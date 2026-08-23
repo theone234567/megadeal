@@ -1,14 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
+
+interface AddressSuggestion {
+  label: string;
+  street: string;
+  city?: string;
+  postcode?: string;
+}
+
+// Free, keyless geocoder (OpenStreetMap-based) used purely for address
+// suggestions as the merchant types — no API key or billing needed.
+async function fetchAddressSuggestions(query: string): Promise<AddressSuggestion[]> {
+  const url = new URL("https://photon.komoot.io/api/");
+  url.searchParams.set("q", query);
+  url.searchParams.set("limit", "5");
+  url.searchParams.set("lang", "en");
+  // Bias results toward New Zealand without excluding other countries.
+  url.searchParams.set("lat", "-41.29");
+  url.searchParams.set("lon", "174.78");
+
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error("Address lookup failed");
+  const data = await res.json();
+
+  return (data.features ?? []).map((f: any) => {
+    const p = f.properties ?? {};
+    const street = p.housenumber && p.name ? `${p.housenumber} ${p.name}` : p.name || p.street || "";
+    const label = [street, p.city, p.state, p.postcode, p.country].filter(Boolean).join(", ");
+    return { label, street, city: p.city, postcode: p.postcode };
+  });
+}
 
 export default function MerchantSignupForm() {
   const [submitted, setSubmitted] = useState(false);
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [consent, setConsent] = useState(false);
+
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [postcode, setPostcode] = useState("");
+  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const addressBoxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!photo) {
@@ -19,6 +56,52 @@ export default function MerchantSignupForm() {
     setPhotoPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [photo]);
+
+  // Debounced address lookup as the merchant types.
+  useEffect(() => {
+    if (address.trim().length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      fetchAddressSuggestions(address)
+        .then((results) => {
+          if (!cancelled) setSuggestions(results);
+        })
+        .catch(() => {
+          if (!cancelled) setSuggestions([]);
+        });
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [address]);
+
+  // Close the suggestions dropdown on an outside click.
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (addressBoxRef.current && !addressBoxRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  function selectSuggestion(s: AddressSuggestion) {
+    setAddress(s.street || s.label);
+    if (s.postcode) setPostcode(s.postcode);
+    if (s.city) {
+      const match = CITIES.find(
+        (c) => c.toLowerCase() === s.city!.toLowerCase()
+      );
+      setCity(match ?? "Other");
+    }
+    setSuggestions([]);
+    setShowSuggestions(false);
+  }
 
   if (submitted) {
     return (
@@ -99,19 +182,42 @@ export default function MerchantSignupForm() {
           </div>
         </div>
 
-        <div>
+        <div ref={addressBoxRef} className="relative">
           <label className="mb-1 block text-sm font-medium text-slate-700">
             Business address
           </label>
           <input
             required
             type="text"
-            placeholder="Street address"
+            autoComplete="off"
+            value={address}
+            onChange={(e) => {
+              setAddress(e.target.value);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => setShowSuggestions(true)}
+            placeholder="Start typing your street address…"
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
           <p className="mt-1 text-xs text-slate-400">
             Used to show your deal to customers nearby.
           </p>
+
+          {showSuggestions && suggestions.length > 0 && (
+            <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card-hover">
+              {suggestions.map((s, i) => (
+                <li key={i}>
+                  <button
+                    type="button"
+                    onClick={() => selectSuggestion(s)}
+                    className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-brand-50"
+                  >
+                    {s.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -121,7 +227,8 @@ export default function MerchantSignupForm() {
             </label>
             <select
               required
-              defaultValue=""
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
             >
               <option value="" disabled>
@@ -140,6 +247,8 @@ export default function MerchantSignupForm() {
             </label>
             <input
               type="text"
+              value={postcode}
+              onChange={(e) => setPostcode(e.target.value)}
               placeholder="1010"
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
