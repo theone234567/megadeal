@@ -89,6 +89,11 @@ export default function Footer() {
                   Contact us
                 </Link>
               </li>
+              <li>
+                <Link href="/portal" className="hover:text-brand-700">
+                  Sign in
+                </Link>
+              </li>
             </ul>
           </div>
           <div>

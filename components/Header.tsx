@@ -78,10 +78,10 @@ export default function Header() {
 
         <Link
           href="/portal"
-          className="hidden shrink-0 items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:flex"
+          className="flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
         >
           <span aria-hidden>👤</span>
-          {isLoggedIn ? member?.profile?.nickname || "My portal" : "Merchant sign in"}
+          {isLoggedIn ? member?.profile?.nickname || "My portal" : "Sign in"}
         </Link>
 
         <button
