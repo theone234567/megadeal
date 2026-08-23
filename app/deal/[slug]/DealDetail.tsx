@@ -76,7 +76,9 @@ export default function DealDetail({ slug }: { slug: string }) {
               </div>
             )}
             <div className="absolute bottom-3 left-3 flex gap-2">
-              <CountdownBadge target={dealEndsAt(deal.id)} />
+              <CountdownBadge
+                target={deal.expiresAt ? new Date(deal.expiresAt) : dealEndsAt(deal.id)}
+              />
             </div>
           </div>
 

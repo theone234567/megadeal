@@ -24,6 +24,10 @@ interface WixContextValue {
   checkout: () => Promise<void>;
   isAdding: boolean;
   isCheckingOut: boolean;
+  member: any | null | undefined;
+  isLoggedIn: boolean;
+  login: (returnTo?: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const WixContext = createContext<WixContextValue | null>(null);
@@ -44,6 +48,7 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
   const [cartOpen, setCartOpen] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [member, setMember] = useState<any | null | undefined>(undefined);
 
   const fetchCart = useCallback(async () => {
     try {
@@ -54,10 +59,42 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
     }
   }, [client]);
 
+  const fetchMember = useCallback(async () => {
+    try {
+      if (client.auth.loggedIn()) {
+        const { member: current } = await client.members.getCurrentMember();
+        setMember(current ?? null);
+      } else {
+        setMember(null);
+      }
+    } catch {
+      setMember(null);
+    }
+  }, [client]);
+
   useEffect(() => {
     fetchCart();
+    fetchMember();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const login = useCallback(
+    async (returnTo?: string) => {
+      const redirectUri = `${window.location.origin}/login-callback`;
+      const originalUri = returnTo || window.location.href;
+      const data = client.auth.generateOAuthData(redirectUri, originalUri);
+      localStorage.setItem("oauthRedirectData", JSON.stringify(data));
+      const { authUrl } = await client.auth.getAuthUrl(data);
+      window.location.href = authUrl;
+    },
+    [client]
+  );
+
+  const logout = useCallback(async () => {
+    const { logoutUrl } = await client.auth.logout(window.location.href);
+    Cookies.remove("session");
+    window.location.href = logoutUrl;
+  }, [client]);
 
   const addToCart = useCallback(
     async (deal: Deal, quantity = 1) => {
@@ -131,6 +168,10 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
     checkout,
     isAdding,
     isCheckingOut,
+    member,
+    isLoggedIn: Boolean(member),
+    login,
+    logout,
   };
 
   return <WixContext.Provider value={value}>{children}</WixContext.Provider>;

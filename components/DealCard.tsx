@@ -34,7 +34,9 @@ export default function DealCard({ deal }: { deal: Deal }) {
           )}
         </div>
         <div className="absolute bottom-2 left-2">
-          <CountdownBadge target={dealEndsAt(deal.id)} />
+          <CountdownBadge
+            target={deal.expiresAt ? new Date(deal.expiresAt) : dealEndsAt(deal.id)}
+          />
         </div>
       </div>
 

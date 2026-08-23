@@ -8,7 +8,7 @@ import { useWix } from "@/context/WixProvider";
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
 export default function Header() {
-  const { cart, setCartOpen } = useWix();
+  const { cart, setCartOpen, member, isLoggedIn } = useWix();
   const [city, setCity] = useState(CITIES[0]);
   const [query, setQuery] = useState("");
   const router = useRouter();
@@ -74,6 +74,14 @@ export default function Header() {
           className="hidden shrink-0 items-center rounded-full bg-ember-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-ember-600 md:flex"
         >
           List your deal
+        </Link>
+
+        <Link
+          href="/portal"
+          className="hidden shrink-0 items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:flex"
+        >
+          <span aria-hidden>👤</span>
+          {isLoggedIn ? member?.profile?.nickname || "My portal" : "Merchant sign in"}
         </Link>
 
         <button

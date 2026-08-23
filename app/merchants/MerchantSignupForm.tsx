@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useWix } from "@/context/WixProvider";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 
@@ -35,7 +36,10 @@ async function fetchAddressSuggestions(query: string): Promise<AddressSuggestion
 }
 
 export default function MerchantSignupForm() {
+  const { client, isLoggedIn, member, login } = useWix();
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [consent, setConsent] = useState(false);
@@ -112,8 +116,41 @@ export default function MerchantSignupForm() {
         <p className="mt-2 text-sm text-brand-700">
           Our merchant team will review your business and be in touch by
           email within a couple of business days to talk through your first
-          deal.
+          deal. You can check your application status and deal credits
+          anytime in your{" "}
+          <a href="/portal" className="font-semibold underline">
+            merchant portal
+          </a>
+          .
         </p>
+      </div>
+    );
+  }
+
+  if (member === undefined) {
+    return (
+      <div id="signup" className="rounded-2xl border border-slate-100 bg-white p-6 text-center shadow-card">
+        <p className="text-sm text-slate-400">Loading…</p>
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div id="signup" className="rounded-2xl border border-slate-100 bg-white p-6 text-center shadow-card">
+        <span className="text-3xl">🔒</span>
+        <h3 className="mt-2 text-lg font-bold text-slate-900">Sign up your business</h3>
+        <p className="mt-2 text-sm text-slate-500">
+          Sign in first so we can securely link your application to your
+          account. You&apos;ll be able to check your status and deal credits
+          anytime in your merchant portal — only you can see it.
+        </p>
+        <button
+          onClick={() => login("/merchants#signup")}
+          className="mt-5 rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-brand-700"
+        >
+          Sign in to continue
+        </button>
       </div>
     );
   }
@@ -127,9 +164,32 @@ export default function MerchantSignupForm() {
       </p>
 
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          setSubmitted(true);
+          setSubmitError(null);
+          setSubmitting(true);
+          try {
+            const formData = new FormData(e.currentTarget);
+            await client.items.insert("Merchants", {
+              businessName: String(formData.get("businessName") ?? ""),
+              website: String(formData.get("website") ?? ""),
+              email: String(formData.get("email") ?? ""),
+              phone: String(formData.get("phone") ?? ""),
+              address,
+              city,
+              postcode,
+              couponCode: String(formData.get("couponCode") ?? ""),
+              creditsBalance: 0,
+              status: "Pending",
+            });
+            setSubmitted(true);
+          } catch {
+            setSubmitError(
+              "Something went wrong submitting your application. Please try again."
+            );
+          } finally {
+            setSubmitting(false);
+          }
         }}
         className="mt-6 space-y-4"
       >
@@ -140,6 +200,7 @@ export default function MerchantSignupForm() {
             </label>
             <input
               required
+              name="businessName"
               type="text"
               placeholder="e.g. Harbourside Bistro"
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -150,6 +211,7 @@ export default function MerchantSignupForm() {
               Website
             </label>
             <input
+              name="website"
               type="url"
               placeholder="https://yourbusiness.co.nz"
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -164,7 +226,9 @@ export default function MerchantSignupForm() {
             </label>
             <input
               required
+              name="email"
               type="email"
+              defaultValue={member?.loginEmail ?? ""}
               placeholder="you@yourbusiness.co.nz"
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
@@ -175,6 +239,7 @@ export default function MerchantSignupForm() {
             </label>
             <input
               required
+              name="phone"
               type="tel"
               placeholder="021 234 5678"
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -292,6 +357,7 @@ export default function MerchantSignupForm() {
             <span className="font-normal text-slate-400">(optional)</span>
           </label>
           <input
+            name="couponCode"
             type="text"
             placeholder="e.g. PARTNER10"
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400 sm:max-w-xs"
@@ -317,11 +383,16 @@ export default function MerchantSignupForm() {
           </span>
         </label>
 
+        {submitError && (
+          <p className="text-sm text-ember-600">{submitError}</p>
+        )}
+
         <button
           type="submit"
-          className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 sm:w-auto sm:px-8"
+          disabled={submitting}
+          className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 disabled:opacity-60 sm:w-auto sm:px-8"
         >
-          Submit application
+          {submitting ? "Submitting…" : "Submit application"}
         </button>
       </form>
     </div>

@@ -14,4 +14,5 @@ export interface Deal {
   categories: string[];
   variantId: string | null;
   inStock: boolean;
+  expiresAt: string | null;
 }
