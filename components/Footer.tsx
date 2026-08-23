@@ -26,19 +26,51 @@ export default function Footer() {
           <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Company</h4>
             <ul className="space-y-2 text-sm text-slate-600">
-              <li>About MegaDeal</li>
-              <li>How it works</li>
-              <li>Merchants: list your deal</li>
-              <li>Careers</li>
+              <li>
+                <Link href="/about" className="hover:text-brand-700">
+                  About MegaDeal
+                </Link>
+              </li>
+              <li>
+                <Link href="/how-it-works" className="hover:text-brand-700">
+                  How it works
+                </Link>
+              </li>
+              <li>
+                <Link href="/merchants" className="hover:text-brand-700">
+                  Merchants: list your deal
+                </Link>
+              </li>
+              <li>
+                <Link href="/careers" className="hover:text-brand-700">
+                  Careers
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Support</h4>
             <ul className="space-y-2 text-sm text-slate-600">
-              <li>Help centre</li>
-              <li>Redeem a voucher</li>
-              <li>Refund policy</li>
-              <li>Contact us</li>
+              <li>
+                <Link href="/help" className="hover:text-brand-700">
+                  Help centre
+                </Link>
+              </li>
+              <li>
+                <Link href="/redeem" className="hover:text-brand-700">
+                  Redeem a voucher
+                </Link>
+              </li>
+              <li>
+                <Link href="/refund-policy" className="hover:text-brand-700">
+                  Refund policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-brand-700">
+                  Contact us
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -69,8 +101,12 @@ export default function Footer() {
             megadeal.co.nz &amp; Groupon — powered by Wix Headless.
           </p>
           <div className="flex gap-4">
-            <span>Terms</span>
-            <span>Privacy</span>
+            <Link href="/terms" className="hover:text-brand-700">
+              Terms
+            </Link>
+            <Link href="/privacy" className="hover:text-brand-700">
+              Privacy
+            </Link>
           </div>
         </div>
       </div>
