@@ -66,9 +66,16 @@ export default function Header() {
           </button>
         </form>
 
+        <Link
+          href="/merchants"
+          className="hidden shrink-0 items-center rounded-full bg-ember-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-ember-600 md:flex"
+        >
+          List your deal
+        </Link>
+
         <button
           onClick={() => setCartOpen(true)}
-          className="relative ml-auto flex shrink-0 items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:ml-0"
+          className="relative flex shrink-0 items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 max-md:ml-auto"
         >
           <span aria-hidden>🛒</span>
           Cart

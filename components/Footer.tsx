@@ -2,11 +2,29 @@
 
 import Link from "next/link";
 import { CATEGORIES } from "./CategoryNav";
+import SocialLinks from "./SocialLinks";
 
 export default function Footer() {
   return (
     <footer className="mt-16 border-t border-slate-100 bg-slate-50">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-brand-700 px-6 py-6 text-center sm:flex-row sm:text-left">
+          <div>
+            <h3 className="text-lg font-bold text-white">Own a local business?</h3>
+            <p className="text-sm text-brand-100">
+              List your deal on MegaDeal and reach new customers today.
+            </p>
+          </div>
+          <Link
+            href="/merchants"
+            className="shrink-0 rounded-full bg-ember-500 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-ember-600"
+          >
+            List your deal →
+          </Link>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Categories</h4>
@@ -95,12 +113,13 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-6 text-sm text-slate-500 sm:flex-row">
-          <p>
+        <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 sm:flex-row">
+          <SocialLinks />
+          <p className="text-center text-sm text-slate-500 sm:text-left">
             © {new Date().getFullYear()} MegaDeal. Deals inspired by
             megadeal.co.nz &amp; Groupon — powered by Wix Headless.
           </p>
-          <div className="flex gap-4">
+          <div className="flex gap-4 text-sm text-slate-500">
             <Link href="/terms" className="hover:text-brand-700">
               Terms
             </Link>
