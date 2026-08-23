@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
+import MerchantSignupForm from "./MerchantSignupForm";
 
 export const metadata: Metadata = { title: "List Your Deal" };
 
@@ -9,6 +10,13 @@ export default function MerchantsPage() {
       title="List your deal"
       subtitle="Reach new customers in your city without any upfront ad spend."
     >
+      <a
+        href="#signup"
+        className="inline-block rounded-full bg-ember-500 px-5 py-2.5 text-sm font-bold text-white no-underline shadow-card transition hover:bg-ember-600"
+      >
+        Sign up your business ↓
+      </a>
+
       <p>
         Restaurants, spas, activity providers and travel operators use
         MegaDeal to fill quiet periods and introduce themselves to customers
@@ -42,14 +50,7 @@ export default function MerchantsPage() {
         love to hear from you.
       </p>
 
-      <p>
-        Interested in listing your business? Reach out via our{" "}
-        <a href="/contact" className="text-brand-600 hover:underline">
-          contact page
-        </a>{" "}
-        with a bit about your business and what you&apos;d like to offer, and
-        we&apos;ll be in touch.
-      </p>
+      <MerchantSignupForm />
     </PageShell>
   );
 }
