@@ -50,16 +50,28 @@ export default function MerchantSignupForm() {
         }}
         className="mt-6 space-y-4"
       >
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Company name
-          </label>
-          <input
-            required
-            type="text"
-            placeholder="e.g. Harbourside Bistro"
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-          />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Company name
+            </label>
+            <input
+              required
+              type="text"
+              placeholder="e.g. Harbourside Bistro"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Website
+            </label>
+            <input
+              type="url"
+              placeholder="https://yourbusiness.co.nz"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -163,6 +175,22 @@ export default function MerchantSignupForm() {
               </p>
             </div>
           </div>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            Coupon or referral code{" "}
+            <span className="font-normal text-slate-400">(optional)</span>
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. PARTNER10"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400 sm:max-w-xs"
+          />
+          <p className="mt-1 text-xs text-slate-400">
+            Were you referred by another merchant, or given a promo code at
+            an event? Enter it here.
+          </p>
         </div>
 
         <label className="flex items-start gap-2 text-sm text-slate-600">
