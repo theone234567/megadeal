@@ -24,9 +24,12 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="flex shrink-0 items-center gap-1 font-display">
+        <Link href="/" className="flex shrink-0 items-center gap-1.5 font-display">
           <span className="text-2xl font-extrabold tracking-tight text-brand-700">
-            Mega<span className="text-ember-500">Deal</span>
+            Mega
+          </span>
+          <span className="-rotate-2 rounded-full bg-ember-500 px-2.5 py-0.5 text-2xl font-extrabold tracking-tight text-white shadow-card">
+            Deal
           </span>
         </Link>
 
