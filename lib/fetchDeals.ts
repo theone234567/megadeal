@@ -70,15 +70,14 @@ function isPubliclyVisible(deal: Deal): boolean {
 }
 
 /**
- * client.productsV3.searchProducts() reliably resolves with zero products
- * in the deployed browser client — confirmed via a console diagnostic
- * across three different request shapes (empty, with cursorPaging) — even
- * though the identical query against www.wixapis.com succeeds every time
- * when called directly. The SDK module resolves its own request URL
- * internally and may be routing through a different host/edge path than a
- * plain call to the documented REST endpoint. Bypassing the SDK's search
- * wrapper and hitting the endpoint directly (still using the SDK's own
- * auth token via fetchWithAuth) sidesteps whatever that difference is.
+ * client.productsV3.searchProducts() and client.productsV3.getProduct()
+ * both proved unreliable in the deployed browser client — confirmed via
+ * repeated console/on-page diagnostics — while the identical REST calls
+ * against www.wixapis.com always succeed when called directly (including
+ * via this same client's own fetchWithAuth, bypassing the SDK's own
+ * request-building). Requesting full fields directly in the search call
+ * also removes the need for a separate per-product hydration call
+ * entirely, so there's no getProduct call left to be unreliable.
  */
 async function searchAllProducts(client: WixClient): Promise<any[]> {
   const res = await client.fetchWithAuth(
@@ -86,7 +85,10 @@ async function searchAllProducts(client: WixClient): Promise<any[]> {
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ search: { cursorPaging: { limit: 100 } } }),
+      body: JSON.stringify({
+        search: { cursorPaging: { limit: 100 } },
+        fields: FULL_FIELDS,
+      }),
     }
   );
   if (!res.ok) {
@@ -106,20 +108,7 @@ export async function fetchDeals(client: WixClient): Promise<Deal[]> {
   const basics = await searchAllProducts(client);
   const metaMap = await fetchDealMetaMap(client);
 
-  const full = await Promise.all(
-    basics.slice(0, 48).map(async (p: any) => {
-      try {
-        const res = await client.productsV3.getProduct(p.id ?? p._id, {
-          fields: FULL_FIELDS,
-        } as any);
-        return (res as any).product;
-      } catch {
-        return p;
-      }
-    })
-  );
-
-  return full
+  return basics
     .filter(Boolean)
     .map((p) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
     .map((deal) => applyMeta(deal, metaMap[deal.id]))

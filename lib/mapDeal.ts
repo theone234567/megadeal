@@ -7,7 +7,14 @@ import type { Deal } from "./types";
 // sub-object populated — the raw `url` is what comes back instead.
 export function mapProductToDeal(product: any, categoryNamesById?: Record<string, string>): Deal {
   const variant = product?.variantsInfo?.variants?.[0];
-  const price = variant?.price;
+  // Get Product (by id/slug) returns per-variant pricing under
+  // variantsInfo.variants[].price; Search Products only returns
+  // aggregate actualPriceRange/compareAtPriceRange at the top level.
+  // Fall back to the range shape so both response types map correctly.
+  const price = variant?.price ?? {
+    actualPrice: product?.actualPriceRange?.minValue,
+    compareAtPrice: product?.compareAtPriceRange?.minValue,
+  };
 
   const now = price?.actualPrice?.amount ? Number(price.actualPrice.amount) : 0;
   const was = price?.compareAtPrice?.amount
