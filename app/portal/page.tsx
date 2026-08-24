@@ -21,6 +21,8 @@ interface MerchantRecord {
   businessHours?: string;
   facebookUrl?: string;
   instagramUrl?: string;
+  priceRange?: string;
+  amenities?: string;
   couponCode?: string;
   creditsBalance?: number;
   status?: string;

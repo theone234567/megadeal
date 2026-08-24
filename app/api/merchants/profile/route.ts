@@ -4,6 +4,7 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 
 const MAX_TEXT_LENGTH = 300;
 const MAX_BIO_LENGTH = 600;
+const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
 
 function cleanText(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -32,6 +33,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Business name is required." }, { status: 400 });
   }
 
+  const priceRange = cleanText(body.priceRange, 4);
+  if (!ALLOWED_PRICE_RANGES.includes(priceRange)) {
+    return NextResponse.json({ error: "Invalid price range." }, { status: 400 });
+  }
+
   const adminClient = createWixAdminClient();
   const result = await adminClient.items.query("Merchants").eq("_owner", member.id).find();
   const merchant = result.items?.[0];
@@ -51,6 +57,8 @@ export async function POST(req: NextRequest) {
     businessHours: cleanText(body.businessHours, MAX_TEXT_LENGTH),
     facebookUrl: cleanText(body.facebookUrl, MAX_TEXT_LENGTH),
     instagramUrl: cleanText(body.instagramUrl, MAX_TEXT_LENGTH),
+    priceRange,
+    amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
     status: "Pending",
   });
   return NextResponse.json({ item: updated });

@@ -17,6 +17,8 @@ interface MerchantRecord {
   businessHours?: string;
   facebookUrl?: string;
   instagramUrl?: string;
+  priceRange?: string;
+  amenities?: string;
   [key: string]: any;
 }
 
@@ -41,6 +43,8 @@ export default function MerchantProfileForm({
   const [businessHours, setBusinessHours] = useState(merchant.businessHours || "");
   const [facebookUrl, setFacebookUrl] = useState(merchant.facebookUrl || "");
   const [instagramUrl, setInstagramUrl] = useState(merchant.instagramUrl || "");
+  const [priceRange, setPriceRange] = useState(merchant.priceRange || "");
+  const [amenities, setAmenities] = useState(merchant.amenities || "");
 
   async function handleSave() {
     setSaving(true);
@@ -60,6 +64,8 @@ export default function MerchantProfileForm({
           businessHours,
           facebookUrl,
           instagramUrl,
+          priceRange,
+          amenities,
         }),
       });
       if (!res.ok) {
@@ -122,6 +128,14 @@ export default function MerchantProfileForm({
                 .filter(Boolean)
                 .join(", ") || "—"}
             </dd>
+          </div>
+          <div>
+            <dt className="text-slate-400">Price range</dt>
+            <dd className="font-medium text-slate-800">{merchant.priceRange || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400">Features &amp; amenities</dt>
+            <dd className="font-medium text-slate-800">{merchant.amenities || "—"}</dd>
           </div>
           <div className="sm:col-span-2">
             <dt className="text-slate-400">About</dt>
@@ -244,6 +258,34 @@ export default function MerchantProfileForm({
             rows={3}
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Price range</label>
+            <select
+              value={priceRange}
+              onChange={(e) => setPriceRange(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+            >
+              <option value="">Not applicable</option>
+              <option value="$">$ — Budget-friendly</option>
+              <option value="$$">$$ — Moderate</option>
+              <option value="$$$">$$$ — Upmarket</option>
+              <option value="$$$$">$$$$ — Premium</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Features &amp; amenities
+            </label>
+            <input
+              value={amenities}
+              onChange={(e) => setAmenities(e.target.value)}
+              placeholder="e.g. Vegan options, Free parking"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}

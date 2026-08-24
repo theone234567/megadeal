@@ -85,6 +85,8 @@ export interface BusinessProfile {
   businessHours: string | null;
   facebookUrl: string | null;
   instagramUrl: string | null;
+  priceRange: string | null;
+  amenities: string[];
 }
 
 /**
@@ -123,6 +125,11 @@ export async function fetchBusinessProfileBySlug(
       businessHours: merchant.businessHours || null,
       facebookUrl: merchant.facebookUrl || null,
       instagramUrl: merchant.instagramUrl || null,
+      priceRange: merchant.priceRange || null,
+      amenities: String(merchant.amenities || "")
+        .split(",")
+        .map((a: string) => a.trim())
+        .filter(Boolean),
     };
 
     const dealsResult = await adminClient.items

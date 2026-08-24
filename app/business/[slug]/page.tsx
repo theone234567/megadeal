@@ -103,12 +103,30 @@ export default async function BusinessProfilePage({
             <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
               {business.businessName}
             </h1>
-            {business.city && <p className="mt-1 text-sm text-slate-500">📍 {business.city}</p>}
+            <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+              {business.city && <span>📍 {business.city}</span>}
+              {business.priceRange && (
+                <span className="font-semibold text-slate-600">{business.priceRange}</span>
+              )}
+            </p>
           </div>
         </div>
 
         {business.bio && (
           <p className="mt-5 max-w-2xl text-sm leading-relaxed text-slate-600">{business.bio}</p>
+        )}
+
+        {business.amenities.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {business.amenities.map((a) => (
+              <span
+                key={a}
+                className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600"
+              >
+                {a}
+              </span>
+            ))}
+          </div>
         )}
 
         {(hasContactInfo || business.businessHours || hasSocial) && (

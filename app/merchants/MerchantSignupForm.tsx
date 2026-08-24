@@ -184,6 +184,8 @@ export default function MerchantSignupForm() {
               businessHours: String(formData.get("businessHours") ?? ""),
               facebookUrl: String(formData.get("facebookUrl") ?? ""),
               instagramUrl: String(formData.get("instagramUrl") ?? ""),
+              priceRange: String(formData.get("priceRange") ?? ""),
+              amenities: String(formData.get("amenities") ?? ""),
               couponCode: String(formData.get("couponCode") ?? ""),
               creditsBalance: 0,
               status: "Pending",
@@ -378,6 +380,43 @@ export default function MerchantSignupForm() {
             placeholder="https://instagram.com/yourbusiness"
             className="w-full max-w-xs rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Price range{" "}
+              <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <select
+              name="priceRange"
+              defaultValue=""
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+            >
+              <option value="">Not applicable</option>
+              <option value="$">$ — Budget-friendly</option>
+              <option value="$$">$$ — Moderate</option>
+              <option value="$$$">$$$ — Upmarket</option>
+              <option value="$$$$">$$$$ — Premium</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Features &amp; amenities{" "}
+              <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <input
+              name="amenities"
+              type="text"
+              placeholder="e.g. Vegan options, Free parking, Wheelchair accessible"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              Comma-separated. Use whatever&apos;s relevant — cuisine or
+              dietary options for a restaurant, class types for a gym,
+              treatments for a spa, and so on.
+            </p>
+          </div>
         </div>
 
         <div>
