@@ -66,6 +66,30 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
 
       {open && (
         <div className="space-y-4 border-t border-slate-100 px-4 py-4">
+          {(deal.description || deal.terms || deal.priceNow) && (
+            <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
+              {deal.priceNow !== undefined && (
+                <p className="font-semibold text-slate-800">
+                  ${deal.priceNow}
+                  {deal.priceWas && deal.priceWas > deal.priceNow ? (
+                    <span className="ml-1 text-xs font-normal text-slate-400 line-through">
+                      ${deal.priceWas}
+                    </span>
+                  ) : null}
+                  {deal.quantityAvailable ? (
+                    <span className="ml-2 text-xs font-normal text-slate-400">
+                      · {deal.quantityAvailable} available
+                    </span>
+                  ) : null}
+                </p>
+              )}
+              {deal.description && <p className="mt-1">{deal.description}</p>}
+              {deal.terms && (
+                <p className="mt-1 text-xs italic text-slate-500">{deal.terms}</p>
+              )}
+            </div>
+          )}
+
           <PhotoUploadField
             label="Deal photo"
             currentUrl={deal.photoUrl || null}

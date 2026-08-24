@@ -246,10 +246,18 @@ export default function PortalPage() {
           </div>
 
           <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
-            <h2 className="text-lg font-bold text-slate-900">Your deals</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">Your deals</h2>
+              <Link
+                href="/portal/new-deal"
+                className="rounded-full bg-ember-500 px-4 py-2 text-xs font-bold text-white shadow-card hover:bg-ember-600"
+              >
+                + Create a deal
+              </Link>
+            </div>
             {deals.length === 0 ? (
               <p className="mt-2 text-sm text-slate-500">
-                No deals linked to your account yet.
+                No deals yet — create your first one above.
               </p>
             ) : (
               <ul className="mt-4 space-y-3">

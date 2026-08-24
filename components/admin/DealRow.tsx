@@ -24,6 +24,7 @@ function toDateInputValue(iso?: string) {
 }
 
 export default function DealRow({ deal }: { deal: AdminDeal }) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [status, setStatus] = useState<string>(deal.status || "Live");
   const [expiresAt, setExpiresAt] = useState(toDateInputValue(deal.expiresAt));
   const [merchantEmail, setMerchantEmail] = useState(deal.merchantEmail || "");
@@ -62,10 +63,18 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
     }
   }
 
+  const hasDetails = deal.description || deal.terms || deal.priceNow !== undefined;
+
   return (
+    <>
     <tr className="border-b border-slate-100 align-top">
       <td className="py-3 pr-4">
-        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setDetailsOpen((v) => !v)}
+          className="flex items-center gap-2 text-left"
+          disabled={!hasDetails}
+        >
           {deal.photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={deal.photoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
@@ -75,10 +84,12 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
             </span>
           )}
           <div>
-            <p className="font-semibold text-slate-800">{deal.dealName || "Untitled"}</p>
-            <p className="text-xs text-slate-400">{deal.productId?.slice(0, 8)}…</p>
+            <p className="font-semibold text-slate-800">
+              {deal.dealName || "Untitled"} {hasDetails && (detailsOpen ? "▲" : "▼")}
+            </p>
+            <p className="text-xs text-slate-400">{deal.productId ? `${deal.productId.slice(0, 8)}…` : "no linked product"}</p>
           </div>
-        </div>
+        </button>
       </td>
       <td className="py-3 pr-4">
         <input
@@ -121,5 +132,34 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
         {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
       </td>
     </tr>
+    {detailsOpen && hasDetails && (
+      <tr className="border-b border-slate-100 bg-slate-50">
+        <td colSpan={5} className="px-4 py-3 text-sm text-slate-600">
+          {deal.priceNow !== undefined && (
+            <p className="font-semibold text-slate-800">
+              ${deal.priceNow}
+              {deal.priceWas && deal.priceWas > deal.priceNow ? (
+                <span className="ml-1 text-xs font-normal text-slate-400 line-through">
+                  ${deal.priceWas}
+                </span>
+              ) : null}
+              {deal.quantityAvailable ? (
+                <span className="ml-2 text-xs font-normal text-slate-400">
+                  · {deal.quantityAvailable} available
+                </span>
+              ) : null}
+            </p>
+          )}
+          {deal.description && <p className="mt-1">{deal.description}</p>}
+          {deal.terms && <p className="mt-1 text-xs italic text-slate-500">Terms: {deal.terms}</p>}
+          {!deal.productId && (
+            <p className="mt-2 text-xs font-semibold text-amber-700">
+              ⚠️ No Wix Store product linked yet — create one and set Product ID via the Wix dashboard to make this purchasable, then set status to Live.
+            </p>
+          )}
+        </td>
+      </tr>
+    )}
+    </>
   );
 }
