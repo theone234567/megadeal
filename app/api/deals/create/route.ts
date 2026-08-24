@@ -3,6 +3,7 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { CATEGORY_ID_BY_NAME } from "@/lib/categories";
+import { getOrClaimMerchant } from "@/lib/merchant";
 
 const MAX_DURATION_DAYS = 365;
 const WIX_STORES_APP_ID = "215238eb-22a5-4c36-9e7b-e7c08025e04e";
@@ -70,8 +71,7 @@ export async function POST(req: NextRequest) {
 
   const adminClient = createWixAdminClient();
 
-  const merchantResult = await adminClient.items.query("Merchants").eq("_owner", member.id).find();
-  const merchant = merchantResult.items?.[0];
+  const merchant = await getOrClaimMerchant(adminClient, member);
   if (!merchant) {
     return NextResponse.json({ error: "No business application found for this account." }, { status: 404 });
   }
