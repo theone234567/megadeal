@@ -4,7 +4,6 @@ import { currentCart } from "@wix/ecom";
 import { redirects } from "@wix/redirects";
 import { items } from "@wix/data";
 import { members } from "@wix/members";
-import { categories } from "@wix/categories";
 
 export const WIX_CLIENT_ID =
   process.env.NEXT_PUBLIC_WIX_CLIENT_ID || "a5df1008-85ea-4479-8a49-8b0576ae9714";
@@ -13,7 +12,7 @@ export const WIX_STORES_APP_ID = "215238eb-22a5-4c36-9e7b-e7c08025e04e";
 
 export function createWixClient(tokens?: Tokens) {
   return createClient({
-    modules: { productsV3, currentCart, redirects, items, members, categories },
+    modules: { productsV3, currentCart, redirects, items, members },
     auth: OAuthStrategy({
       clientId: WIX_CLIENT_ID,
       tokens,

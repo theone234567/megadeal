@@ -39,24 +39,20 @@ async function fetchDealMetaMap(client: WixClient): Promise<Record<string, DealM
 
 /**
  * Catalog V3's ALL_CATEGORIES_INFO field only returns category ids on each
- * product, not names — so category names (used for filtering/display) are
- * resolved separately via this id -> name lookup, built once per request
- * from the small, fixed set of storefront categories.
+ * product, not names, so names are resolved via this lookup instead of a
+ * live API call. The 5 storefront categories are fixed (see CategoryNav)
+ * and rarely change, and a live categories.queryCategories() call turned
+ * out to be unreliable for the visitor OAuth client in production (it
+ * failed outright in the browser), so a static map is both simpler and
+ * removes an extra network round-trip from every deal-listing fetch.
  */
-async function fetchCategoryNameMap(client: WixClient): Promise<Record<string, string>> {
-  try {
-    const result = await (client as any).categories
-      .queryCategories({ treeReference: { appNamespace: "@wix/stores", treeKey: null } })
-      .find();
-    const map: Record<string, string> = {};
-    for (const cat of result.items ?? []) {
-      if (cat.id && cat.name) map[cat.id] = cat.name;
-    }
-    return map;
-  } catch {
-    return {};
-  }
-}
+const CATEGORY_NAME_BY_ID: Record<string, string> = {
+  "e0def6d9-af2f-4ea9-91f6-15ce3bd20ac7": "Food & Drink",
+  "333efe51-7bfe-4357-a79a-5e63952d5791": "Beauty & Spa",
+  "606adf09-ff58-490b-97f6-960587bf9cb1": "Things To Do",
+  "870d3932-8296-4120-8dde-71159aa2bdf1": "Travel & Getaways",
+  "909fc5df-6473-4a39-99e9-c23e665e9288": "Health & Fitness",
+};
 
 function applyMeta(deal: Deal, meta: DealMeta | undefined): Deal {
   if (!meta) return deal;
@@ -80,10 +76,9 @@ function isPubliclyVisible(deal: Deal): boolean {
  * so per-product hydration stays cheap.
  */
 export async function fetchDeals(client: WixClient): Promise<Deal[]> {
-  const [searchResult, metaMap, categoryNamesById] = await Promise.all([
+  const [searchResult, metaMap] = await Promise.all([
     client.productsV3.searchProducts({}),
     fetchDealMetaMap(client),
-    fetchCategoryNameMap(client),
   ]);
   const basics = searchResult.products ?? [];
 
@@ -102,7 +97,7 @@ export async function fetchDeals(client: WixClient): Promise<Deal[]> {
 
   return full
     .filter(Boolean)
-    .map((p) => mapProductToDeal(p, categoryNamesById))
+    .map((p) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
     .map((deal) => applyMeta(deal, metaMap[deal.id]))
     .filter(isPubliclyVisible);
 }
@@ -117,8 +112,7 @@ export async function fetchDealBySlug(
     } as any);
     const product = (res as any).product;
     if (!product) return null;
-    const categoryNamesById = await fetchCategoryNameMap(client);
-    const deal = mapProductToDeal(product, categoryNamesById);
+    const deal = mapProductToDeal(product, CATEGORY_NAME_BY_ID);
 
     try {
       const metaResult = await (client as any).items

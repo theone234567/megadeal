@@ -21,9 +21,16 @@ export default function HomeDeals() {
     setDeals(null);
     fetchDeals(client)
       .then((result) => {
-        if (!cancelled) setDeals(result);
+        if (cancelled) return;
+        if (result.length === 0) {
+          // Diagnostic only: helps tell "genuinely no live deals" apart
+          // from a fetch/permissions issue returning an empty list.
+          console.warn("[fetchDeals] resolved with 0 deals");
+        }
+        setDeals(result);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("[fetchDeals] failed", err);
         if (!cancelled) setError(true);
       });
     return () => {
