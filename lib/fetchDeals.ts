@@ -77,7 +77,13 @@ function isPubliclyVisible(deal: Deal): boolean {
  */
 export async function fetchDeals(client: WixClient): Promise<Deal[]> {
   const [searchResult, metaMap] = await Promise.all([
-    client.productsV3.searchProducts({}),
+    // An empty search ({}) reliably resolves with zero products in the
+    // deployed browser client even though the identical query succeeds
+    // server-side — almost certainly a cached-empty-response somewhere in
+    // the request path for that exact (highly generic) request shape.
+    // Passing an explicit paging value changes the request enough to
+    // avoid hitting that stale cache.
+    client.productsV3.searchProducts({ cursorPaging: { limit: 100 } }),
     fetchDealMetaMap(client),
   ]);
   const basics = searchResult.products ?? [];
