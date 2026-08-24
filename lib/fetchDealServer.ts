@@ -56,6 +56,10 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
           ...deal,
           businessName: merchant.businessName,
           businessLogoUrl: merchant.logoUrl || null,
+          businessWebsite: merchant.website || null,
+          businessPhone: merchant.phone || null,
+          businessAddress: merchant.address || null,
+          businessCity: merchant.city || null,
         };
       }
     }

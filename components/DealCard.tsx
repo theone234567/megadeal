@@ -67,7 +67,7 @@ export default function DealCard({ deal }: { deal: Deal }) {
             )}
           </div>
         </div>
-        <p className="text-xs text-slate-400">{boughtToday(deal.id)} bought today</p>
+        <p className="text-xs text-slate-400">{boughtToday(deal.id)} grabbed today</p>
       </div>
     </Link>
   );

@@ -9,26 +9,23 @@ export default function PrivacyPage() {
       <p>
         This policy explains what personal information MegaDeal collects,
         why we collect it, and the choices you have about it. By using
-        MegaDeal, you agree to the practices described here.
+        MegaDeal, you agree to the practices described here. MegaDeal
+        doesn&apos;t process customer payments, so we never see or store
+        card or payment details — there simply aren&apos;t any to collect.
       </p>
 
       <h2>Information we collect</h2>
-      <p>When you browse or buy a deal, we may collect:</p>
       <ul>
-        <li>
-          <strong>Account and order details</strong> — your name, email
-          address, and order history, so we can process purchases and send
-          your voucher.
-        </li>
-        <li>
-          <strong>Payment information</strong> — handled and stored by our
-          payment processor, not by MegaDeal directly. We never see or store
-          full card numbers.
-        </li>
         <li>
           <strong>Usage data</strong> — pages viewed, deals browsed, and
           general device/browser information, used to keep the site working
           well and to improve which deals we feature.
+        </li>
+        <li>
+          <strong>Merchant account details</strong> — if you sign in to
+          list or manage a deal, we collect your business name, contact
+          details, address, and photos, so we can review and display your
+          listing.
         </li>
         <li>
           <strong>Communications</strong> — anything you send us through the{" "}
@@ -40,39 +37,36 @@ export default function PrivacyPage() {
       </ul>
 
       <h2>How we use it</h2>
-      <p>We use your information to:</p>
       <ul>
-        <li>Process orders and deliver your voucher</li>
+        <li>Show relevant deals and keep the site working well</li>
+        <li>Review and publish merchant listings</li>
         <li>Provide customer support and respond to enquiries</li>
-        <li>Send deal recommendations and updates, if you&apos;ve opted in</li>
         <li>Detect and prevent fraud, and keep the site secure</li>
         <li>Understand which deals and categories perform well, in aggregate</li>
       </ul>
       <p>We don&apos;t sell your personal data to third parties.</p>
 
-      <h2>Sharing with merchants</h2>
+      <h2>What businesses see</h2>
       <p>
-        When you buy a deal, the merchant behind it receives what they need
-        to honour your voucher — typically your name and order reference.
-        They don&apos;t receive your payment details.
+        A business&apos;s name, logo, address, phone number and website are
+        shown publicly on their deal listings so customers can contact them
+        — that information is meant to be public. Their account email,
+        used to sign in to the merchant portal, is never shown publicly.
       </p>
 
       <h2>Cookies</h2>
       <p>
-        We use a small amount of cookie-based storage to keep your cart and
-        visitor session working across page loads. This is functional, not
-        advertising-driven — see our{" "}
-        <a href="/terms" className="text-brand-600 hover:underline">
-          terms of service
-        </a>{" "}
-        for how sessions work.
+        We use a small amount of cookie-based storage to keep a merchant
+        signed in to the portal across visits. This is functional, not
+        advertising-driven.
       </p>
 
       <h2>Data retention</h2>
       <p>
-        We keep order records for as long as needed for accounting, dispute
-        resolution and legal requirements, and delete or anonymise other
-        personal data when it&apos;s no longer needed for the purposes above.
+        We keep merchant account and listing records for as long as needed
+        to operate the site and meet legal requirements, and delete or
+        anonymise other personal data when it&apos;s no longer needed for
+        the purposes above.
       </p>
 
       <h2>Your choices</h2>

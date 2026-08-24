@@ -24,26 +24,28 @@ export default function MerchantsPage() {
       <p>
         Restaurants, spas, activity providers and travel operators use
         MegaDeal to fill quiet periods and introduce themselves to customers
-        who&apos;ve never visited before. You set the offer and the
-        redemption terms — we handle the marketing, payments and customer
-        support.
+        who&apos;ve never visited before. MegaDeal is advertising, not a
+        marketplace: you pay us with advertising credits or a subscription to
+        get your deal in front of new customers — we never take a cut of what
+        you charge them, because we never touch that payment at all.
       </p>
 
       <h2>Why merchants list with us</h2>
       <ul>
-        <li>No upfront cost — you only pay a share of each deal sold</li>
-        <li>Full control over how many vouchers are available and when</li>
-        <li>New customer data and repeat-visit insights after each campaign</li>
+        <li>Zero commission — every dollar a customer pays goes to you, not us</li>
+        <li>Pay with simple advertising credits or a subscription, not a cut of sales</li>
+        <li>Full control over how many spots are available and when</li>
         <li>Deals go live fast — most listings are ready within a few days</li>
       </ul>
 
       <h2>How it works for you</h2>
       <p>
         You tell us what you&apos;d like to offer — a percentage off, a
-        bundled experience, a set voucher amount — and we help shape it into
-        a listing that converts. Once it&apos;s live, customers buy directly
-        through MegaDeal, and you redeem vouchers exactly as you would a
-        regular booking or walk-in.
+        bundled experience, a set price — and we help shape it into a
+        listing that converts. Once it&apos;s live, customers see it on
+        MegaDeal and contact or visit you directly to redeem it, paying you
+        in full at the discounted price — exactly like a regular booking or
+        walk-in.
       </p>
 
       <h2>Who it&apos;s a good fit for</h2>

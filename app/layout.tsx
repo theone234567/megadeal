@@ -3,7 +3,6 @@ import "./globals.css";
 import { WixProvider } from "@/context/WixProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import CartDrawer from "@/components/CartDrawer";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
@@ -60,7 +59,6 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
-          <CartDrawer />
         </WixProvider>
       </body>
     </html>

@@ -9,8 +9,8 @@ export default function Hero() {
           Up to 70% off restaurants, spas, activities &amp; getaways near you
         </h1>
         <p className="mt-4 max-w-xl text-brand-50">
-          New deals added daily. Buy now, redeem whenever you&apos;re ready —
-          no subscriptions, no catch.
+          New deals added daily. Grab one, then contact the business
+          directly to redeem — MegaDeal never charges you a cent.
         </p>
       </div>
     </section>

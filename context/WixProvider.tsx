@@ -9,21 +9,10 @@ import {
   useMemo,
   useState,
 } from "react";
-import { currentCart } from "@wix/ecom";
-import { createWixClient, WIX_STORES_APP_ID, type WixClient } from "@/lib/wixClient";
-import type { Deal } from "@/lib/types";
+import { createWixClient, type WixClient } from "@/lib/wixClient";
 
 interface WixContextValue {
   client: WixClient;
-  cart: any;
-  cartOpen: boolean;
-  setCartOpen: (open: boolean) => void;
-  addToCart: (deal: Deal, quantity?: number) => Promise<void>;
-  removeLineItem: (lineItemId: string) => Promise<void>;
-  clearCart: () => Promise<void>;
-  checkout: () => Promise<void>;
-  isAdding: boolean;
-  isCheckingOut: boolean;
   member: any | null | undefined;
   isLoggedIn: boolean;
   login: (returnTo?: string) => Promise<void>;
@@ -42,22 +31,15 @@ function readTokens() {
   }
 }
 
+/**
+ * MegaDeal is an advertising directory, not a payment processor — customers
+ * never buy anything through the site, so there's no cart/checkout concept
+ * here at all. This client only handles member sign-in (for the merchant
+ * portal) and gets passed down for the odd read that still wants it.
+ */
 export function WixProvider({ children }: { children: React.ReactNode }) {
   const client = useMemo(() => createWixClient(readTokens()), []);
-  const [cart, setCart] = useState<any>({});
-  const [cartOpen, setCartOpen] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [member, setMember] = useState<any | null | undefined>(undefined);
-
-  const fetchCart = useCallback(async () => {
-    try {
-      const current = await client.currentCart.getCurrentCart();
-      setCart(current || {});
-    } catch {
-      setCart({});
-    }
-  }, [client]);
 
   const fetchMember = useCallback(async () => {
     try {
@@ -73,10 +55,8 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
   }, [client]);
 
   useEffect(() => {
-    fetchCart();
     fetchMember();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchMember]);
 
   const login = useCallback(
     async (returnTo?: string) => {
@@ -96,78 +76,8 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
     window.location.href = logoutUrl;
   }, [client]);
 
-  const addToCart = useCallback(
-    async (deal: Deal, quantity = 1) => {
-      setIsAdding(true);
-      try {
-        const { cart: updatedCart } = await client.currentCart.addToCurrentCart({
-          lineItems: [
-            {
-              catalogReference: {
-                appId: WIX_STORES_APP_ID,
-                catalogItemId: deal.id,
-                options: deal.variantId ? { variantId: deal.variantId } : undefined,
-              },
-              quantity,
-            },
-          ],
-        });
-        setCart(updatedCart);
-        setCartOpen(true);
-      } finally {
-        setIsAdding(false);
-      }
-    },
-    [client]
-  );
-
-  const removeLineItem = useCallback(
-    async (lineItemId: string) => {
-      const { cart: updatedCart } = await client.currentCart.removeLineItemsFromCurrentCart(
-        [lineItemId]
-      );
-      setCart(updatedCart);
-    },
-    [client]
-  );
-
-  const clearCart = useCallback(async () => {
-    await client.currentCart.deleteCurrentCart();
-    setCart({});
-  }, [client]);
-
-  const checkout = useCallback(async () => {
-    setIsCheckingOut(true);
-    try {
-      const { checkoutId } = await client.currentCart.createCheckoutFromCurrentCart({
-        channelType: currentCart.ChannelType.WEB,
-      });
-      const redirect = await client.redirects.createRedirectSession({
-        ecomCheckout: { checkoutId },
-        callbacks: {
-          postFlowUrl:
-            typeof window !== "undefined" ? window.location.href : "/",
-        },
-      });
-      if (typeof window !== "undefined") {
-        window.location.href = redirect.redirectSession!.fullUrl!;
-      }
-    } finally {
-      setIsCheckingOut(false);
-    }
-  }, [client]);
-
   const value: WixContextValue = {
     client,
-    cart,
-    cartOpen,
-    setCartOpen,
-    addToCart,
-    removeLineItem,
-    clearCart,
-    checkout,
-    isAdding,
-    isCheckingOut,
     member,
     isLoggedIn: Boolean(member),
     login,

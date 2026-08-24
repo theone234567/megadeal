@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useWix } from "@/context/WixProvider";
 import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDealBySlug } from "@/lib/fetchDeals";
 import type { Deal } from "@/lib/types";
@@ -12,10 +11,8 @@ import { boughtToday, dealEndsAt } from "@/lib/socialProof";
 import CountdownBadge from "@/components/CountdownBadge";
 
 export default function DealDetail({ slug }: { slug: string }) {
-  const { addToCart, checkout } = useWix();
   const [deal, setDeal] = useState<Deal | null | undefined>(undefined);
-  const [quantity, setQuantity] = useState(1);
-  const [buying, setBuying] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,7 +48,7 @@ export default function DealDetail({ slug }: { slug: string }) {
     );
   }
 
-  const total = deal.now * quantity;
+  const hasContactInfo = Boolean(deal.businessWebsite || deal.businessPhone || deal.businessAddress);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -125,7 +122,7 @@ export default function DealDetail({ slug }: { slug: string }) {
               </div>
             )}
             <p className="mt-1 text-sm text-slate-400">
-              {boughtToday(deal.id)} people bought this deal today
+              {boughtToday(deal.id)} people have grabbed this deal today
             </p>
 
             <div className="mt-4 flex items-baseline gap-3">
@@ -143,56 +140,62 @@ export default function DealDetail({ slug }: { slug: string }) {
                 </>
               )}
             </div>
-
-            <div className="mt-6 flex items-center gap-3">
-              <label htmlFor="qty" className="text-sm font-medium text-slate-600">
-                Quantity
-              </label>
-              <div className="flex items-center rounded-full border border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="px-3 py-1.5 text-lg text-slate-500 hover:text-slate-800"
-                  aria-label="Decrease quantity"
-                >
-                  −
-                </button>
-                <span id="qty" className="w-8 text-center text-sm font-semibold">
-                  {quantity}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setQuantity((q) => Math.min(10, q + 1))}
-                  className="px-3 py-1.5 text-lg text-slate-500 hover:text-slate-800"
-                  aria-label="Increase quantity"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            <p className="mt-3 text-sm text-slate-500">
-              Total: <span className="font-semibold text-slate-800">
-                {formatMoney(total, deal.currency)}
-              </span>
+            <p className="mt-1 text-xs text-slate-400">
+              Price paid directly to {deal.businessName || "the business"} — MegaDeal
+              doesn&apos;t process any payment.
             </p>
 
             <div className="mt-6">
-              <button
-                onClick={async () => {
-                  setBuying(true);
-                  try {
-                    await addToCart(deal, quantity);
-                    await checkout();
-                  } catch {
-                    setBuying(false);
-                  }
-                }}
-                disabled={buying}
-                className="w-full rounded-full bg-ember-500 py-3 text-center font-bold text-white shadow-card transition hover:bg-ember-600 disabled:opacity-60"
-              >
-                {buying ? "Taking you to checkout…" : "Grab this deal"}
-              </button>
+              {!showContact ? (
+                <button
+                  onClick={() => setShowContact(true)}
+                  className="w-full rounded-full bg-ember-500 py-3 text-center font-bold text-white shadow-card transition hover:bg-ember-600"
+                >
+                  Get this deal
+                </button>
+              ) : hasContactInfo ? (
+                <div className="space-y-2 rounded-xl border border-brand-100 bg-brand-50 p-4">
+                  <p className="text-sm font-semibold text-brand-800">
+                    Contact or visit {deal.businessName || "the business"} and mention
+                    this MegaDeal offer:
+                  </p>
+                  {deal.businessPhone && (
+                    <a
+                      href={`tel:${deal.businessPhone.replace(/[^0-9+]/g, "")}`}
+                      className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
+                    >
+                      📞 {deal.businessPhone}
+                    </a>
+                  )}
+                  {deal.businessWebsite && (
+                    <a
+                      href={
+                        deal.businessWebsite.startsWith("http")
+                          ? deal.businessWebsite
+                          : `https://${deal.businessWebsite}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
+                    >
+                      🌐 Visit website
+                    </a>
+                  )}
+                  {deal.businessAddress && (
+                    <p className="flex items-center gap-2 text-sm text-brand-700">
+                      📍 {deal.businessAddress}
+                      {deal.businessCity ? `, ${deal.businessCity}` : ""}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-brand-100 bg-brand-50 p-4">
+                  <p className="text-sm font-semibold text-brand-800">
+                    Mention this MegaDeal offer when you contact or visit{" "}
+                    {deal.businessName || "the business"} to redeem it.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

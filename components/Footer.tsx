@@ -81,7 +81,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/redeem" className="hover:text-brand-700">
-                  Redeem a voucher
+                  How to redeem a deal
                 </Link>
               </li>
               <li>

@@ -20,4 +20,8 @@ export interface Deal {
   status: DealStatus | null;
   businessName: string | null;
   businessLogoUrl: string | null;
+  businessWebsite: string | null;
+  businessPhone: string | null;
+  businessAddress: string | null;
+  businessCity: string | null;
 }

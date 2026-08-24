@@ -71,9 +71,16 @@ function applyMeta(deal: Deal, meta: DealMeta | undefined): Deal {
  * re-exposes only businessName/logoUrl, keyed by product id — never by
  * merchant email, so this can't be scraped for merchants' addresses.
  */
-async function fetchBusinessDirectory(): Promise<
-  Record<string, { businessName: string; logoUrl: string | null }>
-> {
+interface PublicBusiness {
+  businessName: string;
+  logoUrl: string | null;
+  website: string | null;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+}
+
+async function fetchBusinessDirectory(): Promise<Record<string, PublicBusiness>> {
   try {
     const res = await fetch("/api/public/merchant-directory");
     if (!res.ok) return {};
@@ -84,16 +91,17 @@ async function fetchBusinessDirectory(): Promise<
   }
 }
 
-function applyBusiness(
-  deal: Deal,
-  directory: Record<string, { businessName: string; logoUrl: string | null }>
-): Deal {
+function applyBusiness(deal: Deal, directory: Record<string, PublicBusiness>): Deal {
   const business = directory[deal.id];
   if (!business) return deal;
   return {
     ...deal,
     businessName: business.businessName,
     businessLogoUrl: business.logoUrl,
+    businessWebsite: business.website,
+    businessPhone: business.phone,
+    businessAddress: business.address,
+    businessCity: business.city,
   };
 }
 

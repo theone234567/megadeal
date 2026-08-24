@@ -12,15 +12,15 @@ export default function CareersPage() {
       <p>
         MegaDeal is built around a simple idea — great local businesses
         deserve an easy way to reach new customers, and customers deserve an
-        easy way to find them. Everything we build, from the deals we choose
-        to the way checkout works, is in service of that.
+        easy way to find them, without either side paying us a cut of every
+        sale. Everything we build is in service of that.
       </p>
 
       <h2>What we look for</h2>
       <p>
         Wherever we do add to the team, we look for people who care about
         the small details that make a service trustworthy — clear pricing,
-        honest deal descriptions, a checkout that just works — and who like
+        honest deal descriptions, a site that just works — and who like
         working closely with the local businesses on the other side of every
         listing.
       </p>

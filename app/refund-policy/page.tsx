@@ -1,58 +1,60 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
 
-export const metadata: Metadata = { title: "Refund Policy" };
+export const metadata: Metadata = {
+  title: "Refund Policy",
+  description:
+    "MegaDeal never charges customers, so there's nothing for us to refund — here's how pricing and disputes work instead.",
+};
 
 export default function RefundPolicyPage() {
   return (
     <PageShell title="Refund policy" subtitle="Last updated August 2026">
       <p>
-        We want every deal you buy to be one you&apos;re happy with. If
-        something&apos;s not right, here&apos;s exactly how refunds work.
+        MegaDeal doesn&apos;t charge customers for deals — we&apos;re an
+        advertising board, not a checkout. That means there&apos;s no order,
+        no card charge, and nothing for us to refund. Any payment for a deal
+        happens directly between you and the business when you redeem it.
       </p>
 
-      <h2>Before redemption</h2>
+      <h2>If a business won&apos;t honour a deal</h2>
       <p>
-        Unredeemed deals can generally be refunded within the deal&apos;s
-        validity window. Contact us with your order reference and we&apos;ll
-        process it — most refunds are handled within a few business days and
-        returned to your original payment method.
+        If a business can&apos;t or won&apos;t honour a deal that&apos;s
+        still live and within its validity window, let us know via our{" "}
+        <a href="/contact" className="text-brand-600 hover:underline">
+          contact page
+        </a>
+        . We&apos;ll follow up with the business directly and, where it&apos;s
+        warranted, remove the listing.
       </p>
 
-      <h2>After redemption</h2>
+      <h2>Disputes over price or service</h2>
       <p>
-        Once a deal has been redeemed with the merchant, it&apos;s no longer
-        eligible for a refund through MegaDeal, since the merchant has
-        already delivered the product or service. If something went wrong
-        during redemption — the experience didn&apos;t match what was
-        described, for example — let us know and we&apos;ll help mediate
-        with the merchant directly.
+        Since payment happens directly with the business, disputes about
+        what you were charged or the quality of what you received are
+        between you and them — the same as any other in-person purchase.
+        We&apos;re happy to help mediate in good faith if a business isn&apos;t
+        responding, but MegaDeal isn&apos;t a party to that transaction and
+        can&apos;t issue a refund for it.
       </p>
 
       <h2>Expired deals</h2>
       <p>
-        Deals not redeemed before their expiry date are non-refundable, so
-        keep an eye on the validity window shown on each deal page and in
-        your confirmation email. If a merchant closes or is unable to honour
-        a deal within its window through no fault of yours, contact us and
-        we&apos;ll make it right.
+        Deals shown on MegaDeal are only valid until the expiry date on the
+        deal page. Once a deal expires it&apos;s removed from the site, and
+        the discounted price is no longer available from the business.
       </p>
 
-      <h2>Change of mind</h2>
+      <h2>Merchant advertising credits</h2>
       <p>
-        Bought the wrong quantity, or picked a deal you&apos;ve since decided
-        against? As long as it hasn&apos;t been redeemed and is still within
-        its validity window, reach out and we&apos;ll process a refund.
-      </p>
-
-      <h2>How to request a refund</h2>
-      <p>
-        Contact us via our{" "}
+        Businesses pay MegaDeal in advertising credits or a subscription to
+        list a deal — that fee is for the listing itself, separate from
+        anything a customer pays the business. Merchants can find our
+        billing terms in the merchant portal, or reach out via our{" "}
         <a href="/contact" className="text-brand-600 hover:underline">
           contact page
-        </a>{" "}
-        with your order reference and the reason for the request, and
-        we&apos;ll take it from there.
+        </a>
+        .
       </p>
     </PageShell>
   );

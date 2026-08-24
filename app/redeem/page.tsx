@@ -1,28 +1,30 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
 
-export const metadata: Metadata = { title: "Redeem a Voucher" };
+export const metadata: Metadata = { title: "How to Redeem a Deal" };
 
 export default function RedeemPage() {
   return (
     <PageShell
-      title="Redeem a voucher"
-      subtitle="No app, no printing required — your confirmation email is all you need."
+      title="How to redeem a deal"
+      subtitle="No voucher, no order confirmation — just contact the business directly."
     >
       <p>
-        After checkout, your order confirmation email is your voucher — no
-        need to print anything unless the merchant specifically asks for it.
+        MegaDeal doesn&apos;t sell vouchers or process payment for any deal.
+        Every deal on the site is redeemed directly with the business that
+        listed it, at the discounted price shown on the deal page.
       </p>
 
       <h2>Steps to redeem</h2>
       <ul>
-        <li>Check your email for the order confirmation right after purchase</li>
+        <li>Open the deal page and tap &quot;Get this deal&quot;</li>
         <li>
-          If the deal requires a booking, contact the merchant using the
-          details in that email to arrange a time
+          Call, message, or visit the business using the contact details
+          shown — some deals need a booking ahead of time, others are
+          walk-in, so check the deal&apos;s fine print
         </li>
-        <li>Show your confirmation email (digital or printed) when you arrive</li>
-        <li>Enjoy your deal — redemption itself only takes a moment</li>
+        <li>Mention the MegaDeal offer when you get in touch or arrive</li>
+        <li>Pay the business directly at the discounted price and enjoy</li>
       </ul>
 
       <h2>Booking ahead</h2>
@@ -30,26 +32,18 @@ export default function RedeemPage() {
         Some deals — like a specific spa treatment or a scheduled tour —
         need a booking in advance, especially around weekends and holidays.
         Where that&apos;s the case, it&apos;s noted on the deal page, so
-        it&apos;s worth booking your slot as soon as you buy rather than
-        waiting until the last few days of the validity window.
-      </p>
-
-      <h2>Partial redemption</h2>
-      <p>
-        If you bought more than one voucher, each is redeemed separately —
-        you don&apos;t need to use them all in one visit unless the deal says
-        otherwise.
+        it&apos;s worth getting in early rather than waiting until the last
+        few days of the validity window.
       </p>
 
       <h2>Trouble redeeming?</h2>
       <p>
-        Can&apos;t find your confirmation email, or the merchant isn&apos;t
-        able to honour it? Reach out via our{" "}
+        Can&apos;t reach the business, or they&apos;re not able to honour a
+        current deal? Let us know via our{" "}
         <a href="/contact" className="text-brand-600 hover:underline">
           contact page
         </a>{" "}
-        with the email address you used at checkout and we&apos;ll help sort
-        it out.
+        — we&apos;ll follow up with the business on your behalf.
       </p>
     </PageShell>
   );

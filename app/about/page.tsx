@@ -19,17 +19,16 @@ export default function AboutPage() {
         the trip — no filler, no fine-print traps, no subscriptions.
       </p>
       <p>
-        We buy a bit of your attention span for a great deal, and merchants
-        get new customers through the door. It works because everyone wins:
-        you get up to 70% off, and the business gets to show off what they do
-        best to people who&apos;ve never tried them before.
+        We&apos;re free to browse and free to use — MegaDeal never charges
+        customers anything. Merchants pay us to advertise, and every dollar
+        you spend on a deal goes straight to the business, not to us.
       </p>
 
       <h2>Our mission</h2>
       <p>
         Trying somewhere new shouldn&apos;t feel like a gamble. We want
-        booking a massage, a dinner out, or a weekend away to be as easy as
-        scrolling a feed — see the deal, see the price, buy it, go enjoy it.
+        finding a massage, a dinner out, or a weekend away to be as easy as
+        scrolling a feed — see the deal, contact the business, go enjoy it.
         Every listing on MegaDeal exists to make that first visit an easy
         decision, for you and for the business behind it.
       </p>
@@ -41,14 +40,14 @@ export default function AboutPage() {
         real discounts off real prices, redeemable whenever you&apos;re ready.
         We don&apos;t inflate a &quot;was&quot; price just to make the
         &quot;now&quot; price look bigger, and we don&apos;t list a deal we
-        wouldn&apos;t book ourselves.
+        wouldn&apos;t visit ourselves.
       </p>
 
       <h2>What makes us different</h2>
       <ul>
-        <li>Pay once — no subscriptions, no recurring charges</li>
+        <li>Free for customers — MegaDeal never takes payment from you</li>
         <li>Redeem on your own schedule within the deal&apos;s validity window</li>
-        <li>Clear fine print on every deal, shown before you buy</li>
+        <li>Clear fine print on every deal, shown before you go</li>
         <li>Every merchant is vetted before their deal goes live</li>
       </ul>
 
