@@ -70,23 +70,38 @@ function isPubliclyVisible(deal: Deal): boolean {
 }
 
 /**
- * Search Products (Catalog V3) doesn't return variant-level pricing, so we
- * hydrate each result with a Get Product call to pick up actualPrice /
- * compareAtPrice / media. The catalog here is small (a handful of deals),
- * so per-product hydration stays cheap.
+ * client.productsV3.searchProducts() reliably resolves with zero products
+ * in the deployed browser client — confirmed via a console diagnostic
+ * across three different request shapes (empty, with cursorPaging) — even
+ * though the identical query against www.wixapis.com succeeds every time
+ * when called directly. The SDK module resolves its own request URL
+ * internally and may be routing through a different host/edge path than a
+ * plain call to the documented REST endpoint. Bypassing the SDK's search
+ * wrapper and hitting the endpoint directly (still using the SDK's own
+ * auth token via fetchWithAuth) sidesteps whatever that difference is.
  */
+async function searchAllProducts(client: WixClient): Promise<any[]> {
+  const res = await client.fetchWithAuth(
+    "https://www.wixapis.com/stores/v3/products/search",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ search: { cursorPaging: { limit: 100 } } }),
+    }
+  );
+  if (!res.ok) {
+    console.error("[searchAllProducts] request failed", res.status, await res.text().catch(() => ""));
+    return [];
+  }
+  const data = await res.json();
+  return data.products ?? [];
+}
+
 export async function fetchDeals(client: WixClient): Promise<Deal[]> {
-  const [searchResult, metaMap] = await Promise.all([
-    // An empty search ({}) reliably resolves with zero products in the
-    // deployed browser client even though the identical query succeeds
-    // server-side — almost certainly a cached-empty-response somewhere in
-    // the request path for that exact (highly generic) request shape.
-    // Passing an explicit paging value changes the request enough to
-    // avoid hitting that stale cache.
-    client.productsV3.searchProducts({ cursorPaging: { limit: 100 } }),
+  const [basics, metaMap] = await Promise.all([
+    searchAllProducts(client),
     fetchDealMetaMap(client),
   ]);
-  const basics = searchResult.products ?? [];
 
   const full = await Promise.all(
     basics.slice(0, 48).map(async (p: any) => {
