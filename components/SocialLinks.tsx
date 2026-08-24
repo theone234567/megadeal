@@ -37,7 +37,18 @@ const SOCIALS = [
   },
 ];
 
-export default function SocialLinks({ className = "" }: { className?: string }) {
+export default function SocialLinks({
+  className = "",
+  variant = "default",
+}: {
+  className?: string;
+  variant?: "default" | "light";
+}) {
+  const linkClass =
+    variant === "light"
+      ? "border-white/40 text-white hover:border-white hover:bg-white/10"
+      : "border-slate-200 text-slate-500 hover:border-brand-400 hover:text-brand-600";
+
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       {SOCIALS.map((s) => (
@@ -47,7 +58,7 @@ export default function SocialLinks({ className = "" }: { className?: string }) 
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`MegaDeal on ${s.name}`}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-brand-400 hover:text-brand-600"
+          className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${linkClass}`}
         >
           {s.icon}
         </a>
