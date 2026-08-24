@@ -8,25 +8,40 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 export const dynamic = "force-dynamic";
 
 /**
- * Public, read-only projection of merchant info needed to show "who's
- * behind this deal" on the storefront (business name + logo), keyed by
- * email. The Merchants collection itself isn't publicly readable (it's
- * SITE_MEMBER_AUTHOR-scoped so a merchant can't see other merchants' full
- * records — address, phone, credits balance, etc.), so this route uses the
- * admin client to read it server-side and re-exposes only the fields that
- * are safe and meant to be public once a merchant has a live deal.
+ * Public, read-only projection of "who's behind this deal" (business name
+ * + logo) needed on the storefront, keyed by deal/product id — deliberately
+ * NOT by merchant email. The Merchants collection isn't publicly readable
+ * (it's SITE_MEMBER_AUTHOR-scoped: a merchant can't see other merchants'
+ * full records — address, phone, credits balance, email), so this route
+ * uses the admin client to read and join Deals+Merchants server-side and
+ * re-exposes only businessName/logoUrl. Keying by product id rather than
+ * email means this endpoint can't be scraped for merchants' email
+ * addresses, which product ids alone never reveal.
  */
 export async function GET() {
   const adminClient = createWixAdminClient();
-  const result = await adminClient.items.query("Merchants").find();
+  const [dealsResult, merchantsResult] = await Promise.all([
+    adminClient.items.query("Deals").find(),
+    adminClient.items.query("Merchants").find(),
+  ]);
 
-  const directory: Record<string, { businessName: string; logoUrl: string | null }> = {};
-  for (const m of result.items ?? []) {
+  const businessByEmail: Record<string, { businessName: string; logoUrl: string | null }> = {};
+  for (const m of merchantsResult.items ?? []) {
     if (m.email && m.businessName) {
-      directory[String(m.email).toLowerCase()] = {
+      businessByEmail[String(m.email).toLowerCase()] = {
         businessName: m.businessName,
         logoUrl: m.logoUrl || null,
       };
+    }
+  }
+
+  const directory: Record<string, { businessName: string; logoUrl: string | null }> = {};
+  for (const deal of dealsResult.items ?? []) {
+    const business = deal.merchantEmail
+      ? businessByEmail[String(deal.merchantEmail).toLowerCase()]
+      : undefined;
+    if (deal.productId && business) {
+      directory[deal.productId] = business;
     }
   }
 

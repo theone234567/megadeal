@@ -8,7 +8,6 @@ interface DealMeta {
   expiresAt: string | null;
   status: DealStatus | null;
   photoUrl: string | null;
-  merchantEmail: string | null;
 }
 
 /**
@@ -29,7 +28,6 @@ async function fetchDealMetaMap(client: WixClient): Promise<Record<string, DealM
           expiresAt: item.expiresAt ?? null,
           status: item.status ?? null,
           photoUrl: item.photoUrl || null,
-          merchantEmail: item.merchantEmail || null,
         };
       }
     }
@@ -63,14 +61,15 @@ function applyMeta(deal: Deal, meta: DealMeta | undefined): Deal {
     expiresAt: meta.expiresAt,
     status: meta.status,
     image: meta.photoUrl || deal.image,
-    merchantEmail: meta.merchantEmail,
   };
 }
 
 /**
  * The Merchants collection isn't publicly readable (SITE_MEMBER_AUTHOR
  * scoped), so business names/logos come from a small public API route
- * that re-exposes just those two fields via the admin client server-side.
+ * that joins Deals+Merchants server-side (via the admin client) and
+ * re-exposes only businessName/logoUrl, keyed by product id — never by
+ * merchant email, so this can't be scraped for merchants' addresses.
  */
 async function fetchBusinessDirectory(): Promise<
   Record<string, { businessName: string; logoUrl: string | null }>
@@ -89,8 +88,7 @@ function applyBusiness(
   deal: Deal,
   directory: Record<string, { businessName: string; logoUrl: string | null }>
 ): Deal {
-  if (!deal.merchantEmail) return deal;
-  const business = directory[deal.merchantEmail.toLowerCase()];
+  const business = directory[deal.id];
   if (!business) return deal;
   return {
     ...deal,
@@ -177,7 +175,6 @@ export async function fetchDealBySlug(
             expiresAt: record.expiresAt ?? null,
             status: record.status ?? null,
             photoUrl: record.photoUrl || null,
-            merchantEmail: record.merchantEmail || null,
           }
         : undefined);
       if (!isPubliclyVisible(merged)) return null;

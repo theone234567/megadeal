@@ -18,7 +18,6 @@ export interface Deal {
   inStock: boolean;
   expiresAt: string | null;
   status: DealStatus | null;
-  merchantEmail: string | null;
   businessName: string | null;
   businessLogoUrl: string | null;
 }

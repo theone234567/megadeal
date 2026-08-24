@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
 
-export const metadata: Metadata = { title: "How It Works" };
+export const metadata: Metadata = {
+  title: "How It Works",
+  description:
+    "How MegaDeal works for customers and businesses: browse and buy a local deal in minutes, or list your own deal and reach new customers.",
+};
 
 export default function HowItWorksPage() {
   return (

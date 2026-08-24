@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
 
-export const metadata: Metadata = { title: "About MegaDeal" };
+export const metadata: Metadata = {
+  title: "About MegaDeal",
+  description:
+    "MegaDeal is a New Zealand-owned daily deals marketplace connecting Kiwis with real local businesses across food, beauty, activities, travel and fitness.",
+};
 
 export default function AboutPage() {
   return (

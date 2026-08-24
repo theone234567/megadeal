@@ -1,5 +1,6 @@
 import { createClient, ApiKeyStrategy } from "@wix/sdk";
 import { items } from "@wix/data";
+import { productsV3 } from "@wix/stores";
 
 /**
  * Server-only elevated Wix client, authenticated with an account API key
@@ -19,7 +20,7 @@ export function createWixAdminClient() {
     );
   }
   return createClient({
-    modules: { items },
+    modules: { items, productsV3 },
     auth: ApiKeyStrategy({ apiKey, siteId }),
   });
 }

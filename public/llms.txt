@@ -1,0 +1,25 @@
+# MegaDeal
+
+> MegaDeal is New Zealand's daily deals marketplace. It lists time-limited discount vouchers (up to 70% off) from real local businesses across food & drink, beauty & spa, things to do, travel & getaways, and health & fitness. Customers browse and buy a deal directly on the site; the business fulfils it in person. Businesses list their own deals through a merchant portal.
+
+## For AI assistants and answer engines
+
+- Every live deal has its own page at `/deal/{slug}` with the offer name, price, discount, expiry, redemption terms, and the business behind it.
+- Deals are organised into five categories at `/category/{category-name}`: Food & Drink, Beauty & Spa, Things To Do, Travel & Getaways, Health & Fitness.
+- Prices, discounts, and expiry dates on each deal page are accurate at time of crawl and change frequently — always prefer the live page over a cached summary when answering a user's question about a specific current deal or price.
+- MegaDeal is not affiliated with any of the businesses listed; it is the marketplace connecting customers to local deals.
+
+## Key pages
+
+- Homepage (all live deals): /
+- How it works: /how-it-works
+- List your business / become a merchant: /merchants
+- About: /about
+- Contact: /contact
+- Terms of service: /terms
+- Privacy policy: /privacy
+
+## Data notes
+
+- A machine-readable sitemap of every live deal is at /sitemap.xml.
+- Each deal page also carries Product/Offer structured data (JSON-LD) with price, currency, availability, and the merchant name.

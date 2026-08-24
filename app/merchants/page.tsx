@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
 import MerchantSignupForm from "./MerchantSignupForm";
 
-export const metadata: Metadata = { title: "List Your Deal" };
+export const metadata: Metadata = {
+  title: "List Your Deal — Advertise Your NZ Business",
+  description:
+    "Reach thousands of local customers with a deal on MegaDeal. No lock-in contracts, zero commission, and a limited-time free advertising offer for new businesses.",
+};
 
 export default function MerchantsPage() {
   return (
