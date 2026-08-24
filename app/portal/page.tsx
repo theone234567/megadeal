@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useWix } from "@/context/WixProvider";
+import type { DealStatus } from "@/lib/types";
+import DealManageCard, { type DealRecord } from "@/components/portal/DealManageCard";
+import PhotoUploadField from "@/components/portal/PhotoUploadField";
 
 interface MerchantRecord {
   _id: string;
@@ -16,19 +19,27 @@ interface MerchantRecord {
   couponCode?: string;
   creditsBalance?: number;
   status?: string;
-}
-
-interface DealRecord {
-  _id: string;
-  dealName?: string;
-  productId?: string;
-  expiresAt?: string;
+  logoUrl?: string;
+  [key: string]: any;
 }
 
 export default function PortalPage() {
   const { client, member, isLoggedIn, login, logout } = useWix();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   const [deals, setDeals] = useState<DealRecord[]>([]);
+  const [logoError, setLogoError] = useState<string | null>(null);
+
+  const loadDeals = useCallback(
+    (email: string) => {
+      client.items
+        .query("Deals")
+        .eq("merchantEmail", email)
+        .find()
+        .then((dealsResult: any) => setDeals(dealsResult.items ?? []))
+        .catch(() => setDeals([]));
+    },
+    [client]
+  );
 
   useEffect(() => {
     if (member === undefined) return; // still resolving auth state
@@ -50,19 +61,7 @@ export default function PortalPage() {
         if (cancelled) return;
         const record = result.items?.[0] ?? null;
         setMerchant(record);
-
-        if (record?.email) {
-          client.items
-            .query("Deals")
-            .eq("merchantEmail", record.email)
-            .find()
-            .then((dealsResult: any) => {
-              if (!cancelled) setDeals(dealsResult.items ?? []);
-            })
-            .catch(() => {
-              if (!cancelled) setDeals([]);
-            });
-        }
+        if (record?.email) loadDeals(record.email);
       })
       .catch(() => {
         if (!cancelled) setMerchant(null);
@@ -71,7 +70,44 @@ export default function PortalPage() {
     return () => {
       cancelled = true;
     };
-  }, [client, member, isLoggedIn]);
+  }, [client, member, isLoggedIn, loadDeals]);
+
+  async function handleChangeDealStatus(deal: DealRecord, target: DealStatus) {
+    // Wix's SITE_MEMBER_AUTHOR write permission rejects this update
+    // server-side unless the signed-in member is this deal's actual
+    // owner — a merchant can never change another merchant's deal, even
+    // by guessing its ID.
+    const updated = await client.items.update("Deals", { ...deal, status: target });
+    setDeals((prev) => prev.map((d) => (d._id === deal._id ? updated : d)));
+  }
+
+  async function handleChangeDealPhoto(deal: DealRecord, dataUrl: string) {
+    const currentStatus = deal.status ?? "Live";
+    const nextStatus: DealStatus =
+      currentStatus === "Cancelled" ? currentStatus : "Pending Approval";
+    const updated = await client.items.update("Deals", {
+      ...deal,
+      photoUrl: dataUrl,
+      status: nextStatus,
+    });
+    setDeals((prev) => prev.map((d) => (d._id === deal._id ? updated : d)));
+  }
+
+  async function handleChangeLogo(dataUrl: string) {
+    if (!merchant) return;
+    setLogoError(null);
+    try {
+      const updated = await client.items.update("Merchants", {
+        ...merchant,
+        logoUrl: dataUrl,
+        status: "Pending",
+      });
+      setMerchant(updated);
+    } catch (err: any) {
+      setLogoError(err?.message || "Couldn't save your logo. Please try again.");
+      throw err;
+    }
+  }
 
   if (member === undefined || merchant === undefined) {
     return (
@@ -180,6 +216,16 @@ export default function PortalPage() {
                 </dd>
               </div>
             </dl>
+
+            <div className="mt-5 border-t border-slate-100 pt-5">
+              <PhotoUploadField
+                label="Business logo"
+                currentUrl={merchant.logoUrl || null}
+                warningText="Changing your logo sends your business profile back for review before it shows on the site again. Continue?"
+                onConfirm={handleChangeLogo}
+              />
+              {logoError && <p className="mt-2 text-sm text-red-600">{logoError}</p>}
+            </div>
           </div>
 
           <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
@@ -191,18 +237,12 @@ export default function PortalPage() {
             ) : (
               <ul className="mt-4 space-y-3">
                 {deals.map((deal) => (
-                  <li
+                  <DealManageCard
                     key={deal._id}
-                    className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-3"
-                  >
-                    <span className="font-medium text-slate-800">{deal.dealName}</span>
-                    <span className="text-sm text-slate-500">
-                      Ends{" "}
-                      {deal.expiresAt
-                        ? new Date(deal.expiresAt).toLocaleDateString()
-                        : "—"}
-                    </span>
-                  </li>
+                    deal={deal}
+                    onChangeStatus={handleChangeDealStatus}
+                    onChangePhoto={handleChangeDealPhoto}
+                  />
                 ))}
               </ul>
             )}

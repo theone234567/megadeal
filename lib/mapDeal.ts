@@ -47,5 +47,6 @@ export function mapProductToDeal(product: any): Deal {
     variantId: variant?.id ?? variant?._id ?? null,
     inStock: variant?.inventoryStatus?.inStock ?? true,
     expiresAt: null,
+    status: null,
   };
 }

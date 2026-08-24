@@ -1,28 +1,55 @@
 import type { WixClient } from "./wixClient";
-import type { Deal } from "./types";
+import type { Deal, DealStatus } from "./types";
 import { mapProductToDeal } from "./mapDeal";
 
 const FULL_FIELDS = ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"];
 
+interface DealMeta {
+  expiresAt: string | null;
+  status: DealStatus | null;
+  photoUrl: string | null;
+}
+
 /**
- * The "Deals" CMS collection holds the real, site-owner-editable expiry
- * date for each product (edited directly in the Wix dashboard's Content
- * Manager to extend a deal). Read access is public, so this is safe to
- * call from the storefront.
+ * The "Deals" CMS collection holds per-product metadata that isn't part of
+ * the Wix Stores catalog itself: the real expiry date, the moderation
+ * status (Pending Approval / Live / Paused / Cancelled), and an optional
+ * merchant-uploaded photo override. Read access is public, so this is safe
+ * to call from the storefront. A product with no matching Deals record is
+ * treated as a legacy/admin-managed listing and always shown as live.
  */
-async function fetchExpiryMap(client: WixClient): Promise<Record<string, string>> {
+async function fetchDealMetaMap(client: WixClient): Promise<Record<string, DealMeta>> {
   try {
     const result = await (client as any).items.query("Deals").find();
-    const map: Record<string, string> = {};
+    const map: Record<string, DealMeta> = {};
     for (const item of result.items ?? []) {
-      if (item.productId && item.expiresAt) {
-        map[item.productId] = item.expiresAt;
+      if (item.productId) {
+        map[item.productId] = {
+          expiresAt: item.expiresAt ?? null,
+          status: item.status ?? null,
+          photoUrl: item.photoUrl || null,
+        };
       }
     }
     return map;
   } catch {
     return {};
   }
+}
+
+function applyMeta(deal: Deal, meta: DealMeta | undefined): Deal {
+  if (!meta) return deal;
+  return {
+    ...deal,
+    expiresAt: meta.expiresAt,
+    status: meta.status,
+    image: meta.photoUrl || deal.image,
+  };
+}
+
+/** A deal is visible on the public site unless it has a status that explicitly hides it. */
+function isPubliclyVisible(deal: Deal): boolean {
+  return deal.status === null || deal.status === "Live";
 }
 
 /**
@@ -32,9 +59,9 @@ async function fetchExpiryMap(client: WixClient): Promise<Record<string, string>
  * so per-product hydration stays cheap.
  */
 export async function fetchDeals(client: WixClient): Promise<Deal[]> {
-  const [searchResult, expiryMap] = await Promise.all([
+  const [searchResult, metaMap] = await Promise.all([
     client.productsV3.searchProducts({}),
-    fetchExpiryMap(client),
+    fetchDealMetaMap(client),
   ]);
   const basics = searchResult.products ?? [];
 
@@ -54,7 +81,8 @@ export async function fetchDeals(client: WixClient): Promise<Deal[]> {
   return full
     .filter(Boolean)
     .map(mapProductToDeal)
-    .map((deal) => ({ ...deal, expiresAt: expiryMap[deal.id] ?? null }));
+    .map((deal) => applyMeta(deal, metaMap[deal.id]))
+    .filter(isPubliclyVisible);
 }
 
 export async function fetchDealBySlug(
@@ -70,12 +98,15 @@ export async function fetchDealBySlug(
     const deal = mapProductToDeal(product);
 
     try {
-      const expiryResult = await (client as any).items
+      const metaResult = await (client as any).items
         .query("Deals")
         .eq("productId", deal.id)
         .find();
-      const expiresAt = expiryResult.items?.[0]?.expiresAt ?? null;
-      return { ...deal, expiresAt };
+      const record = metaResult.items?.[0];
+      const merged = applyMeta(deal, record
+        ? { expiresAt: record.expiresAt ?? null, status: record.status ?? null, photoUrl: record.photoUrl || null }
+        : undefined);
+      return isPubliclyVisible(merged) ? merged : null;
     } catch {
       return deal;
     }

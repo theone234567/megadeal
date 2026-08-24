@@ -1,3 +1,5 @@
+export type DealStatus = "Pending Approval" | "Live" | "Paused" | "Cancelled";
+
 export interface Deal {
   id: string;
   slug: string;
@@ -15,4 +17,5 @@ export interface Deal {
   variantId: string | null;
   inStock: boolean;
   expiresAt: string | null;
+  status: DealStatus | null;
 }
