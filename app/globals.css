@@ -16,3 +16,113 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+@keyframes elephant-idle-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(2deg);
+  }
+}
+
+@keyframes elephant-idle-ear {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-6deg);
+  }
+}
+
+@keyframes elephant-trick-jump {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  20% {
+    transform: translateY(2px) rotate(-4deg) scale(0.94, 1.06);
+  }
+  50% {
+    transform: translateY(-14px) rotate(10deg) scale(1.05);
+  }
+  75% {
+    transform: translateY(-4px) rotate(-6deg) scale(0.98);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes elephant-trick-ear {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-30deg);
+  }
+  50% {
+    transform: rotate(20deg);
+  }
+  75% {
+    transform: rotate(-20deg);
+  }
+}
+
+@keyframes elephant-trick-trunk {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  40% {
+    transform: rotate(-35deg);
+  }
+  70% {
+    transform: rotate(-15deg);
+  }
+}
+
+@keyframes elephant-sparkle-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 4px) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--sparkle-x, 0px), -26px) scale(1);
+  }
+}
+
+.animate-elephant-idle-body {
+  animation: elephant-idle-bob 3.2s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+
+.animate-elephant-idle-ear {
+  animation: elephant-idle-ear 3.2s ease-in-out infinite;
+  transform-origin: 70% 40%;
+}
+
+.animate-elephant-trick-body {
+  animation: elephant-trick-jump 0.9s ease-in-out;
+  transform-origin: 50% 90%;
+}
+
+.animate-elephant-trick-ear {
+  animation: elephant-trick-ear 0.9s ease-in-out;
+  transform-origin: 70% 40%;
+}
+
+.animate-elephant-trick-trunk {
+  animation: elephant-trick-trunk 0.9s ease-in-out;
+  transform-origin: 20% 55%;
+}
+
+.animate-elephant-sparkle {
+  animation: elephant-sparkle-float 0.9s ease-out forwards;
+}

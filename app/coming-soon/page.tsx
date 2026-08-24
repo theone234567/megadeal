@@ -30,9 +30,9 @@ export default function ComingSoonPage() {
         <div className="pointer-events-none absolute -bottom-24 -right-10 h-80 w-80 rounded-full bg-ember-300/20 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl">
-          <Link href="/" className="inline-flex items-center gap-1.5 font-display">
-            <span className="text-2xl font-extrabold tracking-tight text-white">Mega</span>
-            <span className="-rotate-2 rounded-full bg-white px-2.5 py-0.5 text-2xl font-extrabold tracking-tight text-ember-600 shadow-card">
+          <Link href="/" className="inline-flex items-center gap-0.5 font-display">
+            <span className="text-[1.7rem] font-extrabold tracking-tight text-white">Mega</span>
+            <span className="-rotate-2 rounded-full bg-white px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-ember-600 shadow-card">
               Deal
             </span>
           </Link>
