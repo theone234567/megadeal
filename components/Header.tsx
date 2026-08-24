@@ -25,15 +25,17 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="flex shrink-0 items-center gap-0.5 font-display">
-          <span className="text-[1.7rem] font-extrabold tracking-tight text-brand-700">
-            Mega
-          </span>
-          <span className="-rotate-2 rounded-full bg-ember-500 px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-white shadow-card">
-            Deal
-          </span>
-        </Link>
-        <ElephantMascot />
+        <div className="flex shrink-0 items-center">
+          <Link href="/" className="flex items-center gap-0.5 font-display">
+            <span className="text-[1.7rem] font-extrabold tracking-tight text-brand-700">
+              Mega
+            </span>
+            <span className="-rotate-2 rounded-full bg-ember-500 px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-white shadow-card">
+              Deal
+            </span>
+          </Link>
+          <ElephantMascot className="-ml-2 -rotate-3" />
+        </div>
 
         <form
           onSubmit={handleSearch}

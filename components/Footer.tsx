@@ -64,6 +64,11 @@ export default function Footer() {
                   Careers
                 </Link>
               </li>
+              <li>
+                <Link href="/coming-soon" className="hover:text-brand-700">
+                  What&apos;s coming next
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
