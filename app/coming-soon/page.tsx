@@ -12,12 +12,16 @@ export const metadata: Metadata = {
 const CUSTOMER_PERKS = [
   { emoji: "🍽️", text: "Half-price dinners, spa days and weekend adventures" },
   { emoji: "💸", text: "You pay the business direct. No middleman, no markup." },
+  { emoji: "🆕", text: "Fresh deals added all the time — always something new to try" },
+  { emoji: "🧡", text: "Every deal you grab supports a local Kiwi business" },
 ];
 
 const MERCHANT_PERKS = [
   { emoji: "📣", text: "Pure advertising — we get you seen, that's it" },
-  { emoji: "🤝", text: "Zero commission. Ever. What you charge is what you keep" },
-  { emoji: "🇳🇿", text: "Built by a Kiwi small business, for Kiwi small businesses" },
+  { emoji: "🤝", text: "Zero commission. What you charge is what you keep" },
+  { emoji: "🇳🇿", text: "Proudly a Kiwi business" },
+  { emoji: "⚡", text: "Quick to set up — pause, resume or update your deal anytime" },
+  { emoji: "🔓", text: "No lock-in contracts. Advertise on your terms" },
 ];
 
 export default function ComingSoonPage() {
