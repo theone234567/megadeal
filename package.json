@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@wix/categories": "^1.0.218",
     "@wix/data": "^1.0.0",
     "@wix/ecom": "^1.0.744",
     "@wix/members": "^1.0.0",

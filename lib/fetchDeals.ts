@@ -37,6 +37,27 @@ async function fetchDealMetaMap(client: WixClient): Promise<Record<string, DealM
   }
 }
 
+/**
+ * Catalog V3's ALL_CATEGORIES_INFO field only returns category ids on each
+ * product, not names — so category names (used for filtering/display) are
+ * resolved separately via this id -> name lookup, built once per request
+ * from the small, fixed set of storefront categories.
+ */
+async function fetchCategoryNameMap(client: WixClient): Promise<Record<string, string>> {
+  try {
+    const result = await (client as any).categories
+      .queryCategories({ treeReference: { appNamespace: "@wix/stores", treeKey: null } })
+      .find();
+    const map: Record<string, string> = {};
+    for (const cat of result.items ?? []) {
+      if (cat.id && cat.name) map[cat.id] = cat.name;
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
+
 function applyMeta(deal: Deal, meta: DealMeta | undefined): Deal {
   if (!meta) return deal;
   return {
@@ -59,9 +80,10 @@ function isPubliclyVisible(deal: Deal): boolean {
  * so per-product hydration stays cheap.
  */
 export async function fetchDeals(client: WixClient): Promise<Deal[]> {
-  const [searchResult, metaMap] = await Promise.all([
+  const [searchResult, metaMap, categoryNamesById] = await Promise.all([
     client.productsV3.searchProducts({}),
     fetchDealMetaMap(client),
+    fetchCategoryNameMap(client),
   ]);
   const basics = searchResult.products ?? [];
 
@@ -80,7 +102,7 @@ export async function fetchDeals(client: WixClient): Promise<Deal[]> {
 
   return full
     .filter(Boolean)
-    .map(mapProductToDeal)
+    .map((p) => mapProductToDeal(p, categoryNamesById))
     .map((deal) => applyMeta(deal, metaMap[deal.id]))
     .filter(isPubliclyVisible);
 }
@@ -95,7 +117,8 @@ export async function fetchDealBySlug(
     } as any);
     const product = (res as any).product;
     if (!product) return null;
-    const deal = mapProductToDeal(product);
+    const categoryNamesById = await fetchCategoryNameMap(client);
+    const deal = mapProductToDeal(product, categoryNamesById);
 
     try {
       const metaResult = await (client as any).items

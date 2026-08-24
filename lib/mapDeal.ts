@@ -5,7 +5,7 @@ import type { Deal } from "./types";
 // which `fields` were requested, and media items added via an external
 // `url` (rather than a Wix Media Manager id) don't get their `image`
 // sub-object populated — the raw `url` is what comes back instead.
-export function mapProductToDeal(product: any): Deal {
+export function mapProductToDeal(product: any, categoryNamesById?: Record<string, string>): Deal {
   const variant = product?.variantsInfo?.variants?.[0];
   const price = variant?.price;
 
@@ -25,9 +25,12 @@ export function mapProductToDeal(product: any): Deal {
     firstItem?.url ||
     null;
 
+  // Catalog V3's ALL_CATEGORIES_INFO field only returns category ids, not
+  // names, so names are resolved separately via a category id -> name map
+  // (see fetchDeals.ts) and fall back to any inline name Wix does provide.
   const categories: string[] =
     product?.allCategoriesInfo?.categories
-      ?.map((c: any) => c?.name)
+      ?.map((c: any) => (categoryNamesById && c?.id ? categoryNamesById[c.id] : null) || c?.name)
       .filter(Boolean) ?? [];
 
   return {
