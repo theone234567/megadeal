@@ -22,7 +22,7 @@ interface MerchantRecord {
 }
 
 export default function NewDealPage() {
-  const { client, isLoggedIn, member, login } = useWix();
+  const { isLoggedIn, member, login } = useWix();
   const router = useRouter();
 
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
@@ -48,12 +48,11 @@ export default function NewDealPage() {
       setMerchant(null);
       return;
     }
-    client.items
-      .query("Merchants")
-      .find()
-      .then((result: any) => setMerchant(result.items?.[0] ?? null))
+    fetch("/api/merchants/me")
+      .then((res) => (res.ok ? res.json() : { item: null }))
+      .then(({ item }) => setMerchant(item ?? null))
       .catch(() => setMerchant(null));
-  }, [client, member, isLoggedIn]);
+  }, [member, isLoggedIn]);
 
   useEffect(() => {
     if (!photo) {

@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useWix } from "@/context/WixProvider";
-import { uploadPhoto } from "@/lib/imageUpload";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 
@@ -37,12 +35,9 @@ async function fetchAddressSuggestions(query: string): Promise<AddressSuggestion
 }
 
 export default function MerchantSignupForm() {
-  const { client, isLoggedIn, member, login } = useWix();
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [consent, setConsent] = useState(false);
 
   const [address, setAddress] = useState("");
@@ -51,16 +46,6 @@ export default function MerchantSignupForm() {
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const addressBoxRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!photo) {
-      setPhotoPreview(null);
-      return;
-    }
-    const url = URL.createObjectURL(photo);
-    setPhotoPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [photo]);
 
   // Debounced address lookup as the merchant types.
   useEffect(() => {
@@ -128,40 +113,14 @@ export default function MerchantSignupForm() {
     );
   }
 
-  if (member === undefined) {
-    return (
-      <div id="signup" className="rounded-2xl border border-slate-100 bg-white p-6 text-center shadow-card">
-        <p className="text-sm text-slate-400">Loading…</p>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return (
-      <div id="signup" className="rounded-2xl border border-slate-100 bg-white p-6 text-center shadow-card">
-        <span className="text-3xl">🔒</span>
-        <h3 className="mt-2 text-lg font-bold text-slate-900">Sign up your business</h3>
-        <p className="mt-2 text-sm text-slate-500">
-          Sign in first so we can securely link your application to your
-          account. You&apos;ll be able to check your status and deal credits
-          anytime in your merchant portal — only you can see it.
-        </p>
-        <button
-          onClick={() => login("/merchants#signup")}
-          className="mt-5 rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-brand-700"
-        >
-          Sign in to continue
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div id="signup" className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
       <h3 className="text-lg font-bold text-slate-900">Sign up your business</h3>
       <p className="mt-1 text-sm text-slate-500">
         Tell us a bit about your business and we&apos;ll be in touch to set up
-        your first deal.
+        your first deal — no account needed to apply. Once we&apos;ve
+        approved you, sign in with this same email to manage your listing
+        from your merchant portal.
       </p>
 
       <form
@@ -171,30 +130,35 @@ export default function MerchantSignupForm() {
           setSubmitting(true);
           try {
             const formData = new FormData(e.currentTarget);
-            const logoUrl = photo ? (await uploadPhoto(photo)).url : "";
-            await client.items.insert("Merchants", {
-              businessName: String(formData.get("businessName") ?? ""),
-              website: String(formData.get("website") ?? ""),
-              email: String(formData.get("email") ?? ""),
-              phone: String(formData.get("phone") ?? ""),
-              address,
-              city,
-              postcode,
-              bio: String(formData.get("bio") ?? ""),
-              businessHours: String(formData.get("businessHours") ?? ""),
-              facebookUrl: String(formData.get("facebookUrl") ?? ""),
-              instagramUrl: String(formData.get("instagramUrl") ?? ""),
-              priceRange: String(formData.get("priceRange") ?? ""),
-              amenities: String(formData.get("amenities") ?? ""),
-              couponCode: String(formData.get("couponCode") ?? ""),
-              creditsBalance: 0,
-              status: "Pending",
-              logoUrl,
+            const res = await fetch("/api/merchants/apply", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                businessName: String(formData.get("businessName") ?? ""),
+                website: String(formData.get("website") ?? ""),
+                email: String(formData.get("email") ?? ""),
+                phone: String(formData.get("phone") ?? ""),
+                address,
+                city,
+                postcode,
+                bio: String(formData.get("bio") ?? ""),
+                businessHours: String(formData.get("businessHours") ?? ""),
+                facebookUrl: String(formData.get("facebookUrl") ?? ""),
+                instagramUrl: String(formData.get("instagramUrl") ?? ""),
+                priceRange: String(formData.get("priceRange") ?? ""),
+                amenities: String(formData.get("amenities") ?? ""),
+                couponCode: String(formData.get("couponCode") ?? ""),
+                website2: String(formData.get("website2") ?? ""),
+              }),
             });
+            if (!res.ok) {
+              const data = await res.json().catch(() => ({}));
+              throw new Error(data.error || "Something went wrong submitting your application.");
+            }
             setSubmitted(true);
-          } catch {
+          } catch (err: any) {
             setSubmitError(
-              "Something went wrong submitting your application. Please try again."
+              err?.message || "Something went wrong submitting your application. Please try again."
             );
           } finally {
             setSubmitting(false);
@@ -202,6 +166,16 @@ export default function MerchantSignupForm() {
         }}
         className="mt-6 space-y-4"
       >
+        {/* Honeypot — hidden from real visitors via CSS, so only a bot filling every field would set this. */}
+        <input
+          type="text"
+          name="website2"
+          tabIndex={-1}
+          autoComplete="off"
+          className="absolute left-[-9999px] h-0 w-0 opacity-0"
+          aria-hidden="true"
+        />
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">
@@ -237,7 +211,6 @@ export default function MerchantSignupForm() {
               required
               name="email"
               type="email"
-              defaultValue={member?.loginEmail ?? ""}
               placeholder="you@yourbusiness.co.nz"
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
@@ -421,37 +394,6 @@ export default function MerchantSignupForm() {
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
-            Photo of your business
-          </label>
-          <div className="flex items-center gap-4">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-300">
-              {photoPreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={photoPreview}
-                  alt="Business preview"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span className="text-2xl">🏪</span>
-              )}
-            </div>
-            <div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
-                className="block text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100"
-              />
-              <p className="mt-1 text-xs text-slate-400">
-                A photo of your storefront or space helps your listing stand out. JPG or PNG.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
             Coupon or referral code{" "}
             <span className="font-normal text-slate-400">(optional)</span>
           </label>
@@ -476,9 +418,9 @@ export default function MerchantSignupForm() {
             className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
           />
           <span>
-            I understand my business name, address, and photo will be
-            displayed publicly on the MegaDeal website as part of my deal
-            listing.
+            I understand my business name and address will be displayed
+            publicly on the MegaDeal website as part of my deal listing. I
+            can add a business photo once my account is set up.
           </span>
         </label>
 

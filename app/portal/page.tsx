@@ -58,16 +58,15 @@ export default function PortalPage() {
     let cancelled = false;
     setMerchant(undefined);
 
-    // Because the "Merchants" collection has SITE_MEMBER_AUTHOR read
-    // permission, this query can only ever return items this signed-in
-    // member created — Wix enforces that server-side, not this code.
-    client.items
-      .query("Merchants")
-      .find()
-      .then((result: any) => {
+    // Goes through a server route rather than querying the Merchants
+    // collection directly: a business can apply before ever signing in
+    // (see /merchants), so their record may have no owner yet — this route
+    // claims it for the signed-in member on first access by matching email.
+    fetch("/api/merchants/me")
+      .then((res) => (res.ok ? res.json() : { item: null }))
+      .then(({ item: record }) => {
         if (cancelled) return;
-        const record = result.items?.[0] ?? null;
-        setMerchant(record);
+        setMerchant(record ?? null);
         if (record?.email) loadDeals(record.email);
       })
       .catch(() => {
@@ -77,7 +76,7 @@ export default function PortalPage() {
     return () => {
       cancelled = true;
     };
-  }, [client, member, isLoggedIn, loadDeals]);
+  }, [member, isLoggedIn, loadDeals]);
 
   async function handleChangeDealStatus(deal: DealRecord, target: DealStatus) {
     // Goes through a server route rather than a direct client write: the

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
+import { getOrClaimMerchant } from "@/lib/merchant";
 
 export async function POST(req: NextRequest) {
   const member = await getVerifiedMember(req);
@@ -16,8 +17,7 @@ export async function POST(req: NextRequest) {
   }
 
   const adminClient = createWixAdminClient();
-  const result = await adminClient.items.query("Merchants").eq("_owner", member.id).find();
-  const merchant = result.items?.[0];
+  const merchant = await getOrClaimMerchant(adminClient, member);
   if (!merchant) {
     return NextResponse.json({ error: "No business application found for this account." }, { status: 404 });
   }
