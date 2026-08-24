@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import CategoryNav, { CATEGORIES } from "@/components/CategoryNav";
+import CategoryNav from "@/components/CategoryNav";
+import { CATEGORIES } from "@/lib/categories";
 import CategoryDeals from "./CategoryDeals";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 

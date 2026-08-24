@@ -2,15 +2,8 @@ import "server-only";
 import { createWixAdminClient } from "./wixAdmin";
 import { mapProductToDeal } from "./mapDeal";
 import { businessSlug } from "./slug";
+import { CATEGORY_NAME_BY_ID } from "./categories";
 import type { Deal } from "./types";
-
-const CATEGORY_NAME_BY_ID: Record<string, string> = {
-  "e0def6d9-af2f-4ea9-91f6-15ce3bd20ac7": "Food & Drink",
-  "333efe51-7bfe-4357-a79a-5e63952d5791": "Beauty & Spa",
-  "606adf09-ff58-490b-97f6-960587bf9cb1": "Things To Do",
-  "870d3932-8296-4120-8dde-71159aa2bdf1": "Travel & Getaways",
-  "909fc5df-6473-4a39-99e9-c23e665e9288": "Health & Fitness",
-};
 
 /**
  * Server-only deal lookup for generateMetadata/JSON-LD, deliberately

@@ -51,7 +51,7 @@ export function mapProductToDeal(product: any, categoryNamesById?: Record<string
     formattedNow: price?.actualPrice?.formattedAmount ?? null,
     formattedWas: price?.compareAtPrice?.formattedAmount ?? null,
     discountPercent,
-    currency: product?.currency ?? "USD",
+    currency: product?.currency ?? "NZD",
     ribbon: product?.ribbon?.name ?? null,
     categories,
     variantId: variant?.id ?? variant?._id ?? null,

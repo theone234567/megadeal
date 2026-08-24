@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
-import { fileToCompressedDataUrl } from "@/lib/imageUpload";
+import { uploadPhoto } from "@/lib/imageUpload";
+import { CATEGORIES } from "@/lib/categories";
 
 const DURATIONS = [
   { label: "1 week", days: 7 },
@@ -27,6 +28,7 @@ export default function NewDealPage() {
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
 
   const [dealName, setDealName] = useState("");
+  const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [terms, setTerms] = useState("");
   const [priceNow, setPriceNow] = useState("");
@@ -68,19 +70,21 @@ export default function NewDealPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const photoUrl = photo ? await fileToCompressedDataUrl(photo) : "";
+      const uploaded = photo ? await uploadPhoto(photo) : null;
       const res = await fetch("/api/deals/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           dealName,
+          category,
           description,
           terms,
           priceNow: Number(priceNow),
           priceWas: priceWas ? Number(priceWas) : undefined,
           durationDays,
           quantityAvailable: quantityAvailable ? Number(quantityAvailable) : undefined,
-          photoUrl,
+          photoUrl: uploaded?.url || "",
+          photoMediaId: uploaded?.id || "",
         }),
       });
       if (!res.ok) {
@@ -200,6 +204,25 @@ export default function NewDealPage() {
             placeholder="e.g. 60-Minute Massage + Facial"
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">Category</label>
+          <select
+            required
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+          >
+            <option value="" disabled>
+              Choose a category…
+            </option>
+            {CATEGORIES.map((c) => (
+              <option key={c.id} value={c.name}>
+                {c.emoji} {c.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>

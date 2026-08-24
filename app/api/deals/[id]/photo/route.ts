@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
-
-const MAX_PHOTO_LENGTH = 350_000;
+import { isWixMediaUrl } from "@/lib/photoUrl";
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const member = await getVerifiedMember(req);
@@ -12,7 +11,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const body = await req.json().catch(() => null);
   const photoUrl = body?.photoUrl;
-  if (typeof photoUrl !== "string" || !photoUrl.startsWith("data:image/") || photoUrl.length > MAX_PHOTO_LENGTH) {
+  if (!isWixMediaUrl(photoUrl)) {
     return NextResponse.json({ error: "Invalid photo." }, { status: 400 });
   }
 

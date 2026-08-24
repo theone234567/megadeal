@@ -1,12 +1,5 @@
 import Link from "next/link";
-
-const CATEGORIES = [
-  { name: "Food & Drink", emoji: "🍽️" },
-  { name: "Beauty & Spa", emoji: "💆" },
-  { name: "Things To Do", emoji: "🎟️" },
-  { name: "Travel & Getaways", emoji: "✈️" },
-  { name: "Health & Fitness", emoji: "🏋️" },
-];
+import { CATEGORIES } from "@/lib/categories";
 
 export default function CategoryNav({ active }: { active?: string }) {
   return (
@@ -40,5 +33,3 @@ export default function CategoryNav({ active }: { active?: string }) {
     </nav>
   );
 }
-
-export { CATEGORIES };

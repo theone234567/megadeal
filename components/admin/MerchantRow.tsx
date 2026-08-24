@@ -14,6 +14,12 @@ export interface AdminMerchant {
   creditsBalance?: number;
   status?: string;
   logoUrl?: string;
+  bio?: string;
+  businessHours?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  priceRange?: string;
+  amenities?: string;
   [key: string]: any;
 }
 
@@ -25,8 +31,13 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const dirty = status !== (merchant.status || "Pending") || credits !== (merchant.creditsBalance ?? 0);
+
+  const hasProfileDetails =
+    merchant.bio || merchant.businessHours || merchant.facebookUrl || merchant.instagramUrl ||
+    merchant.priceRange || merchant.amenities;
 
   async function save() {
     setSaving(true);
@@ -50,9 +61,15 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
   }
 
   return (
+    <>
     <tr className="border-b border-slate-100 align-top">
       <td className="py-3 pr-4">
-        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setDetailsOpen((v) => !v)}
+          className="flex items-center gap-2 text-left"
+          disabled={!hasProfileDetails}
+        >
           {merchant.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={merchant.logoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
@@ -62,10 +79,12 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
             </span>
           )}
           <div>
-            <p className="font-semibold text-slate-800">{merchant.businessName || "—"}</p>
+            <p className="font-semibold text-slate-800">
+              {merchant.businessName || "—"} {hasProfileDetails && (detailsOpen ? "▲" : "▼")}
+            </p>
             <p className="text-xs text-slate-400">{merchant.email}</p>
           </div>
-        </div>
+        </button>
       </td>
       <td className="py-3 pr-4 text-xs text-slate-500">
         {[merchant.address, merchant.city, merchant.postcode].filter(Boolean).join(", ") || "—"}
@@ -108,5 +127,38 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
         {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
       </td>
     </tr>
+    {detailsOpen && hasProfileDetails && (
+      <tr className="border-b border-slate-100 bg-slate-50">
+        <td colSpan={6} className="px-4 py-3 text-sm text-slate-600">
+          {(merchant.priceRange || merchant.amenities) && (
+            <p className="font-semibold text-slate-800">
+              {merchant.priceRange}
+              {merchant.priceRange && merchant.amenities ? " · " : ""}
+              {merchant.amenities}
+            </p>
+          )}
+          {merchant.bio && <p className="mt-1">{merchant.bio}</p>}
+          {merchant.businessHours && (
+            <p className="mt-1 text-xs text-slate-500">Hours: {merchant.businessHours}</p>
+          )}
+          {(merchant.facebookUrl || merchant.instagramUrl) && (
+            <p className="mt-1 text-xs text-slate-500">
+              {merchant.facebookUrl && (
+                <a href={merchant.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">
+                  Facebook
+                </a>
+              )}
+              {merchant.facebookUrl && merchant.instagramUrl ? " · " : ""}
+              {merchant.instagramUrl && (
+                <a href={merchant.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">
+                  Instagram
+                </a>
+              )}
+            </p>
+          )}
+        </td>
+      </tr>
+    )}
+    </>
   );
 }

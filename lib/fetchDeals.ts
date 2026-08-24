@@ -1,6 +1,7 @@
 import type { WixClient } from "./wixClient";
 import type { Deal, DealStatus } from "./types";
 import { mapProductToDeal } from "./mapDeal";
+import { CATEGORY_NAME_BY_ID } from "./categories";
 
 const FULL_FIELDS = ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"];
 
@@ -36,23 +37,6 @@ async function fetchDealMetaMap(client: WixClient): Promise<Record<string, DealM
     return {};
   }
 }
-
-/**
- * Catalog V3's ALL_CATEGORIES_INFO field only returns category ids on each
- * product, not names, so names are resolved via this lookup instead of a
- * live API call. The 5 storefront categories are fixed (see CategoryNav)
- * and rarely change, and a live categories.queryCategories() call turned
- * out to be unreliable for the visitor OAuth client in production (it
- * failed outright in the browser), so a static map is both simpler and
- * removes an extra network round-trip from every deal-listing fetch.
- */
-const CATEGORY_NAME_BY_ID: Record<string, string> = {
-  "e0def6d9-af2f-4ea9-91f6-15ce3bd20ac7": "Food & Drink",
-  "333efe51-7bfe-4357-a79a-5e63952d5791": "Beauty & Spa",
-  "606adf09-ff58-490b-97f6-960587bf9cb1": "Things To Do",
-  "870d3932-8296-4120-8dde-71159aa2bdf1": "Travel & Getaways",
-  "909fc5df-6473-4a39-99e9-c23e665e9288": "Health & Fitness",
-};
 
 function applyMeta(deal: Deal, meta: DealMeta | undefined): Deal {
   if (!meta) return deal;

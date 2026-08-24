@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CATEGORIES } from "./CategoryNav";
+import { CATEGORIES } from "@/lib/categories";
 import SocialLinks from "./SocialLinks";
 
 export default function Footer() {

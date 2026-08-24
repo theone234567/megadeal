@@ -154,7 +154,9 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
           {deal.terms && <p className="mt-1 text-xs italic text-slate-500">Terms: {deal.terms}</p>}
           {!deal.productId && (
             <p className="mt-2 text-xs font-semibold text-amber-700">
-              ⚠️ No Wix Store product linked yet — create one and set Product ID via the Wix dashboard to make this purchasable, then set status to Live.
+              ⚠️ No Wix Store product linked — this deal won&apos;t appear on the storefront even if
+              set to Live. Deals normally get a product automatically when submitted; if one is
+              missing here, check the Wix dashboard or have the merchant resubmit.
             </p>
           )}
         </td>

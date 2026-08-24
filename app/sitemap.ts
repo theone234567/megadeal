@@ -4,7 +4,7 @@ import {
   fetchAllLiveDealSlugsForSitemap,
   fetchAllBusinessSlugsForSitemap,
 } from "@/lib/fetchDealServer";
-import { CATEGORIES } from "@/components/CategoryNav";
+import { CATEGORIES } from "@/lib/categories";
 
 // Deals are created/edited by merchants continuously, so a build-time-only
 // static sitemap would go stale between deploys. Regenerate hourly instead.
