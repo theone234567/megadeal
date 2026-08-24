@@ -37,11 +37,7 @@ export default function ComingSoonPage() {
             </span>
           </Link>
 
-          <p className="mx-auto mt-6 inline-block rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white">
-            🇳🇿 Proudly Kiwi-owned · Coming soon
-          </p>
-
-          <h1 className="mt-6 text-4xl font-extrabold leading-tight text-white sm:text-5xl">
+          <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white sm:text-5xl">
             The best local deals in Aotearoa,
             <br className="hidden sm:block" /> landing very soon.
           </h1>
@@ -50,19 +46,22 @@ export default function ComingSoonPage() {
             help Kiwi businesses get in front of new customers without giving away a
             cut of every sale. Be first through the door.
           </p>
+          <p className="mx-auto mt-2 max-w-xl text-sm font-semibold text-brand-100">
+            🚀 Launching in Auckland first, with the rest of NZ following shortly after.
+          </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#customers"
-              className="rounded-full bg-white px-6 py-3 text-sm font-bold text-brand-700 shadow-card transition hover:bg-brand-50"
+              className="flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-brand-700 shadow-card transition hover:bg-brand-50"
             >
-              🎉 I&apos;m after deals
+              <span className="text-2xl">🎉</span> I&apos;m after deals
             </a>
             <a
               href="#merchants"
-              className="rounded-full border-2 border-white/70 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+              className="flex items-center gap-2 rounded-full border-2 border-white/70 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10"
             >
-              🚀 I run a business
+              <span className="text-2xl">🚀</span> I run a business
             </a>
           </div>
 
@@ -163,6 +162,9 @@ export default function ComingSoonPage() {
               it&apos;s advertising, plain and simple. You put your offer in front
               of thousands of local customers, they pay you direct, and you keep
               100% of it. That&apos;s the whole model.
+            </p>
+            <p className="mt-4 inline-block rounded-full bg-ember-50 px-4 py-2 text-sm font-bold text-ember-700">
+              🎁 Sign up now for up to 6 months free advertising
             </p>
             <ul className="mt-6 space-y-3">
               {MERCHANT_PERKS.map((p) => (
