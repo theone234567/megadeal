@@ -98,10 +98,13 @@ async function searchAllProducts(client: WixClient): Promise<any[]> {
 }
 
 export async function fetchDeals(client: WixClient): Promise<Deal[]> {
-  const [basics, metaMap] = await Promise.all([
-    searchAllProducts(client),
-    fetchDealMetaMap(client),
-  ]);
+  // Deliberately sequential, not Promise.all: on a brand-new client (first
+  // page load, no cached auth token yet) firing multiple calls at once
+  // raced over token setup and reliably left one of them resolving empty.
+  // The first call here pays that one-time setup cost; everything after
+  // reuses the now-cached token.
+  const basics = await searchAllProducts(client);
+  const metaMap = await fetchDealMetaMap(client);
 
   const full = await Promise.all(
     basics.slice(0, 48).map(async (p: any) => {
