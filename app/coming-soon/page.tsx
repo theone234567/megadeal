@@ -30,16 +30,12 @@ export default function ComingSoonPage() {
         <div className="pointer-events-none absolute -bottom-24 -right-10 h-80 w-80 rounded-full bg-ember-300/20 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl">
-          <Link href="/" className="inline-flex items-center gap-0.5 font-display">
-            <span className="text-[1.7rem] font-extrabold tracking-tight text-white">Mega</span>
-            <span className="-rotate-2 rounded-full bg-white px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-ember-600 shadow-card">
-              Deal
-            </span>
-          </Link>
-
-          <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white sm:text-5xl">
+          <h1 className="text-4xl font-extrabold leading-tight text-white sm:text-5xl">
             The best local deals in Aotearoa,
-            <br className="hidden sm:block" /> landing very soon.
+            <br className="hidden sm:block" /> landing very soon.{" "}
+            <span className="inline-block animate-[elephant-idle-ear_3.2s_ease-in-out_infinite]">
+              😊
+            </span>
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
             We&apos;re building the fun, fair way to discover unreal local deals — and
@@ -148,6 +144,13 @@ export default function ComingSoonPage() {
             >
               List your business now →
             </Link>
+            <p className="mt-3 text-sm font-bold text-white">
+              🎁 Sign up now for up to 6 months free advertising — use code{" "}
+              <span className="rounded-full bg-white/20 px-2 py-0.5 tracking-wide">
+                MEGA3
+              </span>{" "}
+              at sign-up
+            </p>
           </div>
 
           <div className="order-1 lg:order-2">
@@ -162,9 +165,6 @@ export default function ComingSoonPage() {
               it&apos;s advertising, plain and simple. You put your offer in front
               of thousands of local customers, they pay you direct, and you keep
               100% of it. That&apos;s the whole model.
-            </p>
-            <p className="mt-4 inline-block rounded-full bg-ember-50 px-4 py-2 text-sm font-bold text-ember-700">
-              🎁 Sign up now for up to 6 months free advertising
             </p>
             <ul className="mt-6 space-y-3">
               {MERCHANT_PERKS.map((p) => (
