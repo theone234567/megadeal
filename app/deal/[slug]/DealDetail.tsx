@@ -12,10 +12,10 @@ import { boughtToday, dealEndsAt } from "@/lib/socialProof";
 import CountdownBadge from "@/components/CountdownBadge";
 
 export default function DealDetail({ slug }: { slug: string }) {
-  const { addToCart, checkout, isAdding } = useWix();
+  const { addToCart, checkout } = useWix();
   const [deal, setDeal] = useState<Deal | null | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
-  const [justAdded, setJustAdded] = useState(false);
+  const [buying, setBuying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -102,6 +102,28 @@ export default function DealDetail({ slug }: { slug: string }) {
             <h1 className="mt-1 text-2xl font-extrabold leading-snug text-slate-900">
               {deal.name}
             </h1>
+            {deal.businessName && (
+              <div className="mt-2 flex items-center gap-2">
+                {deal.businessLogoUrl ? (
+                  <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-slate-50">
+                    <Image
+                      src={deal.businessLogoUrl}
+                      alt={deal.businessName}
+                      fill
+                      sizes="28px"
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <span aria-hidden className="text-lg">
+                    🏪
+                  </span>
+                )}
+                <span className="text-sm font-semibold text-slate-700">
+                  by {deal.businessName}
+                </span>
+              </div>
+            )}
             <p className="mt-1 text-sm text-slate-400">
               {boughtToday(deal.id)} people bought this deal today
             </p>
@@ -155,31 +177,22 @@ export default function DealDetail({ slug }: { slug: string }) {
               </span>
             </p>
 
-            <div className="mt-6 flex flex-col gap-2">
+            <div className="mt-6">
               <button
                 onClick={async () => {
-                  await addToCart(deal, quantity);
-                  setJustAdded(true);
+                  setBuying(true);
+                  try {
+                    await addToCart(deal, quantity);
+                    await checkout();
+                  } catch {
+                    setBuying(false);
+                  }
                 }}
-                disabled={isAdding}
-                className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 disabled:opacity-60"
+                disabled={buying}
+                className="w-full rounded-full bg-ember-500 py-3 text-center font-bold text-white shadow-card transition hover:bg-ember-600 disabled:opacity-60"
               >
-                {isAdding ? "Adding…" : "Add to cart"}
+                {buying ? "Taking you to checkout…" : "Grab this deal"}
               </button>
-              <button
-                onClick={async () => {
-                  await addToCart(deal, quantity);
-                  await checkout();
-                }}
-                className="w-full rounded-full border-2 border-ember-500 py-3 text-center font-bold text-ember-500 transition hover:bg-ember-50"
-              >
-                Buy now
-              </button>
-              {justAdded && (
-                <p className="text-center text-xs text-brand-600">
-                  Added to cart! Open the cart to checkout whenever you&apos;re ready.
-                </p>
-              )}
             </div>
           </div>
         </div>

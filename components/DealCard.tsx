@@ -49,6 +49,11 @@ export default function DealCard({ deal }: { deal: Deal }) {
         <h3 className="line-clamp-2 min-h-[2.75rem] text-sm font-bold text-slate-900 group-hover:text-brand-700">
           {deal.name}
         </h3>
+        {deal.businessName && (
+          <p className="-mt-1 truncate text-xs font-medium text-slate-500">
+            by {deal.businessName}
+          </p>
+        )}
 
         <div className="mt-auto flex items-end justify-between pt-1">
           <div className="flex items-baseline gap-2">

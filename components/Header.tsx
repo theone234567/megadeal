@@ -9,13 +9,10 @@ import ElephantMascot from "@/components/ElephantMascot";
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
 export default function Header() {
-  const { cart, setCartOpen, member, isLoggedIn } = useWix();
+  const { member, isLoggedIn } = useWix();
   const [city, setCity] = useState(CITIES[0]);
   const [query, setQuery] = useState("");
   const router = useRouter();
-
-  const itemCount =
-    cart?.lineItems?.reduce((sum: number, i: any) => sum + (i.quantity ?? 0), 0) ?? 0;
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -87,19 +84,6 @@ export default function Header() {
           <span aria-hidden>👤</span>
           {isLoggedIn ? member?.profile?.nickname || "My portal" : "Sign in"}
         </Link>
-
-        <button
-          onClick={() => setCartOpen(true)}
-          className="relative flex shrink-0 items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 max-md:ml-auto"
-        >
-          <span aria-hidden>🛒</span>
-          Cart
-          {itemCount > 0 && (
-            <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-ember-500 text-xs font-bold text-white">
-              {itemCount}
-            </span>
-          )}
-        </button>
       </div>
     </header>
   );

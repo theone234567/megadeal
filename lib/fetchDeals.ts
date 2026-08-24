@@ -8,6 +8,7 @@ interface DealMeta {
   expiresAt: string | null;
   status: DealStatus | null;
   photoUrl: string | null;
+  merchantEmail: string | null;
 }
 
 /**
@@ -28,6 +29,7 @@ async function fetchDealMetaMap(client: WixClient): Promise<Record<string, DealM
           expiresAt: item.expiresAt ?? null,
           status: item.status ?? null,
           photoUrl: item.photoUrl || null,
+          merchantEmail: item.merchantEmail || null,
         };
       }
     }
@@ -61,6 +63,39 @@ function applyMeta(deal: Deal, meta: DealMeta | undefined): Deal {
     expiresAt: meta.expiresAt,
     status: meta.status,
     image: meta.photoUrl || deal.image,
+    merchantEmail: meta.merchantEmail,
+  };
+}
+
+/**
+ * The Merchants collection isn't publicly readable (SITE_MEMBER_AUTHOR
+ * scoped), so business names/logos come from a small public API route
+ * that re-exposes just those two fields via the admin client server-side.
+ */
+async function fetchBusinessDirectory(): Promise<
+  Record<string, { businessName: string; logoUrl: string | null }>
+> {
+  try {
+    const res = await fetch("/api/public/merchant-directory");
+    if (!res.ok) return {};
+    const data = await res.json();
+    return data.directory ?? {};
+  } catch {
+    return {};
+  }
+}
+
+function applyBusiness(
+  deal: Deal,
+  directory: Record<string, { businessName: string; logoUrl: string | null }>
+): Deal {
+  if (!deal.merchantEmail) return deal;
+  const business = directory[deal.merchantEmail.toLowerCase()];
+  if (!business) return deal;
+  return {
+    ...deal,
+    businessName: business.businessName,
+    businessLogoUrl: business.logoUrl,
   };
 }
 
@@ -106,13 +141,17 @@ export async function fetchDeals(client: WixClient): Promise<Deal[]> {
   // The first call here pays that one-time setup cost; everything after
   // reuses the now-cached token.
   const basics = await searchAllProducts(client);
-  const metaMap = await fetchDealMetaMap(client);
+  const [metaMap, directory] = await Promise.all([
+    fetchDealMetaMap(client),
+    fetchBusinessDirectory(),
+  ]);
 
   return basics
     .filter(Boolean)
     .map((p) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
     .map((deal) => applyMeta(deal, metaMap[deal.id]))
-    .filter(isPubliclyVisible);
+    .filter(isPubliclyVisible)
+    .map((deal) => applyBusiness(deal, directory));
 }
 
 export async function fetchDealBySlug(
@@ -134,9 +173,16 @@ export async function fetchDealBySlug(
         .find();
       const record = metaResult.items?.[0];
       const merged = applyMeta(deal, record
-        ? { expiresAt: record.expiresAt ?? null, status: record.status ?? null, photoUrl: record.photoUrl || null }
+        ? {
+            expiresAt: record.expiresAt ?? null,
+            status: record.status ?? null,
+            photoUrl: record.photoUrl || null,
+            merchantEmail: record.merchantEmail || null,
+          }
         : undefined);
-      return isPubliclyVisible(merged) ? merged : null;
+      if (!isPubliclyVisible(merged)) return null;
+      const directory = await fetchBusinessDirectory();
+      return applyBusiness(merged, directory);
     } catch {
       return deal;
     }
