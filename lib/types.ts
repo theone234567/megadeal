@@ -24,4 +24,5 @@ export interface Deal {
   businessPhone: string | null;
   businessAddress: string | null;
   businessCity: string | null;
+  businessSlug: string | null;
 }

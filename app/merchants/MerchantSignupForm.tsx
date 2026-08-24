@@ -180,6 +180,10 @@ export default function MerchantSignupForm() {
               address,
               city,
               postcode,
+              bio: String(formData.get("bio") ?? ""),
+              businessHours: String(formData.get("businessHours") ?? ""),
+              facebookUrl: String(formData.get("facebookUrl") ?? ""),
+              instagramUrl: String(formData.get("instagramUrl") ?? ""),
               couponCode: String(formData.get("couponCode") ?? ""),
               creditsBalance: 0,
               status: "Pending",
@@ -321,6 +325,59 @@ export default function MerchantSignupForm() {
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            About your business{" "}
+            <span className="font-normal text-slate-400">(optional)</span>
+          </label>
+          <textarea
+            name="bio"
+            rows={3}
+            placeholder="A couple of sentences customers will see on your business profile — what you do, what makes you worth a visit."
+            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Opening hours{" "}
+              <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <input
+              name="businessHours"
+              type="text"
+              placeholder="e.g. Mon–Fri 9am–5pm, Sat 10am–2pm"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Facebook{" "}
+              <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <input
+              name="facebookUrl"
+              type="url"
+              placeholder="https://facebook.com/yourbusiness"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            Instagram{" "}
+            <span className="font-normal text-slate-400">(optional)</span>
+          </label>
+          <input
+            name="instagramUrl"
+            type="url"
+            placeholder="https://instagram.com/yourbusiness"
+            className="w-full max-w-xs rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+          />
         </div>
 
         <div>

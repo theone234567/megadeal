@@ -64,5 +64,6 @@ export function mapProductToDeal(product: any, categoryNamesById?: Record<string
     businessPhone: null,
     businessAddress: null,
     businessCity: null,
+    businessSlug: null,
   };
 }

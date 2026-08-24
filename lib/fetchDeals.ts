@@ -78,6 +78,7 @@ interface PublicBusiness {
   phone: string | null;
   address: string | null;
   city: string | null;
+  slug: string;
 }
 
 async function fetchBusinessDirectory(): Promise<Record<string, PublicBusiness>> {
@@ -102,6 +103,7 @@ function applyBusiness(deal: Deal, directory: Record<string, PublicBusiness>): D
     businessPhone: business.phone,
     businessAddress: business.address,
     businessCity: business.city,
+    businessSlug: business.slug,
   };
 }
 

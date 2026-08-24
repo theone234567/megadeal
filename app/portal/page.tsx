@@ -6,6 +6,7 @@ import { useWix } from "@/context/WixProvider";
 import type { DealStatus } from "@/lib/types";
 import DealManageCard, { type DealRecord } from "@/components/portal/DealManageCard";
 import PhotoUploadField from "@/components/portal/PhotoUploadField";
+import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
 
 interface MerchantRecord {
   _id: string;
@@ -16,6 +17,10 @@ interface MerchantRecord {
   address?: string;
   city?: string;
   postcode?: string;
+  bio?: string;
+  businessHours?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
   couponCode?: string;
   creditsBalance?: number;
   status?: string;
@@ -213,33 +218,7 @@ export default function PortalPage() {
           </div>
 
           <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
-            <h2 className="text-lg font-bold text-slate-900">Business details</h2>
-            <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-              <div>
-                <dt className="text-slate-400">Business name</dt>
-                <dd className="font-medium text-slate-800">{merchant.businessName || "—"}</dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">Website</dt>
-                <dd className="font-medium text-slate-800">{merchant.website || "—"}</dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">Email</dt>
-                <dd className="font-medium text-slate-800">{merchant.email || "—"}</dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">Phone</dt>
-                <dd className="font-medium text-slate-800">{merchant.phone || "—"}</dd>
-              </div>
-              <div className="sm:col-span-2">
-                <dt className="text-slate-400">Address</dt>
-                <dd className="font-medium text-slate-800">
-                  {[merchant.address, merchant.city, merchant.postcode]
-                    .filter(Boolean)
-                    .join(", ") || "—"}
-                </dd>
-              </div>
-            </dl>
+            <MerchantProfileForm merchant={merchant} onSaved={(updated) => setMerchant(updated)} />
 
             <div className="mt-5 border-t border-slate-100 pt-5">
               <PhotoUploadField

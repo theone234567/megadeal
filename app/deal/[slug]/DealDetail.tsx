@@ -100,7 +100,10 @@ export default function DealDetail({ slug }: { slug: string }) {
               {deal.name}
             </h1>
             {deal.businessName && (
-              <div className="mt-2 flex items-center gap-2">
+              <Link
+                href={deal.businessSlug ? `/business/${deal.businessSlug}` : "#"}
+                className="mt-2 flex items-center gap-2 group/business"
+              >
                 {deal.businessLogoUrl ? (
                   <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-slate-50">
                     <Image
@@ -116,10 +119,10 @@ export default function DealDetail({ slug }: { slug: string }) {
                     🏪
                   </span>
                 )}
-                <span className="text-sm font-semibold text-slate-700">
+                <span className="text-sm font-semibold text-slate-700 group-hover/business:text-brand-700 group-hover/business:underline">
                   by {deal.businessName}
                 </span>
-              </div>
+              </Link>
             )}
             <p className="mt-1 text-sm text-slate-400">
               {boughtToday(deal.id)} people have grabbed this deal today
@@ -187,6 +190,14 @@ export default function DealDetail({ slug }: { slug: string }) {
                       {deal.businessCity ? `, ${deal.businessCity}` : ""}
                     </p>
                   )}
+                  {deal.businessSlug && (
+                    <Link
+                      href={`/business/${deal.businessSlug}`}
+                      className="inline-block text-xs font-semibold text-brand-600 hover:underline"
+                    >
+                      View full business profile →
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <div className="rounded-xl border border-brand-100 bg-brand-50 p-4">
@@ -194,6 +205,14 @@ export default function DealDetail({ slug }: { slug: string }) {
                     Mention this MegaDeal offer when you contact or visit{" "}
                     {deal.businessName || "the business"} to redeem it.
                   </p>
+                  {deal.businessSlug && (
+                    <Link
+                      href={`/business/${deal.businessSlug}`}
+                      className="mt-2 inline-block text-xs font-semibold text-brand-600 hover:underline"
+                    >
+                      View full business profile →
+                    </Link>
+                  )}
                 </div>
               )}
             </div>

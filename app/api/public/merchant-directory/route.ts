@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { businessSlug } from "@/lib/slug";
 
 // No request-derived data to force dynamic rendering automatically (unlike
 // routes that read cookies/headers), so this must be opted in explicitly —
@@ -14,6 +15,7 @@ interface PublicBusiness {
   phone: string | null;
   address: string | null;
   city: string | null;
+  slug: string;
 }
 
 /**
@@ -40,7 +42,7 @@ export async function GET() {
 
   const businessByEmail: Record<string, PublicBusiness> = {};
   for (const m of merchantsResult.items ?? []) {
-    if (m.email && m.businessName) {
+    if (m.email && m.businessName && m._id) {
       businessByEmail[String(m.email).toLowerCase()] = {
         businessName: m.businessName,
         logoUrl: m.logoUrl || null,
@@ -48,6 +50,7 @@ export async function GET() {
         phone: m.phone || null,
         address: m.address || null,
         city: m.city || null,
+        slug: businessSlug(m.businessName, m._id),
       };
     }
   }

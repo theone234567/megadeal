@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/siteConfig";
-import { fetchAllLiveDealSlugsForSitemap } from "@/lib/fetchDealServer";
+import {
+  fetchAllLiveDealSlugsForSitemap,
+  fetchAllBusinessSlugsForSitemap,
+} from "@/lib/fetchDealServer";
 import { CATEGORIES } from "@/components/CategoryNav";
 
 // Deals are created/edited by merchants continuously, so a build-time-only
@@ -32,5 +35,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticPages, ...categoryPages, ...dealPages];
+  const businessSlugs = await fetchAllBusinessSlugsForSitemap();
+  const businessPages: MetadataRoute.Sitemap = businessSlugs.map((slug) => ({
+    url: `${SITE_URL}/business/${slug}`,
+    changeFrequency: "weekly",
+    priority: 0.5,
+  }));
+
+  return [...staticPages, ...categoryPages, ...dealPages, ...businessPages];
 }
