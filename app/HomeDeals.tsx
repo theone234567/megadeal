@@ -14,6 +14,7 @@ export default function HomeDeals() {
 
   const [deals, setDeals] = useState<Deal[] | null>(null);
   const [error, setError] = useState(false);
+  const [diagnostic, setDiagnostic] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -22,15 +23,33 @@ export default function HomeDeals() {
       .then((result) => {
         if (cancelled) return;
         if (result.length === 0) {
-          // Diagnostic only: helps tell "genuinely no live deals" apart
-          // from a fetch/permissions issue returning an empty list.
-          console.warn("[fetchDeals] resolved with 0 deals");
+          // Temporary on-page diagnostic (no DevTools needed): probe the
+          // search endpoint directly and show exactly what came back, to
+          // tell "genuinely no live deals" apart from a fetch issue.
+          const client = getPublicWixClient();
+          client
+            .fetchWithAuth("https://www.wixapis.com/stores/v3/products/search", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ search: { cursorPaging: { limit: 100 } } }),
+            })
+            .then(async (res) => {
+              const bodyText = await res.text().catch(() => "<unreadable>");
+              if (!cancelled) {
+                setDiagnostic(`probe status=${res.status} body=${bodyText.slice(0, 400)}`);
+              }
+            })
+            .catch((probeErr) => {
+              if (!cancelled) setDiagnostic(`probe threw: ${String(probeErr)}`);
+            });
         }
         setDeals(result);
       })
       .catch((err) => {
-        console.error("[fetchDeals] failed", err);
-        if (!cancelled) setError(true);
+        if (!cancelled) {
+          setError(true);
+          setDiagnostic(`fetchDeals threw: ${String(err)}`);
+        }
       });
     return () => {
       cancelled = true;
@@ -40,9 +59,16 @@ export default function HomeDeals() {
 
   if (error) {
     return (
-      <p className="rounded-2xl border border-dashed border-slate-200 py-16 text-center text-slate-500">
-        Couldn&apos;t load deals right now. Please refresh the page.
-      </p>
+      <div>
+        <p className="rounded-2xl border border-dashed border-slate-200 py-16 text-center text-slate-500">
+          Couldn&apos;t load deals right now. Please refresh the page.
+        </p>
+        {diagnostic && (
+          <pre className="mt-4 whitespace-pre-wrap break-all rounded-xl bg-slate-900 p-4 text-xs text-lime-300">
+            {diagnostic}
+          </pre>
+        )}
+      </div>
     );
   }
 
@@ -65,6 +91,11 @@ export default function HomeDeals() {
         {query ? `Results for “${query}”` : "Today's top deals"}
       </h2>
       <DealGrid deals={filtered} />
+      {diagnostic && (
+        <pre className="mt-4 whitespace-pre-wrap break-all rounded-xl bg-slate-900 p-4 text-xs text-lime-300">
+          {diagnostic}
+        </pre>
+      )}
     </>
   );
 }
