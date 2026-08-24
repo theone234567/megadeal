@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useWix } from "@/context/WixProvider";
+import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDeals } from "@/lib/fetchDeals";
 import type { Deal } from "@/lib/types";
 import DealGrid from "@/components/DealGrid";
 import DealGridSkeleton from "@/components/DealGridSkeleton";
 
 export default function HomeDeals() {
-  const { client } = useWix();
   const searchParams = useSearchParams();
   const query = (searchParams.get("q") ?? "").toLowerCase().trim();
 
@@ -19,7 +18,7 @@ export default function HomeDeals() {
   useEffect(() => {
     let cancelled = false;
     setDeals(null);
-    fetchDeals(client)
+    fetchDeals(getPublicWixClient())
       .then((result) => {
         if (cancelled) return;
         if (result.length === 0) {

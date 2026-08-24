@@ -1,20 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useWix } from "@/context/WixProvider";
+import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDeals } from "@/lib/fetchDeals";
 import type { Deal } from "@/lib/types";
 import DealGrid from "@/components/DealGrid";
 import DealGridSkeleton from "@/components/DealGridSkeleton";
 
 export default function CategoryDeals({ category }: { category: string }) {
-  const { client } = useWix();
   const [deals, setDeals] = useState<Deal[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setDeals(null);
-    fetchDeals(client).then((result) => {
+    fetchDeals(getPublicWixClient()).then((result) => {
       if (!cancelled) setDeals(result);
     });
     return () => {

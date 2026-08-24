@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useWix } from "@/context/WixProvider";
+import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDealBySlug } from "@/lib/fetchDeals";
 import type { Deal } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
@@ -11,14 +12,14 @@ import { boughtToday, dealEndsAt } from "@/lib/socialProof";
 import CountdownBadge from "@/components/CountdownBadge";
 
 export default function DealDetail({ slug }: { slug: string }) {
-  const { client, addToCart, checkout, isAdding } = useWix();
+  const { addToCart, checkout, isAdding } = useWix();
   const [deal, setDeal] = useState<Deal | null | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    fetchDealBySlug(client, slug).then((result) => {
+    fetchDealBySlug(getPublicWixClient(), slug).then((result) => {
       if (!cancelled) setDeal(result);
     });
     return () => {
