@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useWix } from "@/context/WixProvider";
+import { fileToCompressedDataUrl } from "@/lib/imageUpload";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 
@@ -170,6 +171,7 @@ export default function MerchantSignupForm() {
           setSubmitting(true);
           try {
             const formData = new FormData(e.currentTarget);
+            const logoUrl = photo ? await fileToCompressedDataUrl(photo) : "";
             await client.items.insert("Merchants", {
               businessName: String(formData.get("businessName") ?? ""),
               website: String(formData.get("website") ?? ""),
@@ -181,6 +183,7 @@ export default function MerchantSignupForm() {
               couponCode: String(formData.get("couponCode") ?? ""),
               creditsBalance: 0,
               status: "Pending",
+              logoUrl,
             });
             setSubmitted(true);
           } catch {

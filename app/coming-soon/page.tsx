@@ -11,7 +11,6 @@ export const metadata: Metadata = {
 
 const CUSTOMER_PERKS = [
   { emoji: "🍽️", text: "Half-price dinners, spa days and weekend adventures" },
-  { emoji: "📍", text: "Handpicked by locals, for locals — every region of NZ" },
   { emoji: "💸", text: "You pay the business direct. No middleman, no markup." },
 ];
 
@@ -115,6 +114,16 @@ export default function ComingSoonPage() {
               </Link>
               .
             </p>
+
+            <div className="mt-6 border-t border-brand-100 pt-6">
+              <p className="text-sm text-slate-600">
+                We&apos;d love your support 🧡 — give us a follow. More of us
+                here means better, bigger deals for everyone.
+              </p>
+              <div className="mt-3 flex">
+                <SocialLinks />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -151,6 +160,16 @@ export default function ComingSoonPage() {
               </span>{" "}
               at sign-up
             </p>
+
+            <div className="mt-6 border-t border-white/20 pt-6">
+              <p className="text-sm text-ember-50">
+                Help us spread the word 📣 — the bigger our following, the
+                more eyes on your business from day one. Give us a follow!
+              </p>
+              <div className="mt-3 flex">
+                <SocialLinks variant="light" />
+              </div>
+            </div>
           </div>
 
           <div className="order-1 lg:order-2">
@@ -180,17 +199,7 @@ export default function ComingSoonPage() {
 
       {/* Closer */}
       <section className="px-4 py-16 text-center sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-extrabold text-slate-900">
-          Help us make some noise 📣
-        </h2>
-        <p className="mx-auto mt-2 max-w-md text-slate-600">
-          Follow along, share with a mate, and be part of a NZ deals platform
-          that&apos;s actually on your side.
-        </p>
-        <div className="mt-6 flex justify-center">
-          <SocialLinks />
-        </div>
-        <div className="mt-10 flex justify-center gap-6 text-xs text-slate-400">
+        <div className="flex justify-center gap-6 text-xs text-slate-400">
           <Link href="/terms" className="hover:text-brand-600">
             Terms
           </Link>

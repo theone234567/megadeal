@@ -73,23 +73,35 @@ export default function PortalPage() {
   }, [client, member, isLoggedIn, loadDeals]);
 
   async function handleChangeDealStatus(deal: DealRecord, target: DealStatus) {
-    // Wix's SITE_MEMBER_AUTHOR write permission rejects this update
-    // server-side unless the signed-in member is this deal's actual
-    // owner — a merchant can never change another merchant's deal, even
-    // by guessing its ID.
-    const updated = await client.items.update("Deals", { ...deal, status: target });
+    // Goes through a server route rather than a direct client write: the
+    // route re-verifies who's calling and only allows the specific status
+    // transitions our state machine permits, so a merchant can never
+    // self-approve a deal out of "Pending Approval" no matter what request
+    // they craft — that check can't be bypassed from the browser.
+    const res = await fetch(`/api/deals/${deal._id}/status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: target }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Couldn't update this deal.");
+    }
+    const { item: updated } = await res.json();
     setDeals((prev) => prev.map((d) => (d._id === deal._id ? updated : d)));
   }
 
   async function handleChangeDealPhoto(deal: DealRecord, dataUrl: string) {
-    const currentStatus = deal.status ?? "Live";
-    const nextStatus: DealStatus =
-      currentStatus === "Cancelled" ? currentStatus : "Pending Approval";
-    const updated = await client.items.update("Deals", {
-      ...deal,
-      photoUrl: dataUrl,
-      status: nextStatus,
+    const res = await fetch(`/api/deals/${deal._id}/photo`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ photoUrl: dataUrl }),
     });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || "Couldn't save that photo.");
+    }
+    const { item: updated } = await res.json();
     setDeals((prev) => prev.map((d) => (d._id === deal._id ? updated : d)));
   }
 
@@ -97,11 +109,16 @@ export default function PortalPage() {
     if (!merchant) return;
     setLogoError(null);
     try {
-      const updated = await client.items.update("Merchants", {
-        ...merchant,
-        logoUrl: dataUrl,
-        status: "Pending",
+      const res = await fetch("/api/merchants/logo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logoUrl: dataUrl }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Couldn't save your logo.");
+      }
+      const { item: updated } = await res.json();
       setMerchant(updated);
     } catch (err: any) {
       setLogoError(err?.message || "Couldn't save your logo. Please try again.");
