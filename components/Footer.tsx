@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CATEGORIES } from "@/lib/categories";
 import SocialLinks from "./SocialLinks";
+import EmailSignupForm from "./EmailSignupForm";
 
 export default function Footer() {
   return (
@@ -64,11 +65,6 @@ export default function Footer() {
                   Careers
                 </Link>
               </li>
-              <li>
-                <Link href="/coming-soon" className="hover:text-brand-700">
-                  What&apos;s coming next
-                </Link>
-              </li>
             </ul>
           </div>
           <div>
@@ -106,28 +102,19 @@ export default function Footer() {
             <p className="mb-3 text-sm text-slate-600">
               Get the best local deals in your inbox every week.
             </p>
-            <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                required
-                placeholder="you@example.com"
-                className="w-full min-w-0 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
-              />
-              <button
-                type="submit"
-                className="shrink-0 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-              >
-                Join
-              </button>
-            </form>
+            <EmailSignupForm
+              audience="customer"
+              source="footer"
+              buttonLabel="Join"
+              surface="plain"
+            />
           </div>
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 sm:flex-row">
           <SocialLinks />
           <p className="text-center text-sm text-slate-500 sm:text-left">
-            © {new Date().getFullYear()} MegaDeal. Deals inspired by
-            megadeal.co.nz &amp; Groupon — powered by Wix Headless.
+            © {new Date().getFullYear()} MegaDeal. All rights reserved.
           </p>
           <div className="flex gap-4 text-sm text-slate-500">
             <Link href="/terms" className="hover:text-brand-700">

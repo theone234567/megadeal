@@ -179,7 +179,7 @@ export default function MerchantSignupForm() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">
-              Company name
+              Business name
             </label>
             <input
               required
@@ -394,7 +394,7 @@ export default function MerchantSignupForm() {
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
-            Coupon or referral code{" "}
+            Referral code{" "}
             <span className="font-normal text-slate-400">(optional)</span>
           </label>
           <input

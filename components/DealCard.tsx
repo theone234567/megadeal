@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Deal } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
-import { boughtToday, dealEndsAt } from "@/lib/socialProof";
+import { dealEndsAt } from "@/lib/socialProof";
 import CountdownBadge from "./CountdownBadge";
 
 export default function DealCard({ deal }: { deal: Deal }) {
@@ -67,7 +67,6 @@ export default function DealCard({ deal }: { deal: Deal }) {
             )}
           </div>
         </div>
-        <p className="text-xs text-slate-400">{boughtToday(deal.id)} grabbed today</p>
       </div>
     </Link>
   );

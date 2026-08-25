@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import CategoryNav from "@/components/CategoryNav";
 import { CATEGORIES } from "@/lib/categories";
@@ -39,7 +40,9 @@ export default function CategoryPage({
       <CategoryNav active={category} />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <h1 className="mb-5 text-2xl font-extrabold text-slate-900">{category}</h1>
-        <CategoryDeals category={category} />
+        <Suspense fallback={null}>
+          <CategoryDeals category={category} />
+        </Suspense>
       </div>
     </main>
   );

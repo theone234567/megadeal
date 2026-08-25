@@ -5,16 +5,22 @@ import { useWix } from "@/context/WixProvider";
 
 interface EmailSignupFormProps {
   audience: "customer" | "merchant";
+  source?: string;
   placeholder?: string;
   buttonLabel?: string;
   accent?: "brand" | "ember";
+  /** "onColor" (default) is for a colored/dark background (e.g. a gradient hero);
+   * "plain" is for an ordinary light background (e.g. the footer). */
+  surface?: "onColor" | "plain";
 }
 
 export default function EmailSignupForm({
   audience,
+  source = "coming-soon",
   placeholder = "you@example.com",
   buttonLabel = "Count me in",
   accent = "brand",
+  surface = "onColor",
 }: EmailSignupFormProps) {
   const { client } = useWix();
   const [email, setEmail] = useState("");
@@ -28,7 +34,7 @@ export default function EmailSignupForm({
       await client.items.insert("EmailSignups", {
         email,
         audience,
-        source: "coming-soon",
+        source,
       });
       setState("done");
     } catch {
@@ -38,7 +44,11 @@ export default function EmailSignupForm({
 
   if (state === "done") {
     return (
-      <p className="rounded-full bg-white/90 px-5 py-3 text-center text-sm font-bold text-brand-700 shadow-card">
+      <p
+        className={`rounded-full px-5 py-3 text-center text-sm font-bold shadow-card ${
+          surface === "plain" ? "bg-brand-50 text-brand-700" : "bg-white/90 text-brand-700"
+        }`}
+      >
         🎉 You&apos;re on the list — welcome aboard!
       </p>
     );
@@ -49,6 +59,11 @@ export default function EmailSignupForm({
       ? "bg-ember-500 hover:bg-ember-600"
       : "bg-brand-600 hover:bg-brand-700";
 
+  const inputClass =
+    surface === "plain"
+      ? "border border-slate-200 bg-white text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400"
+      : "border border-white/40 bg-white/95 text-slate-800 outline-none placeholder:text-slate-400 focus:border-white";
+
   return (
     <div>
       <form onSubmit={handleSubmit} className="flex w-full max-w-md gap-2">
@@ -58,7 +73,7 @@ export default function EmailSignupForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={placeholder}
-          className="w-full min-w-0 rounded-full border border-white/40 bg-white/95 px-4 py-3 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-white"
+          className={`w-full min-w-0 rounded-full px-4 py-3 text-sm ${inputClass}`}
         />
         <button
           type="submit"
@@ -69,7 +84,7 @@ export default function EmailSignupForm({
         </button>
       </form>
       {state === "error" && (
-        <p className="mt-2 text-xs text-red-100">
+        <p className={`mt-2 text-xs ${surface === "plain" ? "text-red-600" : "text-red-100"}`}>
           Something went wrong — please try again.
         </p>
       )}

@@ -7,7 +7,7 @@ import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDealBySlug } from "@/lib/fetchDeals";
 import type { Deal } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
-import { boughtToday, dealEndsAt } from "@/lib/socialProof";
+import { dealEndsAt } from "@/lib/socialProof";
 import CountdownBadge from "@/components/CountdownBadge";
 
 export default function DealDetail({ slug }: { slug: string }) {
@@ -82,10 +82,9 @@ export default function DealDetail({ slug }: { slug: string }) {
 
           <div className="mt-6">
             <h2 className="mb-2 text-lg font-bold text-slate-900">The fine print</h2>
-            <div
-              className="max-w-none space-y-3 text-sm leading-relaxed text-slate-600 [&_b]:font-semibold [&_b]:text-slate-800"
-              dangerouslySetInnerHTML={{ __html: deal.description }}
-            />
+            <p className="max-w-none whitespace-pre-line text-sm leading-relaxed text-slate-600">
+              {deal.description}
+            </p>
           </div>
         </div>
 
@@ -124,9 +123,6 @@ export default function DealDetail({ slug }: { slug: string }) {
                 </span>
               </Link>
             )}
-            <p className="mt-1 text-sm text-slate-400">
-              {boughtToday(deal.id)} people have grabbed this deal today
-            </p>
 
             <div className="mt-4 flex items-baseline gap-3">
               <span className="text-3xl font-extrabold text-slate-900">

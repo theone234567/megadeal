@@ -11,6 +11,7 @@ import DealGridSkeleton from "@/components/DealGridSkeleton";
 export default function HomeDeals() {
   const searchParams = useSearchParams();
   const query = (searchParams.get("q") ?? "").toLowerCase().trim();
+  const city = (searchParams.get("city") ?? "").toLowerCase().trim();
 
   const [deals, setDeals] = useState<Deal[] | null>(null);
   const [error, setError] = useState(false);
@@ -45,7 +46,7 @@ export default function HomeDeals() {
     return <DealGridSkeleton />;
   }
 
-  const filtered = query
+  let filtered = query
     ? deals.filter(
         (d) =>
           d.name.toLowerCase().includes(query) ||
@@ -54,11 +55,19 @@ export default function HomeDeals() {
       )
     : deals;
 
+  if (city) {
+    filtered = filtered.filter((d) => (d.businessCity ?? "").toLowerCase() === city);
+  }
+
+  const heading = query
+    ? `Results for “${searchParams.get("q")}”`
+    : city
+    ? `Today's top deals in ${searchParams.get("city")}`
+    : "Today's top deals";
+
   return (
     <>
-      <h2 className="mb-5 text-xl font-bold text-slate-900">
-        {query ? `Results for “${query}”` : "Today's top deals"}
-      </h2>
+      <h2 className="mb-5 text-xl font-bold text-slate-900">{heading}</h2>
       <DealGrid deals={filtered} />
     </>
   );

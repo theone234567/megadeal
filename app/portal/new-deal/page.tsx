@@ -322,7 +322,7 @@ export default function NewDealPage() {
             rows={3}
             value={terms}
             onChange={(e) => setTerms(e.target.value)}
-            placeholder="e.g. First in, first served — limited to 50 vouchers. Valid 3 months from purchase. Not valid with other offers."
+            placeholder="e.g. First in, first served — limited to 50 redemptions. Valid 3 months from when the deal goes live. Not valid with other offers."
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
         </div>

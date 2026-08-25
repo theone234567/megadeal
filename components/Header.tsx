@@ -10,13 +10,17 @@ const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilto
 
 export default function Header() {
   const { member, isLoggedIn } = useWix();
-  const [city, setCity] = useState(CITIES[0]);
+  const [city, setCity] = useState("");
   const [query, setQuery] = useState("");
   const router = useRouter();
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    router.push(query ? `/?q=${encodeURIComponent(query)}` : "/");
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (city) params.set("city", city);
+    const qs = params.toString();
+    router.push(qs ? `/?${qs}` : "/");
   }
 
   return (
@@ -56,6 +60,7 @@ export default function Header() {
             aria-label="Choose your city"
             className="hidden shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none sm:block"
           >
+            <option value="">All cities</option>
             {CITIES.map((c) => (
               <option key={c} value={c}>
                 {c}

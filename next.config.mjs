@@ -35,6 +35,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      // The pre-launch waitlist page no longer makes sense now that the
+      // site is live with real deals — redirect any old links to the
+      // homepage instead of leaving a "coming soon" page reachable on a
+      // site that's already running.
+      { source: "/coming-soon", destination: "/", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

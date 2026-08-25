@@ -49,8 +49,8 @@ export default function RefundPolicyPage() {
       <p>
         Businesses pay MegaDeal in advertising credits or a subscription to
         list a deal — that fee is for the listing itself, separate from
-        anything a customer pays the business. Merchants can find our
-        billing terms in the merchant portal, or reach out via our{" "}
+        anything a customer pays the business. For billing questions, reach
+        out via our{" "}
         <a href="/contact" className="text-brand-600 hover:underline">
           contact page
         </a>
