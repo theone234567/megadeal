@@ -23,10 +23,11 @@ const HINT_MS = 4200;
 let sparkleId = 0;
 
 /**
- * The MegaDeal elephant: a clearly-readable trumpeting elephant (big fan
- * ear, curled raised trunk) that sways gently on its own, and jumps + flaps
- * + toots with a sparkle burst and a speech bubble whenever it's tapped or
- * clicked — a shareable, no-assets brand flourish for the header.
+ * The MegaDeal elephant: a cute, front-facing baby-elephant face (big round
+ * head, two big symmetric ears, a soft swinging trunk, big eyes, blush
+ * cheeks, tiny tusks) sized to sit alongside the wordmark rather than
+ * dominate it. Sways gently on its own, and jumps + flaps + toots with a
+ * sparkle burst and a speech bubble whenever it's tapped or clicked.
  */
 export default function ElephantMascot({ className = "" }: { className?: string }) {
   const gradientId = useId();
@@ -82,7 +83,7 @@ export default function ElephantMascot({ className = "" }: { className?: string 
       {bubble && (
         <span
           key={bubble.id}
-          className="animate-elephant-bubble pointer-events-none absolute -top-9 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-3 py-1 text-xs font-bold text-white shadow-card after:absolute after:left-1/2 after:top-full after:-ml-1 after:border-4 after:border-transparent after:border-t-slate-900"
+          className="animate-elephant-bubble pointer-events-none absolute -top-7 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-3 py-1 text-xs font-bold text-white shadow-card after:absolute after:left-1/2 after:top-full after:-ml-1 after:border-4 after:border-transparent after:border-t-slate-900"
         >
           {bubble.text}
         </span>
@@ -91,7 +92,7 @@ export default function ElephantMascot({ className = "" }: { className?: string 
       {sparkles.map((s) => (
         <span
           key={s.id}
-          className="animate-elephant-sparkle pointer-events-none absolute left-1/2 top-1 text-base"
+          className="animate-elephant-sparkle pointer-events-none absolute left-1/2 top-1 text-sm"
           style={{ ["--sparkle-x" as any]: `${s.x}px` }}
         >
           {s.emoji}
@@ -99,8 +100,8 @@ export default function ElephantMascot({ className = "" }: { className?: string 
       ))}
 
       <svg
-        viewBox="0 0 120 120"
-        className={`h-16 w-16 drop-shadow-md sm:h-[4.5rem] sm:w-[4.5rem] ${
+        viewBox="0 0 100 100"
+        className={`h-10 w-10 drop-shadow-md sm:h-11 sm:w-11 ${
           isDoingTrick ? "animate-elephant-trick-body" : "animate-elephant-idle-body"
         }`}
       >
@@ -111,67 +112,44 @@ export default function ElephantMascot({ className = "" }: { className?: string 
           </linearGradient>
         </defs>
 
-        {/* tail */}
-        <path
-          d="M24 58c-7 -1 -11 4 -9 9"
-          fill="none"
-          stroke="#650fc7"
-          strokeWidth={4.5}
-          strokeLinecap="round"
-        />
-        <circle cx="15" cy="68" r="3.4" fill="#650fc7" />
-        {/* legs */}
-        <rect x="32" y="86" width="13" height="20" rx="6" fill="#650fc7" />
-        <rect x="68" y="86" width="13" height="20" rx="6" fill="#650fc7" />
-        {/* ear (fan-shaped, unmistakably elephant) */}
+        {/* both ears, big and symmetric — the single clearest "elephant" cue */}
         <g
           style={{ transformBox: "fill-box" as any }}
           className={isDoingTrick ? "animate-elephant-trick-ear" : "animate-elephant-idle-ear"}
         >
-          <path
-            d="M70 30c17-12 36-4 36 12s-14 26-30 21c-8-3-13-13-11-21 1-6 2-9 5-12z"
-            fill="#c194ff"
-          />
-          <path
-            d="M74 34c11-8 24-3 24 8s-9 17-19 14c-5-2-9-9-7-14 1-4 1-6 2-8z"
-            fill="#ffb8e8"
-          />
+          <ellipse cx="15" cy="48" rx="17" ry="22" fill="#c194ff" />
+          <ellipse cx="18" cy="48" rx="10" ry="14" fill="#ffb8e8" />
+          <ellipse cx="85" cy="48" rx="17" ry="22" fill="#c194ff" />
+          <ellipse cx="82" cy="48" rx="10" ry="14" fill="#ffb8e8" />
         </g>
-        {/* body */}
-        <ellipse cx="52" cy="68" rx="35" ry="28" fill={`url(#${gradientId}-body)`} />
-        {/* belly */}
-        <ellipse cx="46" cy="77" rx="18" ry="15" fill="#f7f2ff" />
+
         {/* head */}
-        <circle cx="82" cy="42" r="25" fill={`url(#${gradientId}-body)`} />
-        {/* far ear peeking out */}
+        <ellipse cx="50" cy="45" rx="30" ry="28" fill={`url(#${gradientId}-body)`} />
+
+        {/* blush cheeks */}
+        <ellipse cx="26" cy="56" rx="6" ry="4" fill="#ff9ed6" opacity="0.65" />
+        <ellipse cx="74" cy="56" rx="6" ry="4" fill="#ff9ed6" opacity="0.65" />
+
+        {/* tusks */}
+        <ellipse cx="41" cy="66" rx="3.6" ry="7" fill="#fffaf3" transform="rotate(-12 41 66)" />
+        <ellipse cx="59" cy="66" rx="3.6" ry="7" fill="#fffaf3" transform="rotate(12 59 66)" />
+
+        {/* trunk: soft downward swing, unmistakably an elephant's */}
         <path
-          d="M64 24c-17-6-31 3-31 17s15 23 28 18c8-3 11-13 9-21-1-6-3-10-6-14z"
-          fill="#dcc2ff"
-        />
-        {/* trunk: raised and curled, unmistakably trumpeting */}
-        <path
-          d="M96 50
-             C111 41 124 45 124 30
-             C124 19 113 15 105 22
-             C111 22 116 28 113 34
-             C107 30 100 33 98 40
-             C103 40 105 44 101 48
-             C99 50 97 51 96 50 Z"
-          fill={`url(#${gradientId}-body)`}
+          d="M50 58 C 45 70, 55 78, 50 90"
+          fill="none"
+          stroke={`url(#${gradientId}-body)`}
+          strokeWidth={13}
+          strokeLinecap="round"
           className={isDoingTrick ? "animate-elephant-trick-trunk" : ""}
           style={{ transformBox: "fill-box" as any }}
         />
-        {/* smile */}
-        <path
-          d="M79 52c3.4 3.2 9 3.2 12.4 0"
-          fill="none"
-          stroke="#211033"
-          strokeWidth={2.4}
-          strokeLinecap="round"
-        />
-        {/* eye */}
-        <circle cx="88" cy="36" r="4.6" fill="#211033" />
-        <circle cx="89.8" cy="34.2" r="1.6" fill="#ffffff" />
+
+        {/* eyes */}
+        <circle cx="36" cy="40" r="6" fill="#211033" />
+        <circle cx="38.2" cy="37.8" r="2" fill="#ffffff" />
+        <circle cx="64" cy="40" r="6" fill="#211033" />
+        <circle cx="66.2" cy="37.8" r="2" fill="#ffffff" />
       </svg>
     </button>
   );
