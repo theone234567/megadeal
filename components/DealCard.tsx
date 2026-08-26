@@ -7,6 +7,11 @@ import CountdownBadge from "./CountdownBadge";
 
 export default function DealCard({ deal }: { deal: Deal }) {
   const soldOut = !deal.inStock;
+  const lowStock =
+    !soldOut &&
+    deal.quantityAvailable !== null &&
+    deal.quantityAvailable > 0 &&
+    deal.quantityAvailable <= 5;
 
   return (
     <Link
@@ -51,10 +56,15 @@ export default function DealCard({ deal }: { deal: Deal }) {
           )}
         </div>
         {!soldOut && (
-          <div className="absolute bottom-2 left-2">
+          <div className="absolute bottom-2 left-2 flex items-center gap-1">
             <CountdownBadge
               target={deal.expiresAt ? new Date(deal.expiresAt) : dealEndsAt(deal.id)}
             />
+            {lowStock && (
+              <span className="rounded-full bg-red-600/90 px-2.5 py-1 text-xs font-semibold text-white">
+                Only {deal.quantityAvailable} left
+              </span>
+            )}
           </div>
         )}
       </div>

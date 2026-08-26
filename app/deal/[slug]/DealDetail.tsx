@@ -265,6 +265,14 @@ export default function DealDetail({ slug }: { slug: string }) {
                   </span>
                 </>
               )}
+              {deal.inStock &&
+                deal.quantityAvailable !== null &&
+                deal.quantityAvailable > 0 &&
+                deal.quantityAvailable <= 5 && (
+                  <span className="rounded-full bg-red-50 px-2 py-0.5 text-sm font-bold text-red-600">
+                    Only {deal.quantityAvailable} left
+                  </span>
+                )}
             </div>
             <p className="mt-1 text-xs text-slate-400">
               Price paid directly to {deal.businessName || "the business"} — MegaDeal

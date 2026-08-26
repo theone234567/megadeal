@@ -10,6 +10,7 @@ interface DealMeta {
   status: DealStatus | null;
   photoUrl: string | null;
   isFlash: boolean;
+  quantityAvailable: number | null;
 }
 
 /**
@@ -31,6 +32,7 @@ async function fetchDealMetaMap(client: WixClient): Promise<Record<string, DealM
           status: item.status ?? null,
           photoUrl: item.photoUrl || null,
           isFlash: Boolean(item.isFlash),
+          quantityAvailable: typeof item.quantityAvailable === "number" ? item.quantityAvailable : null,
         };
       }
     }
@@ -48,6 +50,7 @@ function applyMeta(deal: Deal, meta: DealMeta | undefined): Deal {
     status: meta.status,
     image: meta.photoUrl || deal.image,
     isFlash: meta.isFlash,
+    quantityAvailable: meta.quantityAvailable,
   };
 }
 
@@ -214,6 +217,8 @@ export async function fetchDealBySlug(
             status: record.status ?? null,
             photoUrl: record.photoUrl || null,
             isFlash: Boolean(record.isFlash),
+            quantityAvailable:
+              typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
           }
         : undefined);
       if (!isPubliclyVisible(merged)) return null;

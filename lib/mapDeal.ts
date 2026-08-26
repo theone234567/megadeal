@@ -56,6 +56,7 @@ export function mapProductToDeal(product: any, categoryNamesById?: Record<string
     categories,
     variantId: variant?.id ?? variant?._id ?? null,
     inStock: variant?.inventoryStatus?.inStock ?? true,
+    quantityAvailable: null,
     expiresAt: null,
     status: null,
     isFlash: false,

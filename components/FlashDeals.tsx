@@ -42,16 +42,14 @@ export default function FlashDeals() {
   if (flash.length === 0) return null;
 
   return (
-    <div className="bg-brand-900">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-4 flex items-center gap-2">
-          <h2 className="text-xl font-extrabold text-white">⚡ Flash Deals</h2>
-          <span className="animate-pulse rounded-full bg-ember-500 px-2.5 py-0.5 text-xs font-bold text-white">
-            Ending soon
-          </span>
-        </div>
-        <DealGrid deals={flash} />
+    <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+      <div className="mb-4 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-slate-900">⚡ Flash Deals</h2>
+        <span className="animate-pulse rounded-full bg-ember-500 px-2.5 py-0.5 text-xs font-bold text-white">
+          Ending soon
+        </span>
       </div>
+      <DealGrid deals={flash} />
     </div>
   );
 }

@@ -16,6 +16,7 @@ export interface Deal {
   categories: string[];
   variantId: string | null;
   inStock: boolean;
+  quantityAvailable: number | null;
   expiresAt: string | null;
   status: DealStatus | null;
   isFlash: boolean;

@@ -35,6 +35,8 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
         status: record.status ?? null,
         image: record.photoUrl || deal.image,
         isFlash: Boolean(record.isFlash),
+        quantityAvailable:
+          typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
       };
     }
 
@@ -175,6 +177,8 @@ export async function fetchBusinessProfileBySlug(
           status: record.status ?? null,
           image: record.photoUrl || undefined,
           isFlash: Boolean(record.isFlash),
+          quantityAvailable:
+            typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
           businessName: business.businessName,
           businessLogoUrl: business.logoUrl,
           businessWebsite: business.website,
