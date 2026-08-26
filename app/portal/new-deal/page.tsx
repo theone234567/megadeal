@@ -47,6 +47,7 @@ export default function NewDealPage() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
+  const [step, setStep] = useState<"form" | "preview">("form");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,8 +74,14 @@ export default function NewDealPage() {
     return () => URL.revokeObjectURL(url);
   }, [photo]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleContinueToPreview(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
+    setStep("preview");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function handleSubmit() {
     setError(null);
     setSubmitting(true);
     try {
@@ -191,6 +198,128 @@ export default function NewDealPage() {
     );
   }
 
+  if (step === "preview") {
+    const discountPercent =
+      priceWas && Number(priceWas) > Number(priceNow) && Number(priceNow) > 0
+        ? Math.round(((Number(priceWas) - Number(priceNow)) / Number(priceWas)) * 100)
+        : 0;
+    const categoryDef = CATEGORIES.find((c) => c.name === category);
+    const durationLabel = isFlash
+      ? FLASH_DURATIONS.find((d) => d.minutes === durationMinutes)?.label
+      : DURATIONS.find((d) => d.days === durationDays)?.label;
+
+    return (
+      <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          onClick={() => setStep("form")}
+          className="text-sm text-slate-500 hover:text-brand-700"
+        >
+          ← Back to edit
+        </button>
+
+        <h1 className="mt-3 text-2xl font-extrabold text-slate-900">Preview your deal</h1>
+        <p className="mt-1 text-sm text-slate-500">
+          This is how your deal card will look to customers. Check everything looks right,
+          then submit it for review.
+        </p>
+
+        <div className="mt-6 max-w-xs">
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
+              {photoPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photoPreview} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-slate-300">
+                  <span className="text-4xl">🏷️</span>
+                </div>
+              )}
+              <div className="absolute left-2 top-2 flex flex-col gap-1">
+                {isFlash && (
+                  <span className="animate-pulse rounded-full bg-brand-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+                    ⚡ FLASH
+                  </span>
+                )}
+                {discountPercent > 0 && (
+                  <span className="rounded-full bg-ember-500 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+                    {discountPercent}% OFF
+                  </span>
+                )}
+              </div>
+              <div className="absolute bottom-2 left-2">
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 px-2.5 py-1 text-xs font-semibold text-white">
+                  ⏱ Live for {durationLabel || "—"}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-1 flex-col gap-2 p-4">
+              {category && (
+                <span className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+                  {categoryDef ? `${categoryDef.emoji} ${category}` : category}
+                </span>
+              )}
+              <h3 className="line-clamp-2 min-h-[2.75rem] text-sm font-bold text-slate-900">
+                {dealName || "Your deal name"}
+              </h3>
+              <div className="mt-auto flex items-end justify-between pt-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xl font-extrabold text-slate-900">
+                    ${priceNow || "0"}
+                  </span>
+                  {priceWas && Number(priceWas) > Number(priceNow) && (
+                    <span className="text-sm text-slate-400 line-through">${priceWas}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+          <p className="mt-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Preview — not yet submitted
+          </p>
+        </div>
+
+        <div className="mt-6 space-y-4 rounded-2xl border border-slate-100 bg-white p-6 text-sm text-slate-700 shadow-card">
+          <div>
+            <p className="font-semibold text-slate-900">Description</p>
+            <p className="mt-1 whitespace-pre-wrap">{description}</p>
+          </div>
+          <div>
+            <p className="font-semibold text-slate-900">Terms &amp; conditions</p>
+            <p className="mt-1 whitespace-pre-wrap">{terms}</p>
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-1 border-t border-slate-100 pt-3 text-xs text-slate-500">
+            <span>
+              Duration: {durationLabel}
+              {isFlash ? " (flash deal)" : ""}
+            </span>
+            {quantityAvailable && <span>Quantity: {quantityAvailable}</span>}
+          </div>
+        </div>
+
+        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => setStep("form")}
+            className="rounded-full border border-slate-200 px-6 py-3 text-center text-sm font-bold text-slate-700 hover:bg-slate-50"
+          >
+            ← Back to edit
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="rounded-full bg-brand-600 px-8 py-3 text-center text-sm font-bold text-white shadow-card transition hover:bg-brand-700 disabled:opacity-60 sm:ml-auto"
+          >
+            {submitting ? "Submitting…" : "Submit deal for approval"}
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
       <Link href="/portal" className="text-sm text-slate-500 hover:text-brand-700">
@@ -203,7 +332,7 @@ export default function NewDealPage() {
         Your deal goes live once we&apos;ve reviewed it.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+      <form onSubmit={handleContinueToPreview} className="mt-6 space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">Deal name</label>
           <input
@@ -373,10 +502,9 @@ export default function NewDealPage() {
 
         <button
           type="submit"
-          disabled={submitting}
-          className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 disabled:opacity-60 sm:w-auto sm:px-8"
+          className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 sm:w-auto sm:px-8"
         >
-          {submitting ? "Submitting…" : "Submit deal for approval"}
+          Preview deal →
         </button>
       </form>
     </main>
