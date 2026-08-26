@@ -34,6 +34,13 @@ export default function PrivacyPage() {
           </a>{" "}
           or by email.
         </li>
+        <li>
+          <strong>Deal-alert email signups</strong> — if you sign up for
+          deal emails, we collect your email address. We send a
+          confirmation email to verify it&apos;s really yours before adding
+          you to the list, and every email includes an unsubscribe link
+          that removes you immediately.
+        </li>
       </ul>
 
       <h2>How we use it</h2>

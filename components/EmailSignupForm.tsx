@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useWix } from "@/context/WixProvider";
 
 interface EmailSignupFormProps {
   audience: "customer" | "merchant";
@@ -22,22 +21,29 @@ export default function EmailSignupForm({
   accent = "brand",
   surface = "onColor",
 }: EmailSignupFormProps) {
-  const { client } = useWix();
   const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
   const [state, setState] = useState<"idle" | "saving" | "done" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !consent) return;
     setState("saving");
+    setErrorMessage(null);
     try {
-      await client.items.insert("EmailSignups", {
-        email,
-        audience,
-        source,
+      const res = await fetch("/api/email-signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, audience, source, consent }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Something went wrong. Please try again.");
+      }
       setState("done");
-    } catch {
+    } catch (err: any) {
+      setErrorMessage(err?.message || "Something went wrong — please try again.");
       setState("error");
     }
   }
@@ -45,11 +51,11 @@ export default function EmailSignupForm({
   if (state === "done") {
     return (
       <p
-        className={`rounded-full px-5 py-3 text-center text-sm font-bold shadow-card ${
+        className={`rounded-2xl px-5 py-3 text-center text-sm font-bold shadow-card ${
           surface === "plain" ? "bg-brand-50 text-brand-700" : "bg-white/90 text-brand-700"
         }`}
       >
-        🎉 You&apos;re on the list — welcome aboard!
+        📬 Almost there — check your email to confirm!
       </p>
     );
   }
@@ -64,28 +70,52 @@ export default function EmailSignupForm({
       ? "border border-slate-200 bg-white text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400"
       : "border border-white/40 bg-white/95 text-slate-800 outline-none placeholder:text-slate-400 focus:border-white";
 
+  const mutedTextClass = surface === "plain" ? "text-slate-500" : "text-white/80";
+  const linkClass =
+    surface === "plain"
+      ? "underline hover:text-brand-700"
+      : "underline hover:text-white";
+
   return (
     <div>
-      <form onSubmit={handleSubmit} className="flex w-full max-w-md gap-2">
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder={placeholder}
-          className={`w-full min-w-0 rounded-full px-4 py-3 text-sm ${inputClass}`}
-        />
-        <button
-          type="submit"
-          disabled={state === "saving"}
-          className={`shrink-0 rounded-full px-5 py-3 text-sm font-bold text-white shadow-card transition disabled:opacity-60 ${buttonClass}`}
-        >
-          {state === "saving" ? "Joining…" : buttonLabel}
-        </button>
+      <form onSubmit={handleSubmit} className="w-full max-w-md">
+        <div className="flex gap-2">
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={placeholder}
+            className={`w-full min-w-0 rounded-full px-4 py-3 text-sm ${inputClass}`}
+          />
+          <button
+            type="submit"
+            disabled={state === "saving" || !consent}
+            className={`shrink-0 rounded-full px-5 py-3 text-sm font-bold text-white shadow-card transition disabled:opacity-60 ${buttonClass}`}
+          >
+            {state === "saving" ? "Joining…" : buttonLabel}
+          </button>
+        </div>
+        <label className={`mt-2 flex items-start gap-2 text-xs ${mutedTextClass}`}>
+          <input
+            type="checkbox"
+            required
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-slate-300"
+          />
+          <span>
+            I agree to receive deal emails from MegaDeal and have read the{" "}
+            <a href="/privacy" className={linkClass}>
+              privacy policy
+            </a>
+            . I can unsubscribe anytime.
+          </span>
+        </label>
       </form>
       {state === "error" && (
         <p className={`mt-2 text-xs ${surface === "plain" ? "text-red-600" : "text-red-100"}`}>
-          Something went wrong — please try again.
+          {errorMessage}
         </p>
       )}
     </div>

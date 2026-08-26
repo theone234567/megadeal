@@ -25,8 +25,8 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
-        <div className="flex shrink-0 items-center">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex items-center">
           <Link href="/" className="flex items-center gap-0.5 font-display">
             <span className="text-[1.7rem] font-extrabold tracking-tight text-brand-700">
               Mega
@@ -38,10 +38,7 @@ export default function Header() {
           <ElephantMascot className="-ml-2 -rotate-3" />
         </div>
 
-        <form
-          onSubmit={handleSearch}
-          className="order-3 flex w-full flex-1 items-center gap-2 sm:order-none sm:w-auto"
-        >
+        <form onSubmit={handleSearch} className="flex w-full items-center gap-2">
           <div className="flex flex-1 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 focus-within:border-brand-400">
             <span aria-hidden className="text-slate-400">
               🔍
@@ -75,20 +72,22 @@ export default function Header() {
           </button>
         </form>
 
-        <Link
-          href="/merchants"
-          className="flex shrink-0 items-center rounded-full bg-ember-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-ember-600"
-        >
-          List your deal
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link
+            href="/portal"
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            <span aria-hidden>👤</span>
+            {isLoggedIn ? member?.profile?.nickname || "My portal" : "Sign in"}
+          </Link>
 
-        <Link
-          href="/portal"
-          className="flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          <span aria-hidden>👤</span>
-          {isLoggedIn ? member?.profile?.nickname || "My portal" : "Sign in"}
-        </Link>
+          <Link
+            href="/merchants"
+            className="flex shrink-0 items-center rounded-full bg-ember-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-ember-600"
+          >
+            List your deal
+          </Link>
+        </div>
       </div>
     </header>
   );
