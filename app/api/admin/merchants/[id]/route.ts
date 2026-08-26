@@ -6,6 +6,7 @@ import { SITE_URL } from "@/lib/siteConfig";
 
 const ALLOWED_STATUSES = ["Pending", "Approved", "Suspended"];
 const INTRO_CREDITS = 2;
+const REFERRAL_BONUS_CREDITS: number = 2;
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   if (!isAdminRequest(req)) {
@@ -63,15 +64,47 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Merchant not found." }, { status: 404 });
   }
 
+  const becomingApproved = patch.status === "Approved" && existing.status !== "Approved";
+  const adminSetCredits = patch.creditsBalance !== undefined;
+  const existingCredits = Number(existing.creditsBalance) || 0;
+
+  // Base credits: whatever the admin explicitly set this save, or the
+  // existing balance if they left it untouched.
+  let newCredits = adminSetCredits ? patch.creditsBalance : existingCredits;
+  let introGranted = 0;
+  let referralBonusGranted = 0;
+  let referrer: any = null;
+
   // First-time approval: grant a small number of free introductory credits
   // so a newly-approved merchant can submit a deal straight away, without
   // waiting on a manual top-up. Only kicks in when the admin didn't also
   // set an explicit credits number in this same save (respecting a
   // deliberate manual entry) and the merchant currently has none.
-  const becomingApproved = patch.status === "Approved" && existing.status !== "Approved";
-  const adminSetCredits = patch.creditsBalance !== undefined;
-  if (becomingApproved && !adminSetCredits && (Number(existing.creditsBalance) || 0) === 0) {
-    patch.creditsBalance = INTRO_CREDITS;
+  if (becomingApproved && !adminSetCredits && existingCredits === 0) {
+    introGranted = INTRO_CREDITS;
+    newCredits += introGranted;
+  }
+
+  // Referral bonus: if this merchant signed up with someone else's referral
+  // code, and hasn't already been rewarded, both sides get a bonus once
+  // this merchant is approved. referralRewarded guards against granting it
+  // again on a later suspend/re-approve cycle.
+  if (becomingApproved && existing.couponCode && !existing.referralRewarded) {
+    const referrerResult = await adminClient.items
+      .query("Merchants")
+      .eq("referralCode", existing.couponCode)
+      .find();
+    referrer = (referrerResult.items ?? []).find((m: any) => m._id !== existing._id) || null;
+    if (referrer) {
+      referralBonusGranted = REFERRAL_BONUS_CREDITS;
+      newCredits += referralBonusGranted;
+      patch.referralRewarded = true;
+      patch.referredBy = referrer.businessName || referrer.email || null;
+    }
+  }
+
+  if (becomingApproved || adminSetCredits) {
+    patch.creditsBalance = newCredits;
   }
 
   const updated = await adminClient.items.update("Merchants", {
@@ -79,8 +112,39 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     ...patch,
   });
 
+  if (referrer) {
+    try {
+      const referrerFresh = await adminClient.items.get("Merchants", referrer._id);
+      if (referrerFresh) {
+        await adminClient.items.update("Merchants", {
+          ...referrerFresh,
+          creditsBalance: (Number(referrerFresh.creditsBalance) || 0) + REFERRAL_BONUS_CREDITS,
+        });
+        if (referrerFresh.email) {
+          await sendTransactionalEmail({
+            to: referrerFresh.email,
+            subject: "You earned referral credits on MegaDeal!",
+            html: `
+              <p>Hi ${referrerFresh.businessName || "there"},</p>
+              <p>Great news — a business you referred, <strong>${
+                existing.businessName || "a new business"
+              }</strong>, has been approved on MegaDeal. We've added
+              ${REFERRAL_BONUS_CREDITS} bonus deal credit${
+              REFERRAL_BONUS_CREDITS === 1 ? "" : "s"
+            } to your account. Thanks for spreading the word!</p>
+              <p><a href="${SITE_URL}/portal">View your portal</a></p>
+            `,
+          });
+        }
+      }
+    } catch (err) {
+      console.error("[admin/merchants] referral reward failed", err);
+    }
+  }
+
   if (becomingApproved && existing.email) {
     try {
+      const totalGranted = introGranted + referralBonusGranted;
       await sendTransactionalEmail({
         to: existing.email,
         subject: "You're approved! Welcome to MegaDeal",
@@ -90,10 +154,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           business portal to submit your first deal:</p>
           <p><a href="${SITE_URL}/portal">Go to your portal</a></p>
           ${
-            patch.creditsBalance
-              ? `<p>We've added ${patch.creditsBalance} free introductory deal credit${
-                  patch.creditsBalance === 1 ? "" : "s"
-                } to your account so you can get started right away.</p>`
+            totalGranted > 0
+              ? `<p>We've added ${totalGranted} free deal credit${
+                  totalGranted === 1 ? "" : "s"
+                } to your account${
+                  referralBonusGranted > 0 ? " (including a referral bonus)" : ""
+                } so you can get started right away.</p>`
               : ""
           }
         `,

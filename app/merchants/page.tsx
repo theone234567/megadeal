@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { formatMoney } from "@/lib/format";
@@ -252,7 +253,9 @@ export default function MerchantsPage() {
       {/* Signup */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
-          <MerchantSignupForm />
+          <Suspense fallback={null}>
+            <MerchantSignupForm />
+          </Suspense>
           <p className="mt-4 text-center text-xs text-slate-400">
             Already applied?{" "}
             <Link href="/portal" className="font-semibold text-brand-600 hover:underline">

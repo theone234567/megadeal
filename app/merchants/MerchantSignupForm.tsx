@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 
@@ -49,6 +50,8 @@ function OptionalTag() {
 }
 
 export default function MerchantSignupForm() {
+  const searchParams = useSearchParams();
+  const referralPrefill = searchParams.get("ref") || "";
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -247,7 +250,8 @@ export default function MerchantSignupForm() {
                 <input
                   name="couponCode"
                   type="text"
-                  placeholder="e.g. PARTNER10"
+                  defaultValue={referralPrefill}
+                  placeholder="e.g. MD1A2B3C"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
                 />
               </div>

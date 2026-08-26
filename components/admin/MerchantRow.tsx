@@ -28,6 +28,8 @@ export interface AdminMerchant {
   lng?: number;
   rating?: number | null;
   reviewCount?: number | null;
+  referralCode?: string;
+  referredBy?: string;
   [key: string]: any;
 }
 
@@ -200,6 +202,12 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
           {merchant.bio && <p className="mt-1">{merchant.bio}</p>}
           {merchant.businessHours && (
             <p className="mt-1 text-xs text-slate-500">Hours: {merchant.businessHours}</p>
+          )}
+          {merchant.referralCode && (
+            <p className="mt-1 text-xs text-slate-500">
+              🤝 Referral code: <span className="font-semibold">{merchant.referralCode}</span>
+              {merchant.referredBy && ` · Referred by ${merchant.referredBy}`}
+            </p>
           )}
           {(merchant.bookingUrl || merchant.bookingEmail) && (
             <p className="mt-1 text-xs text-slate-500">

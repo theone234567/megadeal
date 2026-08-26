@@ -7,6 +7,7 @@ import type { DealStatus } from "@/lib/types";
 import DealManageCard, { type DealRecord } from "@/components/portal/DealManageCard";
 import PhotoUploadField from "@/components/portal/PhotoUploadField";
 import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
+import ReferralCard from "@/components/portal/ReferralCard";
 
 interface MerchantRecord {
   _id: string;
@@ -28,6 +29,7 @@ interface MerchantRecord {
   status?: string;
   logoUrl?: string;
   emailVerified?: boolean;
+  referralCode?: string;
   [key: string]: any;
 }
 
@@ -227,6 +229,8 @@ export default function PortalPage() {
               )}
             </div>
           </div>
+
+          <ReferralCard referralCode={merchant.referralCode} />
 
           <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
             <MerchantProfileForm merchant={merchant} onSaved={(updated) => setMerchant(updated)} />

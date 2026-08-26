@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL } from "@/lib/siteConfig";
+import { generateReferralCode } from "@/lib/referral";
 
 const MAX_TEXT_LENGTH = 300;
 const MAX_BIO_LENGTH = 600;
@@ -89,6 +90,8 @@ export async function POST(req: NextRequest) {
     logoUrl: "",
     emailVerified: false,
     emailVerifyToken,
+    referralCode: generateReferralCode(),
+    referralRewarded: false,
   });
 
   // Best-effort: a failed send shouldn't block the application itself — the
