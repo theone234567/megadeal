@@ -134,7 +134,7 @@ export default function MerchantSignupForm() {
   }
 
   return (
-    <div id="signup" className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+    <div id="signup" className="scroll-mt-36 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
       <h3 className="text-lg font-bold text-slate-900">Sign up your business</h3>
       <p className="mt-1 text-sm text-slate-500">
         Tell us a bit about your business and we&apos;ll be in touch to set up
