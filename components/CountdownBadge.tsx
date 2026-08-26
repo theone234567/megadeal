@@ -29,8 +29,19 @@ export default function CountdownBadge({ target }: { target: Date }) {
       ? `${parts.hours}h ${parts.minutes}m`
       : `${parts.minutes}m`;
 
+  // Urgency escalates the badge color as the deal gets closer to expiring —
+  // neutral with days left, amber under a day, pulsing red under an hour.
+  const urgencyClass =
+    parts.days > 0
+      ? "bg-slate-900/80"
+      : parts.hours > 0
+      ? "bg-amber-600/90"
+      : "animate-pulse bg-red-600/90";
+
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 px-2.5 py-1 text-xs font-semibold text-white">
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold text-white transition-colors ${urgencyClass}`}
+    >
       ⏱ Ends in {label}
     </span>
   );

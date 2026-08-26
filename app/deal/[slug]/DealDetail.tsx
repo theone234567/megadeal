@@ -12,6 +12,7 @@ import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
 import CountdownBadge from "@/components/CountdownBadge";
 import DealGrid from "@/components/DealGrid";
 import ShareButtons from "@/components/ShareButtons";
+import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
 
 export default function DealDetail({ slug }: { slug: string }) {
   const [deal, setDeal] = useState<Deal | null | undefined>(undefined);
@@ -56,10 +57,10 @@ export default function DealDetail({ slug }: { slug: string }) {
 
   if (deal === undefined) {
     return (
-      <main className="mx-auto max-w-5xl animate-pulse px-4 py-10 sm:px-6 lg:px-8">
-        <div className="aspect-[16/9] w-full rounded-2xl bg-slate-200" />
-        <div className="mt-6 h-8 w-2/3 rounded bg-slate-200" />
-        <div className="mt-3 h-4 w-1/3 rounded bg-slate-200" />
+      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="animate-shimmer aspect-[16/9] w-full rounded-2xl" />
+        <div className="animate-shimmer mt-6 h-8 w-2/3 rounded" />
+        <div className="animate-shimmer mt-3 h-4 w-1/3 rounded" />
       </main>
     );
   }
@@ -167,7 +168,7 @@ export default function DealDetail({ slug }: { slug: string }) {
                 )}
                 {deal.businessHours && (
                   <p className="mt-3 flex items-start gap-2 text-sm text-slate-600">
-                    🕐 <span>{deal.businessHours}</span>
+                    <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" /> <span>{deal.businessHours}</span>
                   </p>
                 )}
                 {(deal.businessFacebookUrl || deal.businessInstagramUrl) && (
@@ -268,7 +269,7 @@ export default function DealDetail({ slug }: { slug: string }) {
               {!showContact ? (
                 <button
                   onClick={() => setShowContact(true)}
-                  className="w-full rounded-full bg-ember-500 py-3 text-center font-bold text-white shadow-card transition hover:bg-ember-600"
+                  className="w-full rounded-full bg-ember-500 py-3 text-center font-bold text-white shadow-card transition hover:bg-ember-600 active:scale-95"
                 >
                   Get this deal
                 </button>
@@ -288,9 +289,9 @@ export default function DealDetail({ slug }: { slug: string }) {
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-1 flex items-center justify-center gap-2 rounded-full bg-brand-600 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700"
+                      className="mt-1 flex items-center justify-center gap-2 rounded-full bg-brand-600 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95"
                     >
-                      📅 Book now
+                      <CalendarIcon className="h-4 w-4" /> Book now
                     </a>
                   )}
                   {deal.businessPhone && (
@@ -298,7 +299,7 @@ export default function DealDetail({ slug }: { slug: string }) {
                       href={`tel:${deal.businessPhone.replace(/[^0-9+]/g, "")}`}
                       className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
                     >
-                      📞 {deal.businessPhone}
+                      <PhoneIcon className="h-4 w-4 shrink-0" /> {deal.businessPhone}
                     </a>
                   )}
                   {deal.businessBookingEmail && (
@@ -306,7 +307,7 @@ export default function DealDetail({ slug }: { slug: string }) {
                       href={`mailto:${deal.businessBookingEmail}`}
                       className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
                     >
-                      ✉️ {deal.businessBookingEmail}
+                      <MailIcon className="h-4 w-4 shrink-0" /> {deal.businessBookingEmail}
                     </a>
                   )}
                   {deal.businessWebsite && (
@@ -320,13 +321,13 @@ export default function DealDetail({ slug }: { slug: string }) {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
                     >
-                      🌐 Visit website
+                      <GlobeIcon className="h-4 w-4 shrink-0" /> Visit website
                     </a>
                   )}
                   {deal.businessAddress && (
                     <div className="text-sm text-brand-700">
                       <p className="flex items-center gap-2">
-                        📍 {deal.businessAddress}
+                        <MapPinIcon className="h-4 w-4 shrink-0" /> {deal.businessAddress}
                         {deal.businessCity ? `, ${deal.businessCity}` : ""}
                       </p>
                       {(mapUrl || directionsUrl) && (

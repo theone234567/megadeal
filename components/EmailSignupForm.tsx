@@ -91,7 +91,7 @@ export default function EmailSignupForm({
           <button
             type="submit"
             disabled={state === "saving" || !consent}
-            className={`shrink-0 rounded-full px-5 py-3 text-sm font-bold text-white shadow-card transition disabled:opacity-60 ${buttonClass}`}
+            className={`shrink-0 rounded-full px-5 py-3 text-sm font-bold text-white shadow-card transition active:scale-95 disabled:opacity-60 ${buttonClass}`}
           >
             {state === "saving" ? "Joining…" : buttonLabel}
           </button>

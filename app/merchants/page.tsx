@@ -74,13 +74,13 @@ export default function MerchantsPage() {
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#signup"
-              className="flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-brand-700 shadow-card transition hover:bg-brand-50"
+              className="flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-brand-700 shadow-card transition active:scale-95 hover:bg-brand-50"
             >
               🚀 Sign up your business
             </a>
             <a
               href="#preview"
-              className="flex items-center gap-2 rounded-full border-2 border-white/70 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+              className="flex items-center gap-2 rounded-full border-2 border-white/70 px-6 py-3 text-sm font-bold text-white transition active:scale-95 hover:bg-white/10"
             >
               See a preview ↓
             </a>
@@ -108,7 +108,7 @@ export default function MerchantsPage() {
           </div>
           <a
             href="#signup"
-            className="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-bold text-ember-600 shadow-card transition hover:bg-ember-50"
+            className="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-bold text-ember-600 shadow-card transition active:scale-95 hover:bg-ember-50"
           >
             Claim your free advertising →
           </a>

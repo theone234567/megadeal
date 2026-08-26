@@ -6,6 +6,7 @@ import { fetchBusinessProfileBySlug } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
 import DealGrid from "@/components/DealGrid";
+import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
 
 export async function generateMetadata({
   params,
@@ -116,7 +117,11 @@ export default async function BusinessProfilePage({
               {business.businessName}
             </h1>
             <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-              {business.city && <span>📍 {business.city}</span>}
+              {business.city && (
+                <span className="flex items-center gap-1">
+                  <MapPinIcon className="h-3.5 w-3.5" /> {business.city}
+                </span>
+              )}
               {business.priceRange && (
                 <span className="font-semibold text-slate-600">{business.priceRange}</span>
               )}
@@ -153,9 +158,9 @@ export default async function BusinessProfilePage({
                     href={business.bookingUrl.startsWith("http") ? business.bookingUrl : `https://${business.bookingUrl}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mb-1 flex items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-2 font-bold text-white transition hover:bg-brand-700"
+                    className="mb-1 flex items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-2 font-bold text-white transition hover:bg-brand-700 active:scale-95"
                   >
-                    📅 Book now
+                    <CalendarIcon className="h-4 w-4" /> Book now
                   </a>
                 )}
                 {business.phone && (
@@ -163,7 +168,7 @@ export default async function BusinessProfilePage({
                     href={`tel:${business.phone.replace(/[^0-9+]/g, "")}`}
                     className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
                   >
-                    📞 {business.phone}
+                    <PhoneIcon className="h-4 w-4 shrink-0" /> {business.phone}
                   </a>
                 )}
                 {business.bookingEmail && (
@@ -171,7 +176,7 @@ export default async function BusinessProfilePage({
                     href={`mailto:${business.bookingEmail}`}
                     className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
                   >
-                    ✉️ {business.bookingEmail}
+                    <MailIcon className="h-4 w-4 shrink-0" /> {business.bookingEmail}
                   </a>
                 )}
                 {business.website && (
@@ -181,13 +186,13 @@ export default async function BusinessProfilePage({
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
                   >
-                    🌐 Visit website
+                    <GlobeIcon className="h-4 w-4 shrink-0" /> Visit website
                   </a>
                 )}
                 {business.address && (
                   <div>
                     <p className="flex items-center gap-2 text-slate-600">
-                      📍 {business.address}
+                      <MapPinIcon className="h-4 w-4 shrink-0" /> {business.address}
                       {business.city ? `, ${business.city}` : ""}
                     </p>
                     {(mapUrl || directionsUrl) && (
@@ -218,7 +223,7 @@ export default async function BusinessProfilePage({
               <div className="space-y-1.5 text-sm">
                 {business.businessHours && (
                   <p className="flex items-start gap-2 text-slate-600">
-                    🕐 <span>{business.businessHours}</span>
+                    <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" /> <span>{business.businessHours}</span>
                   </p>
                 )}
                 {hasSocial && (

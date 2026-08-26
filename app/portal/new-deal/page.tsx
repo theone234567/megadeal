@@ -237,7 +237,7 @@ export default function NewDealPage() {
               )}
               <div className="absolute left-2 top-2 flex flex-col gap-1">
                 {isFlash && (
-                  <span className="animate-pulse rounded-full bg-brand-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+                  <span className="inline-block animate-flash-zap rounded-full bg-brand-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
                     ⚡ FLASH
                   </span>
                 )}
@@ -311,7 +311,7 @@ export default function NewDealPage() {
             type="button"
             onClick={handleSubmit}
             disabled={submitting}
-            className="rounded-full bg-brand-600 px-8 py-3 text-center text-sm font-bold text-white shadow-card transition hover:bg-brand-700 disabled:opacity-60 sm:ml-auto"
+            className="rounded-full bg-brand-600 px-8 py-3 text-center text-sm font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60 sm:ml-auto"
           >
             {submitting ? "Submitting…" : "Submit deal for approval"}
           </button>
@@ -502,7 +502,7 @@ export default function NewDealPage() {
 
         <button
           type="submit"
-          className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 sm:w-auto sm:px-8"
+          className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 sm:w-auto sm:px-8"
         >
           Preview deal →
         </button>

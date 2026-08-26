@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import ElephantMascot from "@/components/ElephantMascot";
+import { SearchIcon, UserIcon } from "@/components/icons";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
@@ -41,20 +42,19 @@ export default function Header() {
             href="/portal"
             className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-brand-700"
           >
-            <span aria-hidden>👤</span>
+            <UserIcon className="h-4 w-4" />
             {isLoggedIn ? member?.profile?.nickname || "My portal" : "Business sign in"}
           </Link>
         </div>
 
         <form onSubmit={handleSearch} className="flex w-full items-center gap-2">
           <div className="flex flex-1 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 focus-within:border-brand-400">
-            <span aria-hidden className="text-slate-400">
-              🔍
-            </span>
+            <SearchIcon className="h-4 w-4 shrink-0 text-slate-400" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               type="search"
+              aria-label="Search deals"
               placeholder="Search massages, dinners, getaways…"
               className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
             />
@@ -74,7 +74,7 @@ export default function Header() {
           </select>
           <button
             type="submit"
-            className="shrink-0 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
+            className="shrink-0 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-95"
           >
             Search
           </button>

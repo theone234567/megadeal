@@ -514,7 +514,7 @@ export default function MerchantSignupForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 disabled:opacity-60 sm:w-auto sm:px-8"
+          className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60 sm:w-auto sm:px-8"
         >
           {submitting ? "Submitting…" : "Submit application"}
         </button>
