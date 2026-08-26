@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { sendTransactionalEmail } from "@/lib/sendEmail";
+import { SITE_URL } from "@/lib/siteConfig";
 
 const ALLOWED_STATUSES = ["Pending", "Approved", "Suspended"];
+const INTRO_CREDITS = 2;
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   if (!isAdminRequest(req)) {
@@ -60,9 +63,45 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Merchant not found." }, { status: 404 });
   }
 
+  // First-time approval: grant a small number of free introductory credits
+  // so a newly-approved merchant can submit a deal straight away, without
+  // waiting on a manual top-up. Only kicks in when the admin didn't also
+  // set an explicit credits number in this same save (respecting a
+  // deliberate manual entry) and the merchant currently has none.
+  const becomingApproved = patch.status === "Approved" && existing.status !== "Approved";
+  const adminSetCredits = patch.creditsBalance !== undefined;
+  if (becomingApproved && !adminSetCredits && (Number(existing.creditsBalance) || 0) === 0) {
+    patch.creditsBalance = INTRO_CREDITS;
+  }
+
   const updated = await adminClient.items.update("Merchants", {
     ...existing,
     ...patch,
   });
+
+  if (becomingApproved && existing.email) {
+    try {
+      await sendTransactionalEmail({
+        to: existing.email,
+        subject: "You're approved! Welcome to MegaDeal",
+        html: `
+          <p>Hi ${existing.businessName || "there"},</p>
+          <p>Good news — your business is approved on MegaDeal. Log in to your
+          business portal to submit your first deal:</p>
+          <p><a href="${SITE_URL}/portal">Go to your portal</a></p>
+          ${
+            patch.creditsBalance
+              ? `<p>We've added ${patch.creditsBalance} free introductory deal credit${
+                  patch.creditsBalance === 1 ? "" : "s"
+                } to your account so you can get started right away.</p>`
+              : ""
+          }
+        `,
+      });
+    } catch (err) {
+      console.error("[admin/merchants] approval email failed", err);
+    }
+  }
+
   return NextResponse.json({ item: updated });
 }
