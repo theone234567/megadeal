@@ -4,16 +4,18 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getPublicWixClient } from "@/lib/wixClient";
-import { fetchDealBySlug } from "@/lib/fetchDeals";
+import { fetchDealBySlug, fetchDeals } from "@/lib/fetchDeals";
 import type { Deal } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
 import { dealEndsAt } from "@/lib/socialProof";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
 import CountdownBadge from "@/components/CountdownBadge";
+import DealGrid from "@/components/DealGrid";
 
 export default function DealDetail({ slug }: { slug: string }) {
   const [deal, setDeal] = useState<Deal | null | undefined>(undefined);
   const [showContact, setShowContact] = useState(false);
+  const [related, setRelated] = useState<Deal[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -25,6 +27,31 @@ export default function DealDetail({ slug }: { slug: string }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
+
+  useEffect(() => {
+    if (!deal) {
+      setRelated(null);
+      return;
+    }
+    let cancelled = false;
+    fetchDeals(getPublicWixClient())
+      .then((all) => {
+        if (cancelled) return;
+        const others = all.filter((d) => d.id !== deal.id);
+        const sameCategory = others.filter((d) =>
+          d.categories.some((c) => deal.categories.includes(c))
+        );
+        const pool = sameCategory.length > 0 ? sameCategory : others;
+        setRelated(pool.slice(0, 4));
+      })
+      .catch(() => {
+        if (!cancelled) setRelated([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deal?.id]);
 
   if (deal === undefined) {
     return (
@@ -354,6 +381,13 @@ export default function DealDetail({ slug }: { slug: string }) {
           </div>
         </div>
       </div>
+
+      {related && related.length > 0 && (
+        <div className="mt-10 border-t border-slate-100 pt-8">
+          <h2 className="mb-5 text-xl font-bold text-slate-900">You might also like</h2>
+          <DealGrid deals={related} />
+        </div>
+      )}
     </main>
   );
 }
