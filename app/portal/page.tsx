@@ -27,6 +27,7 @@ interface MerchantRecord {
   creditsBalance?: number;
   status?: string;
   logoUrl?: string;
+  emailVerified?: boolean;
   [key: string]: any;
 }
 
@@ -215,6 +216,15 @@ export default function PortalPage() {
               <p className="mt-1 text-sm text-slate-500">
                 We&apos;ll email you once your first deal is ready to go live.
               </p>
+              {merchant.emailVerified ? (
+                <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
+                  ✓ Email verified
+                </p>
+              ) : (
+                <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                  ⏳ Check your inbox to verify your email
+                </p>
+              )}
             </div>
           </div>
 

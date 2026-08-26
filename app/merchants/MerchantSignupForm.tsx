@@ -100,10 +100,12 @@ export default function MerchantSignupForm() {
           Thanks — we&apos;ve got your details!
         </h3>
         <p className="mt-2 text-sm text-brand-700">
-          Our merchant team will review your business and be in touch by
-          email within a couple of business days to talk through your first
-          deal. You can check your application status and deal credits
-          anytime in your{" "}
+          We&apos;ve sent a verification email to the address you entered —
+          click the link in it to confirm it&apos;s really you. Our merchant
+          team will also review your business and be in touch by email
+          within a couple of business days to talk through your first deal.
+          You can check your application status and deal credits anytime in
+          your{" "}
           <a href="/portal" className="font-semibold underline">
             merchant portal
           </a>

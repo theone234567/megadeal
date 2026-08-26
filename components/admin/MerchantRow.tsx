@@ -21,6 +21,7 @@ export interface AdminMerchant {
   instagramUrl?: string;
   priceRange?: string;
   amenities?: string;
+  emailVerified?: boolean;
   [key: string]: any;
 }
 
@@ -84,6 +85,15 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
               {merchant.businessName || "—"} {hasProfileDetails && (detailsOpen ? "▲" : "▼")}
             </p>
             <p className="text-xs text-slate-400">{merchant.email}</p>
+            {merchant.emailVerified ? (
+              <p className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
+                ✓ Email verified
+              </p>
+            ) : (
+              <p className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                ⏳ Email pending verification
+              </p>
+            )}
             {!merchant._owner && (
               <p
                 className="mt-0.5 text-xs font-semibold text-amber-700"

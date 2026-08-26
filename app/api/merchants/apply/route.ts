@@ -1,5 +1,8 @@
+import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { sendTransactionalEmail } from "@/lib/sendEmail";
+import { SITE_URL } from "@/lib/siteConfig";
 
 const MAX_TEXT_LENGTH = 300;
 const MAX_BIO_LENGTH = 600;
@@ -52,6 +55,7 @@ export async function POST(req: NextRequest) {
   }
 
   const adminClient = createWixAdminClient();
+  const emailVerifyToken = randomBytes(32).toString("hex");
 
   const item = await adminClient.items.insert("Merchants", {
     businessName,
@@ -71,7 +75,28 @@ export async function POST(req: NextRequest) {
     creditsBalance: 0,
     status: "Pending",
     logoUrl: "",
+    emailVerified: false,
+    emailVerifyToken,
   });
+
+  // Best-effort: a failed send shouldn't block the application itself — the
+  // record just stays unverified, visible to admins, and can be resolved
+  // manually if it ever comes up.
+  try {
+    const verifyUrl = `${SITE_URL}/api/merchants/verify-email?token=${emailVerifyToken}`;
+    await sendTransactionalEmail({
+      to: email,
+      subject: "Confirm your email for MegaDeal",
+      html: `
+        <p>Hi ${businessName ? businessName : "there"},</p>
+        <p>Thanks for applying to list your business on MegaDeal. Please confirm this is your email address:</p>
+        <p><a href="${verifyUrl}">Verify your email</a></p>
+        <p>If you didn't apply to MegaDeal, you can ignore this email.</p>
+      `,
+    });
+  } catch (err) {
+    console.error("[merchants/apply] verification email failed", err);
+  }
 
   return NextResponse.json({ item });
 }
