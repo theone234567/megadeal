@@ -4,6 +4,7 @@ import { useState } from "react";
 
 export interface AdminMerchant {
   _id: string;
+  _owner?: string;
   businessName?: string;
   email?: string;
   phone?: string;
@@ -83,6 +84,14 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
               {merchant.businessName || "—"} {hasProfileDetails && (detailsOpen ? "▲" : "▼")}
             </p>
             <p className="text-xs text-slate-400">{merchant.email}</p>
+            {!merchant._owner && (
+              <p
+                className="mt-0.5 text-xs font-semibold text-amber-700"
+                title="No one has signed in with this business's email yet, so it isn't linked to any account. It'll link automatically the first time they sign in with a matching email."
+              >
+                ⚠️ Unclaimed — no account signed in yet
+              </p>
+            )}
           </div>
         </button>
       </td>
