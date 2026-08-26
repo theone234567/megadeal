@@ -62,8 +62,8 @@ export default function HomeDeals() {
   const heading = query
     ? `Results for “${searchParams.get("q")}”`
     : city
-    ? `Today's top deals in ${searchParams.get("city")}`
-    : "Today's top deals";
+    ? `All deals in ${searchParams.get("city")}`
+    : "All deals";
 
   return (
     <>

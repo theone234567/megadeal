@@ -6,6 +6,7 @@ import { CATEGORY_ID_BY_NAME } from "@/lib/categories";
 import { getOrClaimMerchant } from "@/lib/merchant";
 
 const MAX_DURATION_DAYS = 365;
+const MAX_DURATION_MINUTES = 24 * 60;
 const WIX_STORES_APP_ID = "215238eb-22a5-4c36-9e7b-e7c08025e04e";
 
 /**
@@ -37,7 +38,9 @@ export async function POST(req: NextRequest) {
   const terms = String(body.terms || "").trim();
   const priceNow = Number(body.priceNow);
   const priceWas = body.priceWas !== undefined && body.priceWas !== "" ? Number(body.priceWas) : undefined;
+  const isFlash = Boolean(body.isFlash);
   const durationDays = Number(body.durationDays);
+  const durationMinutes = Number(body.durationMinutes);
   const quantityAvailable =
     body.quantityAvailable !== undefined && body.quantityAvailable !== ""
       ? Number(body.quantityAvailable)
@@ -59,7 +62,11 @@ export async function POST(req: NextRequest) {
   if (priceWas !== undefined && (!Number.isFinite(priceWas) || priceWas < priceNow)) {
     return NextResponse.json({ error: "Original price must be at least the deal price." }, { status: 400 });
   }
-  if (!Number.isFinite(durationDays) || durationDays < 1 || durationDays > MAX_DURATION_DAYS) {
+  if (isFlash) {
+    if (!Number.isFinite(durationMinutes) || durationMinutes < 1 || durationMinutes > MAX_DURATION_MINUTES) {
+      return NextResponse.json({ error: "Choose a valid flash deal duration." }, { status: 400 });
+    }
+  } else if (!Number.isFinite(durationDays) || durationDays < 1 || durationDays > MAX_DURATION_DAYS) {
     return NextResponse.json({ error: "Choose a valid duration." }, { status: 400 });
   }
   if (quantityAvailable !== undefined && (!Number.isFinite(quantityAvailable) || quantityAvailable < 1)) {
@@ -156,7 +163,9 @@ export async function POST(req: NextRequest) {
     console.error("[deals/create] category assignment failed", err);
   }
 
-  const expiresAt = new Date(Date.now() + durationDays * 86_400_000).toISOString();
+  const expiresAt = new Date(
+    Date.now() + (isFlash ? durationMinutes * 60_000 : durationDays * 86_400_000)
+  ).toISOString();
 
   const deal = await adminClient.items.insert("Deals", {
     dealName,
@@ -170,6 +179,7 @@ export async function POST(req: NextRequest) {
     merchantEmail: member.email,
     status: "Pending Approval",
     productId,
+    isFlash,
   });
 
   await adminClient.items.update("Merchants", {

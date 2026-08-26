@@ -85,6 +85,7 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
           )}
           <div>
             <p className="font-semibold text-slate-800">
+              {deal.isFlash && <span className="mr-1 text-brand-600">⚡</span>}
               {deal.dealName || "Untitled"} {hasDetails && (detailsOpen ? "▲" : "▼")}
             </p>
             <p className="text-xs text-slate-400">{deal.productId ? `${deal.productId.slice(0, 8)}…` : "no linked product"}</p>

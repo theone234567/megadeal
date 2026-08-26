@@ -18,6 +18,7 @@ export interface Deal {
   inStock: boolean;
   expiresAt: string | null;
   status: DealStatus | null;
+  isFlash: boolean;
   businessName: string | null;
   businessLogoUrl: string | null;
   businessWebsite: string | null;

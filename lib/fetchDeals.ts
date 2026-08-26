@@ -9,6 +9,7 @@ interface DealMeta {
   expiresAt: string | null;
   status: DealStatus | null;
   photoUrl: string | null;
+  isFlash: boolean;
 }
 
 /**
@@ -29,6 +30,7 @@ async function fetchDealMetaMap(client: WixClient): Promise<Record<string, DealM
           expiresAt: item.expiresAt ?? null,
           status: item.status ?? null,
           photoUrl: item.photoUrl || null,
+          isFlash: Boolean(item.isFlash),
         };
       }
     }
@@ -45,6 +47,7 @@ function applyMeta(deal: Deal, meta: DealMeta | undefined): Deal {
     expiresAt: meta.expiresAt,
     status: meta.status,
     image: meta.photoUrl || deal.image,
+    isFlash: meta.isFlash,
   };
 }
 
@@ -189,6 +192,7 @@ export async function fetchDealBySlug(
             expiresAt: record.expiresAt ?? null,
             status: record.status ?? null,
             photoUrl: record.photoUrl || null,
+            isFlash: Boolean(record.isFlash),
           }
         : undefined);
       if (!isPubliclyVisible(merged)) return null;

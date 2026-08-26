@@ -15,6 +15,13 @@ const DURATIONS = [
   { label: "3 months", days: 90 },
 ];
 
+const FLASH_DURATIONS = [
+  { label: "30 minutes", minutes: 30 },
+  { label: "1 hour", minutes: 60 },
+  { label: "2 hours", minutes: 120 },
+  { label: "4 hours", minutes: 240 },
+];
+
 interface MerchantRecord {
   _id: string;
   status?: string;
@@ -34,6 +41,8 @@ export default function NewDealPage() {
   const [priceNow, setPriceNow] = useState("");
   const [priceWas, setPriceWas] = useState("");
   const [durationDays, setDurationDays] = useState(30);
+  const [isFlash, setIsFlash] = useState(false);
+  const [durationMinutes, setDurationMinutes] = useState(60);
   const [quantityAvailable, setQuantityAvailable] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -80,7 +89,8 @@ export default function NewDealPage() {
           terms,
           priceNow: Number(priceNow),
           priceWas: priceWas ? Number(priceWas) : undefined,
-          durationDays,
+          isFlash,
+          ...(isFlash ? { durationMinutes } : { durationDays }),
           quantityAvailable: quantityAvailable ? Number(quantityAvailable) : undefined,
           photoUrl: uploaded?.url || "",
           photoMediaId: uploaded?.id || "",
@@ -265,20 +275,52 @@ export default function NewDealPage() {
           </div>
         </div>
 
+        <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-3">
+          <label className="flex cursor-pointer items-start gap-2">
+            <input
+              type="checkbox"
+              checked={isFlash}
+              onChange={(e) => setIsFlash(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+            />
+            <span>
+              <span className="block text-sm font-bold text-slate-900">⚡ Make this a Flash Deal</span>
+              <span className="block text-xs text-slate-500">
+                Short burst offer (minutes to hours) — great for filling quiet
+                spots, e.g. &quot;2-for-1 tonight only&quot;. Shows an animated FLASH badge.
+              </span>
+            </span>
+          </label>
+        </div>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">Duration</label>
-            <select
-              value={durationDays}
-              onChange={(e) => setDurationDays(Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
-            >
-              {DURATIONS.map((d) => (
-                <option key={d.days} value={d.days}>
-                  {d.label}
-                </option>
-              ))}
-            </select>
+            {isFlash ? (
+              <select
+                value={durationMinutes}
+                onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+              >
+                {FLASH_DURATIONS.map((d) => (
+                  <option key={d.minutes} value={d.minutes}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <select
+                value={durationDays}
+                onChange={(e) => setDurationDays(Number(e.target.value))}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+              >
+                {DURATIONS.map((d) => (
+                  <option key={d.days} value={d.days}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">

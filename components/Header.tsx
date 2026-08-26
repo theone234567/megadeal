@@ -34,7 +34,7 @@ export default function Header() {
             <span className="-rotate-2 rounded-full bg-ember-500 px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-white shadow-card">
               Deal
             </span>
-            <ElephantMascot className="-ml-1 -rotate-3" />
+            <ElephantMascot className="ml-1.5 -rotate-3" />
           </Link>
 
           <Link

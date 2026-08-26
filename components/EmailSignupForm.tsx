@@ -106,6 +106,10 @@ export default function EmailSignupForm({
           />
           <span>
             I agree to receive deal emails from MegaDeal and have read the{" "}
+            <a href="/terms" className={linkClass}>
+              terms
+            </a>{" "}
+            and{" "}
             <a href="/privacy" className={linkClass}>
               privacy policy
             </a>

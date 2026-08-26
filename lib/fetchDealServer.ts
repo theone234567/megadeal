@@ -34,6 +34,7 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
         expiresAt: record.expiresAt ?? null,
         status: record.status ?? null,
         image: record.photoUrl || deal.image,
+        isFlash: Boolean(record.isFlash),
       };
     }
 
@@ -167,6 +168,7 @@ export async function fetchBusinessProfileBySlug(
           expiresAt: record.expiresAt ?? null,
           status: record.status ?? null,
           image: record.photoUrl || undefined,
+          isFlash: Boolean(record.isFlash),
           businessName: business.businessName,
           businessLogoUrl: business.logoUrl,
           businessWebsite: business.website,

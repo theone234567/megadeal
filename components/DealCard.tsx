@@ -27,6 +27,11 @@ export default function DealCard({ deal }: { deal: Deal }) {
         )}
 
         <div className="absolute left-2 top-2 flex flex-col gap-1">
+          {deal.isFlash && (
+            <span className="animate-pulse rounded-full bg-brand-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+              ⚡ FLASH
+            </span>
+          )}
           {deal.discountPercent > 0 && (
             <span className="rounded-full bg-ember-500 px-2.5 py-1 text-xs font-extrabold text-white shadow">
               {deal.discountPercent}% OFF
