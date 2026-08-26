@@ -11,6 +11,7 @@ import { dealEndsAt } from "@/lib/socialProof";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
 import CountdownBadge from "@/components/CountdownBadge";
 import DealGrid from "@/components/DealGrid";
+import ShareButtons from "@/components/ShareButtons";
 
 export default function DealDetail({ slug }: { slug: string }) {
   const [deal, setDeal] = useState<Deal | null | undefined>(undefined);
@@ -260,6 +261,8 @@ export default function DealDetail({ slug }: { slug: string }) {
               Price paid directly to {deal.businessName || "the business"} — MegaDeal
               doesn&apos;t process any payment.
             </p>
+
+            <ShareButtons title={deal.name} className="mt-4" />
 
             <div className="mt-6">
               {!showContact ? (

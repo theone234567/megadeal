@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Hero from "@/components/Hero";
 import CategoryNav from "@/components/CategoryNav";
 import FlashDeals from "@/components/FlashDeals";
+import SocialCTA from "@/components/SocialCTA";
 import HomeDeals from "./HomeDeals";
 
 export default function HomePage() {
@@ -15,6 +16,7 @@ export default function HomePage() {
           <HomeDeals />
         </Suspense>
       </div>
+      <SocialCTA />
     </main>
   );
 }
