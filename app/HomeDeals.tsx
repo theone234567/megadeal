@@ -5,8 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDeals } from "@/lib/fetchDeals";
 import type { Deal } from "@/lib/types";
+import { sortDeals, type SortOption } from "@/lib/sortDeals";
 import DealGrid from "@/components/DealGrid";
 import DealGridSkeleton from "@/components/DealGridSkeleton";
+import SortSelect from "@/components/SortSelect";
 
 export default function HomeDeals() {
   const searchParams = useSearchParams();
@@ -15,6 +17,7 @@ export default function HomeDeals() {
 
   const [deals, setDeals] = useState<Deal[] | null>(null);
   const [error, setError] = useState(false);
+  const [sort, setSort] = useState<SortOption>("ending");
 
   useEffect(() => {
     let cancelled = false;
@@ -65,10 +68,15 @@ export default function HomeDeals() {
     ? `All deals in ${searchParams.get("city")}`
     : "All deals";
 
+  const sorted = sortDeals(filtered, sort);
+
   return (
     <>
-      <h2 className="mb-5 text-xl font-bold text-slate-900">{heading}</h2>
-      <DealGrid deals={filtered} />
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-xl font-bold text-slate-900">{heading}</h2>
+        <SortSelect value={sort} onChange={setSort} />
+      </div>
+      <DealGrid deals={sorted} />
     </>
   );
 }

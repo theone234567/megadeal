@@ -36,4 +36,6 @@ export interface Deal {
   businessBookingEmail: string | null;
   businessLat: number | null;
   businessLng: number | null;
+  businessRating: number | null;
+  businessReviewCount: number | null;
 }

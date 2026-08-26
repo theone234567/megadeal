@@ -69,6 +69,8 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
           businessBookingEmail: merchant.bookingEmail || null,
           businessLat: typeof merchant.lat === "number" ? merchant.lat : null,
           businessLng: typeof merchant.lng === "number" ? merchant.lng : null,
+          businessRating: typeof merchant.rating === "number" ? merchant.rating : null,
+          businessReviewCount: typeof merchant.reviewCount === "number" ? merchant.reviewCount : null,
         };
       }
     }
@@ -98,6 +100,8 @@ export interface BusinessProfile {
   bookingEmail: string | null;
   lat: number | null;
   lng: number | null;
+  rating: number | null;
+  reviewCount: number | null;
 }
 
 /**
@@ -145,6 +149,8 @@ export async function fetchBusinessProfileBySlug(
       bookingEmail: merchant.bookingEmail || null,
       lat: typeof merchant.lat === "number" ? merchant.lat : null,
       lng: typeof merchant.lng === "number" ? merchant.lng : null,
+      rating: typeof merchant.rating === "number" ? merchant.rating : null,
+      reviewCount: typeof merchant.reviewCount === "number" ? merchant.reviewCount : null,
     };
 
     const dealsResult = await adminClient.items
@@ -186,6 +192,8 @@ export async function fetchBusinessProfileBySlug(
           businessBookingEmail: business.bookingEmail,
           businessLat: business.lat,
           businessLng: business.lng,
+          businessRating: business.rating,
+          businessReviewCount: business.reviewCount,
         } as Deal);
       } catch {
         // Skip products that fail to hydrate rather than failing the page.

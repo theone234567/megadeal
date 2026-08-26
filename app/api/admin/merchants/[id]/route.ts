@@ -28,6 +28,28 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
     patch.creditsBalance = credits;
   }
+  if (body.rating !== undefined) {
+    if (body.rating === null || body.rating === "") {
+      patch.rating = null;
+    } else {
+      const rating = Number(body.rating);
+      if (!Number.isFinite(rating) || rating < 0 || rating > 5) {
+        return NextResponse.json({ error: "Rating must be between 0 and 5." }, { status: 400 });
+      }
+      patch.rating = rating;
+    }
+  }
+  if (body.reviewCount !== undefined) {
+    if (body.reviewCount === null || body.reviewCount === "") {
+      patch.reviewCount = null;
+    } else {
+      const reviewCount = Number(body.reviewCount);
+      if (!Number.isFinite(reviewCount) || reviewCount < 0) {
+        return NextResponse.json({ error: "Invalid review count." }, { status: 400 });
+      }
+      patch.reviewCount = reviewCount;
+    }
+  }
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }

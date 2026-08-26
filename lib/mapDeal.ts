@@ -76,5 +76,7 @@ export function mapProductToDeal(product: any, categoryNamesById?: Record<string
     businessBookingEmail: null,
     businessLat: null,
     businessLng: null,
+    businessRating: null,
+    businessReviewCount: null,
   };
 }

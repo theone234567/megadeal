@@ -5,8 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDeals } from "@/lib/fetchDeals";
 import type { Deal } from "@/lib/types";
+import { sortDeals, type SortOption } from "@/lib/sortDeals";
 import DealGrid from "@/components/DealGrid";
 import DealGridSkeleton from "@/components/DealGridSkeleton";
+import SortSelect from "@/components/SortSelect";
 
 export default function CategoryDeals({ category }: { category: string }) {
   const searchParams = useSearchParams();
@@ -14,6 +16,7 @@ export default function CategoryDeals({ category }: { category: string }) {
 
   const [deals, setDeals] = useState<Deal[] | null>(null);
   const [error, setError] = useState(false);
+  const [sort, setSort] = useState<SortOption>("ending");
 
   useEffect(() => {
     let cancelled = false;
@@ -53,5 +56,16 @@ export default function CategoryDeals({ category }: { category: string }) {
     ? `No deals in ${category} in ${searchParams.get("city")} right now — check back soon!`
     : `No deals in ${category} right now — check back soon!`;
 
-  return <DealGrid deals={filtered} emptyMessage={emptyMessage} />;
+  const sorted = sortDeals(filtered, sort);
+
+  return (
+    <>
+      {filtered.length > 0 && (
+        <div className="mb-5 flex justify-end">
+          <SortSelect value={sort} onChange={setSort} />
+        </div>
+      )}
+      <DealGrid deals={sorted} emptyMessage={emptyMessage} />
+    </>
+  );
 }

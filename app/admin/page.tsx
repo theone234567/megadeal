@@ -14,6 +14,10 @@ export default function AdminDashboardPage() {
   const [subscribers, setSubscribers] = useState<AdminSubscriber[] | null>(null);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [merchantSearch, setMerchantSearch] = useState("");
+  const [dealSearch, setDealSearch] = useState("");
+  const [bulkApproving, setBulkApproving] = useState(false);
+  const [dealsRefreshKey, setDealsRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +61,55 @@ export default function AdminDashboardPage() {
 
   const pendingMerchants = merchants?.filter((m) => (m.status || "Pending") === "Pending").length ?? 0;
   const pendingDeals = deals?.filter((d) => (d.status || "Live") === "Pending Approval").length ?? 0;
+
+  const merchantQuery = merchantSearch.toLowerCase().trim();
+  const filteredMerchants = merchants?.filter((m) => {
+    if (!merchantQuery) return true;
+    return (
+      (m.businessName || "").toLowerCase().includes(merchantQuery) ||
+      (m.email || "").toLowerCase().includes(merchantQuery)
+    );
+  });
+
+  const dealQuery = dealSearch.toLowerCase().trim();
+  const filteredDeals = deals?.filter((d) => {
+    if (!dealQuery) return true;
+    return (
+      (d.dealName || "").toLowerCase().includes(dealQuery) ||
+      (d.merchantEmail || "").toLowerCase().includes(dealQuery)
+    );
+  });
+
+  async function handleBulkApprove() {
+    if (!deals) return;
+    const pending = deals.filter((d) => (d.status || "Live") === "Pending Approval");
+    if (pending.length === 0) return;
+    setBulkApproving(true);
+    try {
+      await Promise.all(
+        pending.map((d) =>
+          fetch(`/api/admin/deals/${d._id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "Live" }),
+          })
+        )
+      );
+      // Refetch rather than patch local state — DealRow keeps its own
+      // status state initialized from the deal prop on mount, so a purely
+      // local update here wouldn't be reflected in each row's dropdown.
+      const res = await fetch("/api/admin/deals");
+      if (res.ok) {
+        const data = await res.json();
+        setDeals(data.items ?? []);
+        // DealRow keys include this so the rows remount and re-sync their
+        // internal status state from the freshly-fetched props.
+        setDealsRefreshKey((k) => k + 1);
+      }
+    } finally {
+      setBulkApproving(false);
+    }
+  }
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -106,23 +159,37 @@ export default function AdminDashboardPage() {
           ) : merchants.length === 0 ? (
             <p className="text-sm text-slate-500">No merchant applications yet.</p>
           ) : (
-            <table className="w-full min-w-[720px] text-left text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
-                  <th className="pb-2 pr-4">Business</th>
-                  <th className="pb-2 pr-4">Address</th>
-                  <th className="pb-2 pr-4">Coupon</th>
-                  <th className="pb-2 pr-4">Credits</th>
-                  <th className="pb-2 pr-4">Status</th>
-                  <th className="pb-2">Save</th>
-                </tr>
-              </thead>
-              <tbody>
-                {merchants.map((m) => (
-                  <MerchantRow key={m._id} merchant={m} />
-                ))}
-              </tbody>
-            </table>
+            <>
+              <input
+                type="search"
+                value={merchantSearch}
+                onChange={(e) => setMerchantSearch(e.target.value)}
+                placeholder="Search by business name or email…"
+                className="mb-4 w-full max-w-sm rounded-full border border-slate-200 px-4 py-2 text-sm outline-none focus:border-brand-400"
+              />
+              {filteredMerchants && filteredMerchants.length === 0 ? (
+                <p className="text-sm text-slate-500">No merchants match &quot;{merchantSearch}&quot;.</p>
+              ) : (
+                <table className="w-full min-w-[720px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
+                      <th className="pb-2 pr-4">Business</th>
+                      <th className="pb-2 pr-4">Address</th>
+                      <th className="pb-2 pr-4">Coupon</th>
+                      <th className="pb-2 pr-4">Credits</th>
+                      <th className="pb-2 pr-4">Rating</th>
+                      <th className="pb-2 pr-4">Status</th>
+                      <th className="pb-2">Save</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredMerchants?.map((m) => (
+                      <MerchantRow key={m._id} merchant={m} />
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
           )}
         </div>
       )}
@@ -134,22 +201,48 @@ export default function AdminDashboardPage() {
           ) : deals.length === 0 ? (
             <p className="text-sm text-slate-500">No deals yet.</p>
           ) : (
-            <table className="w-full min-w-[720px] text-left text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
-                  <th className="pb-2 pr-4">Deal</th>
-                  <th className="pb-2 pr-4">Merchant email</th>
-                  <th className="pb-2 pr-4">Expires</th>
-                  <th className="pb-2 pr-4">Status</th>
-                  <th className="pb-2">Save</th>
-                </tr>
-              </thead>
-              <tbody>
-                {deals.map((d) => (
-                  <DealRow key={d._id} deal={d} />
-                ))}
-              </tbody>
-            </table>
+            <>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <input
+                  type="search"
+                  value={dealSearch}
+                  onChange={(e) => setDealSearch(e.target.value)}
+                  placeholder="Search by deal name or merchant email…"
+                  className="w-full max-w-sm rounded-full border border-slate-200 px-4 py-2 text-sm outline-none focus:border-brand-400"
+                />
+                {pendingDeals > 0 && (
+                  <button
+                    onClick={handleBulkApprove}
+                    disabled={bulkApproving}
+                    className="shrink-0 rounded-full bg-brand-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
+                  >
+                    {bulkApproving
+                      ? "Approving…"
+                      : `Approve all pending (${pendingDeals})`}
+                  </button>
+                )}
+              </div>
+              {filteredDeals && filteredDeals.length === 0 ? (
+                <p className="text-sm text-slate-500">No deals match &quot;{dealSearch}&quot;.</p>
+              ) : (
+                <table className="w-full min-w-[720px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
+                      <th className="pb-2 pr-4">Deal</th>
+                      <th className="pb-2 pr-4">Merchant email</th>
+                      <th className="pb-2 pr-4">Expires</th>
+                      <th className="pb-2 pr-4">Status</th>
+                      <th className="pb-2">Save</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredDeals?.map((d) => (
+                      <DealRow key={`${d._id}-${dealsRefreshKey}`} deal={d} />
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </>
           )}
         </div>
       )}

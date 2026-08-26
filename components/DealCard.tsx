@@ -6,10 +6,14 @@ import { dealEndsAt } from "@/lib/socialProof";
 import CountdownBadge from "./CountdownBadge";
 
 export default function DealCard({ deal }: { deal: Deal }) {
+  const soldOut = !deal.inStock;
+
   return (
     <Link
       href={`/deal/${deal.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:shadow-card-hover"
+      className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:shadow-card-hover ${
+        soldOut ? "opacity-75" : ""
+      }`}
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
         {deal.image ? (
@@ -18,7 +22,7 @@ export default function DealCard({ deal }: { deal: Deal }) {
             alt={deal.name}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"
-            className="object-cover transition duration-300 group-hover:scale-105"
+            className={`object-cover transition duration-300 group-hover:scale-105 ${soldOut ? "grayscale" : ""}`}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-slate-300">
@@ -26,8 +30,16 @@ export default function DealCard({ deal }: { deal: Deal }) {
           </div>
         )}
 
+        {soldOut && (
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/40">
+            <span className="-rotate-6 rounded-lg bg-slate-900 px-3 py-1 text-sm font-extrabold uppercase tracking-wide text-white shadow">
+              Sold out
+            </span>
+          </div>
+        )}
+
         <div className="absolute left-2 top-2 flex flex-col gap-1">
-          {deal.isFlash && (
+          {!soldOut && deal.isFlash && (
             <span className="inline-block animate-flash-zap rounded-full bg-brand-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
               ⚡ FLASH
             </span>
@@ -38,11 +50,13 @@ export default function DealCard({ deal }: { deal: Deal }) {
             </span>
           )}
         </div>
-        <div className="absolute bottom-2 left-2">
-          <CountdownBadge
-            target={deal.expiresAt ? new Date(deal.expiresAt) : dealEndsAt(deal.id)}
-          />
-        </div>
+        {!soldOut && (
+          <div className="absolute bottom-2 left-2">
+            <CountdownBadge
+              target={deal.expiresAt ? new Date(deal.expiresAt) : dealEndsAt(deal.id)}
+            />
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-4">

@@ -7,6 +7,7 @@ import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
 import DealGrid from "@/components/DealGrid";
 import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
+import StarRating from "@/components/StarRating";
 
 export async function generateMetadata({
   params,
@@ -81,6 +82,14 @@ export default async function BusinessProfilePage({
               business.lat !== null && business.lng !== null
                 ? { "@type": "GeoCoordinates", latitude: business.lat, longitude: business.lng }
                 : undefined,
+            aggregateRating:
+              business.rating !== null
+                ? {
+                    "@type": "AggregateRating",
+                    ratingValue: business.rating,
+                    reviewCount: business.reviewCount || 1,
+                  }
+                : undefined,
             sameAs: [
               business.website,
               business.bookingUrl,
@@ -116,6 +125,9 @@ export default async function BusinessProfilePage({
             <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
               {business.businessName}
             </h1>
+            {business.rating !== null && (
+              <StarRating rating={business.rating} reviewCount={business.reviewCount} className="mt-1" />
+            )}
             <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
               {business.city && (
                 <span className="flex items-center gap-1">

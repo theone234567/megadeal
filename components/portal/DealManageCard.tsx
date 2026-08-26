@@ -90,6 +90,14 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
             </div>
           )}
 
+          {(deal.viewCount || deal.clickCount) && (
+            <p className="text-xs text-slate-500">
+              👁 {deal.viewCount || 0} view{deal.viewCount === 1 ? "" : "s"} · 🖱{" "}
+              {deal.clickCount || 0} click{deal.clickCount === 1 ? "" : "s"} on &quot;Get this
+              deal&quot;
+            </p>
+          )}
+
           <PhotoUploadField
             label="Deal photo"
             currentUrl={deal.photoUrl || null}

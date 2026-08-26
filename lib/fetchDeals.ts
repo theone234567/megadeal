@@ -76,6 +76,8 @@ interface PublicBusiness {
   bookingEmail: string | null;
   lat: number | null;
   lng: number | null;
+  rating: number | null;
+  reviewCount: number | null;
 }
 
 async function fetchBusinessDirectory(): Promise<Record<string, PublicBusiness>> {
@@ -111,6 +113,8 @@ function applyBusiness(deal: Deal, directory: Record<string, PublicBusiness>): D
     businessBookingEmail: business.bookingEmail,
     businessLat: business.lat,
     businessLng: business.lng,
+    businessRating: business.rating,
+    businessReviewCount: business.reviewCount,
   };
 }
 

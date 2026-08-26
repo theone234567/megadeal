@@ -26,6 +26,8 @@ interface PublicBusiness {
   bookingEmail: string | null;
   lat: number | null;
   lng: number | null;
+  rating: number | null;
+  reviewCount: number | null;
 }
 
 /**
@@ -78,6 +80,8 @@ export async function GET() {
         bookingEmail: m.bookingEmail || null,
         lat: typeof m.lat === "number" ? m.lat : null,
         lng: typeof m.lng === "number" ? m.lng : null,
+        rating: typeof m.rating === "number" ? m.rating : null,
+        reviewCount: typeof m.reviewCount === "number" ? m.reviewCount : null,
       };
     }
   }

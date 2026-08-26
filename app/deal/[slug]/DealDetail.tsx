@@ -13,6 +13,8 @@ import CountdownBadge from "@/components/CountdownBadge";
 import DealGrid from "@/components/DealGrid";
 import ShareButtons from "@/components/ShareButtons";
 import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
+import { trackDealEvent } from "@/lib/trackDeal";
+import StarRating from "@/components/StarRating";
 
 export default function DealDetail({ slug }: { slug: string }) {
   const [deal, setDeal] = useState<Deal | null | undefined>(undefined);
@@ -29,6 +31,11 @@ export default function DealDetail({ slug }: { slug: string }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
+
+  useEffect(() => {
+    if (deal?.id) trackDealEvent(deal.id, "view");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deal?.id]);
 
   useEffect(() => {
     if (!deal) {
@@ -242,6 +249,7 @@ export default function DealDetail({ slug }: { slug: string }) {
                 </span>
               </Link>
             )}
+            <StarRating rating={deal.businessRating} reviewCount={deal.businessReviewCount} className="mt-1" />
 
             <div className="mt-4 flex items-baseline gap-3">
               <span className="text-3xl font-extrabold text-slate-900">
@@ -266,9 +274,16 @@ export default function DealDetail({ slug }: { slug: string }) {
             <ShareButtons title={deal.name} className="mt-4" />
 
             <div className="mt-6">
-              {!showContact ? (
+              {!deal.inStock ? (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 py-3 text-center text-sm font-bold text-slate-500">
+                  Sold out — check back soon
+                </div>
+              ) : !showContact ? (
                 <button
-                  onClick={() => setShowContact(true)}
+                  onClick={() => {
+                    trackDealEvent(deal.id, "click");
+                    setShowContact(true);
+                  }}
                   className="w-full rounded-full bg-ember-500 py-3 text-center font-bold text-white shadow-card transition hover:bg-ember-600 active:scale-95"
                 >
                   Get this deal

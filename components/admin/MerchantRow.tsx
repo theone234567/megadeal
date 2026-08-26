@@ -26,6 +26,8 @@ export interface AdminMerchant {
   emailVerified?: boolean;
   lat?: number;
   lng?: number;
+  rating?: number | null;
+  reviewCount?: number | null;
   [key: string]: any;
 }
 
@@ -34,12 +36,18 @@ const STATUSES = ["Pending", "Approved", "Suspended"];
 export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
   const [status, setStatus] = useState(merchant.status || "Pending");
   const [credits, setCredits] = useState(merchant.creditsBalance ?? 0);
+  const [rating, setRating] = useState(merchant.rating ?? "");
+  const [reviewCount, setReviewCount] = useState(merchant.reviewCount ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  const dirty = status !== (merchant.status || "Pending") || credits !== (merchant.creditsBalance ?? 0);
+  const dirty =
+    status !== (merchant.status || "Pending") ||
+    credits !== (merchant.creditsBalance ?? 0) ||
+    rating !== (merchant.rating ?? "") ||
+    reviewCount !== (merchant.reviewCount ?? "");
 
   const hasProfileDetails =
     merchant.bio || merchant.businessHours || merchant.bookingUrl || merchant.bookingEmail ||
@@ -52,11 +60,18 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
       const res = await fetch(`/api/admin/merchants/${merchant._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, creditsBalance: credits }),
+        body: JSON.stringify({
+          status,
+          creditsBalance: credits,
+          rating: rating === "" ? null : rating,
+          reviewCount: reviewCount === "" ? null : reviewCount,
+        }),
       });
       if (!res.ok) throw new Error();
       merchant.status = status;
       merchant.creditsBalance = credits;
+      merchant.rating = rating === "" ? null : Number(rating);
+      merchant.reviewCount = reviewCount === "" ? null : Number(reviewCount);
       setSaved(true);
       setTimeout(() => setSaved(false), 1500);
     } catch {
@@ -127,6 +142,28 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
         />
       </td>
       <td className="py-3 pr-4">
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            min={0}
+            max={5}
+            step={0.1}
+            value={rating}
+            onChange={(e) => setRating(e.target.value === "" ? "" : Number(e.target.value))}
+            placeholder="★"
+            className="w-14 rounded-lg border border-slate-200 px-2 py-1 text-sm"
+          />
+          <input
+            type="number"
+            min={0}
+            value={reviewCount}
+            onChange={(e) => setReviewCount(e.target.value === "" ? "" : Number(e.target.value))}
+            placeholder="#"
+            className="w-14 rounded-lg border border-slate-200 px-2 py-1 text-sm"
+          />
+        </div>
+      </td>
+      <td className="py-3 pr-4">
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
@@ -152,7 +189,7 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
     </tr>
     {detailsOpen && hasProfileDetails && (
       <tr className="border-b border-slate-100 bg-slate-50">
-        <td colSpan={6} className="px-4 py-3 text-sm text-slate-600">
+        <td colSpan={7} className="px-4 py-3 text-sm text-slate-600">
           {(merchant.priceRange || merchant.amenities) && (
             <p className="font-semibold text-slate-800">
               {merchant.priceRange}
