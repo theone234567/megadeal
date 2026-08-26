@@ -25,4 +25,14 @@ export interface Deal {
   businessAddress: string | null;
   businessCity: string | null;
   businessSlug: string | null;
+  businessBio: string | null;
+  businessHours: string | null;
+  businessFacebookUrl: string | null;
+  businessInstagramUrl: string | null;
+  businessPriceRange: string | null;
+  businessAmenities: string[];
+  businessBookingUrl: string | null;
+  businessBookingEmail: string | null;
+  businessLat: number | null;
+  businessLng: number | null;
 }

@@ -6,6 +6,7 @@ import { getOrClaimMerchant } from "@/lib/merchant";
 const MAX_TEXT_LENGTH = 300;
 const MAX_BIO_LENGTH = 600;
 const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function cleanText(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -39,26 +40,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid price range." }, { status: 400 });
   }
 
+  const bookingEmail = cleanText(body.bookingEmail, MAX_TEXT_LENGTH);
+  if (bookingEmail && !EMAIL_RE.test(bookingEmail)) {
+    return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
+  }
+
   const adminClient = createWixAdminClient();
   const merchant = await getOrClaimMerchant(adminClient, member);
   if (!merchant) {
     return NextResponse.json({ error: "No business application found for this account." }, { status: 404 });
   }
 
+  const address = cleanText(body.address, MAX_TEXT_LENGTH);
+  const city = cleanText(body.city, MAX_TEXT_LENGTH);
+  // This form has no address-autocomplete/geocoding, so a changed address
+  // can't be trusted to still match the stored coordinates — drop them
+  // rather than show a map pin at the old location. They're re-captured
+  // automatically next time the address is set via the signup flow.
+  const addressChanged = address !== (merchant.address || "") || city !== (merchant.city || "");
+
   const updated = await adminClient.items.update("Merchants", {
     ...merchant,
     businessName,
     website: cleanText(body.website, MAX_TEXT_LENGTH),
     phone: cleanText(body.phone, MAX_TEXT_LENGTH),
-    address: cleanText(body.address, MAX_TEXT_LENGTH),
-    city: cleanText(body.city, MAX_TEXT_LENGTH),
+    address,
+    city,
     postcode: cleanText(body.postcode, 20),
     bio: cleanText(body.bio, MAX_BIO_LENGTH),
     businessHours: cleanText(body.businessHours, MAX_TEXT_LENGTH),
+    bookingUrl: cleanText(body.bookingUrl, MAX_TEXT_LENGTH),
+    bookingEmail,
     facebookUrl: cleanText(body.facebookUrl, MAX_TEXT_LENGTH),
     instagramUrl: cleanText(body.instagramUrl, MAX_TEXT_LENGTH),
     priceRange,
     amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
+    ...(addressChanged ? { lat: null, lng: null } : {}),
     status: "Pending",
   });
   return NextResponse.json({ item: updated });

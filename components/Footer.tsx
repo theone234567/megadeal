@@ -97,7 +97,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/portal" className="hover:text-brand-700">
-                  Sign in
+                  Business sign in
                 </Link>
               </li>
             </ul>

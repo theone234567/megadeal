@@ -54,6 +54,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid price range." }, { status: 400 });
   }
 
+  const bookingEmail = cleanText(body.bookingEmail, MAX_TEXT_LENGTH);
+  if (bookingEmail && !EMAIL_RE.test(bookingEmail)) {
+    return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
+  }
+
+  const lat = Number.isFinite(body.lat) ? Number(body.lat) : null;
+  const lng = Number.isFinite(body.lng) ? Number(body.lng) : null;
+
   const adminClient = createWixAdminClient();
   const emailVerifyToken = randomBytes(32).toString("hex");
 
@@ -67,11 +75,15 @@ export async function POST(req: NextRequest) {
     website: cleanText(body.website, MAX_TEXT_LENGTH),
     bio: cleanText(body.bio, MAX_BIO_LENGTH),
     businessHours: cleanText(body.businessHours, MAX_TEXT_LENGTH),
+    bookingUrl: cleanText(body.bookingUrl, MAX_TEXT_LENGTH),
+    bookingEmail,
     facebookUrl: cleanText(body.facebookUrl, MAX_TEXT_LENGTH),
     instagramUrl: cleanText(body.instagramUrl, MAX_TEXT_LENGTH),
     priceRange,
     amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
     couponCode: cleanText(body.couponCode, 50),
+    lat,
+    lng,
     creditsBalance: 0,
     status: "Pending",
     logoUrl: "",

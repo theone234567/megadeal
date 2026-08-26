@@ -15,6 +15,8 @@ interface MerchantRecord {
   postcode?: string;
   bio?: string;
   businessHours?: string;
+  bookingUrl?: string;
+  bookingEmail?: string;
   facebookUrl?: string;
   instagramUrl?: string;
   priceRange?: string;
@@ -41,6 +43,8 @@ export default function MerchantProfileForm({
   const [postcode, setPostcode] = useState(merchant.postcode || "");
   const [bio, setBio] = useState(merchant.bio || "");
   const [businessHours, setBusinessHours] = useState(merchant.businessHours || "");
+  const [bookingUrl, setBookingUrl] = useState(merchant.bookingUrl || "");
+  const [bookingEmail, setBookingEmail] = useState(merchant.bookingEmail || "");
   const [facebookUrl, setFacebookUrl] = useState(merchant.facebookUrl || "");
   const [instagramUrl, setInstagramUrl] = useState(merchant.instagramUrl || "");
   const [priceRange, setPriceRange] = useState(merchant.priceRange || "");
@@ -62,6 +66,8 @@ export default function MerchantProfileForm({
           postcode,
           bio,
           businessHours,
+          bookingUrl,
+          bookingEmail,
           facebookUrl,
           instagramUrl,
           priceRange,
@@ -120,6 +126,14 @@ export default function MerchantProfileForm({
           <div>
             <dt className="text-slate-400">Opening hours</dt>
             <dd className="font-medium text-slate-800">{merchant.businessHours || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400">Booking link</dt>
+            <dd className="font-medium text-slate-800">{merchant.bookingUrl || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400">Booking email</dt>
+            <dd className="font-medium text-slate-800">{merchant.bookingEmail || "—"}</dd>
           </div>
           <div>
             <dt className="text-slate-400">Social</dt>
@@ -189,6 +203,28 @@ export default function MerchantProfileForm({
               value={businessHours}
               onChange={(e) => setBusinessHours(e.target.value)}
               placeholder="e.g. Mon–Fri 9am–5pm, Sat 10am–2pm"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Booking link</label>
+            <input
+              value={bookingUrl}
+              onChange={(e) => setBookingUrl(e.target.value)}
+              placeholder="Your booking/reservation page, if you have one"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Booking email</label>
+            <input
+              type="email"
+              value={bookingEmail}
+              onChange={(e) => setBookingEmail(e.target.value)}
+              placeholder="bookings@yourbusiness.co.nz"
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
           </div>

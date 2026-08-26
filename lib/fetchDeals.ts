@@ -63,6 +63,16 @@ interface PublicBusiness {
   address: string | null;
   city: string | null;
   slug: string;
+  bio: string | null;
+  businessHours: string | null;
+  facebookUrl: string | null;
+  instagramUrl: string | null;
+  priceRange: string | null;
+  amenities: string[];
+  bookingUrl: string | null;
+  bookingEmail: string | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 async function fetchBusinessDirectory(): Promise<Record<string, PublicBusiness>> {
@@ -88,6 +98,16 @@ function applyBusiness(deal: Deal, directory: Record<string, PublicBusiness>): D
     businessAddress: business.address,
     businessCity: business.city,
     businessSlug: business.slug,
+    businessBio: business.bio,
+    businessHours: business.businessHours,
+    businessFacebookUrl: business.facebookUrl,
+    businessInstagramUrl: business.instagramUrl,
+    businessPriceRange: business.priceRange,
+    businessAmenities: business.amenities,
+    businessBookingUrl: business.bookingUrl,
+    businessBookingEmail: business.bookingEmail,
+    businessLat: business.lat,
+    businessLng: business.lng,
   };
 }
 

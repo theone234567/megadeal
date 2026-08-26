@@ -16,6 +16,16 @@ interface PublicBusiness {
   address: string | null;
   city: string | null;
   slug: string;
+  bio: string | null;
+  businessHours: string | null;
+  facebookUrl: string | null;
+  instagramUrl: string | null;
+  priceRange: string | null;
+  amenities: string[];
+  bookingUrl: string | null;
+  bookingEmail: string | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 /**
@@ -27,11 +37,15 @@ interface PublicBusiness {
  * NOT by merchant email. The Merchants collection isn't publicly readable
  * (it's SITE_MEMBER_AUTHOR-scoped: a merchant can't see other merchants'
  * full records, including their email/login identity), so this route uses
- * the admin client to read and join Deals+Merchants server-side. Phone,
- * website and address are fine to expose here — a business advertising a
- * deal wants customers to see exactly this. Email is deliberately excluded:
- * it's the merchant's platform login, not a public contact channel, and
- * keying by product id means this endpoint can't be scraped for it either.
+ * the admin client to read and join Deals+Merchants server-side. Everything
+ * a merchant fills in on their public business profile (bio, hours, social
+ * links, price range, amenities, booking link/email, coordinates) is
+ * included here too, so the deal page can show it without a separate
+ * profile-page fetch. Deliberately excluded:
+ * email (the merchant's platform login, not a public contact channel),
+ * postcode, coupon/referral code, credits balance, and status — none of
+ * those are ever shown to customers. Keying by product id (not email) means
+ * this endpoint can't be scraped for the excluded fields either.
  */
 export async function GET() {
   const adminClient = createWixAdminClient();
@@ -51,6 +65,19 @@ export async function GET() {
         address: m.address || null,
         city: m.city || null,
         slug: businessSlug(m.businessName, m._id),
+        bio: m.bio || null,
+        businessHours: m.businessHours || null,
+        facebookUrl: m.facebookUrl || null,
+        instagramUrl: m.instagramUrl || null,
+        priceRange: m.priceRange || null,
+        amenities: String(m.amenities || "")
+          .split(",")
+          .map((a: string) => a.trim())
+          .filter(Boolean),
+        bookingUrl: m.bookingUrl || null,
+        bookingEmail: m.bookingEmail || null,
+        lat: typeof m.lat === "number" ? m.lat : null,
+        lng: typeof m.lng === "number" ? m.lng : null,
       };
     }
   }

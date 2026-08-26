@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchBusinessProfileBySlug } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
 import DealGrid from "@/components/DealGrid";
 
 export async function generateMetadata({
@@ -46,8 +47,12 @@ export default async function BusinessProfilePage({
   if (!result) notFound();
   const { business, deals } = result;
 
-  const hasContactInfo = Boolean(business.website || business.phone || business.address);
+  const hasContactInfo = Boolean(
+    business.website || business.phone || business.address || business.bookingUrl || business.bookingEmail
+  );
   const hasSocial = Boolean(business.facebookUrl || business.instagramUrl);
+  const mapUrl = getMapUrl(business);
+  const directionsUrl = getDirectionsUrl(business);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -71,9 +76,16 @@ export default async function BusinessProfilePage({
                   addressCountry: "NZ",
                 }
               : undefined,
-            sameAs: [business.website, business.facebookUrl, business.instagramUrl].filter(
-              Boolean
-            ),
+            geo:
+              business.lat !== null && business.lng !== null
+                ? { "@type": "GeoCoordinates", latitude: business.lat, longitude: business.lng }
+                : undefined,
+            sameAs: [
+              business.website,
+              business.bookingUrl,
+              business.facebookUrl,
+              business.instagramUrl,
+            ].filter(Boolean),
           }),
         }}
       />
@@ -133,12 +145,33 @@ export default async function BusinessProfilePage({
           <div className="mt-6 grid grid-cols-1 gap-4 border-t border-slate-100 pt-5 sm:grid-cols-2">
             {hasContactInfo && (
               <div className="space-y-1.5 text-sm">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                  How to book
+                </p>
+                {business.bookingUrl && (
+                  <a
+                    href={business.bookingUrl.startsWith("http") ? business.bookingUrl : `https://${business.bookingUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-1 flex items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-2 font-bold text-white transition hover:bg-brand-700"
+                  >
+                    📅 Book now
+                  </a>
+                )}
                 {business.phone && (
                   <a
                     href={`tel:${business.phone.replace(/[^0-9+]/g, "")}`}
                     className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
                   >
                     📞 {business.phone}
+                  </a>
+                )}
+                {business.bookingEmail && (
+                  <a
+                    href={`mailto:${business.bookingEmail}`}
+                    className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
+                  >
+                    ✉️ {business.bookingEmail}
                   </a>
                 )}
                 {business.website && (
@@ -152,10 +185,31 @@ export default async function BusinessProfilePage({
                   </a>
                 )}
                 {business.address && (
-                  <p className="flex items-center gap-2 text-slate-600">
-                    📍 {business.address}
-                    {business.city ? `, ${business.city}` : ""}
-                  </p>
+                  <div>
+                    <p className="flex items-center gap-2 text-slate-600">
+                      📍 {business.address}
+                      {business.city ? `, ${business.city}` : ""}
+                    </p>
+                    {(mapUrl || directionsUrl) && (
+                      <p className="mt-1 flex items-center gap-3 pl-6 text-xs font-semibold text-brand-700">
+                        {mapUrl && (
+                          <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            View map
+                          </a>
+                        )}
+                        {directionsUrl && (
+                          <a
+                            href={directionsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            Get directions
+                          </a>
+                        )}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             )}

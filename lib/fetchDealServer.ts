@@ -55,6 +55,19 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
           businessAddress: merchant.address || null,
           businessCity: merchant.city || null,
           businessSlug: businessSlug(merchant.businessName, merchant._id),
+          businessBio: merchant.bio || null,
+          businessHours: merchant.businessHours || null,
+          businessFacebookUrl: merchant.facebookUrl || null,
+          businessInstagramUrl: merchant.instagramUrl || null,
+          businessPriceRange: merchant.priceRange || null,
+          businessAmenities: String(merchant.amenities || "")
+            .split(",")
+            .map((a: string) => a.trim())
+            .filter(Boolean),
+          businessBookingUrl: merchant.bookingUrl || null,
+          businessBookingEmail: merchant.bookingEmail || null,
+          businessLat: typeof merchant.lat === "number" ? merchant.lat : null,
+          businessLng: typeof merchant.lng === "number" ? merchant.lng : null,
         };
       }
     }
@@ -80,6 +93,10 @@ export interface BusinessProfile {
   instagramUrl: string | null;
   priceRange: string | null;
   amenities: string[];
+  bookingUrl: string | null;
+  bookingEmail: string | null;
+  lat: number | null;
+  lng: number | null;
 }
 
 /**
@@ -123,6 +140,10 @@ export async function fetchBusinessProfileBySlug(
         .split(",")
         .map((a: string) => a.trim())
         .filter(Boolean),
+      bookingUrl: merchant.bookingUrl || null,
+      bookingEmail: merchant.bookingEmail || null,
+      lat: typeof merchant.lat === "number" ? merchant.lat : null,
+      lng: typeof merchant.lng === "number" ? merchant.lng : null,
     };
 
     const dealsResult = await adminClient.items
@@ -153,6 +174,16 @@ export async function fetchBusinessProfileBySlug(
           businessAddress: business.address,
           businessCity: business.city,
           businessSlug: business.slug,
+          businessBio: business.bio,
+          businessHours: business.businessHours,
+          businessFacebookUrl: business.facebookUrl,
+          businessInstagramUrl: business.instagramUrl,
+          businessPriceRange: business.priceRange,
+          businessAmenities: business.amenities,
+          businessBookingUrl: business.bookingUrl,
+          businessBookingEmail: business.bookingEmail,
+          businessLat: business.lat,
+          businessLng: business.lng,
         } as Deal);
       } catch {
         // Skip products that fail to hydrate rather than failing the page.

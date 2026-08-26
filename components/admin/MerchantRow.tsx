@@ -17,11 +17,15 @@ export interface AdminMerchant {
   logoUrl?: string;
   bio?: string;
   businessHours?: string;
+  bookingUrl?: string;
+  bookingEmail?: string;
   facebookUrl?: string;
   instagramUrl?: string;
   priceRange?: string;
   amenities?: string;
   emailVerified?: boolean;
+  lat?: number;
+  lng?: number;
   [key: string]: any;
 }
 
@@ -38,8 +42,8 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
   const dirty = status !== (merchant.status || "Pending") || credits !== (merchant.creditsBalance ?? 0);
 
   const hasProfileDetails =
-    merchant.bio || merchant.businessHours || merchant.facebookUrl || merchant.instagramUrl ||
-    merchant.priceRange || merchant.amenities;
+    merchant.bio || merchant.businessHours || merchant.bookingUrl || merchant.bookingEmail ||
+    merchant.facebookUrl || merchant.instagramUrl || merchant.priceRange || merchant.amenities;
 
   async function save() {
     setSaving(true);
@@ -159,6 +163,16 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
           {merchant.bio && <p className="mt-1">{merchant.bio}</p>}
           {merchant.businessHours && (
             <p className="mt-1 text-xs text-slate-500">Hours: {merchant.businessHours}</p>
+          )}
+          {(merchant.bookingUrl || merchant.bookingEmail) && (
+            <p className="mt-1 text-xs text-slate-500">
+              Booking: {[merchant.bookingUrl, merchant.bookingEmail].filter(Boolean).join(" · ")}
+            </p>
+          )}
+          {typeof merchant.lat === "number" && typeof merchant.lng === "number" && (
+            <p className="mt-1 text-xs text-slate-400">
+              📍 {merchant.lat.toFixed(5)}, {merchant.lng.toFixed(5)}
+            </p>
           )}
           {(merchant.facebookUrl || merchant.instagramUrl) && (
             <p className="mt-1 text-xs text-slate-500">

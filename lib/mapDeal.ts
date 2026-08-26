@@ -65,5 +65,15 @@ export function mapProductToDeal(product: any, categoryNamesById?: Record<string
     businessAddress: null,
     businessCity: null,
     businessSlug: null,
+    businessBio: null,
+    businessHours: null,
+    businessFacebookUrl: null,
+    businessInstagramUrl: null,
+    businessPriceRange: null,
+    businessAmenities: [],
+    businessBookingUrl: null,
+    businessBookingEmail: null,
+    businessLat: null,
+    businessLng: null,
   };
 }
