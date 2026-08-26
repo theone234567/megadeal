@@ -42,7 +42,7 @@ export default function Header() {
             className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-brand-700"
           >
             <span aria-hidden>👤</span>
-            {isLoggedIn ? member?.profile?.nickname || "My portal" : "Merchant sign in"}
+            {isLoggedIn ? member?.profile?.nickname || "My portal" : "Business sign in"}
           </Link>
         </div>
 
