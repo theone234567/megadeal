@@ -77,7 +77,7 @@ export default function Header() {
 
         <Link
           href="/merchants"
-          className="hidden shrink-0 items-center rounded-full bg-ember-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-ember-600 md:flex"
+          className="flex shrink-0 items-center rounded-full bg-ember-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-ember-600"
         >
           List your deal
         </Link>
