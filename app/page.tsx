@@ -5,11 +5,17 @@ import FlashDeals from "@/components/FlashDeals";
 import SocialCTA from "@/components/SocialCTA";
 import HomeDeals from "./HomeDeals";
 
-export default function HomePage() {
+export default function HomePage({
+  searchParams,
+}: {
+  searchParams: { q?: string };
+}) {
+  const isSearching = Boolean(searchParams.q?.trim());
+
   return (
     <main>
-      <Hero />
-      <FlashDeals />
+      {!isSearching && <Hero />}
+      {!isSearching && <FlashDeals />}
       <CategoryNav />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Suspense fallback={null}>
