@@ -149,24 +149,41 @@ async function searchAllProducts(client: WixClient): Promise<any[]> {
   return data.products ?? [];
 }
 
-export async function fetchDeals(client: WixClient): Promise<Deal[]> {
-  // Deliberately sequential, not Promise.all: on a brand-new client (first
-  // page load, no cached auth token yet) firing multiple calls at once
-  // raced over token setup and reliably left one of them resolving empty.
-  // The first call here pays that one-time setup cost; everything after
-  // reuses the now-cached token.
-  const basics = await searchAllProducts(client);
-  const [metaMap, directory] = await Promise.all([
-    fetchDealMetaMap(client),
-    fetchBusinessDirectory(),
-  ]);
+// The homepage mounts more than one component that calls fetchDeals() on
+// initial render (HomeDeals + FlashDeals) — sharing one in-flight request
+// avoids duplicate API traffic and, more importantly, the exact race noted
+// below: firing multiple independent fetchDeals() calls at once on a fresh
+// client raced over token setup and reliably left one of them resolving
+// empty. Cleared once settled so later calls (e.g. after navigating away
+// and back) always get fresh data.
+let inFlight: Promise<Deal[]> | null = null;
 
-  return basics
-    .filter(Boolean)
-    .map((p) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
-    .map((deal) => applyMeta(deal, metaMap[deal.id]))
-    .filter(isPubliclyVisible)
-    .map((deal) => applyBusiness(deal, directory));
+export async function fetchDeals(client: WixClient): Promise<Deal[]> {
+  if (inFlight) return inFlight;
+  inFlight = (async () => {
+    // Deliberately sequential, not Promise.all: on a brand-new client (first
+    // page load, no cached auth token yet) firing multiple calls at once
+    // raced over token setup and reliably left one of them resolving empty.
+    // The first call here pays that one-time setup cost; everything after
+    // reuses the now-cached token.
+    const basics = await searchAllProducts(client);
+    const [metaMap, directory] = await Promise.all([
+      fetchDealMetaMap(client),
+      fetchBusinessDirectory(),
+    ]);
+
+    return basics
+      .filter(Boolean)
+      .map((p) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
+      .map((deal) => applyMeta(deal, metaMap[deal.id]))
+      .filter(isPubliclyVisible)
+      .map((deal) => applyBusiness(deal, directory));
+  })();
+  try {
+    return await inFlight;
+  } finally {
+    inFlight = null;
+  }
 }
 
 export async function fetchDealBySlug(
