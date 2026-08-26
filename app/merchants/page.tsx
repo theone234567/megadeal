@@ -94,6 +94,27 @@ export default function MerchantsPage() {
         </div>
       </section>
 
+      {/* Free advertising offer CTA */}
+      <section className="px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-2xl bg-ember-500 px-6 py-6 text-center shadow-card sm:flex-row sm:text-left">
+          <div className="flex-1">
+            <p className="text-lg font-extrabold text-white sm:text-xl">
+              🎁 Get up to 3 months free advertising
+            </p>
+            <p className="mt-1 text-sm text-ember-50">
+              Limited-time offer for new businesses that sign up now.{" "}
+              <span className="font-semibold">Conditions apply.</span>
+            </p>
+          </div>
+          <a
+            href="#signup"
+            className="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-bold text-ember-600 shadow-card transition hover:bg-ember-50"
+          >
+            Claim your free advertising →
+          </a>
+        </div>
+      </section>
+
       {/* Preview mockup */}
       <section id="preview" className="scroll-mt-36 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
@@ -221,8 +242,9 @@ export default function MerchantsPage() {
             sounds like you, we&apos;d love to hear from you.
           </p>
           <p className="mt-4 text-sm text-slate-500">
-            New businesses get a limited-time free advertising offer — ask
-            when you apply.
+            New businesses can get up to 3 months free advertising — ask when
+            you apply.{" "}
+            <span className="text-slate-400">Conditions apply.</span>
           </p>
         </div>
       </section>

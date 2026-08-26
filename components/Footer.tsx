@@ -13,7 +13,9 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-bold text-white">Own a local business?</h3>
             <p className="text-sm text-brand-100">
-              List your deal on MegaDeal and reach new customers today.
+              List your deal on MegaDeal and get up to 3 months free
+              advertising.{" "}
+              <span className="text-brand-200">Conditions apply.</span>
             </p>
           </div>
           <Link
