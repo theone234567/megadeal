@@ -1,4 +1,6 @@
 import SocialLinks from "./SocialLinks";
+import ShareButtons from "./ShareButtons";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/siteConfig";
 
 export default function SocialCTA() {
   return (
@@ -10,6 +12,12 @@ export default function SocialCTA() {
           businesses joining every week.
         </p>
         <SocialLinks />
+        <ShareButtons
+          title={`${SITE_NAME} — ${SITE_DESCRIPTION}`}
+          url={SITE_URL}
+          label="Share MegaDeal"
+          className="mt-1"
+        />
       </div>
     </section>
   );

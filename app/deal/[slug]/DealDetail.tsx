@@ -271,7 +271,7 @@ export default function DealDetail({ slug }: { slug: string }) {
               doesn&apos;t process any payment.
             </p>
 
-            <ShareButtons title={deal.name} className="mt-4" />
+            <ShareButtons title={deal.name} size="md" className="mt-4" />
 
             <div className="mt-6">
               {!deal.inStock ? (
