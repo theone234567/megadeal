@@ -234,7 +234,7 @@ export default function MerchantsPage() {
           <p className="mt-4 text-center text-xs text-slate-400">
             Already applied?{" "}
             <Link href="/portal" className="font-semibold text-brand-600 hover:underline">
-              Sign in to your merchant portal
+              Sign in to your business portal
             </Link>
           </p>
         </div>

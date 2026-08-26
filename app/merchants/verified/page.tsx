@@ -22,7 +22,7 @@ export default function EmailVerifiedPage({
           <p className="mt-2 text-sm text-slate-500">
             Thanks — your contact email is confirmed. Sign in with this same
             email once your application&apos;s approved to manage your
-            listing from the merchant portal.
+            listing from the business portal.
           </p>
         </>
       ) : (

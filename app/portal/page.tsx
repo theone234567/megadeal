@@ -145,7 +145,7 @@ export default function PortalPage() {
     return (
       <main className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center px-4 text-center">
         <span className="text-4xl">🔒</span>
-        <h1 className="mt-3 text-xl font-bold text-slate-900">Merchant portal</h1>
+        <h1 className="mt-3 text-xl font-bold text-slate-900">Business portal</h1>
         <p className="mt-2 text-sm text-slate-500">
           Sign in to view your business details, deal credits and active
           deals. Only you can see your own account.
@@ -163,7 +163,7 @@ export default function PortalPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-extrabold text-slate-900">Merchant portal</h1>
+        <h1 className="text-2xl font-extrabold text-slate-900">Business portal</h1>
         <button
           onClick={logout}
           className="text-sm font-medium text-slate-500 hover:text-brand-700"

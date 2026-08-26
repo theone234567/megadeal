@@ -125,7 +125,7 @@ export default function MerchantSignupForm() {
           You can check your application status and deal credits anytime in
           your{" "}
           <a href="/portal" className="font-semibold underline">
-            merchant portal
+            business portal
           </a>
           .
         </p>
@@ -140,7 +140,7 @@ export default function MerchantSignupForm() {
         Tell us a bit about your business and we&apos;ll be in touch to set up
         your first deal — no account needed to apply. Once we&apos;ve
         approved you, sign in with this same email to manage your listing
-        from your merchant portal.
+        from your business portal.
       </p>
 
       <form
@@ -221,7 +221,7 @@ export default function MerchantSignupForm() {
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
               />
               <p className="mt-1 text-xs text-slate-400">
-                Used to sign in to your merchant portal and for us to contact you.
+                Used to sign in to your business portal and for us to contact you.
               </p>
             </div>
 

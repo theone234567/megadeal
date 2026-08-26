@@ -58,7 +58,7 @@ export default function PrivacyPage() {
         A business&apos;s name, logo, address, phone number and website are
         shown publicly on their deal listings so customers can contact them
         — that information is meant to be public. Their account email,
-        used to sign in to the merchant portal, is never shown publicly.
+        used to sign in to the business portal, is never shown publicly.
       </p>
 
       <h2>Cookies</h2>
