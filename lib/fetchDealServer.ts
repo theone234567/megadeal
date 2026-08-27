@@ -3,6 +3,7 @@ import { createWixAdminClient } from "./wixAdmin";
 import { mapProductToDeal } from "./mapDeal";
 import { businessSlug } from "./slug";
 import { CATEGORY_NAME_BY_ID } from "./categories";
+import { mapMerchantToBusiness, applyBusinessToDeal, type PublicBusiness } from "./business";
 import type { Deal } from "./types";
 
 /**
@@ -49,31 +50,7 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
         .find();
       const merchant = merchantResult.items?.[0];
       if (merchant?.businessName && merchant._id) {
-        deal = {
-          ...deal,
-          businessName: merchant.businessName,
-          businessLogoUrl: merchant.logoUrl || null,
-          businessWebsite: merchant.website || null,
-          businessPhone: merchant.phone || null,
-          businessAddress: merchant.address || null,
-          businessCity: merchant.city || null,
-          businessSlug: businessSlug(merchant.businessName, merchant._id),
-          businessBio: merchant.bio || null,
-          businessHours: merchant.businessHours || null,
-          businessFacebookUrl: merchant.facebookUrl || null,
-          businessInstagramUrl: merchant.instagramUrl || null,
-          businessPriceRange: merchant.priceRange || null,
-          businessAmenities: String(merchant.amenities || "")
-            .split(",")
-            .map((a: string) => a.trim())
-            .filter(Boolean),
-          businessBookingUrl: merchant.bookingUrl || null,
-          businessBookingEmail: merchant.bookingEmail || null,
-          businessLat: typeof merchant.lat === "number" ? merchant.lat : null,
-          businessLng: typeof merchant.lng === "number" ? merchant.lng : null,
-          businessRating: typeof merchant.rating === "number" ? merchant.rating : null,
-          businessReviewCount: typeof merchant.reviewCount === "number" ? merchant.reviewCount : null,
-        };
+        deal = applyBusinessToDeal(deal, mapMerchantToBusiness(merchant));
       }
     }
 
@@ -83,27 +60,8 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
   }
 }
 
-export interface BusinessProfile {
+export interface BusinessProfile extends PublicBusiness {
   id: string;
-  slug: string;
-  businessName: string;
-  logoUrl: string | null;
-  website: string | null;
-  phone: string | null;
-  address: string | null;
-  city: string | null;
-  bio: string | null;
-  businessHours: string | null;
-  facebookUrl: string | null;
-  instagramUrl: string | null;
-  priceRange: string | null;
-  amenities: string[];
-  bookingUrl: string | null;
-  bookingEmail: string | null;
-  lat: number | null;
-  lng: number | null;
-  rating: number | null;
-  reviewCount: number | null;
 }
 
 /**
@@ -131,28 +89,7 @@ export async function fetchBusinessProfileBySlug(
 
     const business: BusinessProfile = {
       id: merchant._id,
-      slug: businessSlug(merchant.businessName, merchant._id),
-      businessName: merchant.businessName,
-      logoUrl: merchant.logoUrl || null,
-      website: merchant.website || null,
-      phone: merchant.phone || null,
-      address: merchant.address || null,
-      city: merchant.city || null,
-      bio: merchant.bio || null,
-      businessHours: merchant.businessHours || null,
-      facebookUrl: merchant.facebookUrl || null,
-      instagramUrl: merchant.instagramUrl || null,
-      priceRange: merchant.priceRange || null,
-      amenities: String(merchant.amenities || "")
-        .split(",")
-        .map((a: string) => a.trim())
-        .filter(Boolean),
-      bookingUrl: merchant.bookingUrl || null,
-      bookingEmail: merchant.bookingEmail || null,
-      lat: typeof merchant.lat === "number" ? merchant.lat : null,
-      lng: typeof merchant.lng === "number" ? merchant.lng : null,
-      rating: typeof merchant.rating === "number" ? merchant.rating : null,
-      reviewCount: typeof merchant.reviewCount === "number" ? merchant.reviewCount : null,
+      ...mapMerchantToBusiness(merchant),
     };
 
     const dealsResult = await adminClient.items
@@ -171,7 +108,7 @@ export async function fetchBusinessProfileBySlug(
         } as any);
         const product = (res as any).product;
         if (!product) continue;
-        deals.push({
+        const dealBase: Deal = {
           ...mapProductToDeal(product, CATEGORY_NAME_BY_ID),
           expiresAt: record.expiresAt ?? null,
           status: record.status ?? null,
@@ -179,26 +116,8 @@ export async function fetchBusinessProfileBySlug(
           isFlash: Boolean(record.isFlash),
           quantityAvailable:
             typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
-          businessName: business.businessName,
-          businessLogoUrl: business.logoUrl,
-          businessWebsite: business.website,
-          businessPhone: business.phone,
-          businessAddress: business.address,
-          businessCity: business.city,
-          businessSlug: business.slug,
-          businessBio: business.bio,
-          businessHours: business.businessHours,
-          businessFacebookUrl: business.facebookUrl,
-          businessInstagramUrl: business.instagramUrl,
-          businessPriceRange: business.priceRange,
-          businessAmenities: business.amenities,
-          businessBookingUrl: business.bookingUrl,
-          businessBookingEmail: business.bookingEmail,
-          businessLat: business.lat,
-          businessLng: business.lng,
-          businessRating: business.rating,
-          businessReviewCount: business.reviewCount,
-        } as Deal);
+        };
+        deals.push(applyBusinessToDeal(dealBase, business));
       } catch {
         // Skip products that fail to hydrate rather than failing the page.
       }

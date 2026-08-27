@@ -76,7 +76,17 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
                       ${deal.priceWas}
                     </span>
                   ) : null}
-                  {deal.quantityAvailable ? (
+                  {deal.quantityAvailable === 0 ? (
+                    <span className="ml-2 rounded-full bg-slate-800 px-2 py-0.5 text-xs font-bold text-white">
+                      Sold out
+                    </span>
+                  ) : deal.quantityAvailable !== undefined &&
+                    deal.quantityAvailable !== null &&
+                    deal.quantityAvailable <= 5 ? (
+                    <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-600">
+                      Only {deal.quantityAvailable} left
+                    </span>
+                  ) : deal.quantityAvailable ? (
                     <span className="ml-2 text-xs font-normal text-slate-400">
                       · {deal.quantityAvailable} available
                     </span>

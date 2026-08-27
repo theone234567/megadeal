@@ -8,6 +8,71 @@ const ALLOWED_STATUSES = ["Pending", "Approved", "Suspended"];
 const INTRO_CREDITS = 2;
 const REFERRAL_BONUS_CREDITS: number = 2;
 
+/**
+ * Atomically flips referralRewarded from not-true to true, server-side,
+ * conditioned on it still being not-true at the moment the write lands.
+ * Two concurrent approve requests for the same merchant will only ever
+ * have one of these calls succeed — the loser sees res.ok === false and
+ * must not grant the referral bonus. A plain read-then-write (checking
+ * existing.referralRewarded in JS, then items.update()) can't guarantee
+ * that: both requests could read "not yet rewarded" before either write
+ * lands, double-crediting the referrer.
+ */
+async function claimReferralAtomically(adminClient: any, merchantId: string): Promise<boolean> {
+  try {
+    const res = await adminClient.fetchWithAuth(
+      `https://www.wixapis.com/wix-data/v2/items/${merchantId}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dataCollectionId: "Merchants",
+          patch: {
+            dataItemId: merchantId,
+            fieldModifications: [
+              { fieldPath: "referralRewarded", action: "SET_FIELD", setFieldOptions: { value: true } },
+            ],
+          },
+          condition: { filter: { referralRewarded: { $ne: true } } },
+        }),
+      }
+    );
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Atomic server-side increment — safe under concurrent referral claims,
+ * unlike a get-then-update of creditsBalance in application code. */
+async function incrementCreditsAtomically(
+  adminClient: any,
+  merchantId: string,
+  amount: number
+): Promise<boolean> {
+  try {
+    const res = await adminClient.fetchWithAuth(
+      `https://www.wixapis.com/wix-data/v2/items/${merchantId}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dataCollectionId: "Merchants",
+          patch: {
+            dataItemId: merchantId,
+            fieldModifications: [
+              { fieldPath: "creditsBalance", action: "INCREMENT_FIELD", incrementFieldOptions: { value: amount } },
+            ],
+          },
+        }),
+      }
+    );
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -86,20 +151,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   // Referral bonus: if this merchant signed up with someone else's referral
-  // code, and hasn't already been rewarded, both sides get a bonus once
-  // this merchant is approved. referralRewarded guards against granting it
-  // again on a later suspend/re-approve cycle.
-  if (becomingApproved && existing.couponCode && !existing.referralRewarded) {
+  // code, both sides get a bonus once this merchant is approved. The claim
+  // itself is an atomic conditional patch (see claimReferralAtomically) so
+  // concurrent approve requests for the same merchant can't both succeed.
+  if (becomingApproved && existing.couponCode) {
     const referrerResult = await adminClient.items
       .query("Merchants")
       .eq("referralCode", existing.couponCode)
       .find();
-    referrer = (referrerResult.items ?? []).find((m: any) => m._id !== existing._id) || null;
-    if (referrer) {
+    const candidate = (referrerResult.items ?? []).find((m: any) => m._id !== existing._id) || null;
+    if (candidate && (await claimReferralAtomically(adminClient, existing._id))) {
+      referrer = candidate;
       referralBonusGranted = REFERRAL_BONUS_CREDITS;
       newCredits += referralBonusGranted;
       patch.referralRewarded = true;
-      patch.referredBy = referrer.businessName || referrer.email || null;
+      patch.referredBy = candidate.businessName || candidate.email || null;
     }
   }
 
@@ -112,33 +178,41 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     ...patch,
   });
 
+  // Collected non-fatal problems from here on: the merchant record itself
+  // already saved successfully above, so a notification failure shouldn't
+  // fail the request — but it also shouldn't vanish into server logs only,
+  // since an admin has no other way to notice a merchant never got their
+  // "you're approved" email. Surfaced to the caller as `warnings`.
+  const warnings: string[] = [];
+
   if (referrer) {
+    let referrerFresh: any = null;
     try {
-      const referrerFresh = await adminClient.items.get("Merchants", referrer._id);
-      if (referrerFresh) {
-        await adminClient.items.update("Merchants", {
-          ...referrerFresh,
-          creditsBalance: (Number(referrerFresh.creditsBalance) || 0) + REFERRAL_BONUS_CREDITS,
-        });
-        if (referrerFresh.email) {
-          await sendTransactionalEmail({
-            to: referrerFresh.email,
-            subject: "You earned referral credits on MegaDeal!",
-            html: `
-              <p>Hi ${referrerFresh.businessName || "there"},</p>
-              <p>Great news — a business you referred, <strong>${
-                existing.businessName || "a new business"
-              }</strong>, has been approved on MegaDeal. We've added
-              ${REFERRAL_BONUS_CREDITS} bonus deal credit${
-              REFERRAL_BONUS_CREDITS === 1 ? "" : "s"
-            } to your account. Thanks for spreading the word!</p>
-              <p><a href="${SITE_URL}/portal">View your portal</a></p>
-            `,
-          });
-        }
-      }
+      referrerFresh = await adminClient.items.get("Merchants", referrer._id);
     } catch (err) {
-      console.error("[admin/merchants] referral reward failed", err);
+      console.error("[admin/merchants] fetching referrer failed", err);
+      warnings.push(`Couldn't load referrer details for the credit notification email.`);
+    }
+    if (referrerFresh?.email) {
+      try {
+        await sendTransactionalEmail({
+          to: referrerFresh.email,
+          subject: "You earned referral credits on MegaDeal!",
+          html: `
+            <p>Hi ${referrerFresh.businessName || "there"},</p>
+            <p>Great news — a business you referred, <strong>${
+              existing.businessName || "a new business"
+            }</strong>, has been approved on MegaDeal. We've added
+            ${REFERRAL_BONUS_CREDITS} bonus deal credit${
+            REFERRAL_BONUS_CREDITS === 1 ? "" : "s"
+          } to your account. Thanks for spreading the word!</p>
+            <p><a href="${SITE_URL}/portal">View your portal</a></p>
+          `,
+        });
+      } catch (err) {
+        console.error("[admin/merchants] referral bonus email failed", err);
+        warnings.push(`Referral bonus was credited, but the notification email to ${referrerFresh.email} failed to send.`);
+      }
     }
   }
 
@@ -166,8 +240,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       });
     } catch (err) {
       console.error("[admin/merchants] approval email failed", err);
+      warnings.push(`Merchant was approved, but the notification email to ${existing.email} failed to send.`);
     }
   }
 
-  return NextResponse.json({ item: updated });
+  return NextResponse.json({ item: updated, warnings });
 }

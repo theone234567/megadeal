@@ -4,6 +4,7 @@ import type { Deal } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
 import { dealEndsAt } from "@/lib/socialProof";
 import CountdownBadge from "./CountdownBadge";
+import StarRating from "./StarRating";
 
 export default function DealCard({ deal }: { deal: Deal }) {
   const soldOut = !deal.inStock;
@@ -56,7 +57,7 @@ export default function DealCard({ deal }: { deal: Deal }) {
           )}
         </div>
         {!soldOut && (
-          <div className="absolute bottom-2 left-2 flex items-center gap-1">
+          <div className="absolute bottom-2 left-2 right-2 flex flex-wrap items-center gap-1">
             <CountdownBadge
               target={deal.expiresAt ? new Date(deal.expiresAt) : dealEndsAt(deal.id)}
             />
@@ -82,6 +83,9 @@ export default function DealCard({ deal }: { deal: Deal }) {
           <p className="-mt-1 truncate text-xs font-medium text-slate-500">
             by {deal.businessName}
           </p>
+        )}
+        {deal.businessRating !== null && (
+          <StarRating rating={deal.businessRating} reviewCount={deal.businessReviewCount} className="-mt-1" />
         )}
 
         <div className="mt-auto flex items-end justify-between pt-1">

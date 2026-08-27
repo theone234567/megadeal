@@ -43,6 +43,7 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warnings, setWarnings] = useState<string[]>([]);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   const dirty =
@@ -58,6 +59,7 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
   async function save() {
     setSaving(true);
     setError(null);
+    setWarnings([]);
     try {
       const res = await fetch(`/api/admin/merchants/${merchant._id}`, {
         method: "PATCH",
@@ -70,12 +72,16 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
         }),
       });
       if (!res.ok) throw new Error();
+      const data = await res.json().catch(() => ({}));
       merchant.status = status;
       merchant.creditsBalance = credits;
       merchant.rating = rating === "" ? null : Number(rating);
       merchant.reviewCount = reviewCount === "" ? null : Number(reviewCount);
       setSaved(true);
       setTimeout(() => setSaved(false), 1500);
+      if (Array.isArray(data.warnings) && data.warnings.length > 0) {
+        setWarnings(data.warnings);
+      }
     } catch {
       setError("Save failed.");
     } finally {
@@ -187,6 +193,11 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
           {saving ? "Saving…" : saved ? "Saved ✓" : "Save"}
         </button>
         {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+        {warnings.map((w, i) => (
+          <p key={i} className="mt-1 max-w-[16rem] text-xs text-amber-600">
+            ⚠️ {w}
+          </p>
+        ))}
       </td>
     </tr>
     {detailsOpen && hasProfileDetails && (

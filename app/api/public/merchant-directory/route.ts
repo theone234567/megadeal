@@ -1,34 +1,12 @@
 import { NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
-import { businessSlug } from "@/lib/slug";
+import { mapMerchantToBusiness, type PublicBusiness } from "@/lib/business";
 
 // No request-derived data to force dynamic rendering automatically (unlike
 // routes that read cookies/headers), so this must be opted in explicitly —
 // otherwise Next tries to statically prerender it at build time, before
 // WIX_API_KEY/WIX_SITE_ID are available to the build.
 export const dynamic = "force-dynamic";
-
-interface PublicBusiness {
-  businessName: string;
-  logoUrl: string | null;
-  website: string | null;
-  phone: string | null;
-  address: string | null;
-  city: string | null;
-  slug: string;
-  bio: string | null;
-  businessHours: string | null;
-  facebookUrl: string | null;
-  instagramUrl: string | null;
-  priceRange: string | null;
-  amenities: string[];
-  bookingUrl: string | null;
-  bookingEmail: string | null;
-  lat: number | null;
-  lng: number | null;
-  rating: number | null;
-  reviewCount: number | null;
-}
 
 /**
  * Public, read-only projection of "who's behind this deal" needed on the
@@ -59,30 +37,7 @@ export async function GET() {
   const businessByEmail: Record<string, PublicBusiness> = {};
   for (const m of merchantsResult.items ?? []) {
     if (m.email && m.businessName && m._id) {
-      businessByEmail[String(m.email).toLowerCase()] = {
-        businessName: m.businessName,
-        logoUrl: m.logoUrl || null,
-        website: m.website || null,
-        phone: m.phone || null,
-        address: m.address || null,
-        city: m.city || null,
-        slug: businessSlug(m.businessName, m._id),
-        bio: m.bio || null,
-        businessHours: m.businessHours || null,
-        facebookUrl: m.facebookUrl || null,
-        instagramUrl: m.instagramUrl || null,
-        priceRange: m.priceRange || null,
-        amenities: String(m.amenities || "")
-          .split(",")
-          .map((a: string) => a.trim())
-          .filter(Boolean),
-        bookingUrl: m.bookingUrl || null,
-        bookingEmail: m.bookingEmail || null,
-        lat: typeof m.lat === "number" ? m.lat : null,
-        lng: typeof m.lng === "number" ? m.lng : null,
-        rating: typeof m.rating === "number" ? m.rating : null,
-        reviewCount: typeof m.reviewCount === "number" ? m.reviewCount : null,
-      };
+      businessByEmail[String(m.email).toLowerCase()] = mapMerchantToBusiness(m);
     }
   }
 

@@ -13,6 +13,7 @@ import DealGrid from "./DealGrid";
  */
 export default function FlashDeals() {
   const [deals, setDeals] = useState<Deal[] | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     let cancelled = false;
@@ -28,9 +29,14 @@ export default function FlashDeals() {
     };
   }, []);
 
-  if (!deals) return null;
+  // Re-check every 30s so a flash deal that expires while the page is open
+  // disappears on its own, without requiring a manual refresh.
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
-  const now = Date.now();
+  if (!deals) return null;
   const flash = deals
     .filter((d) => d.isFlash && (!d.expiresAt || new Date(d.expiresAt).getTime() > now))
     .sort((a, b) => {

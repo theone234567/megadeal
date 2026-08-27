@@ -2,6 +2,7 @@ import type { WixClient } from "./wixClient";
 import type { Deal, DealStatus } from "./types";
 import { mapProductToDeal } from "./mapDeal";
 import { CATEGORY_NAME_BY_ID } from "./categories";
+import { applyBusinessToDeal, type PublicBusiness } from "./business";
 
 const FULL_FIELDS = ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"];
 
@@ -61,28 +62,6 @@ function applyMeta(deal: Deal, meta: DealMeta | undefined): Deal {
  * re-exposes only businessName/logoUrl, keyed by product id — never by
  * merchant email, so this can't be scraped for merchants' addresses.
  */
-interface PublicBusiness {
-  businessName: string;
-  logoUrl: string | null;
-  website: string | null;
-  phone: string | null;
-  address: string | null;
-  city: string | null;
-  slug: string;
-  bio: string | null;
-  businessHours: string | null;
-  facebookUrl: string | null;
-  instagramUrl: string | null;
-  priceRange: string | null;
-  amenities: string[];
-  bookingUrl: string | null;
-  bookingEmail: string | null;
-  lat: number | null;
-  lng: number | null;
-  rating: number | null;
-  reviewCount: number | null;
-}
-
 async function fetchBusinessDirectory(): Promise<Record<string, PublicBusiness>> {
   try {
     const res = await fetch("/api/public/merchant-directory");
@@ -97,28 +76,7 @@ async function fetchBusinessDirectory(): Promise<Record<string, PublicBusiness>>
 function applyBusiness(deal: Deal, directory: Record<string, PublicBusiness>): Deal {
   const business = directory[deal.id];
   if (!business) return deal;
-  return {
-    ...deal,
-    businessName: business.businessName,
-    businessLogoUrl: business.logoUrl,
-    businessWebsite: business.website,
-    businessPhone: business.phone,
-    businessAddress: business.address,
-    businessCity: business.city,
-    businessSlug: business.slug,
-    businessBio: business.bio,
-    businessHours: business.businessHours,
-    businessFacebookUrl: business.facebookUrl,
-    businessInstagramUrl: business.instagramUrl,
-    businessPriceRange: business.priceRange,
-    businessAmenities: business.amenities,
-    businessBookingUrl: business.bookingUrl,
-    businessBookingEmail: business.bookingEmail,
-    businessLat: business.lat,
-    businessLng: business.lng,
-    businessRating: business.rating,
-    businessReviewCount: business.reviewCount,
-  };
+  return applyBusinessToDeal(deal, business);
 }
 
 /** A deal is visible on the public site unless it has a status that explicitly hides it. */

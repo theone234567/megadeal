@@ -8,6 +8,7 @@ import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
 import DealGrid from "@/components/DealGrid";
 import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
 import StarRating from "@/components/StarRating";
+import ShareButtons from "@/components/ShareButtons";
 
 export async function generateMetadata({
   params,
@@ -138,6 +139,11 @@ export default async function BusinessProfilePage({
                 <span className="font-semibold text-slate-600">{business.priceRange}</span>
               )}
             </p>
+            <ShareButtons
+              title={business.businessName}
+              url={`${SITE_URL}/business/${business.slug}`}
+              className="mt-2"
+            />
           </div>
         </div>
 
