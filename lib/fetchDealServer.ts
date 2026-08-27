@@ -4,7 +4,8 @@ import { mapProductToDeal } from "./mapDeal";
 import { businessSlug } from "./slug";
 import { CATEGORY_NAME_BY_ID } from "./categories";
 import { mapMerchantToBusiness, applyBusinessToDeal, type PublicBusiness } from "./business";
-import type { Deal } from "./types";
+import { isDealLive } from "./dealVisibility";
+import type { Deal, DealStatus } from "./types";
 
 /**
  * Server-only deal lookup for generateMetadata/JSON-LD, deliberately
@@ -41,7 +42,7 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
       };
     }
 
-    if (deal.status !== null && deal.status !== "Live") return null;
+    if (!isDealLive(deal)) return null;
 
     if (merchantEmail) {
       const merchantResult = await adminClient.items
@@ -97,7 +98,9 @@ export async function fetchBusinessProfileBySlug(
       .eq("merchantEmail", merchant.email)
       .find();
     const liveDealRecords = (dealsResult.items ?? []).filter(
-      (d: any) => (!d.status || d.status === "Live") && d.productId
+      (d: any) =>
+        d.productId &&
+        isDealLive({ status: d.status ?? null, expiresAt: d.expiresAt ?? null })
     );
 
     const deals: Deal[] = [];
@@ -154,15 +157,20 @@ export async function fetchAllLiveDealSlugsForSitemap(): Promise<
     const products = (res as any).products ?? [];
 
     const dealsResult = await adminClient.items.query("Deals").find();
-    const statusByProductId: Record<string, string | null> = {};
+    const metaByProductId: Record<string, { status: DealStatus | null; expiresAt: string | null }> = {};
     for (const item of dealsResult.items ?? []) {
-      if (item.productId) statusByProductId[item.productId] = item.status ?? null;
+      if (item.productId) {
+        metaByProductId[item.productId] = {
+          status: (item.status as DealStatus) ?? null,
+          expiresAt: item.expiresAt ?? null,
+        };
+      }
     }
 
     return products
       .filter((p: any) => {
-        const status = statusByProductId[p.id ?? p._id];
-        return status === undefined || status === null || status === "Live";
+        const meta = metaByProductId[p.id ?? p._id];
+        return !meta || isDealLive(meta);
       })
       .map((p: any) => ({
         slug: p.slug ?? p.id ?? p._id,

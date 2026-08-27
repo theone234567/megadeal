@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDeals } from "@/lib/fetchDeals";
+import { isDealLive } from "@/lib/dealVisibility";
 import type { Deal } from "@/lib/types";
 import DealGrid from "./DealGrid";
 
@@ -39,7 +40,7 @@ export default function FlashDeals() {
 
   if (!deals) return null;
   const flash = deals
-    .filter((d) => d.isFlash && (!d.expiresAt || new Date(d.expiresAt).getTime() > now))
+    .filter((d) => d.isFlash && isDealLive(d, now))
     .sort((a, b) => {
       const aExp = a.expiresAt ? new Date(a.expiresAt).getTime() : Infinity;
       const bExp = b.expiresAt ? new Date(b.expiresAt).getTime() : Infinity;

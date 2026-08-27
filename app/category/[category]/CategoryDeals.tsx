@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDeals } from "@/lib/fetchDeals";
+import { isDealLive } from "@/lib/dealVisibility";
 import type { Deal } from "@/lib/types";
 import { sortDeals, type SortOption } from "@/lib/sortDeals";
 import DealGrid from "@/components/DealGrid";
@@ -17,6 +18,14 @@ export default function CategoryDeals({ category }: { category: string }) {
   const [deals, setDeals] = useState<Deal[] | null>(null);
   const [error, setError] = useState(false);
   const [sort, setSort] = useState<SortOption>("ending");
+  const [now, setNow] = useState(() => Date.now());
+
+  // Re-check every 30s so a deal that expires while this page is open drops
+  // out of the grid on its own, without requiring a manual refresh.
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +56,7 @@ export default function CategoryDeals({ category }: { category: string }) {
 
   if (!deals) return <DealGridSkeleton />;
 
-  let filtered = deals.filter((d) => d.categories.includes(category));
+  let filtered = deals.filter((d) => isDealLive(d, now) && d.categories.includes(category));
   if (city) {
     filtered = filtered.filter((d) => (d.businessCity ?? "").toLowerCase() === city);
   }

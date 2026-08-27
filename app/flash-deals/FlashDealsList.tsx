@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDeals } from "@/lib/fetchDeals";
+import { isDealLive } from "@/lib/dealVisibility";
 import type { Deal } from "@/lib/types";
 import { sortDeals, type SortOption } from "@/lib/sortDeals";
 import DealGrid from "@/components/DealGrid";
@@ -49,9 +50,7 @@ export default function FlashDealsList() {
 
   if (!deals) return <DealGridSkeleton />;
 
-  const flash = deals.filter(
-    (d) => d.isFlash && (!d.expiresAt || new Date(d.expiresAt).getTime() > now)
-  );
+  const flash = deals.filter((d) => d.isFlash && isDealLive(d, now));
   const sorted = sortDeals(flash, sort);
 
   return (

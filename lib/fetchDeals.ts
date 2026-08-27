@@ -3,6 +3,7 @@ import type { Deal, DealStatus } from "./types";
 import { mapProductToDeal } from "./mapDeal";
 import { CATEGORY_NAME_BY_ID } from "./categories";
 import { applyBusinessToDeal, type PublicBusiness } from "./business";
+import { isDealLive } from "./dealVisibility";
 
 const FULL_FIELDS = ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"];
 
@@ -79,11 +80,6 @@ function applyBusiness(deal: Deal, directory: Record<string, PublicBusiness>): D
   return applyBusinessToDeal(deal, business);
 }
 
-/** A deal is visible on the public site unless it has a status that explicitly hides it. */
-function isPubliclyVisible(deal: Deal): boolean {
-  return deal.status === null || deal.status === "Live";
-}
-
 /**
  * client.productsV3.searchProducts() and client.productsV3.getProduct()
  * both proved unreliable in the deployed browser client — confirmed via
@@ -141,7 +137,7 @@ export async function fetchDeals(client: WixClient): Promise<Deal[]> {
       .filter(Boolean)
       .map((p) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
       .map((deal) => applyMeta(deal, metaMap[deal.id]))
-      .filter(isPubliclyVisible)
+      .filter((deal) => isDealLive(deal))
       .map((deal) => applyBusiness(deal, directory));
   })();
   try {
@@ -179,7 +175,7 @@ export async function fetchDealBySlug(
               typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
           }
         : undefined);
-      if (!isPubliclyVisible(merged)) return null;
+      if (!isDealLive(merged)) return null;
       const directory = await fetchBusinessDirectory();
       return applyBusiness(merged, directory);
     } catch {
