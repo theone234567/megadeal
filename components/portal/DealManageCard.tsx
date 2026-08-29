@@ -13,6 +13,7 @@ export interface DealRecord {
   status?: DealStatus | null;
   photoUrl?: string | null;
   merchantEmail?: string;
+  statusNote?: string | null;
   [key: string]: any;
 }
 
@@ -98,6 +99,12 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
                 <p className="mt-1 text-xs italic text-slate-500">{deal.terms}</p>
               )}
             </div>
+          )}
+
+          {deal.statusNote && (status === "Paused" || status === "Cancelled") && (
+            <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              <span className="font-semibold">Note from MegaDeal:</span> {deal.statusNote}
+            </p>
           )}
 
           {(deal.viewCount || deal.clickCount) && (

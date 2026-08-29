@@ -11,6 +11,7 @@ export interface AdminDeal {
   status?: DealStatus | string;
   photoUrl?: string;
   merchantEmail?: string;
+  statusNote?: string | null;
   [key: string]: any;
 }
 
@@ -28,14 +29,19 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
   const [status, setStatus] = useState<string>(deal.status || "Live");
   const [expiresAt, setExpiresAt] = useState(toDateInputValue(deal.expiresAt));
   const [merchantEmail, setMerchantEmail] = useState(deal.merchantEmail || "");
+  const [note, setNote] = useState(deal.statusNote || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const statusChangedToPausedOrCancelled =
+    status !== (deal.status || "Live") && (status === "Paused" || status === "Cancelled");
+
   const dirty =
     status !== (deal.status || "Live") ||
     expiresAt !== toDateInputValue(deal.expiresAt) ||
-    merchantEmail !== (deal.merchantEmail || "");
+    merchantEmail !== (deal.merchantEmail || "") ||
+    note !== (deal.statusNote || "");
 
   async function save() {
     setSaving(true);
@@ -48,12 +54,14 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
           status,
           expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
           merchantEmail,
+          note,
         }),
       });
       if (!res.ok) throw new Error();
       deal.status = status;
       deal.expiresAt = expiresAt ? new Date(expiresAt).toISOString() : undefined;
       deal.merchantEmail = merchantEmail;
+      deal.statusNote = note || null;
       setSaved(true);
       setTimeout(() => setSaved(false), 1500);
     } catch {
@@ -121,6 +129,17 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
             </option>
           ))}
         </select>
+        {(status === "Paused" || status === "Cancelled" || note) && (
+          <input
+            type="text"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder={
+              statusChangedToPausedOrCancelled ? "Note for the merchant (why?)" : "Note for the merchant"
+            }
+            className="mt-1 w-44 rounded-lg border border-slate-200 px-2 py-1 text-xs"
+          />
+        )}
       </td>
       <td className="py-3">
         <button

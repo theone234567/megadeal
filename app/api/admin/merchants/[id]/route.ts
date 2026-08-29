@@ -3,6 +3,8 @@ import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL } from "@/lib/siteConfig";
+import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
+import { logMerchantActivity } from "@/lib/merchantActivity";
 
 const ALLOWED_STATUSES = ["Pending", "Approved", "Suspended"];
 const INTRO_CREDITS = 2;
@@ -34,36 +36,6 @@ async function claimReferralAtomically(adminClient: any, merchantId: string): Pr
             ],
           },
           condition: { filter: { referralRewarded: { $ne: true } } },
-        }),
-      }
-    );
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
-/** Atomic server-side increment — safe under concurrent referral claims,
- * unlike a get-then-update of creditsBalance in application code. */
-async function incrementCreditsAtomically(
-  adminClient: any,
-  merchantId: string,
-  amount: number
-): Promise<boolean> {
-  try {
-    const res = await adminClient.fetchWithAuth(
-      `https://www.wixapis.com/wix-data/v2/items/${merchantId}`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          dataCollectionId: "Merchants",
-          patch: {
-            dataItemId: merchantId,
-            fieldModifications: [
-              { fieldPath: "creditsBalance", action: "INCREMENT_FIELD", incrementFieldOptions: { value: amount } },
-            ],
-          },
         }),
       }
     );
@@ -134,8 +106,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const existingCredits = Number(existing.creditsBalance) || 0;
 
   // Base credits: whatever the admin explicitly set this save, or the
-  // existing balance if they left it untouched.
+  // existing balance if they left it untouched. Captured before newCredits
+  // picks up intro/referral additions below, so the ledger entry only
+  // reflects the admin's own manual adjustment, not those.
   let newCredits = adminSetCredits ? patch.creditsBalance : existingCredits;
+  const adminAdjustDelta = adminSetCredits ? patch.creditsBalance - existingCredits : 0;
   let introGranted = 0;
   let referralBonusGranted = 0;
   let referrer: any = null;
@@ -166,6 +141,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       newCredits += referralBonusGranted;
       patch.referralRewarded = true;
       patch.referredBy = candidate.businessName || candidate.email || null;
+      // The referrer isn't part of this record's own patch below, so their
+      // credit bump is a separate atomic increment on their own record.
+      await incrementCreditsAtomically(adminClient, referrer._id, REFERRAL_BONUS_CREDITS);
     }
   }
 
@@ -185,6 +163,31 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   // "you're approved" email. Surfaced to the caller as `warnings`.
   const warnings: string[] = [];
 
+  if (adminAdjustDelta !== 0 && existing.email) {
+    await logMerchantActivity(adminClient, {
+      merchantEmail: existing.email,
+      type: "credit",
+      amount: adminAdjustDelta,
+      description: "Credits adjusted by admin",
+    });
+  }
+  if (introGranted > 0 && existing.email) {
+    await logMerchantActivity(adminClient, {
+      merchantEmail: existing.email,
+      type: "credit",
+      amount: introGranted,
+      description: "Free intro credits on approval",
+    });
+  }
+  if (referralBonusGranted > 0 && existing.email) {
+    await logMerchantActivity(adminClient, {
+      merchantEmail: existing.email,
+      type: "credit",
+      amount: referralBonusGranted,
+      description: "Referral bonus for signing up with a referral code",
+    });
+  }
+
   if (referrer) {
     let referrerFresh: any = null;
     try {
@@ -194,24 +197,35 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       warnings.push(`Couldn't load referrer details for the credit notification email.`);
     }
     if (referrerFresh?.email) {
-      try {
-        await sendTransactionalEmail({
-          to: referrerFresh.email,
-          subject: "You earned referral credits on MegaDeal!",
-          html: `
-            <p>Hi ${referrerFresh.businessName || "there"},</p>
-            <p>Great news — a business you referred, <strong>${
-              existing.businessName || "a new business"
-            }</strong>, has been approved on MegaDeal. We've added
-            ${REFERRAL_BONUS_CREDITS} bonus deal credit${
-            REFERRAL_BONUS_CREDITS === 1 ? "" : "s"
-          } to your account. Thanks for spreading the word!</p>
-            <p><a href="${SITE_URL}/portal">View your portal</a></p>
-          `,
-        });
-      } catch (err) {
-        console.error("[admin/merchants] referral bonus email failed", err);
-        warnings.push(`Referral bonus was credited, but the notification email to ${referrerFresh.email} failed to send.`);
+      await logMerchantActivity(adminClient, {
+        merchantEmail: referrerFresh.email,
+        type: "credit",
+        amount: REFERRAL_BONUS_CREDITS,
+        description: `Referral bonus for referring "${existing.businessName || "a new business"}"`,
+      });
+      // Referral bonus emails are the one notification a merchant can opt
+      // out of (notifyReferralBonus) — the credit and ledger entry above
+      // always happen regardless, only this email is conditional.
+      if (referrerFresh.notifyReferralBonus !== false) {
+        try {
+          await sendTransactionalEmail({
+            to: referrerFresh.email,
+            subject: "You earned referral credits on MegaDeal!",
+            html: `
+              <p>Hi ${referrerFresh.businessName || "there"},</p>
+              <p>Great news — a business you referred, <strong>${
+                existing.businessName || "a new business"
+              }</strong>, has been approved on MegaDeal. We've added
+              ${REFERRAL_BONUS_CREDITS} bonus deal credit${
+              REFERRAL_BONUS_CREDITS === 1 ? "" : "s"
+            } to your account. Thanks for spreading the word!</p>
+              <p><a href="${SITE_URL}/portal">View your portal</a></p>
+            `,
+          });
+        } catch (err) {
+          console.error("[admin/merchants] referral bonus email failed", err);
+          warnings.push(`Referral bonus was credited, but the notification email to ${referrerFresh.email} failed to send.`);
+        }
       }
     }
   }

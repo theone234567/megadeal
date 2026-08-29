@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { logMerchantActivity } from "@/lib/merchantActivity";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
 
@@ -33,6 +34,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (body.photoUrl !== undefined) {
     patch.photoUrl = String(body.photoUrl);
   }
+  if (body.note !== undefined) {
+    patch.statusNote = String(body.note).trim().slice(0, 500) || null;
+  }
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
@@ -47,5 +51,27 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     ...existing,
     ...patch,
   });
+
+  const dealName = existing.dealName || "Your deal";
+  const statusChanged = patch.status !== undefined && patch.status !== existing.status;
+  if (statusChanged && existing.merchantEmail) {
+    if (patch.status === "Live") {
+      await logMerchantActivity(adminClient, {
+        merchantEmail: existing.merchantEmail,
+        type: "deal",
+        description: `"${dealName}" is now live`,
+      });
+    } else if (patch.status === "Paused" || patch.status === "Cancelled") {
+      const note = patch.statusNote ?? existing.statusNote;
+      await logMerchantActivity(adminClient, {
+        merchantEmail: existing.merchantEmail,
+        type: "deal",
+        description: note
+          ? `"${dealName}" was ${patch.status.toLowerCase()}: ${note}`
+          : `"${dealName}" was ${patch.status.toLowerCase()}`,
+      });
+    }
+  }
+
   return NextResponse.json({ item: updated });
 }

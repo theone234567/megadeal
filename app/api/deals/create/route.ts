@@ -4,6 +4,8 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { CATEGORY_ID_BY_NAME } from "@/lib/categories";
 import { getOrClaimMerchant } from "@/lib/merchant";
+import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
+import { logMerchantActivity } from "@/lib/merchantActivity";
 
 const MAX_DURATION_DAYS = 365;
 const MAX_DURATION_MINUTES = 24 * 60;
@@ -182,9 +184,12 @@ export async function POST(req: NextRequest) {
     isFlash,
   });
 
-  await adminClient.items.update("Merchants", {
-    ...merchant,
-    creditsBalance: credits - 1,
+  await incrementCreditsAtomically(adminClient, merchant._id, -1);
+  await logMerchantActivity(adminClient, {
+    merchantEmail: member.email,
+    type: "credit",
+    amount: -1,
+    description: `Deal created: "${dealName}"`,
   });
 
   return NextResponse.json({ item: deal });
