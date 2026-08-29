@@ -205,7 +205,10 @@ export default function PortalPage() {
                 {merchant.creditsBalance ?? 0}
               </p>
               <p className="mt-1 text-sm text-slate-500">
-                1 credit = 1 deal listing. Contact us to top up.
+                1 credit = 1 deal listing.{" "}
+                <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
+                  Contact us to top up.
+                </Link>
               </p>
             </div>
             <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card">

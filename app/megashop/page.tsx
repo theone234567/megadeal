@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 
@@ -39,19 +40,14 @@ export default function MegaShopComingSoonPage() {
         </h2>
         <p className="mt-2 text-sm text-slate-600">
           We&apos;re looking for wholesale suppliers of popular branded
-          products for MegaShop.co.nz. If that&apos;s you, send us your email
-          and we&apos;ll be in touch.
+          products for MegaShop.co.nz. If that&apos;s you, send us an email.
         </p>
-        <div className="mt-4">
-          <EmailSignupForm
-            audience="supplier"
-            source="megashop-wholesale"
-            placeholder="you@yourcompany.com"
-            buttonLabel="Get in touch"
-            accent="brand"
-            surface="plain"
-          />
-        </div>
+        <Link
+          href="/contact"
+          className="mt-4 inline-block rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95"
+        >
+          Get in touch →
+        </Link>
       </div>
     </main>
   );

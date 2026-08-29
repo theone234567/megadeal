@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 interface EmailSignupFormProps {
-  audience: "customer" | "merchant" | "supplier";
+  audience: "customer" | "merchant";
   source?: string;
   placeholder?: string;
   buttonLabel?: string;
@@ -105,14 +105,7 @@ export default function EmailSignupForm({
             className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-slate-300"
           />
           <span>
-            {audience === "supplier" ? (
-              <>
-                I agree to be contacted by MegaDeal about this
-              </>
-            ) : (
-              <>I agree to receive deal emails from MegaDeal</>
-            )}{" "}
-            and have read the{" "}
+            I agree to receive deal emails from MegaDeal and have read the{" "}
             <a href="/terms" className={linkClass}>
               terms
             </a>{" "}
