@@ -92,6 +92,14 @@ export default function DealDetail({ slug }: { slug: string }) {
       deal.businessBookingUrl ||
       deal.businessBookingEmail
   );
+  const hasAboutContent = Boolean(
+    deal.businessBio ||
+      deal.businessHours ||
+      deal.businessPriceRange ||
+      deal.businessAmenities.length > 0 ||
+      deal.businessFacebookUrl ||
+      deal.businessInstagramUrl
+  );
   const mapUrl = getMapUrl({
     lat: deal.businessLat,
     lng: deal.businessLng,
@@ -142,76 +150,152 @@ export default function DealDetail({ slug }: { slug: string }) {
             </p>
           </div>
 
-          {deal.businessName &&
-            (deal.businessBio ||
-              deal.businessHours ||
-              deal.businessPriceRange ||
-              deal.businessAmenities.length > 0 ||
-              deal.businessFacebookUrl ||
-              deal.businessInstagramUrl) && (
-              <div className="mt-6 border-t border-slate-100 pt-6">
-                <h2 className="mb-2 text-lg font-bold text-slate-900">
-                  About {deal.businessName}
-                </h2>
-                {deal.businessPriceRange && (
-                  <p className="mb-2 text-sm font-semibold text-slate-600">
-                    {deal.businessPriceRange}
-                  </p>
-                )}
-                {deal.businessBio && (
-                  <p className="text-sm leading-relaxed text-slate-600">{deal.businessBio}</p>
-                )}
-                {deal.businessAmenities.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {deal.businessAmenities.map((a) => (
-                      <span
-                        key={a}
-                        className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600"
-                      >
-                        {a}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {deal.businessHours && (
-                  <p className="mt-3 flex items-start gap-2 text-sm text-slate-600">
-                    <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" /> <span>{deal.businessHours}</span>
-                  </p>
-                )}
-                {(deal.businessFacebookUrl || deal.businessInstagramUrl) && (
-                  <div className="mt-3 flex items-center gap-3 text-sm">
-                    {deal.businessFacebookUrl && (
-                      <a
-                        href={deal.businessFacebookUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-brand-700 hover:underline"
-                      >
-                        Facebook
-                      </a>
-                    )}
-                    {deal.businessInstagramUrl && (
-                      <a
-                        href={deal.businessInstagramUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium text-brand-700 hover:underline"
-                      >
-                        Instagram
-                      </a>
-                    )}
-                  </div>
-                )}
-                {deal.businessSlug && (
-                  <Link
-                    href={`/business/${deal.businessSlug}`}
-                    className="mt-3 inline-block text-xs font-semibold text-brand-600 hover:underline"
-                  >
-                    View full business profile →
-                  </Link>
-                )}
-              </div>
-            )}
+          {deal.businessName && (hasAboutContent || hasContactInfo) && (
+            <div className="mt-6 border-t border-slate-100 pt-6">
+              <h2 className="mb-2 text-lg font-bold text-slate-900">
+                About {deal.businessName}
+              </h2>
+              {deal.businessPriceRange && (
+                <p className="mb-2 text-sm font-semibold text-slate-600">
+                  {deal.businessPriceRange}
+                </p>
+              )}
+              {deal.businessBio && (
+                <p className="text-sm leading-relaxed text-slate-600">{deal.businessBio}</p>
+              )}
+              {deal.businessAmenities.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {deal.businessAmenities.map((a) => (
+                    <span
+                      key={a}
+                      className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600"
+                    >
+                      {a}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {deal.businessHours && (
+                <p className="mt-3 flex items-start gap-2 text-sm text-slate-600">
+                  <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" /> <span>{deal.businessHours}</span>
+                </p>
+              )}
+
+              {hasContactInfo && (
+                <div className="mt-3 space-y-2">
+                  {deal.businessBookingUrl && (
+                    <a
+                      href={
+                        deal.businessBookingUrl.startsWith("http")
+                          ? deal.businessBookingUrl
+                          : `https://${deal.businessBookingUrl}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-fit items-center gap-2 rounded-full bg-brand-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95"
+                    >
+                      <CalendarIcon className="h-4 w-4" /> Book now
+                    </a>
+                  )}
+                  {deal.businessPhone && (
+                    <a
+                      href={`tel:${deal.businessPhone.replace(/[^0-9+]/g, "")}`}
+                      className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
+                    >
+                      <PhoneIcon className="h-4 w-4 shrink-0" /> {deal.businessPhone}
+                    </a>
+                  )}
+                  {deal.businessBookingEmail && (
+                    <a
+                      href={`mailto:${deal.businessBookingEmail}`}
+                      className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
+                    >
+                      <MailIcon className="h-4 w-4 shrink-0" /> {deal.businessBookingEmail}
+                    </a>
+                  )}
+                  {deal.businessWebsite && (
+                    <a
+                      href={
+                        deal.businessWebsite.startsWith("http")
+                          ? deal.businessWebsite
+                          : `https://${deal.businessWebsite}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
+                    >
+                      <GlobeIcon className="h-4 w-4 shrink-0" /> Visit website
+                    </a>
+                  )}
+                  {deal.businessAddress && (
+                    <div className="text-sm text-slate-600">
+                      <p className="flex items-center gap-2">
+                        <MapPinIcon className="h-4 w-4 shrink-0" /> {deal.businessAddress}
+                        {deal.businessCity ? `, ${deal.businessCity}` : ""}
+                      </p>
+                      {(mapUrl || directionsUrl) && (
+                        <p className="mt-1 flex items-center gap-3 pl-6 text-xs font-semibold text-brand-700">
+                          {mapUrl && (
+                            <a
+                              href={mapUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline"
+                            >
+                              View map
+                            </a>
+                          )}
+                          {directionsUrl && (
+                            <a
+                              href={directionsUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline"
+                            >
+                              Get directions
+                            </a>
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {(deal.businessFacebookUrl || deal.businessInstagramUrl) && (
+                <div className="mt-3 flex items-center gap-3 text-sm">
+                  {deal.businessFacebookUrl && (
+                    <a
+                      href={deal.businessFacebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-brand-700 hover:underline"
+                    >
+                      Facebook
+                    </a>
+                  )}
+                  {deal.businessInstagramUrl && (
+                    <a
+                      href={deal.businessInstagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-brand-700 hover:underline"
+                    >
+                      Instagram
+                    </a>
+                  )}
+                </div>
+              )}
+              {deal.businessSlug && (
+                <Link
+                  href={`/business/${deal.businessSlug}`}
+                  className="mt-3 inline-block text-xs font-semibold text-brand-600 hover:underline"
+                >
+                  View full business profile →
+                </Link>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="lg:col-span-2">
@@ -296,104 +380,18 @@ export default function DealDetail({ slug }: { slug: string }) {
                 >
                   Get this deal
                 </button>
-              ) : hasContactInfo ? (
-                <div className="space-y-2 rounded-xl border border-brand-100 bg-brand-50 p-4">
-                  <p className="text-sm font-semibold text-brand-800">How to book</p>
-                  <p className="text-xs text-brand-700">
-                    Contact or visit {deal.businessName || "the business"} and mention
-                    this MegaDeal offer.
-                  </p>
-                  {deal.businessBookingUrl && (
-                    <a
-                      href={
-                        deal.businessBookingUrl.startsWith("http")
-                          ? deal.businessBookingUrl
-                          : `https://${deal.businessBookingUrl}`
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1 flex items-center justify-center gap-2 rounded-full bg-brand-600 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95"
-                    >
-                      <CalendarIcon className="h-4 w-4" /> Book now
-                    </a>
-                  )}
-                  {deal.businessPhone && (
-                    <a
-                      href={`tel:${deal.businessPhone.replace(/[^0-9+]/g, "")}`}
-                      className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
-                    >
-                      <PhoneIcon className="h-4 w-4 shrink-0" /> {deal.businessPhone}
-                    </a>
-                  )}
-                  {deal.businessBookingEmail && (
-                    <a
-                      href={`mailto:${deal.businessBookingEmail}`}
-                      className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
-                    >
-                      <MailIcon className="h-4 w-4 shrink-0" /> {deal.businessBookingEmail}
-                    </a>
-                  )}
-                  {deal.businessWebsite && (
-                    <a
-                      href={
-                        deal.businessWebsite.startsWith("http")
-                          ? deal.businessWebsite
-                          : `https://${deal.businessWebsite}`
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
-                    >
-                      <GlobeIcon className="h-4 w-4 shrink-0" /> Visit website
-                    </a>
-                  )}
-                  {deal.businessAddress && (
-                    <div className="text-sm text-brand-700">
-                      <p className="flex items-center gap-2">
-                        <MapPinIcon className="h-4 w-4 shrink-0" /> {deal.businessAddress}
-                        {deal.businessCity ? `, ${deal.businessCity}` : ""}
-                      </p>
-                      {(mapUrl || directionsUrl) && (
-                        <p className="mt-1 flex items-center gap-3 pl-6 text-xs font-semibold">
-                          {mapUrl && (
-                            <a
-                              href={mapUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:underline"
-                            >
-                              View map
-                            </a>
-                          )}
-                          {directionsUrl && (
-                            <a
-                              href={directionsUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:underline"
-                            >
-                              Get directions
-                            </a>
-                          )}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  {deal.businessSlug && (
-                    <Link
-                      href={`/business/${deal.businessSlug}`}
-                      className="inline-block text-xs font-semibold text-brand-600 hover:underline"
-                    >
-                      View full business profile →
-                    </Link>
-                  )}
-                </div>
               ) : (
                 <div className="rounded-xl border border-brand-100 bg-brand-50 p-4">
                   <p className="text-sm font-semibold text-brand-800">
                     Mention this MegaDeal offer when you contact or visit{" "}
                     {deal.businessName || "the business"} to redeem it.
                   </p>
+                  {hasContactInfo && (
+                    <p className="mt-1 text-xs text-brand-700">
+                      Full contact details are in the &quot;About{" "}
+                      {deal.businessName || "this business"}&quot; section below.
+                    </p>
+                  )}
                   {deal.businessSlug && (
                     <Link
                       href={`/business/${deal.businessSlug}`}
