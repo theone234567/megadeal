@@ -5,7 +5,7 @@ import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL } from "@/lib/siteConfig";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ALLOWED_AUDIENCES = ["customer", "merchant"];
+const ALLOWED_AUDIENCES = ["customer", "merchant", "supplier"];
 
 /**
  * Deal-alert email signup — goes through this server route (rather than a
@@ -50,10 +50,23 @@ export async function POST(req: NextRequest) {
   try {
     const verifyUrl = `${SITE_URL}/api/email-signup/verify?token=${verifyToken}`;
     const unsubscribeUrl = `${SITE_URL}/api/email-signup/unsubscribe?token=${unsubscribeToken}`;
+    const isSupplier = audience === "supplier";
     await sendTransactionalEmail({
       to: email,
-      subject: "Confirm your MegaDeal email alerts",
-      html: `
+      subject: isSupplier
+        ? "Confirm your email — MegaShop wholesale suppliers"
+        : "Confirm your MegaDeal email alerts",
+      html: isSupplier
+        ? `
+        <p>Hi there,</p>
+        <p>Thanks for your interest in becoming a wholesale supplier for MegaShop.co.nz. Please confirm this is your email address so our team can get in touch:</p>
+        <p><a href="${verifyUrl}">Confirm my email</a></p>
+        <p>If you didn't submit this, you can ignore this email — you won't be added to our list unless you confirm.</p>
+        <p style="margin-top:24px;font-size:12px;color:#888;">
+          <a href="${unsubscribeUrl}">Unsubscribe</a> at any time.
+        </p>
+      `
+        : `
         <p>Hi there,</p>
         <p>Thanks for signing up for MegaDeal deal alerts. Please confirm this is your email address:</p>
         <p><a href="${verifyUrl}">Confirm my email</a></p>

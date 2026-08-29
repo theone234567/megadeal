@@ -3,7 +3,7 @@ import type { Deal } from "./types";
 export type SortOption = "ending" | "discount" | "priceAsc" | "priceDesc";
 
 export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: "ending", label: "Ending soonest" },
+  { value: "ending", label: "Ending soon" },
   { value: "discount", label: "Biggest discount" },
   { value: "priceAsc", label: "Price: low to high" },
   { value: "priceDesc", label: "Price: high to low" },

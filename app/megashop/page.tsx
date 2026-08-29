@@ -31,6 +31,28 @@ export default function MegaShopComingSoonPage() {
           surface="plain"
         />
       </div>
+
+      <div className="mt-14 w-full max-w-md border-t border-slate-100 pt-10">
+        <span className="text-3xl">🤝</span>
+        <h2 className="mt-2 text-xl font-bold text-slate-900">
+          Wholesale suppliers wanted
+        </h2>
+        <p className="mt-2 text-sm text-slate-600">
+          We&apos;re looking for wholesale suppliers of popular branded
+          products for MegaShop.co.nz. If that&apos;s you, send us your email
+          and we&apos;ll be in touch.
+        </p>
+        <div className="mt-4">
+          <EmailSignupForm
+            audience="supplier"
+            source="megashop-wholesale"
+            placeholder="you@yourcompany.com"
+            buttonLabel="Get in touch"
+            accent="brand"
+            surface="plain"
+          />
+        </div>
+      </div>
     </main>
   );
 }
