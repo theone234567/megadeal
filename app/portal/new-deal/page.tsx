@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { uploadPhoto } from "@/lib/imageUpload";
 import { CATEGORIES } from "@/lib/categories";
@@ -28,11 +28,14 @@ interface MerchantRecord {
   creditsBalance?: number;
 }
 
-export default function NewDealPage() {
-  const { isLoggedIn, member, login } = useWix();
+function NewDealForm() {
+  const { isLoggedIn, member, login, client } = useWix();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const duplicateId = searchParams.get("duplicate");
 
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
+  const [duplicatedFrom, setDuplicatedFrom] = useState(false);
 
   const [dealName, setDealName] = useState("");
   const [category, setCategory] = useState("");
@@ -63,6 +66,38 @@ export default function NewDealPage() {
       .then(({ item }) => setMerchant(item ?? null))
       .catch(() => setMerchant(null));
   }, [member, isLoggedIn]);
+
+  // Prefill from an existing deal when arriving via "Duplicate this deal".
+  // Only the fields stored directly on the Deals record carry over — category
+  // and photo live on the linked Wix Store product, so those are re-picked.
+  useEffect(() => {
+    if (!duplicateId || !merchant) return;
+    (client as any).items
+      .get("Deals", duplicateId)
+      .then((original: any) => {
+        if (!original || original.merchantEmail !== member?.email) return;
+        setDealName(original.dealName || "");
+        setDescription(original.description || "");
+        setTerms(original.terms || "");
+        setPriceNow(original.priceNow !== undefined ? String(original.priceNow) : "");
+        setPriceWas(
+          original.priceWas && original.priceWas !== original.priceNow
+            ? String(original.priceWas)
+            : ""
+        );
+        setIsFlash(Boolean(original.isFlash));
+        setQuantityAvailable(
+          original.quantityAvailable !== undefined && original.quantityAvailable !== null
+            ? String(original.quantityAvailable)
+            : ""
+        );
+        setDuplicatedFrom(true);
+      })
+      .catch(() => {
+        // Not fatal — the merchant just starts from a blank form instead.
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [duplicateId, merchant]);
 
   useEffect(() => {
     if (!photo) {
@@ -331,6 +366,12 @@ export default function NewDealPage() {
         This will use 1 of your {credits} deal credit{credits === 1 ? "" : "s"}.
         Your deal goes live once we&apos;ve reviewed it.
       </p>
+      {duplicatedFrom && (
+        <p className="mt-3 rounded-xl border border-brand-100 bg-brand-50 p-3 text-sm text-brand-700">
+          Prefilled from your previous deal — just re-pick the category and
+          photo below, then everything else is ready to go.
+        </p>
+      )}
 
       <form onSubmit={handleContinueToPreview} className="mt-6 space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
         <div>
@@ -508,5 +549,13 @@ export default function NewDealPage() {
         </button>
       </form>
     </main>
+  );
+}
+
+export default function NewDealPage() {
+  return (
+    <Suspense fallback={null}>
+      <NewDealForm />
+    </Suspense>
   );
 }

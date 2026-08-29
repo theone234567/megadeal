@@ -9,6 +9,7 @@ import PhotoUploadField from "@/components/portal/PhotoUploadField";
 import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
 import ReferralCard from "@/components/portal/ReferralCard";
 import ActivityFeed from "@/components/portal/ActivityFeed";
+import NotificationPreferences from "@/components/portal/NotificationPreferences";
 
 interface MerchantRecord {
   _id: string;
@@ -31,6 +32,7 @@ interface MerchantRecord {
   logoUrl?: string;
   emailVerified?: boolean;
   referralCode?: string;
+  notifyReferralBonus?: boolean;
   [key: string]: any;
 }
 
@@ -237,6 +239,8 @@ export default function PortalPage() {
           <ReferralCard referralCode={merchant.referralCode} />
 
           <ActivityFeed />
+
+          <NotificationPreferences notifyReferralBonus={merchant.notifyReferralBonus} />
 
           <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
             <MerchantProfileForm merchant={merchant} onSaved={(updated) => setMerchant(updated)} />

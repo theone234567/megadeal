@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { DealStatus } from "@/lib/types";
 import { DEAL_STATUS_STYLES, allowedDealActions } from "@/lib/dealStatus";
 import PhotoUploadField from "./PhotoUploadField";
@@ -31,6 +32,10 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
   const status: DealStatus | null = deal.status ?? "Live";
   const actions = allowedDealActions(status);
   const isCancelled = status === "Cancelled";
+  const daysUntilExpiry = deal.expiresAt
+    ? (new Date(deal.expiresAt).getTime() - Date.now()) / 86_400_000
+    : null;
+  const endingSoon = status === "Live" && daysUntilExpiry !== null && daysUntilExpiry >= 0 && daysUntilExpiry <= 3;
 
   async function handleStatusClick(target: DealStatus) {
     setActionError(null);
@@ -58,8 +63,9 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
           >
             {status}
           </span>
-          <span className="text-sm text-slate-500">
+          <span className={`text-sm ${endingSoon ? "font-semibold text-ember-600" : "text-slate-500"}`}>
             {deal.expiresAt ? `Ends ${new Date(deal.expiresAt).toLocaleDateString()}` : "—"}
+            {endingSoon && " ⏰"}
           </span>
           <span className="text-slate-400">{open ? "▲" : "▼"}</span>
         </span>
@@ -129,7 +135,7 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
             {actions.length === 0 ? (
               <p className="mt-1 text-sm text-slate-500">
                 {isCancelled
-                  ? "This deal is cancelled. Contact us if you'd like to relist it."
+                  ? "This deal is cancelled — duplicate it below if you'd like to relist it."
                   : "Waiting for site owner approval — you'll be notified once it's reviewed."}
               </p>
             ) : (
@@ -153,6 +159,13 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
             )}
             {actionError && <p className="mt-2 text-sm text-red-600">{actionError}</p>}
           </div>
+
+          <Link
+            href={`/portal/new-deal?duplicate=${deal._id}`}
+            className="inline-block text-xs font-semibold text-brand-600 hover:underline"
+          >
+            Duplicate this deal →
+          </Link>
         </div>
       )}
     </li>
