@@ -10,6 +10,8 @@ import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
 import ReferralCard from "@/components/portal/ReferralCard";
 import ActivityFeed from "@/components/portal/ActivityFeed";
 import NotificationPreferences from "@/components/portal/NotificationPreferences";
+import OnboardingChecklist from "@/components/portal/OnboardingChecklist";
+import ExportDealsButton from "@/components/portal/ExportDealsButton";
 
 interface MerchantRecord {
   _id: string;
@@ -199,6 +201,12 @@ export default function PortalPage() {
             + Create a new deal
           </Link>
 
+          <OnboardingChecklist
+            emailVerified={merchant.emailVerified}
+            profileComplete={Boolean(merchant.bio && (merchant.phone || merchant.address))}
+            hasDeals={deals.length > 0}
+          />
+
           <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
@@ -257,7 +265,10 @@ export default function PortalPage() {
           </div>
 
           <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
-            <h2 className="text-lg font-bold text-slate-900">Your deals</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">Your deals</h2>
+              <ExportDealsButton deals={deals} />
+            </div>
             {deals.length === 0 ? (
               <p className="mt-2 text-sm text-slate-500">
                 No deals yet — create your first one above.
