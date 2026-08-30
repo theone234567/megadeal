@@ -56,6 +56,7 @@ export default function MerchantSignupForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [consent, setConsent] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -176,6 +177,7 @@ export default function MerchantSignupForm() {
                 amenities: String(formData.get("amenities") ?? ""),
                 couponCode: String(formData.get("couponCode") ?? ""),
                 website2: String(formData.get("website2") ?? ""),
+                agreedToTerms,
               }),
             });
             if (!res.ok) {
@@ -508,6 +510,27 @@ export default function MerchantSignupForm() {
             I understand my business name and address will be displayed
             publicly on the MegaDeal website as part of my deal listing. I
             can add a business photo once my account is set up.
+          </span>
+        </label>
+
+        <label className="flex items-start gap-2 text-sm text-slate-600">
+          <input
+            required
+            type="checkbox"
+            checked={agreedToTerms}
+            onChange={(e) => setAgreedToTerms(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+          />
+          <span>
+            I agree to MegaDeal&apos;s{" "}
+            <a href="/terms" target="_blank" className="font-semibold underline hover:text-brand-700">
+              Terms and Conditions
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" target="_blank" className="font-semibold underline hover:text-brand-700">
+              Privacy Policy
+            </a>
+            .
           </span>
         </label>
 

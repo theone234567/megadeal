@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
+import { addResendContact } from "@/lib/resendAudience";
 import { SITE_URL } from "@/lib/siteConfig";
 import { generateReferralCode } from "@/lib/referral";
 
@@ -60,6 +61,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
   }
 
+  if (body.agreedToTerms !== true) {
+    return NextResponse.json(
+      { error: "You must agree to the Terms and Conditions to apply." },
+      { status: 400 }
+    );
+  }
+
   const lat = Number.isFinite(body.lat) ? Number(body.lat) : null;
   const lng = Number.isFinite(body.lng) ? Number(body.lng) : null;
 
@@ -112,6 +120,13 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[merchants/apply] verification email failed", err);
   }
+
+  // Best-effort, same reasoning: keeps merchants reachable via a Resend
+  // Broadcast alongside customer deal-alert subscribers, without blocking
+  // the application if Resend has a hiccup.
+  addResendContact(email).catch((err) =>
+    console.error("[merchants/apply] Resend sync failed", err)
+  );
 
   return NextResponse.json({ item });
 }
