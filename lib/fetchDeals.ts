@@ -1,7 +1,7 @@
 import type { WixClient } from "./wixClient";
 import type { Deal, DealStatus } from "./types";
 import { mapProductToDeal } from "./mapDeal";
-import { CATEGORY_NAME_BY_ID } from "./categories";
+import { CATEGORY_NAME_BY_ID, isMegaShopProduct } from "./categories";
 import { applyBusinessToDeal, type PublicBusiness } from "./business";
 import { isDealLive } from "./dealVisibility";
 
@@ -135,6 +135,7 @@ export async function fetchDeals(client: WixClient): Promise<Deal[]> {
 
     return basics
       .filter(Boolean)
+      .filter((p) => !isMegaShopProduct(p))
       .map((p) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
       .map((deal) => applyMeta(deal, metaMap[deal.id]))
       .filter((deal) => isDealLive(deal))
@@ -156,7 +157,7 @@ export async function fetchDealBySlug(
       fields: FULL_FIELDS,
     } as any);
     const product = (res as any).product;
-    if (!product) return null;
+    if (!product || isMegaShopProduct(product)) return null;
     const deal = mapProductToDeal(product, CATEGORY_NAME_BY_ID);
 
     try {

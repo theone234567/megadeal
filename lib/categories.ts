@@ -25,3 +25,18 @@ export const CATEGORY_NAME_BY_ID: Record<string, string> = Object.fromEntries(
 export const CATEGORY_ID_BY_NAME: Record<string, string> = Object.fromEntries(
   CATEGORIES.map((c) => [c.name, c.id])
 );
+
+/**
+ * MegaShop.co.nz products live in the same Wix Stores catalog as MegaDeal's
+ * deal-listing products, kept isolated only by category membership — a
+ * product in this category is never shown as a MegaDeal deal. Every
+ * MegaDeal product-fetch path must request ALL_CATEGORIES_INFO and filter
+ * through isMegaShopProduct() before mapping/displaying a product.
+ */
+export const MEGASHOP_CATEGORY_ID = "f97b5530-5218-4779-a221-20af6edc58a5";
+
+export function isMegaShopProduct(product: any): boolean {
+  return Boolean(
+    product?.allCategoriesInfo?.categories?.some((c: any) => c?.id === MEGASHOP_CATEGORY_ID)
+  );
+}

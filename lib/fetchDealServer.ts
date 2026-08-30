@@ -2,7 +2,7 @@ import "server-only";
 import { createWixAdminClient } from "./wixAdmin";
 import { mapProductToDeal } from "./mapDeal";
 import { businessSlug } from "./slug";
-import { CATEGORY_NAME_BY_ID } from "./categories";
+import { CATEGORY_NAME_BY_ID, isMegaShopProduct } from "./categories";
 import { mapMerchantToBusiness, applyBusinessToDeal, type PublicBusiness } from "./business";
 import { isDealLive } from "./dealVisibility";
 import type { Deal, DealStatus } from "./types";
@@ -20,7 +20,7 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
       fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
     } as any);
     const product = (res as any).product;
-    if (!product) return null;
+    if (!product || isMegaShopProduct(product)) return null;
 
     let deal = mapProductToDeal(product, CATEGORY_NAME_BY_ID);
 
@@ -153,8 +153,9 @@ export async function fetchAllLiveDealSlugsForSitemap(): Promise<
     const adminClient = createWixAdminClient();
     const res = await adminClient.productsV3.searchProducts({
       cursorPaging: { limit: 100 },
-    });
-    const products = (res as any).products ?? [];
+      fields: ["ALL_CATEGORIES_INFO"],
+    } as any);
+    const products = ((res as any).products ?? []).filter((p: any) => !isMegaShopProduct(p));
 
     const dealsResult = await adminClient.items.query("Deals").find();
     const metaByProductId: Record<string, { status: DealStatus | null; expiresAt: string | null }> = {};
