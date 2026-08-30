@@ -26,6 +26,12 @@
     "react-leaflet": "^4.2.1",
     "server-only": "^0.0.1"
   },
+  "browserslist": [
+    "chrome >= 96",
+    "edge >= 96",
+    "firefox >= 96",
+    "safari >= 15"
+  ],
   "devDependencies": {
     "@opennextjs/cloudflare": "1.15.1",
     "@types/js-cookie": "^3.0.6",

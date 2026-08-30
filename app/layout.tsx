@@ -40,6 +40,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en-NZ">
+      <head>
+        {/* Every deal photo and most API calls come from Wix's domains —
+            opening the connection before those requests are discovered
+            mid-render shaves the DNS/TLS handshake off the critical path. */}
+        <link rel="preconnect" href="https://static.wixstatic.com" />
+        <link rel="preconnect" href="https://www.wixapis.com" crossOrigin="" />
+      </head>
       <body className="min-h-screen bg-white text-slate-900 antialiased">
         <script
           type="application/ld+json"
