@@ -33,12 +33,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const adminClient = createWixAdminClient();
-
   let verifyToken: string;
   let unsubscribeToken: string;
 
   try {
+    const adminClient = createWixAdminClient();
     const existingResult = await adminClient.items.query("EmailSignups").eq("email", email).find();
     const existing = existingResult.items?.[0];
 
