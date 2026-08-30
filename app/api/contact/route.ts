@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { sendTransactionalEmail } from "@/lib/sendEmail";
 
 // This route stores the message only — it must never add the sender to the
 // Resend marketing audience. There's no consent checkbox on the contact
@@ -34,9 +35,37 @@ export async function POST(req: NextRequest) {
   try {
     const adminClient = createWixAdminClient();
     await adminClient.items.insert("ContactMessages", { name, email, message });
-    return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[contact] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
+
+  // Best-effort admin notification — the message is already saved above, so
+  // a failure here shouldn't turn into an error for the person submitting.
+  const notifyTo = process.env.ADMIN_NOTIFY_EMAIL;
+  if (notifyTo) {
+    sendTransactionalEmail({
+      to: notifyTo,
+      subject: `New contact message from ${name}`,
+      html: `
+        <div style="font-family:'Segoe UI',ui-rounded,system-ui,sans-serif;font-size:15px;color:#211033;">
+          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+          <p><strong>Message:</strong></p>
+          <p style="white-space:pre-wrap;">${escapeHtml(message)}</p>
+        </div>
+      `,
+    }).catch((err) => console.error("[contact] admin notify failed", err));
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
