@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDeals } from "@/lib/fetchDeals";
 import { isDealLive } from "@/lib/dealVisibility";
@@ -12,6 +13,16 @@ import DealGrid from "@/components/DealGrid";
 import DealGridSkeleton from "@/components/DealGridSkeleton";
 import SortSelect from "@/components/SortSelect";
 import NearMeStatus from "@/components/NearMeStatus";
+import ViewToggle, { type DealsView } from "@/components/ViewToggle";
+
+const DealsMap = dynamic(() => import("@/components/DealsMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[420px] items-center justify-center rounded-2xl border border-slate-100 text-sm text-slate-400">
+      Loading map…
+    </div>
+  ),
+});
 
 export default function CategoryDeals({ category }: { category: string }) {
   const searchParams = useSearchParams();
@@ -20,6 +31,7 @@ export default function CategoryDeals({ category }: { category: string }) {
   const [deals, setDeals] = useState<Deal[] | null>(null);
   const [error, setError] = useState(false);
   const [sort, setSort] = useState<SortOption>("ending");
+  const [view, setView] = useState<DealsView>("grid");
   const [now, setNow] = useState(() => Date.now());
   const { coords, status: locationStatus, request: requestLocation } = useUserLocation();
 
@@ -78,8 +90,9 @@ export default function CategoryDeals({ category }: { category: string }) {
   return (
     <>
       {filtered.length > 0 && (
-        <div className="mb-2 flex justify-end">
+        <div className="mb-2 flex flex-wrap justify-end gap-2">
           <SortSelect value={sort} onChange={setSort} />
+          <ViewToggle value={view} onChange={setView} />
         </div>
       )}
       {sort === "nearest" && (
@@ -87,7 +100,11 @@ export default function CategoryDeals({ category }: { category: string }) {
           <NearMeStatus status={locationStatus} onRetry={requestLocation} />
         </div>
       )}
-      <DealGrid deals={sorted} emptyMessage={emptyMessage} userLocation={coords} />
+      {view === "map" ? (
+        <DealsMap deals={sorted} userLocation={coords} />
+      ) : (
+        <DealGrid deals={sorted} emptyMessage={emptyMessage} userLocation={coords} />
+      )}
     </>
   );
 }

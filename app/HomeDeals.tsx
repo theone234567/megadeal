@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { getPublicWixClient } from "@/lib/wixClient";
 import { fetchDeals } from "@/lib/fetchDeals";
 import { isDealLive } from "@/lib/dealVisibility";
@@ -12,6 +13,16 @@ import DealGrid from "@/components/DealGrid";
 import DealGridSkeleton from "@/components/DealGridSkeleton";
 import SortSelect from "@/components/SortSelect";
 import NearMeStatus from "@/components/NearMeStatus";
+import ViewToggle, { type DealsView } from "@/components/ViewToggle";
+
+const DealsMap = dynamic(() => import("@/components/DealsMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[420px] items-center justify-center rounded-2xl border border-slate-100 text-sm text-slate-400">
+      Loading map…
+    </div>
+  ),
+});
 
 export default function HomeDeals() {
   const searchParams = useSearchParams();
@@ -21,6 +32,7 @@ export default function HomeDeals() {
   const [deals, setDeals] = useState<Deal[] | null>(null);
   const [error, setError] = useState(false);
   const [sort, setSort] = useState<SortOption>("ending");
+  const [view, setView] = useState<DealsView>("grid");
   const [now, setNow] = useState(() => Date.now());
   const { coords, status: locationStatus, request: requestLocation } = useUserLocation();
 
@@ -94,12 +106,19 @@ export default function HomeDeals() {
     <>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-bold text-slate-900">{heading}</h2>
-        <SortSelect value={sort} onChange={setSort} />
+        <div className="flex flex-wrap items-center gap-2">
+          <SortSelect value={sort} onChange={setSort} />
+          <ViewToggle value={view} onChange={setView} />
+        </div>
       </div>
       {sort === "nearest" && (
         <NearMeStatus status={locationStatus} onRetry={requestLocation} />
       )}
-      <DealGrid deals={sorted} userLocation={coords} />
+      {view === "map" ? (
+        <DealsMap deals={sorted} userLocation={coords} />
+      ) : (
+        <DealGrid deals={sorted} userLocation={coords} />
+      )}
     </>
   );
 }

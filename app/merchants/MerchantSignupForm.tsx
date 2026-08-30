@@ -2,6 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const AddressPinMap = dynamic(() => import("@/components/AddressPinMap"), {
+  ssr: false,
+});
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 
@@ -336,6 +341,17 @@ export default function MerchantSignupForm() {
                     </li>
                   ))}
                 </ul>
+              )}
+
+              {lat !== undefined && lon !== undefined && (
+                <AddressPinMap
+                  lat={lat}
+                  lng={lon}
+                  onMove={(newLat, newLng) => {
+                    setLat(newLat);
+                    setLon(newLng);
+                  }}
+                />
               )}
             </div>
 
