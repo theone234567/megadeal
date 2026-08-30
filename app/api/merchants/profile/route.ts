@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getOrClaimMerchant } from "@/lib/merchant";
+import { isValidSocialUrl } from "@/lib/socialLinks";
 
 const MAX_TEXT_LENGTH = 300;
 const MAX_BIO_LENGTH = 600;
@@ -45,6 +46,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
   }
 
+  const facebookUrl = cleanText(body.facebookUrl, MAX_TEXT_LENGTH);
+  if (!isValidSocialUrl(facebookUrl, "facebook")) {
+    return NextResponse.json(
+      { error: "Enter a valid Facebook page URL (e.g. facebook.com/yourbusiness)." },
+      { status: 400 }
+    );
+  }
+  const instagramUrl = cleanText(body.instagramUrl, MAX_TEXT_LENGTH);
+  if (!isValidSocialUrl(instagramUrl, "instagram")) {
+    return NextResponse.json(
+      { error: "Enter a valid Instagram profile URL (e.g. instagram.com/yourbusiness)." },
+      { status: 400 }
+    );
+  }
+
   try {
   const adminClient = createWixAdminClient();
   const merchant = await getOrClaimMerchant(adminClient, member);
@@ -72,8 +88,8 @@ export async function POST(req: NextRequest) {
     businessHours: cleanText(body.businessHours, MAX_TEXT_LENGTH),
     bookingUrl: cleanText(body.bookingUrl, MAX_TEXT_LENGTH),
     bookingEmail,
-    facebookUrl: cleanText(body.facebookUrl, MAX_TEXT_LENGTH),
-    instagramUrl: cleanText(body.instagramUrl, MAX_TEXT_LENGTH),
+    facebookUrl,
+    instagramUrl,
     priceRange,
     amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
     ...(addressChanged ? { lat: null, lng: null } : {}),

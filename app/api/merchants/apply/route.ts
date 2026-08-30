@@ -5,6 +5,7 @@ import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { addResendContact } from "@/lib/resendAudience";
 import { SITE_URL } from "@/lib/siteConfig";
 import { generateReferralCode } from "@/lib/referral";
+import { isValidSocialUrl } from "@/lib/socialLinks";
 
 const MAX_TEXT_LENGTH = 300;
 const MAX_BIO_LENGTH = 600;
@@ -61,6 +62,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
   }
 
+  const facebookUrl = cleanText(body.facebookUrl, MAX_TEXT_LENGTH);
+  if (!isValidSocialUrl(facebookUrl, "facebook")) {
+    return NextResponse.json(
+      { error: "Enter a valid Facebook page URL (e.g. facebook.com/yourbusiness)." },
+      { status: 400 }
+    );
+  }
+  const instagramUrl = cleanText(body.instagramUrl, MAX_TEXT_LENGTH);
+  if (!isValidSocialUrl(instagramUrl, "instagram")) {
+    return NextResponse.json(
+      { error: "Enter a valid Instagram profile URL (e.g. instagram.com/yourbusiness)." },
+      { status: 400 }
+    );
+  }
+
   if (body.agreedToTerms !== true) {
     return NextResponse.json(
       { error: "You must agree to the Terms and Conditions to apply." },
@@ -87,8 +103,8 @@ export async function POST(req: NextRequest) {
       businessHours: cleanText(body.businessHours, MAX_TEXT_LENGTH),
       bookingUrl: cleanText(body.bookingUrl, MAX_TEXT_LENGTH),
       bookingEmail,
-      facebookUrl: cleanText(body.facebookUrl, MAX_TEXT_LENGTH),
-      instagramUrl: cleanText(body.instagramUrl, MAX_TEXT_LENGTH),
+      facebookUrl,
+      instagramUrl,
       priceRange,
       amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
       couponCode: cleanText(body.couponCode, 50),
