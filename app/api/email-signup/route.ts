@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
-import { addResendContact } from "@/lib/resendAudience";
+import { createSignupConfirmToken } from "@/lib/emailSignupToken";
 import { SITE_URL } from "@/lib/siteConfig";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * Deal-alert email signup. Resend's Audience is the sole storage for this
- * (no Wix Data involved) — a signup is just a contact in Resend, marked
- * unsubscribed:false. Single opt-in: added immediately, then sent a
- * welcome email with an unsubscribe link, rather than gated behind a
- * confirm-your-email click.
+ * Deal-alert email signup — double opt-in. This route never touches
+ * Resend's Audience directly; it only sends a signed confirm link. The
+ * contact is added to Resend only once that link is clicked (see
+ * verify/route.ts), so nobody's added to the list without proving they
+ * control the inbox. No database record needed in between — the token
+ * itself carries everything needed to verify.
  */
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -31,30 +32,52 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const added = await addResendContact(email);
-  if (!added) {
-    return NextResponse.json(
-      { error: "Something went wrong saving your signup. Please try again." },
-      { status: 500 }
-    );
-  }
-
   try {
-    const unsubscribeUrl = `${SITE_URL}/api/email-signup/unsubscribe?email=${encodeURIComponent(email)}`;
-    await sendTransactionalEmail({
+    const token = createSignupConfirmToken(email);
+    const confirmUrl = `${SITE_URL}/api/email-signup/verify?email=${encodeURIComponent(email)}&token=${token}`;
+    const noThanksUrl = `${SITE_URL}/api/email-signup/unsubscribe?email=${encodeURIComponent(email)}`;
+    const sent = await sendTransactionalEmail({
       to: email,
-      subject: "You're on the list for MegaDeal alerts!",
+      subject: "Confirm your MegaDeal email alerts 🐘",
       html: `
-        <p>Hi there,</p>
-        <p>You're in — you'll now get MegaDeal's best deals straight to your inbox.</p>
-        <p style="margin-top:24px;font-size:12px;color:#888;">
-          You're receiving this because you signed up for MegaDeal deal alerts.
-          <a href="${unsubscribeUrl}">Unsubscribe</a> at any time.
-        </p>
+        <div style="max-width:480px;margin:0 auto;font-family:'Segoe UI',ui-rounded,system-ui,sans-serif;">
+          <div style="background:linear-gradient(135deg,#7a17f0,#440e82);border-radius:20px 20px 0 0;padding:28px 32px;text-align:center;">
+            <span style="font-size:28px;font-weight:800;color:#ffffff;">Mega</span><span style="font-size:28px;font-weight:800;color:#ffffff;background:#e81ea3;border-radius:9999px;padding:2px 14px;">Deal</span>
+          </div>
+          <div style="background:#ffffff;border:1px solid #f1f0f4;border-top:none;border-radius:0 0 20px 20px;padding:32px;">
+            <h1 style="margin:0 0 12px;font-size:20px;color:#211033;">One click and you're in 🎉</h1>
+            <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#4b4358;">
+              Thanks for signing up for MegaDeal deal alerts — NZ's best local
+              deals, sniffed out for you. Just confirm this is your email
+              address and we'll take it from there.
+            </p>
+            <div style="text-align:center;margin:28px 0;">
+              <a href="${confirmUrl}" style="display:inline-block;background:#7a17f0;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 36px;border-radius:9999px;">
+                Confirm my email
+              </a>
+            </div>
+            <p style="margin:0;font-size:13px;line-height:1.6;color:#8b8494;">
+              Didn't sign up for this? No action needed — you won't be added
+              to the list unless you click the button above. Or
+              <a href="${noThanksUrl}" style="color:#8b8494;">click here to opt out</a>
+              and we won't email you again.
+            </p>
+          </div>
+        </div>
       `,
     });
+    if (!sent) {
+      return NextResponse.json(
+        { error: "Something went wrong sending your confirmation email. Please try again." },
+        { status: 500 }
+      );
+    }
   } catch (err) {
-    console.error("[email-signup] welcome email failed", err);
+    console.error("[email-signup] failed", err);
+    return NextResponse.json(
+      { error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ ok: true });

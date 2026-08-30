@@ -55,7 +55,7 @@ export default function EmailSignupForm({
           surface === "plain" ? "bg-brand-50 text-brand-700" : "bg-white/90 text-brand-700"
         }`}
       >
-        🎉 You're in! Deal alerts are on their way.
+        📬 Almost there — check your email to confirm!
       </p>
     );
   }
