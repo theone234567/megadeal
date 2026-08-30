@@ -28,31 +28,38 @@ export const dynamic = "force-dynamic";
  * this endpoint can't be scraped for the excluded fields either.
  */
 export async function GET() {
-  const adminClient = createWixAdminClient();
-  const [dealsResult, merchantsResult] = await Promise.all([
-    adminClient.items.query("Deals").find(),
-    adminClient.items.query("Merchants").find(),
-  ]);
+  try {
+    const adminClient = createWixAdminClient();
+    const [dealsResult, merchantsResult] = await Promise.all([
+      adminClient.items.query("Deals").find(),
+      adminClient.items.query("Merchants").find(),
+    ]);
 
-  const businessByEmail: Record<string, PublicBusiness> = {};
-  for (const m of merchantsResult.items ?? []) {
-    if (m.email && m.businessName && m._id) {
-      businessByEmail[String(m.email).toLowerCase()] = mapMerchantToBusiness(m);
+    const businessByEmail: Record<string, PublicBusiness> = {};
+    for (const m of merchantsResult.items ?? []) {
+      if (m.email && m.businessName && m._id) {
+        businessByEmail[String(m.email).toLowerCase()] = mapMerchantToBusiness(m);
+      }
     }
-  }
 
-  const directory: Record<string, PublicBusiness> = {};
-  for (const deal of dealsResult.items ?? []) {
-    const business = deal.merchantEmail
-      ? businessByEmail[String(deal.merchantEmail).toLowerCase()]
-      : undefined;
-    if (deal.productId && business) {
-      directory[deal.productId] = business;
+    const directory: Record<string, PublicBusiness> = {};
+    for (const deal of dealsResult.items ?? []) {
+      const business = deal.merchantEmail
+        ? businessByEmail[String(deal.merchantEmail).toLowerCase()]
+        : undefined;
+      if (deal.productId && business) {
+        directory[deal.productId] = business;
+      }
     }
-  }
 
-  return NextResponse.json(
-    { directory },
-    { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } }
-  );
+    return NextResponse.json(
+      { directory },
+      { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } }
+    );
+  } catch (err) {
+    console.error("[public/merchant-directory] failed", err);
+    // Degrade gracefully — deals still render without business info rather
+    // than the whole request failing.
+    return NextResponse.json({ directory: {} }, { status: 200 });
+  }
 }

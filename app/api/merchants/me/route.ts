@@ -19,7 +19,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });
   }
 
-  const adminClient = createWixAdminClient();
-  const merchant = await getOrClaimMerchant(adminClient, member);
-  return NextResponse.json({ item: merchant });
+  try {
+    const adminClient = createWixAdminClient();
+    const merchant = await getOrClaimMerchant(adminClient, member);
+    return NextResponse.json({ item: merchant });
+  } catch (err) {
+    console.error("[merchants/me] failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 }

@@ -23,20 +23,25 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: "Missing target status." }, { status: 400 });
   }
 
-  const adminClient = createWixAdminClient();
-  const deal = await adminClient.items.get("Deals", params.id);
-  if (!deal) {
-    return NextResponse.json({ error: "Deal not found." }, { status: 404 });
-  }
-  if ((deal.merchantEmail || "").toLowerCase() !== member.email.toLowerCase()) {
-    return NextResponse.json({ error: "This isn't your deal." }, { status: 403 });
-  }
+  try {
+    const adminClient = createWixAdminClient();
+    const deal = await adminClient.items.get("Deals", params.id);
+    if (!deal) {
+      return NextResponse.json({ error: "Deal not found." }, { status: 404 });
+    }
+    if ((deal.merchantEmail || "").toLowerCase() !== member.email.toLowerCase()) {
+      return NextResponse.json({ error: "This isn't your deal." }, { status: 403 });
+    }
 
-  const allowed = allowedDealActions(deal.status ?? "Live").some((a) => a.target === target);
-  if (!allowed) {
-    return NextResponse.json({ error: "That status change isn't allowed." }, { status: 400 });
-  }
+    const allowed = allowedDealActions(deal.status ?? "Live").some((a) => a.target === target);
+    if (!allowed) {
+      return NextResponse.json({ error: "That status change isn't allowed." }, { status: 400 });
+    }
 
-  const updated = await adminClient.items.update("Deals", { ...deal, status: target });
-  return NextResponse.json({ item: updated });
+    const updated = await adminClient.items.update("Deals", { ...deal, status: target });
+    return NextResponse.json({ item: updated });
+  } catch (err) {
+    console.error("[deals/[id]/status] failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 }

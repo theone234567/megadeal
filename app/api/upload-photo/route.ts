@@ -41,39 +41,44 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "That image is too large." }, { status: 400 });
   }
 
-  const adminClient = createWixAdminClient();
-  const ext = mimeType.split("/")[1]?.split("+")[0] || "jpg";
-  const fileName = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  try {
+    const adminClient = createWixAdminClient();
+    const ext = mimeType.split("/")[1]?.split("+")[0] || "jpg";
+    const fileName = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
-  const genRes = await adminClient.fetchWithAuth(
-    "https://www.wixapis.com/site-media/v1/files/generate-upload-url",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mimeType, fileName }),
+    const genRes = await adminClient.fetchWithAuth(
+      "https://www.wixapis.com/site-media/v1/files/generate-upload-url",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mimeType, fileName }),
+      }
+    );
+    if (!genRes.ok) {
+      return NextResponse.json({ error: "Couldn't start the upload." }, { status: 502 });
     }
-  );
-  if (!genRes.ok) {
-    return NextResponse.json({ error: "Couldn't start the upload." }, { status: 502 });
-  }
-  const { uploadUrl } = await genRes.json();
+    const { uploadUrl } = await genRes.json();
 
-  // The generated uploadUrl is a signed, self-authorizing URL — no admin
-  // auth header needed (or wanted) on this specific request.
-  const uploadRes = await fetch(`${uploadUrl}?filename=${encodeURIComponent(fileName)}`, {
-    method: "PUT",
-    headers: { "Content-Type": mimeType },
-    body: bytes,
-  });
-  if (!uploadRes.ok) {
-    return NextResponse.json({ error: "Upload failed." }, { status: 502 });
-  }
-  const uploadJson = await uploadRes.json();
-  const url = uploadJson?.file?.url;
-  const id = uploadJson?.file?.id;
-  if (!url || !id) {
-    return NextResponse.json({ error: "Upload failed." }, { status: 502 });
-  }
+    // The generated uploadUrl is a signed, self-authorizing URL — no admin
+    // auth header needed (or wanted) on this specific request.
+    const uploadRes = await fetch(`${uploadUrl}?filename=${encodeURIComponent(fileName)}`, {
+      method: "PUT",
+      headers: { "Content-Type": mimeType },
+      body: bytes,
+    });
+    if (!uploadRes.ok) {
+      return NextResponse.json({ error: "Upload failed." }, { status: 502 });
+    }
+    const uploadJson = await uploadRes.json();
+    const url = uploadJson?.file?.url;
+    const id = uploadJson?.file?.id;
+    if (!url || !id) {
+      return NextResponse.json({ error: "Upload failed." }, { status: 502 });
+    }
 
-  return NextResponse.json({ url, id });
+    return NextResponse.json({ url, id });
+  } catch (err) {
+    console.error("[upload-photo] failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 }

@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid photo." }, { status: 400 });
   }
 
+  try {
   const adminClient = createWixAdminClient();
 
   const merchant = await getOrClaimMerchant(adminClient, member);
@@ -193,4 +194,8 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({ item: deal });
+  } catch (err) {
+    console.error("[deals/create] failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 }

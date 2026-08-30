@@ -12,18 +12,22 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token")?.trim();
 
-  if (token) {
-    const adminClient = createWixAdminClient();
-    const result = await adminClient.items.query("Merchants").eq("emailVerifyToken", token).find();
-    const merchant = result.items?.[0];
-    if (merchant) {
-      await adminClient.items.update("Merchants", {
-        ...merchant,
-        emailVerified: true,
-        emailVerifyToken: "",
-      });
-      return NextResponse.redirect(`${SITE_URL}/merchants/verified?ok=1`);
+  try {
+    if (token) {
+      const adminClient = createWixAdminClient();
+      const result = await adminClient.items.query("Merchants").eq("emailVerifyToken", token).find();
+      const merchant = result.items?.[0];
+      if (merchant) {
+        await adminClient.items.update("Merchants", {
+          ...merchant,
+          emailVerified: true,
+          emailVerifyToken: "",
+        });
+        return NextResponse.redirect(`${SITE_URL}/merchants/verified?ok=1`);
+      }
     }
+  } catch (err) {
+    console.error("[merchants/verify-email] failed", err);
   }
 
   return NextResponse.redirect(`${SITE_URL}/merchants/verified?ok=0`);

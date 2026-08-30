@@ -41,37 +41,42 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
 
-  const adminClient = createWixAdminClient();
-  const existing = await adminClient.items.get("Deals", params.id);
-  if (!existing) {
-    return NextResponse.json({ error: "Deal not found." }, { status: 404 });
-  }
-
-  const updated = await adminClient.items.update("Deals", {
-    ...existing,
-    ...patch,
-  });
-
-  const dealName = existing.dealName || "Your deal";
-  const statusChanged = patch.status !== undefined && patch.status !== existing.status;
-  if (statusChanged && existing.merchantEmail) {
-    if (patch.status === "Live") {
-      await logMerchantActivity(adminClient, {
-        merchantEmail: existing.merchantEmail,
-        type: "deal",
-        description: `"${dealName}" is now live`,
-      });
-    } else if (patch.status === "Paused" || patch.status === "Cancelled") {
-      const note = patch.statusNote ?? existing.statusNote;
-      await logMerchantActivity(adminClient, {
-        merchantEmail: existing.merchantEmail,
-        type: "deal",
-        description: note
-          ? `"${dealName}" was ${patch.status.toLowerCase()}: ${note}`
-          : `"${dealName}" was ${patch.status.toLowerCase()}`,
-      });
+  try {
+    const adminClient = createWixAdminClient();
+    const existing = await adminClient.items.get("Deals", params.id);
+    if (!existing) {
+      return NextResponse.json({ error: "Deal not found." }, { status: 404 });
     }
-  }
 
-  return NextResponse.json({ item: updated });
+    const updated = await adminClient.items.update("Deals", {
+      ...existing,
+      ...patch,
+    });
+
+    const dealName = existing.dealName || "Your deal";
+    const statusChanged = patch.status !== undefined && patch.status !== existing.status;
+    if (statusChanged && existing.merchantEmail) {
+      if (patch.status === "Live") {
+        await logMerchantActivity(adminClient, {
+          merchantEmail: existing.merchantEmail,
+          type: "deal",
+          description: `"${dealName}" is now live`,
+        });
+      } else if (patch.status === "Paused" || patch.status === "Cancelled") {
+        const note = patch.statusNote ?? existing.statusNote;
+        await logMerchantActivity(adminClient, {
+          merchantEmail: existing.merchantEmail,
+          type: "deal",
+          description: note
+            ? `"${dealName}" was ${patch.status.toLowerCase()}: ${note}`
+            : `"${dealName}" was ${patch.status.toLowerCase()}`,
+        });
+      }
+    }
+
+    return NextResponse.json({ item: updated });
+  } catch (err) {
+    console.error("[admin/deals/[id]] failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 }

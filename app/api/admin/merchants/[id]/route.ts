@@ -95,6 +95,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
 
+  try {
   const adminClient = createWixAdminClient();
   const existing = await adminClient.items.get("Merchants", params.id);
   if (!existing) {
@@ -259,4 +260,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   return NextResponse.json({ item: updated, warnings });
+  } catch (err) {
+    console.error("[admin/merchants/[id]] failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 }

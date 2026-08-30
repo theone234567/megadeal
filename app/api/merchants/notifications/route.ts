@@ -21,15 +21,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const adminClient = createWixAdminClient();
-  const merchant = await getOrClaimMerchant(adminClient, member);
-  if (!merchant) {
-    return NextResponse.json({ error: "No business application found for this account." }, { status: 404 });
-  }
+  try {
+    const adminClient = createWixAdminClient();
+    const merchant = await getOrClaimMerchant(adminClient, member);
+    if (!merchant) {
+      return NextResponse.json({ error: "No business application found for this account." }, { status: 404 });
+    }
 
-  const updated = await adminClient.items.update("Merchants", {
-    ...merchant,
-    notifyReferralBonus: body.notifyReferralBonus,
-  });
-  return NextResponse.json({ item: updated });
+    const updated = await adminClient.items.update("Merchants", {
+      ...merchant,
+      notifyReferralBonus: body.notifyReferralBonus,
+    });
+    return NextResponse.json({ item: updated });
+  } catch (err) {
+    console.error("[merchants/notifications] failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 }

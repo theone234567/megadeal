@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
   }
 
+  try {
   const adminClient = createWixAdminClient();
   const merchant = await getOrClaimMerchant(adminClient, member);
   if (!merchant) {
@@ -79,4 +80,8 @@ export async function POST(req: NextRequest) {
     status: "Pending",
   });
   return NextResponse.json({ item: updated });
+  } catch (err) {
+    console.error("[merchants/profile] failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 }

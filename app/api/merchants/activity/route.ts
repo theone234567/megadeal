@@ -18,23 +18,28 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });
   }
 
-  const adminClient = createWixAdminClient();
-  const merchant = await getOrClaimMerchant(adminClient, member);
-  if (!merchant?.email) {
-    return NextResponse.json({ items: [] });
+  try {
+    const adminClient = createWixAdminClient();
+    const merchant = await getOrClaimMerchant(adminClient, member);
+    if (!merchant?.email) {
+      return NextResponse.json({ items: [] });
+    }
+
+    const result = await adminClient.items
+      .query("MerchantActivity")
+      .eq("merchantEmail", merchant.email)
+      .find();
+
+    const items = (result.items ?? [])
+      .sort(
+        (a: any, b: any) =>
+          new Date(b._createdDate ?? 0).getTime() - new Date(a._createdDate ?? 0).getTime()
+      )
+      .slice(0, MAX_ITEMS);
+
+    return NextResponse.json({ items });
+  } catch (err) {
+    console.error("[merchants/activity] failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
-
-  const result = await adminClient.items
-    .query("MerchantActivity")
-    .eq("merchantEmail", merchant.email)
-    .find();
-
-  const items = (result.items ?? [])
-    .sort(
-      (a: any, b: any) =>
-        new Date(b._createdDate ?? 0).getTime() - new Date(a._createdDate ?? 0).getTime()
-    )
-    .slice(0, MAX_ITEMS);
-
-  return NextResponse.json({ items });
 }

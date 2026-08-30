@@ -17,29 +17,34 @@ export async function GET(req: NextRequest) {
 
   const verifiedOnly = req.nextUrl.searchParams.get("verifiedOnly") === "true";
 
-  const adminClient = createWixAdminClient();
-  const result = await adminClient.items.query("EmailSignups").find();
-  let items = result.items ?? [];
-  if (verifiedOnly) {
-    items = items.filter((i: any) => i.verified && !i.unsubscribed);
+  try {
+    const adminClient = createWixAdminClient();
+    const result = await adminClient.items.query("EmailSignups").find();
+    let items = result.items ?? [];
+    if (verifiedOnly) {
+      items = items.filter((i: any) => i.verified && !i.unsubscribed);
+    }
+
+    const header = ["Email", "Audience", "Source", "Verified", "Unsubscribed", "Signed up"];
+    const rows = items.map((i: any) => [
+      i.email,
+      i.audience,
+      i.source,
+      i.verified ? "Yes" : "No",
+      i.unsubscribed ? "Yes" : "No",
+      i._createdDate,
+    ]);
+    const csv = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+
+    const filename = verifiedOnly ? "email-signups-verified.csv" : "email-signups.csv";
+    return new NextResponse(csv, {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+      },
+    });
+  } catch (err) {
+    console.error("[admin/email-signups/export] failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
-
-  const header = ["Email", "Audience", "Source", "Verified", "Unsubscribed", "Signed up"];
-  const rows = items.map((i: any) => [
-    i.email,
-    i.audience,
-    i.source,
-    i.verified ? "Yes" : "No",
-    i.unsubscribed ? "Yes" : "No",
-    i._createdDate,
-  ]);
-  const csv = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
-
-  const filename = verifiedOnly ? "email-signups-verified.csv" : "email-signups.csv";
-  return new NextResponse(csv, {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${filename}"`,
-    },
-  });
 }

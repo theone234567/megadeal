@@ -25,8 +25,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Enter a valid email." }, { status: 400 });
   }
 
-  const adminClient = createWixAdminClient();
-  await adminClient.items.insert("ContactMessages", { name, email, message });
-
-  return NextResponse.json({ ok: true });
+  try {
+    const adminClient = createWixAdminClient();
+    await adminClient.items.insert("ContactMessages", { name, email, message });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[contact] failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 }

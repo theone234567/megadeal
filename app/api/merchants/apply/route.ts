@@ -71,36 +71,44 @@ export async function POST(req: NextRequest) {
   const lat = Number.isFinite(body.lat) ? Number(body.lat) : null;
   const lng = Number.isFinite(body.lng) ? Number(body.lng) : null;
 
-  const adminClient = createWixAdminClient();
   const emailVerifyToken = randomBytes(32).toString("hex");
-
-  const item = await adminClient.items.insert("Merchants", {
-    businessName,
-    email,
-    phone,
-    address,
-    city,
-    postcode: cleanText(body.postcode, 20),
-    website: cleanText(body.website, MAX_TEXT_LENGTH),
-    bio: cleanText(body.bio, MAX_BIO_LENGTH),
-    businessHours: cleanText(body.businessHours, MAX_TEXT_LENGTH),
-    bookingUrl: cleanText(body.bookingUrl, MAX_TEXT_LENGTH),
-    bookingEmail,
-    facebookUrl: cleanText(body.facebookUrl, MAX_TEXT_LENGTH),
-    instagramUrl: cleanText(body.instagramUrl, MAX_TEXT_LENGTH),
-    priceRange,
-    amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
-    couponCode: cleanText(body.couponCode, 50),
-    lat,
-    lng,
-    creditsBalance: 0,
-    status: "Pending",
-    logoUrl: "",
-    emailVerified: false,
-    emailVerifyToken,
-    referralCode: generateReferralCode(),
-    referralRewarded: false,
-  });
+  let item: any;
+  try {
+    const adminClient = createWixAdminClient();
+    item = await adminClient.items.insert("Merchants", {
+      businessName,
+      email,
+      phone,
+      address,
+      city,
+      postcode: cleanText(body.postcode, 20),
+      website: cleanText(body.website, MAX_TEXT_LENGTH),
+      bio: cleanText(body.bio, MAX_BIO_LENGTH),
+      businessHours: cleanText(body.businessHours, MAX_TEXT_LENGTH),
+      bookingUrl: cleanText(body.bookingUrl, MAX_TEXT_LENGTH),
+      bookingEmail,
+      facebookUrl: cleanText(body.facebookUrl, MAX_TEXT_LENGTH),
+      instagramUrl: cleanText(body.instagramUrl, MAX_TEXT_LENGTH),
+      priceRange,
+      amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
+      couponCode: cleanText(body.couponCode, 50),
+      lat,
+      lng,
+      creditsBalance: 0,
+      status: "Pending",
+      logoUrl: "",
+      emailVerified: false,
+      emailVerifyToken,
+      referralCode: generateReferralCode(),
+      referralRewarded: false,
+    });
+  } catch (err) {
+    console.error("[merchants/apply] failed to save application", err);
+    return NextResponse.json(
+      { error: "Something went wrong submitting your application. Please try again." },
+      { status: 500 }
+    );
+  }
 
   // Best-effort: a failed send shouldn't block the application itself — the
   // record just stays unverified, visible to admins, and can be resolved
