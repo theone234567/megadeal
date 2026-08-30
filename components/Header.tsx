@@ -29,11 +29,13 @@ export default function Header() {
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-0.5 font-display">
-            <span className="text-[1.7rem] font-extrabold tracking-tight text-brand-700">
-              Mega
-            </span>
-            <span className="-rotate-2 rounded-full bg-ember-500 px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-white shadow-card">
-              Deal
+            <span className="animate-wordmark-shake items-center gap-0.5">
+              <span className="text-[1.7rem] font-extrabold tracking-tight text-brand-700">
+                Mega
+              </span>
+              <span className="-rotate-2 rounded-full bg-ember-500 px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-white shadow-card">
+                Deal
+              </span>
             </span>
             <ElephantMascot className="ml-1.5 -rotate-3" />
           </Link>
