@@ -34,18 +34,51 @@ export async function POST(req: NextRequest) {
   }
 
   const adminClient = createWixAdminClient();
-  const verifyToken = randomBytes(32).toString("hex");
-  const unsubscribeToken = randomBytes(32).toString("hex");
 
-  await adminClient.items.insert("EmailSignups", {
-    email,
-    audience,
-    source,
-    verified: false,
-    verifyToken,
-    unsubscribed: false,
-    unsubscribeToken,
-  });
+  let verifyToken: string;
+  let unsubscribeToken: string;
+
+  try {
+    const existingResult = await adminClient.items.query("EmailSignups").eq("email", email).find();
+    const existing = existingResult.items?.[0];
+
+    if (existing?.verified) {
+      // Already signed up and confirmed — nothing to do, but don't show an error.
+      return NextResponse.json({ ok: true });
+    }
+
+    if (existing) {
+      // Signed up before but never confirmed — reuse their record, issue a
+      // fresh token in case the original email was lost, and resend.
+      verifyToken = randomBytes(32).toString("hex");
+      unsubscribeToken = existing.unsubscribeToken || randomBytes(32).toString("hex");
+      await adminClient.items.update("EmailSignups", {
+        ...existing,
+        audience,
+        source,
+        verifyToken,
+        unsubscribeToken,
+      });
+    } else {
+      verifyToken = randomBytes(32).toString("hex");
+      unsubscribeToken = randomBytes(32).toString("hex");
+      await adminClient.items.insert("EmailSignups", {
+        email,
+        audience,
+        source,
+        verified: false,
+        verifyToken,
+        unsubscribed: false,
+        unsubscribeToken,
+      });
+    }
+  } catch (err) {
+    console.error("[email-signup] failed to save signup", err);
+    return NextResponse.json(
+      { error: "Something went wrong saving your signup. Please try again." },
+      { status: 500 }
+    );
+  }
 
   try {
     const verifyUrl = `${SITE_URL}/api/email-signup/verify?token=${verifyToken}`;
