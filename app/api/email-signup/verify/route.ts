@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { addResendContact } from "@/lib/resendAudience";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,9 @@ export async function GET(req: NextRequest) {
         verified: true,
         verifyToken: "",
       });
+      if (signup.audience === "customer") {
+        await addResendContact(signup.email);
+      }
       return NextResponse.redirect(`${SITE_URL}/subscribed?ok=1`);
     }
   }

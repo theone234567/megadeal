@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { markResendContactUnsubscribed } from "@/lib/resendAudience";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,9 @@ export async function GET(req: NextRequest) {
     if (signup) {
       if (!signup.unsubscribed) {
         await adminClient.items.update("EmailSignups", { ...signup, unsubscribed: true });
+        if (signup.audience === "customer") {
+          await markResendContactUnsubscribed(signup.email);
+        }
       }
       return NextResponse.redirect(`${SITE_URL}/unsubscribed?ok=1`);
     }

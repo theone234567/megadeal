@@ -1,12 +1,9 @@
-import { randomUUID } from "crypto";
-import { createWixAdminClient } from "./wixAdmin";
-
 /**
- * Sends a transactional email via Wix's Email Transmissions API. The sender
- * address doesn't need to be pre-verified — Wix falls back to its own
- * no-reply address and sets ours as reply-to instead, so this works with no
- * extra setup. Counts against the site's Email Marketing quota (Get Account
- * Details shows current usage).
+ * Sends a transactional email via Resend. Switched from Wix's Email
+ * Transmissions API (see git history) because custom-code-triggered Wix
+ * emails count against the site's Email Marketing quota (5,000/mo on Core)
+ * even though they're transactional, not marketing — Resend's free tier
+ * (3,000/mo) covers this app's verification/notification volume for free.
  */
 export async function sendTransactionalEmail({
   to,
@@ -17,26 +14,26 @@ export async function sendTransactionalEmail({
   subject: string;
   html: string;
 }): Promise<boolean> {
-  const adminClient = createWixAdminClient();
-  const res = await adminClient.fetchWithAuth(
-    "https://www.wixapis.com/email-transmissions/v1/email-transmissions/send",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        emailTransmission: {
-          emailSubject: subject,
-          emailHtmlContent: html,
-          senderName: "MegaDeal",
-          senderEmailAddress: "no-reply@megadeal.co.nz",
-          replyTo: { emailAddress: "no-reply@megadeal.co.nz" },
-          toRecipients: [{ emailAddress: to }],
-          type: "TRANSACTIONAL",
-        },
-        idempotencyKey: randomUUID(),
-      }),
-    }
-  );
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error("[sendTransactionalEmail] RESEND_API_KEY is not configured.");
+    return false;
+  }
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "MegaDeal <no-reply@megadeal.co.nz>",
+      to: [to],
+      subject,
+      html,
+    }),
+  });
+
   if (!res.ok) {
     console.error("[sendTransactionalEmail] failed", await res.text().catch(() => ""));
   }
