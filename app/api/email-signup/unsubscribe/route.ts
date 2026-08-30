@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createWixAdminClient } from "@/lib/wixAdmin";
 import { markResendContactUnsubscribed } from "@/lib/resendAudience";
 import { SITE_URL } from "@/lib/siteConfig";
 
@@ -7,26 +6,15 @@ export const dynamic = "force-dynamic";
 
 /**
  * Public, unauthenticated on purpose — this is the unsubscribe link that
- * goes in every email. Unlike the verify token, this one is never cleared,
- * so the same link in an old email always still works.
+ * goes in every email. Resend's Audience is the sole storage for
+ * deal-alert signups, so this just marks the contact unsubscribed there.
  */
 export async function GET(req: NextRequest) {
-  const token = req.nextUrl.searchParams.get("token")?.trim();
+  const email = req.nextUrl.searchParams.get("email")?.trim().toLowerCase();
 
-  if (token) {
-    const adminClient = createWixAdminClient();
-    const result = await adminClient.items
-      .query("EmailSignups")
-      .eq("unsubscribeToken", token)
-      .find();
-    const signup = result.items?.[0];
-    if (signup) {
-      if (!signup.unsubscribed) {
-        await adminClient.items.update("EmailSignups", { ...signup, unsubscribed: true });
-        if (signup.audience === "customer") {
-          await markResendContactUnsubscribed(signup.email);
-        }
-      }
+  if (email) {
+    const ok = await markResendContactUnsubscribed(email);
+    if (ok) {
       return NextResponse.redirect(`${SITE_URL}/unsubscribed?ok=1`);
     }
   }

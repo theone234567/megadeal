@@ -1,16 +1,16 @@
-import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { createWixAdminClient } from "@/lib/wixAdmin";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
+import { addResendContact } from "@/lib/resendAudience";
 import { SITE_URL } from "@/lib/siteConfig";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ALLOWED_AUDIENCES = ["customer", "merchant"];
 
 /**
- * Deal-alert email signup — goes through this server route (rather than a
- * direct client-side Wix Data insert) so we can generate verification and
- * unsubscribe tokens and send the confirmation email server-side.
+ * Deal-alert email signup. Resend's Audience is the sole storage for this
+ * (no Wix Data involved) — a signup is just a contact in Resend, marked
+ * unsubscribed:false. Single opt-in: added immediately, then sent a
+ * welcome email with an unsubscribe link, rather than gated behind a
+ * confirm-your-email click.
  */
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -19,8 +19,6 @@ export async function POST(req: NextRequest) {
   }
 
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase().slice(0, 300) : "";
-  const audience = ALLOWED_AUDIENCES.includes(body.audience) ? body.audience : "customer";
-  const source = typeof body.source === "string" ? body.source.trim().slice(0, 100) : "unknown";
   const consent = body.consent === true;
 
   if (!EMAIL_RE.test(email)) {
@@ -33,46 +31,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let verifyToken: string;
-  let unsubscribeToken: string;
-
-  try {
-    const adminClient = createWixAdminClient();
-    const existingResult = await adminClient.items.query("EmailSignups").eq("email", email).find();
-    const existing = existingResult.items?.[0];
-
-    if (existing?.verified) {
-      // Already signed up and confirmed — nothing to do, but don't show an error.
-      return NextResponse.json({ ok: true });
-    }
-
-    if (existing) {
-      // Signed up before but never confirmed — reuse their record, issue a
-      // fresh token in case the original email was lost, and resend.
-      verifyToken = randomBytes(32).toString("hex");
-      unsubscribeToken = existing.unsubscribeToken || randomBytes(32).toString("hex");
-      await adminClient.items.update("EmailSignups", {
-        ...existing,
-        audience,
-        source,
-        verifyToken,
-        unsubscribeToken,
-      });
-    } else {
-      verifyToken = randomBytes(32).toString("hex");
-      unsubscribeToken = randomBytes(32).toString("hex");
-      await adminClient.items.insert("EmailSignups", {
-        email,
-        audience,
-        source,
-        verified: false,
-        verifyToken,
-        unsubscribed: false,
-        unsubscribeToken,
-      });
-    }
-  } catch (err) {
-    console.error("[email-signup] failed to save signup", err);
+  const added = await addResendContact(email);
+  if (!added) {
     return NextResponse.json(
       { error: "Something went wrong saving your signup. Please try again." },
       { status: 500 }
@@ -80,16 +40,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const verifyUrl = `${SITE_URL}/api/email-signup/verify?token=${verifyToken}`;
-    const unsubscribeUrl = `${SITE_URL}/api/email-signup/unsubscribe?token=${unsubscribeToken}`;
+    const unsubscribeUrl = `${SITE_URL}/api/email-signup/unsubscribe?email=${encodeURIComponent(email)}`;
     await sendTransactionalEmail({
       to: email,
-      subject: "Confirm your MegaDeal email alerts",
+      subject: "You're on the list for MegaDeal alerts!",
       html: `
         <p>Hi there,</p>
-        <p>Thanks for signing up for MegaDeal deal alerts. Please confirm this is your email address:</p>
-        <p><a href="${verifyUrl}">Confirm my email</a></p>
-        <p>If you didn't sign up, you can ignore this email — you won't be added to the list unless you confirm.</p>
+        <p>You're in — you'll now get MegaDeal's best deals straight to your inbox.</p>
         <p style="margin-top:24px;font-size:12px;color:#888;">
           You're receiving this because you signed up for MegaDeal deal alerts.
           <a href="${unsubscribeUrl}">Unsubscribe</a> at any time.
@@ -97,7 +54,7 @@ export async function POST(req: NextRequest) {
       `,
     });
   } catch (err) {
-    console.error("[email-signup] verification email failed", err);
+    console.error("[email-signup] welcome email failed", err);
   }
 
   return NextResponse.json({ ok: true });
