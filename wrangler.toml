@@ -7,6 +7,15 @@ compatibility_flags = ["nodejs_compat"]
 directory = ".open-next/assets"
 binding = "ASSETS"
 
+# Without this, @opennextjs/cloudflare's /_next/image handler passes every
+# image straight through unresized and uncompressed (confirmed in its own
+# source — it only transforms when env.IMAGES is bound). Deal/merchant
+# photos are uploaded at whatever resolution someone's phone shoots, so this
+# was shipping full-size originals to every visitor instead of the sized,
+# compressed derivatives next/image's `sizes` prop already asks for.
+[images]
+binding = "IMAGES"
+
 [observability]
 enabled = true
 head_sampling_rate = 1

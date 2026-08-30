@@ -7,6 +7,7 @@ import { fetchDeals } from "@/lib/fetchDeals";
 import { isDealLive } from "@/lib/dealVisibility";
 import type { Deal } from "@/lib/types";
 import DealGrid from "./DealGrid";
+import DealGridSkeleton from "./DealGridSkeleton";
 
 /**
  * Short-burst "2-for-1 tonight only" style deals. Only rendered on the
@@ -38,7 +39,20 @@ export default function FlashDeals() {
     return () => clearInterval(id);
   }, []);
 
-  if (!deals) return null;
+  // While loading, reserve roughly the same space a real flash section
+  // would take instead of rendering nothing — the empty-to-full pop-in was
+  // a major layout-shift contributor once the fetch resolved.
+  if (!deals) {
+    return (
+      <div className="bg-brand-900">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mb-4 h-7 w-40 animate-pulse rounded-full bg-white/10" />
+          <DealGridSkeleton count={4} />
+        </div>
+      </div>
+    );
+  }
+
   const flash = deals
     .filter((d) => d.isFlash && isDealLive(d, now))
     .sort((a, b) => {
