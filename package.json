@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@wix/data": "^1.0.0",
@@ -22,6 +25,8 @@
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "1.15.1",
+    "wrangler": "^4.59.2",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^20.14.15",
     "@types/react": "^18.3.3",
