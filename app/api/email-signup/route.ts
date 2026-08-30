@@ -35,7 +35,6 @@ export async function POST(req: NextRequest) {
   try {
     const token = createSignupConfirmToken(email);
     const confirmUrl = `${SITE_URL}/api/email-signup/verify?email=${encodeURIComponent(email)}&token=${token}`;
-    const noThanksUrl = `${SITE_URL}/api/email-signup/unsubscribe?email=${encodeURIComponent(email)}`;
     const sent = await sendTransactionalEmail({
       to: email,
       subject: "Confirm your MegaDeal email alerts 🐘",
@@ -58,9 +57,7 @@ export async function POST(req: NextRequest) {
             </div>
             <p style="margin:0;font-size:13px;line-height:1.6;color:#8b8494;">
               Didn't sign up for this? No action needed — you won't be added
-              to the list unless you click the button above. Or
-              <a href="${noThanksUrl}" style="color:#8b8494;">click here to opt out</a>
-              and we won't email you again.
+              to the list unless you click the button above.
             </p>
           </div>
         </div>
