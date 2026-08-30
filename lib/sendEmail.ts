@@ -27,7 +27,7 @@ export async function sendTransactionalEmail({
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "MegaDeal <no-reply@megadeal.co.nz>",
+      from: "MegaDeal <no-reply@mail.megadeal.co.nz>",
       to: [to],
       subject,
       html,
