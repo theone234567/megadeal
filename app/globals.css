@@ -183,18 +183,25 @@ body {
   }
 }
 
+/* The visible part of this loop is only ~16% of each 4s cycle (3.12s–3.76s)
+   — starting the animation there instead of at 0% means every page load
+   shows the stomp within about a second, instead of asking visitors to
+   sit and watch 3+ seconds of stillness before anything happens. */
 .animate-elephant-idle-body {
   animation: elephant-idle-bob 4s ease-in-out infinite;
+  animation-delay: -3.12s;
   transform-origin: 50% 90%;
 }
 
 .animate-elephant-idle-ear {
   animation: elephant-idle-ear 4s ease-in-out infinite;
+  animation-delay: -3.12s;
   transform-origin: 70% 40%;
 }
 
 .animate-wordmark-shake {
   animation: wordmark-shake 4s ease-in-out infinite;
+  animation-delay: -3.12s;
   display: inline-flex;
 }
 
