@@ -7,9 +7,11 @@ import { fetchDeals } from "@/lib/fetchDeals";
 import { isDealLive } from "@/lib/dealVisibility";
 import type { Deal } from "@/lib/types";
 import { sortDeals, type SortOption } from "@/lib/sortDeals";
+import { useUserLocation } from "@/lib/geo";
 import DealGrid from "@/components/DealGrid";
 import DealGridSkeleton from "@/components/DealGridSkeleton";
 import SortSelect from "@/components/SortSelect";
+import NearMeStatus from "@/components/NearMeStatus";
 
 export default function CategoryDeals({ category }: { category: string }) {
   const searchParams = useSearchParams();
@@ -19,6 +21,12 @@ export default function CategoryDeals({ category }: { category: string }) {
   const [error, setError] = useState(false);
   const [sort, setSort] = useState<SortOption>("ending");
   const [now, setNow] = useState(() => Date.now());
+  const { coords, status: locationStatus, request: requestLocation } = useUserLocation();
+
+  // Only prompt for location once "Nearest to me" is actually picked.
+  useEffect(() => {
+    if (sort === "nearest" && locationStatus === "idle") requestLocation();
+  }, [sort, locationStatus, requestLocation]);
 
   // Re-check every 30s so a deal that expires while this page is open drops
   // out of the grid on its own, without requiring a manual refresh.
@@ -65,16 +73,21 @@ export default function CategoryDeals({ category }: { category: string }) {
     ? `No deals in ${category} in ${searchParams.get("city")} right now — check back soon!`
     : `No deals in ${category} right now — check back soon!`;
 
-  const sorted = sortDeals(filtered, sort);
+  const sorted = sortDeals(filtered, sort, coords);
 
   return (
     <>
       {filtered.length > 0 && (
-        <div className="mb-5 flex justify-end">
+        <div className="mb-2 flex justify-end">
           <SortSelect value={sort} onChange={setSort} />
         </div>
       )}
-      <DealGrid deals={sorted} emptyMessage={emptyMessage} />
+      {sort === "nearest" && (
+        <div className="flex justify-end">
+          <NearMeStatus status={locationStatus} onRetry={requestLocation} />
+        </div>
+      )}
+      <DealGrid deals={sorted} emptyMessage={emptyMessage} userLocation={coords} />
     </>
   );
 }

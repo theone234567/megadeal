@@ -6,7 +6,14 @@ import { dealEndsAt } from "@/lib/socialProof";
 import CountdownBadge from "./CountdownBadge";
 import StarRating from "./StarRating";
 
-export default function DealCard({ deal }: { deal: Deal }) {
+export default function DealCard({
+  deal,
+  distanceKm = null,
+}: {
+  deal: Deal;
+  /** Distance from the viewer, in km — shown as a badge when known. */
+  distanceKm?: number | null;
+}) {
   const soldOut = !deal.inStock;
   const lowStock =
     !soldOut &&
@@ -86,6 +93,11 @@ export default function DealCard({ deal }: { deal: Deal }) {
         )}
         {deal.businessRating !== null && (
           <StarRating rating={deal.businessRating} reviewCount={deal.businessReviewCount} className="-mt-1" />
+        )}
+        {distanceKm !== null && (
+          <p className="-mt-1 text-xs font-medium text-slate-400">
+            📍 {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)}km`} away
+          </p>
         )}
 
         <div className="mt-auto flex items-end justify-between pt-1">

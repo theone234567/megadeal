@@ -1,12 +1,17 @@
 import type { Deal } from "@/lib/types";
+import type { Coords } from "@/lib/geo";
+import { dealDistanceKm } from "@/lib/sortDeals";
 import DealCard from "./DealCard";
 
 export default function DealGrid({
   deals,
   emptyMessage = "No deals found. Try a different search or category.",
+  userLocation = null,
 }: {
   deals: Deal[];
   emptyMessage?: string;
+  /** When set, each card shows its distance from this point. */
+  userLocation?: Coords | null;
 }) {
   if (deals.length === 0) {
     return (
@@ -19,7 +24,7 @@ export default function DealGrid({
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
       {deals.map((deal) => (
-        <DealCard key={deal.id} deal={deal} />
+        <DealCard key={deal.id} deal={deal} distanceKm={dealDistanceKm(deal, userLocation)} />
       ))}
     </div>
   );
