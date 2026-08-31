@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { isDealLive } from "@/lib/dealVisibility";
 import type { Deal } from "@/lib/types";
-import DealGrid from "./DealGrid";
+import DealCard from "./DealCard";
 
 /**
  * Short-burst "2-for-1 tonight only" style deals. Only rendered on the
@@ -50,7 +50,19 @@ export default function FlashDeals({ initialDeals }: { initialDeals: Deal[] }) {
             See all →
           </Link>
         </div>
-        <DealGrid deals={flash} />
+        {/* Fixed-width cards in a horizontal scroller rather than a
+            stretched grid — a flash section often only has 1-3 live deals,
+            and a full grid made those few cards look oversized. This also
+            matches how "flash sale" rows read elsewhere (Amazon, Groupon):
+            scan/swipe a short strip instead of the deals reflowing to fill
+            whatever space is left. */}
+        <div className="scrollbar-hide -mb-2 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:gap-5">
+          {flash.map((deal) => (
+            <div key={deal.id} className="w-40 shrink-0 snap-start sm:w-48 md:w-56 lg:w-64">
+              <DealCard deal={deal} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

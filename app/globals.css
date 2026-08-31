@@ -17,6 +17,16 @@ body {
   overflow: hidden;
 }
 
+/* Horizontal deal scrollers (flash deals row) — swipeable on touch, but
+   without a visible scrollbar cluttering a short, urgency-driven strip. */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes shimmer-sweep {
   0% {
     background-position: -150% 0;
