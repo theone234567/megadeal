@@ -31,7 +31,7 @@ function FitBounds({ points }: { points: [number, number][] }) {
   useEffect(() => {
     if (points.length === 0) return;
     if (points.length === 1) {
-      map.setView(points[0], 15);
+      map.setView(points[0], 16);
     } else {
       map.fitBounds(points, { padding: [40, 40] });
     }

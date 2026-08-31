@@ -17,7 +17,7 @@ const PIN_ICON = L.divIcon({
 function Recenter({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
   useEffect(() => {
-    map.setView([lat, lng], Math.max(map.getZoom(), 17));
+    map.setView([lat, lng], Math.max(map.getZoom(), 18));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map]);
   return null;
@@ -37,7 +37,7 @@ export default function AddressPinMap({
       <div className="h-56 w-full">
         <MapContainer
           center={[lat, lng]}
-          zoom={17}
+          zoom={18}
           scrollWheelZoom={false}
           style={{ height: "100%", width: "100%" }}
         >
