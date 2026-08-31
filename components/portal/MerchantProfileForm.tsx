@@ -246,7 +246,7 @@ export default function MerchantProfileForm({
             setLon(null);
           }}
           onSelect={(s: AddressSuggestion) => {
-            setAddress(s.street || s.label);
+            setAddress(s.label || s.street);
             if (s.postcode) setPostcode(s.postcode);
             if (s.city) {
               const match = CITIES.find((c) => c.toLowerCase() === s.city!.toLowerCase());

@@ -46,10 +46,19 @@ export async function GET(req: NextRequest) {
     const find = (type: string) => components.find((c) => c.types?.includes(type))?.longText;
     const street = [find("street_number"), find("route")].filter(Boolean).join(" ");
 
+    // formattedAddress is the full address (street, suburb, city, postcode)
+    // but always ends with the country name — strip that trailing segment
+    // so the field shows the complete address without "New Zealand" tacked on.
+    const country = find("country");
+    let fullAddress = data.formattedAddress || street || "";
+    if (country && fullAddress.endsWith(`, ${country}`)) {
+      fullAddress = fullAddress.slice(0, -(country.length + 2));
+    }
+
     return NextResponse.json({
       result: {
-        label: data.formattedAddress || street || "",
-        street: street || data.formattedAddress || "",
+        label: fullAddress,
+        street: street || fullAddress || "",
         city: find("locality") || null,
         postcode: find("postal_code") || null,
         lat: typeof data.location?.latitude === "number" ? data.location.latitude : null,

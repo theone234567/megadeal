@@ -35,7 +35,7 @@ async function fetchPhotonSuggestions(query: string): Promise<AddressSuggestion[
   return (data.features ?? []).map((f: any) => {
     const p = f.properties ?? {};
     const street = p.housenumber && p.name ? `${p.housenumber} ${p.name}` : p.name || p.street || "";
-    const label = [street, p.city, p.state, p.postcode, p.country].filter(Boolean).join(", ");
+    const label = [street, p.city, p.state, p.postcode].filter(Boolean).join(", ");
     const [lon, lat] = f.geometry?.coordinates ?? [];
     return { label, street, city: p.city, postcode: p.postcode, lat, lon };
   });

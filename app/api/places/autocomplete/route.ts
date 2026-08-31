@@ -48,7 +48,12 @@ export async function POST(req: NextRequest) {
     const suggestions = (data.suggestions ?? [])
       .map((s: any) => s.placePrediction)
       .filter(Boolean)
-      .map((p: any) => ({ placeId: p.placeId, label: p.text?.text ?? "" }));
+      .map((p: any) => ({
+        placeId: p.placeId,
+        // Predictions are always NZ-scoped (includedRegionCodes above), so
+        // the trailing country name is redundant clutter here — drop it.
+        label: (p.text?.text ?? "").replace(/,\s*New Zealand$/i, ""),
+      }));
     return NextResponse.json({ suggestions });
   } catch (err) {
     console.error("[places/autocomplete] failed", err);

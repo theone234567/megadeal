@@ -31,7 +31,7 @@ export default function MerchantSignupForm() {
   const [lon, setLon] = useState<number | null>(null);
 
   function applyAddressSuggestion(s: AddressSuggestion) {
-    setAddress(s.street || s.label);
+    setAddress(s.label || s.street);
     if (s.postcode) setPostcode(s.postcode);
     if (s.city) {
       const match = CITIES.find((c) => c.toLowerCase() === s.city!.toLowerCase());
