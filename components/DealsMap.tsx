@@ -31,7 +31,7 @@ function FitBounds({ points }: { points: [number, number][] }) {
   useEffect(() => {
     if (points.length === 0) return;
     if (points.length === 1) {
-      map.setView(points[0], 13);
+      map.setView(points[0], 15);
     } else {
       map.fitBounds(points, { padding: [40, 40] });
     }
@@ -82,13 +82,8 @@ export default function DealsMap({
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
-          // CARTO's free basemap tiles instead of raw OSM ones — same OSM
-          // data underneath, but CARTO serves proper @2x retina tiles, so
-          // this doesn't look soft/blurry on high-DPI screens the way
-          // plain OSM tiles (never retina-aware) do.
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-          detectRetina
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <FitBounds points={points} />
         {userLocation && (

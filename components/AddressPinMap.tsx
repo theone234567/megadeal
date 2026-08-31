@@ -17,7 +17,7 @@ const PIN_ICON = L.divIcon({
 function Recenter({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
   useEffect(() => {
-    map.setView([lat, lng], Math.max(map.getZoom(), 15));
+    map.setView([lat, lng], Math.max(map.getZoom(), 17));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map]);
   return null;
@@ -37,16 +37,13 @@ export default function AddressPinMap({
       <div className="h-56 w-full">
         <MapContainer
           center={[lat, lng]}
-          zoom={16}
+          zoom={17}
           scrollWheelZoom={false}
           style={{ height: "100%", width: "100%" }}
         >
           <TileLayer
-            // CARTO's free retina-aware tiles instead of raw OSM ones — see
-            // components/DealsMap.tsx for why.
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-            detectRetina
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <Recenter lat={lat} lng={lng} />
           <Marker
