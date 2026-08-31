@@ -19,20 +19,3 @@ export function createWixClient(tokens?: Tokens) {
 }
 
 export type WixClient = ReturnType<typeof createWixClient>;
-
-let publicClient: WixClient | undefined;
-
-/**
- * A dedicated, always-anonymous client for public catalog browsing (deal
- * listings, category pages, deal detail pages). Deliberately separate from
- * the member-session client in WixProvider: reusing that client's stored
- * cookie tokens for public browsing means a stale/expired member session
- * can silently break catalog reads for a signed-in-looking visitor, even
- * though nothing about browsing deals should depend on being logged in.
- */
-export function getPublicWixClient(): WixClient {
-  if (!publicClient) {
-    publicClient = createWixClient();
-  }
-  return publicClient;
-}

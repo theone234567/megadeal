@@ -4,6 +4,9 @@ import CategoryNav from "@/components/CategoryNav";
 import { CATEGORIES } from "@/lib/categories";
 import CategoryDeals from "./CategoryDeals";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
+
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
   return CATEGORIES.map((c) => ({ category: c.name }));
@@ -28,12 +31,13 @@ export function generateMetadata({
   };
 }
 
-export default function CategoryPage({
+export default async function CategoryPage({
   params,
 }: {
   params: { category: string };
 }) {
   const category = decodeURIComponent(params.category);
+  const deals = await fetchAllLiveDealsServer();
 
   return (
     <main>
@@ -41,7 +45,7 @@ export default function CategoryPage({
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <h1 className="mb-5 text-2xl font-extrabold text-slate-900">{category}</h1>
         <Suspense fallback={null}>
-          <CategoryDeals category={category} />
+          <CategoryDeals category={category} initialDeals={deals} />
         </Suspense>
       </div>
     </main>

@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import DealDetail from "./DealDetail";
-import { fetchDealForSEO } from "@/lib/fetchDealServer";
+import { fetchDealForSEO, fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { formatMoney } from "@/lib/format";
+
+export const dynamic = "force-dynamic";
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -48,43 +51,47 @@ export async function generateMetadata({
 
 export default async function DealPage({ params }: { params: { slug: string } }) {
   const deal = await fetchDealForSEO(params.slug);
+  if (!deal) notFound();
+
+  const allDeals = await fetchAllLiveDealsServer();
+  const others = allDeals.filter((d) => d.id !== deal.id);
+  const sameCategory = others.filter((d) => d.categories.some((c) => deal.categories.includes(c)));
+  const relatedDeals = (sameCategory.length > 0 ? sameCategory : others).slice(0, 4);
 
   return (
     <>
-      {deal && (
-        <script
-          type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Product",
-              name: deal.name,
-              description: stripHtml(deal.description) || deal.name,
-              image: deal.image ? [deal.image] : undefined,
-              category: deal.categories[0] || undefined,
-              brand: deal.businessName
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: deal.name,
+            description: stripHtml(deal.description) || deal.name,
+            image: deal.image ? [deal.image] : undefined,
+            category: deal.categories[0] || undefined,
+            brand: deal.businessName
+              ? { "@type": "Organization", name: deal.businessName }
+              : undefined,
+            offers: {
+              "@type": "Offer",
+              url: `${SITE_URL}/deal/${deal.slug}`,
+              priceCurrency: deal.currency || "NZD",
+              price: deal.now,
+              availability:
+                deal.inStock !== false
+                  ? "https://schema.org/InStock"
+                  : "https://schema.org/SoldOut",
+              priceValidUntil: deal.expiresAt ?? undefined,
+              seller: deal.businessName
                 ? { "@type": "Organization", name: deal.businessName }
                 : undefined,
-              offers: {
-                "@type": "Offer",
-                url: `${SITE_URL}/deal/${deal.slug}`,
-                priceCurrency: deal.currency || "NZD",
-                price: deal.now,
-                availability:
-                  deal.inStock !== false
-                    ? "https://schema.org/InStock"
-                    : "https://schema.org/SoldOut",
-                priceValidUntil: deal.expiresAt ?? undefined,
-                seller: deal.businessName
-                  ? { "@type": "Organization", name: deal.businessName }
-                  : undefined,
-              },
-            }),
-          }}
-        />
-      )}
-      <DealDetail slug={params.slug} />
+            },
+          }),
+        }}
+      />
+      <DealDetail deal={deal} relatedDeals={relatedDeals} />
     </>
   );
 }

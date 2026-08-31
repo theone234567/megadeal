@@ -2,35 +2,19 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getPublicWixClient } from "@/lib/wixClient";
-import { fetchDeals } from "@/lib/fetchDeals";
 import { isDealLive } from "@/lib/dealVisibility";
 import type { Deal } from "@/lib/types";
 import DealGrid from "./DealGrid";
-import DealGridSkeleton from "./DealGridSkeleton";
 
 /**
  * Short-burst "2-for-1 tonight only" style deals. Only rendered on the
  * homepage when at least one is currently live and unexpired — an empty
- * or all-expired flash section would just be dead space.
+ * or all-expired flash section would just be dead space. Deals come from
+ * app/page.tsx's server-side fetch (present in the initial HTML for
+ * crawlers and with no loading-state pop-in), not a client fetch here.
  */
-export default function FlashDeals() {
-  const [deals, setDeals] = useState<Deal[] | null>(null);
+export default function FlashDeals({ initialDeals }: { initialDeals: Deal[] }) {
   const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchDeals(getPublicWixClient())
-      .then((result) => {
-        if (!cancelled) setDeals(result);
-      })
-      .catch(() => {
-        if (!cancelled) setDeals([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // Re-check every 30s so a flash deal that expires while the page is open
   // disappears on its own, without requiring a manual refresh.
@@ -39,21 +23,7 @@ export default function FlashDeals() {
     return () => clearInterval(id);
   }, []);
 
-  // While loading, reserve roughly the same space a real flash section
-  // would take instead of rendering nothing — the empty-to-full pop-in was
-  // a major layout-shift contributor once the fetch resolved.
-  if (!deals) {
-    return (
-      <div className="bg-brand-900">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mb-4 h-7 w-40 animate-pulse rounded-full bg-white/10" />
-          <DealGridSkeleton count={4} />
-        </div>
-      </div>
-    );
-  }
-
-  const flash = deals
+  const flash = initialDeals
     .filter((d) => d.isFlash && isDealLive(d, now))
     .sort((a, b) => {
       const aExp = a.expiresAt ? new Date(a.expiresAt).getTime() : Infinity;

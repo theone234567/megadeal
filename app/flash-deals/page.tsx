@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import CategoryNav from "@/components/CategoryNav";
 import FlashDealsList from "./FlashDealsList";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: `Flash Deals — Short-Burst Offers | ${SITE_NAME}`,
@@ -18,7 +21,9 @@ export const metadata: Metadata = {
   twitter: { card: "summary", title: `Flash Deals | ${SITE_NAME}` },
 };
 
-export default function FlashDealsPage() {
+export default async function FlashDealsPage() {
+  const deals = await fetchAllLiveDealsServer();
+
   return (
     <main>
       <CategoryNav />
@@ -34,7 +39,7 @@ export default function FlashDealsPage() {
       </div>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Suspense fallback={null}>
-          <FlashDealsList />
+          <FlashDealsList initialDeals={deals} />
         </Suspense>
       </div>
     </main>

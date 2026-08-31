@@ -61,6 +61,73 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
   }
 }
 
+/**
+ * All currently-live deals with business info applied, server-rendered —
+ * this is what backs the homepage, category pages, and flash deals list,
+ * so the actual deal listings are present in the raw HTML a crawler gets
+ * on first request instead of only appearing after client-side JS fetches
+ * them. Same admin-client reliability story as fetchDealForSEO above, and
+ * mirrors the shape lib/fetchDeals.ts's client-side fetchDeals() produces
+ * exactly (same mapProductToDeal/applyBusinessToDeal/isDealLive calls) so
+ * every consumer can keep working with the result identically either way.
+ */
+export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
+  try {
+    const adminClient = createWixAdminClient();
+    const [productsRes, dealsResult, merchantsResult] = await Promise.all([
+      adminClient.productsV3.searchProducts({
+        search: { cursorPaging: { limit: 100 } },
+        fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
+      } as any),
+      adminClient.items.query("Deals").find(),
+      adminClient.items.query("Merchants").find(),
+    ]);
+
+    const products = ((productsRes as any).products ?? [])
+      .filter(Boolean)
+      .filter((p: any) => !isMegaShopProduct(p));
+
+    const metaByProductId: Record<string, any> = {};
+    for (const item of dealsResult.items ?? []) {
+      if (item.productId) metaByProductId[item.productId] = item;
+    }
+
+    const businessByEmail: Record<string, PublicBusiness> = {};
+    for (const m of merchantsResult.items ?? []) {
+      if (m.email && m.businessName && m._id) {
+        businessByEmail[String(m.email).toLowerCase()] = mapMerchantToBusiness(m);
+      }
+    }
+
+    return products
+      .map((p: any) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
+      .map((deal: Deal) => {
+        const meta = metaByProductId[deal.id];
+        if (!meta) return deal;
+        return {
+          ...deal,
+          expiresAt: meta.expiresAt ?? null,
+          status: meta.status ?? null,
+          image: meta.photoUrl || deal.image,
+          isFlash: Boolean(meta.isFlash),
+          quantityAvailable:
+            typeof meta.quantityAvailable === "number" ? meta.quantityAvailable : null,
+        };
+      })
+      .filter((deal: Deal) => isDealLive(deal))
+      .map((deal: Deal) => {
+        const meta = metaByProductId[deal.id];
+        const business = meta?.merchantEmail
+          ? businessByEmail[String(meta.merchantEmail).toLowerCase()]
+          : undefined;
+        return business ? applyBusinessToDeal(deal, business) : deal;
+      });
+  } catch (err) {
+    console.error("[fetchAllLiveDealsServer] failed", err);
+    return [];
+  }
+}
+
 export interface BusinessProfile extends PublicBusiness {
   id: string;
 }

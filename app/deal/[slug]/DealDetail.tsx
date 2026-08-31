@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getPublicWixClient } from "@/lib/wixClient";
-import { fetchDealBySlug, fetchDeals } from "@/lib/fetchDeals";
 import type { Deal } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
 import { dealEndsAt } from "@/lib/socialProof";
@@ -16,74 +14,23 @@ import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } f
 import { trackDealEvent } from "@/lib/trackDeal";
 import StarRating from "@/components/StarRating";
 
-export default function DealDetail({ slug }: { slug: string }) {
-  const [deal, setDeal] = useState<Deal | null | undefined>(undefined);
+// The deal (and its related deals) are fetched server-side (see page.tsx)
+// so the description, price, and business info are present in the raw
+// HTML on first load — this component only adds client-side interactivity
+// (view tracking, the "reveal contact info" toggle) on top of real data.
+export default function DealDetail({
+  deal,
+  relatedDeals,
+}: {
+  deal: Deal;
+  relatedDeals: Deal[];
+}) {
   const [showContact, setShowContact] = useState(false);
-  const [related, setRelated] = useState<Deal[] | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-    fetchDealBySlug(getPublicWixClient(), slug).then((result) => {
-      if (!cancelled) setDeal(result);
-    });
-    return () => {
-      cancelled = true;
-    };
+    trackDealEvent(deal.id, "view");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
-
-  useEffect(() => {
-    if (deal?.id) trackDealEvent(deal.id, "view");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deal?.id]);
-
-  useEffect(() => {
-    if (!deal) {
-      setRelated(null);
-      return;
-    }
-    let cancelled = false;
-    fetchDeals(getPublicWixClient())
-      .then((all) => {
-        if (cancelled) return;
-        const others = all.filter((d) => d.id !== deal.id);
-        const sameCategory = others.filter((d) =>
-          d.categories.some((c) => deal.categories.includes(c))
-        );
-        const pool = sameCategory.length > 0 ? sameCategory : others;
-        setRelated(pool.slice(0, 4));
-      })
-      .catch(() => {
-        if (!cancelled) setRelated([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deal?.id]);
-
-  if (deal === undefined) {
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="animate-shimmer aspect-[16/9] w-full rounded-2xl" />
-        <div className="animate-shimmer mt-6 h-8 w-2/3 rounded" />
-        <div className="animate-shimmer mt-3 h-4 w-1/3 rounded" />
-      </main>
-    );
-  }
-
-  if (deal === null) {
-    return (
-      <main className="mx-auto max-w-5xl px-4 py-16 text-center sm:px-6 lg:px-8">
-        <p className="text-lg font-semibold text-slate-700">
-          We couldn&apos;t find that deal.
-        </p>
-        <Link href="/" className="mt-4 inline-block text-brand-600 hover:underline">
-          ← Back to all deals
-        </Link>
-      </main>
-    );
-  }
+  }, [deal.id]);
 
   const hasContactInfo = Boolean(
     deal.businessWebsite ||
@@ -407,10 +354,10 @@ export default function DealDetail({ slug }: { slug: string }) {
         </div>
       </div>
 
-      {related && related.length > 0 && (
+      {relatedDeals.length > 0 && (
         <div className="mt-10 border-t border-slate-100 pt-8">
           <h2 className="mb-5 text-xl font-bold text-slate-900">You might also like</h2>
-          <DealGrid deals={related} />
+          <DealGrid deals={relatedDeals} />
         </div>
       )}
     </main>

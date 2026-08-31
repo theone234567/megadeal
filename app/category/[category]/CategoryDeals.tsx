@@ -3,14 +3,11 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { getPublicWixClient } from "@/lib/wixClient";
-import { fetchDeals } from "@/lib/fetchDeals";
 import { isDealLive } from "@/lib/dealVisibility";
 import type { Deal } from "@/lib/types";
 import { sortDeals, type SortOption } from "@/lib/sortDeals";
 import { useUserLocation } from "@/lib/geo";
 import DealGrid from "@/components/DealGrid";
-import DealGridSkeleton from "@/components/DealGridSkeleton";
 import SortSelect from "@/components/SortSelect";
 import NearMeStatus from "@/components/NearMeStatus";
 import ViewToggle, { type DealsView } from "@/components/ViewToggle";
@@ -24,12 +21,18 @@ const DealsMap = dynamic(() => import("@/components/DealsMap"), {
   ),
 });
 
-export default function CategoryDeals({ category }: { category: string }) {
+// Deals are fetched server-side (see page.tsx) so listings are present in
+// the raw HTML on first load. This component only filters/sorts on top.
+export default function CategoryDeals({
+  category,
+  initialDeals,
+}: {
+  category: string;
+  initialDeals: Deal[];
+}) {
   const searchParams = useSearchParams();
   const city = (searchParams.get("city") ?? "").toLowerCase().trim();
 
-  const [deals, setDeals] = useState<Deal[] | null>(null);
-  const [error, setError] = useState(false);
   const [sort, setSort] = useState<SortOption>("ending");
   const [view, setView] = useState<DealsView>("grid");
   const [now, setNow] = useState(() => Date.now());
@@ -47,36 +50,7 @@ export default function CategoryDeals({ category }: { category: string }) {
     return () => clearInterval(id);
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    setDeals(null);
-    setError(false);
-    fetchDeals(getPublicWixClient())
-      .then((result) => {
-        if (!cancelled) setDeals(result);
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          console.error("[CategoryDeals] fetchDeals failed", err);
-          setError(true);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [category]);
-
-  if (error) {
-    return (
-      <p className="rounded-2xl border border-dashed border-slate-200 py-16 text-center text-slate-500">
-        Couldn&apos;t load deals right now. Please refresh the page.
-      </p>
-    );
-  }
-
-  if (!deals) return <DealGridSkeleton />;
-
-  let filtered = deals.filter((d) => isDealLive(d, now) && d.categories.includes(category));
+  let filtered = initialDeals.filter((d) => isDealLive(d, now) && d.categories.includes(category));
   if (city) {
     filtered = filtered.filter((d) => (d.businessCity ?? "").toLowerCase() === city);
   }
