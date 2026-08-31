@@ -34,7 +34,23 @@ export default function OpengraphImage() {
           >
             Deal
           </span>
-          <span style={{ fontSize: 80, marginLeft: 16 }}>🐘</span>
+          {/* Vector elephant instead of the emoji — Satori composites emoji
+              as rasterized Twemoji glyphs, which can leave a faint dark
+              fringe around the edges; plain shapes have nothing to fringe. */}
+          <svg width="90" height="90" viewBox="0 0 100 100" style={{ marginLeft: 16 }}>
+            <ellipse cx="15" cy="48" rx="17" ry="22" fill="#eee0ff" />
+            <ellipse cx="85" cy="48" rx="17" ry="22" fill="#eee0ff" />
+            <ellipse cx="50" cy="45" rx="30" ry="28" fill="#f7f2ff" />
+            <path
+              d="M50 58 C 45 70, 55 78, 50 90"
+              fill="none"
+              stroke="#f7f2ff"
+              strokeWidth="13"
+              strokeLinecap="round"
+            />
+            <circle cx="36" cy="40" r="6" fill="#440e82" />
+            <circle cx="64" cy="40" r="6" fill="#440e82" />
+          </svg>
         </div>
         <div
           style={{
