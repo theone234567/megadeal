@@ -83,7 +83,7 @@ export default function ElephantMascot({ className = "" }: { className?: string 
       {bubble && (
         <span
           key={bubble.id}
-          className="animate-elephant-bubble pointer-events-none absolute -top-7 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-3 py-1 text-xs font-bold text-white shadow-card after:absolute after:left-1/2 after:top-full after:-ml-1 after:border-4 after:border-transparent after:border-t-slate-900"
+          className="animate-elephant-bubble pointer-events-none absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-3 py-1 text-xs font-bold text-white shadow-card after:absolute after:bottom-full after:left-1/2 after:-ml-1 after:border-4 after:border-transparent after:border-b-slate-900"
         >
           {bubble.text}
         </span>
