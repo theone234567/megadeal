@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
+import { SITE_URL } from "@/lib/siteConfig";
 
-export const metadata: Metadata = { title: "Terms of Service" };
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  alternates: { canonical: `${SITE_URL}/terms` },
+};
 
 export default function TermsPage() {
   return (

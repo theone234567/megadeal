@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SocialLinks from "@/components/SocialLinks";
 import EmailSignupForm from "@/components/EmailSignupForm";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "MegaDeal is coming soon — NZ's new home for local deals",
   description:
     "MegaDeal is a proudly Kiwi-owned deals platform launching soon. Customers browse and save, businesses advertise and keep every dollar — no commission, ever.",
+  alternates: { canonical: `${SITE_URL}/coming-soon` },
 };
 
 const CUSTOMER_PERKS = [

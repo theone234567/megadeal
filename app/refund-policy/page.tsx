@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "Refund Policy",
   description:
     "MegaDeal never charges customers, so there's nothing for us to refund — here's how pricing and disputes work instead.",
+  alternates: { canonical: `${SITE_URL}/refund-policy` },
 };
 
 export default function RefundPolicyPage() {

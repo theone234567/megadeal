@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "How It Works",
   description:
     "How MegaDeal works: browse local deals for free and contact the business directly to redeem, or list your own deal and reach new customers.",
+  alternates: { canonical: `${SITE_URL}/how-it-works` },
 };
 
 export default function HowItWorksPage() {

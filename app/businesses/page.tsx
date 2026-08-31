@@ -4,11 +4,13 @@ import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 import CountdownBadge from "@/components/CountdownBadge";
 import MerchantSignupForm from "./MerchantSignupForm";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "List Your Deal — Advertise Your NZ Business",
   description:
     "Reach thousands of local customers with a deal on MegaDeal. No lock-in contracts, zero commission, and a limited-time free advertising offer for new businesses.",
+  alternates: { canonical: `${SITE_URL}/businesses` },
 };
 
 const PERKS = [

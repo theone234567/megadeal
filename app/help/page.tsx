@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
+import { SITE_URL } from "@/lib/siteConfig";
 
-export const metadata: Metadata = { title: "Help Centre" };
+export const metadata: Metadata = {
+  title: "Help Centre",
+  alternates: { canonical: `${SITE_URL}/help` },
+};
 
 export default function HelpPage() {
   return (

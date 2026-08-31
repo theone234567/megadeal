@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
+import { SITE_URL } from "@/lib/siteConfig";
 
-export const metadata: Metadata = { title: "How to Redeem a Deal" };
+export const metadata: Metadata = {
+  title: "How to Redeem a Deal",
+  alternates: { canonical: `${SITE_URL}/redeem` },
+};
 
 export default function RedeemPage() {
   return (

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
+import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "About MegaDeal",
   description:
     "MegaDeal is a New Zealand-owned daily deals marketplace connecting Kiwis with real local businesses across food, beauty, activities, travel and fitness.",
+  alternates: { canonical: `${SITE_URL}/about` },
 };
 
 export default function AboutPage() {
