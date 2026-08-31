@@ -30,6 +30,6 @@ export const config = {
   // Google's sitemap crawler, which has little patience for that extra
   // network hop on what should be a trivial static file.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|opengraph-image|icon|api/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|opengraph-image|icon|security.txt|.well-known|api/).*)",
   ],
 };
