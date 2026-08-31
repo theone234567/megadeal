@@ -193,7 +193,7 @@ export default function MerchantsPage() {
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-2xl font-extrabold text-slate-900 sm:text-3xl">
-            Why merchants list with us
+            Why businesses list with us
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
             {PERKS.map((p) => (

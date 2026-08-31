@@ -9,7 +9,7 @@ export default function ReferralCard({ referralCode }: { referralCode?: string }
 
   if (!referralCode) return null;
 
-  const referralUrl = `${SITE_URL}/merchants?ref=${referralCode}`;
+  const referralUrl = `${SITE_URL}/businesses?ref=${referralCode}`;
 
   async function copyLink() {
     try {

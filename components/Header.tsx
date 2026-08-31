@@ -84,7 +84,7 @@ export default function Header() {
 
         <div className="flex justify-end">
           <Link
-            href="/merchants"
+            href="/businesses"
             className="text-xs font-semibold text-slate-500 hover:text-ember-600"
           >
             Own a business? List your deal →

@@ -152,7 +152,7 @@ export default function ComingSoonPage() {
               />
             </div>
             <Link
-              href="/merchants"
+              href="/businesses"
               className="mt-6 inline-block rounded-full bg-white px-5 py-2.5 text-sm font-bold text-ember-600 shadow-card transition hover:bg-ember-50"
             >
               List your business now →

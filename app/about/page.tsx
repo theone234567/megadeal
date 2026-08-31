@@ -57,8 +57,8 @@ export default function AboutPage() {
         and Queenstown, and we&apos;re adding new cities and new categories
         all the time. If there&apos;s a business you love that you&apos;d like
         to see on MegaDeal, let their owner know — or point them to our{" "}
-        <a href="/merchants" className="text-brand-600 hover:underline">
-          merchant page
+        <a href="/businesses" className="text-brand-600 hover:underline">
+          business page
         </a>
         .
       </p>

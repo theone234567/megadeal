@@ -7,6 +7,18 @@ const nextConfig = {
       { protocol: "https", hostname: "**.wixstatic.com" },
     ],
   },
+  async redirects() {
+    // The public merchant-signup section moved from /merchants to
+    // /businesses (less "marketplace where you buy through us" sounding,
+    // more consistent with the rest of the site's own copy). Permanent
+    // redirects so existing bookmarks, indexed search results, and
+    // already-shared referral links (?ref=CODE) keep working — query
+    // strings and any #fragment are preserved automatically.
+    return [
+      { source: "/merchants", destination: "/businesses", permanent: true },
+      { source: "/merchants/:path*", destination: "/businesses/:path*", permanent: true },
+    ];
+  },
   async headers() {
     // Deliberately not shipping a Content-Security-Policy here: this app
     // calls several wixapis.com subdomains from the browser and a

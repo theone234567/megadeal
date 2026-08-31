@@ -56,8 +56,8 @@ export default function HowItWorksPage() {
       <h3>1. Sign up</h3>
       <p>
         Tell us about your business on our{" "}
-        <a href="/merchants" className="text-brand-600 hover:underline">
-          merchant page
+        <a href="/businesses" className="text-brand-600 hover:underline">
+          business page
         </a>{" "}
         — no account needed just to apply.
       </p>

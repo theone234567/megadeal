@@ -47,8 +47,8 @@ export default function HelpPage() {
       <h2>I&apos;m a business — how do I list a deal?</h2>
       <p>
         Head to our{" "}
-        <a href="/merchants" className="text-brand-600 hover:underline">
-          merchant page
+        <a href="/businesses" className="text-brand-600 hover:underline">
+          business page
         </a>{" "}
         to find out how listing works — you advertise with credits or a
         subscription, and customers pay you directly when they redeem.

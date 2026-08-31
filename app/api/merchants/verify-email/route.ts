@@ -23,12 +23,12 @@ export async function GET(req: NextRequest) {
           emailVerified: true,
           emailVerifyToken: "",
         });
-        return NextResponse.redirect(`${SITE_URL}/merchants/verified?ok=1`);
+        return NextResponse.redirect(`${SITE_URL}/businesses/verified?ok=1`);
       }
     }
   } catch (err) {
     console.error("[merchants/verify-email] failed", err);
   }
 
-  return NextResponse.redirect(`${SITE_URL}/merchants/verified?ok=0`);
+  return NextResponse.redirect(`${SITE_URL}/businesses/verified?ok=0`);
 }

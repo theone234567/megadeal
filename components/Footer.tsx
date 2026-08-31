@@ -19,7 +19,7 @@ export default function Footer() {
             </p>
           </div>
           <Link
-            href="/merchants"
+            href="/businesses"
             className="shrink-0 rounded-full bg-ember-500 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-ember-600"
           >
             List your deal →
@@ -58,8 +58,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/merchants" className="hover:text-brand-700">
-                  Merchants: list your deal
+                <Link href="/businesses" className="hover:text-brand-700">
+                  Businesses: list your deal
                 </Link>
               </li>
               <li>
