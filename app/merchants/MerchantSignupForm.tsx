@@ -1,50 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import dynamic from "next/dynamic";
-
-const AddressPinMap = dynamic(() => import("@/components/AddressPinMap"), {
-  ssr: false,
-});
+import AddressAutocompleteField from "@/components/AddressAutocompleteField";
+import type { AddressSuggestion } from "@/lib/googlePlaces";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
-
-interface AddressSuggestion {
-  label: string;
-  street: string;
-  city?: string;
-  postcode?: string;
-  lat?: number;
-  lon?: number;
-}
-
-// Free, keyless geocoder (OpenStreetMap-based) used for address suggestions
-// as the merchant types — no API key or billing needed. Its response
-// already includes coordinates (GeoJSON [lon, lat]), which we keep so the
-// business's deal/profile pages can offer a "view map" / "get directions"
-// link straight to Google Maps.
-async function fetchAddressSuggestions(query: string): Promise<AddressSuggestion[]> {
-  const url = new URL("https://photon.komoot.io/api/");
-  url.searchParams.set("q", query);
-  url.searchParams.set("limit", "5");
-  url.searchParams.set("lang", "en");
-  // Bias results toward New Zealand without excluding other countries.
-  url.searchParams.set("lat", "-41.29");
-  url.searchParams.set("lon", "174.78");
-
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error("Address lookup failed");
-  const data = await res.json();
-
-  return (data.features ?? []).map((f: any) => {
-    const p = f.properties ?? {};
-    const street = p.housenumber && p.name ? `${p.housenumber} ${p.name}` : p.name || p.street || "";
-    const label = [street, p.city, p.state, p.postcode, p.country].filter(Boolean).join(", ");
-    const [lon, lat] = f.geometry?.coordinates ?? [];
-    return { label, street, city: p.city, postcode: p.postcode, lat, lon };
-  });
-}
 
 function RequiredTag() {
   return <span className="ml-1 font-normal text-ember-600">Required</span>;
@@ -66,58 +27,18 @@ export default function MerchantSignupForm() {
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postcode, setPostcode] = useState("");
-  const [lat, setLat] = useState<number | undefined>(undefined);
-  const [lon, setLon] = useState<number | undefined>(undefined);
-  const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const addressBoxRef = useRef<HTMLDivElement>(null);
+  const [lat, setLat] = useState<number | null>(null);
+  const [lon, setLon] = useState<number | null>(null);
 
-  // Debounced address lookup as the merchant types.
-  useEffect(() => {
-    if (address.trim().length < 3) {
-      setSuggestions([]);
-      return;
-    }
-    let cancelled = false;
-    const timer = setTimeout(() => {
-      fetchAddressSuggestions(address)
-        .then((results) => {
-          if (!cancelled) setSuggestions(results);
-        })
-        .catch(() => {
-          if (!cancelled) setSuggestions([]);
-        });
-    }, 350);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [address]);
-
-  // Close the suggestions dropdown on an outside click.
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (addressBoxRef.current && !addressBoxRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  function selectSuggestion(s: AddressSuggestion) {
+  function applyAddressSuggestion(s: AddressSuggestion) {
     setAddress(s.street || s.label);
     if (s.postcode) setPostcode(s.postcode);
     if (s.city) {
-      const match = CITIES.find(
-        (c) => c.toLowerCase() === s.city!.toLowerCase()
-      );
+      const match = CITIES.find((c) => c.toLowerCase() === s.city!.toLowerCase());
       setCity(match ?? "Other");
     }
-    setLat(s.lat);
-    setLon(s.lon);
-    setSuggestions([]);
-    setShowSuggestions(false);
+    setLat(s.lat ?? null);
+    setLon(s.lon ?? null);
   }
 
   if (submitted) {
@@ -303,57 +224,21 @@ export default function MerchantSignupForm() {
               </div>
             </div>
 
-            <div ref={addressBoxRef} className="relative">
-              <label className="mb-1 block text-sm font-medium text-slate-700">
-                Business address
-                <RequiredTag />
-              </label>
-              <input
-                required
-                type="text"
-                autoComplete="off"
-                value={address}
-                onChange={(e) => {
-                  setAddress(e.target.value);
-                  setLat(undefined);
-                  setLon(undefined);
-                  setShowSuggestions(true);
-                }}
-                onFocus={() => setShowSuggestions(true)}
-                placeholder="Start typing your street address…"
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-              />
-              <p className="mt-1 text-xs text-slate-400">
-                Pick a suggestion so we can show customers a map/directions link.
-              </p>
-
-              {showSuggestions && suggestions.length > 0 && (
-                <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card-hover">
-                  {suggestions.map((s, i) => (
-                    <li key={i}>
-                      <button
-                        type="button"
-                        onClick={() => selectSuggestion(s)}
-                        className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-brand-50"
-                      >
-                        {s.label}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {lat !== undefined && lon !== undefined && (
-                <AddressPinMap
-                  lat={lat}
-                  lng={lon}
-                  onMove={(newLat, newLng) => {
-                    setLat(newLat);
-                    setLon(newLng);
-                  }}
-                />
-              )}
-            </div>
+            <AddressAutocompleteField
+              address={address}
+              onAddressChange={(value) => {
+                setAddress(value);
+                setLat(null);
+                setLon(null);
+              }}
+              onSelect={applyAddressSuggestion}
+              lat={lat}
+              lon={lon}
+              onPinMove={(newLat, newLng) => {
+                setLat(newLat);
+                setLon(newLng);
+              }}
+            />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>

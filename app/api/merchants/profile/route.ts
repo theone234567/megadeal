@@ -70,11 +70,15 @@ export async function POST(req: NextRequest) {
 
   const address = cleanText(body.address, MAX_TEXT_LENGTH);
   const city = cleanText(body.city, MAX_TEXT_LENGTH);
-  // This form has no address-autocomplete/geocoding, so a changed address
-  // can't be trusted to still match the stored coordinates — drop them
-  // rather than show a map pin at the old location. They're re-captured
-  // automatically next time the address is set via the signup flow.
   const addressChanged = address !== (merchant.address || "") || city !== (merchant.city || "");
+  // This form now has the same address-autocomplete/pin-map as signup, so a
+  // freshly resolved lat/lng from the client is trustworthy — use it. If
+  // the client didn't send one (address typed without picking a
+  // suggestion) and the address changed, drop the old coordinates rather
+  // than show a map pin at the wrong location; if the address is unchanged,
+  // leave whatever was already stored alone.
+  const lat = Number.isFinite(body.lat) ? Number(body.lat) : null;
+  const lng = Number.isFinite(body.lng) ? Number(body.lng) : null;
 
   const updated = await adminClient.items.update("Merchants", {
     ...merchant,
@@ -92,7 +96,8 @@ export async function POST(req: NextRequest) {
     instagramUrl,
     priceRange,
     amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
-    ...(addressChanged ? { lat: null, lng: null } : {}),
+    lat: lat ?? (addressChanged ? null : merchant.lat ?? null),
+    lng: lng ?? (addressChanged ? null : merchant.lng ?? null),
     status: "Pending",
   });
   return NextResponse.json({ item: updated });

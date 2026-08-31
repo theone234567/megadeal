@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import AddressAutocompleteField from "@/components/AddressAutocompleteField";
+import type { AddressSuggestion } from "@/lib/googlePlaces";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 
@@ -13,6 +15,8 @@ interface MerchantRecord {
   address?: string;
   city?: string;
   postcode?: string;
+  lat?: number | null;
+  lng?: number | null;
   bio?: string;
   businessHours?: string;
   bookingUrl?: string;
@@ -41,6 +45,8 @@ export default function MerchantProfileForm({
   const [address, setAddress] = useState(merchant.address || "");
   const [city, setCity] = useState(merchant.city || "");
   const [postcode, setPostcode] = useState(merchant.postcode || "");
+  const [lat, setLat] = useState<number | null>(merchant.lat ?? null);
+  const [lon, setLon] = useState<number | null>(merchant.lng ?? null);
   const [bio, setBio] = useState(merchant.bio || "");
   const [businessHours, setBusinessHours] = useState(merchant.businessHours || "");
   const [bookingUrl, setBookingUrl] = useState(merchant.bookingUrl || "");
@@ -64,6 +70,8 @@ export default function MerchantProfileForm({
           address,
           city,
           postcode,
+          lat,
+          lng: lon,
           bio,
           businessHours,
           bookingUrl,
@@ -230,14 +238,32 @@ export default function MerchantProfileForm({
           </div>
         </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Address</label>
-          <input
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-          />
-        </div>
+        <AddressAutocompleteField
+          address={address}
+          onAddressChange={(value) => {
+            setAddress(value);
+            setLat(null);
+            setLon(null);
+          }}
+          onSelect={(s: AddressSuggestion) => {
+            setAddress(s.street || s.label);
+            if (s.postcode) setPostcode(s.postcode);
+            if (s.city) {
+              const match = CITIES.find((c) => c.toLowerCase() === s.city!.toLowerCase());
+              setCity(match ?? "Other");
+            }
+            setLat(s.lat ?? null);
+            setLon(s.lon ?? null);
+          }}
+          lat={lat}
+          lon={lon}
+          onPinMove={(newLat, newLng) => {
+            setLat(newLat);
+            setLon(newLng);
+          }}
+          required={false}
+          helperText="Pick a suggestion to keep your map location accurate."
+        />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
