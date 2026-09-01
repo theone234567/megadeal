@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { uploadPhoto } from "@/lib/imageUpload";
 import { CATEGORIES } from "@/lib/categories";
+import MerchantLoginForm from "@/components/portal/MerchantLoginForm";
 
 const DURATIONS = [
   { label: "1 week", days: 7 },
@@ -29,7 +30,7 @@ interface MerchantRecord {
 }
 
 function NewDealForm() {
-  const { isLoggedIn, member, login, client } = useWix();
+  const { isLoggedIn, member, client } = useWix();
   const router = useRouter();
   const searchParams = useSearchParams();
   const duplicateId = searchParams.get("duplicate");
@@ -167,12 +168,7 @@ function NewDealForm() {
           Sign in to your merchant account to create a deal. Only your own
           account can create deals on it.
         </p>
-        <button
-          onClick={() => login("/portal/new-deal")}
-          className="mt-6 rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-brand-700"
-        >
-          Sign in
-        </button>
+        <MerchantLoginForm redirectTo="/portal/new-deal" />
       </main>
     );
   }

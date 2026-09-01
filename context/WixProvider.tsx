@@ -15,7 +15,6 @@ interface WixContextValue {
   client: WixClient;
   member: any | null | undefined;
   isLoggedIn: boolean;
-  login: (returnTo?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -58,18 +57,6 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
     fetchMember();
   }, [fetchMember]);
 
-  const login = useCallback(
-    async (returnTo?: string) => {
-      const redirectUri = `${window.location.origin}/login-callback`;
-      const originalUri = returnTo || window.location.href;
-      const data = client.auth.generateOAuthData(redirectUri, originalUri);
-      localStorage.setItem("oauthRedirectData", JSON.stringify(data));
-      const { authUrl } = await client.auth.getAuthUrl(data);
-      window.location.href = authUrl;
-    },
-    [client]
-  );
-
   const logout = useCallback(async () => {
     const { logoutUrl } = await client.auth.logout(window.location.href);
     Cookies.remove("session");
@@ -80,7 +67,6 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
     client,
     member,
     isLoggedIn: Boolean(member),
-    login,
     logout,
   };
 

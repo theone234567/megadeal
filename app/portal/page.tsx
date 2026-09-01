@@ -7,6 +7,7 @@ import type { DealStatus } from "@/lib/types";
 import DealManageCard, { type DealRecord } from "@/components/portal/DealManageCard";
 import PhotoUploadField from "@/components/portal/PhotoUploadField";
 import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
+import MerchantLoginForm from "@/components/portal/MerchantLoginForm";
 import ReferralCard from "@/components/portal/ReferralCard";
 import ActivityFeed from "@/components/portal/ActivityFeed";
 import NotificationPreferences from "@/components/portal/NotificationPreferences";
@@ -39,7 +40,7 @@ interface MerchantRecord {
 }
 
 export default function PortalPage() {
-  const { client, member, isLoggedIn, login, logout } = useWix();
+  const { client, member, isLoggedIn, logout } = useWix();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   const [deals, setDeals] = useState<DealRecord[]>([]);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -157,12 +158,13 @@ export default function PortalPage() {
           Sign in to view your business details, deal credits and active
           deals. Only you can see your own account.
         </p>
-        <button
-          onClick={() => login("/portal")}
-          className="mt-6 rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-brand-700"
-        >
-          Sign in
-        </button>
+        <MerchantLoginForm />
+        <p className="mt-4 text-sm text-slate-500">
+          New here?{" "}
+          <Link href="/businesses#signup" className="font-semibold text-brand-600 hover:underline">
+            Sign up your business
+          </Link>
+        </p>
       </main>
     );
   }
@@ -202,7 +204,7 @@ export default function PortalPage() {
           </Link>
 
           <OnboardingChecklist
-            emailVerified={merchant.emailVerified}
+            emailVerified={Boolean(member?.loginEmailVerified)}
             profileComplete={Boolean(merchant.bio && (merchant.phone || merchant.address))}
             hasDeals={deals.length > 0}
           />
@@ -232,7 +234,7 @@ export default function PortalPage() {
               <p className="mt-1 text-sm text-slate-500">
                 We&apos;ll email you once your first deal is ready to go live.
               </p>
-              {merchant.emailVerified ? (
+              {member?.loginEmailVerified ? (
                 <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
                   ✓ Email verified
                 </p>

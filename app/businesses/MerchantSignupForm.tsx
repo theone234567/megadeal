@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useWix } from "@/context/WixProvider";
+import { registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import AddressAutocompleteField from "@/components/AddressAutocompleteField";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
 
@@ -15,10 +17,54 @@ function OptionalTag() {
   return <span className="ml-1 font-normal text-slate-400">(optional)</span>;
 }
 
+/** Submits everything the /businesses form collected to create (or claim)
+ *  the business application — called only once the account itself exists
+ *  and, if Wix required it, its email is verified. */
+async function submitApplication(formEl: HTMLFormElement, extra: {
+  address: string;
+  city: string;
+  postcode: string;
+  lat: number | null;
+  lon: number | null;
+}) {
+  const formData = new FormData(formEl);
+  const res = await fetch("/api/merchants/apply", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      businessName: String(formData.get("businessName") ?? ""),
+      website: String(formData.get("website") ?? ""),
+      phone: String(formData.get("phone") ?? ""),
+      address: extra.address,
+      city: extra.city,
+      postcode: extra.postcode,
+      lat: extra.lat,
+      lng: extra.lon,
+      bio: String(formData.get("bio") ?? ""),
+      businessHours: String(formData.get("businessHours") ?? ""),
+      bookingUrl: String(formData.get("bookingUrl") ?? ""),
+      bookingEmail: String(formData.get("bookingEmail") ?? ""),
+      facebookUrl: String(formData.get("facebookUrl") ?? ""),
+      instagramUrl: String(formData.get("instagramUrl") ?? ""),
+      priceRange: String(formData.get("priceRange") ?? ""),
+      amenities: String(formData.get("amenities") ?? ""),
+      couponCode: String(formData.get("couponCode") ?? ""),
+      website2: String(formData.get("website2") ?? ""),
+      agreedToTerms: formData.get("agreedToTerms") === "on",
+    }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || "Your account was created, but we couldn't save your business details. Please contact us so we can sort it out.");
+  }
+}
+
 export default function MerchantSignupForm() {
+  const { client } = useWix();
   const searchParams = useSearchParams();
   const referralPrefill = searchParams.get("ref") || "";
-  const [submitted, setSubmitted] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [consent, setConsent] = useState(false);
@@ -29,6 +75,17 @@ export default function MerchantSignupForm() {
   const [postcode, setPostcode] = useState("");
   const [lat, setLat] = useState<number | null>(null);
   const [lon, setLon] = useState<number | null>(null);
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Set once Wix comes back with EMAIL_VERIFICATION_REQUIRED — the rest of
+  // the form stays filled in underneath while this is shown, nothing is
+  // lost, the verification code just has to clear before the application
+  // itself gets submitted.
+  const [pendingState, setPendingState] = useState<unknown>(null);
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [code, setCode] = useState("");
 
   function applyAddressSuggestion(s: AddressSuggestion) {
     setAddress(s.label || s.street);
@@ -41,24 +98,110 @@ export default function MerchantSignupForm() {
     setLon(s.lon ?? null);
   }
 
-  if (submitted) {
+  async function finishAfterAuth() {
+    if (!formRef.current) return;
+    await submitApplication(formRef.current, { address, city, postcode, lat, lon });
+    window.location.href = "/portal";
+  }
+
+  async function handleOutcome(outcome: AuthOutcome) {
+    if (outcome.status === "success") {
+      await finishAfterAuth();
+    } else if (outcome.status === "verify") {
+      setPendingState(outcome.pendingState);
+      setPendingEmail(outcome.email);
+    } else {
+      setSubmitError(outcome.message);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSubmitError(null);
+
+    const formData = new FormData(e.currentTarget);
+
+    // Honeypot — hidden from real visitors via CSS, so only a bot filling
+    // every field would set this. Pretend to succeed either way so a bot
+    // isn't tipped off it was caught.
+    if (String(formData.get("website2") ?? "").trim() !== "") {
+      setSubmitting(true);
+      return;
+    }
+
+    const email = String(formData.get("email") ?? "").trim();
+    const businessName = String(formData.get("businessName") ?? "").trim();
+
+    if (password.length < 8) {
+      setSubmitError("Your password needs to be at least 8 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setSubmitError("Those passwords don't match.");
+      return;
+    }
+    if (!agreedToTerms) {
+      setSubmitError("You must agree to the Terms and Conditions to apply.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const outcome = await registerMember(client, email, password, businessName);
+      await handleOutcome(outcome);
+    } catch (err: any) {
+      setSubmitError(err?.message || "Something went wrong submitting your application. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleVerifySubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      const outcome = await submitVerificationCode(client, code, pendingState);
+      if (outcome.status === "success") {
+        await finishAfterAuth();
+      } else if (outcome.status === "error") {
+        setSubmitError(outcome.message);
+      } else {
+        setSubmitError("That code isn't right — check your email and try again.");
+      }
+    } catch (err: any) {
+      setSubmitError(err?.message || "That code isn't right. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (pendingState) {
     return (
       <div className="rounded-2xl border border-brand-100 bg-brand-50 p-6">
-        <h3 className="text-lg font-bold text-brand-800">
-          Thanks — we&apos;ve got your details!
-        </h3>
+        <h3 className="text-lg font-bold text-brand-800">Almost there — check your email</h3>
         <p className="mt-2 text-sm text-brand-700">
-          We&apos;ve sent a verification email to the address you entered —
-          click the link in it to confirm it&apos;s really you. Our merchant
-          team will also review your business and be in touch by email
-          within a couple of business days to talk through your first deal.
-          You can check your application status and deal credits anytime in
-          your{" "}
-          <a href="/portal" className="font-semibold underline">
-            business portal
-          </a>
-          .
+          We&apos;ve sent a verification code to <strong>{pendingEmail}</strong>. Enter it below to
+          finish creating your account.
         </p>
+        <form onSubmit={handleVerifySubmit} className="mt-4 max-w-xs space-y-3">
+          <input
+            required
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="Verification code"
+            autoFocus
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-sm tracking-widest outline-none focus:border-brand-400"
+          />
+          {submitError && <p className="text-sm text-ember-600">{submitError}</p>}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full rounded-full bg-brand-600 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 disabled:opacity-60"
+          >
+            {submitting ? "Checking…" : "Verify & finish signing up"}
+          </button>
+        </form>
       </div>
     );
   }
@@ -67,60 +210,11 @@ export default function MerchantSignupForm() {
     <div id="signup" className="scroll-mt-36 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
       <h3 className="text-lg font-bold text-slate-900">Sign up your business</h3>
       <p className="mt-1 text-sm text-slate-500">
-        Tell us a bit about your business and we&apos;ll be in touch to set up
-        your first deal — no account needed to apply. Once we&apos;ve
-        approved you, sign in with this same email to manage your listing
-        from your business portal.
+        Create your account and tell us about your business in one go — you&apos;ll land straight in
+        your business portal, ready to go the moment we approve you.
       </p>
 
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setSubmitError(null);
-          setSubmitting(true);
-          try {
-            const formData = new FormData(e.currentTarget);
-            const res = await fetch("/api/merchants/apply", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                businessName: String(formData.get("businessName") ?? ""),
-                website: String(formData.get("website") ?? ""),
-                email: String(formData.get("email") ?? ""),
-                phone: String(formData.get("phone") ?? ""),
-                address,
-                city,
-                postcode,
-                lat,
-                lng: lon,
-                bio: String(formData.get("bio") ?? ""),
-                businessHours: String(formData.get("businessHours") ?? ""),
-                bookingUrl: String(formData.get("bookingUrl") ?? ""),
-                bookingEmail: String(formData.get("bookingEmail") ?? ""),
-                facebookUrl: String(formData.get("facebookUrl") ?? ""),
-                instagramUrl: String(formData.get("instagramUrl") ?? ""),
-                priceRange: String(formData.get("priceRange") ?? ""),
-                amenities: String(formData.get("amenities") ?? ""),
-                couponCode: String(formData.get("couponCode") ?? ""),
-                website2: String(formData.get("website2") ?? ""),
-                agreedToTerms,
-              }),
-            });
-            if (!res.ok) {
-              const data = await res.json().catch(() => ({}));
-              throw new Error(data.error || "Something went wrong submitting your application.");
-            }
-            setSubmitted(true);
-          } catch (err: any) {
-            setSubmitError(
-              err?.message || "Something went wrong submitting your application. Please try again."
-            );
-          } finally {
-            setSubmitting(false);
-          }
-        }}
-        className="mt-6 space-y-6"
-      >
+      <form ref={formRef} onSubmit={handleSubmit} className="mt-6 space-y-6">
         {/* Honeypot — hidden from real visitors via CSS, so only a bot filling every field would set this. */}
         <input
           type="text"
@@ -133,7 +227,7 @@ export default function MerchantSignupForm() {
 
         {/* Private section — never shown to customers */}
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-          <h4 className="text-sm font-bold text-slate-700">🔒 Private details</h4>
+          <h4 className="text-sm font-bold text-slate-700">🔒 Account &amp; private details</h4>
           <p className="mt-0.5 text-xs text-slate-500">
             Only MegaDeal sees this — it&apos;s never shown to customers.
           </p>
@@ -148,12 +242,46 @@ export default function MerchantSignupForm() {
                 required
                 name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="you@yourbusiness.co.nz"
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
               />
               <p className="mt-1 text-xs text-slate-400">
-                Used to sign in to your business portal and for us to contact you.
+                This becomes your login for the business portal.
               </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Password
+                  <RequiredTag />
+                </label>
+                <input
+                  required
+                  type="password"
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Confirm password
+                  <RequiredTag />
+                </label>
+                <input
+                  required
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Same password again"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -418,6 +546,7 @@ export default function MerchantSignupForm() {
           <input
             required
             type="checkbox"
+            name="agreedToTerms"
             checked={agreedToTerms}
             onChange={(e) => setAgreedToTerms(e.target.checked)}
             className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
@@ -444,8 +573,15 @@ export default function MerchantSignupForm() {
           disabled={submitting}
           className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60 sm:w-auto sm:px-8"
         >
-          {submitting ? "Submitting…" : "Submit application"}
+          {submitting ? "Submitting…" : "Create account & submit application"}
         </button>
+
+        <p className="text-center text-sm text-slate-500 sm:text-left">
+          Already applied?{" "}
+          <a href="/portal" className="font-semibold text-brand-600 hover:underline">
+            Sign in to your business portal
+          </a>
+        </p>
       </form>
     </div>
   );

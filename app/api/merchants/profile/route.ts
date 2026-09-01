@@ -99,6 +99,9 @@ export async function POST(req: NextRequest) {
     lat: lat ?? (addressChanged ? null : merchant.lat ?? null),
     lng: lng ?? (addressChanged ? null : merchant.lng ?? null),
     status: "Pending",
+    // Keep this in sync with Wix's real verified-email flag rather than
+    // letting it go stale between visits.
+    emailVerified: member.loginEmailVerified,
   });
   return NextResponse.json({ item: updated });
   } catch (err) {

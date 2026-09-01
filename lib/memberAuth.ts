@@ -4,6 +4,9 @@ import { createWixClient } from "./wixClient";
 export interface VerifiedMember {
   id: string;
   email: string | null;
+  /** Wix's own verified-email flag on the member — the real signal, not a
+   *  custom token we invented ourselves. */
+  loginEmailVerified: boolean;
 }
 
 /**
@@ -28,7 +31,11 @@ export async function getVerifiedMember(req: NextRequest): Promise<VerifiedMembe
     if (!client.auth.loggedIn()) return null;
     const { member } = await client.members.getCurrentMember();
     if (!member?._id) return null;
-    return { id: member._id, email: member.loginEmail ?? null };
+    return {
+      id: member._id,
+      email: member.loginEmail ?? null,
+      loginEmailVerified: Boolean(member.loginEmailVerified),
+    };
   } catch {
     return null;
   }

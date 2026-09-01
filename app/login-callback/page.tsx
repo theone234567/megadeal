@@ -27,7 +27,7 @@ export default function LoginCallbackPage() {
           tokens = await client.auth.getMemberTokens(code, state, data);
           attempts += 1;
         }
-        Cookies.set("session", JSON.stringify(tokens), { path: "/", sameSite: "lax" });
+        Cookies.set("session", JSON.stringify(tokens), { path: "/", sameSite: "lax", secure: true });
         window.location.href = data?.originalUri || "/";
       } catch (e: any) {
         setNextPage(data?.originalUri || "/");
