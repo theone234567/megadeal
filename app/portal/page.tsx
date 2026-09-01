@@ -239,9 +239,18 @@ export default function PortalPage() {
                   ✓ Email verified
                 </p>
               ) : (
-                <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
-                  ⏳ Check your inbox to verify your email
-                </p>
+                <div className="mt-2">
+                  <p className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                    ⏳ Check your inbox to verify your email
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Didn&apos;t get a code, or missed it?{" "}
+                    <button onClick={logout} className="font-semibold text-brand-600 hover:underline">
+                      Sign out and back in
+                    </button>{" "}
+                    to get a fresh one.
+                  </p>
+                </div>
               )}
             </div>
           </div>
