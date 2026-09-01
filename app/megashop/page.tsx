@@ -29,7 +29,7 @@ export default async function MegaShopPage() {
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-4 py-20 text-center">
         <span className="text-4xl">🛍️</span>
-        <h1 className="mt-3 font-display text-2xl font-extrabold text-slate-900 sm:text-3xl">
+        <h1 className="mt-3 text-2xl font-extrabold text-slate-900 sm:text-3xl">
           MegaShop.co.nz — Coming soon
         </h1>
         <p className="mt-3 text-slate-600">
@@ -70,7 +70,7 @@ export default async function MegaShopPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="font-display text-2xl font-extrabold text-slate-900">MegaShop.co.nz</h1>
+      <h1 className="text-2xl font-extrabold text-slate-900">MegaShop.co.nz</h1>
       <p className="mt-1 text-sm text-slate-500">
         Shopping is coming soon — checkout isn&apos;t live yet, but here&apos;s a look at what&apos;s in store.
       </p>

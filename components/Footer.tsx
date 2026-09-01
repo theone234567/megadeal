@@ -9,9 +9,9 @@ export default function Footer() {
   return (
     <footer className="mt-16 border-t border-slate-100 bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-gradient-to-br from-brand-700 via-brand-600 to-ember-500 px-6 py-6 text-center sm:flex-row sm:text-left">
+        <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-brand-700 px-6 py-6 text-center sm:flex-row sm:text-left">
           <div>
-            <h3 className="font-display text-lg font-bold text-white">Own a local business?</h3>
+            <h3 className="text-lg font-bold text-white">Own a local business?</h3>
             <p className="text-sm text-brand-100">
               List your deal on MegaDeal and get up to 3 months free
               advertising.{" "}

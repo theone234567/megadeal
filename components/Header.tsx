@@ -37,14 +37,7 @@ export default function Header() {
                 Deal
               </span>
             </span>
-            {/* Purple-to-pink badge matches the favicon, OG image and
-                transactional-email logo — one consistent mark everywhere
-                it shows up, not just a bare elephant on white. Sized by
-                padding around the mascot's own fixed SVG size rather than a
-                fixed box, so it never clips. */}
-            <span className="ml-1.5 inline-flex shrink-0 -rotate-3 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-ember-500 p-1 shadow-card">
-              <ElephantMascot className="rotate-3" />
-            </span>
+            <ElephantMascot className="ml-1.5 -rotate-3" />
           </Link>
 
           <Link

@@ -1,21 +1,9 @@
 import type { Metadata } from "next";
-import { Baloo_2 } from "next/font/google";
 import "./globals.css";
 import { WixProvider } from "@/context/WixProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/siteConfig";
-
-// The site's one display face — bold, rounded, matches the pill-shaped
-// wordmark and elephant mark. Body copy stays on the system font stack for
-// readability; this is reserved for headings only (see tailwind.config.ts's
-// `font-display`).
-const baloo = Baloo_2({
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-baloo",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -51,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en-NZ" className={baloo.variable}>
+    <html lang="en-NZ">
       <body className="min-h-screen bg-white text-slate-900 antialiased">
         {/* Every deal photo and most API calls come from Wix's domains —
             opening the connection before those requests are discovered
