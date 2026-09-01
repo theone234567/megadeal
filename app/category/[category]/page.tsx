@@ -74,7 +74,7 @@ export default async function CategoryPage({
             }}
           />
         )}
-        <h1 className="mb-5 text-2xl font-extrabold text-slate-900">{category}</h1>
+        <h1 className="mb-5 font-display text-2xl font-extrabold text-slate-900">{category}</h1>
         <Suspense fallback={null}>
           <CategoryDeals category={category} initialDeals={deals} />
         </Suspense>

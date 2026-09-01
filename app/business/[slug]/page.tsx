@@ -122,7 +122,7 @@ export default async function BusinessProfilePage({
             </div>
           )}
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+            <h1 className="font-display text-2xl font-extrabold text-slate-900 sm:text-3xl">
               {business.businessName}
             </h1>
             {business.rating !== null && (

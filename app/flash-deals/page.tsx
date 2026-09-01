@@ -49,7 +49,7 @@ export default async function FlashDealsPage() {
       )}
       <div className="bg-brand-900">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <h1 className="flex items-center gap-2 text-2xl font-extrabold text-white">
+          <h1 className="font-display flex items-center gap-2 text-2xl font-extrabold text-white">
             ⚡ Flash Deals
           </h1>
           <p className="mt-1 text-sm text-brand-100">

@@ -252,7 +252,7 @@ export default function DealDetail({
                 {deal.categories[0]}
               </span>
             )}
-            <h1 className="mt-1 text-2xl font-extrabold leading-snug text-slate-900">
+            <h1 className="mt-1 font-display text-2xl font-extrabold leading-snug text-slate-900">
               {deal.name}
             </h1>
             {deal.businessName && (

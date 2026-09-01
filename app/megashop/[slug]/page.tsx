@@ -76,7 +76,7 @@ export default async function MegaShopProductPage({ params }: { params: { slug: 
 
         <div className="lg:col-span-2">
           <div className="sticky top-24 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
-            <h1 className="text-2xl font-extrabold leading-snug text-slate-900">{product.name}</h1>
+            <h1 className="font-display text-2xl font-extrabold leading-snug text-slate-900">{product.name}</h1>
 
             <div className="mt-4 flex items-baseline gap-3">
               <span className="text-3xl font-extrabold text-slate-900">

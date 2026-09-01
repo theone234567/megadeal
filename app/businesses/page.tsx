@@ -65,7 +65,7 @@ export default function MerchantsPage() {
         <div className="pointer-events-none absolute -bottom-24 -right-10 h-80 w-80 rounded-full bg-ember-300/20 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl">
-          <h1 className="text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
+          <h1 className="font-display text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
             Get your business in front of thousands of local customers
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">

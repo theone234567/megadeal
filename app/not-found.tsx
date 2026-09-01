@@ -10,7 +10,7 @@ export default function NotFound() {
   return (
     <main className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center px-4 text-center">
       <span className="text-4xl">🐘</span>
-      <h1 className="mt-3 text-xl font-bold text-slate-900">
+      <h1 className="mt-3 font-display text-xl font-bold text-slate-900">
         This page has wandered off
       </h1>
       <p className="mt-2 text-sm text-slate-500">

@@ -35,7 +35,7 @@ export default function ComingSoonPage() {
         <div className="pointer-events-none absolute -bottom-24 -right-10 h-80 w-80 rounded-full bg-ember-300/20 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl">
-          <h1 className="text-4xl font-extrabold leading-tight text-white sm:text-5xl">
+          <h1 className="font-display text-4xl font-extrabold leading-tight text-white sm:text-5xl">
             The best local deals in Aotearoa,
             <br className="hidden sm:block" /> landing very soon.{" "}
             <span className="inline-block animate-[elephant-idle-ear_3.2s_ease-in-out_infinite]">

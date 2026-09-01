@@ -31,7 +31,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["ui-rounded", "Segoe UI", "system-ui", "sans-serif"],
+        // var(--font-baloo) is set on <html> in app/layout.tsx via
+        // next/font/google — self-hosted at build time, no runtime request
+        // to Google. Falls back to the system rounded font while it loads.
+        display: ["var(--font-baloo)", "ui-rounded", "Segoe UI", "system-ui", "sans-serif"],
       },
       boxShadow: {
         card: "0 1px 2px rgba(16,24,40,0.06), 0 1px 3px rgba(16,24,40,0.10)",
