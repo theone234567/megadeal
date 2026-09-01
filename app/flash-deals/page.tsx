@@ -23,10 +23,30 @@ export const metadata: Metadata = {
 
 export default async function FlashDealsPage() {
   const deals = await fetchAllLiveDealsServer();
+  const flashDeals = deals.filter((d) => d.isFlash).slice(0, 20);
 
   return (
     <main>
       <CategoryNav />
+      {flashDeals.length > 0 && (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "ItemList",
+              name: `Flash deals on ${SITE_NAME}`,
+              itemListElement: flashDeals.map((d, i) => ({
+                "@type": "ListItem",
+                position: i + 1,
+                url: `${SITE_URL}/deal/${d.slug}`,
+                name: d.name,
+              })),
+            }),
+          }}
+        />
+      )}
       <div className="bg-brand-900">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <h1 className="flex items-center gap-2 text-2xl font-extrabold text-white">

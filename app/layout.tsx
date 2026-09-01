@@ -64,6 +64,28 @@ export default function RootLayout({
             }),
           }}
         />
+        {/* WebSite + SearchAction — the standard hook for Google's sitelinks
+            search box, and a defined "how do I search this site" entry
+            point that AI answer engines can use directly instead of
+            guessing at a URL scheme. Matches the ?q= search homepage
+            already understands (see app/HomeDeals.tsx). */}
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: SITE_NAME,
+              url: SITE_URL,
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${SITE_URL}/?q={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
         <WixProvider>
           <Header />
           {children}
