@@ -1,8 +1,8 @@
 /**
  * Central site metadata used across generateMetadata calls, sitemap.ts,
- * robots.ts, and JSON-LD. Set NEXT_PUBLIC_SITE_URL in Vercel once a custom
- * domain is attached (e.g. https://megadeal.co.nz) — everything here reads
- * from it rather than hardcoding the current *.vercel.app deployment URL.
+ * robots.ts, and JSON-LD. NEXT_PUBLIC_SITE_URL is set in the Cloudflare
+ * Worker's runtime variables (megadeal.co.nz) — everything here reads
+ * from it rather than hardcoding a deployment URL.
  */
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://megadeal23456.vercel.app";

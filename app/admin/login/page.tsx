@@ -59,9 +59,12 @@ export default function AdminLoginPage() {
         </button>
       </form>
       <p className="mt-6 text-xs text-slate-400">
-        Forgot it? There&apos;s no email reset — this password lives in your
-        Vercel project&apos;s <code className="rounded bg-slate-100 px-1 py-0.5">ADMIN_PASSWORD</code>{" "}
-        environment variable. Update it there and redeploy to change it.
+        Forgot it? There&apos;s no email reset — this password lives in the
+        Cloudflare Worker&apos;s{" "}
+        <code className="rounded bg-slate-100 px-1 py-0.5">ADMIN_PASSWORD</code>{" "}
+        runtime variable (Cloudflare dashboard → Workers &amp; Pages → this
+        Worker → Settings → Variables and Secrets). Update it there and
+        redeploy to change it.
       </p>
     </main>
   );
