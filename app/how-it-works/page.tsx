@@ -30,9 +30,10 @@ export default function HowItWorksPage() {
       <p>
         Open the deal page to see exactly what&apos;s on offer, the fine
         print, and who&apos;s behind it. Tap &quot;Get this deal&quot; to
-        reveal the business&apos;s phone number, website and address.
-        There&apos;s nothing to buy and nothing to pay on MegaDeal — we
-        don&apos;t take a card number or process any payment.
+        reveal the business&apos;s phone number, website and address —
+        there&apos;s no voucher to buy and no checkout on MegaDeal. We
+        don&apos;t take a card number or process any payment; you&apos;re
+        just unlocking the business&apos;s contact details.
       </p>
 
       <h3>3. Redeem with the business, directly</h3>

@@ -15,9 +15,9 @@ export default function HelpPage() {
     >
       <h2>Do I pay MegaDeal for a deal?</h2>
       <p>
-        No — MegaDeal never charges customers anything. Deals are redeemed
-        and paid for directly with the business, at the discounted price
-        shown on the deal page.
+        No — MegaDeal never charges customers anything, and there&apos;s no
+        voucher to buy. Deals are redeemed and paid for directly with the
+        business, at the discounted price shown on the deal page.
       </p>
 
       <h2>How do I redeem a deal?</h2>

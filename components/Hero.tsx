@@ -9,9 +9,15 @@ export default function Hero() {
           Up to 70% off restaurants, spas, activities &amp; getaways near you
         </h1>
         <p className="mt-4 max-w-xl text-brand-50">
-          New deals added daily. Grab one, then contact the business
-          directly to redeem — MegaDeal never charges you a cent.
+          New deals added daily. No vouchers, no checkout — pick a deal,
+          contact the business, and pay them directly at the discounted
+          price.
         </p>
+        <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-semibold text-brand-50">
+          <span>🎟️ No vouchers to buy</span>
+          <span>📞 Deal with the business direct</span>
+          <span>💸 Never a MegaDeal fee</span>
+        </div>
       </div>
     </section>
   );
