@@ -6,6 +6,7 @@ import SocialCTA from "@/components/SocialCTA";
 import HomeDeals from "./HomeDeals";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export default async function HomePage({
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: safeJsonLd({
               "@context": "https://schema.org",
               "@type": "ItemList",
               name: `Today's deals on ${SITE_NAME}`,

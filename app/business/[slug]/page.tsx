@@ -9,6 +9,7 @@ import DealGrid from "@/components/DealGrid";
 import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
 import StarRating from "@/components/StarRating";
 import ShareButtons from "@/components/ShareButtons";
+import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export async function generateMetadata({
   params,
@@ -63,7 +64,7 @@ export default async function BusinessProfilePage({
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "LocalBusiness",
             name: business.businessName,

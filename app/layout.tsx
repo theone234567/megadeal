@@ -4,6 +4,7 @@ import { WixProvider } from "@/context/WixProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/siteConfig";
+import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -54,7 +55,7 @@ export default function RootLayout({
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: safeJsonLd({
               "@context": "https://schema.org",
               "@type": "Organization",
               name: SITE_NAME,
@@ -73,7 +74,7 @@ export default function RootLayout({
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: safeJsonLd({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: SITE_NAME,

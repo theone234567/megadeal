@@ -7,6 +7,7 @@ import { addResendContact } from "@/lib/resendAudience";
 import { SITE_URL } from "@/lib/siteConfig";
 import { generateReferralCode } from "@/lib/referral";
 import { isValidSocialUrl } from "@/lib/socialLinks";
+import { escapeHtml } from "@/lib/escapeHtml";
 
 const MAX_TEXT_LENGTH = 300;
 const MAX_BIO_LENGTH = 600;
@@ -17,9 +18,10 @@ function cleanText(value: unknown, maxLength: number): string {
 }
 
 function welcomeEmailHtml(businessName: string): string {
+  const safeName = escapeHtml(businessName);
   return `
-    <p>Hi ${businessName || "there"},</p>
-    <p>🎉 You're in! Thanks for signing up to MegaDeal — we're genuinely excited to have ${businessName || "your business"} on board.</p>
+    <p>Hi ${safeName || "there"},</p>
+    <p>🎉 You're in! Thanks for signing up to MegaDeal — we're genuinely excited to have ${safeName || "your business"} on board.</p>
     <p>Here's what happens next:</p>
     <ul>
       <li>Our team will take a look at your application — usually within a couple of business days</li>

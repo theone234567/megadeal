@@ -4,6 +4,7 @@ import DealDetail from "./DealDetail";
 import { fetchDealForSEO, fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { formatMoney } from "@/lib/format";
+import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +65,7 @@ export default async function DealPage({ params }: { params: { slug: string } })
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "Product",
             name: deal.name,

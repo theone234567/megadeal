@@ -5,6 +5,7 @@ import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL } from "@/lib/siteConfig";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
+import { escapeHtml } from "@/lib/escapeHtml";
 
 const ALLOWED_STATUSES = ["Pending", "Approved", "Suspended"];
 const INTRO_CREDITS = 2;
@@ -209,14 +210,18 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       // always happen regardless, only this email is conditional.
       if (referrerFresh.notifyReferralBonus !== false) {
         try {
+          // Both names here are merchant-supplied — existing.businessName is
+          // the *referred* business's own choice of name, which this email
+          // sends to a completely different merchant (the referrer). Escape
+          // both, not just the recipient's own.
+          const safeReferrerName = escapeHtml(referrerFresh.businessName || "there");
+          const safeReferredName = escapeHtml(existing.businessName || "a new business");
           await sendTransactionalEmail({
             to: referrerFresh.email,
             subject: "You earned referral credits on MegaDeal!",
             html: `
-              <p>Hi ${referrerFresh.businessName || "there"},</p>
-              <p>Great news — a business you referred, <strong>${
-                existing.businessName || "a new business"
-              }</strong>, has been approved on MegaDeal. We've added
+              <p>Hi ${safeReferrerName},</p>
+              <p>Great news — a business you referred, <strong>${safeReferredName}</strong>, has been approved on MegaDeal. We've added
               ${REFERRAL_BONUS_CREDITS} bonus deal credit${
               REFERRAL_BONUS_CREDITS === 1 ? "" : "s"
             } to your account. Thanks for spreading the word!</p>
@@ -234,11 +239,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (becomingApproved && existing.email) {
     try {
       const totalGranted = introGranted + referralBonusGranted;
+      const safeName = escapeHtml(existing.businessName || "there");
       await sendTransactionalEmail({
         to: existing.email,
         subject: "You're approved! Welcome to MegaDeal",
         html: `
-          <p>Hi ${existing.businessName || "there"},</p>
+          <p>Hi ${safeName},</p>
           <p>Good news — your business is approved on MegaDeal. Log in to your
           business portal to submit your first deal:</p>
           <p><a href="${SITE_URL}/portal">Go to your portal</a></p>

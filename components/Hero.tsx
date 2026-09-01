@@ -12,6 +12,11 @@ export default function Hero() {
           No vouchers, no checkout — pick a deal, contact the business, and
           pay them directly at the discounted price.
         </p>
+        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs font-semibold text-brand-50 sm:text-sm">
+          <span>🎟️ No vouchers to buy</span>
+          <span>📞 Deal with the business direct</span>
+          <span>💸 Never a MegaDeal fee</span>
+        </div>
       </div>
     </section>
   );

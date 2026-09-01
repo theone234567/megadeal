@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
+import { escapeHtml } from "@/lib/escapeHtml";
 
 // This route stores the message only — it must never add the sender to the
 // Resend marketing audience. There's no consent checkbox on the contact
@@ -59,13 +60,4 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ ok: true });
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }

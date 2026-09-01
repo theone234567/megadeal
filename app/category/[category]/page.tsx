@@ -6,6 +6,7 @@ import { CATEGORIES } from "@/lib/categories";
 import CategoryDeals from "./CategoryDeals";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
+import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +61,7 @@ export default async function CategoryPage({
             type="application/ld+json"
             // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
+              __html: safeJsonLd({
                 "@context": "https://schema.org",
                 "@type": "ItemList",
                 name: `${category} deals on ${SITE_NAME}`,

@@ -6,6 +6,12 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 // before sending, this just guards against an oversized/malicious payload.
 const MAX_BYTES = 3_000_000;
 
+// Deliberately excludes image/svg+xml: an SVG can carry embedded <script>
+// content, and there's no legitimate reason a deal or logo photo needs to
+// be one — every upload here comes from a photo file input or canvas
+// compression, never vector art.
+const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
 /**
  * Uploads a client-compressed photo to Wix Media Manager and returns its
  * real, CDN-hosted URL (plus the Wix media id, needed when attaching the
@@ -36,6 +42,9 @@ export async function POST(req: NextRequest) {
   }
 
   const mimeType = match[1];
+  if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+    return NextResponse.json({ error: "Please upload a JPEG, PNG, WebP or GIF image." }, { status: 400 });
+  }
   const bytes = Buffer.from(match[2], "base64");
   if (bytes.length === 0 || bytes.length > MAX_BYTES) {
     return NextResponse.json({ error: "That image is too large." }, { status: 400 });

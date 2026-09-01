@@ -4,6 +4,7 @@ import CategoryNav from "@/components/CategoryNav";
 import FlashDealsList from "./FlashDealsList";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
+import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function FlashDealsPage() {
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: safeJsonLd({
               "@context": "https://schema.org",
               "@type": "ItemList",
               name: `Flash deals on ${SITE_NAME}`,
