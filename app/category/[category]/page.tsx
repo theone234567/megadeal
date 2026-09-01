@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import CategoryNav from "@/components/CategoryNav";
 import { CATEGORIES } from "@/lib/categories";
 import CategoryDeals from "./CategoryDeals";
@@ -37,6 +38,12 @@ export default async function CategoryPage({
   params: { category: string };
 }) {
   const category = decodeURIComponent(params.category);
+  // The route matches any string, but only these 5 categories are real —
+  // anything else (a typo'd link, a scraped/guessed URL) previously
+  // rendered a 200-status page with an empty deal grid, a classic
+  // soft-404 that wastes crawl budget and can end up indexed as junk.
+  if (!CATEGORIES.some((c) => c.name === category)) notFound();
+
   const deals = await fetchAllLiveDealsServer();
 
   // Same live+category filter CategoryDeals.tsx applies client-side, kept

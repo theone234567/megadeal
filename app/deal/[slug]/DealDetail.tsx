@@ -138,7 +138,7 @@ export default function DealDetail({
                           : `https://${deal.businessBookingUrl}`
                       }
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="noopener noreferrer nofollow ugc"
                       className="flex w-fit items-center gap-2 rounded-full bg-brand-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95"
                     >
                       <CalendarIcon className="h-4 w-4" /> Book now
@@ -168,7 +168,7 @@ export default function DealDetail({
                           : `https://${deal.businessWebsite}`
                       }
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="noopener noreferrer nofollow ugc"
                       className="flex items-center gap-2 text-sm font-medium text-brand-700 hover:underline"
                     >
                       <GlobeIcon className="h-4 w-4 shrink-0" /> Visit website
@@ -215,7 +215,7 @@ export default function DealDetail({
                     <a
                       href={deal.businessFacebookUrl}
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="noopener noreferrer nofollow ugc"
                       className="font-medium text-brand-700 hover:underline"
                     >
                       Facebook
@@ -225,7 +225,7 @@ export default function DealDetail({
                     <a
                       href={deal.businessInstagramUrl}
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="noopener noreferrer nofollow ugc"
                       className="font-medium text-brand-700 hover:underline"
                     >
                       Instagram

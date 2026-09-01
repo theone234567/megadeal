@@ -83,14 +83,13 @@ export default async function BusinessProfilePage({
               business.lat !== null && business.lng !== null
                 ? { "@type": "GeoCoordinates", latitude: business.lat, longitude: business.lng }
                 : undefined,
-            aggregateRating:
-              business.rating !== null
-                ? {
-                    "@type": "AggregateRating",
-                    ratingValue: business.rating,
-                    reviewCount: business.reviewCount || 1,
-                  }
-                : undefined,
+            // No aggregateRating here: this rating is a plain number an
+            // admin types into a form (components/admin/MerchantRow.tsx),
+            // not aggregated from genuine customer reviews. Marking it up
+            // as schema.org AggregateRating would violate Google's
+            // structured-data policy on review markup and risks a sitewide
+            // manual action — the star rating still shows visually on the
+            // page below, just not as verified review data.
             sameAs: [
               business.website,
               business.bookingUrl,
@@ -175,7 +174,7 @@ export default async function BusinessProfilePage({
                   <a
                     href={business.bookingUrl.startsWith("http") ? business.bookingUrl : `https://${business.bookingUrl}`}
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="noopener noreferrer nofollow ugc"
                     className="mb-1 flex items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-2 font-bold text-white transition hover:bg-brand-700 active:scale-95"
                   >
                     <CalendarIcon className="h-4 w-4" /> Book now
@@ -201,7 +200,7 @@ export default async function BusinessProfilePage({
                   <a
                     href={business.website.startsWith("http") ? business.website : `https://${business.website}`}
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="noopener noreferrer nofollow ugc"
                     className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
                   >
                     <GlobeIcon className="h-4 w-4 shrink-0" /> Visit website
@@ -250,7 +249,7 @@ export default async function BusinessProfilePage({
                       <a
                         href={business.facebookUrl}
                         target="_blank"
-                        rel="noopener noreferrer"
+                        rel="noopener noreferrer nofollow ugc"
                         className="font-medium text-brand-700 hover:underline"
                       >
                         Facebook
@@ -260,7 +259,7 @@ export default async function BusinessProfilePage({
                       <a
                         href={business.instagramUrl}
                         target="_blank"
-                        rel="noopener noreferrer"
+                        rel="noopener noreferrer nofollow ugc"
                         className="font-medium text-brand-700 hover:underline"
                       >
                         Instagram

@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/siteConfig";
 
-const DISALLOWED = ["/admin", "/admin/*", "/portal", "/portal/*", "/api/*", "/redeem"];
+// /redeem is a real, linked-to help article (see Footer, /how-it-works,
+// /help), not a functional/private route — it belongs indexed like any
+// other content page, so it isn't in this list.
+const DISALLOWED = ["/admin", "/admin/*", "/portal", "/portal/*", "/api/*"];
 
 export default function robots(): MetadataRoute.Robots {
   return {
