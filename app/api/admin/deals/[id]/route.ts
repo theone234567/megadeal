@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { logMerchantActivity } from "@/lib/merchantActivity";
+import { submitUrlsToIndexNow } from "@/lib/indexNow";
+import { SITE_URL } from "@/lib/siteConfig";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
 
@@ -55,6 +57,25 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     const dealName = existing.dealName || "Your deal";
     const statusChanged = patch.status !== undefined && patch.status !== existing.status;
+    if (statusChanged && patch.status === "Live") {
+      // Fire-and-forget: nudge Bing/Yandex to crawl this deal right away
+      // instead of waiting on their own discovery schedule. Never blocks
+      // the response — a failed push just falls back to normal sitemap
+      // discovery, same as before IndexNow existed.
+      const urls = [`${SITE_URL}/`, `${SITE_URL}/businesses`];
+      if (existing.productId) {
+        adminClient.productsV3
+          .getProduct(existing.productId, {} as any)
+          .then((res: any) => {
+            const slug = res?.product?.slug;
+            if (slug) urls.push(`${SITE_URL}/deal/${slug}`);
+            return submitUrlsToIndexNow(urls);
+          })
+          .catch(() => submitUrlsToIndexNow(urls));
+      } else {
+        submitUrlsToIndexNow(urls);
+      }
+    }
     if (statusChanged && existing.merchantEmail) {
       if (patch.status === "Live") {
         await logMerchantActivity(adminClient, {

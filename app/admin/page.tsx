@@ -18,6 +18,7 @@ export default function AdminDashboardPage() {
   const [dealSearch, setDealSearch] = useState("");
   const [bulkApproving, setBulkApproving] = useState(false);
   const [dealsRefreshKey, setDealsRefreshKey] = useState(0);
+  const [indexNowStatus, setIndexNowStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +58,16 @@ export default function AdminDashboardPage() {
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" });
     router.push("/admin/login");
+  }
+
+  async function handleIndexNowSubmitAll() {
+    setIndexNowStatus("submitting");
+    try {
+      const res = await fetch("/api/admin/seo/indexnow-submit-all", { method: "POST" });
+      setIndexNowStatus(res.ok ? "done" : "error");
+    } catch {
+      setIndexNowStatus("error");
+    }
   }
 
   const pendingMerchants = merchants?.filter((m) => (m.status || "Pending") === "Pending").length ?? 0;
@@ -115,12 +126,28 @@ export default function AdminDashboardPage() {
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-slate-900">Admin dashboard</h1>
-        <button
-          onClick={handleLogout}
-          className="text-sm font-medium text-slate-500 hover:text-brand-700"
-        >
-          Sign out
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleIndexNowSubmitAll}
+            disabled={indexNowStatus === "submitting"}
+            title="Push every live page to Bing/Yandex via IndexNow instead of waiting for them to crawl it on their own"
+            className="text-sm font-medium text-slate-500 hover:text-brand-700 disabled:opacity-60"
+          >
+            {indexNowStatus === "submitting"
+              ? "Submitting to Bing…"
+              : indexNowStatus === "done"
+              ? "Submitted ✓"
+              : indexNowStatus === "error"
+              ? "Submission failed — retry"
+              : "Submit all pages to Bing"}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="text-sm font-medium text-slate-500 hover:text-brand-700"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
       <div className="mt-6 flex gap-2">
