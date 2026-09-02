@@ -307,7 +307,13 @@ export default function DealDetail({
             </div>
             <p className="mt-1 text-xs text-slate-400">
               Price paid directly to {deal.businessName || "the business"} — MegaDeal
-              doesn&apos;t process any payment.
+              doesn&apos;t process any payment. Offered directly by the
+              business, subject to availability and while supplies last —
+              MegaDeal is the advertiser, not a party to your booking. See our{" "}
+              <Link href="/terms" className="underline hover:text-slate-500">
+                terms
+              </Link>
+              .
             </p>
 
             <ShareButtons title={deal.name} size="md" className="mt-4" />

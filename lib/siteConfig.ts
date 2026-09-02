@@ -11,3 +11,13 @@ export const SITE_NAME = "MegaDeal";
 
 export const SITE_DESCRIPTION =
   "New Zealand's daily deals site — restaurants, spas, activities and getaways at up to 70% off from real local Kiwi businesses.";
+
+/**
+ * The registered legal entity behind MegaDeal, referenced in /terms and
+ * /privacy so those documents name an identifiable, contactable party
+ * rather than just the trading name — a contract needs an identifiable
+ * party to be enforceable, and the Privacy Act 2020 requires an agency to
+ * be identifiable too.
+ */
+export const LEGAL_ENTITY_NAME = "Babo Investments Limited";
+export const LEGAL_ENTITY_NZBN = "9429035341451";

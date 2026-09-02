@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function RefundPolicyPage() {
   return (
-    <PageShell title="Refund policy" subtitle="Last updated August 2026">
+    <PageShell title="Refund policy" subtitle="Last updated September 2026">
       <p>
         MegaDeal doesn&apos;t charge customers for deals — we&apos;re an
         advertising board, not a checkout. That means there&apos;s no order,
@@ -51,8 +51,13 @@ export default function RefundPolicyPage() {
       <p>
         Businesses pay MegaDeal in advertising credits or a subscription to
         list a deal — that fee is for the listing itself, separate from
-        anything a customer pays the business. For billing questions, reach
-        out via our{" "}
+        anything a customer pays the business. Advertising credits are
+        generally non-refundable once they&apos;ve been allocated to your
+        account, except where we agree otherwise at our discretion. If we
+        launch self-serve online payment for credits or subscriptions in
+        future, the specific payment, cancellation and refund terms for
+        that will be shown at checkout and referenced here. For billing
+        questions in the meantime, reach out via our{" "}
         <a href="/contact" className="text-brand-600 hover:underline">
           contact page
         </a>

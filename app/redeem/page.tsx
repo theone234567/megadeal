@@ -40,6 +40,18 @@ export default function RedeemPage() {
         few days of the validity window.
       </p>
 
+      <h2>Availability &amp; fair use</h2>
+      <p>
+        Deals are offered directly by the business, subject to availability
+        and while supplies last — where a deal has a quantity limit,
+        it&apos;s first-in, first-served. Businesses use best endeavours to
+        honour every deal within its validity window, but MegaDeal
+        can&apos;t guarantee a specific deal will still be available when
+        you get in touch. Deals are for genuine personal use — please
+        don&apos;t resell or misuse them, and mention the deal honestly when
+        you contact the business.
+      </p>
+
       <h2>Trouble redeeming?</h2>
       <p>
         Can&apos;t reach the business, or they&apos;re not able to honour a
@@ -47,7 +59,14 @@ export default function RedeemPage() {
         <a href="/contact" className="text-brand-600 hover:underline">
           contact page
         </a>{" "}
-        — we&apos;ll follow up with the business on your behalf.
+        and we&apos;ll follow up with the business on your behalf — but as
+        MegaDeal is just the advertiser and never a party to the booking or
+        payment, any dispute over the deal itself is ultimately between you
+        and the business. See our{" "}
+        <a href="/terms" className="text-brand-600 hover:underline">
+          terms
+        </a>{" "}
+        for more.
       </p>
     </PageShell>
   );

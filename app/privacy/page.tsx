@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_URL, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -9,13 +9,16 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <PageShell title="Privacy policy" subtitle="Last updated August 2026">
+    <PageShell title="Privacy policy" subtitle="Last updated September 2026">
       <p>
-        This policy explains what personal information MegaDeal collects,
-        why we collect it, and the choices you have about it. By using
-        MegaDeal, you agree to the practices described here. MegaDeal
-        doesn&apos;t process customer payments, so we never see or store
-        card or payment details — there simply aren&apos;t any to collect.
+        MegaDeal is operated by {LEGAL_ENTITY_NAME} (NZBN {LEGAL_ENTITY_NZBN}),
+        a company registered in New Zealand (&quot;MegaDeal&quot;,
+        &quot;we&quot;, &quot;us&quot;). This policy explains what personal
+        information we collect, why we collect it, and the choices you have
+        about it, in line with the Privacy Act 2020. By using MegaDeal, you
+        agree to the practices described here. MegaDeal doesn&apos;t process
+        customer payments, so we never see or store card or payment details
+        — there simply aren&apos;t any to collect.
       </p>
 
       <h2>Information we collect</h2>
@@ -26,10 +29,11 @@ export default function PrivacyPage() {
           well and to improve which deals we feature.
         </li>
         <li>
-          <strong>Merchant account details</strong> — if you sign in to
-          list or manage a deal, we collect your business name, contact
-          details, address, and photos, so we can review and display your
-          listing.
+          <strong>Account and merchant details</strong> — if you sign up to
+          list or manage a deal, we collect your email address and a
+          password (stored securely by our identity provider, never in
+          plain text), plus your business name, contact details, address,
+          and photos, so we can review and display your listing.
         </li>
         <li>
           <strong>Communications</strong> — anything you send us through the{" "}
@@ -65,6 +69,32 @@ export default function PrivacyPage() {
         used to sign in to the business portal, is never shown publicly.
       </p>
 
+      <h2>Service providers and overseas disclosure</h2>
+      <p>
+        We use a small number of specialist providers to run the site, and
+        some personal information is processed by them on our behalf. This
+        includes our headless commerce and member-login provider (Wix.com),
+        our transactional email provider (Resend), and Google&apos;s Places
+        API for business-address autocomplete. Some of these providers
+        store or process data on servers outside New Zealand. Where that
+        happens, we only share the information needed for them to provide
+        their service to us, and we choose providers who apply security and
+        privacy standards comparable to those required under the Privacy
+        Act 2020.
+      </p>
+
+      <h2>How we protect your information</h2>
+      <p>
+        We use reasonable technical and organisational measures to protect
+        personal information from loss, misuse or unauthorised access —
+        including encrypted transmission (HTTPS), access controls on our
+        internal tools, and restricting merchant data access to the
+        merchant&apos;s own listings. No online service can guarantee
+        perfect security, but if we ever became aware of a privacy breach
+        likely to cause serious harm, we&apos;d notify the Office of the
+        Privacy Commissioner and affected individuals as required by law.
+      </p>
+
       <h2>Cookies</h2>
       <p>
         We use a small amount of cookie-based storage to keep a merchant
@@ -80,8 +110,10 @@ export default function PrivacyPage() {
         the purposes above.
       </p>
 
-      <h2>Your choices</h2>
-      <p>You can, at any time:</p>
+      <h2>Your rights</h2>
+      <p>
+        Under the Privacy Act 2020 you can, at any time:
+      </p>
       <ul>
         <li>Unsubscribe from marketing emails using the link in any email</li>
         <li>Request a copy of the personal data we hold about you</li>
@@ -91,6 +123,18 @@ export default function PrivacyPage() {
         To exercise any of these, reach out via our{" "}
         <a href="/contact" className="text-brand-600 hover:underline">
           contact page
+        </a>
+        . We&apos;ll normally respond within 20 working days, as required by
+        the Privacy Act. If you&apos;re not satisfied with how we&apos;ve
+        handled a privacy request or complaint, you can contact the Office
+        of the Privacy Commissioner at{" "}
+        <a
+          href="https://www.privacy.org.nz"
+          className="text-brand-600 hover:underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          privacy.org.nz
         </a>
         .
       </p>
