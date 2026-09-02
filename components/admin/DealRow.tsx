@@ -12,6 +12,7 @@ export interface AdminDeal {
   photoUrl?: string;
   merchantEmail?: string;
   statusNote?: string | null;
+  dealCode?: string | null;
   [key: string]: any;
 }
 
@@ -172,6 +173,11 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
           )}
           {deal.description && <p className="mt-1">{deal.description}</p>}
           {deal.terms && <p className="mt-1 text-xs italic text-slate-500">Terms: {deal.terms}</p>}
+          {deal.dealCode && (
+            <p className="mt-1 text-xs text-slate-500">
+              Code: <span className="font-mono font-semibold text-slate-700">{deal.dealCode}</span>
+            </p>
+          )}
           {(deal.viewCount || deal.clickCount) && (
             <p className="mt-1 text-xs text-slate-500">
               👁 {deal.viewCount || 0} views · 🖱 {deal.clickCount || 0} clicks

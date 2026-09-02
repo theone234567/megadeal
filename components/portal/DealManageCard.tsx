@@ -15,6 +15,7 @@ export interface DealRecord {
   photoUrl?: string | null;
   merchantEmail?: string;
   statusNote?: string | null;
+  dealCode?: string | null;
   [key: string]: any;
 }
 
@@ -103,6 +104,15 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
               {deal.description && <p className="mt-1">{deal.description}</p>}
               {deal.terms && (
                 <p className="mt-1 text-xs italic text-slate-500">{deal.terms}</p>
+              )}
+              {deal.dealCode && (
+                <p className="mt-2 text-xs text-slate-500">
+                  Customers will quote{" "}
+                  <span className="rounded bg-white px-1.5 py-0.5 font-mono font-semibold text-slate-700 shadow-sm">
+                    {deal.dealCode}
+                  </span>{" "}
+                  when they contact you about this deal.
+                </p>
               )}
             </div>
           )}

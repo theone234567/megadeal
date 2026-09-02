@@ -339,6 +339,14 @@ export default function DealDetail({
                     Mention this MegaDeal offer when you contact or visit{" "}
                     {deal.businessName || "the business"} to redeem it.
                   </p>
+                  {deal.dealCode && (
+                    <p className="mt-2 flex items-center gap-2 text-sm text-brand-800">
+                      Quote code{" "}
+                      <span className="rounded-md bg-white px-2 py-0.5 font-mono font-bold tracking-wide text-brand-700 shadow-sm">
+                        {deal.dealCode}
+                      </span>
+                    </p>
+                  )}
                   {hasContactInfo && (
                     <p className="mt-1 text-xs text-brand-700">
                       Full contact details are in the &quot;About{" "}

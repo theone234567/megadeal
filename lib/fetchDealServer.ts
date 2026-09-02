@@ -39,6 +39,7 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
         isFlash: Boolean(record.isFlash),
         quantityAvailable:
           typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
+        dealCode: record.dealCode || null,
       };
     }
 
@@ -112,6 +113,7 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
           isFlash: Boolean(meta.isFlash),
           quantityAvailable:
             typeof meta.quantityAvailable === "number" ? meta.quantityAvailable : null,
+          dealCode: meta.dealCode || null,
         };
       })
       .filter((deal: Deal) => isDealLive(deal))
@@ -186,6 +188,7 @@ export async function fetchBusinessProfileBySlug(
           isFlash: Boolean(record.isFlash),
           quantityAvailable:
             typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
+          dealCode: record.dealCode || null,
         };
         deals.push(applyBusinessToDeal(dealBase, business));
       } catch {

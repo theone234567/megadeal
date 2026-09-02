@@ -6,6 +6,7 @@ import { CATEGORY_ID_BY_NAME } from "@/lib/categories";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
+import { generateDealCode } from "@/lib/dealCode";
 
 const MAX_DURATION_DAYS = 365;
 const MAX_DURATION_MINUTES = 24 * 60;
@@ -183,6 +184,7 @@ export async function POST(req: NextRequest) {
     status: "Pending Approval",
     productId,
     isFlash,
+    dealCode: generateDealCode(),
   });
 
   await incrementCreditsAtomically(adminClient, merchant._id, -1);

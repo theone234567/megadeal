@@ -27,7 +27,12 @@ export default function RedeemPage() {
           shown — some deals need a booking ahead of time, others are
           walk-in, so check the deal&apos;s fine print
         </li>
-        <li>Mention the MegaDeal offer when you get in touch or arrive</li>
+        <li>
+          Mention the MegaDeal offer when you get in touch or arrive — most
+          deal pages show a short code (like{" "}
+          <span className="font-mono font-semibold">MEGA-7K4XQ</span>) you
+          can quote so the business knows straight away
+        </li>
         <li>Pay the business directly at the discounted price and enjoy</li>
       </ul>
 

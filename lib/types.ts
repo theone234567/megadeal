@@ -39,4 +39,5 @@ export interface Deal {
   businessLng: number | null;
   businessRating: number | null;
   businessReviewCount: number | null;
+  dealCode: string | null;
 }
