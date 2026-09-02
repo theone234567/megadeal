@@ -1,10 +1,15 @@
 import { createClient, OAuthStrategy } from "@wix/sdk";
 import { NextResponse, type NextRequest } from "next/server";
+import { SITE_LAUNCHED } from "@/lib/siteConfig";
 
 const WIX_CLIENT_ID =
   process.env.NEXT_PUBLIC_WIX_CLIENT_ID || "a5df1008-85ea-4479-8a49-8b0576ae9714";
 
 export async function middleware(request: NextRequest) {
+  if (!SITE_LAUNCHED && request.nextUrl.pathname === "/") {
+    return NextResponse.redirect(new URL("/coming-soon", request.url));
+  }
+
   if (!request.cookies.get("session")) {
     const response = NextResponse.next();
     const wixClient = createClient({

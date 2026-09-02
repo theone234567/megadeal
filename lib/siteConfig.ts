@@ -9,6 +9,17 @@ export const SITE_URL =
 
 export const SITE_NAME = "MegaDeal";
 
+/**
+ * Pre-launch gate: while false, middleware.ts redirects "/" to
+ * /coming-soon so real visitors never see an empty (or demo-data-filled)
+ * deal grid before there's a credible number of real live deals. Business
+ * sign-up, the merchant portal, and admin all stay reachable regardless,
+ * so merchant recruitment can happen in the background. Flip this by
+ * setting the SITE_LAUNCHED runtime variable to "true" in the Cloudflare
+ * Worker's settings (same place as ADMIN_PASSWORD) — no redeploy needed.
+ */
+export const SITE_LAUNCHED = process.env.SITE_LAUNCHED === "true";
+
 export const SITE_DESCRIPTION =
   "New Zealand's daily deals site — restaurants, spas, activities and getaways at up to 70% off from real local Kiwi businesses.";
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SocialLinks from "@/components/SocialLinks";
 import EmailSignupForm from "@/components/EmailSignupForm";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "MegaDeal is coming soon — NZ's new home for local deals",
@@ -35,21 +35,28 @@ export default function ComingSoonPage() {
         <div className="pointer-events-none absolute -bottom-24 -right-10 h-80 w-80 rounded-full bg-ember-300/20 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl">
-          <h1 className="text-4xl font-extrabold leading-tight text-white sm:text-5xl">
-            The best local deals in Aotearoa,
-            <br className="hidden sm:block" /> landing very soon.{" "}
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-brand-100 sm:text-sm">
+            Landing very soon
+          </p>
+          <h1 className="mx-auto max-w-2xl text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
+            Up to 70% off restaurants, spas, activities &amp; getaways near you{" "}
             <span className="inline-block animate-[elephant-idle-ear_3.2s_ease-in-out_infinite]">
               😊
             </span>
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            We&apos;re building the fun, fair way to discover unreal local deals — and
+            We&apos;re building the fun, fair way to discover real local deals — and
             help Kiwi businesses get in front of new customers without giving away a
             cut of every sale. Be first through the door.
           </p>
           <p className="mx-auto mt-2 max-w-xl text-sm font-semibold text-brand-100">
             🚀 Launching in Auckland first, with the rest of NZ following shortly after.
           </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs font-semibold text-brand-50 sm:text-sm">
+            <span>🎟️ No vouchers to buy</span>
+            <span>📞 Deal with the business direct</span>
+            <span>💸 Never a MegaDeal fee</span>
+          </div>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
@@ -68,6 +75,43 @@ export default function ComingSoonPage() {
 
           <div className="mt-10 flex justify-center">
             <SocialLinks variant="light" />
+          </div>
+        </div>
+      </section>
+
+      {/* How it'll work */}
+      <section className="px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <div className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6">
+            <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+              <div className="flex items-start gap-2 sm:items-center">
+                <span className="text-lg leading-none">🔍</span>
+                <p className="text-xs text-slate-600 sm:text-sm">
+                  <span className="font-bold text-slate-800">1. Browse</span>{" "}
+                  <span className="text-slate-500">— real local deals, up to 70% off</span>
+                </p>
+              </div>
+              <div className="flex items-start gap-2 sm:items-center">
+                <span className="text-lg leading-none">🎟️</span>
+                <p className="text-xs text-slate-600 sm:text-sm">
+                  <span className="font-bold text-slate-800">2. Get the code</span>{" "}
+                  <span className="text-slate-500">— contact details + a code, no voucher to buy</span>
+                </p>
+              </div>
+              <div className="flex items-start gap-2 sm:items-center">
+                <span className="text-lg leading-none">📞</span>
+                <p className="text-xs text-slate-600 sm:text-sm">
+                  <span className="font-bold text-slate-800">3. Contact &amp; redeem</span>{" "}
+                  <span className="text-slate-500">— quote the code, pay the business direct</span>
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/how-it-works"
+              className="shrink-0 text-xs font-semibold text-brand-600 hover:underline sm:text-sm"
+            >
+              How it works →
+            </Link>
           </div>
         </div>
       </section>
@@ -113,13 +157,15 @@ export default function ComingSoonPage() {
                 accent="brand"
               />
             </div>
-            <p className="mt-8 text-sm font-semibold text-slate-500">
-              Curious now? You can already{" "}
-              <Link href="/" className="text-brand-600 underline hover:text-brand-700">
-                peek at the beta site
-              </Link>
-              .
-            </p>
+            {SITE_LAUNCHED && (
+              <p className="mt-8 text-sm font-semibold text-slate-500">
+                Curious now? You can already{" "}
+                <Link href="/" className="text-brand-600 underline hover:text-brand-700">
+                  peek at the beta site
+                </Link>
+                .
+              </p>
+            )}
 
             <div className="mt-6 border-t border-brand-100 pt-6">
               <p className="text-sm text-slate-600">
@@ -212,9 +258,11 @@ export default function ComingSoonPage() {
           <Link href="/privacy" className="hover:text-brand-600">
             Privacy
           </Link>
-          <Link href="/" className="hover:text-brand-600">
-            Beta site
-          </Link>
+          {SITE_LAUNCHED && (
+            <Link href="/" className="hover:text-brand-600">
+              Beta site
+            </Link>
+          )}
         </div>
       </section>
     </main>
