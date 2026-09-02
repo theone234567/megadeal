@@ -16,6 +16,15 @@ binding = "ASSETS"
 [images]
 binding = "IMAGES"
 
+# Persistent, IP-keyed store for the admin login lockout (lib/adminRateLimit.ts).
+# Create it once with `wrangler kv namespace create ADMIN_RATE_LIMIT_KV`
+# (or via Cloudflare dashboard -> Workers & Pages -> KV), then paste the id
+# it prints below. Until a real id is set, admin login falls back to
+# allowing every attempt (fails open) rather than breaking login entirely.
+[[kv_namespaces]]
+binding = "ADMIN_RATE_LIMIT_KV"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
 [observability]
 enabled = true
 head_sampling_rate = 1
