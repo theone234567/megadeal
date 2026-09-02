@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import CategoryNav from "@/components/CategoryNav";
+import HowToUseStrip from "@/components/HowToUseStrip";
 import FlashDealsList from "./FlashDealsList";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
@@ -57,6 +58,9 @@ export default async function FlashDealsPage() {
             Short-burst offers that end fast — grab them while they last.
           </p>
         </div>
+      </div>
+      <div className="pt-6">
+        <HowToUseStrip />
       </div>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Suspense fallback={null}>

@@ -3,6 +3,7 @@ import Hero from "@/components/Hero";
 import CategoryNav from "@/components/CategoryNav";
 import FlashDeals from "@/components/FlashDeals";
 import SocialCTA from "@/components/SocialCTA";
+import HowToUseStrip from "@/components/HowToUseStrip";
 import HomeDeals from "./HomeDeals";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
@@ -43,6 +44,9 @@ export default async function HomePage({
       {!isSearching && <Hero />}
       {!isSearching && <FlashDeals initialDeals={deals} />}
       <CategoryNav />
+      <div className="pt-6">
+        <HowToUseStrip />
+      </div>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Suspense fallback={null}>
           <HomeDeals initialDeals={deals} />

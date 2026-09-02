@@ -22,9 +22,12 @@ export default function HelpPage() {
 
       <h2>How do I redeem a deal?</h2>
       <p>
-        Open the deal page, tap &quot;Get this deal&quot; to see the
-        business&apos;s contact details, then get in touch or visit them
-        directly — mention the MegaDeal offer when you do. See our{" "}
+        Open the deal page and tap &quot;Get this deal&quot; to reveal the
+        business&apos;s contact details and a short code (like{" "}
+        <span className="font-mono font-semibold">MEGA-7K4XQ</span>). Get in
+        touch or visit the business directly, quote that code so they know
+        it&apos;s a MegaDeal offer, and pay them at the discounted price. See
+        our{" "}
         <a href="/redeem" className="text-brand-600 hover:underline">
           redemption guide
         </a>{" "}

@@ -6,6 +6,7 @@ import { fetchBusinessProfileBySlug } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
 import DealGrid from "@/components/DealGrid";
+import HowToUseStrip from "@/components/HowToUseStrip";
 import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
 import StarRating from "@/components/StarRating";
 import ShareButtons from "@/components/ShareButtons";
@@ -274,7 +275,12 @@ export default async function BusinessProfilePage({
         )}
       </div>
 
-      <h2 className="mb-5 mt-8 text-xl font-bold text-slate-900">
+      {deals.length > 0 && (
+        <div className="mt-8">
+          <HowToUseStrip bare />
+        </div>
+      )}
+      <h2 className="mb-5 mt-6 text-xl font-bold text-slate-900">
         {deals.length > 0
           ? `${deals.length} live deal${deals.length === 1 ? "" : "s"} from ${business.businessName}`
           : `No live deals from ${business.businessName} right now`}

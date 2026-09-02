@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CategoryNav from "@/components/CategoryNav";
+import HowToUseStrip from "@/components/HowToUseStrip";
 import { CATEGORIES } from "@/lib/categories";
 import CategoryDeals from "./CategoryDeals";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
@@ -55,6 +56,9 @@ export default async function CategoryPage({
   return (
     <main>
       <CategoryNav active={category} />
+      <div className="pt-6">
+        <HowToUseStrip />
+      </div>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {categoryDeals.length > 0 && (
           <script
