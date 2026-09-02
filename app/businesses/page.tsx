@@ -39,13 +39,13 @@ const PERKS = [
 const STEPS = [
   {
     number: "1",
-    title: "Apply — no account needed",
-    text: "Tell us about your business in a couple of minutes. No sign-up required just to apply.",
+    title: "Create your account & apply",
+    text: "Set up your login and tell us about your business — one form, a couple of minutes.",
   },
   {
     number: "2",
     title: "We review & set up your deal",
-    text: "Once approved, sign in with the same email to build your first deal — price, photo, terms, duration.",
+    text: "Once approved, log back in to build your first deal — price, photo, terms, duration.",
   },
   {
     number: "3",

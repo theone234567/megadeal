@@ -56,19 +56,21 @@ export default function HowItWorksPage() {
         redeems it pays you directly, in full.
       </p>
 
-      <h3>1. Sign up</h3>
+      <h3>1. Create your account &amp; apply</h3>
       <p>
-        Tell us about your business on our{" "}
+        Set up your login and tell us about your business on our{" "}
         <a href="/businesses" className="text-brand-600 hover:underline">
           business page
         </a>{" "}
-        — no account needed just to apply.
+        — one form, a couple of minutes, and you&apos;re straight into your
+        new business portal.
       </p>
 
       <h3>2. Verify your email</h3>
       <p>
-        We&apos;ll send a confirmation link to the email you signed up with —
-        click it to confirm it&apos;s really you.
+        Depending on your account, we may ask you to enter a short code we
+        email you at sign-up — no separate link to hunt down, just type it in
+        and you&apos;re verified.
       </p>
 
       <h3>3. We review your application</h3>
@@ -80,9 +82,9 @@ export default function HowItWorksPage() {
       <h3>4. Get notified and log in</h3>
       <p>
         Once you&apos;re approved, we&apos;ll email you. Log in to your
-        business portal with the same email — you&apos;ll have a couple of
-        free introductory deal credits waiting, so you can submit your first
-        deal straight away.
+        business portal with your email and password — you&apos;ll have a
+        couple of free introductory deal credits waiting, so you can submit
+        your first deal straight away.
       </p>
 
       <h3>5. Top up anytime</h3>
