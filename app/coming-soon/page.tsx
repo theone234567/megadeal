@@ -57,6 +57,15 @@ const MERCHANT_PERKS = [
   },
 ];
 
+const BUSINESS_TYPES = [
+  "🍽️ Restaurants & cafes",
+  "💆 Spas & beauty",
+  "🏋️ Gyms & fitness studios",
+  "🧘 Yoga & pilates",
+  "🚐 Tours & activities",
+  "🏨 Getaways & stays",
+];
+
 const MERCHANT_STEPS = [
   {
     number: "1",
@@ -162,6 +171,24 @@ export default function ComingSoonPage() {
               it&apos;s advertising, plain and simple. You put your offer in front
               of local customers, they pay you direct, and you keep 100% of it.
               That&apos;s the whole model.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              {BUSINESS_TYPES.map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            <p className="mx-auto mt-3 max-w-xl text-xs text-slate-500">
+              We&apos;re not currently set up for pure online/product
+              retailers (see{" "}
+              <Link href="/megashop" className="underline hover:text-slate-700">
+                MegaShop
+              </Link>{" "}
+              for that) or adult entertainment businesses.
             </p>
           </div>
 

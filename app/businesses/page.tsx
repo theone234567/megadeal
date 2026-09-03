@@ -35,6 +35,15 @@ const PERKS = [
   },
 ];
 
+const BUSINESS_TYPES = [
+  "🍽️ Restaurants & cafes",
+  "💆 Spas & beauty",
+  "🏋️ Gyms & fitness studios",
+  "🧘 Yoga & pilates",
+  "🚐 Tours & activities",
+  "🏨 Getaways & stays",
+];
+
 const STEPS = [
   {
     number: "1",
@@ -193,10 +202,28 @@ export default function MerchantsPage() {
             Who it&apos;s a good fit for
           </h2>
           <p className="mt-2 text-slate-600">
-            MegaDeal works best for businesses with some spare capacity to
+            MegaDeal works best for local businesses with some spare capacity to
             fill — an off-peak dinner slot, a treatment room between
             appointments, seats on a tour that isn&apos;t full. If that
             sounds like you, we&apos;d love to hear from you.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            {BUSINESS_TYPES.map((t) => (
+              <span
+                key={t}
+                className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+          <p className="mx-auto mt-4 max-w-xl text-xs text-slate-500">
+            We&apos;re not currently set up for pure online/product retailers
+            (see{" "}
+            <Link href="/megashop" className="underline hover:text-slate-700">
+              MegaShop
+            </Link>{" "}
+            for that) or adult entertainment businesses.
           </p>
           <p className="mt-4 text-sm text-slate-500">
             New businesses can get up to 3 months free advertising — ask when
