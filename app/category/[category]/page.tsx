@@ -9,7 +9,9 @@ import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
-export const dynamic = "force-dynamic";
+// See app/page.tsx for why this is a short revalidate window rather than
+// force-dynamic.
+export const revalidate = 60;
 
 export function generateStaticParams() {
   return CATEGORIES.map((c) => ({ category: c.name }));

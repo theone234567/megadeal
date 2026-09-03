@@ -9,7 +9,15 @@ import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
-export const dynamic = "force-dynamic";
+// Was force-dynamic (a live Wix API round-trip on every single page view,
+// with no caching at all — the biggest single latency cost on the site).
+// Deals aren't truly real-time: they go live via admin approval, expire on
+// a schedule, and the site's own terms already say availability isn't
+// guaranteed and is first-come-first-served — so a short cache window is
+// a safe trade for a much faster response to most visitors. Worst case
+// with a stale cache hit: a just-sold-out deal or a deal approved in the
+// last minute is up to 60s behind, not a correctness bug.
+export const revalidate = 60;
 
 export default async function HomePage({
   searchParams,

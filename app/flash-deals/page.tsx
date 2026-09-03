@@ -7,7 +7,10 @@ import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
-export const dynamic = "force-dynamic";
+// See app/page.tsx for why this is a short revalidate window rather than
+// force-dynamic. Flash deals are short-lived by nature, so this stays
+// tighter than the other browse pages.
+export const revalidate = 30;
 
 export const metadata: Metadata = {
   title: `Flash Deals — Short-Burst Offers | ${SITE_NAME}`,

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
 import {
   fetchAllLiveDealSlugsForSitemap,
   fetchAllBusinessSlugsForSitemap,
@@ -12,7 +12,15 @@ export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
-    { url: SITE_URL, changeFrequency: "hourly", priority: 1 },
+    // While pre-launch (middleware.ts redirects "/" to /coming-soon),
+    // submitting the bare "/" here would just hand crawlers a redirect
+    // stub — point them at the real front door instead. Flips back
+    // automatically once SITE_LAUNCHED is set, no manual edit needed.
+    {
+      url: SITE_LAUNCHED ? SITE_URL : `${SITE_URL}/coming-soon`,
+      changeFrequency: "hourly",
+      priority: 1,
+    },
     { url: `${SITE_URL}/businesses`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${SITE_URL}/how-it-works`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/redeem`, changeFrequency: "monthly", priority: 0.4 },

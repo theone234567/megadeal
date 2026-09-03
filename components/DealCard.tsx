@@ -51,27 +51,28 @@ export default function DealCard({
           </div>
         )}
 
-        <div className="absolute left-2 top-2 flex flex-col gap-1">
-          {!soldOut && deal.isFlash && (
-            <span className="inline-block animate-flash-zap rounded-full bg-brand-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
-              ⚡ FLASH
-            </span>
-          )}
-          {deal.discountPercent > 0 && (
-            <span className="rounded-full bg-ember-500 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+        {!soldOut && deal.discountPercent > 0 && (
+          <div className="absolute left-2 top-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-ember-500 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+              {deal.isFlash && <span className="animate-flash-zap">⚡</span>}
               {deal.discountPercent}% OFF
             </span>
-          )}
-        </div>
+          </div>
+        )}
         {!soldOut && (
-          <div className="absolute bottom-2 left-2 right-2 flex flex-wrap items-center gap-1">
-            <CountdownBadge
-              target={deal.expiresAt ? new Date(deal.expiresAt) : dealEndsAt(deal.id)}
-            />
-            {lowStock && (
+          <div className="absolute bottom-2 left-2 right-2">
+            {/* At most one urgency badge at a time — scarcity is the
+                stronger, more specific signal once stock is genuinely low,
+                so it takes priority over the countdown rather than both
+                stacking. Full countdown is still on the deal page. */}
+            {lowStock ? (
               <span className="rounded-full bg-red-600/90 px-2.5 py-1 text-xs font-semibold text-white">
                 Only {deal.quantityAvailable} left
               </span>
+            ) : (
+              <CountdownBadge
+                target={deal.expiresAt ? new Date(deal.expiresAt) : dealEndsAt(deal.id)}
+              />
             )}
           </div>
         )}

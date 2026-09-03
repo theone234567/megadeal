@@ -6,7 +6,11 @@ import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { formatMoney } from "@/lib/format";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
-export const dynamic = "force-dynamic";
+// See app/page.tsx for why this is a short revalidate window rather than
+// force-dynamic. Kept tighter than the browse pages since this is the
+// actual "contact the business" conversion page — a stale sold-out/
+// quantity state here is the highest-stakes case for it to be wrong.
+export const revalidate = 30;
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
