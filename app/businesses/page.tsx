@@ -1,8 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { formatMoney } from "@/lib/format";
-import CountdownBadge from "@/components/CountdownBadge";
+import SampleDealCard from "@/components/SampleDealCard";
 import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL } from "@/lib/siteConfig";
 
@@ -53,8 +52,6 @@ const STEPS = [
     text: "Your deal goes live to thousands of locals. They redeem it by booking or visiting you — you keep every dollar.",
   },
 ];
-
-const sampleExpiresAt = new Date(Date.now() + 21 * 24 * 60 * 60 * 1000);
 
 export default function MerchantsPage() {
   return (
@@ -135,51 +132,8 @@ export default function MerchantsPage() {
             </p>
           </div>
 
-          <div className="mx-auto mt-8 max-w-xs">
-            <div
-              aria-hidden
-              className="pointer-events-none relative flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card-hover"
-            >
-              <span className="absolute left-2 top-2 z-10 rounded-full bg-slate-900/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-                Sample preview
-              </span>
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
-                <div className="flex h-full w-full items-center justify-center text-4xl text-slate-300">
-                  🏷️
-                </div>
-                <div className="absolute left-2 top-9 flex flex-col gap-1">
-                  <span className="rounded-full bg-ember-500 px-2.5 py-1 text-xs font-extrabold text-white shadow">
-                    50% OFF
-                  </span>
-                </div>
-                <div className="absolute bottom-2 left-2">
-                  <CountdownBadge target={sampleExpiresAt} />
-                </div>
-              </div>
-
-              <div className="flex flex-1 flex-col gap-2 p-4">
-                <span className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-                  Beauty &amp; Spa
-                </span>
-                <h3 className="line-clamp-2 min-h-[2.75rem] text-sm font-bold text-slate-900">
-                  60-Minute Deep Tissue Massage
-                </h3>
-                <p className="-mt-1 truncate text-xs font-medium text-slate-500">
-                  by Your Business Name
-                </p>
-
-                <div className="mt-auto flex items-end justify-between pt-1">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-extrabold text-slate-900">
-                      {formatMoney(49, "NZD", null)}
-                    </span>
-                    <span className="text-sm text-slate-400 line-through">
-                      {formatMoney(99, "NZD", null)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="mt-8">
+            <SampleDealCard />
           </div>
 
           <p className="mx-auto mt-4 max-w-md text-center text-xs text-slate-400">
