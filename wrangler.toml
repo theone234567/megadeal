@@ -16,13 +16,15 @@ binding = "ASSETS"
 [images]
 binding = "IMAGES"
 
-# Persistent, IP-keyed store for the admin login lockout (lib/adminRateLimit.ts).
-# Create it once with `wrangler kv namespace create ADMIN_RATE_LIMIT_KV`
-# (or via Cloudflare dashboard -> Workers & Pages -> KV), then paste the id
-# it prints below. Until a real id is set, admin login falls back to
-# allowing every attempt (fails open) rather than breaking login entirely.
+# Shared, IP/key-keyed store for every rate limit in the app (lib/rateLimit.ts,
+# lib/adminRateLimit.ts) — the admin login lockout, and abuse limits on public
+# endpoints like /api/email-signup and /api/contact. Create it once with
+# `wrangler kv namespace create RATE_LIMIT_KV` (or via Cloudflare dashboard ->
+# Workers & Pages -> KV), then paste the id it prints below. Until a real id
+# is set, every rate limit falls back to allowing every request (fails open)
+# rather than breaking the feature it protects.
 [[kv_namespaces]]
-binding = "ADMIN_RATE_LIMIT_KV"
+binding = "RATE_LIMIT_KV"
 id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
 
 [observability]

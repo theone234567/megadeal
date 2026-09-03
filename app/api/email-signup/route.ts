@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { createSignupConfirmToken } from "@/lib/emailSignupToken";
 import { SITE_URL } from "@/lib/siteConfig";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -29,6 +30,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: "Please agree to receive deal emails to sign up." },
       { status: 400 }
+    );
+  }
+
+  // Unauthenticated by nature (that's the point — anyone can sign up), but
+  // that also means anyone can POST any email address and trigger a real
+  // send to it with no proof they control that inbox. Two limits, both
+  // needed: per-IP stops a single bot looping this endpoint (and running
+  // up the Resend bill); per-email stops the same victim being bombed via
+  // many different/rotating IPs.
+  const ip = getClientIp(req);
+  const [ipLimit, emailLimit] = await Promise.all([
+    checkRateLimit(`emailsignup-ip:${ip}`, 5, 60 * 60),
+    checkRateLimit(`emailsignup-email:${email}`, 3, 24 * 60 * 60),
+  ]);
+  if (ipLimit.limited || emailLimit.limited) {
+    return NextResponse.json(
+      { error: "Too many signup attempts. Please try again later." },
+      { status: 429 }
     );
   }
 

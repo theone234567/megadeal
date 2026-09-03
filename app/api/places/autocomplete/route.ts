@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { tryConsumePlacesQuota } from "@/lib/placesUsageLimiter";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,16 @@ export async function POST(req: NextRequest) {
 
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   if (!apiKey) {
+    return NextResponse.json({ suggestions: [], disabled: true });
+  }
+
+  // The site-wide daily quota below caps the actual Google bill regardless
+  // of source, but on its own it lets a single abusive IP burn through the
+  // whole shared budget in seconds and lock every real signup out for the
+  // rest of the day. This per-IP limit is generous for real typing (20
+  // keystroke-debounced queries per 10 minutes) but stops that.
+  const { limited } = await checkRateLimit(`places-autocomplete-ip:${getClientIp(req)}`, 20, 10 * 60);
+  if (limited) {
     return NextResponse.json({ suggestions: [], disabled: true });
   }
 

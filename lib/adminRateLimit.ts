@@ -1,5 +1,6 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
-import type { NextRequest } from "next/server";
+import { getRateLimitKv, getClientIp } from "@/lib/rateLimit";
+
+export { getClientIp };
 
 export const ADMIN_MAX_LOGIN_ATTEMPTS = 3;
 const LOCKOUT_SECONDS = 15 * 60;
@@ -7,52 +8,22 @@ const LOCKOUT_SECONDS = 15 * 60;
 // prevents attempts from three separate days ever adding up to a lockout.
 const ATTEMPTS_WINDOW_SECONDS = 15 * 60;
 
-// Minimal shape of the one KV method set this module needs, so we don't
-// have to pull in @cloudflare/workers-types just for the ambient global.
-interface MinimalKVNamespace {
-  get(key: string): Promise<string | null>;
-  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
-  delete(key: string): Promise<void>;
-}
-
-declare global {
-  interface CloudflareEnv {
-    ADMIN_RATE_LIMIT_KV?: MinimalKVNamespace;
-  }
-}
-
 /**
- * True IP-scoped admin login lockout, backed by the ADMIN_RATE_LIMIT_KV
- * namespace (see wrangler.toml) — unlike a cookie-based lockout, clearing
- * cookies or switching browsers on the same connection doesn't reset it.
- * If the KV binding isn't configured yet (local dev, or before the
- * namespace id is set in wrangler.toml), every check fails open so admin
- * login still works, it just isn't rate-limited.
+ * True IP-scoped admin login lockout, backed by the shared RATE_LIMIT_KV
+ * namespace (see lib/rateLimit.ts / wrangler.toml) — unlike a cookie-based
+ * lockout, clearing cookies or switching browsers on the same connection
+ * doesn't reset it. Uses its own lock/attempts keys rather than the
+ * generic checkRateLimit() helper since a lockout (persist a "locked"
+ * state past the window, reset early on a correct password) is different
+ * shape from a plain fixed-window counter.
  */
-export function getClientIp(req: NextRequest): string {
-  return (
-    req.headers.get("cf-connecting-ip") ||
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    "unknown"
-  );
-}
-
-async function getKv(): Promise<MinimalKVNamespace | null> {
-  try {
-    const { env } = await getCloudflareContext({ async: true });
-    return env.ADMIN_RATE_LIMIT_KV ?? null;
-  } catch {
-    return null;
-  }
-}
-
 export interface IpLockoutStatus {
   locked: boolean;
   minutesLeft: number;
 }
 
 export async function checkIpLockout(ip: string): Promise<IpLockoutStatus> {
-  const kv = await getKv();
+  const kv = await getRateLimitKv();
   if (!kv || ip === "unknown") return { locked: false, minutesLeft: 0 };
 
   const raw = await kv.get(`admin-lock:${ip}`);
@@ -72,7 +43,7 @@ export interface AdminLoginAttemptResult {
 }
 
 export async function recordFailedIpAttempt(ip: string): Promise<AdminLoginAttemptResult> {
-  const kv = await getKv();
+  const kv = await getRateLimitKv();
   if (!kv || ip === "unknown") {
     return { locked: false, minutesLeft: 0, remaining: ADMIN_MAX_LOGIN_ATTEMPTS - 1 };
   }
@@ -92,7 +63,7 @@ export async function recordFailedIpAttempt(ip: string): Promise<AdminLoginAttem
 }
 
 export async function clearIpAttempts(ip: string): Promise<void> {
-  const kv = await getKv();
+  const kv = await getRateLimitKv();
   if (!kv || ip === "unknown") return;
   await Promise.all([kv.delete(`admin-attempts:${ip}`), kv.delete(`admin-lock:${ip}`)]);
 }

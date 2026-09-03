@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { escapeHtml } from "@/lib/escapeHtml";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // This route stores the message only — it must never add the sender to the
 // Resend marketing audience. There's no consent checkbox on the contact
@@ -31,6 +32,17 @@ export async function POST(req: NextRequest) {
   }
   if (!EMAIL_RE.test(email)) {
     return NextResponse.json({ error: "Enter a valid email." }, { status: 400 });
+  }
+
+  // Unauthenticated by design (anyone should be able to reach out), but
+  // without a limit a bot could flood the ContactMessages collection and
+  // trigger an admin-notification email on every single submission.
+  const { limited } = await checkRateLimit(`contact-ip:${getClientIp(req)}`, 5, 60 * 60);
+  if (limited) {
+    return NextResponse.json(
+      { error: "Too many messages sent. Please try again later." },
+      { status: 429 }
+    );
   }
 
   try {

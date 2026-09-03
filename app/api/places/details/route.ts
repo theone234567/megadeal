@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { tryConsumePlacesQuota } from "@/lib/placesUsageLimiter";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,13 @@ export async function GET(req: NextRequest) {
 
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   if (!apiKey) {
+    return NextResponse.json({ result: null });
+  }
+
+  // See app/api/places/autocomplete/route.ts for why this per-IP limit
+  // exists alongside the site-wide daily quota below.
+  const { limited } = await checkRateLimit(`places-details-ip:${getClientIp(req)}`, 10, 10 * 60);
+  if (limited) {
     return NextResponse.json({ result: null });
   }
 
