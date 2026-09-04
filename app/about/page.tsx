@@ -55,10 +55,10 @@ export default function AboutPage() {
 
       <h2>Where we operate</h2>
       <p>
-        MegaDeal started with deals across Auckland, Wellington, Christchurch
-        and Queenstown, and we&apos;re adding new cities and new categories
-        all the time. If there&apos;s a business you love that you&apos;d like
-        to see on MegaDeal, let their owner know — or point them to our{" "}
+        We&apos;re launching in Auckland first, with the rest of New Zealand
+        following shortly after — Wellington, Christchurch and Queenstown are
+        next on the list. If there&apos;s a business you love that you&apos;d
+        like to see on MegaDeal, let their owner know — or point them to our{" "}
         <a href="/businesses" className="text-brand-600 hover:underline">
           business page
         </a>

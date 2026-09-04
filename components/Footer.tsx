@@ -58,11 +58,6 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/businesses" className="hover:text-brand-700">
-                  Businesses: list your deal
-                </Link>
-              </li>
-              <li>
                 <Link href="/careers" className="hover:text-brand-700">
                   Careers
                 </Link>
@@ -93,18 +88,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="hover:text-brand-700">
-                  Privacy policy
-                </Link>
-              </li>
-              <li>
                 <Link href="/contact" className="hover:text-brand-700">
                   Contact us
-                </Link>
-              </li>
-              <li>
-                <Link href="/portal" className="hover:text-brand-700">
-                  Business sign in
                 </Link>
               </li>
             </ul>

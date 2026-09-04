@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SocialLinks from "@/components/SocialLinks";
 import EmailSignupForm from "@/components/EmailSignupForm";
-import SampleDealCard from "@/components/SampleDealCard";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 
 const TITLE = "MegaDeal is Coming Soon — NZ Local Deals & Free Business Advertising";
@@ -34,29 +33,6 @@ const CUSTOMER_PERKS = [
   { emoji: "🧡", text: "Every deal you grab supports a local Kiwi business" },
 ];
 
-const MERCHANT_PERKS = [
-  {
-    emoji: "🤝",
-    title: "Zero commission, ever",
-    text: "Every dollar a customer pays goes straight to you. MegaDeal never touches the payment.",
-  },
-  {
-    emoji: "💳",
-    title: "Pay in credits, not a cut",
-    text: "You pay MegaDeal in simple advertising credits or a subscription — never a percentage of sales.",
-  },
-  {
-    emoji: "⚡",
-    title: "Live in days, not weeks",
-    text: "Submit your deal, we review it, and it's usually live within a couple of business days.",
-  },
-  {
-    emoji: "🔓",
-    title: "No lock-in contracts",
-    text: "Pause, update or retire your deal whenever suits your business — no minimum term.",
-  },
-];
-
 const BUSINESS_TYPES = [
   "🍽️ Restaurants & cafes",
   "💆 Spas & beauty",
@@ -64,43 +40,6 @@ const BUSINESS_TYPES = [
   "🧘 Yoga & pilates",
   "🚐 Tours & activities",
   "🏨 Getaways & stays",
-];
-
-const MERCHANT_STEPS = [
-  {
-    number: "1",
-    title: "Create your account & apply",
-    text: "Set up your login and tell us about your business — one form, a couple of minutes.",
-  },
-  {
-    number: "2",
-    title: "We review & set up your deal",
-    text: "Once approved, log back in to build your first deal — price, photo, terms, duration.",
-  },
-  {
-    number: "3",
-    title: "Customers contact you directly",
-    text: "Your deal goes live to locals in your area. They redeem it by booking or visiting you — you keep every dollar.",
-  },
-];
-
-const MERCHANT_FAQ = [
-  {
-    q: "Is MegaDeal a real company?",
-    a: "Yes — MegaDeal is run by a registered New Zealand company. Our terms and privacy policy are already live and public, same as they'll be on launch day, so you can see exactly how we operate before you sign up.",
-  },
-  {
-    q: "What does it actually cost?",
-    a: "Nothing to start — new businesses get up to 3 months free advertising. After that, you pay in simple advertising credits or a subscription, never a cut of your sales.",
-  },
-  {
-    q: "What if it doesn't work out for me?",
-    a: "No lock-in contracts. Pause, update or cancel your listing whenever suits you — there's no minimum term.",
-  },
-  {
-    q: "How much time does this take to set up?",
-    a: "A few minutes to apply. Once approved, you can have your first deal live within a couple of business days.",
-  },
 ];
 
 export default function ComingSoonPage() {
@@ -192,87 +131,8 @@ export default function ComingSoonPage() {
             </p>
           </div>
 
-          {/* Sample listing */}
-          <div className="mt-12">
-            <div className="text-center">
-              <span className="text-xs font-bold uppercase tracking-wide text-brand-600">
-                A quick preview
-              </span>
-              <h3 className="mt-2 text-xl font-extrabold text-slate-900 sm:text-2xl">
-                Here&apos;s what your listing will look like
-              </h3>
-              <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
-                This is a sample, not a real deal — but it&apos;s exactly the
-                layout customers will see on launch day: your photo, your
-                price, your business name, front and centre.
-              </p>
-            </div>
-            <div className="mt-6">
-              <SampleDealCard />
-            </div>
-          </div>
-
-          {/* How listing works */}
-          <div className="mt-16">
-            <h3 className="text-center text-xl font-extrabold text-slate-900 sm:text-2xl">
-              How it&apos;ll work
-            </h3>
-            <div className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-8 sm:grid-cols-3">
-              {MERCHANT_STEPS.map((s) => (
-                <div key={s.number}>
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-sm font-extrabold text-white">
-                    {s.number}
-                  </span>
-                  <h4 className="mt-3 font-bold text-slate-900">{s.title}</h4>
-                  <p className="mt-1 text-sm text-slate-500">{s.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Perks */}
-          <div className="mt-16">
-            <h3 className="text-center text-xl font-extrabold text-slate-900 sm:text-2xl">
-              Why businesses will list with us
-            </h3>
-            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
-              {MERCHANT_PERKS.map((p) => (
-                <div
-                  key={p.title}
-                  className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card"
-                >
-                  <span className="text-2xl">{p.emoji}</span>
-                  <h4 className="mt-2 font-bold text-slate-900">{p.title}</h4>
-                  <p className="mt-1 text-sm text-slate-500">{p.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* FAQ */}
-          <div className="mt-16">
-            <h3 className="text-center text-xl font-extrabold text-slate-900 sm:text-2xl">
-              Common questions
-            </h3>
-            <div className="mx-auto mt-8 max-w-3xl space-y-5">
-              {MERCHANT_FAQ.map((f) => (
-                <div key={f.q}>
-                  <h4 className="font-bold text-slate-900">{f.q}</h4>
-                  <p className="mt-1 text-sm text-slate-600">{f.a}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-6 text-center text-sm text-slate-500">
-              Something else on your mind?{" "}
-              <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
-                Ask us directly
-              </Link>
-              .
-            </p>
-          </div>
-
           {/* Signup CTA */}
-          <div className="mt-16 rounded-3xl bg-gradient-to-br from-ember-500 to-brand-600 p-8 text-white shadow-card sm:p-10">
+          <div className="mt-10 rounded-3xl bg-gradient-to-br from-ember-500 to-brand-600 p-8 text-white shadow-card sm:p-10">
             <div className="mx-auto max-w-3xl text-center">
               <h3 className="text-2xl font-extrabold">
                 🎁 Founding businesses get up to 3 months free advertising
@@ -290,7 +150,7 @@ export default function ComingSoonPage() {
                   href="/businesses"
                   className="rounded-full bg-white px-6 py-3 text-sm font-bold text-ember-600 shadow-card transition active:scale-95 hover:bg-ember-50"
                 >
-                  List your business now →
+                  See how it works &amp; apply →
                 </Link>
               </div>
               <div className="mx-auto mt-8 max-w-sm">
