@@ -48,6 +48,11 @@ export default function Footer() {
             <h4 className="mb-3 text-sm font-bold text-slate-900">Company</h4>
             <ul className="space-y-2 text-sm text-slate-600">
               <li>
+                <Link href="/businesses" className="hover:text-brand-700">
+                  List your business
+                </Link>
+              </li>
+              <li>
                 <Link href="/about" className="hover:text-brand-700">
                   About MegaDeal
                 </Link>
