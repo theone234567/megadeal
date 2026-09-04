@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 
 interface Sparkle {
   id: number;
@@ -18,7 +18,6 @@ const TRICK_MESSAGES = [
 ];
 const TRICK_MS = 950;
 const BUBBLE_MS = 1500;
-const HINT_MS = 4200;
 
 let sparkleId = 0;
 
@@ -34,17 +33,10 @@ export default function ElephantMascot({ className = "" }: { className?: string 
   const [isDoingTrick, setIsDoingTrick] = useState(false);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const [bubble, setBubble] = useState<{ id: number; text: string } | null>(null);
-  const [showHint, setShowHint] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const bubbleTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
-  useEffect(() => {
-    const t = setTimeout(() => setShowHint(false), HINT_MS);
-    return () => clearTimeout(t);
-  }, []);
-
   const doTrick = useCallback(() => {
-    setShowHint(false);
     if (isDoingTrick) return;
     setIsDoingTrick(true);
 
@@ -76,10 +68,6 @@ export default function ElephantMascot({ className = "" }: { className?: string 
       aria-label="Boop the MegaDeal elephant"
       className={`relative shrink-0 select-none rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${className}`}
     >
-      {showHint && (
-        <span className="animate-elephant-hint pointer-events-none absolute inset-0 rounded-full border-2 border-ember-400" />
-      )}
-
       {bubble && (
         <span
           key={bubble.id}
