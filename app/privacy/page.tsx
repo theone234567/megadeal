@@ -75,8 +75,9 @@ export default function PrivacyPage() {
         some personal information is processed by them on our behalf. This
         includes our headless commerce and member-login provider (Wix.com),
         our transactional email provider (Resend), Google&apos;s Places API
-        for business-address autocomplete, and Meta (Facebook/Instagram)
-        for ad measurement — see &quot;Cookies and advertising&quot; below.
+        for business-address autocomplete, Google Analytics for site
+        traffic reporting, and Meta (Facebook/Instagram) for ad measurement
+        — see &quot;Cookies and advertising&quot; below.
         Some of these providers store or process data on servers outside
         New Zealand. Where that happens, we only share the information
         needed for them to provide their service to us, and we choose
@@ -96,11 +97,27 @@ export default function PrivacyPage() {
         Privacy Commissioner and affected individuals as required by law.
       </p>
 
-      <h2>Cookies and advertising</h2>
+      <h2>Cookies, analytics and advertising</h2>
       <p>
         We use a small amount of cookie-based storage to keep a merchant
         signed in to the portal across visits — that part is functional,
         not advertising-driven.
+      </p>
+      <p>
+        We use Google Analytics to understand overall site traffic — how
+        many people visit, roughly where from (country/region, not a
+        precise location), and which pages or referring sites they came
+        from. This is aggregate reporting to help us run the site, not used
+        to individually identify you. You can opt out using Google&apos;s{" "}
+        <a
+          href="https://tools.google.com/dlpage/gaoptout"
+          className="text-brand-600 hover:underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Analytics opt-out browser add-on
+        </a>
+        .
       </p>
       <p>
         When we&apos;re running ad campaigns, pages on this site may also
@@ -117,8 +134,8 @@ export default function PrivacyPage() {
         >
           Facebook ad preferences
         </a>
-        , and standard browser tracking-protection or ad-blocking tools
-        will generally block it.
+        . Standard browser tracking-protection or ad-blocking tools will
+        generally block both of these.
       </p>
 
       <h2>Data retention</h2>
