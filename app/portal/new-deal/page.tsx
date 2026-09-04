@@ -407,9 +407,16 @@ function NewDealForm() {
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="What's included, how to redeem, anything customers should know."
+            placeholder="e.g. Unwind with a full-body deep tissue massage using warm oils, finished with a relaxing foot scrub. Includes a herbal tea on arrival. Book at least 24 hours ahead — walk-ins subject to availability."
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
+          {description.length > 0 && description.length < 60 && (
+            <p className="mt-1 text-xs text-amber-600">
+              💡 A bit more detail helps customers know exactly what they&apos;re
+              getting, and makes your listing easier to find in search — try
+              describing what&apos;s included, not just the price.
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
