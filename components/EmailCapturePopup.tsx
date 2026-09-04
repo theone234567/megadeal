@@ -104,20 +104,16 @@ export default function EmailCapturePopup() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 w-[calc(100vw-2rem)] max-w-xs animate-slide-up rounded-2xl border border-slate-100 bg-white p-4 shadow-card-hover sm:right-6 sm:bottom-6">
+    <div className="fixed bottom-3 right-3 z-40 w-[calc(100vw-1.5rem)] max-w-[220px] animate-slide-up rounded-xl border border-slate-100 bg-white p-2.5 shadow-card sm:right-4 sm:bottom-4">
       <button
         onClick={dismiss}
         aria-label="Dismiss"
-        className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
       >
         ✕
       </button>
-      <p className="pr-5 text-sm font-bold text-slate-900">🐘 Don&apos;t miss the good deals</p>
-      <p className="mt-1 text-xs text-slate-500">
-        Get NZ&apos;s best local deals in your inbox — no spam, unsubscribe
-        anytime.
-      </p>
-      <div className="mt-3">
+      <p className="pr-4 text-xs font-bold text-slate-900">🐘 Get local deals in your inbox</p>
+      <div className="mt-2">
         <EmailSignupForm
           audience="customer"
           source="corner-popup"
