@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { WixProvider } from "@/context/WixProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import MetaPixel from "@/components/MetaPixel";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
@@ -87,6 +89,9 @@ export default function RootLayout({
             }),
           }}
         />
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
         <WixProvider>
           <Header />
           {children}

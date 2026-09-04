@@ -6,6 +6,7 @@ import { useWix } from "@/context/WixProvider";
 import { registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import AddressAutocompleteField from "@/components/AddressAutocompleteField";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
+import { trackMetaPixelEvent } from "@/lib/metaPixel";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 
@@ -101,6 +102,9 @@ export default function MerchantSignupForm() {
   async function finishAfterAuth() {
     if (!formRef.current) return;
     await submitApplication(formRef.current, { address, city, postcode, lat, lon });
+    // The real conversion event for business-recruitment ad campaigns — a
+    // completed application, not just a click or an email signup.
+    trackMetaPixelEvent("CompleteRegistration", { content_name: "business_signup" });
     window.location.href = "/portal";
   }
 

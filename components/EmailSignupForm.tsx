@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { trackMetaPixelEvent } from "@/lib/metaPixel";
 
 interface EmailSignupFormProps {
   audience: "customer" | "merchant";
@@ -42,6 +43,7 @@ export default function EmailSignupForm({
         throw new Error(data.error || "Something went wrong. Please try again.");
       }
       setState("done");
+      trackMetaPixelEvent("Lead", { content_name: `email-signup-${audience}`, content_category: audience });
     } catch (err: any) {
       setErrorMessage(err?.message || "Something went wrong — please try again.");
       setState("error");

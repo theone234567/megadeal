@@ -74,13 +74,14 @@ export default function PrivacyPage() {
         We use a small number of specialist providers to run the site, and
         some personal information is processed by them on our behalf. This
         includes our headless commerce and member-login provider (Wix.com),
-        our transactional email provider (Resend), and Google&apos;s Places
-        API for business-address autocomplete. Some of these providers
-        store or process data on servers outside New Zealand. Where that
-        happens, we only share the information needed for them to provide
-        their service to us, and we choose providers who apply security and
-        privacy standards comparable to those required under the Privacy
-        Act 2020.
+        our transactional email provider (Resend), Google&apos;s Places API
+        for business-address autocomplete, and Meta (Facebook/Instagram)
+        for ad measurement — see &quot;Cookies and advertising&quot; below.
+        Some of these providers store or process data on servers outside
+        New Zealand. Where that happens, we only share the information
+        needed for them to provide their service to us, and we choose
+        providers who apply security and privacy standards comparable to
+        those required under the Privacy Act 2020.
       </p>
 
       <h2>How we protect your information</h2>
@@ -95,11 +96,29 @@ export default function PrivacyPage() {
         Privacy Commissioner and affected individuals as required by law.
       </p>
 
-      <h2>Cookies</h2>
+      <h2>Cookies and advertising</h2>
       <p>
         We use a small amount of cookie-based storage to keep a merchant
-        signed in to the portal across visits. This is functional, not
-        advertising-driven.
+        signed in to the portal across visits — that part is functional,
+        not advertising-driven.
+      </p>
+      <p>
+        When we&apos;re running ad campaigns, pages on this site may also
+        load the Meta (Facebook/Instagram) Pixel, which lets us measure
+        whether an ad led to a signup and show ads to people likely to be
+        interested. It can set cookies and share information such as pages
+        you viewed and whether you signed up with Meta. You can control
+        this through your{" "}
+        <a
+          href="https://www.facebook.com/adpreferences"
+          className="text-brand-600 hover:underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Facebook ad preferences
+        </a>
+        , and standard browser tracking-protection or ad-blocking tools
+        will generally block it.
       </p>
 
       <h2>Data retention</h2>
