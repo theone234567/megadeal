@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 const CUSTOMER_PERKS = [
-  { emoji: "🍽️", text: "Half-price dinners, spa days and weekend adventures" },
+  { emoji: "🍽️", text: "Half-price dinners, spa days, weekend adventures and more" },
   { emoji: "💸", text: "You pay the business direct. No middleman, no markup." },
   { emoji: "🆕", text: "Fresh deals added all the time — always something new to try" },
   { emoji: "🧡", text: "Every deal you grab supports a local Kiwi business" },
@@ -96,7 +96,7 @@ export default function ComingSoonPage() {
       </section>
 
       {/* Merchants */}
-      <section id="merchants" className="scroll-mt-8 px-4 py-16 sm:px-6 lg:px-8">
+      <section id="merchants" className="scroll-mt-36 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <div className="text-center">
             <span className="text-xs font-bold uppercase tracking-wide text-ember-600">
@@ -213,7 +213,7 @@ export default function ComingSoonPage() {
       </section>
 
       {/* Customers */}
-      <section id="customers" className="scroll-mt-8 bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
+      <section id="customers" className="scroll-mt-36 bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2">
           <div>
             <span className="text-xs font-bold uppercase tracking-wide text-brand-600">
