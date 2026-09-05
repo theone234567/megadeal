@@ -32,8 +32,8 @@ const PERKS = [
   },
   {
     emoji: "⚡",
-    title: "Live in days, not weeks",
-    text: "Submit your deal, we review it, and it's usually live within a couple of business days.",
+    title: "Live in minutes, not days",
+    text: "Once your business is approved, a new deal can go live in minutes. One thing to note: nothing actually goes live until MegaDeal officially launches — until then, you can build your deal and save it as a draft, ready the moment we open the doors.",
   },
   {
     emoji: "🔓",
