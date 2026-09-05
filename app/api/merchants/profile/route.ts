@@ -49,6 +49,21 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+
+  // Same required set as signup (app/api/merchants/apply/route.ts) — without
+  // this, a merchant could blank out their public phone/address/city here
+  // and it would save silently, degrading a listing that was required to
+  // have all three when it was first approved.
+  const phone = cleanText(body.phone, MAX_TEXT_LENGTH);
+  const address = cleanText(body.address, MAX_TEXT_LENGTH);
+  const city = cleanText(body.city, MAX_TEXT_LENGTH);
+  if (!phone || !address || !city) {
+    return NextResponse.json(
+      { error: "Phone, address and city are required." },
+      { status: 400 }
+    );
+  }
+
   const nzbn = normalizeNzbn(body.nzbn);
   if (!isValidNzbnFormat(nzbn)) {
     return NextResponse.json({ error: "NZBN must be 13 digits." }, { status: 400 });
@@ -95,8 +110,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No business application found for this account." }, { status: 404 });
   }
 
-  const address = cleanText(body.address, MAX_TEXT_LENGTH);
-  const city = cleanText(body.city, MAX_TEXT_LENGTH);
   const addressChanged = address !== (merchant.address || "") || city !== (merchant.city || "");
   // This form now has the same address-autocomplete/pin-map as signup, so a
   // freshly resolved lat/lng from the client is trustworthy — use it. If
@@ -115,7 +128,7 @@ export async function POST(req: NextRequest) {
     legalBusinessName,
     nzbn,
     website,
-    phone: cleanText(body.phone, MAX_TEXT_LENGTH),
+    phone,
     address,
     city,
     postcode: cleanText(body.postcode, 20),

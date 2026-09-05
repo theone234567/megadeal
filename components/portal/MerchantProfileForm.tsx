@@ -8,6 +8,14 @@ import type { AddressSuggestion } from "@/lib/googlePlaces";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 
+function RequiredTag() {
+  return <span className="ml-1 font-normal text-ember-600">Required</span>;
+}
+
+function OptionalTag() {
+  return <span className="ml-1 font-normal text-slate-400">(optional)</span>;
+}
+
 interface MerchantRecord {
   _id: string;
   businessName?: string;
@@ -66,7 +74,8 @@ export default function MerchantProfileForm({
   const [priceRange, setPriceRange] = useState(merchant.priceRange || "");
   const [amenities, setAmenities] = useState(merchant.amenities || "");
 
-  async function handleSave() {
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
     setSaving(true);
     setError(null);
     try {
@@ -214,18 +223,25 @@ export default function MerchantProfileForm({
         publicly again.
       </p>
 
-      <div className="mt-4 space-y-4">
+      <form onSubmit={handleSave} className="mt-4 space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Business name</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Business name
+              <RequiredTag />
+            </label>
             <input
+              required
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Website</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Website
+              <OptionalTag />
+            </label>
             <input
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
@@ -238,15 +254,20 @@ export default function MerchantProfileForm({
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">
               Legal / registered business name
+              <RequiredTag />
             </label>
             <input
+              required
               value={legalBusinessName}
               onChange={(e) => setLegalBusinessName(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">NZBN</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              NZBN
+              <OptionalTag />
+            </label>
             <input
               value={nzbn}
               onChange={(e) => setNzbn(e.target.value)}
@@ -259,16 +280,24 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Contact name</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Contact name
+              <RequiredTag />
+            </label>
             <input
+              required
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Contact phone</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Contact phone
+              <RequiredTag />
+            </label>
             <input
+              required
               value={contactPhone}
               onChange={(e) => setContactPhone(e.target.value)}
               type="tel"
@@ -279,8 +308,12 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Phone</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Phone
+              <RequiredTag />
+            </label>
             <input
+              required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -294,7 +327,10 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Booking link</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Booking link
+              <OptionalTag />
+            </label>
             <input
               value={bookingUrl}
               onChange={(e) => setBookingUrl(e.target.value)}
@@ -303,7 +339,10 @@ export default function MerchantProfileForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Booking email</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Booking email
+              <OptionalTag />
+            </label>
             <input
               type="email"
               value={bookingEmail}
@@ -337,19 +376,24 @@ export default function MerchantProfileForm({
             setLat(newLat);
             setLon(newLng);
           }}
-          required={false}
           helperText="Pick a suggestion to keep your map location accurate."
         />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">City</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              City
+              <RequiredTag />
+            </label>
             <select
+              required
               value={city}
               onChange={(e) => setCity(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
             >
-              <option value="">Select a city</option>
+              <option value="" disabled>
+                Select a city
+              </option>
               {CITIES.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -358,7 +402,10 @@ export default function MerchantProfileForm({
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Postcode</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Postcode
+              <OptionalTag />
+            </label>
             <input
               value={postcode}
               onChange={(e) => setPostcode(e.target.value)}
@@ -369,7 +416,10 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Facebook</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Facebook
+              <OptionalTag />
+            </label>
             <input
               value={facebookUrl}
               onChange={(e) => setFacebookUrl(e.target.value)}
@@ -378,7 +428,10 @@ export default function MerchantProfileForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Instagram</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Instagram
+              <OptionalTag />
+            </label>
             <input
               value={instagramUrl}
               onChange={(e) => setInstagramUrl(e.target.value)}
@@ -389,7 +442,10 @@ export default function MerchantProfileForm({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">About your business</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            About your business
+            <OptionalTag />
+          </label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
@@ -400,7 +456,10 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Price range</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Price range
+              <OptionalTag />
+            </label>
             <select
               value={priceRange}
               onChange={(e) => setPriceRange(e.target.value)}
@@ -416,6 +475,7 @@ export default function MerchantProfileForm({
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">
               Features &amp; amenities
+              <OptionalTag />
             </label>
             <input
               value={amenities}
@@ -430,13 +490,14 @@ export default function MerchantProfileForm({
 
         <div className="flex gap-2">
           <button
-            onClick={handleSave}
+            type="submit"
             disabled={saving}
             className="rounded-full bg-brand-600 px-5 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save changes"}
           </button>
           <button
+            type="button"
             onClick={() => setEditing(false)}
             disabled={saving}
             className="rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
@@ -444,7 +505,7 @@ export default function MerchantProfileForm({
             Cancel
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
