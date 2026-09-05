@@ -72,13 +72,13 @@ export default function MerchantsPage() {
 
         <div className="relative mx-auto max-w-3xl">
           <h1 className="text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
-            Be one of the first businesses on MegaDeal when we launch
+            Get up to 3 months free advertising for your business
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
             MegaDeal is advertising, not a marketplace — zero commission.
-            We&apos;re building the audience — get your deal ready now so
-            you&apos;re first in front of customers the moment we launch,
-            and you get paid in full, direct.
+            Sign up now, get your deal ready, and you&apos;re first in
+            front of customers the moment we launch — paid in full,
+            direct.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -97,9 +97,9 @@ export default function MerchantsPage() {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-semibold text-brand-50">
+            <span>🎁 Up to 3 months free</span>
             <span>🤝 0% commission</span>
             <span>🔓 No lock-in</span>
-            <span>⚡ Live in days</span>
           </div>
         </div>
       </section>
