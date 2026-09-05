@@ -31,7 +31,7 @@ const PERKS = [
   {
     emoji: "🔓",
     title: "No lock-in contracts",
-    text: "Pause, update or retire your deal whenever suits your business — no minimum term.",
+    text: "Pause, update or cancel your deal whenever suits your business — no minimum term.",
   },
 ];
 

@@ -69,6 +69,14 @@ export default function TermsPage() {
         otherwise — the business is the supplier, and any statutory
         guarantees run to them.
       </p>
+      <p>
+        There&apos;s no minimum term — a business can pause, update or
+        cancel a live listing at any time from its portal. Advertising
+        credits already spent on a listing aren&apos;t refunded when it&apos;s
+        paused or cancelled, and cancelling a listing doesn&apos;t relieve
+        the business of honouring any redemption or booking a customer
+        already made in good faith before that point.
+      </p>
 
       <h2>4. Accuracy of listings</h2>
       <p>
