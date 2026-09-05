@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MetaPixel from "@/components/MetaPixel";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import ScrollDepthTracker from "@/components/ScrollDepthTracker";
 import EmailCapturePopup from "@/components/EmailCapturePopup";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/siteConfig";
@@ -98,6 +99,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <MetaPixel />
           <GoogleAnalytics />
+          <ScrollDepthTracker />
         </Suspense>
         <WixProvider>
           <Header />
