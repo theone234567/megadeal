@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SampleDealCard from "@/components/SampleDealCard";
 import MerchantSignupForm from "./MerchantSignupForm";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export const metadata: Metadata = {
@@ -93,6 +93,27 @@ const STEPS = [
 export default function MerchantsPage() {
   return (
     <main>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            serviceType: "Local business advertising",
+            name: `${SITE_NAME} business advertising`,
+            description:
+              "Zero-commission advertising for local New Zealand businesses — customers pay the business direct, and MegaDeal is paid in advertising credits or a subscription, never a cut of sales.",
+            provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+            areaServed: { "@type": "Country", name: "New Zealand" },
+            audience: {
+              "@type": "BusinessAudience",
+              audienceType: "Local businesses (restaurants, spas, activities, tours, getaways)",
+            },
+            url: `${SITE_URL}/businesses`,
+          }),
+        }}
+      />
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-brand-700 via-brand-600 to-ember-500 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="pointer-events-none absolute -left-16 -top-16 h-72 w-72 rounded-full bg-white/10 blur-3xl" />

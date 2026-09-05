@@ -33,8 +33,14 @@ export const config = {
   // never need this middleware to run at all, and skipping it removes a
   // live Wix API round-trip from their critical path — including, notably,
   // Google's sitemap crawler, which has little patience for that extra
-  // network hop on what should be a trivial static file.
+  // network hop on what should be a trivial static file. The first
+  // alternation catches opengraph-image/icon routes wherever they're
+  // nested (e.g. app/businesses/opengraph-image.tsx serving
+  // /businesses/opengraph-image, not just the root /opengraph-image) —
+  // Next.js lets any route segment override these with its own file, and
+  // each one still deserves the same bypass a social-media link scraper
+  // benefits from.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|opengraph-image|icon|security.txt|.well-known|api/).*)",
+    "/((?!(?:.*/)?(?:favicon\\.ico|sitemap\\.xml|robots\\.txt|manifest\\.webmanifest|opengraph-image|icon|security\\.txt)(?:/.*)?$)(?!_next/static|_next/image|.well-known|api/).*)",
   ],
 };
