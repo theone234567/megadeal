@@ -29,3 +29,10 @@ head_sampling_rate = 1
 
 [observability.logs]
 invocation_logs = true
+
+# NEXT_PUBLIC_GA_MEASUREMENT_ID (components/GoogleAnalytics.tsx) and
+# NEXT_PUBLIC_META_PIXEL_ID (components/MetaPixel.tsx) aren't set here —
+# Next.js inlines NEXT_PUBLIC_* values at build time, so they live in the
+# Cloudflare dashboard under this Worker's Settings -> Builds ->
+# Environment variables, not [vars] in this file (which is only read at
+# request time, too late for a value that has to already be in the bundle).
