@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { formatMoney } from "@/lib/format";
 import CountdownBadge from "@/components/CountdownBadge";
 
@@ -20,12 +21,14 @@ export default function SampleDealCard() {
         <span className="absolute left-2 top-2 z-10 rounded-full bg-slate-900/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
           Sample preview
         </span>
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-amber-100 via-rose-50 to-stone-200">
-          <div className="flex h-full w-full items-center justify-center gap-3 text-3xl opacity-70">
-            <span>🕯️</span>
-            <span className="text-4xl">🪨</span>
-            <span>🌿</span>
-          </div>
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
+          <Image
+            src="https://cdn.pixabay.com/photo/2015/01/14/18/42/massage-599476_1280.jpg"
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"
+            className="object-cover"
+          />
           <div className="absolute left-2 top-9 flex flex-col gap-1">
             <span className="rounded-full bg-ember-500 px-2.5 py-1 text-xs font-extrabold text-white shadow">
               50% OFF
