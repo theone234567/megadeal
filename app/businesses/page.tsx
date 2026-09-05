@@ -177,7 +177,7 @@ export default async function MerchantsPage() {
             <span>🎁 Up to 3 months free</span>
             <span>🤝 0% commission</span>
             <span>🔓 No lock-in</span>
-            <span>💳 No credit card to apply</span>
+            <span>💳 No credit card required to apply</span>
           </div>
         </div>
       </section>
