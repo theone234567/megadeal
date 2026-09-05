@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import AddressAutocompleteField from "@/components/AddressAutocompleteField";
-import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import PasswordField from "@/components/PasswordField";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
@@ -20,6 +19,19 @@ function OptionalTag() {
   return <span className="ml-1 font-normal text-slate-500">(optional)</span>;
 }
 
+/**
+ * CRO EXPERIMENT — two-step signup (easy to revert): this form used to also
+ * collect website, bio, opening hours, booking link/email, price range,
+ * Facebook, Instagram and amenities inline — every field already marked
+ * optional. Those are now deferred to the portal's "complete your profile"
+ * step (components/portal/MerchantProfileForm.tsx, unchanged by this
+ * experiment) so the initial signup only asks for what's actually required
+ * to create the account and start a review. To revert: restore this file
+ * (and app/businesses/page.tsx's intro copy) from the commit before this
+ * one — the API route and the portal form already treat every deferred
+ * field as optional, so nothing else needs to change.
+ */
+
 /** Submits everything the /businesses form collected to create (or claim)
  *  the business application — called only once the account itself exists
  *  and, if Wix required it, its email is verified. */
@@ -29,7 +41,6 @@ async function submitApplication(formEl: HTMLFormElement, extra: {
   postcode: string;
   lat: number | null;
   lon: number | null;
-  businessHours: string;
 }) {
   const formData = new FormData(formEl);
   const res = await fetch("/api/merchants/apply", {
@@ -41,21 +52,12 @@ async function submitApplication(formEl: HTMLFormElement, extra: {
       contactPhone: String(formData.get("contactPhone") ?? ""),
       legalBusinessName: String(formData.get("legalBusinessName") ?? ""),
       nzbn: String(formData.get("nzbn") ?? ""),
-      website: String(formData.get("website") ?? ""),
       phone: String(formData.get("phone") ?? ""),
       address: extra.address,
       city: extra.city,
       postcode: extra.postcode,
       lat: extra.lat,
       lng: extra.lon,
-      bio: String(formData.get("bio") ?? ""),
-      businessHours: extra.businessHours,
-      bookingUrl: String(formData.get("bookingUrl") ?? ""),
-      bookingEmail: String(formData.get("bookingEmail") ?? ""),
-      facebookUrl: String(formData.get("facebookUrl") ?? ""),
-      instagramUrl: String(formData.get("instagramUrl") ?? ""),
-      priceRange: String(formData.get("priceRange") ?? ""),
-      amenities: String(formData.get("amenities") ?? ""),
       couponCode: String(formData.get("couponCode") ?? ""),
       website2: String(formData.get("website2") ?? ""),
       agreedToTerms: formData.get("agreedToTerms") === "on",
@@ -83,7 +85,6 @@ export default function MerchantSignupForm() {
   const [postcode, setPostcode] = useState("");
   const [lat, setLat] = useState<number | null>(null);
   const [lon, setLon] = useState<number | null>(null);
-  const [businessHours, setBusinessHours] = useState("");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -109,7 +110,7 @@ export default function MerchantSignupForm() {
 
   async function finishAfterAuth() {
     if (!formRef.current) return;
-    await submitApplication(formRef.current, { address, city, postcode, lat, lon, businessHours });
+    await submitApplication(formRef.current, { address, city, postcode, lat, lon });
     // The real conversion event for business-recruitment ad campaigns — a
     // completed application, not just a click or an email signup.
     trackMetaPixelEvent("CompleteRegistration", { content_name: "business_signup" });
@@ -222,8 +223,9 @@ export default function MerchantSignupForm() {
     <div id="signup" className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
       <h3 className="text-lg font-bold text-slate-900">Sign up your business</h3>
       <p className="mt-1 text-sm text-slate-500">
-        Create your account and tell us about your business in one go — you&apos;ll land straight in
-        your business portal, ready to go the moment we approve you.
+        Just the essentials for now — you&apos;ll land straight in your
+        business portal, where you can add your hours, photos and socials
+        before your deal goes live.
       </p>
 
       <form ref={formRef} onSubmit={handleSubmit} className="mt-6 space-y-6">
@@ -441,163 +443,34 @@ export default function MerchantSignupForm() {
               }}
             />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="signup-city" className="mb-1 block text-sm font-medium text-slate-700">
-                  City
-                  <RequiredTag />
-                </label>
-                <select
-                  id="signup-city"
-                  required
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
-                >
-                  <option value="" disabled>
-                    Select a city
+            <div>
+              <label htmlFor="signup-city" className="mb-1 block text-sm font-medium text-slate-700">
+                City
+                <RequiredTag />
+              </label>
+              <select
+                id="signup-city"
+                required
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full max-w-xs rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+              >
+                <option value="" disabled>
+                  Select a city
+                </option>
+                {CITIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
                   </option>
-                  {CITIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="signup-website" className="mb-1 block text-sm font-medium text-slate-700">
-                  Website
-                  <OptionalTag />
-                </label>
-                <input
-                  id="signup-website"
-                  name="website"
-                  type="url"
-                  placeholder="https://yourbusiness.co.nz"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-                />
-              </div>
+                ))}
+              </select>
             </div>
 
-            <div>
-              <label htmlFor="signup-bio" className="mb-1 block text-sm font-medium text-slate-700">
-                About your business
-                <OptionalTag />
-              </label>
-              <textarea
-                id="signup-bio"
-                name="bio"
-                rows={3}
-                placeholder="A couple of sentences customers will see on your business profile — what you do, what makes you worth a visit."
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-              />
-            </div>
-
-            <div>
-              <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="signup-bookingUrl" className="mb-1 block text-sm font-medium text-slate-700">
-                  Booking link
-                  <OptionalTag />
-                </label>
-                <input
-                  id="signup-bookingUrl"
-                  name="bookingUrl"
-                  type="url"
-                  placeholder="Your booking/reservation page, if you have one"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-                />
-              </div>
-              <div>
-                <label htmlFor="signup-bookingEmail" className="mb-1 block text-sm font-medium text-slate-700">
-                  Booking email
-                  <OptionalTag />
-                </label>
-                <input
-                  id="signup-bookingEmail"
-                  name="bookingEmail"
-                  type="email"
-                  placeholder="bookings@yourbusiness.co.nz"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-                />
-                <p className="mt-1 text-xs text-slate-500">
-                  Only if you want a different email shown to customers than your
-                  contact email above.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="signup-priceRange" className="mb-1 block text-sm font-medium text-slate-700">
-                  Price range
-                  <OptionalTag />
-                </label>
-                <select
-                  id="signup-priceRange"
-                  name="priceRange"
-                  defaultValue=""
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
-                >
-                  <option value="">Not applicable</option>
-                  <option value="$">$ — Budget-friendly</option>
-                  <option value="$$">$$ — Moderate</option>
-                  <option value="$$$">$$$ — Upmarket</option>
-                  <option value="$$$$">$$$$ — Premium</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="signup-facebookUrl" className="mb-1 block text-sm font-medium text-slate-700">
-                  Facebook
-                  <OptionalTag />
-                </label>
-                <input
-                  id="signup-facebookUrl"
-                  name="facebookUrl"
-                  type="url"
-                  placeholder="https://facebook.com/yourbusiness"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="signup-instagramUrl" className="mb-1 block text-sm font-medium text-slate-700">
-                  Instagram
-                  <OptionalTag />
-                </label>
-                <input
-                  id="signup-instagramUrl"
-                  name="instagramUrl"
-                  type="url"
-                  placeholder="https://instagram.com/yourbusiness"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="signup-amenities" className="mb-1 block text-sm font-medium text-slate-700">
-                Features &amp; amenities
-                <OptionalTag />
-              </label>
-              <input
-                id="signup-amenities"
-                name="amenities"
-                type="text"
-                placeholder="e.g. Vegan options, Free parking, Wheelchair accessible"
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-              />
-              <p className="mt-1 text-xs text-slate-500">
-                Comma-separated. Use whatever&apos;s relevant — cuisine or
-                dietary options for a restaurant, class types for a gym,
-                treatments for a spa, and so on.
-              </p>
-            </div>
+            <p className="text-xs text-slate-500">
+              📸 Opening hours, photos, website, socials and more — you&apos;ll
+              add those next, once you&apos;re in your portal. Nothing else to
+              fill in here.
+            </p>
           </div>
         </div>
 
@@ -647,8 +520,9 @@ export default function MerchantSignupForm() {
           disabled={submitting}
           className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60 sm:w-auto sm:px-8"
         >
-          {submitting ? "Submitting…" : "Create account & submit application"}
+          {submitting ? "Submitting…" : "Start listing for free →"}
         </button>
+        <p className="text-xs text-slate-500">💳 No credit card required.</p>
 
         <p className="text-center text-sm text-slate-500 sm:text-left">
           Already applied?{" "}

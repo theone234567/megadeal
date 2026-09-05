@@ -26,7 +26,7 @@ export default function OnboardingChecklist({
       <ul className="mt-3 space-y-2">
         {steps.map((s) => (
           <li key={s.label} className="flex items-center gap-2 text-sm">
-            <span aria-hidden className={s.done ? "text-green-600" : "text-slate-400"}>
+            <span aria-hidden className={s.done ? "text-green-600" : "text-slate-600"}>
               {s.done ? "✓" : "○"}
             </span>
             <span className={s.done ? "text-slate-500 line-through" : "font-medium text-slate-700"}>
