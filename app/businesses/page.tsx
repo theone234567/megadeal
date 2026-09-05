@@ -372,7 +372,7 @@ export default async function MerchantsPage() {
       </section>
 
       {/* FAQ */}
-      <section className="px-4 py-16 sm:px-6 lg:px-8">
+      <section className="px-4 pt-16 pb-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-center text-2xl font-extrabold text-slate-900 sm:text-3xl">
             Frequently asked questions
@@ -412,7 +412,7 @@ export default async function MerchantsPage() {
       </section>
 
       {/* Signup */}
-      <section className="px-4 py-16 sm:px-6 lg:px-8">
+      <section className="px-4 pt-8 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           <Suspense fallback={null}>
             <MerchantSignupForm />
@@ -423,7 +423,7 @@ export default async function MerchantsPage() {
       {/* Not ready yet — a genuine last resort for anyone who's read this far
           and still isn't ready to commit, not an exit offered right before
           the ask (that used to sit directly above the form itself). */}
-      <section className="px-4 pb-16 sm:px-6 lg:px-8">
+      <section className="px-4 pb-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-md text-center">
           <p className="text-sm font-semibold text-slate-700">
             Still not ready to apply?
