@@ -31,7 +31,7 @@ const CUSTOMER_PERKS = [
   { emoji: "💸", text: "You pay the business direct. No middleman, no markup." },
   { emoji: "🆕", text: "Fresh deals added all the time — always something new to try" },
   { emoji: "🧡", text: "Every deal you grab supports a local Kiwi business" },
-  { emoji: "🚀", text: "Businesses keep 100% of what they charge — so better businesses want to list, and you get better deals" },
+  { emoji: "🚀", text: "No commission for businesses means better businesses — and better deals for you" },
 ];
 
 const BUSINESS_TYPES = [
