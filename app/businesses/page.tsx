@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import SampleDealCard from "@/components/SampleDealCard";
+import EmailSignupForm from "@/components/EmailSignupForm";
 import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
@@ -149,6 +150,7 @@ export default function MerchantsPage() {
             <span>🎁 Up to 3 months free</span>
             <span>🤝 0% commission</span>
             <span>🔓 No lock-in</span>
+            <span>💳 No credit card required</span>
           </div>
         </div>
       </section>
@@ -320,6 +322,29 @@ export default function MerchantsPage() {
             }),
           }}
         />
+      </section>
+
+      {/* Not ready yet — soft fallback for anyone about to bounce before the full form */}
+      <section className="px-4 pb-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-md text-center">
+          <p className="text-sm font-semibold text-slate-700">
+            Not ready to apply yet?
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Leave your email and we&apos;ll let you know when we launch — no
+            commitment.
+          </p>
+          <div className="mt-3">
+            <EmailSignupForm
+              audience="merchant"
+              source="businesses-not-ready"
+              buttonLabel="Notify me"
+              accent="brand"
+              surface="plain"
+              center
+            />
+          </div>
+        </div>
       </section>
 
       {/* Signup */}
