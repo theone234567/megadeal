@@ -261,6 +261,7 @@ export default async function MerchantsPage() {
             Here&apos;s exactly how we bring you customers from day one
           </p>
           <ul className="mx-auto mt-3 max-w-md space-y-2 text-left text-sm text-slate-600">
+            <li>📱 A serious TikTok, Facebook &amp; Instagram ad push, aimed squarely at Auckland in the run-up to launch</li>
             <li>📧 A launch email straight to everyone on our waiting list, the moment we go live</li>
             <li>📍 100% of our launch marketing budget goes into Auckland — not spread thin across the whole country</li>
             <li>📰 Local press and community outreach in the weeks before launch</li>
