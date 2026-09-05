@@ -4,6 +4,8 @@ import { SITE_URL, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN } from "@/lib/siteConfig
 
 export const metadata: Metadata = {
   title: "Terms of Service",
+  description:
+    "MegaDeal's Terms of Service — the rules for using the site as a customer or business, including how deals, accounts and listings work.",
   alternates: { canonical: `${SITE_URL}/terms` },
 };
 

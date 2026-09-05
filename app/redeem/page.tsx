@@ -4,6 +4,8 @@ import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "How to Redeem a Deal",
+  description:
+    "How to redeem a MegaDeal deal — no voucher or order confirmation, just contact the business directly and quote your code.",
   alternates: { canonical: `${SITE_URL}/redeem` },
 };
 

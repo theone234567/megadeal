@@ -4,6 +4,8 @@ import { SITE_URL } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
   title: "Careers",
+  description:
+    "MegaDeal is a small team helping local NZ businesses reach new customers without a cut of sales — see what we look for and how to get in touch about future roles.",
   alternates: { canonical: `${SITE_URL}/careers` },
 };
 

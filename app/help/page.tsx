@@ -5,6 +5,8 @@ import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export const metadata: Metadata = {
   title: "Help Centre",
+  description:
+    "Answers to the most common MegaDeal questions — how deals work, redeeming without a voucher, refunds, and listing a business.",
   alternates: { canonical: `${SITE_URL}/help` },
 };
 

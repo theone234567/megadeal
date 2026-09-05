@@ -4,6 +4,8 @@ import { SITE_URL, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN } from "@/lib/siteConfig
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
+  description:
+    "MegaDeal's Privacy Policy — what personal information we collect, how it's used, and your rights under the Privacy Act 2020.",
   alternates: { canonical: `${SITE_URL}/privacy` },
 };
 
