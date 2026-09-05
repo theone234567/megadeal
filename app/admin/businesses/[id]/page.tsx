@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { AdminMerchant } from "@/components/admin/MerchantRow";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
+import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
 
 const STATUSES = ["Pending", "Approved", "Suspended"];
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
@@ -355,6 +356,21 @@ export default function AdminBusinessDetailPage() {
               />
             </label>
             <div className="mb-4">
+              {(() => {
+                const parsed = parseBusinessHours(businessHours);
+                if (!parsed) return null;
+                const lines = formatBusinessHoursLines(parsed);
+                return (
+                  <div className="mb-2 rounded-lg bg-slate-50 p-2.5 text-xs text-slate-500">
+                    <p className="mb-0.5 font-semibold text-slate-600">
+                      Displays to customers as:
+                    </p>
+                    {lines.map((line, i) => (
+                      <p key={i}>{line}</p>
+                    ))}
+                  </div>
+                );
+              })()}
               <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
