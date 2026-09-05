@@ -25,9 +25,11 @@ const SUPPRESSED_PREFIXES = ["/businesses", "/coming-soon", "/portal", "/admin"]
  * asking after someone's shown interest converts better than asking
  * before they've seen anything.
  *
- * Remembers a dismissal (or a signup via any form on the site, not just
- * this one — see EmailSignupForm) in localStorage so it doesn't nag the
- * same visitor again.
+ * A dismissal only sticks for the current browser session (sessionStorage)
+ * — closing it just says "not now", not "never"; it's free to ask again on
+ * a future visit. An actual signup (via any form on the site, not just
+ * this one — see EmailSignupForm) is remembered in localStorage instead,
+ * since there's no reason to ever ask someone who's already subscribed.
  */
 export default function EmailCapturePopup() {
   const pathname = usePathname();
@@ -39,7 +41,7 @@ export default function EmailCapturePopup() {
   useEffect(() => {
     if (suppressed) return;
     try {
-      if (localStorage.getItem(DISMISSED_KEY) || localStorage.getItem(SUBSCRIBED_KEY)) {
+      if (sessionStorage.getItem(DISMISSED_KEY) || localStorage.getItem(SUBSCRIBED_KEY)) {
         return;
       }
     } catch {
@@ -95,7 +97,7 @@ export default function EmailCapturePopup() {
   function dismiss() {
     setVisible(false);
     try {
-      localStorage.setItem(DISMISSED_KEY, "1");
+      sessionStorage.setItem(DISMISSED_KEY, "1");
     } catch {
       // Fine — see note above.
     }
