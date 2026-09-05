@@ -115,15 +115,6 @@ export default function Header() {
             Search
           </button>
         </form>
-
-        <div className="flex justify-end">
-          <Link
-            href="/businesses"
-            className="text-xs font-semibold text-slate-500 hover:text-ember-600"
-          >
-            🎁 Own a business? Get 3 months free advertising →
-          </Link>
-        </div>
       </div>
     </header>
   );
