@@ -80,9 +80,8 @@ export default function HowItWorksPage() {
 
       <h3>2. Verify your email</h3>
       <p>
-        Depending on your account, we may ask you to enter a short code we
-        email you at sign-up — no separate link to hunt down, just type it in
-        and you&apos;re verified.
+        We&apos;ll send you a short code straight to your inbox — pop it in
+        so we know this email is really yours, and you&apos;re verified.
       </p>
 
       <h3>3. We review your application</h3>
@@ -93,10 +92,11 @@ export default function HowItWorksPage() {
 
       <h3>4. Get notified and log in</h3>
       <p>
-        Once you&apos;re approved, we&apos;ll email you. Log in to your
-        business portal with your email and password — you&apos;ll have a
-        couple of free introductory deal credits waiting, so you can submit
-        your first deal straight away.
+        You&apos;ll get a welcome email the moment your account is approved.
+        From there, log in to your business portal any time — you&apos;ll
+        have a couple of free introductory deal credits waiting, and you can
+        complete the rest of your profile whenever suits, if you
+        haven&apos;t already.
       </p>
 
       <h3>5. Top up anytime</h3>
