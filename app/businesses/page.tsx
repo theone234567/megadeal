@@ -152,6 +152,11 @@ export default function MerchantsPage() {
             <span>🔓 No lock-in</span>
             <span>💳 No credit card required</span>
           </div>
+
+          <p className="mt-4 text-sm text-brand-100">
+            Perfect for restaurants, spas, gyms, yoga studios, tours &amp;
+            getaways
+          </p>
         </div>
       </section>
 
