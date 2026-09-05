@@ -69,7 +69,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/coming-soon" className="hover:text-brand-700">
-                  What&apos;s coming next
+                  Coming soon
                 </Link>
               </li>
             </ul>
