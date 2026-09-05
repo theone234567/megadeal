@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SampleDealCard from "@/components/SampleDealCard";
 import EmailSignupForm from "@/components/EmailSignupForm";
+import StickyApplyBar from "@/components/StickyApplyBar";
 import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
@@ -94,6 +95,7 @@ const STEPS = [
 export default function MerchantsPage() {
   return (
     <main>
+      <StickyApplyBar />
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -116,7 +118,7 @@ export default function MerchantsPage() {
         }}
       />
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-700 via-brand-600 to-ember-500 px-4 py-16 text-center sm:px-6 lg:px-8">
+      <section id="hero" className="relative overflow-hidden bg-gradient-to-br from-brand-700 via-brand-600 to-ember-500 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="pointer-events-none absolute -left-16 -top-16 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 -right-10 h-80 w-80 rounded-full bg-ember-300/20 blur-3xl" />
 
@@ -129,15 +131,16 @@ export default function MerchantsPage() {
             Get up to 3 months free advertising for your business
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            MegaDeal is a new NZ advertising platform, not a marketplace —
-            zero commission, ever. We&apos;re putting the finishing
-            touches on launch, so sign up now to get your listing ready
-            and be first in front of customers the moment we go live —
-            paid in full, direct.
+            MegaDeal is a new NZ deal platform that works differently:
+            fairer, because we never take a commission — it&apos;s
+            advertising only, so every dollar your customers pay goes
+            straight to you. We&apos;re putting the finishing touches on
+            launch, so sign up now and be first in front of customers
+            the moment we go live.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm font-semibold text-brand-100">
-            Perfect for restaurants, spas, gyms, yoga studios, tours &amp;
-            getaways
+            Perfect for 🍽️ restaurants, 💆 spas, 🏋️ gyms, 🧘 yoga
+            studios, 🚐 tours &amp; 🏨 getaways
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -182,6 +185,46 @@ export default function MerchantsPage() {
           >
             Claim your free advertising →
           </a>
+        </div>
+      </section>
+
+      {/* Fit — moved up from below "How it works" so a visitor confirms
+          "this is built for me" while first forming an impression, using
+          concrete per-type hooks rather than the compact hero one-liner
+          alone, before urgency/preview/perks copy competes for attention. */}
+      <section className="bg-brand-50 px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2 className="text-xl font-extrabold text-slate-900 sm:text-2xl">
+            Got a quiet Tuesday, an empty mat, or a room going spare?
+          </h2>
+          <p className="mx-auto mt-2 max-w-2xl text-slate-600">
+            That&apos;s exactly who MegaDeal is built for. Any spare capacity
+            you&apos;ve got — an off-peak table, a treatment room between
+            appointments, seats on a tour that never quite fills — is
+            someone else&apos;s perfect excuse to say yes. Put it in front of
+            them.
+          </p>
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {BUSINESS_TYPES.map((t) => (
+              <div
+                key={t.label}
+                className="rounded-2xl bg-white p-4 text-left shadow-sm"
+              >
+                <span className="text-lg">
+                  {t.emoji} {t.label}
+                </span>
+                <p className="mt-1 text-sm text-slate-500">{t.hook}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mx-auto mt-6 max-w-xl text-xs text-slate-600">
+            We&apos;re not currently set up for pure online/product retailers
+            (see{" "}
+            <Link href="/megashop" className="underline hover:text-slate-800">
+              MegaShop
+            </Link>{" "}
+            for that) or adult entertainment businesses.
+          </p>
         </div>
       </section>
 
@@ -281,43 +324,6 @@ export default function MerchantsPage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Fit + pricing */}
-      <section className="bg-brand-50 px-4 py-14 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="text-xl font-extrabold text-slate-900 sm:text-2xl">
-            Got a quiet Tuesday, an empty mat, or a room going spare?
-          </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-slate-600">
-            That&apos;s exactly who MegaDeal is built for. Any spare capacity
-            you&apos;ve got — an off-peak table, a treatment room between
-            appointments, seats on a tour that never quite fills — is
-            someone else&apos;s perfect excuse to say yes. Put it in front of
-            them.
-          </p>
-          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {BUSINESS_TYPES.map((t) => (
-              <div
-                key={t.label}
-                className="rounded-2xl bg-white p-4 text-left shadow-sm"
-              >
-                <span className="text-lg">
-                  {t.emoji} {t.label}
-                </span>
-                <p className="mt-1 text-sm text-slate-500">{t.hook}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mx-auto mt-6 max-w-xl text-xs text-slate-600">
-            We&apos;re not currently set up for pure online/product retailers
-            (see{" "}
-            <Link href="/megashop" className="underline hover:text-slate-800">
-              MegaShop
-            </Link>{" "}
-            for that) or adult entertainment businesses.
-          </p>
         </div>
       </section>
 
