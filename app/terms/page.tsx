@@ -89,12 +89,14 @@ export default function TermsPage() {
         already made in good faith before that point.
       </p>
       <p>
-        Advertising credits have no cash value and can&apos;t be sold,
-        transferred or exchanged for a refund. We may correct or adjust a
-        business&apos;s credit balance where it&apos;s wrong because of a
-        system error, technical fault, or a mistake in applying these
-        terms — for example, reversing credits granted in error, or
-        crediting back an amount that was incorrectly deducted.
+        Advertising credits are non-refundable and have no cash value —
+        they can&apos;t be sold, transferred, exchanged for cash, or
+        refunded for any reason, including unused credits on a closed or
+        suspended account. We may correct or adjust a business&apos;s
+        credit balance where it&apos;s wrong because of a system error,
+        technical fault, or a mistake in applying these terms — for
+        example, reversing credits granted in error, or crediting back an
+        amount that was incorrectly deducted.
       </p>
 
       <h2>4. Accuracy of listings</h2>
