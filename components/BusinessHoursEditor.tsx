@@ -54,7 +54,9 @@ export default function BusinessHoursEditor({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-slate-700">Opening hours</span>
+        <span className="text-sm font-medium text-slate-700">
+          Opening hours <span className="font-normal text-slate-400">(optional)</span>
+        </span>
         <button
           type="button"
           onClick={copyMondayToWeekdays}

@@ -6,6 +6,7 @@ import { useWix } from "@/context/WixProvider";
 import { registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import AddressAutocompleteField from "@/components/AddressAutocompleteField";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
+import PasswordField from "@/components/PasswordField";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
 
@@ -268,14 +269,13 @@ export default function MerchantSignupForm() {
                   Password
                   <RequiredTag />
                 </label>
-                <input
+                <PasswordField
                   required
-                  type="password"
                   autoComplete="new-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={setPassword}
                   placeholder="At least 8 characters"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
                 />
               </div>
               <div>
@@ -283,14 +283,13 @@ export default function MerchantSignupForm() {
                   Confirm password
                   <RequiredTag />
                 </label>
-                <input
+                <PasswordField
                   required
-                  type="password"
                   autoComplete="new-password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={setConfirmPassword}
                   placeholder="Same password again"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
                 />
               </div>
             </div>

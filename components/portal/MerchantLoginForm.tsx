@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useWix } from "@/context/WixProvider";
 import { loginMember, submitVerificationCode, requestPasswordReset } from "@/lib/wixAuth";
+import PasswordField from "@/components/PasswordField";
 
 /**
  * On-brand sign-in, right here on megadeal.co.nz — the previous flow
@@ -112,14 +113,13 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         autoComplete="email"
         className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
       />
-      <input
+      <PasswordField
         required
-        type="password"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={setPassword}
         placeholder="Password"
         autoComplete="current-password"
-        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+        inputClassName="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
       />
       {error && <p className="text-sm text-ember-600">{error}</p>}
       {resetSent && <p className="text-sm text-green-700">Check your email for a reset link.</p>}

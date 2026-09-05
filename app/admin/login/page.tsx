@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import PasswordField from "@/components/PasswordField";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -40,14 +41,13 @@ export default function AdminLoginPage() {
         the site owner&apos;s admin password.
       </p>
       <form onSubmit={handleSubmit} className="mt-6 w-full space-y-3">
-        <input
-          type="password"
+        <PasswordField
           required
           autoFocus
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={setPassword}
           placeholder="Admin password"
-          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-400"
+          inputClassName="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-400"
         />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
