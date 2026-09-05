@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import ElephantMascot from "@/components/ElephantMascot";
@@ -14,6 +14,27 @@ export default function Header() {
   const [city, setCity] = useState("");
   const [query, setQuery] = useState("");
   const router = useRouter();
+
+  // Same "has the deferred profile step been done" signal as the portal's
+  // own onboarding checklist — surfaced here too so a merchant sees they
+  // still have a step left no matter which page they're on, not just once
+  // they're already in the portal.
+  const [profileComplete, setProfileComplete] = useState(true);
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    let cancelled = false;
+    fetch("/api/merchants/me")
+      .then((res) => (res.ok ? res.json() : { item: null }))
+      .then(({ item }) => {
+        if (!cancelled) setProfileComplete(Boolean(!item || item.bio));
+      })
+      .catch(() => {
+        // Not fatal — worst case the badge just doesn't show this load.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -44,8 +65,21 @@ export default function Header() {
             href="/portal"
             className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-brand-700"
           >
-            <UserIcon className="h-4 w-4" />
+            <span className="relative">
+              <UserIcon className="h-4 w-4" />
+              {isLoggedIn && !profileComplete && (
+                <span
+                  aria-hidden
+                  className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-ember-500"
+                />
+              )}
+            </span>
             {isLoggedIn ? member?.profile?.nickname || "My portal" : "Business sign in"}
+            {isLoggedIn && !profileComplete && (
+              <span className="rounded-full bg-ember-50 px-2 py-0.5 text-xs font-semibold text-ember-600">
+                1 step left
+              </span>
+            )}
           </Link>
         </div>
 
