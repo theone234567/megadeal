@@ -17,21 +17,11 @@ binding = "ASSETS"
 binding = "IMAGES"
 
 # Rate limiting (lib/rateLimit.ts, lib/adminRateLimit.ts — the admin login
-# lockout, and abuse limits on /api/email-signup and /api/contact) is fully
-# built and already deployed in the app code, but is currently INACTIVE:
-# it needs a real KV namespace bound here as RATE_LIMIT_KV to actually
-# store counters, and there wasn't a real namespace id yet to put here. A
-# placeholder id in this file would fail Cloudflare's binding validation
-# and block every deploy outright, so the binding is deliberately left out
-# for now — every rate-limit check fails open (allows the request) without
-# it, exactly as it does today.
-#
-# To turn rate limiting on: run `wrangler kv namespace create RATE_LIMIT_KV`
-# (or create it via Cloudflare dashboard -> Workers & Pages -> KV), then add
-# back:
-#   [[kv_namespaces]]
-#   binding = "RATE_LIMIT_KV"
-#   id = "<the id that command printed>"
+# lockout, and abuse limits on /api/email-signup, /api/contact and the
+# Google Places endpoints) stores its counters here.
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "49bc14b529ac4f108051947967a39943"
 
 [observability]
 enabled = true
