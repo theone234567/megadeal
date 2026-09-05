@@ -7,6 +7,14 @@ import type { AdminMerchant } from "@/components/admin/MerchantRow";
 const STATUSES = ["Pending", "Approved", "Suspended"];
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 
+interface ActivityItem {
+  _id: string;
+  type: "credit" | "deal";
+  amount?: number | null;
+  description?: string;
+  _createdDate?: string;
+}
+
 function Field({
   label,
   value,
@@ -41,6 +49,7 @@ export default function AdminBusinessDetailPage() {
   const [merchant, setMerchant] = useState<AdminMerchant | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [activity, setActivity] = useState<ActivityItem[] | null>(null);
 
   // Admin controls
   const [status, setStatus] = useState("Pending");
@@ -120,6 +129,15 @@ export default function AdminBusinessDetailPage() {
       const item: AdminMerchant = data.item;
       setMerchant(item);
       seedFrom(item);
+
+      fetch(`/api/admin/merchants/${params.id}/activity`)
+        .then((r) => (r.ok ? r.json() : { items: [] }))
+        .then(({ items }) => {
+          if (!cancelled) setActivity(items ?? []);
+        })
+        .catch(() => {
+          if (!cancelled) setActivity([]);
+        });
     }
 
     load();
@@ -391,6 +409,49 @@ export default function AdminBusinessDetailPage() {
               </dd>
             </div>
           </dl>
+        </section>
+
+        <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card sm:col-span-2">
+          <h2 className="text-sm font-bold text-slate-900">Credit &amp; activity history</h2>
+          <p className="mt-1 text-xs text-slate-400">
+            Every credit grant, adjustment and deal listed by this business —
+            the same ledger they see on their own portal. MegaDeal doesn&apos;t
+            process any payment itself, so this tracks credit units only,
+            not a dollar amount — there&apos;s nothing to show for a
+            self-serve credit purchase since that doesn&apos;t exist yet.
+          </p>
+          {activity === null ? (
+            <p className="mt-3 text-sm text-slate-400">Loading…</p>
+          ) : activity.length === 0 ? (
+            <p className="mt-3 text-sm text-slate-500">No activity recorded yet.</p>
+          ) : (
+            <ul className="mt-3 divide-y divide-slate-100">
+              {activity.map((item) => (
+                <li key={item._id} className="flex items-start justify-between gap-3 py-2.5 text-sm">
+                  <div className="flex items-start gap-2">
+                    <span aria-hidden>{item.type === "credit" ? "💳" : "📋"}</span>
+                    <div>
+                      <p className="text-slate-700">{item.description}</p>
+                      {item._createdDate && (
+                        <p className="text-xs text-slate-400">
+                          {new Date(item._createdDate).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {item.type === "credit" && typeof item.amount === "number" && item.amount !== 0 && (
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
+                        item.amount > 0 ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {item.amount > 0 ? `+${item.amount}` : item.amount}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card sm:col-span-2">

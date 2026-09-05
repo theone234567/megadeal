@@ -100,6 +100,14 @@ export default function TermsPage() {
         </a>
         .
       </p>
+      <p>
+        We may also correct obvious errors in a business&apos;s own listing
+        or profile ourselves — for example a typo, a wrongly formatted
+        phone number, or a broken link — without treating it as a new
+        submission requiring re-approval. This doesn&apos;t change who&apos;s
+        responsible for the listing&apos;s accuracy; it&apos;s a courtesy
+        fix, not a review or endorsement of the content.
+      </p>
 
       <h2>5. Refunds and disputes</h2>
       <p>
