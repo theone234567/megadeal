@@ -72,6 +72,15 @@ export default function TermsPage() {
         guarantees run to them.
       </p>
       <p>
+        Every listing needs to be an actual deal, not just an ad at your
+        usual price — a genuine discount, a free extra, or some other
+        real added value compared to what a customer would normally pay.
+        We won&apos;t approve (or may remove) a listing that doesn&apos;t
+        offer one. As a rule of thumb: the better the offer, the better
+        it tends to perform — a bigger discount or a nice freebie gets
+        noticed far more than the bare minimum.
+      </p>
+      <p>
         There&apos;s no minimum term — a business can pause, update or
         cancel a live listing at any time from its portal. Advertising
         credits already spent on a listing aren&apos;t refunded when it&apos;s
