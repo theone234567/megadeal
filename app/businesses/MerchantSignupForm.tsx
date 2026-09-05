@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import AddressAutocompleteField from "@/components/AddressAutocompleteField";
+import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
 
@@ -27,6 +28,7 @@ async function submitApplication(formEl: HTMLFormElement, extra: {
   postcode: string;
   lat: number | null;
   lon: number | null;
+  businessHours: string;
 }) {
   const formData = new FormData(formEl);
   const res = await fetch("/api/merchants/apply", {
@@ -46,7 +48,7 @@ async function submitApplication(formEl: HTMLFormElement, extra: {
       lat: extra.lat,
       lng: extra.lon,
       bio: String(formData.get("bio") ?? ""),
-      businessHours: String(formData.get("businessHours") ?? ""),
+      businessHours: extra.businessHours,
       bookingUrl: String(formData.get("bookingUrl") ?? ""),
       bookingEmail: String(formData.get("bookingEmail") ?? ""),
       facebookUrl: String(formData.get("facebookUrl") ?? ""),
@@ -80,6 +82,7 @@ export default function MerchantSignupForm() {
   const [postcode, setPostcode] = useState("");
   const [lat, setLat] = useState<number | null>(null);
   const [lon, setLon] = useState<number | null>(null);
+  const [businessHours, setBusinessHours] = useState("");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -105,7 +108,7 @@ export default function MerchantSignupForm() {
 
   async function finishAfterAuth() {
     if (!formRef.current) return;
-    await submitApplication(formRef.current, { address, city, postcode, lat, lon });
+    await submitApplication(formRef.current, { address, city, postcode, lat, lon, businessHours });
     // The real conversion event for business-recruitment ad campaigns — a
     // completed application, not just a click or an email signup.
     trackMetaPixelEvent("CompleteRegistration", { content_name: "business_signup" });
@@ -490,19 +493,11 @@ export default function MerchantSignupForm() {
               />
             </div>
 
+            <div>
+              <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
+            </div>
+
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Opening hours
-                  <OptionalTag />
-                </label>
-                <input
-                  name="businessHours"
-                  type="text"
-                  placeholder="e.g. Mon–Fri 9am–5pm, Sat 10am–2pm"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-                />
-              </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
                   Booking link
@@ -515,9 +510,6 @@ export default function MerchantSignupForm() {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
                   Booking email
@@ -534,6 +526,9 @@ export default function MerchantSignupForm() {
                   contact email above.
                 </p>
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
                   Price range
@@ -551,9 +546,6 @@ export default function MerchantSignupForm() {
                   <option value="$$$$">$$$$ — Premium</option>
                 </select>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
                   Facebook
@@ -566,6 +558,9 @@ export default function MerchantSignupForm() {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
                 />
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
                   Instagram

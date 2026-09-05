@@ -11,6 +11,7 @@ import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } f
 import StarRating from "@/components/StarRating";
 import ShareButtons from "@/components/ShareButtons";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { parseBusinessHours, formatBusinessHoursLines, toOpeningHoursSpecification, isOpenNow } from "@/lib/businessHours";
 
 export async function generateMetadata({
   params,
@@ -58,6 +59,9 @@ export default async function BusinessProfilePage({
   const hasSocial = Boolean(business.facebookUrl || business.instagramUrl);
   const mapUrl = getMapUrl(business);
   const directionsUrl = getDirectionsUrl(business);
+  const parsedHours = parseBusinessHours(business.businessHours);
+  const hoursLines = parsedHours ? formatBusinessHoursLines(parsedHours) : null;
+  const openNow = parsedHours ? isOpenNow(parsedHours) : null;
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -85,6 +89,9 @@ export default async function BusinessProfilePage({
               business.lat !== null && business.lng !== null
                 ? { "@type": "GeoCoordinates", latitude: business.lat, longitude: business.lng }
                 : undefined,
+            openingHoursSpecification: parsedHours
+              ? toOpeningHoursSpecification(parsedHours)
+              : undefined,
             // No aggregateRating here: this rating is a plain number an
             // admin types into a form (components/admin/MerchantRow.tsx),
             // not aggregated from genuine customer reviews. Marking it up
@@ -241,9 +248,25 @@ export default async function BusinessProfilePage({
             {(business.businessHours || hasSocial) && (
               <div className="space-y-1.5 text-sm">
                 {business.businessHours && (
-                  <p className="flex items-start gap-2 text-slate-600">
-                    <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" /> <span>{business.businessHours}</span>
-                  </p>
+                  <div className="flex items-start gap-2 text-slate-600">
+                    <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div>
+                      {openNow !== null && (
+                        <p
+                          className={`mb-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
+                            openNow ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-500"
+                          }`}
+                        >
+                          {openNow ? "● Open now" : "Closed now"}
+                        </p>
+                      )}
+                      {hoursLines ? (
+                        hoursLines.map((line, i) => <p key={i}>{line}</p>)
+                      ) : (
+                        <p>{business.businessHours}</p>
+                      )}
+                    </div>
+                  </div>
                 )}
                 {hasSocial && (
                   <div className="flex items-center gap-3">

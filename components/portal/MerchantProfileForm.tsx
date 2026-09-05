@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import AddressAutocompleteField from "@/components/AddressAutocompleteField";
+import BusinessHoursEditor from "@/components/BusinessHoursEditor";
+import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
@@ -161,7 +163,15 @@ export default function MerchantProfileForm({
           </div>
           <div>
             <dt className="text-slate-400">Opening hours</dt>
-            <dd className="font-medium text-slate-800">{merchant.businessHours || "—"}</dd>
+            <dd className="font-medium text-slate-800">
+              {(() => {
+                const parsed = parseBusinessHours(merchant.businessHours);
+                if (parsed) {
+                  return formatBusinessHoursLines(parsed).map((line, i) => <p key={i}>{line}</p>);
+                }
+                return merchant.businessHours || "—";
+              })()}
+            </dd>
           </div>
           <div>
             <dt className="text-slate-400">Booking link</dt>
@@ -276,15 +286,10 @@ export default function MerchantProfileForm({
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Opening hours</label>
-            <input
-              value={businessHours}
-              onChange={(e) => setBusinessHours(e.target.value)}
-              placeholder="e.g. Mon–Fri 9am–5pm, Sat 10am–2pm"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-            />
-          </div>
+        </div>
+
+        <div>
+          <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

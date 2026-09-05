@@ -12,6 +12,7 @@ import DealGrid from "@/components/DealGrid";
 import ShareButtons from "@/components/ShareButtons";
 import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
 import { trackDealEvent } from "@/lib/trackDeal";
+import { parseBusinessHours, formatBusinessHoursLines, isOpenNow } from "@/lib/businessHours";
 import StarRating from "@/components/StarRating";
 
 // The deal (and its related deals) are fetched server-side (see page.tsx)
@@ -122,11 +123,31 @@ export default function DealDetail({
                   ))}
                 </div>
               )}
-              {deal.businessHours && (
-                <p className="mt-3 flex items-start gap-2 text-sm text-slate-600">
-                  <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" /> <span>{deal.businessHours}</span>
-                </p>
-              )}
+              {deal.businessHours && (() => {
+                const parsedHours = parseBusinessHours(deal.businessHours);
+                const openNow = parsedHours ? isOpenNow(parsedHours) : null;
+                return (
+                  <div className="mt-3 flex items-start gap-2 text-sm text-slate-600">
+                    <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div>
+                      {openNow !== null && (
+                        <p
+                          className={`mb-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
+                            openNow ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-500"
+                          }`}
+                        >
+                          {openNow ? "● Open now" : "Closed now"}
+                        </p>
+                      )}
+                      {parsedHours ? (
+                        formatBusinessHoursLines(parsedHours).map((line, i) => <p key={i}>{line}</p>)
+                      ) : (
+                        <p>{deal.businessHours}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {hasContactInfo && (
                 <div className="mt-3 space-y-2">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { AdminMerchant } from "@/components/admin/MerchantRow";
+import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 
 const STATUSES = ["Pending", "Approved", "Suspended"];
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
@@ -353,8 +354,10 @@ export default function AdminBusinessDetailPage() {
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
               />
             </label>
+            <div className="mb-4">
+              <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
+            </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Opening hours" value={businessHours} onChange={setBusinessHours} />
               <label className="block text-sm">
                 <span className="mb-1 block font-medium text-slate-700">Price range</span>
                 <select
