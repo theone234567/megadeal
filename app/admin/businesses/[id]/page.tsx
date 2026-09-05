@@ -23,16 +23,25 @@ function Field({
   onChange,
   placeholder,
   type = "text",
+  required = false,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   type?: string;
+  required?: boolean;
 }) {
   return (
     <label className="block text-sm">
-      <span className="mb-1 block font-medium text-slate-700">{label}</span>
+      <span className="mb-1 block font-medium text-slate-700">
+        {label}
+        {required ? (
+          <span className="ml-1 font-normal text-ember-600">Required</span>
+        ) : (
+          <span className="ml-1 font-normal text-slate-400">(optional)</span>
+        )}
+      </span>
       <input
         type={type}
         value={value}
@@ -310,15 +319,18 @@ export default function AdminBusinessDetailPage() {
         <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card sm:col-span-2">
           <h2 className="text-sm font-bold text-slate-900">Contact &amp; legal</h2>
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Business (trading) name" value={businessName} onChange={setBusinessName} />
-            <Field label="Legal / registered business name" value={legalBusinessName} onChange={setLegalBusinessName} />
+            <Field label="Business (trading) name" value={businessName} onChange={setBusinessName} required />
+            <Field label="Legal / registered business name" value={legalBusinessName} onChange={setLegalBusinessName} required />
             <Field label="NZBN" value={nzbn} onChange={setNzbn} />
-            <Field label="Contact name" value={contactName} onChange={setContactName} />
-            <Field label="Contact phone" value={contactPhone} onChange={setContactPhone} />
-            <Field label="Public phone" value={phone} onChange={setPhone} />
-            <Field label="Address" value={address} onChange={setAddress} />
+            <Field label="Contact name" value={contactName} onChange={setContactName} required />
+            <Field label="Contact phone" value={contactPhone} onChange={setContactPhone} required />
+            <Field label="Public phone" value={phone} onChange={setPhone} required />
+            <Field label="Address" value={address} onChange={setAddress} required />
             <label className="block text-sm">
-              <span className="mb-1 block font-medium text-slate-700">City</span>
+              <span className="mb-1 block font-medium text-slate-700">
+                City
+                <span className="ml-1 font-normal text-ember-600">Required</span>
+              </span>
               <select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}

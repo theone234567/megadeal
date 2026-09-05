@@ -190,9 +190,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
     patch.nzbn = v;
   }
-  if (body.phone !== undefined) patch.phone = cleanText(body.phone, MAX_TEXT_LENGTH);
-  if (body.address !== undefined) patch.address = cleanText(body.address, MAX_TEXT_LENGTH);
-  if (body.city !== undefined) patch.city = cleanText(body.city, MAX_TEXT_LENGTH);
+  if (body.phone !== undefined) {
+    const v = cleanText(body.phone, MAX_TEXT_LENGTH);
+    if (!v) return NextResponse.json({ error: "Phone can't be empty." }, { status: 400 });
+    patch.phone = v;
+  }
+  if (body.address !== undefined) {
+    const v = cleanText(body.address, MAX_TEXT_LENGTH);
+    if (!v) return NextResponse.json({ error: "Address can't be empty." }, { status: 400 });
+    patch.address = v;
+  }
+  if (body.city !== undefined) {
+    const v = cleanText(body.city, MAX_TEXT_LENGTH);
+    if (!v) return NextResponse.json({ error: "City can't be empty." }, { status: 400 });
+    patch.city = v;
+  }
   if (body.postcode !== undefined) patch.postcode = cleanText(body.postcode, 20);
   if (body.website !== undefined) {
     const v = cleanText(body.website, MAX_TEXT_LENGTH);
