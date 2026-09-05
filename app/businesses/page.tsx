@@ -152,7 +152,7 @@ export default async function MerchantsPage() {
             Get up to 3 months free advertising for your business
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            Kia ora — MegaDeal is the new local deal site that
+            Welcome — MegaDeal is the new local deal site that
             doesn&apos;t take a commission. We&apos;re simply
             advertising. We&apos;re launching in Auckland first, and
             we&apos;d love for you to join us from day one — so
