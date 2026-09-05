@@ -43,7 +43,7 @@ export default function SampleDealCard() {
           <span className="text-xs font-semibold uppercase tracking-wide text-brand-600">
             Beauty &amp; Spa
           </span>
-          <h3 className="line-clamp-2 min-h-[2.75rem] text-sm font-bold text-slate-900">
+          <h3 className="line-clamp-2 text-sm font-bold text-slate-900">
             60-Minute Hot Stone Massage
           </h3>
           <p className="-mt-1 truncate text-xs font-medium text-slate-500">
