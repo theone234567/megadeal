@@ -157,7 +157,7 @@ export default function AdminDashboardPage() {
             tab === "merchants" ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"
           }`}
         >
-          Merchants{pendingMerchants > 0 && ` (${pendingMerchants} pending)`}
+          Businesses{pendingMerchants > 0 && ` (${pendingMerchants} pending)`}
         </button>
         <button
           onClick={() => setTab("deals")}
@@ -184,7 +184,7 @@ export default function AdminDashboardPage() {
           {merchants === null ? (
             <p className="text-sm text-slate-400">Loading…</p>
           ) : merchants.length === 0 ? (
-            <p className="text-sm text-slate-500">No merchant applications yet.</p>
+            <p className="text-sm text-slate-500">No business applications yet.</p>
           ) : (
             <>
               <input
@@ -195,7 +195,7 @@ export default function AdminDashboardPage() {
                 className="mb-4 w-full max-w-sm rounded-full border border-slate-200 px-4 py-2 text-sm outline-none focus:border-brand-400"
               />
               {filteredMerchants && filteredMerchants.length === 0 ? (
-                <p className="text-sm text-slate-500">No merchants match &quot;{merchantSearch}&quot;.</p>
+                <p className="text-sm text-slate-500">No businesses match &quot;{merchantSearch}&quot;.</p>
               ) : (
                 <table className="w-full min-w-[720px] text-left text-sm">
                   <thead>
@@ -234,7 +234,7 @@ export default function AdminDashboardPage() {
                   type="search"
                   value={dealSearch}
                   onChange={(e) => setDealSearch(e.target.value)}
-                  placeholder="Search by deal name or merchant email…"
+                  placeholder="Search by deal name or business email…"
                   className="w-full max-w-sm rounded-full border border-slate-200 px-4 py-2 text-sm outline-none focus:border-brand-400"
                 />
                 {pendingDeals > 0 && (
@@ -256,7 +256,7 @@ export default function AdminDashboardPage() {
                   <thead>
                     <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
                       <th className="pb-2 pr-4">Deal</th>
-                      <th className="pb-2 pr-4">Merchant email</th>
+                      <th className="pb-2 pr-4">Business email</th>
                       <th className="pb-2 pr-4">Expires</th>
                       <th className="pb-2 pr-4">Status</th>
                       <th className="pb-2">Save</th>

@@ -30,6 +30,10 @@ export interface AdminMerchant {
   reviewCount?: number | null;
   referralCode?: string;
   referredBy?: string;
+  referralRewarded?: boolean;
+  promoRewarded?: boolean;
+  notifyReferralBonus?: boolean;
+  website?: string;
   contactName?: string;
   contactPhone?: string;
   legalBusinessName?: string;
@@ -58,7 +62,8 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
 
   const hasProfileDetails =
     merchant.bio || merchant.businessHours || merchant.bookingUrl || merchant.bookingEmail ||
-    merchant.facebookUrl || merchant.instagramUrl || merchant.priceRange || merchant.amenities;
+    merchant.facebookUrl || merchant.instagramUrl || merchant.priceRange || merchant.amenities ||
+    merchant.website;
 
   async function save() {
     setSaving(true);
@@ -101,7 +106,6 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
           type="button"
           onClick={() => setDetailsOpen((v) => !v)}
           className="flex items-center gap-2 text-left"
-          disabled={!hasProfileDetails}
         >
           {merchant.logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -113,7 +117,7 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
           )}
           <div>
             <p className="font-semibold text-slate-800">
-              {merchant.businessName || "—"} {hasProfileDetails && (detailsOpen ? "▲" : "▼")}
+              {merchant.businessName || "—"} {detailsOpen ? "▲" : "▼"}
             </p>
             <p className="text-xs text-slate-400">{merchant.email}</p>
             {merchant.legalBusinessName && (
@@ -216,9 +220,14 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
         ))}
       </td>
     </tr>
-    {detailsOpen && hasProfileDetails && (
+    {detailsOpen && (
       <tr className="border-b border-slate-100 bg-slate-50">
         <td colSpan={7} className="px-4 py-3 text-sm text-slate-600">
+          {!hasProfileDetails && !merchant.referralCode && (
+            <p className="text-xs text-slate-400">
+              No additional profile details submitted.
+            </p>
+          )}
           {(merchant.priceRange || merchant.amenities) && (
             <p className="font-semibold text-slate-800">
               {merchant.priceRange}
@@ -230,10 +239,29 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
           {merchant.businessHours && (
             <p className="mt-1 text-xs text-slate-500">Hours: {merchant.businessHours}</p>
           )}
+          {merchant.website && (
+            <p className="mt-1 text-xs text-slate-500">
+              Website:{" "}
+              <a href={merchant.website} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">
+                {merchant.website}
+              </a>
+            </p>
+          )}
           {merchant.referralCode && (
             <p className="mt-1 text-xs text-slate-500">
               🤝 Referral code: <span className="font-semibold">{merchant.referralCode}</span>
               {merchant.referredBy && ` · Referred by ${merchant.referredBy}`}
+            </p>
+          )}
+          {merchant.couponCode && (merchant.referralRewarded || merchant.promoRewarded) && (
+            <p className="mt-1 text-xs text-green-700">
+              ✓ {merchant.promoRewarded ? "WELCOME3 promo" : "Referral bonus"} already granted on
+              approval — won&apos;t be granted again.
+            </p>
+          )}
+          {merchant.notifyReferralBonus === false && (
+            <p className="mt-1 text-xs text-slate-400">
+              🔕 Opted out of referral-bonus emails
             </p>
           )}
           {(merchant.bookingUrl || merchant.bookingEmail) && (
