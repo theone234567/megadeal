@@ -131,20 +131,24 @@ export default async function MerchantsPage() {
 
         <div className="relative mx-auto max-w-3xl">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
-            🚧 Not live yet — launching soon in NZ
+            🚧 Not live yet — launching in Auckland first
           </span>
 
           <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
             Get up to 3 months free advertising for your business
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            MegaDeal is a new NZ deal platform doing things a little
-            differently — fairer, friendlier, and refreshingly simple:
-            we&apos;re advertising only, so every dollar your customers
-            spend lands straight in your pocket, always. We&apos;re
-            putting the finishing touches on launch, and we&apos;d love
-            for you to be part of the journey from day one — sign up now
-            and be first in front of customers the moment we go live.
+            Hi, I&apos;m Nick — I built MegaDeal because too many great
+            local businesses go unnoticed while an agency or a cut of
+            every sale gets in the way. It&apos;s advertising only, so
+            every dollar your customers spend lands straight in your
+            pocket, always. We&apos;re launching in Auckland first (the
+            rest of NZ to follow) and putting the finishing touches on
+            it right now — sign up today and be part of the journey from
+            day one.
+          </p>
+          <p className="mx-auto mt-2 max-w-xl text-sm font-semibold text-brand-100">
+            — Nick, Founder of MegaDeal
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm font-semibold text-brand-100">
             Perfect for 🍽️ Restaurants, 💆 Spas, 🏋️ Gyms, 🧘 Yoga
