@@ -361,6 +361,51 @@ export default function MerchantsPage() {
         />
       </section>
 
+      {/* A note from the founder — the page's only real trust signal that
+          isn't a claim MegaDeal makes about itself. Placed right before the
+          ask, since a personal note lands hardest at the point of
+          hesitation, not buried earlier where it competes with feature
+          copy. */}
+      <section className="bg-slate-50 px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl">
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
+            <span className="text-3xl">✍️</span>
+            <p className="mt-3 text-lg leading-relaxed text-slate-700">
+              Hi, I&apos;m Nicholas. I started MegaDeal because I kept
+              seeing the same thing all over the place — brilliant local
+              businesses with a quiet Tuesday table, an empty mat, or a
+              treatment room sitting idle, right next to people who
+              would&apos;ve loved to fill it, if they&apos;d only known it
+              was there.
+            </p>
+            <p className="mt-4 leading-relaxed text-slate-600">
+              This isn&apos;t a big corporate marketplace taking a cut of
+              your sales — it&apos;s a small, NZ-run project trying to
+              close that gap honestly. Zero commission isn&apos;t a
+              launch gimmick; it&apos;s the whole point.
+            </p>
+            <p className="mt-4 leading-relaxed text-slate-600">
+              We&apos;re not live yet, so I can&apos;t point you to a
+              hundred happy businesses already on here — you&apos;d be one
+              of the first. I read every application myself, and I&apos;d
+              genuinely love to hear from you if you&apos;ve got questions
+              before you commit to anything.
+            </p>
+            <p className="mt-5 font-semibold text-slate-900">
+              — Nicholas, Founder of MegaDeal
+            </p>
+            <p className="mt-3 text-sm text-slate-500">
+              P.S. If something on this page doesn&apos;t make sense or
+              you&apos;re just not sure yet,{" "}
+              <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
+                get in touch
+              </Link>{" "}
+              — a real reply, not a bot.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Signup */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
