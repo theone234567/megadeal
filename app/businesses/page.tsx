@@ -63,7 +63,7 @@ const FAQS = [
   },
   {
     q: "Do I need a physical storefront?",
-    a: "MegaDeal works best for local businesses with some spare capacity to fill — an off-peak dinner slot, a treatment room between appointments, seats on a tour that isn't full. We're not currently set up for pure online/product retailers (see MegaShop for that) or adult entertainment businesses.",
+    a: "MegaDeal works best for local businesses with some spare capacity to fill — an off-peak dinner slot, a treatment room between appointments, seats on a tour that isn't full. We don't currently accept pure online/e-commerce stores or adult entertainment businesses.",
   },
   {
     q: "How long until my deal goes live?",
@@ -207,12 +207,8 @@ export default async function MerchantsPage() {
             ))}
           </div>
           <p className="mx-auto mt-6 max-w-xl text-xs text-slate-600">
-            We&apos;re not currently set up for pure online/product retailers
-            (see{" "}
-            <Link href="/megashop" className="underline hover:text-slate-800">
-              MegaShop
-            </Link>{" "}
-            for that) or adult entertainment businesses.
+            We don&apos;t currently accept pure online/e-commerce stores
+            or adult entertainment businesses.
           </p>
         </div>
       </section>
