@@ -7,6 +7,11 @@ import StickyApplyBar from "@/components/StickyApplyBar";
 import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { getSignupStats } from "@/lib/publicStats";
+
+// Re-checked at most once a minute — the counts only need to be
+// approximately live, and this avoids hitting Wix on every single request.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "List Your Deal — Advertise Your NZ Business",
@@ -18,8 +23,8 @@ export const metadata: Metadata = {
 const PERKS = [
   {
     emoji: "🤝",
-    title: "Zero commission",
-    text: "Every dollar a customer pays goes straight to you. MegaDeal doesn't touch the payment.",
+    title: "Zero commission, unlike most deal sites",
+    text: "Most deal and delivery platforms take 20-30% of every sale, forever. MegaDeal takes 0% — every dollar a customer pays goes straight to you.",
   },
   {
     emoji: "💳",
@@ -92,7 +97,9 @@ const STEPS = [
   },
 ];
 
-export default function MerchantsPage() {
+export default async function MerchantsPage() {
+  const stats = await getSignupStats();
+
   return (
     <main>
       <StickyApplyBar />
@@ -209,6 +216,44 @@ export default function MerchantsPage() {
         </div>
       </section>
 
+      {/* Cold-start trust — a two-sided marketplace's real question isn't
+          "how do I sign up," it's "will there actually be customers" (and
+          the mirror version of that question for the customer side). Show
+          real counts when they exist rather than a bare claim, and say
+          exactly how the other side gets built before launch instead of
+          just asserting it will — the plan itself always renders, since
+          it's true regardless of whether the live counts loaded. */}
+      <section className="px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-xl font-extrabold text-slate-900 sm:text-2xl">
+            You&apos;re not signing up on a promise alone
+          </h2>
+          {stats && (stats.merchantCount > 0 || stats.waitlistCount > 0) && (
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 rounded-2xl border border-brand-100 bg-brand-50 px-6 py-4">
+              {stats.merchantCount > 0 && (
+                <p className="text-sm font-semibold text-brand-800">
+                  🏪 <span className="font-extrabold">{stats.merchantCount.toLocaleString()}</span> Auckland businesses already signed up
+                </p>
+              )}
+              {stats.waitlistCount > 0 && (
+                <p className="text-sm font-semibold text-brand-800">
+                  📧 <span className="font-extrabold">{stats.waitlistCount.toLocaleString()}</span> locals waiting for launch day
+                </p>
+              )}
+            </div>
+          )}
+          <p className="mx-auto mt-6 max-w-md text-sm font-bold uppercase tracking-wide text-slate-500">
+            Here&apos;s exactly how we bring you customers from day one
+          </p>
+          <ul className="mx-auto mt-3 max-w-md space-y-2 text-left text-sm text-slate-600">
+            <li>📧 A launch email straight to everyone on our waiting list, the moment we go live</li>
+            <li>📍 100% of our launch marketing budget goes into Auckland — not spread thin across the whole country</li>
+            <li>📰 Local press and community outreach in the weeks before launch</li>
+            <li>🎁 Referral incentives for the first customers who redeem a deal, so word spreads fast</li>
+          </ul>
+        </div>
+      </section>
+
       {/* Free advertising offer CTA */}
       <section className="px-4 py-6 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-2xl bg-ember-500 px-6 py-6 text-center shadow-card sm:flex-row sm:text-left">
@@ -220,6 +265,11 @@ export default function MerchantsPage() {
               Enter code <span className="font-bold">WELCOME3</span> when you sign up below.{" "}
               <span className="font-semibold">Conditions apply.</span>
             </p>
+            {stats && stats.merchantCount > 0 && (
+              <p className="mt-1 text-xs font-semibold text-ember-50">
+                {stats.merchantCount.toLocaleString()} Auckland businesses have already claimed this — get in before launch.
+              </p>
+            )}
           </div>
           <a
             href="#signup"
@@ -380,7 +430,8 @@ export default function MerchantsPage() {
               <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
                 get in touch
               </Link>{" "}
-              — a real reply, not a bot.
+              — a real reply, not a bot. Happy to jump on a call first if
+              that&apos;s easier; just say so in your message.
             </p>
           </div>
         </div>
