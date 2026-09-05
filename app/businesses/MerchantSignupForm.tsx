@@ -522,7 +522,7 @@ export default function MerchantSignupForm() {
         >
           {submitting ? "Submitting…" : "Start listing for free →"}
         </button>
-        <p className="text-xs text-slate-500">💳 No credit card required.</p>
+        <p className="text-xs text-slate-500">💳 No credit card required to apply.</p>
 
         <p className="text-center text-sm text-slate-500 sm:text-left">
           Already applied?{" "}

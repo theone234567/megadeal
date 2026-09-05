@@ -138,16 +138,17 @@ export default async function MerchantsPage() {
             Get up to 3 months free advertising for your business
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            MegaDeal is a new NZ deal platform that works differently:
-            fairer, because we never take a commission — it&apos;s
-            advertising only, so every dollar your customers pay goes
-            straight to you. We&apos;re putting the finishing touches on
-            launch, so sign up now and be first in front of customers
-            the moment we go live.
+            MegaDeal is a new NZ deal platform doing things a little
+            differently — fairer, friendlier, and refreshingly simple:
+            we&apos;re advertising only, so every dollar your customers
+            spend lands straight in your pocket, always. We&apos;re
+            putting the finishing touches on launch, and we&apos;d love
+            for you to be part of the journey from day one — sign up now
+            and be first in front of customers the moment we go live.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm font-semibold text-brand-100">
-            Perfect for 🍽️ restaurants, 💆 spas, 🏋️ gyms, 🧘 yoga
-            studios, 🚐 tours &amp; 🏨 getaways
+            Perfect for 🍽️ Restaurants, 💆 Spas, 🏋️ Gyms, 🧘 Yoga
+            studios, 🚐 Tours &amp; 🏨 Getaways
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -169,7 +170,7 @@ export default async function MerchantsPage() {
             <span>🎁 Up to 3 months free</span>
             <span>🤝 0% commission</span>
             <span>🔓 No lock-in</span>
-            <span>💳 No credit card required</span>
+            <span>💳 No credit card to apply</span>
           </div>
         </div>
       </section>
