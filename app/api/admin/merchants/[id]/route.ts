@@ -12,6 +12,9 @@ import { isValidNzbnFormat } from "@/lib/nzbn";
 const ALLOWED_STATUSES = ["Pending", "Approved", "Suspended"];
 const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
 const MAX_TEXT_LENGTH = 300;
+// See apply/route.ts — businessHours is a structured-hours JSON blob, not
+// a single-line field, so it needs its own generous length cap.
+const MAX_BUSINESS_HOURS_LENGTH = 4000;
 const MAX_BIO_LENGTH = 600;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -199,7 +202,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     patch.website = v;
   }
   if (body.bio !== undefined) patch.bio = cleanText(body.bio, MAX_BIO_LENGTH);
-  if (body.businessHours !== undefined) patch.businessHours = cleanText(body.businessHours, MAX_TEXT_LENGTH);
+  if (body.businessHours !== undefined) patch.businessHours = cleanText(body.businessHours, MAX_BUSINESS_HOURS_LENGTH);
   if (body.bookingUrl !== undefined) {
     const v = cleanText(body.bookingUrl, MAX_TEXT_LENGTH);
     if (!isSafeOptionalUrl(v)) {

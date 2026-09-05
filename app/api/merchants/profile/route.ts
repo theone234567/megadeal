@@ -6,6 +6,9 @@ import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat } from "@/lib/nzbn";
 
 const MAX_TEXT_LENGTH = 300;
+// See apply/route.ts — businessHours is a structured-hours JSON blob, not
+// a single-line field, so it needs its own generous length cap.
+const MAX_BUSINESS_HOURS_LENGTH = 4000;
 const MAX_BIO_LENGTH = 600;
 const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -117,7 +120,7 @@ export async function POST(req: NextRequest) {
     city,
     postcode: cleanText(body.postcode, 20),
     bio: cleanText(body.bio, MAX_BIO_LENGTH),
-    businessHours: cleanText(body.businessHours, MAX_TEXT_LENGTH),
+    businessHours: cleanText(body.businessHours, MAX_BUSINESS_HOURS_LENGTH),
     bookingUrl,
     bookingEmail,
     facebookUrl,

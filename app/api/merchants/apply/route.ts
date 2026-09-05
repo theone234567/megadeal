@@ -11,6 +11,11 @@ import { isValidNzbnFormat } from "@/lib/nzbn";
 import { escapeHtml } from "@/lib/escapeHtml";
 
 const MAX_TEXT_LENGTH = 300;
+// businessHours holds a serialized structured-hours JSON blob (7 days,
+// each with any number of time ranges, plus a notes string) — far longer
+// than a normal single-line field, so it gets its own generous cap rather
+// than MAX_TEXT_LENGTH silently truncating it into invalid JSON.
+const MAX_BUSINESS_HOURS_LENGTH = 4000;
 const MAX_BIO_LENGTH = 600;
 const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
 
@@ -158,7 +163,7 @@ export async function POST(req: NextRequest) {
       postcode: cleanText(body.postcode, 20),
       website,
       bio: cleanText(body.bio, MAX_BIO_LENGTH),
-      businessHours: cleanText(body.businessHours, MAX_TEXT_LENGTH),
+      businessHours: cleanText(body.businessHours, MAX_BUSINESS_HOURS_LENGTH),
       bookingUrl,
       bookingEmail,
       facebookUrl,
