@@ -4,9 +4,9 @@ import SocialLinks from "@/components/SocialLinks";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 
-const TITLE = "MegaDeal is Coming Soon — NZ Local Deals & Free Business Advertising";
+const TITLE = "MegaDeal is Coming Soon — NZ Local Deals & Free Advertising";
 const DESCRIPTION =
-  "MegaDeal is a proudly Kiwi-owned deals platform launching soon in New Zealand. Customers save up to 70% direct from local businesses; businesses advertise commission-free and keep every dollar. Sign up now for launch-week perks.";
+  "MegaDeal is a Kiwi-owned deals platform launching soon in NZ. Save up to 70% direct from local businesses — advertise commission-free and keep every dollar.";
 
 export const metadata: Metadata = {
   title: TITLE,

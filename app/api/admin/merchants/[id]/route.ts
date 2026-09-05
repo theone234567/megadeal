@@ -7,7 +7,7 @@ import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
-import { isValidNzbnFormat } from "@/lib/nzbn";
+import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 
 const ALLOWED_STATUSES = ["Pending", "Approved", "Suspended"];
 const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
@@ -184,7 +184,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     patch.contactPhone = v;
   }
   if (body.nzbn !== undefined) {
-    const v = cleanText(body.nzbn, 13);
+    const v = normalizeNzbn(body.nzbn);
     if (!isValidNzbnFormat(v)) {
       return NextResponse.json({ error: "NZBN must be 13 digits." }, { status: 400 });
     }

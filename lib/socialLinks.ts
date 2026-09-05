@@ -5,12 +5,16 @@ const SOCIAL_HOST_PATTERNS: Record<"facebook" | "instagram", RegExp> = {
 
 /** True for an empty string (both fields are optional) or a URL whose host
  * actually matches the given platform — stops a merchant pasting an
- * unrelated link into the Facebook/Instagram field, by accident or not. */
+ * unrelated link into the Facebook/Instagram field, by accident or not.
+ * Same "assume https if no scheme was typed" convention as
+ * isSafeOptionalUrl below, since people very often paste
+ * "facebook.com/yourbusiness" without a leading https://. */
 export function isValidSocialUrl(url: string, platform: "facebook" | "instagram"): boolean {
   if (!url) return true;
+  const candidate = /^https?:\/\//i.test(url) ? url : `https://${url}`;
   let parsed: URL;
   try {
-    parsed = new URL(url);
+    parsed = new URL(candidate);
   } catch {
     return false;
   }

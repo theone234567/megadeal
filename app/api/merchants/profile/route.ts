@@ -3,7 +3,7 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
-import { isValidNzbnFormat } from "@/lib/nzbn";
+import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 
 const MAX_TEXT_LENGTH = 300;
 // See apply/route.ts — businessHours is a structured-hours JSON blob, not
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  const nzbn = cleanText(body.nzbn, 13);
+  const nzbn = normalizeNzbn(body.nzbn);
   if (!isValidNzbnFormat(nzbn)) {
     return NextResponse.json({ error: "NZBN must be 13 digits." }, { status: 400 });
   }

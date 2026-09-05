@@ -8,7 +8,7 @@ import { SITE_URL } from "@/lib/siteConfig";
 export const metadata: Metadata = {
   title: "List Your Deal — Advertise Your NZ Business",
   description:
-    "Be one of the first businesses on MegaDeal when we launch. No lock-in contracts, zero commission, and a limited-time free advertising offer for new businesses.",
+    "Be one of the first businesses on MegaDeal. No lock-in contracts, zero commission, and a limited-time free advertising offer for new NZ businesses.",
   alternates: { canonical: `${SITE_URL}/businesses` },
 };
 
@@ -126,7 +126,7 @@ export default function MerchantsPage() {
       </section>
 
       {/* Preview mockup */}
-      <section id="preview" className="scroll-mt-36 px-4 py-16 sm:px-6 lg:px-8">
+      <section id="preview" className="scroll-mt-[140px] px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <div className="text-center">
             <span className="text-xs font-bold uppercase tracking-wide text-brand-600">

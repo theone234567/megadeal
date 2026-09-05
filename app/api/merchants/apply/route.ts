@@ -7,7 +7,7 @@ import { addResendContact } from "@/lib/resendAudience";
 import { SITE_URL } from "@/lib/siteConfig";
 import { generateReferralCode } from "@/lib/referral";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
-import { isValidNzbnFormat } from "@/lib/nzbn";
+import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { escapeHtml } from "@/lib/escapeHtml";
 
 const MAX_TEXT_LENGTH = 300;
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const nzbn = cleanText(body.nzbn, 13);
+  const nzbn = normalizeNzbn(body.nzbn);
   if (!isValidNzbnFormat(nzbn)) {
     return NextResponse.json({ error: "NZBN must be 13 digits." }, { status: 400 });
   }
