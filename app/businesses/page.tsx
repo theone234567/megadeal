@@ -167,31 +167,12 @@ export default function MerchantsPage() {
         </div>
       </section>
 
-      {/* Free advertising offer CTA */}
-      <section className="px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-2xl bg-ember-500 px-6 py-6 text-center shadow-card sm:flex-row sm:text-left">
-          <div className="flex-1">
-            <p className="text-lg font-extrabold text-white sm:text-xl">
-              🎁 Get up to 3 months free advertising
-            </p>
-            <p className="mt-1 text-sm text-ember-50">
-              Enter code <span className="font-bold">WELCOME3</span> when you sign up below.{" "}
-              <span className="font-semibold">Conditions apply.</span>
-            </p>
-          </div>
-          <a
-            href="#signup"
-            className="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-bold text-ember-600 shadow-card transition active:scale-95 hover:bg-ember-50"
-          >
-            Claim your free advertising →
-          </a>
-        </div>
-      </section>
-
-      {/* Fit — moved up from below "How it works" so a visitor confirms
-          "this is built for me" while first forming an impression, using
-          concrete per-type hooks rather than the compact hero one-liner
-          alone, before urgency/preview/perks copy competes for attention. */}
+      {/* Fit — comes right after the hero so a visitor confirms "this is
+          built for me" before anything else, using concrete per-type hooks
+          rather than the compact hero one-liner alone. Sits ahead of the
+          offer banner below on purpose: repeating the exact same "3 months
+          free" pitch the hero just made, before establishing relevance,
+          read as repetitive rather than persuasive. */}
       <section className="bg-brand-50 px-4 py-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-xl font-extrabold text-slate-900 sm:text-2xl">
@@ -225,6 +206,27 @@ export default function MerchantsPage() {
             </Link>{" "}
             for that) or adult entertainment businesses.
           </p>
+        </div>
+      </section>
+
+      {/* Free advertising offer CTA */}
+      <section className="px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 rounded-2xl bg-ember-500 px-6 py-6 text-center shadow-card sm:flex-row sm:text-left">
+          <div className="flex-1">
+            <p className="text-lg font-extrabold text-white sm:text-xl">
+              🎁 Get up to 3 months free advertising
+            </p>
+            <p className="mt-1 text-sm text-ember-50">
+              Enter code <span className="font-bold">WELCOME3</span> when you sign up below.{" "}
+              <span className="font-semibold">Conditions apply.</span>
+            </p>
+          </div>
+          <a
+            href="#signup"
+            className="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-bold text-ember-600 shadow-card transition active:scale-95 hover:bg-ember-50"
+          >
+            Claim your free advertising →
+          </a>
         </div>
       </section>
 
