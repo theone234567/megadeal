@@ -106,7 +106,7 @@ export default function EmailCapturePopup() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-3 right-3 z-40 w-[calc(100vw-1.5rem)] max-w-[220px] animate-slide-up rounded-xl border border-t-4 border-slate-100 border-t-brand-600 bg-white p-2.5 shadow-card sm:right-4 sm:bottom-4">
+    <div className="fixed bottom-3 right-3 z-40 w-[calc(100vw-1.5rem)] max-w-xs animate-slide-up rounded-xl border border-t-4 border-slate-100 border-t-brand-600 bg-white p-3.5 shadow-card sm:right-4 sm:bottom-4">
       <button
         onClick={dismiss}
         aria-label="Dismiss"
@@ -122,6 +122,7 @@ export default function EmailCapturePopup() {
           buttonLabel="Join"
           accent="brand"
           surface="plain"
+          layout="stacked"
         />
       </div>
     </div>

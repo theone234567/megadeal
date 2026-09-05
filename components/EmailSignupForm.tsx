@@ -17,6 +17,11 @@ interface EmailSignupFormProps {
    *  form sits in a left-aligned card/column, where centering just this
    *  one row would look wrong instead of right. */
   center?: boolean;
+  /** "row" (default) puts the input and button side by side — fine in a
+   *  wide card, but in a narrow container (the corner popup) it squeezes
+   *  the input down to where a real email address scrolls out of view
+   *  while typing. "stacked" gives the input the full row to itself. */
+  layout?: "row" | "stacked";
 }
 
 export default function EmailSignupForm({
@@ -27,6 +32,7 @@ export default function EmailSignupForm({
   accent = "brand",
   surface = "onColor",
   center = false,
+  layout = "row",
 }: EmailSignupFormProps) {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
@@ -95,7 +101,7 @@ export default function EmailSignupForm({
   return (
     <div>
       <form onSubmit={handleSubmit} className="w-full max-w-md">
-        <div className="flex gap-2">
+        <div className={layout === "stacked" ? "flex flex-col gap-2" : "flex gap-2"}>
           <input
             type="email"
             required
@@ -107,7 +113,9 @@ export default function EmailSignupForm({
           <button
             type="submit"
             disabled={state === "saving" || !consent}
-            className={`shrink-0 rounded-full px-5 py-3 text-sm font-bold text-white shadow-card transition active:scale-95 disabled:opacity-60 ${buttonClass}`}
+            className={`rounded-full px-5 py-3 text-sm font-bold text-white shadow-card transition active:scale-95 disabled:opacity-60 ${
+              layout === "stacked" ? "w-full" : "shrink-0"
+            } ${buttonClass}`}
           >
             {state === "saving" ? "Joining…" : buttonLabel}
           </button>
