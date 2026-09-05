@@ -15,10 +15,13 @@ declare global {
 
 /**
  * Loads Google Analytics 4 site-wide, only when
- * NEXT_PUBLIC_GA_MEASUREMENT_ID is configured — set it as a Cloudflare
- * Worker runtime variable once there's a real Measurement ID from
- * analytics.google.com (Admin -> Data Streams -> Web). Absent that var,
- * this renders nothing and costs nothing.
+ * NEXT_PUBLIC_GA_MEASUREMENT_ID is configured. Since this is a NEXT_PUBLIC_
+ * var, Next.js inlines it at build time — it has to be set as a build
+ * environment variable (Cloudflare dashboard -> Workers & Pages -> this
+ * Worker -> Settings -> Builds -> Environment variables), not the runtime
+ * "Variables and Secrets" on the Bindings tab, which only affects values
+ * read at request time. Absent that var, this renders nothing and costs
+ * nothing.
  *
  * No custom events needed for the location/traffic-source question — GA4
  * captures country/city (via IP, aggregated in reports) and referrer/

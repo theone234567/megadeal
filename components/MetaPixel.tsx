@@ -8,10 +8,12 @@ const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 /**
  * Loads the Meta (Facebook) Pixel base code site-wide, only when
- * NEXT_PUBLIC_META_PIXEL_ID is configured — set it as a Cloudflare Worker
- * runtime variable once there's a real pixel id from Facebook Events
- * Manager (Business Manager -> Events Manager -> Connect a data source ->
- * Web). Absent that var, this renders nothing and costs nothing.
+ * NEXT_PUBLIC_META_PIXEL_ID is configured. Since this is a NEXT_PUBLIC_
+ * var, Next.js inlines it at build time — it has to be set as a build
+ * environment variable (Cloudflare dashboard -> Workers & Pages -> this
+ * Worker -> Settings -> Builds -> Environment variables), not the runtime
+ * "Variables and Secrets" on the Bindings tab. Absent that var, this
+ * renders nothing and costs nothing.
  *
  * Fires PageView on first load and again on every client-side route
  * change, since Next.js App Router navigation doesn't reload the page
