@@ -37,12 +37,12 @@ const PERKS = [
 ];
 
 const BUSINESS_TYPES = [
-  "🍽️ Restaurants & cafes",
-  "💆 Spas & beauty",
-  "🏋️ Gyms & fitness studios",
-  "🧘 Yoga & pilates",
-  "🚐 Tours & activities",
-  "🏨 Getaways & stays",
+  { emoji: "🍽️", label: "Restaurants & cafes", hook: "Turn a quiet Tuesday into a full house" },
+  { emoji: "💆", label: "Spas & beauty", hook: "Book out every treatment room, every week" },
+  { emoji: "🏋️", label: "Gyms & fitness studios", hook: "Pack out your off-peak classes" },
+  { emoji: "🧘", label: "Yoga & pilates", hook: "Fill every mat, not just the popular slots" },
+  { emoji: "🚐", label: "Tours & activities", hook: "Sell the seats that would've gone empty" },
+  { emoji: "🏨", label: "Getaways & stays", hook: "Fill your rooms on the nights that need it" },
 ];
 
 const FAQS = [
@@ -247,27 +247,31 @@ export default function MerchantsPage() {
 
       {/* Fit + pricing */}
       <section className="bg-brand-50 px-4 py-14 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-xl font-extrabold text-slate-900 sm:text-2xl">
-            Who it&apos;s a good fit for
+            Got a quiet Tuesday, an empty mat, or a room going spare?
           </h2>
-          <p className="mt-2 text-slate-600">
-            MegaDeal works best for local businesses with some spare capacity to
-            fill — an off-peak dinner slot, a treatment room between
-            appointments, seats on a tour that isn&apos;t full. If that
-            sounds like you, we&apos;d love to hear from you.
+          <p className="mx-auto mt-2 max-w-2xl text-slate-600">
+            That&apos;s exactly who MegaDeal is built for. Any spare capacity
+            you&apos;ve got — an off-peak table, a treatment room between
+            appointments, seats on a tour that never quite fills — is
+            someone else&apos;s perfect excuse to say yes. Put it in front of
+            them.
           </p>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {BUSINESS_TYPES.map((t) => (
-              <span
-                key={t}
-                className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm"
+              <div
+                key={t.label}
+                className="rounded-2xl bg-white p-4 text-left shadow-sm"
               >
-                {t}
-              </span>
+                <span className="text-lg">
+                  {t.emoji} {t.label}
+                </span>
+                <p className="mt-1 text-sm text-slate-500">{t.hook}</p>
+              </div>
             ))}
           </div>
-          <p className="mx-auto mt-4 max-w-xl text-xs text-slate-500">
+          <p className="mx-auto mt-6 max-w-xl text-xs text-slate-500">
             We&apos;re not currently set up for pure online/product retailers
             (see{" "}
             <Link href="/megashop" className="underline hover:text-slate-700">
