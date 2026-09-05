@@ -152,10 +152,8 @@ export default async function MerchantsPage() {
             Get up to 3 months free advertising for your business
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            Hi, I&apos;m Nick — I built MegaDeal because too many great
-            local businesses go unnoticed while an agency or a cut of
-            every sale gets in the way. MegaDeal is the new local deal
-            site that doesn&apos;t take a commission — we&apos;re simply
+            Kia ora — MegaDeal is the new local deal site that
+            doesn&apos;t take a commission. We&apos;re simply
             advertising. We&apos;re launching in Auckland first, and
             we&apos;d love for you to join us from day one — so
             we&apos;re giving early businesses up to 3 months free
