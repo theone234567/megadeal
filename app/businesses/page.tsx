@@ -153,11 +153,12 @@ export default async function MerchantsPage() {
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
             Welcome — MegaDeal is the new local deal site that
-            doesn&apos;t take a commission. We&apos;re simply
-            advertising. We&apos;re launching in Auckland first, and
-            we&apos;d love for you to join us from day one — so
-            we&apos;re giving early businesses up to 3 months free
-            advertising. Conditions apply.
+            doesn&apos;t take a commission, so you keep more of your
+            hard-earned money. We&apos;re simply advertising.
+            We&apos;re launching in Auckland first, and we&apos;d love
+            for you to join us from day one — so we&apos;re giving
+            early businesses up to 3 months free advertising.
+            Conditions apply.
           </p>
           <p className="mx-auto mt-2 max-w-xl text-sm font-semibold text-brand-100">
             — Nick, Founder of MegaDeal
