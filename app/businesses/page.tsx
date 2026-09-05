@@ -8,7 +8,7 @@ import { SITE_URL } from "@/lib/siteConfig";
 export const metadata: Metadata = {
   title: "List Your Deal — Advertise Your NZ Business",
   description:
-    "Reach thousands of local customers with a deal on MegaDeal. No lock-in contracts, zero commission, and a limited-time free advertising offer for new businesses.",
+    "Be one of the first businesses on MegaDeal when we launch. No lock-in contracts, zero commission, and a limited-time free advertising offer for new businesses.",
   alternates: { canonical: `${SITE_URL}/businesses` },
 };
 
@@ -58,7 +58,7 @@ const STEPS = [
   {
     number: "3",
     title: "Customers contact you directly",
-    text: "Your deal goes live to thousands of locals. They redeem it by booking or visiting you — you keep every dollar.",
+    text: "Your deal goes live the moment we launch. Customers redeem it by booking or visiting you — you keep every dollar.",
   },
 ];
 
@@ -72,12 +72,13 @@ export default function MerchantsPage() {
 
         <div className="relative mx-auto max-w-3xl">
           <h1 className="text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
-            Get your business in front of thousands of local customers
+            Be one of the first businesses on MegaDeal when we launch
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
             MegaDeal is advertising, not a marketplace — zero commission.
-            You set the offer, we bring the customers, and you get
-            paid in full, direct.
+            We&apos;re building the audience — get your deal ready now so
+            you&apos;re first in front of customers the moment we launch,
+            and you get paid in full, direct.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
