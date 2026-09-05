@@ -41,6 +41,11 @@ const PERKS = [
     title: "No lock-in contracts",
     text: "Pause, update or cancel your deal whenever suits your business — no minimum term.",
   },
+  {
+    emoji: "📍",
+    title: "Found by customers nearby",
+    text: "Customers can sort deals by \"Nearest to me\" — set an accurate pin on the map when you sign up, and you'll show up first for the people closest to you.",
+  },
 ];
 
 const BUSINESS_TYPES = [
@@ -165,10 +170,10 @@ export default async function MerchantsPage() {
             early businesses up to 3 months free advertising.
             Conditions apply.
           </p>
-          <p className="mx-auto mt-2 max-w-xl text-sm font-semibold text-brand-100">
+          <p className="mx-auto mt-3 max-w-xl text-sm italic text-brand-100/90">
             — Nick, Founder of MegaDeal
           </p>
-          <p className="mx-auto mt-3 max-w-xl text-sm font-semibold text-brand-100">
+          <p className="mx-auto mt-6 max-w-xl text-sm font-semibold text-brand-100">
             Perfect for 🍽️ Restaurants, 💆 Spas, 🏋️ Gyms, 🧘 Yoga
             studios, 🚐 Tours &amp; 🏨 Getaways
           </p>
@@ -242,29 +247,29 @@ export default async function MerchantsPage() {
           exactly how the other side gets built before launch instead of
           just asserting it will — the plan itself always renders, since
           it's true regardless of whether the live counts loaded. */}
-      <section className="px-4 py-10 sm:px-6 lg:px-8">
+      <section className="px-4 py-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-xl font-extrabold text-slate-900 sm:text-2xl">
+          <h2 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
             You&apos;re not signing up on a promise alone
           </h2>
           {stats && (stats.merchantCount > 0 || stats.waitlistCount > 0) && (
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 rounded-2xl border border-brand-100 bg-brand-50 px-6 py-4">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 rounded-2xl border border-brand-100 bg-brand-50 px-6 py-5">
               {stats.merchantCount > 0 && (
-                <p className="text-sm font-semibold text-brand-800">
+                <p className="text-base font-semibold text-brand-800">
                   🏪 <span className="font-extrabold">{stats.merchantCount.toLocaleString()}</span> Auckland businesses already signed up
                 </p>
               )}
               {stats.waitlistCount > 0 && (
-                <p className="text-sm font-semibold text-brand-800">
+                <p className="text-base font-semibold text-brand-800">
                   📧 <span className="font-extrabold">{stats.waitlistCount.toLocaleString()}</span> locals waiting for launch day
                 </p>
               )}
             </div>
           )}
-          <p className="mx-auto mt-6 max-w-md text-sm font-bold uppercase tracking-wide text-slate-500">
+          <p className="mx-auto mt-8 max-w-xl text-sm font-bold uppercase tracking-wide text-slate-500">
             Here&apos;s exactly how we bring you customers from day one
           </p>
-          <ul className="mx-auto mt-3 max-w-md space-y-2 text-left text-sm text-slate-600">
+          <ul className="mx-auto mt-4 max-w-xl space-y-3 text-left text-base text-slate-600">
             <li>📱 A serious TikTok, Facebook &amp; Instagram ad push, aimed squarely at Auckland in the run-up to launch</li>
             <li>📧 A launch email straight to everyone on our waiting list, the moment we go live</li>
             <li>📍 100% of our launch marketing budget goes into Auckland — not spread thin across the whole country</li>
