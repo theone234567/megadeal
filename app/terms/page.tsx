@@ -77,6 +77,14 @@ export default function TermsPage() {
         the business of honouring any redemption or booking a customer
         already made in good faith before that point.
       </p>
+      <p>
+        Advertising credits have no cash value and can&apos;t be sold,
+        transferred or exchanged for a refund. We may correct or adjust a
+        business&apos;s credit balance where it&apos;s wrong because of a
+        system error, technical fault, or a mistake in applying these
+        terms — for example, reversing credits granted in error, or
+        crediting back an amount that was incorrectly deducted.
+      </p>
 
       <h2>4. Accuracy of listings</h2>
       <p>
@@ -149,14 +157,16 @@ export default function TermsPage() {
         suspect fraud, abuse, or that the referral wasn&apos;t genuine.
       </p>
 
-      <h2>10. Suspending or removing a listing or account</h2>
+      <h2>10. Declining, suspending or cancelling a business or listing</h2>
       <p>
-        We review new businesses and deals before they go live, and we may
-        refuse, edit the presentation of, suspend or remove any listing —
-        or suspend or terminate an account — at any time, including where a
-        listing appears inaccurate, misleading, unlawful, or otherwise
-        breaches these terms. Where reasonably practicable we&apos;ll let the
-        business know why.
+        We review new business applications and deals before they go live,
+        and we may decline any application, or refuse, edit the
+        presentation of, suspend, cancel or remove any listing — or
+        suspend, cancel or terminate an account — at any time and at our
+        discretion, including where an application or listing appears
+        inaccurate, misleading, unlawful, or otherwise breaches these
+        terms. Where reasonably practicable we&apos;ll let the business know
+        why.
       </p>
 
       <h2>11. Disclaimers and liability</h2>
