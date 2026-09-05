@@ -138,10 +138,10 @@ export default function ComingSoonPage() {
                 🎁 Founding businesses get up to 3 months free advertising
               </h3>
               <p className="mx-auto mt-2 max-w-xl text-sm text-ember-50">
-                Be one of the first businesses live on MegaDeal and get priority
-                placement when we launch — use code{" "}
+                Sign up now and get priority placement when we launch — use
+                code{" "}
                 <span className="rounded-full bg-white/20 px-2 py-0.5 tracking-wide">
-                  MEGA3
+                  WELCOME3
                 </span>{" "}
                 at sign-up. Conditions apply.
               </p>
@@ -158,7 +158,7 @@ export default function ComingSoonPage() {
                   Not ready yet? Get notified at launch instead
                 </p>
                 <div className="relative mt-3">
-                  <EmailSignupForm audience="merchant" buttonLabel="Notify me" accent="brand" />
+                  <EmailSignupForm audience="merchant" buttonLabel="Notify me" accent="brand" center />
                 </div>
               </div>
               <div className="mt-8 border-t border-white/20 pt-6">
@@ -251,6 +251,7 @@ export default function ComingSoonPage() {
                 audience="customer"
                 buttonLabel="Notify me"
                 accent="brand"
+                surface="plain"
               />
             </div>
             {SITE_LAUNCHED && (

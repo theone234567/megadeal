@@ -12,6 +12,11 @@ interface EmailSignupFormProps {
   /** "onColor" (default) is for a colored/dark background (e.g. a gradient hero);
    * "plain" is for an ordinary light background (e.g. the footer). */
   surface?: "onColor" | "plain";
+  /** Centers the consent checkbox + text as a block, for use inside an
+   *  already text-centered layout (e.g. a hero CTA) — everywhere else the
+   *  form sits in a left-aligned card/column, where centering just this
+   *  one row would look wrong instead of right. */
+  center?: boolean;
 }
 
 export default function EmailSignupForm({
@@ -21,6 +26,7 @@ export default function EmailSignupForm({
   buttonLabel = "Count me in",
   accent = "brand",
   surface = "onColor",
+  center = false,
 }: EmailSignupFormProps) {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
@@ -106,7 +112,11 @@ export default function EmailSignupForm({
             {state === "saving" ? "Joining…" : buttonLabel}
           </button>
         </div>
-        <label className={`mt-2 flex items-start gap-2 text-xs ${mutedTextClass}`}>
+        <label
+          className={`mt-2 flex items-start gap-2 text-xs ${
+            center ? "mx-auto max-w-xl" : ""
+          } ${mutedTextClass}`}
+        >
           <input
             type="checkbox"
             required
