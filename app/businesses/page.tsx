@@ -121,14 +121,23 @@ export default function MerchantsPage() {
         <div className="pointer-events-none absolute -bottom-24 -right-10 h-80 w-80 rounded-full bg-ember-300/20 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl">
-          <h1 className="text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+            🚧 Not live yet — launching soon in NZ
+          </span>
+
+          <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
             Get up to 3 months free advertising for your business
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            MegaDeal is advertising, not a marketplace — zero commission.
-            Sign up now, get your deal ready, and you&apos;re first in
-            front of customers the moment we launch — paid in full,
-            direct.
+            MegaDeal is a new NZ advertising platform, not a marketplace —
+            zero commission, ever. We&apos;re putting the finishing
+            touches on launch, so sign up now to get your listing ready
+            and be first in front of customers the moment we go live —
+            paid in full, direct.
+          </p>
+          <p className="mx-auto mt-3 max-w-xl text-sm font-semibold text-brand-100">
+            Perfect for restaurants, spas, gyms, yoga studios, tours &amp;
+            getaways
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -152,11 +161,6 @@ export default function MerchantsPage() {
             <span>🔓 No lock-in</span>
             <span>💳 No credit card required</span>
           </div>
-
-          <p className="mt-4 text-sm text-brand-100">
-            Perfect for restaurants, spas, gyms, yoga studios, tours &amp;
-            getaways
-          </p>
         </div>
       </section>
 
