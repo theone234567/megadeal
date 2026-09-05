@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import MetaPixel from "@/components/MetaPixel";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import EmailCapturePopup from "@/components/EmailCapturePopup";
+import { SOCIAL_URLS } from "@/components/SocialLinks";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
@@ -66,6 +67,9 @@ export default function RootLayout({
               url: SITE_URL,
               description: SITE_DESCRIPTION,
               areaServed: { "@type": "Country", name: "New Zealand" },
+              // Ties the brand's social profiles to this entity for Google —
+              // one of the standard signals behind a Knowledge Panel.
+              sameAs: SOCIAL_URLS,
             }),
           }}
         />

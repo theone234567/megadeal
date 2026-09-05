@@ -1,3 +1,11 @@
+// Exported so the homepage's Organization JSON-LD (app/layout.tsx) can list
+// these as `sameAs` without hardcoding a second, driftable copy of the URLs.
+export const SOCIAL_URLS = [
+  "https://www.facebook.com/megadealnz/",
+  "https://instagram.com/megadealnz",
+  "https://tiktok.com/@megadealnz",
+];
+
 const SOCIALS = [
   {
     name: "Facebook",
