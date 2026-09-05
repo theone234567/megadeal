@@ -380,8 +380,7 @@ export default function MerchantSignupForm() {
                 <input
                   name="couponCode"
                   type="text"
-                  defaultValue={referralPrefill}
-                  placeholder="e.g. MD1A2B3C or WELCOME3"
+                  defaultValue={referralPrefill || "WELCOME3"}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
                 />
               </div>
