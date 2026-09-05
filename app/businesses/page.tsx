@@ -46,6 +46,11 @@ const PERKS = [
     title: "Found by customers nearby",
     text: "Customers can sort deals by \"Nearest to me\" — set an accurate pin on the map when you sign up, and you'll show up first for the people closest to you.",
   },
+  {
+    emoji: "🔥",
+    title: "Flash Deals for last-minute capacity",
+    text: "A quiet afternoon just opened up? Run a short-burst Flash Deal — 30 minutes to a few hours — instead of waiting on a long-running listing to fill it.",
+  },
 ];
 
 const BUSINESS_TYPES = [
