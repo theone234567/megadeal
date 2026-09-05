@@ -100,8 +100,16 @@ const STEPS = [
   },
 ];
 
+// Toggle the live signup counter (and the offer-banner scarcity line
+// that reuses it) off while the real numbers are still too low to be
+// worth showing — a low count undercuts the trust it's meant to build
+// more than showing nothing at all. Flip back to true once there's a
+// credible number of real businesses signed up; nothing else needs to
+// change, since both call sites already null-check `stats`.
+const SHOW_SIGNUP_STATS = false;
+
 export default async function MerchantsPage() {
-  const stats = await getSignupStats();
+  const stats = SHOW_SIGNUP_STATS ? await getSignupStats() : null;
 
   return (
     <main>
