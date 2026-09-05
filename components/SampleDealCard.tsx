@@ -20,9 +20,11 @@ export default function SampleDealCard() {
         <span className="absolute left-2 top-2 z-10 rounded-full bg-slate-900/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
           Sample preview
         </span>
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
-          <div className="flex h-full w-full items-center justify-center text-4xl text-slate-300">
-            🏷️
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-amber-100 via-rose-50 to-stone-200">
+          <div className="flex h-full w-full items-center justify-center gap-3 text-3xl opacity-70">
+            <span>🕯️</span>
+            <span className="text-4xl">🪨</span>
+            <span>🌿</span>
           </div>
           <div className="absolute left-2 top-9 flex flex-col gap-1">
             <span className="rounded-full bg-ember-500 px-2.5 py-1 text-xs font-extrabold text-white shadow">
@@ -39,10 +41,10 @@ export default function SampleDealCard() {
             Beauty &amp; Spa
           </span>
           <h3 className="line-clamp-2 min-h-[2.75rem] text-sm font-bold text-slate-900">
-            60-Minute Deep Tissue Massage
+            60-Minute Hot Stone Massage
           </h3>
           <p className="-mt-1 truncate text-xs font-medium text-slate-500">
-            by Your Business Name
+            by Mega Massages
           </p>
 
           <div className="mt-auto flex items-end justify-between pt-1">
