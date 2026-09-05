@@ -7,19 +7,24 @@ export interface SignupStats {
 
 /**
  * Real counts for /businesses' cold-start trust signal — how many
- * businesses have actually applied, and how many customers are already on
- * the launch waitlist. Both collections are admin-only in Wix (a merchant's
- * own SITE_MEMBER_AUTHOR token can't read across other members' rows), so
- * this always goes through the admin client. Returns null on any failure
- * (including the admin credentials being unset, as in local/dev sandboxes)
- * so the caller can hide the section entirely rather than show a broken or
- * misleadingly-zero number.
+ * businesses have actually been approved, and how many customers are
+ * already on the launch waitlist. Both collections are admin-only in Wix
+ * (a merchant's own SITE_MEMBER_AUTHOR token can't read across other
+ * members' rows), so this always goes through the admin client. Returns
+ * null on any failure (including the admin credentials being unset, as in
+ * local/dev sandboxes) so the caller can hide the section entirely rather
+ * than show a broken or misleadingly-zero number.
+ *
+ * merchantCount counts only "Approved" merchants, not "Pending" ones —
+ * an application that hasn't been reviewed yet isn't a business you can
+ * honestly say has "signed up" to a visitor deciding whether to trust the
+ * platform.
  */
 export async function getSignupStats(): Promise<SignupStats | null> {
   try {
     const adminClient = createWixAdminClient();
     const [merchantsResult, signupsResult] = await Promise.all([
-      adminClient.items.query("Merchants").find(),
+      adminClient.items.query("Merchants").eq("status", "Approved").find(),
       adminClient.items.query("EmailSignups").eq("audience", "customer").eq("verified", true).find(),
     ]);
 

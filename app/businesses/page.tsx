@@ -100,16 +100,19 @@ const STEPS = [
   },
 ];
 
-// Toggle the live signup counter (and the offer-banner scarcity line
-// that reuses it) off while the real numbers are still too low to be
-// worth showing — a low count undercuts the trust it's meant to build
-// more than showing nothing at all. Flip back to true once there's a
-// credible number of real businesses signed up; nothing else needs to
-// change, since both call sites already null-check `stats`.
-const SHOW_SIGNUP_STATS = false;
+// The live signup counter (and the offer-banner scarcity line that reuses
+// it) only starts appearing once there's a credible number of approved
+// businesses — a count of 1 undercuts the trust it's meant to build more
+// than showing nothing at all. This is a threshold, not a manual switch:
+// it flips itself on automatically as real approvals cross it, no code
+// change needed. Until then the section just shows the always-on "how we
+// bring you customers" plan, with no numbers.
+const MIN_APPROVED_BUSINESSES_TO_SHOW_STATS = 33;
 
 export default async function MerchantsPage() {
-  const stats = SHOW_SIGNUP_STATS ? await getSignupStats() : null;
+  const rawStats = await getSignupStats();
+  const stats =
+    rawStats && rawStats.merchantCount >= MIN_APPROVED_BUSINESSES_TO_SHOW_STATS ? rawStats : null;
 
   return (
     <main>
