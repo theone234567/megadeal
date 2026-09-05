@@ -288,7 +288,7 @@ export default function MerchantSignupForm() {
               </div>
             </div>
             <p className="text-xs text-slate-400">
-              Checked and stored directly by Wix, our account provider — MegaDeal never sees or
+              Encrypted and verified by our secure account provider — MegaDeal never sees or
               stores your password.
             </p>
 
