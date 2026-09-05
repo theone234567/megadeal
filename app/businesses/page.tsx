@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import SampleDealCard from "@/components/SampleDealCard";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import StickyApplyBar from "@/components/StickyApplyBar";
@@ -437,6 +438,13 @@ export default async function MerchantsPage() {
               center
             />
           </div>
+          <p className="mt-4 text-xs text-slate-500">
+            Got a question first?{" "}
+            <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
+              Get in touch
+            </Link>{" "}
+            — a real person reads every message.
+          </p>
         </div>
       </section>
     </main>
