@@ -143,12 +143,12 @@ export default async function MerchantsPage() {
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
             Hi, I&apos;m Nick — I built MegaDeal because too many great
             local businesses go unnoticed while an agency or a cut of
-            every sale gets in the way. It&apos;s advertising only, so
-            every dollar your customers spend lands straight in your
-            pocket, always. We&apos;re launching in Auckland first (the
-            rest of NZ to follow) and putting the finishing touches on
-            it right now — sign up today and be part of the journey from
-            day one.
+            every sale gets in the way. MegaDeal is the new local deal
+            site that doesn&apos;t take a commission — we&apos;re simply
+            advertising. We&apos;re launching in Auckland first, and
+            we&apos;d love for you to join us from day one — so
+            we&apos;re giving early businesses up to 3 months free
+            advertising. Conditions apply.
           </p>
           <p className="mx-auto mt-2 max-w-xl text-sm font-semibold text-brand-100">
             — Nick, Founder of MegaDeal
