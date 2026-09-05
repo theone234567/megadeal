@@ -4,6 +4,7 @@ import Link from "next/link";
 import SampleDealCard from "@/components/SampleDealCard";
 import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL } from "@/lib/siteConfig";
+import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export const metadata: Metadata = {
   title: "List Your Deal — Advertise Your NZ Business",
@@ -42,6 +43,33 @@ const BUSINESS_TYPES = [
   "🧘 Yoga & pilates",
   "🚐 Tours & activities",
   "🏨 Getaways & stays",
+];
+
+const FAQS = [
+  {
+    q: "How much does it cost to list on MegaDeal?",
+    a: "MegaDeal is advertising, not a marketplace — you pay in simple advertising credits or a subscription, never a percentage of your sales. New businesses can also get up to 3 months free advertising with code WELCOME3 at signup. Conditions apply.",
+  },
+  {
+    q: "Do you take a commission on my sales?",
+    a: "No. MegaDeal never touches the payment — customers pay you direct, and you keep every dollar.",
+  },
+  {
+    q: "Do I need a physical storefront?",
+    a: "MegaDeal works best for local businesses with some spare capacity to fill — an off-peak dinner slot, a treatment room between appointments, seats on a tour that isn't full. We're not currently set up for pure online/product retailers (see MegaShop for that) or adult entertainment businesses.",
+  },
+  {
+    q: "How long until my deal goes live?",
+    a: "Usually within a couple of business days after you apply. Once approved, log back into your business portal to build your first deal — price, photo, terms and duration.",
+  },
+  {
+    q: "Is there a lock-in contract?",
+    a: "No lock-in contracts. Pause, update or cancel your deal whenever suits your business — there's no minimum term.",
+  },
+  {
+    q: "What does the WELCOME3 code do?",
+    a: "Enter WELCOME3 in the referral/promo code field when you sign up to get up to 3 months free advertising as a new business. Conditions apply.",
+  },
 ];
 
 const STEPS = [
@@ -233,6 +261,46 @@ export default function MerchantsPage() {
             <span className="text-slate-400">Conditions apply.</span>
           </p>
         </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-center text-2xl font-extrabold text-slate-900 sm:text-3xl">
+            Frequently asked questions
+          </h2>
+          <div className="mt-8 space-y-3">
+            {FAQS.map((f) => (
+              <details
+                key={f.q}
+                className="group rounded-2xl border border-slate-100 bg-white p-5 shadow-card"
+              >
+                <summary className="cursor-pointer list-none font-bold text-slate-900 marker:content-none">
+                  <span className="flex items-center justify-between gap-4">
+                    {f.q}
+                    <span className="shrink-0 text-slate-400 transition group-open:rotate-45">+</span>
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm text-slate-600">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: safeJsonLd({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: FAQS.map((f) => ({
+                "@type": "Question",
+                name: f.q,
+                acceptedAnswer: { "@type": "Answer", text: f.a },
+              })),
+            }),
+          }}
+        />
       </section>
 
       {/* Signup */}
