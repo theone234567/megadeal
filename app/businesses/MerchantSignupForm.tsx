@@ -34,6 +34,10 @@ async function submitApplication(formEl: HTMLFormElement, extra: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       businessName: String(formData.get("businessName") ?? ""),
+      contactName: String(formData.get("contactName") ?? ""),
+      contactPhone: String(formData.get("contactPhone") ?? ""),
+      legalBusinessName: String(formData.get("legalBusinessName") ?? ""),
+      nzbn: String(formData.get("nzbn") ?? ""),
       website: String(formData.get("website") ?? ""),
       phone: String(formData.get("phone") ?? ""),
       address: extra.address,
@@ -253,6 +257,68 @@ export default function MerchantSignupForm() {
               <p className="mt-1 text-xs text-slate-400">
                 This becomes your login for the business portal.
               </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Contact name
+                  <RequiredTag />
+                </label>
+                <input
+                  required
+                  name="contactName"
+                  type="text"
+                  placeholder="Full name of the person we should deal with"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Contact phone
+                  <RequiredTag />
+                </label>
+                <input
+                  required
+                  name="contactPhone"
+                  type="tel"
+                  placeholder="Direct number for that person"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Legal / registered business name
+                  <RequiredTag />
+                </label>
+                <input
+                  required
+                  name="legalBusinessName"
+                  type="text"
+                  placeholder="e.g. Harbourside Bistro Limited"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+                <p className="mt-1 text-xs text-slate-400">
+                  The registered entity behind your business — sole trader,
+                  partnership or company, whichever applies.
+                </p>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  NZBN
+                  <OptionalTag />
+                </label>
+                <input
+                  name="nzbn"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="13-digit New Zealand Business Number, if you have one"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

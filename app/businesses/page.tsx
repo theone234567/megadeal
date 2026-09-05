@@ -15,8 +15,8 @@ export const metadata: Metadata = {
 const PERKS = [
   {
     emoji: "🤝",
-    title: "Zero commission, ever",
-    text: "Every dollar a customer pays goes straight to you. MegaDeal never touches the payment.",
+    title: "Zero commission",
+    text: "Every dollar a customer pays goes straight to you. MegaDeal doesn't touch the payment.",
   },
   {
     emoji: "💳",
@@ -75,8 +75,8 @@ export default function MerchantsPage() {
             Get your business in front of thousands of local customers
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            MegaDeal is advertising, not a marketplace — zero commission,
-            ever. You set the offer, we bring the customers, and you get
+            MegaDeal is advertising, not a marketplace — zero commission.
+            You set the offer, we bring the customers, and you get
             paid in full, direct.
           </p>
 

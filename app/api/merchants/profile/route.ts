@@ -3,6 +3,7 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
+import { isValidNzbnFormat } from "@/lib/nzbn";
 
 const MAX_TEXT_LENGTH = 300;
 const MAX_BIO_LENGTH = 600;
@@ -34,6 +35,20 @@ export async function POST(req: NextRequest) {
   const businessName = cleanText(body.businessName, MAX_TEXT_LENGTH);
   if (!businessName) {
     return NextResponse.json({ error: "Business name is required." }, { status: 400 });
+  }
+
+  const contactName = cleanText(body.contactName, MAX_TEXT_LENGTH);
+  const contactPhone = cleanText(body.contactPhone, MAX_TEXT_LENGTH);
+  const legalBusinessName = cleanText(body.legalBusinessName, MAX_TEXT_LENGTH);
+  if (!contactName || !contactPhone || !legalBusinessName) {
+    return NextResponse.json(
+      { error: "Contact name, contact phone and legal business name are required." },
+      { status: 400 }
+    );
+  }
+  const nzbn = cleanText(body.nzbn, 13);
+  if (!isValidNzbnFormat(nzbn)) {
+    return NextResponse.json({ error: "NZBN must be 13 digits." }, { status: 400 });
   }
 
   const priceRange = cleanText(body.priceRange, 4);
@@ -92,6 +107,10 @@ export async function POST(req: NextRequest) {
   const updated = await adminClient.items.update("Merchants", {
     ...merchant,
     businessName,
+    contactName,
+    contactPhone,
+    legalBusinessName,
+    nzbn,
     website,
     phone: cleanText(body.phone, MAX_TEXT_LENGTH),
     address,

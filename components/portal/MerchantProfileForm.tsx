@@ -9,6 +9,10 @@ const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilto
 interface MerchantRecord {
   _id: string;
   businessName?: string;
+  contactName?: string;
+  contactPhone?: string;
+  legalBusinessName?: string;
+  nzbn?: string;
   email?: string;
   phone?: string;
   website?: string;
@@ -40,6 +44,10 @@ export default function MerchantProfileForm({
   const [error, setError] = useState<string | null>(null);
 
   const [businessName, setBusinessName] = useState(merchant.businessName || "");
+  const [contactName, setContactName] = useState(merchant.contactName || "");
+  const [contactPhone, setContactPhone] = useState(merchant.contactPhone || "");
+  const [legalBusinessName, setLegalBusinessName] = useState(merchant.legalBusinessName || "");
+  const [nzbn, setNzbn] = useState(merchant.nzbn || "");
   const [website, setWebsite] = useState(merchant.website || "");
   const [phone, setPhone] = useState(merchant.phone || "");
   const [address, setAddress] = useState(merchant.address || "");
@@ -65,6 +73,10 @@ export default function MerchantProfileForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           businessName,
+          contactName,
+          contactPhone,
+          legalBusinessName,
+          nzbn,
           website,
           phone,
           address,
@@ -112,6 +124,22 @@ export default function MerchantProfileForm({
           <div>
             <dt className="text-slate-400">Business name</dt>
             <dd className="font-medium text-slate-800">{merchant.businessName || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400">Legal / registered business name</dt>
+            <dd className="font-medium text-slate-800">{merchant.legalBusinessName || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400">NZBN</dt>
+            <dd className="font-medium text-slate-800">{merchant.nzbn || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400">Contact name</dt>
+            <dd className="font-medium text-slate-800">{merchant.contactName || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-400">Contact phone</dt>
+            <dd className="font-medium text-slate-800">{merchant.contactPhone || "—"}</dd>
           </div>
           <div>
             <dt className="text-slate-400">Website</dt>
@@ -191,6 +219,49 @@ export default function MerchantProfileForm({
             <input
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Legal / registered business name
+            </label>
+            <input
+              value={legalBusinessName}
+              onChange={(e) => setLegalBusinessName(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">NZBN</label>
+            <input
+              value={nzbn}
+              onChange={(e) => setNzbn(e.target.value)}
+              inputMode="numeric"
+              placeholder="13-digit NZBN, if you have one"
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Contact name</label>
+            <input
+              value={contactName}
+              onChange={(e) => setContactName(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Contact phone</label>
+            <input
+              value={contactPhone}
+              onChange={(e) => setContactPhone(e.target.value)}
+              type="tel"
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
           </div>

@@ -30,6 +30,10 @@ export interface AdminMerchant {
   reviewCount?: number | null;
   referralCode?: string;
   referredBy?: string;
+  contactName?: string;
+  contactPhone?: string;
+  legalBusinessName?: string;
+  nzbn?: string;
   [key: string]: any;
 }
 
@@ -112,6 +116,18 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
               {merchant.businessName || "—"} {hasProfileDetails && (detailsOpen ? "▲" : "▼")}
             </p>
             <p className="text-xs text-slate-400">{merchant.email}</p>
+            {merchant.legalBusinessName && (
+              <p className="text-xs text-slate-400">
+                Legal name: <span className="font-medium text-slate-600">{merchant.legalBusinessName}</span>
+                {merchant.nzbn && ` · NZBN ${merchant.nzbn}`}
+              </p>
+            )}
+            {(merchant.contactName || merchant.contactPhone) && (
+              <p className="text-xs text-slate-400">
+                Contact: <span className="font-medium text-slate-600">{merchant.contactName || "—"}</span>
+                {merchant.contactPhone && ` · ${merchant.contactPhone}`}
+              </p>
+            )}
             {merchant.emailVerified ? (
               <p className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
                 ✓ Email verified

@@ -7,6 +7,7 @@ import { addResendContact } from "@/lib/resendAudience";
 import { SITE_URL } from "@/lib/siteConfig";
 import { generateReferralCode } from "@/lib/referral";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
+import { isValidNzbnFormat } from "@/lib/nzbn";
 import { escapeHtml } from "@/lib/escapeHtml";
 
 const MAX_TEXT_LENGTH = 300;
@@ -63,15 +64,34 @@ export async function POST(req: NextRequest) {
   }
 
   const businessName = cleanText(body.businessName, MAX_TEXT_LENGTH);
+  const contactName = cleanText(body.contactName, MAX_TEXT_LENGTH);
+  const contactPhone = cleanText(body.contactPhone, MAX_TEXT_LENGTH);
+  const legalBusinessName = cleanText(body.legalBusinessName, MAX_TEXT_LENGTH);
   const phone = cleanText(body.phone, MAX_TEXT_LENGTH);
   const address = cleanText(body.address, MAX_TEXT_LENGTH);
   const city = cleanText(body.city, MAX_TEXT_LENGTH);
 
-  if (!businessName || !phone || !address || !city) {
+  if (
+    !businessName ||
+    !contactName ||
+    !contactPhone ||
+    !legalBusinessName ||
+    !phone ||
+    !address ||
+    !city
+  ) {
     return NextResponse.json(
-      { error: "Business name, phone, address and city are required." },
+      {
+        error:
+          "Business name, contact name, contact phone, legal business name, phone, address and city are required.",
+      },
       { status: 400 }
     );
+  }
+
+  const nzbn = cleanText(body.nzbn, 13);
+  if (!isValidNzbnFormat(nzbn)) {
+    return NextResponse.json({ error: "NZBN must be 13 digits." }, { status: 400 });
   }
 
   const priceRange = cleanText(body.priceRange, 4);
@@ -127,6 +147,10 @@ export async function POST(req: NextRequest) {
 
     const fields = {
       businessName,
+      contactName,
+      contactPhone,
+      legalBusinessName,
+      nzbn,
       email: member.email ?? "",
       phone,
       address,
