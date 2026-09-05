@@ -48,6 +48,18 @@ export default function HowItWorksPage() {
         for the general process.
       </p>
 
+      <h3>4. Get new deals by email (optional)</h3>
+      <p>
+        Pop your email into the sign-up box (footer, or the corner prompt
+        that appears as you browse) to get new local deals sent to your
+        inbox. Straight after, check that inbox for an email from us and
+        click the &quot;Confirm my email&quot; button in it — that one click
+        is what actually switches your alerts on, so you don&apos;t
+        get signed up to something you never asked for if someone else
+        typed in your address by mistake. No account or password needed,
+        and every email has an unsubscribe link if you change your mind.
+      </p>
+
       <h2>For businesses</h2>
       <p>
         MegaDeal is advertising, not a marketplace — you never hand us a cut
