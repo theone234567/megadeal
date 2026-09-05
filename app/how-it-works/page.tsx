@@ -99,7 +99,20 @@ export default function HowItWorksPage() {
         haven&apos;t already.
       </p>
 
-      <h3>5. Top up anytime</h3>
+      <h3>5. Your deal goes live at launch</h3>
+      <p>
+        Your deal stays queued and ready from the moment you submit it —
+        it goes live for customers the moment MegaDeal officially
+        launches, not before. We&apos;ll email you when that happens, and
+        your business portal will reflect it too. Got a question in the
+        meantime? Feel free to{" "}
+        <a href="/contact" className="text-brand-600 hover:underline">
+          get in touch
+        </a>{" "}
+        any time.
+      </p>
+
+      <h3>6. Top up anytime</h3>
       <p>
         Once your free credits run out, you can top up your account from
         your portal whenever you&apos;re ready to list another deal.
