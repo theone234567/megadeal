@@ -53,7 +53,13 @@ export default function RefundPolicyPage() {
         list a deal — that fee is for the listing itself, separate from
         anything a customer pays the business. Advertising credits are
         generally non-refundable once they&apos;ve been allocated to your
-        account, except where we agree otherwise at our discretion. If we
+        account, except where we agree otherwise at our discretion or need
+        to correct a balance that&apos;s wrong because of a system error or
+        mistake (see our{" "}
+        <a href="/terms" className="text-brand-600 hover:underline">
+          Terms
+        </a>
+        ). If we
         launch self-serve online payment for credits or subscriptions in
         future, the specific payment, cancellation and refund terms for
         that will be shown at checkout and referenced here. For billing

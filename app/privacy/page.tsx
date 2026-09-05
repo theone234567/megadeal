@@ -32,8 +32,10 @@ export default function PrivacyPage() {
           <strong>Account and merchant details</strong> — if you sign up to
           list or manage a deal, we collect your email address and a
           password (stored securely by our identity provider, never in
-          plain text), plus your business name, contact details, address,
-          and photos, so we can review and display your listing.
+          plain text), plus your business&apos;s trading name, its legal
+          or registered name and NZBN, a contact person&apos;s name and
+          phone number, address, and photos, so we can verify who
+          we&apos;re dealing with and review and display your listing.
         </li>
         <li>
           <strong>Communications</strong> — anything you send us through the{" "}
@@ -61,12 +63,15 @@ export default function PrivacyPage() {
       </ul>
       <p>We don&apos;t sell your personal data to third parties.</p>
 
-      <h2>What businesses see</h2>
+      <h2>What&apos;s shown publicly</h2>
       <p>
-        A business&apos;s name, logo, address, phone number and website are
-        shown publicly on their deal listings so customers can contact them
-        — that information is meant to be public. Their account email,
-        used to sign in to the business portal, is never shown publicly.
+        A business&apos;s trading name, logo, address, phone number,
+        opening hours and website are shown publicly on their deal
+        listings so customers can contact them — that information is
+        meant to be public. Their account email, legal/registered
+        business name, NZBN, and private contact person&apos;s name and
+        phone number are collected for our own verification and
+        record-keeping and are never shown publicly.
       </p>
 
       <h2>Service providers and overseas disclosure</h2>
