@@ -1,31 +1,40 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { CATEGORIES } from "@/lib/categories";
 import SocialLinks from "./SocialLinks";
 import EmailSignupForm from "./EmailSignupForm";
 
 export default function Footer() {
+  // /businesses already is this exact pitch, right down to the same
+  // WELCOME3 offer, ending with the identical banner right after a visitor
+  // has just seen (or filled in) the signup form reads as pure repetition.
+  const pathname = usePathname();
+  const hideOwnABusinessCta = pathname?.startsWith("/businesses");
+
   return (
     <footer className="mt-16 border-t border-slate-100 bg-slate-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-brand-700 px-6 py-6 text-center sm:flex-row sm:text-left">
-          <div>
-            <h3 className="text-lg font-bold text-white">Own a local business?</h3>
-            <p className="text-sm text-brand-100">
-              List your deal on MegaDeal and get up to 3 months free
-              advertising — use code <span className="font-bold">WELCOME3</span> at signup.{" "}
-              <span className="text-brand-200">Conditions apply.</span>
-            </p>
+      {!hideOwnABusinessCta && (
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-brand-700 px-6 py-6 text-center sm:flex-row sm:text-left">
+            <div>
+              <h3 className="text-lg font-bold text-white">Own a local business?</h3>
+              <p className="text-sm text-brand-100">
+                List your deal on MegaDeal and get up to 3 months free
+                advertising — use code <span className="font-bold">WELCOME3</span> at signup.{" "}
+                <span className="text-brand-200">Conditions apply.</span>
+              </p>
+            </div>
+            <Link
+              href="/businesses"
+              className="shrink-0 rounded-full bg-ember-500 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-ember-600"
+            >
+              List your deal →
+            </Link>
           </div>
-          <Link
-            href="/businesses"
-            className="shrink-0 rounded-full bg-ember-500 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-ember-600"
-          >
-            List your deal →
-          </Link>
         </div>
-      </div>
+      )}
 
       <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">

@@ -176,6 +176,34 @@ export default function MerchantsPage() {
         </div>
       </section>
 
+      {/* Why join pre-launch — reframes "not live yet" as the advantage it
+          actually is, rather than leaving it as a bare fact discovered
+          later in the Steps/FAQ sections. */}
+      <section className="px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-xl font-extrabold text-slate-900 sm:text-2xl">
+            We&apos;re in the final stretch before launch — here&apos;s why that&apos;s good news for you
+          </h2>
+          <p className="mt-2 text-slate-600">
+            Being early isn&apos;t a downside here — it&apos;s the whole
+            advantage. Sign up now and you&apos;re shaping your listing
+            before a single customer sees it, not competing for attention
+            with hundreds of other deals already live.
+          </p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+            <span className="rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700">
+              🥇 First pick of your category
+            </span>
+            <span className="rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700">
+              📣 Priority placement at launch
+            </span>
+            <span className="rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700">
+              🎁 The best offer we&apos;ll ever run
+            </span>
+          </div>
+        </div>
+      </section>
+
       {/* Preview mockup */}
       <section id="preview" className="scroll-mt-[140px] px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
@@ -324,11 +352,22 @@ export default function MerchantsPage() {
         />
       </section>
 
-      {/* Not ready yet — soft fallback for anyone about to bounce before the full form */}
-      <section className="px-4 pb-6 sm:px-6 lg:px-8">
+      {/* Signup */}
+      <section className="px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl">
+          <Suspense fallback={null}>
+            <MerchantSignupForm />
+          </Suspense>
+        </div>
+      </section>
+
+      {/* Not ready yet — a genuine last resort for anyone who's read this far
+          and still isn't ready to commit, not an exit offered right before
+          the ask (that used to sit directly above the form itself). */}
+      <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-md text-center">
           <p className="text-sm font-semibold text-slate-700">
-            Not ready to apply yet?
+            Still not ready to apply?
           </p>
           <p className="mt-1 text-xs text-slate-500">
             Leave your email and we&apos;ll let you know when we launch — no
@@ -344,15 +383,6 @@ export default function MerchantsPage() {
               center
             />
           </div>
-        </div>
-      </section>
-
-      {/* Signup */}
-      <section className="px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl">
-          <Suspense fallback={null}>
-            <MerchantSignupForm />
-          </Suspense>
         </div>
       </section>
     </main>
