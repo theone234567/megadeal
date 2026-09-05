@@ -265,6 +265,43 @@ export default function MerchantSignupForm() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Password
+                  <RequiredTag />
+                </label>
+                <input
+                  required
+                  type="password"
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Confirm password
+                  <RequiredTag />
+                </label>
+                <input
+                  required
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Same password again"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-slate-400">
+              Encrypted and verified by our secure account provider — MegaDeal never sees or
+              stores your password.
+            </p>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
                   Contact name
                   <RequiredTag />
                 </label>
@@ -323,43 +360,6 @@ export default function MerchantSignupForm() {
                 />
               </div>
             </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Password
-                  <RequiredTag />
-                </label>
-                <input
-                  required
-                  type="password"
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 8 characters"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Confirm password
-                  <RequiredTag />
-                </label>
-                <input
-                  required
-                  type="password"
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Same password again"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
-                />
-              </div>
-            </div>
-            <p className="text-xs text-slate-400">
-              Encrypted and verified by our secure account provider — MegaDeal never sees or
-              stores your password.
-            </p>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
