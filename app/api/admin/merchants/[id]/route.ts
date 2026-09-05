@@ -10,6 +10,13 @@ import { escapeHtml } from "@/lib/escapeHtml";
 const ALLOWED_STATUSES = ["Pending", "Approved", "Suspended"];
 const INTRO_CREDITS = 2;
 const REFERRAL_BONUS_CREDITS: number = 2;
+// The "up to 3 months free advertising" offer advertised on /businesses —
+// a business enters this in the same "Referral code" field used for peer
+// referrals. It isn't anyone's real referralCode, so it can never collide
+// with an actual referral match; the two are handled as separate branches
+// below purely for clarity, not because a collision is actually possible.
+const PROMO_CODE = "WELCOME3";
+const PROMO_CODE_CREDITS = 12;
 
 /**
  * Atomically flips referralRewarded from not-true to true, server-side,
@@ -37,6 +44,34 @@ async function claimReferralAtomically(adminClient: any, merchantId: string): Pr
             ],
           },
           condition: { filter: { referralRewarded: { $ne: true } } },
+        }),
+      }
+    );
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Same atomic-claim pattern as claimReferralAtomically, for the WELCOME3
+ * promo — stops a merchant being re-approved after a later suspension (or
+ * two concurrent approve requests) from granting the promo credits twice. */
+async function claimPromoAtomically(adminClient: any, merchantId: string): Promise<boolean> {
+  try {
+    const res = await adminClient.fetchWithAuth(
+      `https://www.wixapis.com/wix-data/v2/items/${merchantId}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dataCollectionId: "Merchants",
+          patch: {
+            dataItemId: merchantId,
+            fieldModifications: [
+              { fieldPath: "promoRewarded", action: "SET_FIELD", setFieldOptions: { value: true } },
+            ],
+          },
+          condition: { filter: { promoRewarded: { $ne: true } } },
         }),
       }
     );
@@ -115,6 +150,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const adminAdjustDelta = adminSetCredits ? patch.creditsBalance - existingCredits : 0;
   let introGranted = 0;
   let referralBonusGranted = 0;
+  let promoGranted = 0;
   let referrer: any = null;
 
   // First-time approval: grant a small number of free introductory credits
@@ -127,11 +163,22 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     newCredits += introGranted;
   }
 
-  // Referral bonus: if this merchant signed up with someone else's referral
-  // code, both sides get a bonus once this merchant is approved. The claim
-  // itself is an atomic conditional patch (see claimReferralAtomically) so
-  // concurrent approve requests for the same merchant can't both succeed.
-  if (becomingApproved && existing.couponCode) {
+  const enteredCode = String(existing.couponCode || "").trim().toUpperCase();
+
+  // WELCOME3 promo: the "up to 3 months free advertising" offer. Checked
+  // first since it's a fixed code, not anyone's real referralCode — if it
+  // matches, this signup isn't a peer referral at all.
+  if (becomingApproved && enteredCode === PROMO_CODE) {
+    if (await claimPromoAtomically(adminClient, existing._id)) {
+      promoGranted = PROMO_CODE_CREDITS;
+      newCredits += promoGranted;
+      patch.promoRewarded = true;
+    }
+  } else if (becomingApproved && existing.couponCode) {
+    // Referral bonus: if this merchant signed up with someone else's referral
+    // code, both sides get a bonus once this merchant is approved. The claim
+    // itself is an atomic conditional patch (see claimReferralAtomically) so
+    // concurrent approve requests for the same merchant can't both succeed.
     const referrerResult = await adminClient.items
       .query("Merchants")
       .eq("referralCode", existing.couponCode)
@@ -189,6 +236,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       description: "Referral bonus for signing up with a referral code",
     });
   }
+  if (promoGranted > 0 && existing.email) {
+    await logMerchantActivity(adminClient, {
+      merchantEmail: existing.email,
+      type: "credit",
+      amount: promoGranted,
+      description: `Promo code ${PROMO_CODE} redeemed — free advertising offer`,
+    });
+  }
 
   if (referrer) {
     let referrerFresh: any = null;
@@ -238,7 +293,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   if (becomingApproved && existing.email) {
     try {
-      const totalGranted = introGranted + referralBonusGranted;
+      const totalGranted = introGranted + referralBonusGranted + promoGranted;
       const safeName = escapeHtml(existing.businessName || "there");
       await sendTransactionalEmail({
         to: existing.email,
@@ -253,7 +308,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
               ? `<p>We've added ${totalGranted} free deal credit${
                   totalGranted === 1 ? "" : "s"
                 } to your account${
-                  referralBonusGranted > 0 ? " (including a referral bonus)" : ""
+                  promoGranted > 0
+                    ? " (including your WELCOME3 free advertising offer)"
+                    : referralBonusGranted > 0
+                    ? " (including a referral bonus)"
+                    : ""
                 } so you can get started right away.</p>`
               : ""
           }

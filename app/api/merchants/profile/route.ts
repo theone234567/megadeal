@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getOrClaimMerchant } from "@/lib/merchant";
-import { isValidSocialUrl } from "@/lib/socialLinks";
+import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 
 const MAX_TEXT_LENGTH = 300;
 const MAX_BIO_LENGTH = 600;
@@ -46,6 +46,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
   }
 
+  const website = cleanText(body.website, MAX_TEXT_LENGTH);
+  if (!isSafeOptionalUrl(website)) {
+    return NextResponse.json({ error: "Enter a valid website address." }, { status: 400 });
+  }
+  const bookingUrl = cleanText(body.bookingUrl, MAX_TEXT_LENGTH);
+  if (!isSafeOptionalUrl(bookingUrl)) {
+    return NextResponse.json({ error: "Enter a valid booking link." }, { status: 400 });
+  }
+
   const facebookUrl = cleanText(body.facebookUrl, MAX_TEXT_LENGTH);
   if (!isValidSocialUrl(facebookUrl, "facebook")) {
     return NextResponse.json(
@@ -83,14 +92,14 @@ export async function POST(req: NextRequest) {
   const updated = await adminClient.items.update("Merchants", {
     ...merchant,
     businessName,
-    website: cleanText(body.website, MAX_TEXT_LENGTH),
+    website,
     phone: cleanText(body.phone, MAX_TEXT_LENGTH),
     address,
     city,
     postcode: cleanText(body.postcode, 20),
     bio: cleanText(body.bio, MAX_BIO_LENGTH),
     businessHours: cleanText(body.businessHours, MAX_TEXT_LENGTH),
-    bookingUrl: cleanText(body.bookingUrl, MAX_TEXT_LENGTH),
+    bookingUrl,
     bookingEmail,
     facebookUrl,
     instagramUrl,

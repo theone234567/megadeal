@@ -111,7 +111,7 @@ export default function MerchantsPage() {
               🎁 Get up to 3 months free advertising
             </p>
             <p className="mt-1 text-sm text-ember-50">
-              Limited-time offer for new businesses that sign up now.{" "}
+              Enter code <span className="font-bold">WELCOME3</span> when you sign up below.{" "}
               <span className="font-semibold">Conditions apply.</span>
             </p>
           </div>
@@ -226,8 +226,9 @@ export default function MerchantsPage() {
             for that) or adult entertainment businesses.
           </p>
           <p className="mt-4 text-sm text-slate-500">
-            New businesses can get up to 3 months free advertising — ask when
-            you apply.{" "}
+            New businesses can get up to 3 months free advertising — enter
+            code <span className="font-semibold text-slate-600">WELCOME3</span> in the
+            referral/promo code field when you sign up.{" "}
             <span className="text-slate-400">Conditions apply.</span>
           </p>
         </div>

@@ -308,14 +308,14 @@ export default function MerchantSignupForm() {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Referral code
+                  Referral or promo code
                   <OptionalTag />
                 </label>
                 <input
                   name="couponCode"
                   type="text"
                   defaultValue={referralPrefill}
-                  placeholder="e.g. MD1A2B3C"
+                  placeholder="e.g. MD1A2B3C or WELCOME3"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
                 />
               </div>

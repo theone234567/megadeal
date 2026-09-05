@@ -6,7 +6,7 @@ import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { addResendContact } from "@/lib/resendAudience";
 import { SITE_URL } from "@/lib/siteConfig";
 import { generateReferralCode } from "@/lib/referral";
-import { isValidSocialUrl } from "@/lib/socialLinks";
+import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { escapeHtml } from "@/lib/escapeHtml";
 
 const MAX_TEXT_LENGTH = 300;
@@ -85,6 +85,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
   }
 
+  const website = cleanText(body.website, MAX_TEXT_LENGTH);
+  if (!isSafeOptionalUrl(website)) {
+    return NextResponse.json({ error: "Enter a valid website address." }, { status: 400 });
+  }
+  const bookingUrl = cleanText(body.bookingUrl, MAX_TEXT_LENGTH);
+  if (!isSafeOptionalUrl(bookingUrl)) {
+    return NextResponse.json({ error: "Enter a valid booking link." }, { status: 400 });
+  }
+
   const facebookUrl = cleanText(body.facebookUrl, MAX_TEXT_LENGTH);
   if (!isValidSocialUrl(facebookUrl, "facebook")) {
     return NextResponse.json(
@@ -123,10 +132,10 @@ export async function POST(req: NextRequest) {
       address,
       city,
       postcode: cleanText(body.postcode, 20),
-      website: cleanText(body.website, MAX_TEXT_LENGTH),
+      website,
       bio: cleanText(body.bio, MAX_BIO_LENGTH),
       businessHours: cleanText(body.businessHours, MAX_TEXT_LENGTH),
-      bookingUrl: cleanText(body.bookingUrl, MAX_TEXT_LENGTH),
+      bookingUrl,
       bookingEmail,
       facebookUrl,
       instagramUrl,

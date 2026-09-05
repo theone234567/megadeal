@@ -17,3 +17,20 @@ export function isValidSocialUrl(url: string, platform: "facebook" | "instagram"
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return false;
   return SOCIAL_HOST_PATTERNS[platform].test(parsed.hostname);
 }
+
+/** True for an empty string (both fields are optional) or anything that
+ * resolves to a plain http(s) link — same "assume https if no scheme was
+ * typed" convention the public business page already displays these with,
+ * so anything that passes here renders exactly as validated. Rejects
+ * dangerous schemes (javascript:, data:, etc.) explicitly rather than
+ * relying on how a display page happens to render the value. */
+export function isSafeOptionalUrl(url: string): boolean {
+  if (!url) return true;
+  const candidate = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  try {
+    const parsed = new URL(candidate);
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
