@@ -121,7 +121,7 @@ export default function Header() {
             href="/businesses"
             className="text-xs font-semibold text-slate-500 hover:text-ember-600"
           >
-            Own a business? List your deal →
+            🎁 Own a business? Get 3 months free advertising →
           </Link>
         </div>
       </div>
