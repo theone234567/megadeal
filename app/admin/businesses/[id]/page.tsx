@@ -39,7 +39,7 @@ function Field({
         {required ? (
           <span className="ml-1 font-normal text-ember-600">Required</span>
         ) : (
-          <span className="ml-1 font-normal text-slate-400">(optional)</span>
+          <span className="ml-1 font-normal text-slate-500">(optional)</span>
         )}
       </span>
       <input
@@ -261,7 +261,7 @@ export default function AdminBusinessDetailPage() {
   if (!merchant) {
     return (
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-        <p className="text-sm text-slate-400">Loading…</p>
+        <p className="text-sm text-slate-500">Loading…</p>
       </main>
     );
   }
@@ -348,7 +348,7 @@ export default function AdminBusinessDetailPage() {
             <Field label="Website" value={website} onChange={setWebsite} placeholder="https://yourbusiness.co.nz" />
           </div>
           {typeof merchant.lat === "number" && typeof merchant.lng === "number" && (
-            <p className="mt-3 text-xs text-slate-400">
+            <p className="mt-3 text-xs text-slate-500">
               📍 Map pin: {merchant.lat.toFixed(5)}, {merchant.lng.toFixed(5)} (set by the
               business's own address autocomplete — edit their address from the portal to move it)
             </p>
@@ -413,18 +413,18 @@ export default function AdminBusinessDetailPage() {
           <h2 className="text-sm font-bold text-slate-900">Referral &amp; promo</h2>
           <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-slate-400">Entered referral/promo code</dt>
+              <dt className="text-slate-500">Entered referral/promo code</dt>
               <dd className="font-medium text-slate-800">{merchant.couponCode || "—"}</dd>
             </div>
             <div>
-              <dt className="text-slate-400">Their own referral code</dt>
+              <dt className="text-slate-500">Their own referral code</dt>
               <dd className="font-medium text-slate-800">
                 {merchant.referralCode || "—"}
                 {merchant.referredBy && ` · Referred by ${merchant.referredBy}`}
               </dd>
             </div>
             <div>
-              <dt className="text-slate-400">Bonus status</dt>
+              <dt className="text-slate-500">Bonus status</dt>
               <dd className="font-medium text-slate-800">
                 {merchant.promoRewarded
                   ? "✓ WELCOME3 promo already granted"
@@ -434,7 +434,7 @@ export default function AdminBusinessDetailPage() {
               </dd>
             </div>
             <div>
-              <dt className="text-slate-400">Referral-bonus emails</dt>
+              <dt className="text-slate-500">Referral-bonus emails</dt>
               <dd className="font-medium text-slate-800">
                 {merchant.notifyReferralBonus === false ? "🔕 Opted out" : "Enabled"}
               </dd>
@@ -444,7 +444,7 @@ export default function AdminBusinessDetailPage() {
 
         <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card sm:col-span-2">
           <h2 className="text-sm font-bold text-slate-900">Credit &amp; activity history</h2>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-slate-500">
             Every credit grant, adjustment and deal listed by this business —
             the same ledger they see on their own portal. MegaDeal doesn&apos;t
             process any payment itself, so this tracks credit units only,
@@ -452,7 +452,7 @@ export default function AdminBusinessDetailPage() {
             self-serve credit purchase since that doesn&apos;t exist yet.
           </p>
           {activity === null ? (
-            <p className="mt-3 text-sm text-slate-400">Loading…</p>
+            <p className="mt-3 text-sm text-slate-500">Loading…</p>
           ) : activity.length === 0 ? (
             <p className="mt-3 text-sm text-slate-500">No activity recorded yet.</p>
           ) : (
@@ -464,7 +464,7 @@ export default function AdminBusinessDetailPage() {
                     <div>
                       <p className="text-slate-700">{item.description}</p>
                       {item._createdDate && (
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-slate-500">
                           {new Date(item._createdDate).toLocaleString()}
                         </p>
                       )}

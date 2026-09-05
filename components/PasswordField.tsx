@@ -8,6 +8,7 @@ import { EyeIcon, EyeOffIcon } from "@/components/icons";
  *  how or where the value gets sent, so it has no bearing on how securely
  *  Wix handles the password once submitted. */
 export default function PasswordField({
+  id,
   value,
   onChange,
   placeholder,
@@ -16,6 +17,7 @@ export default function PasswordField({
   autoFocus,
   inputClassName,
 }: {
+  id?: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
@@ -29,6 +31,7 @@ export default function PasswordField({
   return (
     <div className="relative">
       <input
+        id={id}
         required={required}
         autoFocus={autoFocus}
         type={visible ? "text" : "password"}
@@ -42,7 +45,7 @@ export default function PasswordField({
         type="button"
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? "Hide password" : "Show password"}
-        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+        className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-slate-400 hover:text-slate-600"
       >
         {visible ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
       </button>

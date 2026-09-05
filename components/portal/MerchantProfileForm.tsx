@@ -13,7 +13,7 @@ function RequiredTag() {
 }
 
 function OptionalTag() {
-  return <span className="ml-1 font-normal text-slate-400">(optional)</span>;
+  return <span className="ml-1 font-normal text-slate-500">(optional)</span>;
 }
 
 interface MerchantRecord {
@@ -133,45 +133,45 @@ export default function MerchantProfileForm({
         </div>
         <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-slate-400">Business name</dt>
+            <dt className="text-slate-500">Business name</dt>
             <dd className="font-medium text-slate-800">{merchant.businessName || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-400">Legal / registered business name</dt>
+            <dt className="text-slate-500">Legal / registered business name</dt>
             <dd className="font-medium text-slate-800">{merchant.legalBusinessName || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-400">NZBN</dt>
+            <dt className="text-slate-500">NZBN</dt>
             <dd className="font-medium text-slate-800">{merchant.nzbn || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-400">Contact name</dt>
+            <dt className="text-slate-500">Contact name</dt>
             <dd className="font-medium text-slate-800">{merchant.contactName || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-400">Contact phone</dt>
+            <dt className="text-slate-500">Contact phone</dt>
             <dd className="font-medium text-slate-800">{merchant.contactPhone || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-400">Website</dt>
+            <dt className="text-slate-500">Website</dt>
             <dd className="font-medium text-slate-800">{merchant.website || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-400">Email</dt>
+            <dt className="text-slate-500">Email</dt>
             <dd className="font-medium text-slate-800">{merchant.email || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-400">Phone</dt>
+            <dt className="text-slate-500">Phone</dt>
             <dd className="font-medium text-slate-800">{merchant.phone || "—"}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="text-slate-400">Address</dt>
+            <dt className="text-slate-500">Address</dt>
             <dd className="font-medium text-slate-800">
               {[merchant.address, merchant.city, merchant.postcode].filter(Boolean).join(", ") || "—"}
             </dd>
           </div>
           <div>
-            <dt className="text-slate-400">Opening hours</dt>
+            <dt className="text-slate-500">Opening hours</dt>
             <dd className="font-medium text-slate-800">
               {(() => {
                 const parsed = parseBusinessHours(merchant.businessHours);
@@ -183,15 +183,15 @@ export default function MerchantProfileForm({
             </dd>
           </div>
           <div>
-            <dt className="text-slate-400">Booking link</dt>
+            <dt className="text-slate-500">Booking link</dt>
             <dd className="font-medium text-slate-800">{merchant.bookingUrl || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-400">Booking email</dt>
+            <dt className="text-slate-500">Booking email</dt>
             <dd className="font-medium text-slate-800">{merchant.bookingEmail || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-400">Social</dt>
+            <dt className="text-slate-500">Social</dt>
             <dd className="font-medium text-slate-800">
               {[merchant.facebookUrl && "Facebook", merchant.instagramUrl && "Instagram"]
                 .filter(Boolean)
@@ -199,15 +199,15 @@ export default function MerchantProfileForm({
             </dd>
           </div>
           <div>
-            <dt className="text-slate-400">Price range</dt>
+            <dt className="text-slate-500">Price range</dt>
             <dd className="font-medium text-slate-800">{merchant.priceRange || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-400">Features &amp; amenities</dt>
+            <dt className="text-slate-500">Features &amp; amenities</dt>
             <dd className="font-medium text-slate-800">{merchant.amenities || "—"}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="text-slate-400">About</dt>
+            <dt className="text-slate-500">About</dt>
             <dd className="font-medium text-slate-800">{merchant.bio || "—"}</dd>
           </div>
         </dl>
@@ -226,11 +226,12 @@ export default function MerchantProfileForm({
       <form onSubmit={handleSave} className="mt-4 space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-businessName" className="mb-1 block text-sm font-medium text-slate-700">
               Business name
               <RequiredTag />
             </label>
             <input
+              id="profile-businessName"
               required
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
@@ -238,11 +239,12 @@ export default function MerchantProfileForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-website" className="mb-1 block text-sm font-medium text-slate-700">
               Website
               <OptionalTag />
             </label>
             <input
+              id="profile-website"
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -252,11 +254,12 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-legalBusinessName" className="mb-1 block text-sm font-medium text-slate-700">
               Legal / registered business name
               <RequiredTag />
             </label>
             <input
+              id="profile-legalBusinessName"
               required
               value={legalBusinessName}
               onChange={(e) => setLegalBusinessName(e.target.value)}
@@ -264,11 +267,12 @@ export default function MerchantProfileForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-nzbn" className="mb-1 block text-sm font-medium text-slate-700">
               NZBN
               <OptionalTag />
             </label>
             <input
+              id="profile-nzbn"
               value={nzbn}
               onChange={(e) => setNzbn(e.target.value)}
               inputMode="numeric"
@@ -280,11 +284,12 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-contactName" className="mb-1 block text-sm font-medium text-slate-700">
               Contact name
               <RequiredTag />
             </label>
             <input
+              id="profile-contactName"
               required
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
@@ -292,11 +297,12 @@ export default function MerchantProfileForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-contactPhone" className="mb-1 block text-sm font-medium text-slate-700">
               Contact phone
               <RequiredTag />
             </label>
             <input
+              id="profile-contactPhone"
               required
               value={contactPhone}
               onChange={(e) => setContactPhone(e.target.value)}
@@ -308,11 +314,12 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-phone" className="mb-1 block text-sm font-medium text-slate-700">
               Phone
               <RequiredTag />
             </label>
             <input
+              id="profile-phone"
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -327,11 +334,12 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-bookingUrl" className="mb-1 block text-sm font-medium text-slate-700">
               Booking link
               <OptionalTag />
             </label>
             <input
+              id="profile-bookingUrl"
               value={bookingUrl}
               onChange={(e) => setBookingUrl(e.target.value)}
               placeholder="Your booking/reservation page, if you have one"
@@ -339,11 +347,12 @@ export default function MerchantProfileForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-bookingEmail" className="mb-1 block text-sm font-medium text-slate-700">
               Booking email
               <OptionalTag />
             </label>
             <input
+              id="profile-bookingEmail"
               type="email"
               value={bookingEmail}
               onChange={(e) => setBookingEmail(e.target.value)}
@@ -354,6 +363,7 @@ export default function MerchantProfileForm({
         </div>
 
         <AddressAutocompleteField
+          id="profile-address"
           address={address}
           onAddressChange={(value) => {
             setAddress(value);
@@ -381,11 +391,12 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-city" className="mb-1 block text-sm font-medium text-slate-700">
               City
               <RequiredTag />
             </label>
             <select
+              id="profile-city"
               required
               value={city}
               onChange={(e) => setCity(e.target.value)}
@@ -402,11 +413,12 @@ export default function MerchantProfileForm({
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-postcode" className="mb-1 block text-sm font-medium text-slate-700">
               Postcode
               <OptionalTag />
             </label>
             <input
+              id="profile-postcode"
               value={postcode}
               onChange={(e) => setPostcode(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -416,11 +428,12 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-facebookUrl" className="mb-1 block text-sm font-medium text-slate-700">
               Facebook
               <OptionalTag />
             </label>
             <input
+              id="profile-facebookUrl"
               value={facebookUrl}
               onChange={(e) => setFacebookUrl(e.target.value)}
               placeholder="https://facebook.com/yourbusiness"
@@ -428,11 +441,12 @@ export default function MerchantProfileForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-instagramUrl" className="mb-1 block text-sm font-medium text-slate-700">
               Instagram
               <OptionalTag />
             </label>
             <input
+              id="profile-instagramUrl"
               value={instagramUrl}
               onChange={(e) => setInstagramUrl(e.target.value)}
               placeholder="https://instagram.com/yourbusiness"
@@ -442,11 +456,12 @@ export default function MerchantProfileForm({
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label htmlFor="profile-bio" className="mb-1 block text-sm font-medium text-slate-700">
             About your business
             <OptionalTag />
           </label>
           <textarea
+            id="profile-bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={3}
@@ -456,11 +471,12 @@ export default function MerchantProfileForm({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-priceRange" className="mb-1 block text-sm font-medium text-slate-700">
               Price range
               <OptionalTag />
             </label>
             <select
+              id="profile-priceRange"
               value={priceRange}
               onChange={(e) => setPriceRange(e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -473,11 +489,12 @@ export default function MerchantProfileForm({
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="profile-amenities" className="mb-1 block text-sm font-medium text-slate-700">
               Features &amp; amenities
               <OptionalTag />
             </label>
             <input
+              id="profile-amenities"
               value={amenities}
               onChange={(e) => setAmenities(e.target.value)}
               placeholder="e.g. Vegan options, Free parking"

@@ -195,7 +195,7 @@ export default function MerchantsPage() {
             <SampleDealCard />
           </div>
 
-          <p className="mx-auto mt-4 max-w-md text-center text-xs text-slate-400">
+          <p className="mx-auto mt-4 max-w-md text-center text-xs text-slate-500">
             Deal pages also auto-show your bio, hours, amenities, price
             range, social links and a &quot;Book now&quot; button if you
             have one — so customers get the full picture before they
@@ -271,19 +271,13 @@ export default function MerchantsPage() {
               </div>
             ))}
           </div>
-          <p className="mx-auto mt-6 max-w-xl text-xs text-slate-500">
+          <p className="mx-auto mt-6 max-w-xl text-xs text-slate-600">
             We&apos;re not currently set up for pure online/product retailers
             (see{" "}
-            <Link href="/megashop" className="underline hover:text-slate-700">
+            <Link href="/megashop" className="underline hover:text-slate-800">
               MegaShop
             </Link>{" "}
             for that) or adult entertainment businesses.
-          </p>
-          <p className="mt-4 text-sm text-slate-500">
-            New businesses can get up to 3 months free advertising — enter
-            code <span className="font-semibold text-slate-600">WELCOME3</span> in the
-            referral/promo code field when you sign up.{" "}
-            <span className="text-slate-400">Conditions apply.</span>
           </p>
         </div>
       </section>
@@ -303,7 +297,7 @@ export default function MerchantsPage() {
                 <summary className="cursor-pointer list-none font-bold text-slate-900 marker:content-none">
                   <span className="flex items-center justify-between gap-4">
                     {f.q}
-                    <span className="shrink-0 text-slate-400 transition group-open:rotate-45">+</span>
+                    <span className="shrink-0 text-slate-500 transition group-open:rotate-45">+</span>
                   </span>
                 </summary>
                 <p className="mt-3 text-sm text-slate-600">{f.a}</p>

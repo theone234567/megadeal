@@ -82,7 +82,11 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         <p className="text-center text-sm text-slate-500">
           Enter the code we just emailed to <strong>{email}</strong>.
         </p>
+        <label htmlFor="login-verify-code" className="sr-only">
+          Verification code
+        </label>
         <input
+          id="login-verify-code"
           required
           value={code}
           onChange={(e) => setCode(e.target.value)}
@@ -104,7 +108,11 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
 
   return (
     <form onSubmit={handleSubmit} className="mt-6 w-full max-w-xs space-y-3 text-left">
+      <label htmlFor="login-email" className="sr-only">
+        Email
+      </label>
       <input
+        id="login-email"
         required
         type="email"
         value={email}
@@ -113,7 +121,11 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         autoComplete="email"
         className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
       />
+      <label htmlFor="login-password" className="sr-only">
+        Password
+      </label>
       <PasswordField
+        id="login-password"
         required
         value={password}
         onChange={setPassword}

@@ -46,10 +46,11 @@ export default function ContactForm() {
       className="space-y-4"
     >
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="contact-name" className="mb-1 block text-sm font-medium text-slate-700">
           Name
         </label>
         <input
+          id="contact-name"
           required
           name="name"
           type="text"
@@ -57,10 +58,11 @@ export default function ContactForm() {
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="contact-email" className="mb-1 block text-sm font-medium text-slate-700">
           Email
         </label>
         <input
+          id="contact-email"
           required
           name="email"
           type="email"
@@ -68,10 +70,11 @@ export default function ContactForm() {
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="contact-message" className="mb-1 block text-sm font-medium text-slate-700">
           Message
         </label>
         <textarea
+          id="contact-message"
           required
           name="message"
           rows={5}

@@ -17,7 +17,7 @@ function RequiredTag() {
 }
 
 function OptionalTag() {
-  return <span className="ml-1 font-normal text-slate-400">(optional)</span>;
+  return <span className="ml-1 font-normal text-slate-500">(optional)</span>;
 }
 
 /** Submits everything the /businesses form collected to create (or claim)
@@ -246,11 +246,12 @@ export default function MerchantSignupForm() {
 
           <div className="mt-3 space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label htmlFor="signup-email" className="mb-1 block text-sm font-medium text-slate-700">
                 Contact email
                 <RequiredTag />
               </label>
               <input
+                id="signup-email"
                 required
                 name="email"
                 type="email"
@@ -258,18 +259,19 @@ export default function MerchantSignupForm() {
                 placeholder="you@yourbusiness.co.nz"
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
               />
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-slate-500">
                 This becomes your login for the business portal.
               </p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-password" className="mb-1 block text-sm font-medium text-slate-700">
                   Password
                   <RequiredTag />
                 </label>
                 <PasswordField
+                  id="signup-password"
                   required
                   autoComplete="new-password"
                   value={password}
@@ -279,11 +281,12 @@ export default function MerchantSignupForm() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-confirmPassword" className="mb-1 block text-sm font-medium text-slate-700">
                   Confirm password
                   <RequiredTag />
                 </label>
                 <PasswordField
+                  id="signup-confirmPassword"
                   required
                   autoComplete="new-password"
                   value={confirmPassword}
@@ -293,18 +296,19 @@ export default function MerchantSignupForm() {
                 />
               </div>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Encrypted and verified by our secure account provider — MegaDeal never sees or
               stores your password.
             </p>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-contactName" className="mb-1 block text-sm font-medium text-slate-700">
                   Contact name
                   <RequiredTag />
                 </label>
                 <input
+                  id="signup-contactName"
                   required
                   name="contactName"
                   type="text"
@@ -313,11 +317,12 @@ export default function MerchantSignupForm() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-contactPhone" className="mb-1 block text-sm font-medium text-slate-700">
                   Contact phone
                   <RequiredTag />
                 </label>
                 <input
+                  id="signup-contactPhone"
                   required
                   name="contactPhone"
                   type="tel"
@@ -329,28 +334,30 @@ export default function MerchantSignupForm() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-legalBusinessName" className="mb-1 block text-sm font-medium text-slate-700">
                   Legal / registered business name
                   <RequiredTag />
                 </label>
                 <input
+                  id="signup-legalBusinessName"
                   required
                   name="legalBusinessName"
                   type="text"
                   placeholder="e.g. Harbourside Bistro Limited"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
                 />
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500">
                   The registered entity behind your business — sole trader,
                   partnership or company, whichever applies.
                 </p>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-nzbn" className="mb-1 block text-sm font-medium text-slate-700">
                   NZBN
                   <OptionalTag />
                 </label>
                 <input
+                  id="signup-nzbn"
                   name="nzbn"
                   type="text"
                   inputMode="numeric"
@@ -362,11 +369,12 @@ export default function MerchantSignupForm() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-couponCode" className="mb-1 block text-sm font-medium text-slate-700">
                   Referral or promo code
                   <OptionalTag />
                 </label>
                 <input
+                  id="signup-couponCode"
                   name="couponCode"
                   type="text"
                   defaultValue={referralPrefill || "WELCOME3"}
@@ -387,11 +395,12 @@ export default function MerchantSignupForm() {
           <div className="mt-3 space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-businessName" className="mb-1 block text-sm font-medium text-slate-700">
                   Business name
                   <RequiredTag />
                 </label>
                 <input
+                  id="signup-businessName"
                   required
                   name="businessName"
                   type="text"
@@ -400,11 +409,12 @@ export default function MerchantSignupForm() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-phone" className="mb-1 block text-sm font-medium text-slate-700">
                   Phone number
                   <RequiredTag />
                 </label>
                 <input
+                  id="signup-phone"
                   required
                   name="phone"
                   type="tel"
@@ -415,6 +425,7 @@ export default function MerchantSignupForm() {
             </div>
 
             <AddressAutocompleteField
+              id="signup-address"
               address={address}
               onAddressChange={(value) => {
                 setAddress(value);
@@ -432,11 +443,12 @@ export default function MerchantSignupForm() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-city" className="mb-1 block text-sm font-medium text-slate-700">
                   City
                   <RequiredTag />
                 </label>
                 <select
+                  id="signup-city"
                   required
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
@@ -453,11 +465,12 @@ export default function MerchantSignupForm() {
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-website" className="mb-1 block text-sm font-medium text-slate-700">
                   Website
                   <OptionalTag />
                 </label>
                 <input
+                  id="signup-website"
                   name="website"
                   type="url"
                   placeholder="https://yourbusiness.co.nz"
@@ -467,11 +480,12 @@ export default function MerchantSignupForm() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label htmlFor="signup-bio" className="mb-1 block text-sm font-medium text-slate-700">
                 About your business
                 <OptionalTag />
               </label>
               <textarea
+                id="signup-bio"
                 name="bio"
                 rows={3}
                 placeholder="A couple of sentences customers will see on your business profile — what you do, what makes you worth a visit."
@@ -485,11 +499,12 @@ export default function MerchantSignupForm() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-bookingUrl" className="mb-1 block text-sm font-medium text-slate-700">
                   Booking link
                   <OptionalTag />
                 </label>
                 <input
+                  id="signup-bookingUrl"
                   name="bookingUrl"
                   type="url"
                   placeholder="Your booking/reservation page, if you have one"
@@ -497,17 +512,18 @@ export default function MerchantSignupForm() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-bookingEmail" className="mb-1 block text-sm font-medium text-slate-700">
                   Booking email
                   <OptionalTag />
                 </label>
                 <input
+                  id="signup-bookingEmail"
                   name="bookingEmail"
                   type="email"
                   placeholder="bookings@yourbusiness.co.nz"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
                 />
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500">
                   Only if you want a different email shown to customers than your
                   contact email above.
                 </p>
@@ -516,11 +532,12 @@ export default function MerchantSignupForm() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-priceRange" className="mb-1 block text-sm font-medium text-slate-700">
                   Price range
                   <OptionalTag />
                 </label>
                 <select
+                  id="signup-priceRange"
                   name="priceRange"
                   defaultValue=""
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -533,11 +550,12 @@ export default function MerchantSignupForm() {
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-facebookUrl" className="mb-1 block text-sm font-medium text-slate-700">
                   Facebook
                   <OptionalTag />
                 </label>
                 <input
+                  id="signup-facebookUrl"
                   name="facebookUrl"
                   type="url"
                   placeholder="https://facebook.com/yourbusiness"
@@ -548,11 +566,12 @@ export default function MerchantSignupForm() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-instagramUrl" className="mb-1 block text-sm font-medium text-slate-700">
                   Instagram
                   <OptionalTag />
                 </label>
                 <input
+                  id="signup-instagramUrl"
                   name="instagramUrl"
                   type="url"
                   placeholder="https://instagram.com/yourbusiness"
@@ -562,17 +581,18 @@ export default function MerchantSignupForm() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label htmlFor="signup-amenities" className="mb-1 block text-sm font-medium text-slate-700">
                 Features &amp; amenities
                 <OptionalTag />
               </label>
               <input
+                id="signup-amenities"
                 name="amenities"
                 type="text"
                 placeholder="e.g. Vegan options, Free parking, Wheelchair accessible"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
               />
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-slate-500">
                 Comma-separated. Use whatever&apos;s relevant — cuisine or
                 dietary options for a restaurant, class types for a gym,
                 treatments for a spa, and so on.

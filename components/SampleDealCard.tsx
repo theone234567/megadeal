@@ -50,7 +50,7 @@ export default function SampleDealCard() {
               <span className="text-xl font-extrabold text-slate-900">
                 {formatMoney(49, "NZD", null)}
               </span>
-              <span className="text-sm text-slate-400 line-through">
+              <span className="text-sm text-slate-500 line-through">
                 {formatMoney(99, "NZD", null)}
               </span>
             </div>

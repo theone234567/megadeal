@@ -50,6 +50,7 @@ async function fetchPhotonSuggestions(query: string): Promise<AddressSuggestion[
  * geocoder actually resolved the address.
  */
 export default function AddressAutocompleteField({
+  id = "business-address",
   address,
   onAddressChange,
   onSelect,
@@ -60,6 +61,7 @@ export default function AddressAutocompleteField({
   required = true,
   helperText = "Pick a suggestion so we can show customers a map/directions link.",
 }: {
+  id?: string;
   address: string;
   onAddressChange: (value: string) => void;
   onSelect: (suggestion: AddressSuggestion) => void;
@@ -138,11 +140,12 @@ export default function AddressAutocompleteField({
 
   return (
     <div ref={boxRef} className="relative">
-      <label className="mb-1 block text-sm font-medium text-slate-700">
+      <label htmlFor={id} className="mb-1 block text-sm font-medium text-slate-700">
         {label}
         {required && <span className="ml-1 font-normal text-ember-600">Required</span>}
       </label>
       <input
+        id={id}
         required={required}
         type="text"
         autoComplete="off"
@@ -155,7 +158,7 @@ export default function AddressAutocompleteField({
         placeholder="Start typing your street address…"
         className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
       />
-      {helperText && <p className="mt-1 text-xs text-slate-400">{helperText}</p>}
+      {helperText && <p className="mt-1 text-xs text-slate-500">{helperText}</p>}
 
       {showSuggestions && suggestions.length > 0 && (
         <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card-hover">

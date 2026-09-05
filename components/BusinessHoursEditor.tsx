@@ -55,7 +55,7 @@ export default function BusinessHoursEditor({
     <div>
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-slate-700">
-          Opening hours <span className="font-normal text-slate-400">(optional)</span>
+          Opening hours <span className="font-normal text-slate-500">(optional)</span>
         </span>
         <button
           type="button"
@@ -74,6 +74,7 @@ export default function BusinessHoursEditor({
               <label className="flex items-center gap-1.5 text-xs text-slate-500">
                 <input
                   type="checkbox"
+                  aria-label={`${day.day} closed`}
                   checked={day.closed}
                   onChange={(e) =>
                     updateDay(i, {
@@ -94,6 +95,7 @@ export default function BusinessHoursEditor({
                   <div key={ri} className="flex items-center gap-2">
                     <input
                       type="time"
+                      aria-label={`${day.day} opening time`}
                       value={range.open}
                       onChange={(e) => {
                         const ranges = [...day.ranges];
@@ -102,9 +104,10 @@ export default function BusinessHoursEditor({
                       }}
                       className="rounded-lg border border-slate-200 px-2 py-1 text-sm"
                     />
-                    <span className="text-slate-400">–</span>
+                    <span className="text-slate-500">–</span>
                     <input
                       type="time"
+                      aria-label={`${day.day} closing time`}
                       value={range.close}
                       onChange={(e) => {
                         const ranges = [...day.ranges];
@@ -120,7 +123,7 @@ export default function BusinessHoursEditor({
                           const ranges = day.ranges.filter((_, x) => x !== ri);
                           updateDay(i, { ...day, ranges });
                         }}
-                        className="text-xs font-semibold text-slate-400 hover:text-ember-600"
+                        className="text-xs font-semibold text-slate-500 hover:text-ember-600"
                         aria-label={`Remove this ${day.day} time range`}
                       >
                         ✕
@@ -148,7 +151,7 @@ export default function BusinessHoursEditor({
 
       <label className="mt-3 block text-sm">
         <span className="mb-1 block font-medium text-slate-700">
-          Notes <span className="font-normal text-slate-400">(optional)</span>
+          Notes <span className="font-normal text-slate-500">(optional)</span>
         </span>
         <input
           type="text"

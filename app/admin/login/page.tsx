@@ -41,7 +41,11 @@ export default function AdminLoginPage() {
         the site owner&apos;s admin password.
       </p>
       <form onSubmit={handleSubmit} className="mt-6 w-full space-y-3">
+        <label htmlFor="admin-password" className="sr-only">
+          Admin password
+        </label>
         <PasswordField
+          id="admin-password"
           required
           autoFocus
           value={password}
