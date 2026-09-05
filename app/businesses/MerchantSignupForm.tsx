@@ -233,7 +233,7 @@ export default function MerchantSignupForm() {
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
           <h4 className="text-sm font-bold text-slate-700">🔒 Account &amp; private details</h4>
           <p className="mt-0.5 text-xs text-slate-500">
-            Only MegaDeal sees this — it&apos;s never shown to customers.
+            Kept private — never shown to customers.
           </p>
 
           <div className="mt-3 space-y-4">
@@ -287,6 +287,10 @@ export default function MerchantSignupForm() {
                 />
               </div>
             </div>
+            <p className="text-xs text-slate-400">
+              Checked and stored directly by Wix, our account provider — MegaDeal never sees or
+              stores your password.
+            </p>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
