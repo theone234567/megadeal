@@ -66,6 +66,10 @@ const FAQS = [
     a: "MegaDeal works best for local businesses with some spare capacity to fill — an off-peak dinner slot, a treatment room between appointments, seats on a tour that isn't full. We don't currently accept pure online/e-commerce stores or adult entertainment businesses.",
   },
   {
+    q: "Will customers see my deal if they're nearby?",
+    a: "📍 Yes — customers can sort deals by \"Nearest to me\", so setting an accurate pin on the map when you sign up genuinely matters: it's what puts your deal in front of the people closest to you first.",
+  },
+  {
     q: "Does my listing need to be an actual discount?",
     a: "Yes — a genuine discount, a free extra, or some other real added value versus your normal price, not just an ad at full price. It works out better for everyone: a real offer is what actually gets customers through your door, and a site full of genuine deals is what keeps them coming back to browse in the first place. As a rule of thumb, the better the offer, the more attention it tends to get.",
   },
