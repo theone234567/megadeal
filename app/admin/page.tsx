@@ -204,9 +204,8 @@ export default function AdminDashboardPage() {
                       <th className="pb-2 pr-4">Address</th>
                       <th className="pb-2 pr-4">Coupon</th>
                       <th className="pb-2 pr-4">Credits</th>
-                      <th className="pb-2 pr-4">Rating</th>
                       <th className="pb-2 pr-4">Status</th>
-                      <th className="pb-2">Save</th>
+                      <th className="pb-2"></th>
                     </tr>
                   </thead>
                   <tbody>

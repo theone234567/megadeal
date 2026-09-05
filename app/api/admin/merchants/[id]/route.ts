@@ -6,8 +6,19 @@ import { SITE_URL } from "@/lib/siteConfig";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { escapeHtml } from "@/lib/escapeHtml";
+import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
+import { isValidNzbnFormat } from "@/lib/nzbn";
 
 const ALLOWED_STATUSES = ["Pending", "Approved", "Suspended"];
+const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
+const MAX_TEXT_LENGTH = 300;
+const MAX_BIO_LENGTH = 600;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function cleanText(value: unknown, maxLength: number): string {
+  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+}
+
 const INTRO_CREDITS = 2;
 const REFERRAL_BONUS_CREDITS: number = 2;
 // The "up to 3 months free advertising" offer advertised on /businesses —
@@ -81,6 +92,23 @@ async function claimPromoAtomically(adminClient: any, merchantId: string): Promi
   }
 }
 
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  if (!isAdminRequest(req)) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+  try {
+    const adminClient = createWixAdminClient();
+    const item = await adminClient.items.get("Merchants", params.id);
+    if (!item) {
+      return NextResponse.json({ error: "Business not found." }, { status: 404 });
+    }
+    return NextResponse.json({ item });
+  } catch (err) {
+    console.error("[admin/merchants/[id]] GET failed", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -127,6 +155,96 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       patch.reviewCount = reviewCount;
     }
   }
+  // Profile-detail corrections — admin fixing a typo or filling in something
+  // a business got wrong, not the merchant's own self-edit (which sends the
+  // listing back to "Pending" for re-review). An admin edit is trusted, so
+  // it doesn't touch status. Same validation as the merchant-facing
+  // /api/merchants/profile route, since this writes to the same fields.
+  if (body.businessName !== undefined) {
+    const v = cleanText(body.businessName, MAX_TEXT_LENGTH);
+    if (!v) return NextResponse.json({ error: "Business name can't be empty." }, { status: 400 });
+    patch.businessName = v;
+  }
+  if (body.legalBusinessName !== undefined) {
+    const v = cleanText(body.legalBusinessName, MAX_TEXT_LENGTH);
+    if (!v) return NextResponse.json({ error: "Legal business name can't be empty." }, { status: 400 });
+    patch.legalBusinessName = v;
+  }
+  if (body.contactName !== undefined) {
+    const v = cleanText(body.contactName, MAX_TEXT_LENGTH);
+    if (!v) return NextResponse.json({ error: "Contact name can't be empty." }, { status: 400 });
+    patch.contactName = v;
+  }
+  if (body.contactPhone !== undefined) {
+    const v = cleanText(body.contactPhone, MAX_TEXT_LENGTH);
+    if (!v) return NextResponse.json({ error: "Contact phone can't be empty." }, { status: 400 });
+    patch.contactPhone = v;
+  }
+  if (body.nzbn !== undefined) {
+    const v = cleanText(body.nzbn, 13);
+    if (!isValidNzbnFormat(v)) {
+      return NextResponse.json({ error: "NZBN must be 13 digits." }, { status: 400 });
+    }
+    patch.nzbn = v;
+  }
+  if (body.phone !== undefined) patch.phone = cleanText(body.phone, MAX_TEXT_LENGTH);
+  if (body.address !== undefined) patch.address = cleanText(body.address, MAX_TEXT_LENGTH);
+  if (body.city !== undefined) patch.city = cleanText(body.city, MAX_TEXT_LENGTH);
+  if (body.postcode !== undefined) patch.postcode = cleanText(body.postcode, 20);
+  if (body.website !== undefined) {
+    const v = cleanText(body.website, MAX_TEXT_LENGTH);
+    if (!isSafeOptionalUrl(v)) {
+      return NextResponse.json({ error: "Enter a valid website address." }, { status: 400 });
+    }
+    patch.website = v;
+  }
+  if (body.bio !== undefined) patch.bio = cleanText(body.bio, MAX_BIO_LENGTH);
+  if (body.businessHours !== undefined) patch.businessHours = cleanText(body.businessHours, MAX_TEXT_LENGTH);
+  if (body.bookingUrl !== undefined) {
+    const v = cleanText(body.bookingUrl, MAX_TEXT_LENGTH);
+    if (!isSafeOptionalUrl(v)) {
+      return NextResponse.json({ error: "Enter a valid booking link." }, { status: 400 });
+    }
+    patch.bookingUrl = v;
+  }
+  if (body.bookingEmail !== undefined) {
+    const v = cleanText(body.bookingEmail, MAX_TEXT_LENGTH);
+    if (v && !EMAIL_RE.test(v)) {
+      return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
+    }
+    patch.bookingEmail = v;
+  }
+  if (body.facebookUrl !== undefined) {
+    const v = cleanText(body.facebookUrl, MAX_TEXT_LENGTH);
+    if (!isValidSocialUrl(v, "facebook")) {
+      return NextResponse.json(
+        { error: "Enter a valid Facebook page URL (e.g. facebook.com/yourbusiness)." },
+        { status: 400 }
+      );
+    }
+    patch.facebookUrl = v;
+  }
+  if (body.instagramUrl !== undefined) {
+    const v = cleanText(body.instagramUrl, MAX_TEXT_LENGTH);
+    if (!isValidSocialUrl(v, "instagram")) {
+      return NextResponse.json(
+        { error: "Enter a valid Instagram profile URL (e.g. instagram.com/yourbusiness)." },
+        { status: 400 }
+      );
+    }
+    patch.instagramUrl = v;
+  }
+  if (body.priceRange !== undefined) {
+    const v = cleanText(body.priceRange, 4);
+    if (!ALLOWED_PRICE_RANGES.includes(v)) {
+      return NextResponse.json({ error: "Invalid price range." }, { status: 400 });
+    }
+    patch.priceRange = v;
+  }
+  if (body.amenities !== undefined) patch.amenities = cleanText(body.amenities, MAX_TEXT_LENGTH);
+  if (body.lat !== undefined) patch.lat = Number.isFinite(body.lat) ? Number(body.lat) : null;
+  if (body.lng !== undefined) patch.lng = Number.isFinite(body.lng) ? Number(body.lng) : null;
+
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }
