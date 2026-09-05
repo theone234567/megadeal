@@ -264,7 +264,7 @@ export default async function MerchantsPage() {
             <li>📧 A launch email straight to everyone on our waiting list, the moment we go live</li>
             <li>📍 100% of our launch marketing budget goes into Auckland — not spread thin across the whole country</li>
             <li>📰 Local press and community outreach in the weeks before launch</li>
-            <li>🎁 Referral incentives for the first customers who redeem a deal, so word spreads fast</li>
+            <li>🎁 Referral incentives</li>
           </ul>
         </div>
       </section>
