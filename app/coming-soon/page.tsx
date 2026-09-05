@@ -214,7 +214,7 @@ export default function ComingSoonPage() {
       </section>
 
       {/* Customers */}
-      <section id="customers" className="scroll-mt-[140px] bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
+      <section id="customers" className="scroll-mt-[140px] bg-slate-50 px-4 pb-8 pt-16 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2">
           <div>
             <span className="text-xs font-bold uppercase tracking-wide text-brand-600">
@@ -278,22 +278,6 @@ export default function ComingSoonPage() {
         </div>
       </section>
 
-      {/* Closer */}
-      <section className="px-4 py-16 text-center sm:px-6 lg:px-8">
-        <div className="flex justify-center gap-6 text-xs text-slate-400">
-          <Link href="/terms" className="hover:text-brand-600">
-            Terms
-          </Link>
-          <Link href="/privacy" className="hover:text-brand-600">
-            Privacy
-          </Link>
-          {SITE_LAUNCHED && (
-            <Link href="/" className="hover:text-brand-600">
-              Beta site
-            </Link>
-          )}
-        </div>
-      </section>
     </main>
   );
 }
