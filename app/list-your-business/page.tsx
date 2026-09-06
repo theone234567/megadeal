@@ -171,7 +171,7 @@ export default async function MerchantsPage() {
 
         <div className="relative mx-auto max-w-3xl">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
-            🚀 Now recruiting founding Auckland businesses
+            🚀 Launching soon in Auckland — founding businesses wanted
           </span>
 
           <h1 className="mt-6 text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
