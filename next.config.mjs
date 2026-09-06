@@ -9,15 +9,21 @@ const nextConfig = {
     ],
   },
   async redirects() {
-    // The public merchant-signup section moved from /merchants to
-    // /businesses (less "marketplace where you buy through us" sounding,
-    // more consistent with the rest of the site's own copy). Permanent
-    // redirects so existing bookmarks, indexed search results, and
-    // already-shared referral links (?ref=CODE) keep working — query
-    // strings and any #fragment are preserved automatically.
+    // The public merchant-signup section has moved twice now: /merchants ->
+    // /businesses (less "marketplace where you buy through us" sounding)
+    // -> /list-your-business (a clearer, more search-intent-matching URL —
+    // "/businesses" read like a directory of businesses to browse, not a
+    // signup page, and didn't match how the site's own nav already
+    // describes this page: "List your business"). Both old paths redirect
+    // straight to the final destination rather than chaining through the
+    // intermediate one. Permanent redirects so existing bookmarks, indexed
+    // search results, and already-shared referral links (?ref=CODE) keep
+    // working — query strings and any #fragment are preserved automatically.
     return [
-      { source: "/merchants", destination: "/businesses", permanent: true },
-      { source: "/merchants/:path*", destination: "/businesses/:path*", permanent: true },
+      { source: "/merchants", destination: "/list-your-business", permanent: true },
+      { source: "/merchants/:path*", destination: "/list-your-business/:path*", permanent: true },
+      { source: "/businesses", destination: "/list-your-business", permanent: true },
+      { source: "/businesses/:path*", destination: "/list-your-business/:path*", permanent: true },
     ];
   },
   async headers() {

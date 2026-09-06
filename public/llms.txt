@@ -13,7 +13,7 @@
 
 - Homepage (all live deals): /
 - How it works: /how-it-works
-- List your business / advertise your deal: /businesses
+- List your business / advertise your deal: /list-your-business
 - About: /about
 - Contact: /contact
 - Terms of service: /terms

@@ -12,9 +12,9 @@ const TIME_TRIGGER_MS = 18_000;
 // Pages where an email-capture popup would just get in the way of the
 // actual point of the page — each of these already has its own prominent,
 // on-page signup/application form, so a popup on top is redundant at best
-// and actively counterproductive on /businesses (interrupting a business
-// application with a customer-deals prompt).
-const SUPPRESSED_PREFIXES = ["/businesses", "/coming-soon", "/portal", "/admin"];
+// and actively counterproductive on /list-your-business (interrupting a
+// business application with a customer-deals prompt).
+const SUPPRESSED_PREFIXES = ["/list-your-business", "/coming-soon", "/portal", "/admin"];
 
 /**
  * Small, dismissible bottom-corner email-capture prompt — deliberately NOT

@@ -9,7 +9,7 @@ const THRESHOLDS = [25, 50, 75, 100];
  * Site-wide scroll-depth instrumentation — sends a GA4 "scroll_depth" event
  * the first time a visitor crosses 25/50/75/100% of a page's height, so we
  * can see where visitors actually stop reading on long single-page layouts
- * (like /businesses) instead of guessing from copy alone. No-ops silently
+ * (like /list-your-business) instead of guessing from copy alone. No-ops silently
  * when GA isn't configured — window.gtag is then just undefined.
  */
 export default function ScrollDepthTracker() {

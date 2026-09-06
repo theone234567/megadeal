@@ -69,7 +69,7 @@ export default function PortalPage() {
 
     // Goes through a server route rather than querying the Merchants
     // collection directly: a business can apply before ever signing in
-    // (see /businesses), so their record may have no owner yet — this route
+    // (see /list-your-business), so their record may have no owner yet — this route
     // claims it for the signed-in member on first access by matching email.
     fetch("/api/merchants/me")
       .then((res) => (res.ok ? res.json() : { item: null }))
@@ -161,7 +161,7 @@ export default function PortalPage() {
         <MerchantLoginForm />
         <p className="mt-4 text-sm text-slate-500">
           New here?{" "}
-          <Link href="/businesses#signup" className="font-semibold text-brand-600 hover:underline">
+          <Link href="/list-your-business#signup" className="font-semibold text-brand-600 hover:underline">
             Sign up your business
           </Link>
         </p>
@@ -188,7 +188,7 @@ export default function PortalPage() {
             application on file for this account yet.
           </p>
           <Link
-            href="/businesses#signup"
+            href="/list-your-business#signup"
             className="mt-4 inline-block rounded-full bg-ember-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-ember-600"
           >
             Sign up your business

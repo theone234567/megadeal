@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   try {
     const staticUrls = [
       `${SITE_URL}/`,
-      `${SITE_URL}/businesses`,
+      `${SITE_URL}/list-your-business`,
       `${SITE_URL}/how-it-works`,
       `${SITE_URL}/about`,
       `${SITE_URL}/contact`,

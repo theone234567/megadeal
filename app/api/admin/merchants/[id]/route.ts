@@ -24,7 +24,7 @@ function cleanText(value: unknown, maxLength: number): string {
 
 const INTRO_CREDITS = 2;
 const REFERRAL_BONUS_CREDITS: number = 2;
-// The "up to 3 months free advertising" offer advertised on /businesses —
+// The "up to 3 months free advertising" offer advertised on /list-your-business —
 // a business enters this in the same "Referral code" field used for peer
 // referrals. It isn't anyone's real referralCode, so it can never collide
 // with an actual referral match; the two are handled as separate branches

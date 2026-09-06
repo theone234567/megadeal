@@ -1,9 +1,10 @@
 import { ImageResponse } from "next/og";
 
 // Route-segment override of the root app/opengraph-image.tsx — Next.js
-// picks this one for any /businesses URL instead of the generic site-wide
-// share image, so a link to this page shows what it's actually about
-// (the free-advertising offer) rather than the generic homepage tagline.
+// picks this one for any /list-your-business URL instead of the generic
+// site-wide share image, so a link to this page shows what it's actually
+// about (the free-advertising offer) rather than the generic homepage
+// tagline.
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

@@ -7,11 +7,12 @@ import SocialLinks from "./SocialLinks";
 import EmailSignupForm from "./EmailSignupForm";
 
 export default function Footer() {
-  // /businesses already is this exact pitch, right down to the same
-  // WELCOME3 offer, ending with the identical banner right after a visitor
-  // has just seen (or filled in) the signup form reads as pure repetition.
+  // /list-your-business already is this exact pitch, right down to the
+  // same WELCOME3 offer, ending with the identical banner right after a
+  // visitor has just seen (or filled in) the signup form reads as pure
+  // repetition.
   const pathname = usePathname();
-  const hideOwnABusinessCta = pathname?.startsWith("/businesses");
+  const hideOwnABusinessCta = pathname?.startsWith("/list-your-business");
 
   return (
     <footer className="mt-16 border-t border-slate-100 bg-slate-50">
@@ -27,7 +28,7 @@ export default function Footer() {
               </p>
             </div>
             <Link
-              href="/businesses"
+              href="/list-your-business"
               className="shrink-0 rounded-full bg-ember-500 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-ember-600"
             >
               List your deal →
@@ -57,7 +58,7 @@ export default function Footer() {
             <h4 className="mb-3 text-sm font-bold text-slate-900">Company</h4>
             <ul className="space-y-2 text-sm text-slate-600">
               <li>
-                <Link href="/businesses" className="hover:text-brand-700">
+                <Link href="/list-your-business" className="hover:text-brand-700">
                   List your business
                 </Link>
               </li>

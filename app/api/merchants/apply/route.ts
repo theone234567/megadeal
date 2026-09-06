@@ -43,7 +43,7 @@ function welcomeEmailHtml(businessName: string): string {
 
 /**
  * Creates or updates the signed-in member's business application. Requires
- * an account now (see app/businesses/MerchantSignupForm.tsx — signup and
+ * an account now (see app/list-your-business/MerchantSignupForm.tsx — signup and
  * application are one flow, the account is created first via Wix's own
  * Custom Login register()), rather than the old "apply first, claim later"
  * design. getOrClaimMerchant still runs first so this can't create a

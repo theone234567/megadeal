@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "Free Advertising for Your NZ Business — MegaDeal",
   description:
     "Be one of the first businesses on MegaDeal. No lock-in contracts, zero commission, and a limited-time free advertising offer for new NZ businesses.",
-  alternates: { canonical: `${SITE_URL}/businesses` },
+  alternates: { canonical: `${SITE_URL}/list-your-business` },
 };
 
 const PERKS = [
@@ -160,7 +160,7 @@ export default async function MerchantsPage() {
               "@type": "BusinessAudience",
               audienceType: "Local businesses (restaurants, spas, activities, tours, getaways)",
             },
-            url: `${SITE_URL}/businesses`,
+            url: `${SITE_URL}/list-your-business`,
           }),
         }}
       />
@@ -191,7 +191,7 @@ export default async function MerchantsPage() {
           </p>
           <p className="mx-auto mt-6 max-w-xl text-sm font-semibold text-brand-100">
             Perfect for 🍽️ Restaurants, 💆 Spas, 🏋️ Gyms, 🧘 Yoga
-            studios, 🚐 Tours &amp; 🏨 Getaways
+            studios, 🚐 Tours, 🏨 Getaways &amp; 🧹 Home services
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

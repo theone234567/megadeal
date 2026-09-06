@@ -59,7 +59,7 @@ export default function AboutPage() {
         following shortly after — Wellington, Christchurch and Queenstown are
         next on the list. If there&apos;s a business you love that you&apos;d
         like to see on MegaDeal, let their owner know — or point them to our{" "}
-        <a href="/businesses" className="text-brand-600 hover:underline">
+        <a href="/list-your-business" className="text-brand-600 hover:underline">
           business page
         </a>
         .

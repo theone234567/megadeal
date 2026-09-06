@@ -27,12 +27,12 @@ function OptionalTag() {
  * step (components/portal/MerchantProfileForm.tsx, unchanged by this
  * experiment) so the initial signup only asks for what's actually required
  * to create the account and start a review. To revert: restore this file
- * (and app/businesses/page.tsx's intro copy) from the commit before this
- * one — the API route and the portal form already treat every deferred
- * field as optional, so nothing else needs to change.
+ * (and app/list-your-business/page.tsx's intro copy) from the commit before
+ * this one — the API route and the portal form already treat every
+ * deferred field as optional, so nothing else needs to change.
  */
 
-/** Submits everything the /businesses form collected to create (or claim)
+/** Submits everything the /list-your-business form collected to create (or claim)
  *  the business application — called only once the account itself exists
  *  and, if Wix required it, its email is verified. */
 async function submitApplication(formEl: HTMLFormElement, extra: {

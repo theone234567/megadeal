@@ -4,7 +4,7 @@ import CountdownBadge from "@/components/CountdownBadge";
 
 /**
  * Static, non-interactive mockup of what a real deal listing looks like —
- * used on both /businesses and /coming-soon to give a prospective merchant
+ * used on both /list-your-business and /coming-soon to give a prospective merchant
  * something concrete to picture instead of just abstract copy. Not the
  * real DealCard component: this never links anywhere and its data is
  * entirely fixed, so it can't accidentally be mistaken for a live deal.

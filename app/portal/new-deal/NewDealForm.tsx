@@ -258,7 +258,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           You don&apos;t have a business application on file yet.
         </p>
         <Link
-          href="/businesses#signup"
+          href="/list-your-business#signup"
           className="mt-4 inline-block rounded-full bg-ember-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-ember-600"
         >
           Sign up your business

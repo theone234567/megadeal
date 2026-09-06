@@ -62,7 +62,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       // instead of waiting on their own discovery schedule. Never blocks
       // the response — a failed push just falls back to normal sitemap
       // discovery, same as before IndexNow existed.
-      const urls = [`${SITE_URL}/`, `${SITE_URL}/businesses`];
+      const urls = [`${SITE_URL}/`, `${SITE_URL}/list-your-business`];
       if (existing.productId) {
         adminClient.productsV3
           .getProduct(existing.productId, {} as any)

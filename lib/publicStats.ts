@@ -6,7 +6,7 @@ export interface SignupStats {
 }
 
 /**
- * Real counts for /businesses' cold-start trust signal — how many
+ * Real counts for /list-your-business' cold-start trust signal — how many
  * businesses have actually been approved, and how many customers are
  * already on the launch waitlist. Both collections are admin-only in Wix
  * (a merchant's own SITE_MEMBER_AUTHOR token can't read across other

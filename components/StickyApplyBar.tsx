@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 /**
- * Sticky mobile-only "Sign up your business" bar for /businesses. The page
+ * Sticky mobile-only "Sign up your business" bar for /list-your-business. The page
  * is long (hero -> offer -> fit -> pre-launch -> preview -> perks -> how it
  * works -> FAQ -> founder note) before the real form, so once a visitor
  * scrolls past the hero there's no CTA back in view until they reach it.

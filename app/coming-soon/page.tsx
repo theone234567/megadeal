@@ -148,7 +148,7 @@ export default function ComingSoonPage() {
               </p>
               <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link
-                  href="/businesses"
+                  href="/list-your-business"
                   className="rounded-full bg-white px-6 py-3 text-sm font-bold text-ember-600 shadow-card transition active:scale-95 hover:bg-ember-50"
                 >
                   See how it works &amp; apply →

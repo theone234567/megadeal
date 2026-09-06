@@ -71,7 +71,7 @@ export default function HowItWorksPage() {
       <h3>1. Create your account &amp; apply</h3>
       <p>
         Set up your login and tell us about your business on our{" "}
-        <a href="/businesses" className="text-brand-600 hover:underline">
+        <a href="/list-your-business" className="text-brand-600 hover:underline">
           business page
         </a>{" "}
         — one form, a couple of minutes, and you&apos;re straight into your

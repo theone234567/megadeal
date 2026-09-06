@@ -35,8 +35,8 @@ export const config = {
   // Google's sitemap crawler, which has little patience for that extra
   // network hop on what should be a trivial static file. The first
   // alternation catches opengraph-image/icon routes wherever they're
-  // nested (e.g. app/businesses/opengraph-image.tsx serving
-  // /businesses/opengraph-image, not just the root /opengraph-image) —
+  // nested (e.g. app/list-your-business/opengraph-image.tsx serving
+  // /list-your-business/opengraph-image, not just the root /opengraph-image) —
   // Next.js lets any route segment override these with its own file, and
   // each one still deserves the same bypass a social-media link scraper
   // benefits from.
