@@ -60,6 +60,8 @@ const BUSINESS_TYPES = [
   { emoji: "🧘", label: "Yoga & pilates", hook: "Fill every mat, not just the popular slots" },
   { emoji: "🚐", label: "Tours & activities", hook: "Sell the seats that would've gone empty" },
   { emoji: "🏨", label: "Getaways & stays", hook: "Fill your rooms on the nights that need it" },
+  { emoji: "🎨", label: "Workshops & classes", hook: "Fill the empty seats in your next class" },
+  { emoji: "🎉", label: "Entertainment & nightlife", hook: "Turn a slow weeknight into a sell-out" },
 ];
 
 const FAQS = [
