@@ -10,6 +10,7 @@ import HowToUseStrip from "@/components/HowToUseStrip";
 import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
 import StarRating from "@/components/StarRating";
 import ShareButtons from "@/components/ShareButtons";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { parseBusinessHours, formatBusinessHoursLines, toOpeningHoursSpecification, isOpenNow } from "@/lib/businessHours";
 
@@ -113,11 +114,9 @@ export default async function BusinessProfilePage({
         }}
       />
 
-      <Link href="/" className="text-sm text-slate-500 hover:text-brand-700">
-        ← Back to all deals
-      </Link>
+      <Breadcrumbs items={[{ name: business.businessName }]} />
 
-      <div className="mt-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
+      <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
         <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
           {business.logoUrl ? (
             <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">

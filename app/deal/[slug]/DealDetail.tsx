@@ -14,6 +14,7 @@ import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } f
 import { trackDealEvent } from "@/lib/trackDeal";
 import { parseBusinessHours, formatBusinessHoursLines, isOpenNow } from "@/lib/businessHours";
 import StarRating from "@/components/StarRating";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 // The deal (and its related deals) are fetched server-side (see page.tsx)
 // so the description, price, and business info are present in the raw
@@ -61,13 +62,20 @@ export default function DealDetail({
     city: deal.businessCity,
   });
 
+  const category = deal.categories[0];
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <Link href="/" className="text-sm text-slate-500 hover:text-brand-700">
-        ← Back to all deals
-      </Link>
+      <Breadcrumbs
+        items={[
+          ...(category
+            ? [{ name: category, href: `/category/${encodeURIComponent(category)}` }]
+            : []),
+          { name: deal.name },
+        ]}
+      />
 
-      <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
         <div className="lg:col-span-3">
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100">
             {deal.image ? (

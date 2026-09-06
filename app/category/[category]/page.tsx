@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CategoryNav from "@/components/CategoryNav";
 import HowToUseStrip from "@/components/HowToUseStrip";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { CATEGORIES } from "@/lib/categories";
 import CategoryDeals from "./CategoryDeals";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
@@ -81,6 +82,7 @@ export default async function CategoryPage({
             }}
           />
         )}
+        <Breadcrumbs items={[{ name: category }]} />
         <h1 className="mb-5 text-2xl font-extrabold text-slate-900">{category}</h1>
         <Suspense fallback={null}>
           <CategoryDeals category={category} initialDeals={deals} />

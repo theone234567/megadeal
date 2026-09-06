@@ -21,6 +21,14 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
+  // Google/Bing verification codes, once you have them (see below), go in
+  // Cloudflare's runtime variables — no redeploy needed to pick them up.
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+    other: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+      ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION }
+      : undefined,
+  },
   openGraph: {
     title: `${SITE_NAME} — Local deals up to 70% off`,
     description: SITE_DESCRIPTION,
