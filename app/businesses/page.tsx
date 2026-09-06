@@ -62,6 +62,7 @@ const BUSINESS_TYPES = [
   { emoji: "🏨", label: "Getaways & stays", hook: "Fill your rooms on the nights that need it" },
   { emoji: "🎨", label: "Workshops & classes", hook: "Fill the empty seats in your next class" },
   { emoji: "🎉", label: "Entertainment & nightlife", hook: "Turn a slow weeknight into a sell-out" },
+  { emoji: "🧹", label: "Home services", hook: "Turn a slow booking week into a full one" },
 ];
 
 const FAQS = [
