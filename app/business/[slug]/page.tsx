@@ -302,6 +302,16 @@ export default async function BusinessProfilePage({
         )}
       </div>
 
+      <p className="mt-4 text-xs text-slate-400">
+        {business.businessName} is a business advertising on MegaDeal —
+        MegaDeal doesn&apos;t process any payment or booking and isn&apos;t
+        a party to your booking with them. See our{" "}
+        <Link href="/terms" className="underline hover:text-slate-500">
+          terms
+        </Link>
+        .
+      </p>
+
       {deals.length > 0 && (
         <div className="mt-8">
           <HowToUseStrip bare />

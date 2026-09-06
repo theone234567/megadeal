@@ -195,7 +195,13 @@ export default function TermsPage() {
         MegaDeal isn&apos;t responsible for the quality, safety, legality or
         delivery of any product or service a business advertises — that
         responsibility sits with the business, and any activity or
-        treatment you undertake through a deal is at your own risk. The
+        treatment you undertake through a deal is at your own risk. This
+        applies just as much to services carried out at your home or
+        property (for example, cleaning or other home services) as it does
+        anywhere else — MegaDeal is only the advertiser, not a party to
+        that arrangement, and isn&apos;t responsible for anything that
+        happens on either side of it, including access to your property,
+        the work performed, or any damage or loss. The
         site and its content are provided &quot;as is&quot;, without
         warranty that it will be uninterrupted, error-free or always
         accurate. To the maximum extent permitted by law, MegaDeal excludes
