@@ -178,13 +178,11 @@ export default async function MerchantsPage() {
             Get up to 3 months free advertising for your business
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            Welcome — MegaDeal is the new local deal site that
-            doesn&apos;t take a commission, so you keep more of your
-            hard-earned money. We&apos;re simply advertising.
-            We&apos;re launching in Auckland first, and we&apos;d love
-            for you to join us from day one — so we&apos;re giving
-            early businesses up to 3 months free advertising.
-            Conditions apply.
+            MegaDeal helps local businesses turn spare capacity into
+            paying customers — without taking a commission.
+            We&apos;re launching in Auckland first, and giving early
+            businesses up to 3 months free advertising to join us
+            from day one. Conditions apply.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm italic text-brand-100/90">
             — Nick, Founder of MegaDeal
