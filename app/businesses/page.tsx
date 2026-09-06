@@ -14,7 +14,7 @@ import { getSignupStats } from "@/lib/publicStats";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "List Your Deal — Advertise Your NZ Business",
+  title: "Free Advertising for Your NZ Business — MegaDeal",
   description:
     "Be one of the first businesses on MegaDeal. No lock-in contracts, zero commission, and a limited-time free advertising offer for new NZ businesses.",
   alternates: { canonical: `${SITE_URL}/businesses` },
@@ -66,6 +66,14 @@ const BUSINESS_TYPES = [
 ];
 
 const FAQS = [
+  {
+    q: "What's the best way to advertise a small business in NZ?",
+    a: "A genuine limited-time offer usually beats a plain ad — it gives people an actual reason to try you now instead of scrolling past. That's exactly what MegaDeal is built for: list a real discount or extra, and it's advertised directly to local customers looking for something worth doing.",
+  },
+  {
+    q: "Is there a free way to advertise my restaurant or business in NZ?",
+    a: "Yes — new businesses can get up to 3 months free advertising on MegaDeal with code WELCOME3 at signup. No credit card required to apply, and no lock-in contract after that either.",
+  },
   {
     q: "How much does it cost to list on MegaDeal?",
     a: "MegaDeal is advertising, not a marketplace — you pay in simple advertising credits or a subscription, never a percentage of your sales. New businesses can also get up to 3 months free advertising with code WELCOME3 at signup. Conditions apply.",
@@ -381,6 +389,13 @@ export default async function MerchantsPage() {
               </div>
             ))}
           </div>
+          <p className="mt-8 text-center text-sm text-slate-500">
+            Want the full step-by-step walkthrough?{" "}
+            <Link href="/how-it-works" className="font-semibold text-brand-600 hover:underline">
+              See exactly how it works
+            </Link>
+            .
+          </p>
         </div>
       </section>
 
