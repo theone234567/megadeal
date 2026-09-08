@@ -76,19 +76,15 @@ export async function POST(req: NextRequest) {
   const address = cleanText(body.address, MAX_TEXT_LENGTH);
   const city = cleanText(body.city, MAX_TEXT_LENGTH);
 
-  if (
-    !businessName ||
-    !contactName ||
-    !contactPhone ||
-    !legalBusinessName ||
-    !phone ||
-    !address ||
-    !city
-  ) {
+  // Address and city are deferred to the portal's "complete your profile"
+  // step (same pattern as bio/hours/website/social below) — the initial
+  // signup only needs enough to create the account and start a review,
+  // not the full public-listing details yet.
+  if (!businessName || !contactName || !contactPhone || !legalBusinessName || !phone) {
     return NextResponse.json(
       {
         error:
-          "Business name, contact name, contact phone, legal business name, phone, address and city are required.",
+          "Business name, contact name, contact phone, legal business name and phone are required.",
       },
       { status: 400 }
     );

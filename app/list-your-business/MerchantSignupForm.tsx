@@ -4,44 +4,35 @@ import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
-import AddressAutocompleteField from "@/components/AddressAutocompleteField";
 import PasswordField from "@/components/PasswordField";
-import type { AddressSuggestion } from "@/lib/googlePlaces";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
-
-const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
+import { CATEGORIES } from "@/lib/categories";
 
 function RequiredTag() {
   return <span className="ml-1 font-normal text-ember-600">Required</span>;
 }
 
-function OptionalTag() {
-  return <span className="ml-1 font-normal text-slate-500">(optional)</span>;
-}
-
 /**
- * CRO EXPERIMENT — two-step signup (easy to revert): this form used to also
- * collect website, bio, opening hours, booking link/email, price range,
- * Facebook, Instagram and amenities inline — every field already marked
- * optional. Those are now deferred to the portal's "complete your profile"
- * step (components/portal/MerchantProfileForm.tsx, unchanged by this
- * experiment) so the initial signup only asks for what's actually required
- * to create the account and start a review. To revert: restore this file
- * (and app/list-your-business/page.tsx's intro copy) from the commit before
- * this one — the API route and the portal form already treat every
- * deferred field as optional, so nothing else needs to change.
+ * CRO EXPERIMENT — short initial signup (easy to revert): the form used to
+ * also collect legal business name's NZBN, referral code as a visible
+ * field, and the full public-profile block (business phone, address,
+ * city) inline. Those are now either dropped (NZBN, removed earlier),
+ * collected silently (referral code, via the ?ref= URL param — no visible
+ * field), or deferred to the portal's "complete your profile" step
+ * (address, city, phone — same place bio/hours/website/social already
+ * go), so the initial ask is business name, contact name, email,
+ * password, mobile, and business category — the minimum needed to create
+ * the account and start a review. A category select was added since
+ * nothing on the Merchants record previously captured it; it's stored as
+ * a prefix on the (already free-text, already-optional) bio field rather
+ * than a new Wix Data column, since this sandbox has no live Wix
+ * credentials to add one — worth promoting to a real schema field later.
  */
 
 /** Submits everything the /list-your-business form collected to create (or claim)
  *  the business application — called only once the account itself exists
  *  and, if Wix required it, its email is verified. */
-async function submitApplication(formEl: HTMLFormElement, extra: {
-  address: string;
-  city: string;
-  postcode: string;
-  lat: number | null;
-  lon: number | null;
-}) {
+async function submitApplication(formEl: HTMLFormElement, category: string) {
   const formData = new FormData(formEl);
   const res = await fetch("/api/merchants/apply", {
     method: "POST",
@@ -51,13 +42,8 @@ async function submitApplication(formEl: HTMLFormElement, extra: {
       contactName: String(formData.get("contactName") ?? ""),
       contactPhone: String(formData.get("contactPhone") ?? ""),
       legalBusinessName: String(formData.get("legalBusinessName") ?? ""),
-      nzbn: String(formData.get("nzbn") ?? ""),
-      phone: String(formData.get("phone") ?? ""),
-      address: extra.address,
-      city: extra.city,
-      postcode: extra.postcode,
-      lat: extra.lat,
-      lng: extra.lon,
+      phone: String(formData.get("contactPhone") ?? ""),
+      bio: category ? `Category: ${category}` : "",
       couponCode: String(formData.get("couponCode") ?? ""),
       website2: String(formData.get("website2") ?? ""),
       agreedToTerms: formData.get("agreedToTerms") === "on",
@@ -74,17 +60,12 @@ export default function MerchantSignupForm() {
   const searchParams = useSearchParams();
   const referralPrefill = searchParams.get("ref") || "";
   const formRef = useRef<HTMLFormElement>(null);
+  const startedRef = useRef(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [consent, setConsent] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [postcode, setPostcode] = useState("");
-  const [lat, setLat] = useState<number | null>(null);
-  const [lon, setLon] = useState<number | null>(null);
+  const [category, setCategory] = useState("");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -97,23 +78,20 @@ export default function MerchantSignupForm() {
   const [pendingEmail, setPendingEmail] = useState("");
   const [code, setCode] = useState("");
 
-  function applyAddressSuggestion(s: AddressSuggestion) {
-    setAddress(s.label || s.street);
-    if (s.postcode) setPostcode(s.postcode);
-    if (s.city) {
-      const match = CITIES.find((c) => c.toLowerCase() === s.city!.toLowerCase());
-      setCity(match ?? "Other");
-    }
-    setLat(s.lat ?? null);
-    setLon(s.lon ?? null);
+  function trackFormStarted() {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    window.gtag?.("event", "form_start", { form_name: "merchant_signup" });
   }
 
   async function finishAfterAuth() {
     if (!formRef.current) return;
-    await submitApplication(formRef.current, { address, city, postcode, lat, lon });
+    await submitApplication(formRef.current, category);
+    window.gtag?.("event", "form_complete", { form_name: "merchant_signup" });
     // The real conversion event for business-recruitment ad campaigns — a
     // completed application, not just a click or an email signup.
     trackMetaPixelEvent("CompleteRegistration", { content_name: "business_signup" });
+    window.gtag?.("event", "sign_up", { method: "merchant_signup" });
     window.location.href = "/portal";
   }
 
@@ -221,14 +199,7 @@ export default function MerchantSignupForm() {
 
   return (
     <div id="signup" className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
-      <h3 className="text-xl font-bold text-slate-900">Sign up your business</h3>
-      <p className="mt-1 text-base text-slate-500">
-        Just the essentials for now — you&apos;ll land straight in your
-        business portal, where you can add your hours, photos and socials
-        before your deal goes live.
-      </p>
-
-      <form ref={formRef} onSubmit={handleSubmit} className="mt-6 space-y-6">
+      <form ref={formRef} onSubmit={handleSubmit} onChangeCapture={trackFormStarted} className="space-y-4">
         {/* Honeypot — hidden from real visitors via CSS, so only a bot filling every field would set this. */}
         <input
           type="text"
@@ -238,241 +209,150 @@ export default function MerchantSignupForm() {
           className="absolute left-[-9999px] h-0 w-0 opacity-0"
           aria-hidden="true"
         />
+        {/* Referral tracking stays silent — no visible field, just carried
+            through from the ?ref= link someone arrived on, if any. */}
+        <input type="hidden" name="couponCode" value={referralPrefill} />
 
-        {/* Private section — never shown to customers */}
-        <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-          <h4 className="text-base font-bold text-slate-700">🔒 Account &amp; private details</h4>
-          <p className="mt-0.5 text-sm text-slate-500">
-            Kept private — never shown to customers.
-          </p>
-
-          <div className="mt-3 space-y-4">
-            <div>
-              <label htmlFor="signup-email" className="mb-1 block text-base font-medium text-slate-700">
-                Contact email
-                <RequiredTag />
-              </label>
-              <input
-                id="signup-email"
-                required
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@yourbusiness.co.nz"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-              />
-              <p className="mt-1 text-sm text-slate-500">
-                This becomes your login for the business portal.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="signup-password" className="mb-1 block text-base font-medium text-slate-700">
-                  Password
-                  <RequiredTag />
-                </label>
-                <PasswordField
-                  id="signup-password"
-                  required
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={setPassword}
-                  placeholder="At least 8 characters"
-                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-                />
-              </div>
-              <div>
-                <label htmlFor="signup-confirmPassword" className="mb-1 block text-base font-medium text-slate-700">
-                  Confirm password
-                  <RequiredTag />
-                </label>
-                <PasswordField
-                  id="signup-confirmPassword"
-                  required
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={setConfirmPassword}
-                  placeholder="Same password again"
-                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-                />
-              </div>
-            </div>
-            <p className="text-sm text-slate-500">
-              Encrypted and verified by our secure account provider — MegaDeal never sees or
-              stores your password.
-            </p>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="signup-contactName" className="mb-1 block text-base font-medium text-slate-700">
-                  Contact name
-                  <RequiredTag />
-                </label>
-                <input
-                  id="signup-contactName"
-                  required
-                  name="contactName"
-                  type="text"
-                  placeholder="Full name of the person we should deal with"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-                />
-              </div>
-              <div>
-                <label htmlFor="signup-contactPhone" className="mb-1 block text-base font-medium text-slate-700">
-                  Contact phone
-                  <RequiredTag />
-                </label>
-                <input
-                  id="signup-contactPhone"
-                  required
-                  name="contactPhone"
-                  type="tel"
-                  placeholder="Direct number for that person"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="signup-legalBusinessName" className="mb-1 block text-base font-medium text-slate-700">
-                Legal / registered business name
-                <RequiredTag />
-              </label>
-              <input
-                id="signup-legalBusinessName"
-                required
-                name="legalBusinessName"
-                type="text"
-                placeholder="e.g. Harbourside Bistro Limited"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-              />
-              <p className="mt-1 text-sm text-slate-500">
-                Must be a New Zealand registered Limited company — we
-                don&apos;t currently accept sole traders or
-                partnerships.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="signup-couponCode" className="mb-1 block text-base font-medium text-slate-700">
-                  Referral or promo code
-                  <OptionalTag />
-                </label>
-                <input
-                  id="signup-couponCode"
-                  name="couponCode"
-                  type="text"
-                  defaultValue={referralPrefill || "WELCOME3"}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Public section — this is your customer-facing profile */}
-        <div className="rounded-xl border border-brand-100 bg-brand-50/40 p-4">
-          <h4 className="text-base font-bold text-slate-700">📣 Public business profile</h4>
-          <p className="mt-0.5 text-sm text-slate-500">
-            Shown to customers on your deal pages and business profile.
-          </p>
-
-          <div className="mt-3 space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="signup-businessName" className="mb-1 block text-base font-medium text-slate-700">
-                  Business name
-                  <RequiredTag />
-                </label>
-                <input
-                  id="signup-businessName"
-                  required
-                  name="businessName"
-                  type="text"
-                  placeholder="e.g. Harbourside Bistro"
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-base outline-none focus:border-brand-400"
-                />
-              </div>
-              <div>
-                <label htmlFor="signup-phone" className="mb-1 block text-base font-medium text-slate-700">
-                  Phone number
-                  <RequiredTag />
-                </label>
-                <input
-                  id="signup-phone"
-                  required
-                  name="phone"
-                  type="tel"
-                  placeholder="021 234 5678"
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-base outline-none focus:border-brand-400"
-                />
-              </div>
-            </div>
-
-            <AddressAutocompleteField
-              id="signup-address"
-              address={address}
-              onAddressChange={(value) => {
-                setAddress(value);
-                setLat(null);
-                setLon(null);
-              }}
-              onSelect={applyAddressSuggestion}
-              lat={lat}
-              lon={lon}
-              onPinMove={(newLat, newLng) => {
-                setLat(newLat);
-                setLon(newLng);
-              }}
-            />
-
-            <div>
-              <label htmlFor="signup-city" className="mb-1 block text-base font-medium text-slate-700">
-                City
-                <RequiredTag />
-              </label>
-              <select
-                id="signup-city"
-                required
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="w-full max-w-xs rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-              >
-                <option value="" disabled>
-                  Select a city
-                </option>
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <p className="text-sm text-slate-500">
-              📸 Opening hours, photos, website, socials and more — you&apos;ll
-              add those next, once you&apos;re in your portal. Nothing else to
-              fill in here.
-            </p>
-          </div>
-        </div>
-
-        <label className="flex items-start gap-2 text-base text-slate-600">
+        <div>
+          <label htmlFor="signup-businessName" className="mb-1 block text-base font-medium text-slate-700">
+            Business name
+            <RequiredTag />
+          </label>
           <input
+            id="signup-businessName"
             required
-            type="checkbox"
-            checked={consent}
-            onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+            name="businessName"
+            type="text"
+            placeholder="e.g. Harbourside Bistro"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
           />
-          <span>
-            I understand my business name and address will be displayed
-            publicly on the MegaDeal website as part of my deal listing. I
-            can add a business photo once my account is set up.
-          </span>
-        </label>
+        </div>
+
+        <div>
+          <label htmlFor="signup-contactName" className="mb-1 block text-base font-medium text-slate-700">
+            Your name
+            <RequiredTag />
+          </label>
+          <input
+            id="signup-contactName"
+            required
+            name="contactName"
+            type="text"
+            placeholder="Full name"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="signup-email" className="mb-1 block text-base font-medium text-slate-700">
+            Email
+            <RequiredTag />
+          </label>
+          <input
+            id="signup-email"
+            required
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@yourbusiness.co.nz"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="signup-password" className="mb-1 block text-base font-medium text-slate-700">
+              Password
+              <RequiredTag />
+            </label>
+            <PasswordField
+              id="signup-password"
+              required
+              autoComplete="new-password"
+              value={password}
+              onChange={setPassword}
+              placeholder="At least 8 characters"
+              inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+            />
+          </div>
+          <div>
+            <label htmlFor="signup-confirmPassword" className="mb-1 block text-base font-medium text-slate-700">
+              Confirm password
+              <RequiredTag />
+            </label>
+            <PasswordField
+              id="signup-confirmPassword"
+              required
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              placeholder="Same password again"
+              inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="signup-contactPhone" className="mb-1 block text-base font-medium text-slate-700">
+            Mobile
+            <RequiredTag />
+          </label>
+          <input
+            id="signup-contactPhone"
+            required
+            name="contactPhone"
+            type="tel"
+            placeholder="021 234 5678"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="signup-category" className="mb-1 block text-base font-medium text-slate-700">
+            Business category
+            <RequiredTag />
+          </label>
+          <select
+            id="signup-category"
+            required
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+          >
+            <option value="" disabled>
+              Select a category
+            </option>
+            {CATEGORIES.map((c) => (
+              <option key={c.id} value={c.name}>
+                {c.emoji} {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="signup-legalBusinessName" className="mb-1 block text-base font-medium text-slate-700">
+            Legal / registered business name
+            <RequiredTag />
+          </label>
+          <input
+            id="signup-legalBusinessName"
+            required
+            name="legalBusinessName"
+            type="text"
+            placeholder="e.g. Harbourside Bistro Limited"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+          />
+          <p className="mt-1 text-sm text-slate-500">
+            Must be a New Zealand registered Limited company — we
+            don&apos;t currently accept sole traders or partnerships.
+          </p>
+        </div>
+
+        <p className="text-sm text-slate-500">
+          📍 Address, hours, photos and more — you&apos;ll add those next,
+          once you&apos;re in your portal.
+        </p>
 
         <label className="flex items-start gap-2 text-base text-slate-600">
           <input
@@ -503,13 +383,15 @@ export default function MerchantSignupForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60 sm:w-auto sm:px-8"
+          className="w-full rounded-full bg-brand-600 py-3.5 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
         >
-          {submitting ? "Submitting…" : "Start listing for free →"}
+          {submitting ? "Submitting…" : "CLAIM MY FREE LISTING →"}
         </button>
-        <p className="text-sm text-slate-500">💳 No credit card required to apply.</p>
+        <p className="text-center text-sm text-slate-500">
+          Takes about 60 seconds • No credit card required • No obligation
+        </p>
 
-        <p className="text-center text-base text-slate-500 sm:text-left">
+        <p className="text-center text-sm text-slate-500">
           Already applied?{" "}
           <a href="/portal" className="font-semibold text-brand-600 hover:underline">
             Sign in to your business portal

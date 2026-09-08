@@ -59,9 +59,10 @@ export default function StickyApplyBar() {
       <a
         href="#signup"
         tabIndex={visible ? 0 : -1}
+        onClick={() => window.gtag?.("event", "cta_click", { cta_section: "sticky_bar" })}
         className="flex items-center justify-center gap-2 rounded-full bg-brand-600 py-3 text-sm font-bold text-white shadow-card active:scale-95"
       >
-        🚀 Sign up your business — up to 3 months free
+        CLAIM MY FREE LISTING →
       </a>
     </div>
   );
