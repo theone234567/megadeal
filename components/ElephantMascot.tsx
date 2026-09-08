@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 
 interface Sparkle {
   id: number;
@@ -22,15 +22,14 @@ const BUBBLE_MS = 1500;
 let sparkleId = 0;
 
 /**
- * The MegaDeal icon: a flat elephant silhouette on a rounded gradient
- * badge — the exact shape and colors already used for the favicon and
- * OG image (app/icon.tsx, app/opengraph-image.tsx), reused here instead
- * of a third, separately-drawn version, so the header, browser tab, and
- * shared-link previews all show the same mark. Keeps the tap-to-boop
- * personality (sparkles, speech bubble, stomp/wiggle) from the previous
- * header mascot — only the art was simplified, not the interaction.
+ * The MegaDeal elephant: a cute, front-facing baby-elephant face (big round
+ * head, two big symmetric ears, a soft swinging trunk, big eyes, blush
+ * cheeks, tiny tusks) sized to sit alongside the wordmark rather than
+ * dominate it. Sways gently on its own, and jumps + flaps + toots with a
+ * sparkle burst and a speech bubble whenever it's tapped or clicked.
  */
-export default function ElephantBadge({ className = "" }: { className?: string }) {
+export default function ElephantMascot({ className = "" }: { className?: string }) {
+  const gradientId = useId();
   const [isDoingTrick, setIsDoingTrick] = useState(false);
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const [bubble, setBubble] = useState<{ id: number; text: string } | null>(null);
@@ -67,7 +66,7 @@ export default function ElephantBadge({ className = "" }: { className?: string }
       type="button"
       onClick={doTrick}
       aria-label="Boop the MegaDeal elephant"
-      className={`relative flex shrink-0 select-none items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-ember-500 p-1.5 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${className}`}
+      className={`relative shrink-0 select-none rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 ${className}`}
     >
       {bubble && (
         <span
@@ -90,29 +89,55 @@ export default function ElephantBadge({ className = "" }: { className?: string }
 
       <svg
         viewBox="0 0 100 100"
-        className={`h-full w-full ${
+        className={`h-10 w-10 drop-shadow-md sm:h-11 sm:w-11 ${
           isDoingTrick ? "animate-elephant-trick-body" : "animate-elephant-idle-body"
         }`}
       >
+        <defs>
+          <linearGradient id={`${gradientId}-body`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#a35cff" />
+            <stop offset="100%" stopColor="#7a17f0" />
+          </linearGradient>
+        </defs>
+
+        {/* both ears, big and symmetric — the single clearest "elephant" cue */}
         <g
           style={{ transformBox: "fill-box" as any }}
           className={isDoingTrick ? "animate-elephant-trick-ear" : "animate-elephant-idle-ear"}
         >
-          <ellipse cx="15" cy="48" rx="17" ry="22" fill="#eee0ff" />
-          <ellipse cx="85" cy="48" rx="17" ry="22" fill="#eee0ff" />
+          <ellipse cx="15" cy="48" rx="17" ry="22" fill="#c194ff" />
+          <ellipse cx="18" cy="48" rx="10" ry="14" fill="#ffb8e8" />
+          <ellipse cx="85" cy="48" rx="17" ry="22" fill="#c194ff" />
+          <ellipse cx="82" cy="48" rx="10" ry="14" fill="#ffb8e8" />
         </g>
-        <ellipse cx="50" cy="45" rx="30" ry="28" fill="#f7f2ff" />
+
+        {/* head */}
+        <ellipse cx="50" cy="45" rx="30" ry="28" fill={`url(#${gradientId}-body)`} />
+
+        {/* blush cheeks */}
+        <ellipse cx="26" cy="56" rx="6" ry="4" fill="#ff9ed6" opacity="0.65" />
+        <ellipse cx="74" cy="56" rx="6" ry="4" fill="#ff9ed6" opacity="0.65" />
+
+        {/* tusks */}
+        <ellipse cx="41" cy="66" rx="3.6" ry="7" fill="#fffaf3" transform="rotate(-12 41 66)" />
+        <ellipse cx="59" cy="66" rx="3.6" ry="7" fill="#fffaf3" transform="rotate(12 59 66)" />
+
+        {/* trunk: soft downward swing, unmistakably an elephant's */}
         <path
           d="M50 58 C 45 70, 55 78, 50 90"
           fill="none"
-          stroke="#f7f2ff"
+          stroke={`url(#${gradientId}-body)`}
           strokeWidth={13}
           strokeLinecap="round"
           className={isDoingTrick ? "animate-elephant-trick-trunk" : ""}
           style={{ transformBox: "fill-box" as any }}
         />
-        <circle cx="36" cy="40" r="6" fill="#440e82" />
-        <circle cx="64" cy="40" r="6" fill="#440e82" />
+
+        {/* eyes */}
+        <circle cx="36" cy="40" r="6" fill="#211033" />
+        <circle cx="38.2" cy="37.8" r="2" fill="#ffffff" />
+        <circle cx="64" cy="40" r="6" fill="#211033" />
+        <circle cx="66.2" cy="37.8" r="2" fill="#ffffff" />
       </svg>
     </button>
   );
