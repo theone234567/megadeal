@@ -463,16 +463,16 @@ export default async function MerchantsPage() {
       {/* Not ready yet — a genuine last resort for anyone who's read this far
           and still isn't ready to commit, not an exit offered right before
           the ask (that used to sit directly above the form itself). */}
-      <section className="px-4 pb-8 sm:px-6 lg:px-8">
+      <section className="px-4 pb-8 pt-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-md text-center">
-          <p className="text-sm font-semibold text-slate-700">
+          <p className={`${fredoka.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
             Still not ready to apply?
           </p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-2 text-base text-slate-600">
             Leave your email and we&apos;ll let you know when we launch — no
             commitment.
           </p>
-          <div className="mt-3">
+          <div className="mt-4">
             <EmailSignupForm
               audience="merchant"
               source="businesses-not-ready"
@@ -482,7 +482,7 @@ export default async function MerchantsPage() {
               center
             />
           </div>
-          <p className="mt-4 text-xs text-slate-500">
+          <p className="mt-4 text-sm text-slate-500">
             Got a question first?{" "}
             <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
               Get in touch
