@@ -497,6 +497,13 @@ export default async function MerchantsPage() {
               <SocialLinks />
             </div>
           </div>
+          <p className="mt-6 border-t border-slate-100 pt-6 text-sm italic text-slate-500">
+            P.S. We&apos;re building MegaDeal to be the deal site
+            businesses actually like — real value, no games, and
+            never a big cut of your sales. Thanks for considering us,
+            and don&apos;t forget: up to 3 months free advertising is
+            waiting for you. — Nick 🐘
+          </p>
         </div>
       </section>
     </main>
