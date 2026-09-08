@@ -176,7 +176,7 @@ export default async function MerchantsPage() {
       {/* Hero */}
       <section id="hero" className="relative overflow-hidden bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-3xl">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+          <span className="inline-flex items-center gap-2 rounded-full bg-ember-500 px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white shadow-card sm:text-base">
             🚀 Launching soon in Auckland — founding businesses wanted
           </span>
 
@@ -187,9 +187,6 @@ export default async function MerchantsPage() {
             MegaDeal is a new local deals platform for NZ
             businesses — helping you turn spare capacity into
             paying customers, without taking a commission.
-            We&apos;re launching soon in Auckland. Early businesses
-            who join us from day one get up to 3 months free
-            advertising. Conditions apply.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm italic text-brand-100/90">
             — Nick, Founder of MegaDeal
