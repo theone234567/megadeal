@@ -131,8 +131,9 @@ export default function HowItWorksPage() {
             How it works
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            MegaDeal is a free deals board, not a checkout — here&apos;s
-            how it works.
+            Free to browse for customers. Advertising, not a
+            marketplace, for businesses. Here&apos;s exactly how each
+            side works.
           </p>
         </div>
       </section>
