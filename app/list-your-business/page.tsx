@@ -199,6 +199,10 @@ export default async function MerchantsPage() {
           <p className="mx-auto mt-3 max-w-xl text-sm italic text-brand-100/90">
             — Nick, Founder of MegaDeal
           </p>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-brand-100/90">
+            We just want to build the deal site businesses actually
+            like — real value, no games, ever.
+          </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#signup"
