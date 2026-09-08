@@ -176,8 +176,9 @@ export default function HowItWorksPage() {
             <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
               contact page
             </Link>{" "}
-            and we&apos;ll follow up — we just can&apos;t issue a refund
-            for something we never charged you for.
+            and we&apos;ll follow up — however, unfortunately, we just
+            can&apos;t issue a refund for something we never charged
+            you for.
           </p>
         </div>
       </section>
