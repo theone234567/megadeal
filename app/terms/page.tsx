@@ -143,6 +143,13 @@ export default function TermsPage() {
         keeping your login details and access to your account secure, and
         for all activity that happens under it.
       </p>
+      <p>
+        To list deals as a business, you must be a New Zealand
+        registered Limited company (registered under the Companies Act
+        1993). We
+        don&apos;t currently accept applications from sole traders,
+        partnerships, or businesses registered outside New Zealand.
+      </p>
 
       <h2>7. Acceptable use</h2>
       <p>
