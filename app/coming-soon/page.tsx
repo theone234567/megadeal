@@ -3,6 +3,7 @@ import Link from "next/link";
 import SocialLinks from "@/components/SocialLinks";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { fredoka } from "@/lib/fonts";
 
 const TITLE = "MegaDeal is Coming Soon — NZ Local Deals & Free Advertising";
 const DESCRIPTION =
@@ -47,15 +48,12 @@ export default function ComingSoonPage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-700 via-brand-600 to-ember-500 px-4 py-20 text-center sm:px-6 lg:px-8">
-        <div className="pointer-events-none absolute -left-16 -top-16 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -right-10 h-80 w-80 rounded-full bg-ember-300/20 blur-3xl" />
-
+      <section className="relative overflow-hidden bg-brand-700 px-4 py-20 text-center sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-3xl">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-brand-100 sm:text-sm">
-            Landing very soon
-          </p>
-          <h1 className="mx-auto max-w-2xl text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
+          <span className="mb-2 inline-flex items-center gap-2 rounded-full bg-ember-500 px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white shadow-card sm:text-base">
+            🚀 Landing very soon
+          </span>
+          <h1 className={`${fredoka.className} mx-auto mt-4 max-w-2xl text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
             Up to 70% off restaurants, spas, activities &amp; getaways near you{" "}
             <span className="inline-block animate-[elephant-idle-ear_3.2s_ease-in-out_infinite]">
               😊
@@ -103,7 +101,7 @@ export default function ComingSoonPage() {
             <span className="text-xs font-bold uppercase tracking-wide text-ember-600">
               For businesses
             </span>
-            <h2 className="mt-2 text-3xl font-extrabold text-slate-900 sm:text-4xl">
+            <h2 className={`${fredoka.className} mt-2 text-3xl font-bold text-slate-900 sm:text-4xl`}>
               Advertise your business. Keep every dollar.
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-slate-600">
@@ -133,9 +131,9 @@ export default function ComingSoonPage() {
           </div>
 
           {/* Signup CTA */}
-          <div className="mt-10 rounded-3xl bg-gradient-to-br from-ember-500 to-brand-600 p-8 text-white shadow-card sm:p-10">
+          <div className="mt-10 rounded-3xl bg-ember-500 p-8 text-white shadow-card sm:p-10">
             <div className="mx-auto max-w-3xl text-center">
-              <h3 className="text-2xl font-extrabold">
+              <h3 className={`${fredoka.className} text-2xl font-bold`}>
                 🎁 Founding businesses get up to 3 months free advertising
               </h3>
               <p className="mx-auto mt-2 max-w-xl text-sm text-ember-50">
@@ -220,7 +218,7 @@ export default function ComingSoonPage() {
             <span className="text-xs font-bold uppercase tracking-wide text-brand-600">
               For deal-hunters
             </span>
-            <h2 className="mt-2 text-3xl font-extrabold text-slate-900 sm:text-4xl">
+            <h2 className={`${fredoka.className} mt-2 text-3xl font-bold text-slate-900 sm:text-4xl`}>
               Kiwi deals. No gimmicks.
             </h2>
             <p className="mt-3 text-slate-600">
@@ -240,7 +238,7 @@ export default function ComingSoonPage() {
           </div>
 
           <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-card">
-            <h3 className="text-xl font-extrabold text-slate-900">
+            <h3 className={`${fredoka.className} text-xl font-bold text-slate-900`}>
               Get first dibs when we launch
             </h3>
             <p className="mt-2 text-sm text-slate-600">
