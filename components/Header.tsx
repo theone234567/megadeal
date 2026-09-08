@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
-import ElephantMascot from "@/components/ElephantMascot";
+import ElephantBadge from "@/components/ElephantBadge";
 import { SearchIcon, UserIcon } from "@/components/icons";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
@@ -49,16 +49,16 @@ export default function Header() {
     <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-0.5 font-display">
+          <Link href="/" className="flex items-center gap-2 font-display">
+            <ElephantBadge className="h-10 w-10 sm:h-11 sm:w-11" />
             <span className="animate-wordmark-shake items-center gap-0.5">
               <span className="text-[1.7rem] font-extrabold tracking-tight text-brand-700">
                 Mega
               </span>
-              <span className="-rotate-2 rounded-full bg-ember-500 px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-white shadow-card">
+              <span className="rounded-full bg-ember-500 px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-white shadow-card">
                 Deal
               </span>
             </span>
-            <ElephantMascot className="ml-1.5 -rotate-3" />
           </Link>
 
           <Link
