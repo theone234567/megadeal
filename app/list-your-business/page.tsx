@@ -8,6 +8,7 @@ import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { getSignupStats } from "@/lib/publicStats";
+import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import {
   PercentIcon,
   CreditCardIcon,
@@ -149,7 +150,7 @@ export default async function MerchantsPage() {
     rawStats && rawStats.merchantCount >= MIN_APPROVED_BUSINESSES_TO_SHOW_STATS ? rawStats : null;
 
   return (
-    <main>
+    <main className={plusJakartaSans.className}>
       <StickyApplyBar />
       <script
         type="application/ld+json"
@@ -179,15 +180,17 @@ export default async function MerchantsPage() {
             🚀 Launching soon in Auckland — founding businesses wanted
           </span>
 
-          <h1 className="mt-6 text-3xl font-extrabold leading-tight text-white sm:text-4xl lg:text-5xl">
+          <h1 className={`${fredoka.className} mt-6 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
             Get up to 3 months free advertising for your business
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            MegaDeal helps local businesses turn spare capacity into
-            paying customers — without taking a commission.
-            We&apos;re launching in Auckland first, and giving early
-            businesses up to 3 months free advertising to join us
-            from day one. Conditions apply.
+            MegaDeal is a new local deals platform for NZ
+            businesses — helping you turn spare capacity into
+            paying customers, without taking a commission.
+            We&apos;re launching in Auckland first so we can get it
+            right before going nationwide, and early businesses who
+            join us from day one get up to 3 months free
+            advertising. Conditions apply.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm italic text-brand-100/90">
             — Nick, Founder of MegaDeal
@@ -229,7 +232,7 @@ export default async function MerchantsPage() {
           read as repetitive rather than persuasive. */}
       <section className="bg-brand-50 px-4 py-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-xl font-extrabold text-slate-900 sm:text-2xl">
+          <h2 className={`${fredoka.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
             Got a quiet Tuesday, an empty mat, or a room going spare?
           </h2>
           <p className="mt-2 max-w-2xl text-slate-600">
@@ -268,7 +271,7 @@ export default async function MerchantsPage() {
           it's true regardless of whether the live counts loaded. */}
       <section className="px-4 py-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             You&apos;re not signing up on a promise alone
           </h2>
           {stats && (stats.merchantCount > 0 || stats.waitlistCount > 0) && (
@@ -331,7 +334,7 @@ export default async function MerchantsPage() {
             <span className="text-xs font-bold uppercase tracking-wide text-brand-600">
               A quick preview
             </span>
-            <h2 className="mt-2 text-2xl font-extrabold text-slate-900 sm:text-3xl">
+            <h2 className={`${fredoka.className} mt-2 text-2xl font-bold text-slate-900 sm:text-3xl`}>
               Here&apos;s what your listing could look like
             </h2>
             <p className="mx-auto mt-2 max-w-xl text-slate-500">
@@ -357,7 +360,7 @@ export default async function MerchantsPage() {
       {/* Perks */}
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             Why businesses list with us
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2">
@@ -379,7 +382,7 @@ export default async function MerchantsPage() {
       {/* How it works */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             How it works
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-3">
@@ -406,7 +409,7 @@ export default async function MerchantsPage() {
       {/* FAQ */}
       <section className="px-4 pt-16 pb-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-center text-2xl font-extrabold text-slate-900 sm:text-3xl">
+          <h2 className={`${fredoka.className} text-center text-2xl font-bold text-slate-900 sm:text-3xl`}>
             Frequently asked questions
           </h2>
           <div className="mt-8 space-y-3">
