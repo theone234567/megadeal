@@ -274,6 +274,11 @@ export default async function MerchantsPage() {
           <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             You&apos;re not signing up on a promise alone
           </h2>
+          <p className="mx-auto mt-3 max-w-xl text-slate-600">
+            Here&apos;s the plan: we&apos;re rounding up brilliant local
+            businesses first, and once we&apos;ve got a great lineup on
+            board, we open the doors to customers and go live. 🐘
+          </p>
           {stats && (stats.merchantCount > 0 || stats.waitlistCount > 0) && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 rounded-2xl border border-brand-100 bg-brand-50 px-6 py-5">
               {stats.merchantCount > 0 && (

@@ -2,18 +2,20 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import ElephantMascot from "@/components/ElephantMascot";
 import { SearchIcon, UserIcon } from "@/components/icons";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
-export default function Header() {
+export default function Header({ siteLaunched }: { siteLaunched: boolean }) {
   const { member, isLoggedIn } = useWix();
   const [city, setCity] = useState("");
   const [query, setQuery] = useState("");
   const router = useRouter();
+  const pathname = usePathname();
+  const onListingPage = pathname?.startsWith("/list-your-business");
 
   // Same "has the deferred profile step been done" signal as the portal's
   // own onboarding checklist — surfaced here too so a merchant sees they
@@ -47,6 +49,20 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur">
+      {!siteLaunched && (
+        <div className="bg-ember-500 px-4 py-1.5 text-center text-xs font-semibold text-white sm:text-sm">
+          🐘 We&apos;re rounding up local businesses before we open the
+          doors
+          {!onListingPage && (
+            <>
+              {" — "}
+              <Link href="/list-your-business" className="underline underline-offset-2 hover:no-underline">
+                list yours free
+              </Link>
+            </>
+          )}
+        </div>
+      )}
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <Link href="/" className="flex items-center gap-0.5 font-display">
