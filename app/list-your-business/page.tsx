@@ -192,11 +192,6 @@ export default async function MerchantsPage() {
           <p className="mx-auto mt-3 max-w-xl text-sm italic text-brand-100/90">
             — Nick, Founder of MegaDeal
           </p>
-          <p className="mx-auto mt-6 max-w-xl text-sm font-semibold text-brand-100">
-            Perfect for 🍽️ Restaurants, 💆 Spas, 🏋️ Gyms, 🧘 Yoga
-            studios, 🚐 Tours, 🏨 Getaways &amp; 🧹 Home services
-          </p>
-
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#signup"
