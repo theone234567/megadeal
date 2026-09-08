@@ -220,9 +220,9 @@ export default function MerchantSignupForm() {
   }
 
   return (
-    <div id="signup" className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
-      <h3 className="text-lg font-bold text-slate-900">Sign up your business</h3>
-      <p className="mt-1 text-sm text-slate-500">
+    <div id="signup" className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
+      <h3 className="text-xl font-bold text-slate-900">Sign up your business</h3>
+      <p className="mt-1 text-base text-slate-500">
         Just the essentials for now — you&apos;ll land straight in your
         business portal, where you can add your hours, photos and socials
         before your deal goes live.
@@ -241,14 +241,14 @@ export default function MerchantSignupForm() {
 
         {/* Private section — never shown to customers */}
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-          <h4 className="text-sm font-bold text-slate-700">🔒 Account &amp; private details</h4>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <h4 className="text-base font-bold text-slate-700">🔒 Account &amp; private details</h4>
+          <p className="mt-0.5 text-sm text-slate-500">
             Kept private — never shown to customers.
           </p>
 
           <div className="mt-3 space-y-4">
             <div>
-              <label htmlFor="signup-email" className="mb-1 block text-sm font-medium text-slate-700">
+              <label htmlFor="signup-email" className="mb-1 block text-base font-medium text-slate-700">
                 Contact email
                 <RequiredTag />
               </label>
@@ -259,16 +259,16 @@ export default function MerchantSignupForm() {
                 type="email"
                 autoComplete="email"
                 placeholder="you@yourbusiness.co.nz"
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
               />
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-sm text-slate-500">
                 This becomes your login for the business portal.
               </p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="signup-password" className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-password" className="mb-1 block text-base font-medium text-slate-700">
                   Password
                   <RequiredTag />
                 </label>
@@ -279,11 +279,11 @@ export default function MerchantSignupForm() {
                   value={password}
                   onChange={setPassword}
                   placeholder="At least 8 characters"
-                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
                 />
               </div>
               <div>
-                <label htmlFor="signup-confirmPassword" className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-confirmPassword" className="mb-1 block text-base font-medium text-slate-700">
                   Confirm password
                   <RequiredTag />
                 </label>
@@ -294,18 +294,18 @@ export default function MerchantSignupForm() {
                   value={confirmPassword}
                   onChange={setConfirmPassword}
                   placeholder="Same password again"
-                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
                 />
               </div>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm text-slate-500">
               Encrypted and verified by our secure account provider — MegaDeal never sees or
               stores your password.
             </p>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="signup-contactName" className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-contactName" className="mb-1 block text-base font-medium text-slate-700">
                   Contact name
                   <RequiredTag />
                 </label>
@@ -315,11 +315,11 @@ export default function MerchantSignupForm() {
                   name="contactName"
                   type="text"
                   placeholder="Full name of the person we should deal with"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
                 />
               </div>
               <div>
-                <label htmlFor="signup-contactPhone" className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-contactPhone" className="mb-1 block text-base font-medium text-slate-700">
                   Contact phone
                   <RequiredTag />
                 </label>
@@ -329,49 +329,34 @@ export default function MerchantSignupForm() {
                   name="contactPhone"
                   type="tel"
                   placeholder="Direct number for that person"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="signup-legalBusinessName" className="mb-1 block text-sm font-medium text-slate-700">
-                  Legal / registered business name
-                  <RequiredTag />
-                </label>
-                <input
-                  id="signup-legalBusinessName"
-                  required
-                  name="legalBusinessName"
-                  type="text"
-                  placeholder="e.g. Harbourside Bistro Limited"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
-                />
-                <p className="mt-1 text-xs text-slate-500">
-                  The registered entity behind your business — sole trader,
-                  partnership or company, whichever applies.
-                </p>
-              </div>
-              <div>
-                <label htmlFor="signup-nzbn" className="mb-1 block text-sm font-medium text-slate-700">
-                  NZBN
-                  <OptionalTag />
-                </label>
-                <input
-                  id="signup-nzbn"
-                  name="nzbn"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="13-digit New Zealand Business Number, if you have one"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
-                />
-              </div>
+            <div>
+              <label htmlFor="signup-legalBusinessName" className="mb-1 block text-base font-medium text-slate-700">
+                Legal / registered business name
+                <RequiredTag />
+              </label>
+              <input
+                id="signup-legalBusinessName"
+                required
+                name="legalBusinessName"
+                type="text"
+                placeholder="e.g. Harbourside Bistro Limited"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+              />
+              <p className="mt-1 text-sm text-slate-500">
+                Must be a New Zealand registered Limited company — we
+                don&apos;t currently accept sole traders or
+                partnerships.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="signup-couponCode" className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-couponCode" className="mb-1 block text-base font-medium text-slate-700">
                   Referral or promo code
                   <OptionalTag />
                 </label>
@@ -380,7 +365,7 @@ export default function MerchantSignupForm() {
                   name="couponCode"
                   type="text"
                   defaultValue={referralPrefill || "WELCOME3"}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
                 />
               </div>
             </div>
@@ -389,15 +374,15 @@ export default function MerchantSignupForm() {
 
         {/* Public section — this is your customer-facing profile */}
         <div className="rounded-xl border border-brand-100 bg-brand-50/40 p-4">
-          <h4 className="text-sm font-bold text-slate-700">📣 Public business profile</h4>
-          <p className="mt-0.5 text-xs text-slate-500">
+          <h4 className="text-base font-bold text-slate-700">📣 Public business profile</h4>
+          <p className="mt-0.5 text-sm text-slate-500">
             Shown to customers on your deal pages and business profile.
           </p>
 
           <div className="mt-3 space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="signup-businessName" className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-businessName" className="mb-1 block text-base font-medium text-slate-700">
                   Business name
                   <RequiredTag />
                 </label>
@@ -407,11 +392,11 @@ export default function MerchantSignupForm() {
                   name="businessName"
                   type="text"
                   placeholder="e.g. Harbourside Bistro"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-base outline-none focus:border-brand-400"
                 />
               </div>
               <div>
-                <label htmlFor="signup-phone" className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="signup-phone" className="mb-1 block text-base font-medium text-slate-700">
                   Phone number
                   <RequiredTag />
                 </label>
@@ -421,7 +406,7 @@ export default function MerchantSignupForm() {
                   name="phone"
                   type="tel"
                   placeholder="021 234 5678"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-base outline-none focus:border-brand-400"
                 />
               </div>
             </div>
@@ -444,7 +429,7 @@ export default function MerchantSignupForm() {
             />
 
             <div>
-              <label htmlFor="signup-city" className="mb-1 block text-sm font-medium text-slate-700">
+              <label htmlFor="signup-city" className="mb-1 block text-base font-medium text-slate-700">
                 City
                 <RequiredTag />
               </label>
@@ -453,7 +438,7 @@ export default function MerchantSignupForm() {
                 required
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full max-w-xs rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                className="w-full max-w-xs rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
               >
                 <option value="" disabled>
                   Select a city
@@ -466,7 +451,7 @@ export default function MerchantSignupForm() {
               </select>
             </div>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-sm text-slate-500">
               📸 Opening hours, photos, website, socials and more — you&apos;ll
               add those next, once you&apos;re in your portal. Nothing else to
               fill in here.
@@ -474,7 +459,7 @@ export default function MerchantSignupForm() {
           </div>
         </div>
 
-        <label className="flex items-start gap-2 text-sm text-slate-600">
+        <label className="flex items-start gap-2 text-base text-slate-600">
           <input
             required
             type="checkbox"
@@ -489,7 +474,7 @@ export default function MerchantSignupForm() {
           </span>
         </label>
 
-        <label className="flex items-start gap-2 text-sm text-slate-600">
+        <label className="flex items-start gap-2 text-base text-slate-600">
           <input
             required
             type="checkbox"
@@ -522,9 +507,9 @@ export default function MerchantSignupForm() {
         >
           {submitting ? "Submitting…" : "Start listing for free →"}
         </button>
-        <p className="text-xs text-slate-500">💳 No credit card required to apply.</p>
+        <p className="text-sm text-slate-500">💳 No credit card required to apply.</p>
 
-        <p className="text-center text-sm text-slate-500 sm:text-left">
+        <p className="text-center text-base text-slate-500 sm:text-left">
           Already applied?{" "}
           <a href="/portal" className="font-semibold text-brand-600 hover:underline">
             Sign in to your business portal
