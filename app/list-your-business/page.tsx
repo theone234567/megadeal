@@ -189,7 +189,7 @@ export default async function MerchantsPage() {
             businesses — helping you turn spare capacity into
             paying customers, without taking a commission.
           </p>
-          <p className="mx-auto mt-3 max-w-xl text-brand-50">
+          <p className="mx-auto mt-3 max-w-xl text-lg text-brand-50">
             Here&apos;s the honest bit: we need brilliant local
             businesses like you on board first — that&apos;s what
             brings the customers. Join early, and you&apos;re not
