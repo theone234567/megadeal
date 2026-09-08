@@ -218,8 +218,14 @@ export default function MerchantSignupForm() {
           aria-hidden="true"
         />
         {/* Referral tracking stays silent — no visible field, just carried
-            through from the ?ref= link someone arrived on, if any. */}
-        <input type="hidden" name="couponCode" value={referralPrefill} />
+            through from the ?ref= link someone arrived on. Defaults to
+            WELCOME3 otherwise (same as the old visible field's default)
+            — this is what actually triggers the "up to 3 months free"
+            offer at admin-approval time (see PROMO_CODE in
+            app/api/admin/merchants/[id]/route.ts), so dropping the
+            default here would silently apply the offer to no one who
+            didn't arrive via a referral link. */}
+        <input type="hidden" name="couponCode" value={referralPrefill || "WELCOME3"} />
 
         <div>
           <label htmlFor="signup-businessName" className="mb-1 block text-base font-medium text-slate-700">
