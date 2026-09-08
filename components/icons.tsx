@@ -145,6 +145,14 @@ export function FlameIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
+export function CheckIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 12.5 9.5 18 20 6" />
+    </svg>
+  );
+}
+
 export function EyeOffIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg {...base} className={className}>

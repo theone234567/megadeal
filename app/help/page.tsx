@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import PageShell from "@/components/PageShell";
+import type { ReactNode } from "react";
+import Link from "next/link";
 import { SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { fredoka } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   title: "Help Centre",
@@ -25,12 +27,96 @@ const FAQ_JSONLD = [
   { q: "I'm a business — how do I list a deal?", a: "Head to our business page to find out how listing works — you advertise with credits or a subscription, and customers pay you directly when they redeem." },
 ];
 
+interface Faq {
+  q: string;
+  a: ReactNode;
+}
+
+const FAQS: Faq[] = [
+  {
+    q: "Do I pay MegaDeal for a deal?",
+    a: "No — MegaDeal never charges customers anything, and there's no voucher to buy. Deals are redeemed and paid for directly with the business, at the discounted price shown on the deal page.",
+  },
+  {
+    q: "Do I need an account to use MegaDeal?",
+    a: "No — browsing and redeeming deals needs no sign-up or account at all. Only businesses need to create an account, to list and manage their own deals.",
+  },
+  {
+    q: "Is my payment information safe?",
+    a: "There's nothing to keep safe — MegaDeal never asks for or stores your card details. You pay the business directly, however they normally take payment, the same as any other in-person or phone purchase.",
+  },
+  {
+    q: "How do I redeem a deal?",
+    a: (
+      <>
+        Open the deal page and tap &quot;Get this deal&quot; to reveal
+        the business&apos;s contact details and a short code (like{" "}
+        <span className="font-mono font-semibold">MEGA-7K4XQ</span>).
+        Get in touch or visit the business directly, quote that code
+        so they know it&apos;s a MegaDeal offer, and pay them at the
+        discounted price. See our{" "}
+        <Link href="/redeem" className="font-semibold text-brand-600 hover:underline">
+          redemption guide
+        </Link>{" "}
+        for the full walkthrough.
+      </>
+    ),
+  },
+  {
+    q: "How long do I have to use a deal?",
+    a: "Every deal shows its own validity window on the deal page. Once it expires, the business is under no obligation to honour the discounted price.",
+  },
+  {
+    q: "Can I redeem the same deal more than once?",
+    a: (
+      <>
+        Deals are for genuine personal use — unless a listing says
+        otherwise, that&apos;s one redemption per person. A business
+        can decline to honour a deal it reasonably believes is being
+        reused or resold. See our{" "}
+        <Link href="/terms" className="font-semibold text-brand-600 hover:underline">
+          terms
+        </Link>{" "}
+        for the full fair-use policy.
+      </>
+    ),
+  },
+  {
+    q: "How do I know a business is legitimate?",
+    a: "Every business is reviewed by our team before their first deal goes live — we don't publish listings automatically.",
+  },
+  {
+    q: "Can I get a refund?",
+    a: (
+      <>
+        Since MegaDeal never charges you, there&apos;s nothing for us
+        to refund. See our{" "}
+        <Link href="/refund-policy" className="font-semibold text-brand-600 hover:underline">
+          refund policy
+        </Link>{" "}
+        for how pricing and disputes work instead.
+      </>
+    ),
+  },
+  {
+    q: "I'm a business — how do I list a deal?",
+    a: (
+      <>
+        Head to our{" "}
+        <Link href="/list-your-business" className="font-semibold text-brand-600 hover:underline">
+          business page
+        </Link>{" "}
+        to find out how listing works — you advertise with credits or
+        a subscription, and customers pay you directly when they
+        redeem.
+      </>
+    ),
+  },
+];
+
 export default function HelpPage() {
   return (
-    <PageShell
-      title="Help centre"
-      subtitle="Answers to the questions we hear most often."
-    >
+    <main>
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -47,95 +133,55 @@ export default function HelpPage() {
         }}
       />
 
-      <h2>Do I pay MegaDeal for a deal?</h2>
-      <p>
-        No — MegaDeal never charges customers anything, and there&apos;s no
-        voucher to buy. Deals are redeemed and paid for directly with the
-        business, at the discounted price shown on the deal page.
-      </p>
+      {/* Hero */}
+      <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl">
+          <h1 className={`${fredoka.className} text-3xl font-bold leading-tight text-white sm:text-4xl`}>
+            Help centre
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
+            Answers to the questions we hear most often.
+          </p>
+        </div>
+      </section>
 
-      <h2>Do I need an account to use MegaDeal?</h2>
-      <p>
-        No — browsing and redeeming deals needs no sign-up or account at
-        all. Only businesses need to create an account, to list and manage
-        their own deals.
-      </p>
+      {/* FAQ */}
+      <section className="px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <div className="space-y-3">
+            {FAQS.map((f) => (
+              <details
+                key={f.q}
+                className="group rounded-2xl border border-slate-100 bg-white p-5 shadow-card"
+              >
+                <summary className="cursor-pointer list-none font-bold text-slate-900 marker:content-none">
+                  <span className="flex items-center justify-between gap-4">
+                    {f.q}
+                    <span className="shrink-0 text-slate-500 transition group-open:rotate-45">+</span>
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm text-slate-600">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <h2>Is my payment information safe?</h2>
-      <p>
-        There&apos;s nothing to keep safe — MegaDeal never asks for or
-        stores your card details. You pay the business directly, however
-        they normally take payment, the same as any other in-person or
-        phone purchase.
-      </p>
-
-      <h2>How do I redeem a deal?</h2>
-      <p>
-        Open the deal page and tap &quot;Get this deal&quot; to reveal the
-        business&apos;s contact details and a short code (like{" "}
-        <span className="font-mono font-semibold">MEGA-7K4XQ</span>). Get in
-        touch or visit the business directly, quote that code so they know
-        it&apos;s a MegaDeal offer, and pay them at the discounted price. See
-        our{" "}
-        <a href="/redeem" className="text-brand-600 hover:underline">
-          redemption guide
-        </a>{" "}
-        for the full walkthrough.
-      </p>
-
-      <h2>How long do I have to use a deal?</h2>
-      <p>
-        Every deal shows its own validity window on the deal page. Once it
-        expires, the business is under no obligation to honour the
-        discounted price.
-      </p>
-
-      <h2>Can I redeem the same deal more than once?</h2>
-      <p>
-        Deals are for genuine personal use — unless a listing says
-        otherwise, that&apos;s one redemption per person. A business can
-        decline to honour a deal it reasonably believes is being reused or
-        resold. See our{" "}
-        <a href="/terms" className="text-brand-600 hover:underline">
-          terms
-        </a>{" "}
-        for the full fair-use policy.
-      </p>
-
-      <h2>How do I know a business is legitimate?</h2>
-      <p>
-        Every business is reviewed by our team before their first deal goes
-        live — we don&apos;t publish listings automatically.
-      </p>
-
-      <h2>Can I get a refund?</h2>
-      <p>
-        Since MegaDeal never charges you, there&apos;s nothing for us to
-        refund. See our{" "}
-        <a href="/refund-policy" className="text-brand-600 hover:underline">
-          refund policy
-        </a>{" "}
-        for how pricing and disputes work instead.
-      </p>
-
-      <h2>I&apos;m a business — how do I list a deal?</h2>
-      <p>
-        Head to our{" "}
-        <a href="/list-your-business" className="text-brand-600 hover:underline">
-          business page
-        </a>{" "}
-        to find out how listing works — you advertise with credits or a
-        subscription, and customers pay you directly when they redeem.
-      </p>
-
-      <h2>Still stuck?</h2>
-      <p>
-        Reach us through the{" "}
-        <a href="/contact" className="text-brand-600 hover:underline">
-          contact page
-        </a>{" "}
-        and we&apos;ll sort it out.
-      </p>
-    </PageShell>
+      {/* Still stuck? */}
+      <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className={`${fredoka.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
+            Still stuck?
+          </p>
+          <p className="mt-2 text-base text-slate-600">
+            Reach us through the{" "}
+            <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
+              contact page
+            </Link>{" "}
+            and we&apos;ll sort it out.
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }
