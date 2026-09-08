@@ -12,11 +12,9 @@ import { getSignupStats } from "@/lib/publicStats";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import {
   PercentIcon,
-  CreditCardIcon,
   ZapIcon,
-  UnlockIcon,
   MapPinIcon,
-  FlameIcon,
+  ClockIcon,
 } from "@/components/icons";
 
 // Re-checked at most once a minute — the counts only need to be
@@ -33,33 +31,23 @@ export const metadata: Metadata = {
 const PERKS = [
   {
     icon: PercentIcon,
-    title: "Zero commission, unlike most deal sites",
-    text: "Most deal and delivery platforms take 20-30% of every sale, forever. MegaDeal takes 0% — every dollar a customer pays goes straight to you.",
-  },
-  {
-    icon: CreditCardIcon,
-    title: "Pay in credits, not a cut",
-    text: "You pay MegaDeal in simple advertising credits or a subscription — never a percentage of sales.",
-  },
-  {
-    icon: ZapIcon,
-    title: "Live in minutes, not days",
-    text: "Once your business is approved, a new deal can go live in minutes. One thing to note: nothing actually goes live until MegaDeal officially launches — until then, you can build your deal and save it as a draft, ready the moment we open the doors.",
-  },
-  {
-    icon: UnlockIcon,
-    title: "No lock-in contracts",
-    text: "Pause, update or cancel your deal whenever suits your business — no minimum term.",
+    title: "Keep 100% of your sales",
+    text: "MegaDeal doesn't take a commission — every dollar a customer pays goes straight to you.",
   },
   {
     icon: MapPinIcon,
-    title: "Found by customers nearby",
-    text: "Customers can sort deals by \"Nearest to me\" — set an accurate pin on the map when you sign up, and you'll show up first for the people closest to you.",
+    title: "Reach local customers",
+    text: "Get your business and offers discovered by people looking for great deals nearby.",
   },
   {
-    icon: FlameIcon,
-    title: "Flash Deals for last-minute capacity",
-    text: "A quiet afternoon just opened up? Run a short-burst Flash Deal — 30 minutes to a few hours — instead of waiting on a long-running listing to fill it.",
+    icon: ClockIcon,
+    title: "Fill quieter times",
+    text: "Use deals to attract customers during slower days, times or periods.",
+  },
+  {
+    icon: ZapIcon,
+    title: "Get in early",
+    text: "Founding businesses will be among the first featured when MegaDeal launches.",
   },
 ];
 
@@ -121,18 +109,23 @@ const FAQS = [
 const STEPS = [
   {
     number: "1",
-    title: "Create your account & apply",
-    text: "Set up your login and tell us about your business — one form, a couple of minutes.",
+    title: "List your business",
+    text: "Create your business profile in minutes.",
   },
   {
     number: "2",
-    title: "We review & set up your deal",
-    text: "Once approved, log back in to build your first deal — price, photo, terms, duration.",
+    title: "Add your deal",
+    text: "Choose an offer that makes sense for your business.",
   },
   {
     number: "3",
-    title: "Customers contact you directly",
-    text: "Your deal goes live the moment we launch. Customers redeem it by booking or visiting you — you keep every dollar.",
+    title: "Get discovered",
+    text: "Once we launch, customers browse MegaDeal to find local businesses and deals like yours.",
+  },
+  {
+    number: "4",
+    title: "Turn deals into customers",
+    text: "Customers redeem your offer directly with your business — you keep every dollar.",
   },
 ];
 
@@ -181,20 +174,24 @@ export default async function MerchantsPage() {
             🚀 Launching soon in Auckland — founding businesses wanted
           </span>
 
-          <h1 className={`${fredoka.className} mt-6 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
+          <p className="mx-auto mt-6 max-w-xl text-base font-semibold text-brand-100">
+            Want more customers without paying commission on every
+            sale?
+          </p>
+          <h1 className={`${fredoka.className} mt-2 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
             Get up to 3 months free advertising for your business
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            MegaDeal is a new local deals platform for NZ
-            businesses — helping you turn spare capacity into
-            paying customers, without taking a commission.
+            MegaDeal is a new local deals platform launching in
+            Auckland — helping local businesses attract new
+            customers, fill spare capacity, and promote great offers,
+            without taking a commission from your sales.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-lg text-brand-50">
-            Here&apos;s the honest bit: we need brilliant local
-            businesses like you on board first — that&apos;s what
-            brings the customers. Join early, and you&apos;re not
-            just signing up, you&apos;re helping build MegaDeal
-            from day one.
+            We&apos;re inviting our first group of founding businesses
+            to join before we launch — because it&apos;s local
+            businesses like you that bring the customers, not the
+            other way around.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm italic text-brand-100/90">
             — Nick, Founder of MegaDeal
@@ -208,7 +205,7 @@ export default async function MerchantsPage() {
               href="#signup"
               className="flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-brand-700 shadow-card transition active:scale-95 hover:bg-brand-50"
             >
-              🚀 Sign up your business
+              🚀 Join the founding businesses
             </a>
             <a
               href="#preview"
@@ -275,12 +272,14 @@ export default async function MerchantsPage() {
       <section className="px-4 py-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
-            You&apos;re not signing up on a promise alone
+            We&apos;re building MegaDeal with local businesses
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-slate-600">
-            Here&apos;s the plan: we&apos;re rounding up brilliant local
-            businesses first, and once we&apos;ve got a great lineup on
-            board, we open the doors to customers and go live. 🐘
+            We&apos;re starting in Auckland and looking for our first
+            group of founding businesses. By joining early, you help
+            us build a platform that genuinely works for local
+            businesses — and get your business in front of future
+            MegaDeal customers from day one. 🐘
           </p>
           {stats && (stats.merchantCount > 0 || stats.waitlistCount > 0) && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 rounded-2xl border border-brand-100 bg-brand-50 px-6 py-5">
@@ -306,6 +305,10 @@ export default async function MerchantsPage() {
             <li>📰 Local press and community outreach in the weeks before launch</li>
             <li>🎁 Referral incentives</li>
           </ul>
+          <p className="mx-auto mt-6 max-w-xl text-base font-semibold text-slate-700">
+            No commission. No complicated contracts. No obligation to
+            continue after your free period.
+          </p>
         </div>
       </section>
 
@@ -369,7 +372,7 @@ export default async function MerchantsPage() {
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
-            Why businesses list with us
+            Why join early?
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2">
             {PERKS.map((p) => (
@@ -393,7 +396,7 @@ export default async function MerchantsPage() {
           <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             How it works
           </h2>
-          <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-3">
+          <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s) => (
               <div key={s.number}>
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-sm font-extrabold text-white">
