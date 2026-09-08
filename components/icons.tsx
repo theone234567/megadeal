@@ -101,6 +101,50 @@ export function EyeIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
+export function PercentIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="7" cy="7" r="2.5" />
+      <circle cx="17" cy="17" r="2.5" />
+      <line x1="19" y1="5" x2="5" y2="19" />
+    </svg>
+  );
+}
+
+export function CreditCardIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <line x1="2" y1="10" x2="22" y2="10" />
+    </svg>
+  );
+}
+
+export function ZapIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" />
+    </svg>
+  );
+}
+
+export function UnlockIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 9.5-2.2" />
+    </svg>
+  );
+}
+
+export function FlameIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c0-1.5-1-2-1-3.5 2 1 3 4 3 6.5a5 5 0 0 1-10 0C7 8 9 5 12 2Z" />
+    </svg>
+  );
+}
+
 export function EyeOffIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg {...base} className={className}>

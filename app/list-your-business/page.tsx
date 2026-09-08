@@ -8,6 +8,14 @@ import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { getSignupStats } from "@/lib/publicStats";
+import {
+  PercentIcon,
+  CreditCardIcon,
+  ZapIcon,
+  UnlockIcon,
+  MapPinIcon,
+  FlameIcon,
+} from "@/components/icons";
 
 // Re-checked at most once a minute — the counts only need to be
 // approximately live, and this avoids hitting Wix on every single request.
@@ -22,32 +30,32 @@ export const metadata: Metadata = {
 
 const PERKS = [
   {
-    emoji: "🤝",
+    icon: PercentIcon,
     title: "Zero commission, unlike most deal sites",
     text: "Most deal and delivery platforms take 20-30% of every sale, forever. MegaDeal takes 0% — every dollar a customer pays goes straight to you.",
   },
   {
-    emoji: "💳",
+    icon: CreditCardIcon,
     title: "Pay in credits, not a cut",
     text: "You pay MegaDeal in simple advertising credits or a subscription — never a percentage of sales.",
   },
   {
-    emoji: "⚡",
+    icon: ZapIcon,
     title: "Live in minutes, not days",
     text: "Once your business is approved, a new deal can go live in minutes. One thing to note: nothing actually goes live until MegaDeal officially launches — until then, you can build your deal and save it as a draft, ready the moment we open the doors.",
   },
   {
-    emoji: "🔓",
+    icon: UnlockIcon,
     title: "No lock-in contracts",
     text: "Pause, update or cancel your deal whenever suits your business — no minimum term.",
   },
   {
-    emoji: "📍",
+    icon: MapPinIcon,
     title: "Found by customers nearby",
     text: "Customers can sort deals by \"Nearest to me\" — set an accurate pin on the map when you sign up, and you'll show up first for the people closest to you.",
   },
   {
-    emoji: "🔥",
+    icon: FlameIcon,
     title: "Flash Deals for last-minute capacity",
     text: "A quiet afternoon just opened up? Run a short-burst Flash Deal — 30 minutes to a few hours — instead of waiting on a long-running listing to fill it.",
   },
@@ -165,10 +173,7 @@ export default async function MerchantsPage() {
         }}
       />
       {/* Hero */}
-      <section id="hero" className="relative overflow-hidden bg-gradient-to-br from-brand-700 via-brand-600 to-ember-500 px-4 py-16 text-center sm:px-6 lg:px-8">
-        <div className="pointer-events-none absolute -left-16 -top-16 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -right-10 h-80 w-80 rounded-full bg-ember-300/20 blur-3xl" />
-
+      <section id="hero" className="relative overflow-hidden bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-3xl">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
             🚀 Launching soon in Auckland — founding businesses wanted
@@ -223,31 +228,31 @@ export default async function MerchantsPage() {
           free" pitch the hero just made, before establishing relevance,
           read as repetitive rather than persuasive. */}
       <section className="bg-brand-50 px-4 py-14 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
+        <div className="mx-auto max-w-4xl">
           <h2 className="text-xl font-extrabold text-slate-900 sm:text-2xl">
             Got a quiet Tuesday, an empty mat, or a room going spare?
           </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-slate-600">
+          <p className="mt-2 max-w-2xl text-slate-600">
             That&apos;s exactly who MegaDeal is built for. Any spare capacity
             you&apos;ve got — an off-peak table, a treatment room between
             appointments, seats on a tour that never quite fills — is
             someone else&apos;s perfect excuse to say yes. Put it in front of
             them.
           </p>
-          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
             {BUSINESS_TYPES.map((t) => (
-              <div
-                key={t.label}
-                className="rounded-2xl bg-white p-4 text-left shadow-sm"
-              >
-                <span className="text-lg">
-                  {t.emoji} {t.label}
+              <div key={t.label} className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-lg shadow-sm">
+                  {t.emoji}
                 </span>
-                <p className="mt-1 text-sm text-slate-500">{t.hook}</p>
+                <div>
+                  <p className="font-bold text-slate-900">{t.label}</p>
+                  <p className="text-sm text-slate-500">{t.hook}</p>
+                </div>
               </div>
             ))}
           </div>
-          <p className="mx-auto mt-6 max-w-xl text-xs text-slate-600">
+          <p className="mt-6 max-w-xl text-xs text-slate-600">
             We don&apos;t currently accept pure online/e-commerce stores
             or adult entertainment businesses.
           </p>
@@ -352,18 +357,19 @@ export default async function MerchantsPage() {
       {/* Perks */}
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-2xl font-extrabold text-slate-900 sm:text-3xl">
+          <h2 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
             Why businesses list with us
           </h2>
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2">
             {PERKS.map((p) => (
-              <div
-                key={p.title}
-                className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card"
-              >
-                <span className="text-2xl">{p.emoji}</span>
-                <h3 className="mt-2 font-bold text-slate-900">{p.title}</h3>
-                <p className="mt-1 text-sm text-slate-500">{p.text}</p>
+              <div key={p.title} className="flex items-start gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+                  <p.icon className="h-5 w-5" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-slate-900">{p.title}</h3>
+                  <p className="mt-1 text-sm text-slate-500">{p.text}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -373,7 +379,7 @@ export default async function MerchantsPage() {
       {/* How it works */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-center text-2xl font-extrabold text-slate-900 sm:text-3xl">
+          <h2 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
             How it works
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-3">
@@ -387,7 +393,7 @@ export default async function MerchantsPage() {
               </div>
             ))}
           </div>
-          <p className="mt-8 text-center text-sm text-slate-500">
+          <p className="mt-8 text-sm text-slate-500">
             Want the full step-by-step walkthrough?{" "}
             <Link href="/how-it-works" className="font-semibold text-brand-600 hover:underline">
               See exactly how it works
