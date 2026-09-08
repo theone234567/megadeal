@@ -22,17 +22,20 @@ function RequiredTag() {
  * (address, city, phone — same place bio/hours/website/social already
  * go), so the initial ask is business name, contact name, email,
  * password, mobile, and business category — the minimum needed to create
- * the account and start a review. A category select was added since
- * nothing on the Merchants record previously captured it; it's stored as
- * a prefix on the (already free-text, already-optional) bio field rather
- * than a new Wix Data column, since this sandbox has no live Wix
- * credentials to add one — worth promoting to a real schema field later.
+ * the account and start a review. A category select was added for lead
+ * qualification, but nothing on the Merchants record captures it yet —
+ * no live Wix connection in this sandbox to add a schema column, and it's
+ * deliberately NOT written into an existing free-text field (bio) that
+ * gets displayed as the business's public description, since a merchant
+ * who doesn't notice and overwrite it would end up with "Category: Food
+ * & Drink" as their public bio. Sent as a gtag event instead (see
+ * finishAfterAuth) until there's a real field to persist it in.
  */
 
 /** Submits everything the /list-your-business form collected to create (or claim)
  *  the business application — called only once the account itself exists
  *  and, if Wix required it, its email is verified. */
-async function submitApplication(formEl: HTMLFormElement, category: string) {
+async function submitApplication(formEl: HTMLFormElement) {
   const formData = new FormData(formEl);
   const res = await fetch("/api/merchants/apply", {
     method: "POST",
@@ -43,7 +46,6 @@ async function submitApplication(formEl: HTMLFormElement, category: string) {
       contactPhone: String(formData.get("contactPhone") ?? ""),
       legalBusinessName: String(formData.get("legalBusinessName") ?? ""),
       phone: String(formData.get("contactPhone") ?? ""),
-      bio: category ? `Category: ${category}` : "",
       couponCode: String(formData.get("couponCode") ?? ""),
       website2: String(formData.get("website2") ?? ""),
       agreedToTerms: formData.get("agreedToTerms") === "on",
@@ -86,12 +88,18 @@ export default function MerchantSignupForm() {
 
   async function finishAfterAuth() {
     if (!formRef.current) return;
-    await submitApplication(formRef.current, category);
+    await submitApplication(formRef.current);
     window.gtag?.("event", "form_complete", { form_name: "merchant_signup" });
     // The real conversion event for business-recruitment ad campaigns — a
     // completed application, not just a click or an email signup.
     trackMetaPixelEvent("CompleteRegistration", { content_name: "business_signup" });
     window.gtag?.("event", "sign_up", { method: "merchant_signup" });
+    // Business category has nowhere to persist yet — no live Wix
+    // connection in this sandbox to add a schema field for it on the
+    // Merchants collection, and it's not safe to smuggle into an
+    // existing free-text field that gets displayed publicly (bio).
+    // Tracked here instead so it's still visible for lead qualification.
+    if (category) window.gtag?.("event", "category_selected", { category });
     window.location.href = "/portal";
   }
 
