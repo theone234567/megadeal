@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SampleDealCard from "@/components/SampleDealCard";
 import EmailSignupForm from "@/components/EmailSignupForm";
+import SocialLinks from "@/components/SocialLinks";
 import StickyApplyBar from "@/components/StickyApplyBar";
 import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
@@ -485,6 +486,15 @@ export default async function MerchantsPage() {
             </Link>{" "}
             — a real person reads every message.
           </p>
+          <div className="mt-6 border-t border-slate-100 pt-6">
+            <p className="text-sm text-slate-600">
+              Help us spread the word 📣 — the bigger our following, the
+              more eyes on your business from day one.
+            </p>
+            <div className="mt-3 flex justify-center">
+              <SocialLinks />
+            </div>
+          </div>
         </div>
       </section>
     </main>
