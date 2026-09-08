@@ -187,9 +187,8 @@ export default async function MerchantsPage() {
             MegaDeal is a new local deals platform for NZ
             businesses — helping you turn spare capacity into
             paying customers, without taking a commission.
-            We&apos;re launching in Auckland first, before expanding
-            across the rest of NZ, and early businesses who join us
-            from day one get up to 3 months free advertising.
+            Launching soon in Auckland, and early businesses who join
+            us from day one get up to 3 months free advertising.
             Conditions apply.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm italic text-brand-100/90">
