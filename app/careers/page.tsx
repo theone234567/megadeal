@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE_URL } from "@/lib/siteConfig";
-import { fredoka } from "@/lib/fonts";
+import { fredoka, plusJakartaSans } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   title: "Careers",
@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 
 export default function CareersPage() {
   return (
-    <main>
+    <main className={plusJakartaSans.className}>
       {/* Hero */}
       <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
-          <h1 className={`${fredoka.className} text-3xl font-bold leading-tight text-white sm:text-4xl`}>
+          <h1 className={`${fredoka.className} text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
             Careers at MegaDeal
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">

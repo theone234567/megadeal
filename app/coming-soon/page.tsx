@@ -3,7 +3,7 @@ import Link from "next/link";
 import SocialLinks from "@/components/SocialLinks";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
-import { fredoka } from "@/lib/fonts";
+import { fredoka, plusJakartaSans } from "@/lib/fonts";
 
 const TITLE = "MegaDeal is Coming Soon — NZ Local Deals & Free Advertising";
 const DESCRIPTION =
@@ -46,7 +46,7 @@ const BUSINESS_TYPES = [
 
 export default function ComingSoonPage() {
   return (
-    <main className="min-h-screen bg-white">
+    <main className={`min-h-screen bg-white ${plusJakartaSans.className}`}>
       {/* Hero */}
       <section className="relative overflow-hidden bg-brand-700 px-4 py-20 text-center sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-3xl">
@@ -101,7 +101,7 @@ export default function ComingSoonPage() {
             <span className="text-xs font-bold uppercase tracking-wide text-ember-600">
               For businesses
             </span>
-            <h2 className={`${fredoka.className} mt-2 text-3xl font-bold text-slate-900 sm:text-4xl`}>
+            <h2 className={`${fredoka.className} mt-2 text-2xl font-bold text-slate-900 sm:text-3xl`}>
               Advertise your business. Keep every dollar.
             </h2>
             <p className="mx-auto mt-3 max-w-2xl text-slate-600">
@@ -218,7 +218,7 @@ export default function ComingSoonPage() {
             <span className="text-xs font-bold uppercase tracking-wide text-brand-600">
               For deal-hunters
             </span>
-            <h2 className={`${fredoka.className} mt-2 text-3xl font-bold text-slate-900 sm:text-4xl`}>
+            <h2 className={`${fredoka.className} mt-2 text-2xl font-bold text-slate-900 sm:text-3xl`}>
               Kiwi deals. No gimmicks.
             </h2>
             <p className="mt-3 text-slate-600">

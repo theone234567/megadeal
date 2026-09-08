@@ -193,7 +193,7 @@ export default async function MerchantsPage() {
             Here&apos;s the honest bit: we need brilliant local
             businesses like you on board first — that&apos;s what
             brings the customers. Join early, and you&apos;re not
-            just signing up, you&apos;re helping build the thing
+            just signing up, you&apos;re helping build MegaDeal
             from day one.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm italic text-brand-100/90">
@@ -231,7 +231,7 @@ export default async function MerchantsPage() {
           read as repetitive rather than persuasive. */}
       <section className="bg-brand-50 px-4 py-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h2 className={`${fredoka.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
+          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             Got a quiet Tuesday, an empty mat, or a room going spare?
           </h2>
           <p className="mt-2 max-w-2xl text-slate-600">
