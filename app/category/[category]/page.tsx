@@ -6,7 +6,7 @@ import HowToUseStrip from "@/components/HowToUseStrip";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { CATEGORIES } from "@/lib/categories";
 import CategoryDeals from "./CategoryDeals";
-import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
@@ -32,6 +32,12 @@ export function generateMetadata({
     title,
     description,
     alternates: { canonical: url },
+    // Pre-launch, "/" redirects to /coming-soon so visitors never see a
+    // demo-data-filled deal grid (see SITE_LAUNCHED in lib/siteConfig.ts)
+    // — but this page is reachable directly regardless, so it needs the
+    // same protection: no category page should get indexed while the
+    // catalog might still hold pre-launch test data.
+    robots: SITE_LAUNCHED ? undefined : { index: false, follow: true },
     openGraph: { title, description, url, siteName: SITE_NAME, type: "website" },
     twitter: { card: "summary", title, description },
   };

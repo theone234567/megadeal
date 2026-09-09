@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import CategoryNav from "@/components/CategoryNav";
 import HowToUseStrip from "@/components/HowToUseStrip";
 import FlashDealsList from "./FlashDealsList";
-import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
@@ -16,6 +16,12 @@ export const metadata: Metadata = {
   title: `Flash Deals — Short-Burst Offers | ${SITE_NAME}`,
   description: `All of ${SITE_NAME}'s current flash deals in one place — short-burst offers that end fast, so grab them while they last.`,
   alternates: { canonical: `${SITE_URL}/flash-deals` },
+  // Pre-launch, "/" redirects to /coming-soon so visitors never see a
+  // demo-data-filled deal grid (see SITE_LAUNCHED in lib/siteConfig.ts)
+  // — but this page is reachable directly regardless, so it needs the
+  // same protection: no browse page should get indexed while the
+  // catalog might still hold pre-launch test data.
+  robots: SITE_LAUNCHED ? undefined : { index: false, follow: true },
   openGraph: {
     title: `Flash Deals | ${SITE_NAME}`,
     description: "Short-burst offers that end fast — grab them while they last.",

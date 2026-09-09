@@ -32,6 +32,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.1 },
   ];
 
+  // These pages carry a matching robots:{index:false} in their own
+  // generateMetadata while !SITE_LAUNCHED (they're reachable directly
+  // even though "/" redirects to /coming-soon), so don't hand crawlers a
+  // sitemap full of URLs they're not allowed to index — submit them only
+  // once the site has actually launched.
+  if (!SITE_LAUNCHED) {
+    return staticPages;
+  }
+
   const categoryPages: MetadataRoute.Sitemap = CATEGORIES.map((c) => ({
     url: `${SITE_URL}/category/${encodeURIComponent(c.name)}`,
     changeFrequency: "daily",

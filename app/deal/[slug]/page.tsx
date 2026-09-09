@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import DealDetail from "./DealDetail";
 import { fetchDealForSEO, fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
-import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney } from "@/lib/format";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
@@ -37,6 +37,12 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: url },
+    // Pre-launch, "/" redirects to /coming-soon so visitors never see a
+    // demo-data-filled deal grid (see SITE_LAUNCHED in lib/siteConfig.ts)
+    // — but this page is reachable directly regardless, so it needs the
+    // same protection: no deal page should get indexed while the catalog
+    // might still hold pre-launch test data.
+    robots: SITE_LAUNCHED ? undefined : { index: false, follow: true },
     openGraph: {
       title,
       description,
