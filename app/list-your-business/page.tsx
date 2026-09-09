@@ -93,11 +93,6 @@ const BUSINESS_TYPES = [
   { emoji: "🧹", label: "Home Services", hook: "Keep your booking calendar busier" },
 ];
 
-const WHO_ITS_FOR = [
-  "Restaurants", "Cafes", "Bars", "Beauty", "Spas", "Gyms", "Fitness", "Yoga",
-  "Tours", "Activities", "Accommodation", "Entertainment", "Workshops", "Home Services",
-];
-
 const FAQS = [
   {
     q: "Is MegaDeal really free?",
@@ -355,6 +350,11 @@ export default async function MerchantsPage() {
               </div>
             ))}
           </div>
+          <p className="mt-6 text-sm text-slate-500">
+            Also welcome: bars, yoga &amp; pilates studios, workshops and
+            classes, entertainment and nightlife venues, and anything
+            else local with something to offer.
+          </p>
         </div>
       </section>
 
@@ -407,26 +407,6 @@ export default async function MerchantsPage() {
             Imagine this with YOUR business here.
           </p>
           <SectionCta section="preview" />
-        </div>
-      </section>
-
-      {/* Who it's for */}
-      <section className="px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
-            Built for local businesses with something to sell.
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base font-semibold text-slate-700">
-            {WHO_ITS_FOR.join(" • ")}
-          </p>
-          <p className="mx-auto mt-4 max-w-xl text-slate-600">
-            If you have spare capacity, a great offer, or want more
-            local customers, MegaDeal is built for you.
-          </p>
-          <p className="mx-auto mt-4 max-w-md text-xs text-slate-500">
-            We don&apos;t currently accept pure online/e-commerce stores
-            or adult entertainment businesses.
-          </p>
         </div>
       </section>
 
