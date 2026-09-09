@@ -9,10 +9,16 @@ export async function sendTransactionalEmail({
   to,
   subject,
   html,
+  text,
 }: {
   to: string;
   subject: string;
   html: string;
+  // Optional plain-text alternative. An HTML-only email (no text/plain
+  // part at all) is one of the signals spam filters weigh against a
+  // message — cheap to avoid, so callers sending anything user-facing
+  // should pass one.
+  text?: string;
 }): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -31,6 +37,7 @@ export async function sendTransactionalEmail({
       to: [to],
       subject,
       html,
+      ...(text ? { text } : {}),
     }),
   });
 

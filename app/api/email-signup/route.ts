@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         <div style="max-width:480px;margin:0 auto;font-family:'Segoe UI',ui-rounded,system-ui,sans-serif;">
           <div style="background:linear-gradient(135deg,#7a17f0,#440e82);border-radius:20px 20px 0 0;padding:28px 32px;text-align:center;">
             <span style="font-size:28px;font-weight:800;color:#ffffff;vertical-align:middle;">Mega</span><span style="font-size:28px;font-weight:800;color:#ffffff;background:#e81ea3;border-radius:9999px;padding:2px 14px;vertical-align:middle;">Deal</span>
-            <img src="${SITE_URL}/icon" width="28" height="28" alt="" style="vertical-align:middle;margin-left:8px;border-radius:8px;" />
+            <img src="${SITE_URL}/email-logo.png" width="28" height="28" alt="" style="vertical-align:middle;margin-left:8px;border-radius:8px;" />
           </div>
           <div style="background:#ffffff;border:1px solid #f1f0f4;border-top:none;border-radius:0 0 20px 20px;padding:32px;">
             <h1 style="margin:0 0 12px;font-size:20px;color:#211033;">One click and you're in 🎉</h1>
@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
           </div>
         </div>
       `,
+      text: `One click and you're in!\n\nThanks for signing up for MegaDeal deal alerts — NZ's best local deals, sniffed out for you. Just confirm this is your email address and we'll take it from there.\n\nConfirm my email: ${confirmUrl}\n\nDidn't sign up for this? No action needed — you won't be added to the list unless you click the link above.`,
     });
     if (!sent) {
       return NextResponse.json(
