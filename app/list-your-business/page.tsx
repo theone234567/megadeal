@@ -85,12 +85,12 @@ const WHAT_YOU_GET = [
 ];
 
 const BUSINESS_TYPES = [
-  { emoji: "🍽️", label: "Restaurants & Cafes", hook: "Fill quiet tables" },
-  { emoji: "💆", label: "Beauty & Spas", hook: "Fill empty appointments" },
-  { emoji: "🏋️", label: "Gyms & Fitness", hook: "Fill off-peak classes" },
-  { emoji: "🚐", label: "Tours & Activities", hook: "Sell unused seats" },
-  { emoji: "🏨", label: "Accommodation", hook: "Fill quieter nights" },
-  { emoji: "🧹", label: "Home Services", hook: "Fill your booking calendar" },
+  { emoji: "🍽️", label: "Restaurants & Cafes", hook: "Turn a quiet Tuesday into a full house" },
+  { emoji: "💆", label: "Beauty & Spas", hook: "Book out every treatment room, every week" },
+  { emoji: "🏋️", label: "Gyms & Fitness", hook: "Pack out your off-peak classes" },
+  { emoji: "🚐", label: "Tours & Activities", hook: "Sell the seats that would've gone empty" },
+  { emoji: "🏨", label: "Getaways & Stays", hook: "Fill your rooms on the nights that need it" },
+  { emoji: "🧹", label: "Home Services", hook: "Turn a slow booking week into a full one" },
 ];
 
 const WHO_ITS_FOR = [
