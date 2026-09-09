@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchMegaShopProductBySlugForServer } from "@/lib/fetchMegaShopServer";
-import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney } from "@/lib/format";
 
 export async function generateMetadata({
@@ -23,6 +23,10 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: url },
+    // Same gate as the /megashop listing page: checkout isn't live yet,
+    // so an individual product page is a preview, not a real shoppable
+    // listing — don't let Google index it as one until MEGASHOP_LAUNCHED.
+    robots: MEGASHOP_LAUNCHED ? undefined : { index: false, follow: true },
     openGraph: {
       title,
       description,

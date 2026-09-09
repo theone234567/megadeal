@@ -20,6 +20,20 @@ export const SITE_NAME = "MegaDeal";
  */
 export const SITE_LAUNCHED = process.env.SITE_LAUNCHED === "true";
 
+/**
+ * Same gate as SITE_LAUNCHED, but for MegaShop specifically: while false,
+ * /megashop and every /megashop/[slug] product page stay noindex no
+ * matter how many products are in the catalog. Phase 1 product pages get
+ * built and previewed with real or placeholder supplier products before
+ * checkout exists — indexing a "Checkout coming soon" product page as a
+ * real shoppable listing would hand Google a non-transactable page that
+ * looks live, which is exactly the kind of thin/misleading content that
+ * hurts crawl trust for the rest of the site. Flip via the MEGASHOP_LAUNCHED
+ * runtime variable once checkout actually works, same mechanism as
+ * SITE_LAUNCHED.
+ */
+export const MEGASHOP_LAUNCHED = process.env.MEGASHOP_LAUNCHED === "true";
+
 export const SITE_DESCRIPTION =
   "New Zealand's daily deals site — restaurants, spas, activities and getaways at up to 70% off from real local Kiwi businesses.";
 

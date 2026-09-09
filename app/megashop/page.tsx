@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import MegaShopProductCard from "@/components/MegaShopProductCard";
-import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import { fetchMegaShopProductsForServer } from "@/lib/fetchMegaShopServer";
 
 export async function generateMetadata(): Promise<Metadata> {
   const products = await fetchMegaShopProductsForServer();
-  if (products.length === 0) {
+  if (products.length === 0 || !MEGASHOP_LAUNCHED) {
     return {
       title: `MegaShop.co.nz — Coming Soon | ${SITE_NAME}`,
       description: "MegaShop.co.nz is coming soon. Sign up to hear when it launches and get launch specials.",
