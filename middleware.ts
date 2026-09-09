@@ -15,11 +15,30 @@ export async function middleware(request: NextRequest) {
     const wixClient = createClient({
       auth: OAuthStrategy({ clientId: WIX_CLIENT_ID }),
     });
-    const tokens = await wixClient.auth.generateVisitorTokens();
-    response.cookies.set("session", JSON.stringify(tokens), {
-      path: "/",
-      sameSite: "lax",
-    });
+    // generateVisitorTokens is a live call to Wix's (documented elsewhere
+    // in this codebase as flaky) visitor OAuth endpoint. Every first-time
+    // visitor with no session cookie yet — someone opening the site fresh
+    // from a Google search result, or following an email confirmation
+    // link's redirect — used to sit on a blank/loading screen for however
+    // long that call took, however long that was. This cookie only
+    // pre-seeds a convenience for WixProvider/lib/memberAuth.ts; the
+    // client-side Wix SDK (lib/wixClient.ts) generates its own visitor
+    // tokens on demand if none exist, so it's safe to give up after a
+    // short timeout and let the page render without one rather than block
+    // first paint on a possibly-slow external API.
+    try {
+      const tokens = await Promise.race([
+        wixClient.auth.generateVisitorTokens(),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 1200)),
+      ]);
+      response.cookies.set("session", JSON.stringify(tokens), {
+        path: "/",
+        sameSite: "lax",
+      });
+    } catch {
+      // Slow or failed — skip pre-seeding the cookie this once rather than
+      // hold up the page; the next request without one just retries.
+    }
     return response;
   }
 }
