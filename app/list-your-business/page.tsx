@@ -462,10 +462,11 @@ export default async function MerchantsPage() {
             </div>
           )}
           <p className="mx-auto mt-6 max-w-xl text-slate-600">
-            We&apos;re not going to pretend we&apos;re already the
-            biggest deal site in New Zealand. We&apos;re building it —
-            and we&apos;d rather build it with local businesses than
-            build it without them.
+            MegaDeal is New Zealand-owned and run — we&apos;re a local
+            business too. We&apos;re not going to pretend we&apos;re
+            already the biggest deal site in the country. We&apos;re
+            building it — and we&apos;d rather build it with local
+            businesses than build it without them.
           </p>
           <p className="mx-auto mt-3 max-w-xl text-sm italic text-slate-500">
             — Nick, Founder of MegaDeal
