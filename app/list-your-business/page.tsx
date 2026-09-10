@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 // The exact CTA used everywhere on this page — one wording, always
 // scrolling to the signup form, so a visitor never has to work out which
 // button is "the" button.
-const CTA_LABEL = "CLAIM MY FREE LISTING →";
+const CTA_LABEL = "CLAIM MY FREE ADVERTISING →";
 
 const WHY_JOIN_NOW = [
   {

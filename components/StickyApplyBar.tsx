@@ -62,7 +62,7 @@ export default function StickyApplyBar() {
         onClick={() => window.gtag?.("event", "cta_click", { cta_section: "sticky_bar" })}
         className="flex items-center justify-center gap-2 rounded-full bg-brand-600 py-3 text-sm font-bold text-white shadow-card active:scale-95"
       >
-        CLAIM MY FREE LISTING →
+        CLAIM MY FREE ADVERTISING →
       </a>
     </div>
   );
