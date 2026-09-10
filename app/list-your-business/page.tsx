@@ -585,9 +585,9 @@ export default async function MerchantsPage() {
             </a>
           </div>
           <p className="mt-6 text-sm text-brand-100">
-            Questions?{" "}
+            Got questions?{" "}
             <Link href="/contact" className="font-semibold text-white underline hover:no-underline">
-              Talk to Nick, Founder of MegaDeal.
+              Flick us a message.
             </Link>
           </p>
         </div>
