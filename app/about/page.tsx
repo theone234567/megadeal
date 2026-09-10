@@ -29,7 +29,7 @@ const DIFFERENTIATORS = [
   },
   {
     icon: CheckIcon,
-    title: "Every merchant is vetted",
+    title: "Every business is vetted",
     text: "Our team reviews a business before their first deal goes live.",
   },
 ];
@@ -61,7 +61,7 @@ export default function AboutPage() {
           </p>
           <p>
             We&apos;re free to browse and free to use — MegaDeal never
-            charges customers anything. Merchants pay us to advertise,
+            charges customers anything. Businesses pay us to advertise,
             and every dollar you spend on a deal goes straight to the
             business, not to us.
           </p>

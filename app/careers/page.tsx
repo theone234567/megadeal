@@ -62,7 +62,7 @@ export default function CareersPage() {
               We&apos;re not currently advertising open roles, but
               we&apos;re always happy to hear from people who&apos;d
               be a good fit for where we&apos;re headed — whether
-              that&apos;s engineering, merchant partnerships, or
+              that&apos;s engineering, business partnerships, or
               customer support.
             </p>
           </div>

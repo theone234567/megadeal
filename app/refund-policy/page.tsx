@@ -47,7 +47,7 @@ export default function RefundPolicyPage() {
         the discounted price is no longer available from the business.
       </p>
 
-      <h2>Merchant advertising credits</h2>
+      <h2>Business advertising credits</h2>
       <p>
         Businesses pay MegaDeal in advertising credits or a subscription to
         list a deal — that fee is for the listing itself, separate from

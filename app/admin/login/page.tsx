@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
       <span className="text-4xl">🔐</span>
       <h1 className="mt-3 text-xl font-bold text-slate-900">Admin dashboard</h1>
       <p className="mt-2 text-sm text-slate-500">
-        This area is separate from merchant accounts and only accessible with
+        This area is separate from business accounts and only accessible with
         the site owner&apos;s admin password.
       </p>
       <form onSubmit={handleSubmit} className="mt-6 w-full space-y-3">

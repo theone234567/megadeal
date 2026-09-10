@@ -243,7 +243,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         <span className="text-4xl">🔒</span>
         <h1 className="mt-3 text-xl font-bold text-slate-900">Create a deal</h1>
         <p className="mt-2 text-sm text-slate-500">
-          Sign in to your merchant account to create a deal. Only your own
+          Sign in to your business account to create a deal. Only your own
           account can create deals on it.
         </p>
         <MerchantLoginForm redirectTo="/portal/new-deal" />

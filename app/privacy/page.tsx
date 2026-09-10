@@ -31,7 +31,7 @@ export default function PrivacyPage() {
           well and to improve which deals we feature.
         </li>
         <li>
-          <strong>Account and merchant details</strong> — if you sign up to
+          <strong>Account and business details</strong> — if you sign up to
           list or manage a deal, we collect your email address and a
           password (stored securely by our identity provider, never in
           plain text), plus your business&apos;s trading name, its legal
@@ -58,7 +58,7 @@ export default function PrivacyPage() {
       <h2>How we use it</h2>
       <ul>
         <li>Show relevant deals and keep the site working well</li>
-        <li>Review and publish merchant listings</li>
+        <li>Review and publish business listings</li>
         <li>Provide customer support and respond to enquiries</li>
         <li>Detect and prevent fraud, and keep the site secure</li>
         <li>Understand which deals and categories perform well, in aggregate</li>
@@ -97,8 +97,8 @@ export default function PrivacyPage() {
         We use reasonable technical and organisational measures to protect
         personal information from loss, misuse or unauthorised access —
         including encrypted transmission (HTTPS), access controls on our
-        internal tools, and restricting merchant data access to the
-        merchant&apos;s own listings. No online service can guarantee
+        internal tools, and restricting business data access to the
+        business&apos;s own listings. No online service can guarantee
         perfect security, but if we ever became aware of a privacy breach
         likely to cause serious harm, we&apos;d notify the Office of the
         Privacy Commissioner and affected individuals as required by law.
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
 
       <h2>Cookies, analytics and advertising</h2>
       <p>
-        We use a small amount of cookie-based storage to keep a merchant
+        We use a small amount of cookie-based storage to keep a business
         signed in to the portal across visits — that part is functional,
         not advertising-driven.
       </p>
@@ -147,7 +147,7 @@ export default function PrivacyPage() {
 
       <h2>Data retention</h2>
       <p>
-        We keep merchant account and listing records for as long as needed
+        We keep business account and listing records for as long as needed
         to operate the site and meet legal requirements, and delete or
         anonymise other personal data when it&apos;s no longer needed for
         the purposes above.

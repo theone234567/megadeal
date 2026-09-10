@@ -136,7 +136,7 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder={
-              statusChangedToPausedOrCancelled ? "Note for the merchant (why?)" : "Note for the merchant"
+              statusChangedToPausedOrCancelled ? "Note for the business (why?)" : "Note for the business"
             }
             className="mt-1 w-44 rounded-lg border border-slate-200 px-2 py-1 text-xs"
           />
@@ -187,7 +187,7 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
             <p className="mt-2 text-xs font-semibold text-amber-700">
               ⚠️ No Wix Store product linked — this deal won&apos;t appear on the storefront even if
               set to Live. Deals normally get a product automatically when submitted; if one is
-              missing here, check the Wix dashboard or have the merchant resubmit.
+              missing here, check the Wix dashboard or have the business resubmit.
             </p>
           )}
         </td>

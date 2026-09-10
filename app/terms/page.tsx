@@ -32,7 +32,7 @@ export default function TermsPage() {
 
       <h2>2. Browsing and redeeming a deal</h2>
       <p>
-        Deals are shown for a limited time and, where a merchant has set a
+        Deals are shown for a limited time and, where a business has set a
         quantity limit, are available on a first-in, first-served basis
         while supplies last — MegaDeal doesn&apos;t guarantee that any
         specific deal will still be available when you get in touch, and
@@ -135,7 +135,7 @@ export default function TermsPage() {
 
       <h2>6. Your account and eligibility</h2>
       <p>
-        Signing in is only needed to manage a merchant listing through the
+        Signing in is only needed to manage a business listing through the
         portal. To create an account you must be at least 18 years old and,
         if you&apos;re signing up on behalf of a business, authorised to
         bind that business to these terms. We use a lightweight session to
