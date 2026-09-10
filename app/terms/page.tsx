@@ -109,6 +109,18 @@ export default function TermsPage() {
         shareholding, or other legal or financial interest in MegaDeal or
         the company that operates it.
       </p>
+      <p>
+        MegaDeal is a new venture, and we don&apos;t guarantee that it will
+        launch, or that it will keep operating once it does — for example,
+        if we don&apos;t get enough businesses signed up to make the
+        platform viable. If we decide not to launch, or to discontinue
+        MegaDeal at any time, these terms, any advertising credits
+        (including under the offer above), and any pending business
+        application become null and void, and we won&apos;t be liable for
+        any loss this causes beyond what&apos;s set out in
+        &quot;Disclaimers and liability&quot; below. We may cancel or
+        discontinue MegaDeal, or any part of it, at any time.
+      </p>
 
       <h2>4. Accuracy of listings</h2>
       <p>

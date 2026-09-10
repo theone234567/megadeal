@@ -157,6 +157,22 @@ const STEPS = [
 // cross it, no code change needed.
 const MIN_APPROVED_BUSINESSES_TO_SHOW_STATS = 33;
 
+// FAQS.a stays a plain string (it also feeds the FAQPage JSON-LD below,
+// which needs plain text) — this only affects the visible rendering,
+// turning a trailing "Conditions apply." into a link to /terms.
+function renderFaqAnswer(a: string) {
+  const suffix = " Conditions apply.";
+  if (!a.endsWith(suffix)) return a;
+  return (
+    <>
+      {a.slice(0, -suffix.length)}{" "}
+      <Link href="/terms" className="text-brand-600 hover:underline">
+        Conditions apply.
+      </Link>
+    </>
+  );
+}
+
 function SectionCta({ section }: { section: string }) {
   return (
     <div className="mt-8 flex justify-center">
@@ -484,8 +500,10 @@ export default async function MerchantsPage() {
             The up-to-6-months-free offer is only available to
             qualifying businesses that join before deals go live on
             MegaDeal — use code{" "}
-            <span className="font-bold">WELCOME6</span> at sign-up.
-            Conditions apply.
+            <span className="font-bold">WELCOME6</span> at sign-up.{" "}
+            <Link href="/terms" className="font-semibold text-white underline hover:no-underline">
+              Conditions apply.
+            </Link>
           </p>
           <div className="mt-6 flex justify-center">
             <a
@@ -518,7 +536,7 @@ export default async function MerchantsPage() {
                     <span className="shrink-0 text-slate-500 transition group-open:rotate-45">+</span>
                   </span>
                 </summary>
-                <p className="mt-3 text-sm text-slate-600">{f.a}</p>
+                <p className="mt-3 text-sm text-slate-600">{renderFaqAnswer(f.a)}</p>
               </details>
             ))}
           </div>

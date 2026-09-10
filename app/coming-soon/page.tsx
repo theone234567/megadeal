@@ -142,7 +142,10 @@ export default function ComingSoonPage() {
                 <span className="rounded-full bg-white/20 px-2 py-0.5 tracking-wide">
                   WELCOME6
                 </span>{" "}
-                at sign-up. Conditions apply.
+                at sign-up.{" "}
+                <Link href="/terms" className="underline hover:no-underline">
+                  Conditions apply.
+                </Link>
               </p>
               <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link

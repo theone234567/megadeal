@@ -24,7 +24,9 @@ export default function Footer() {
               <p className="text-sm text-brand-100">
                 List your deal on MegaDeal and get up to 6 months free
                 advertising — use code <span className="font-bold">WELCOME6</span> at signup.{" "}
-                <span className="text-brand-200">Conditions apply.</span>
+                <Link href="/terms" className="text-brand-200 underline hover:text-white">
+                  Conditions apply.
+                </Link>
               </p>
             </div>
             <Link
