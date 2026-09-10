@@ -123,8 +123,12 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 sm:flex-row">
+        <div className="mt-10 border-t border-slate-200 pt-6">
+          <h4 className="mb-3 text-sm font-bold text-slate-900">Follow us</h4>
           <SocialLinks />
+        </div>
+
+        <div className="mt-6 flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 sm:flex-row">
           <p className="text-center text-sm text-slate-500 sm:text-left">
             © {new Date().getFullYear()} MegaDeal. All rights reserved.
           </p>
