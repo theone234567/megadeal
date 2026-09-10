@@ -211,6 +211,20 @@ export default function MerchantSignupForm() {
             default here would silently apply the offer to no one who
             didn't arrive via a referral link. */}
         <input type="hidden" name="couponCode" value={referralPrefill || "WELCOME6"} />
+        {/* Marketing everywhere else on the site says "use code WELCOME6 at
+            signup" — without this, there was nothing on the actual form
+            confirming that's happening, since the field above is hidden by
+            design. Only claims the WELCOME6 offer specifically when that's
+            really what's being applied (not a referral code). */}
+        {referralPrefill ? (
+          <p className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-2 text-sm text-brand-700">
+            🎉 Signing up via a referral link — thanks!
+          </p>
+        ) : (
+          <p className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-2 text-sm text-brand-700">
+            🎁 Promo code <strong>WELCOME6</strong> applied — up to 6 months free advertising if you&apos;re approved before launch.
+          </p>
+        )}
 
         <div>
           <label htmlFor="signup-businessName" className="mb-1 block text-base font-medium text-slate-700">
