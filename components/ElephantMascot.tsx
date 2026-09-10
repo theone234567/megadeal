@@ -23,10 +23,11 @@ let sparkleId = 0;
 
 /**
  * The MegaDeal elephant: a cute, front-facing baby-elephant face (big round
- * head, two big symmetric ears, a soft swinging trunk, big eyes, blush
- * cheeks, tiny tusks) sized to sit alongside the wordmark rather than
- * dominate it. Sways gently on its own, and jumps + flaps + toots with a
- * sparkle burst and a speech bubble whenever it's tapped or clicked.
+ * head, two big symmetric ears, a raised trunk holding a little price tag,
+ * big eyes, blush cheeks, tiny tusks) sized to sit alongside the wordmark
+ * rather than dominate it. Sways gently on its own, and jumps + flaps +
+ * toots with a sparkle burst and a speech bubble whenever it's tapped or
+ * clicked.
  */
 export default function ElephantMascot({ className = "" }: { className?: string }) {
   const gradientId = useId();
@@ -95,8 +96,12 @@ export default function ElephantMascot({ className = "" }: { className?: string 
       >
         <defs>
           <linearGradient id={`${gradientId}-body`} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#a35cff" />
+            <stop offset="0%" stopColor="#c194ff" />
             <stop offset="100%" stopColor="#7a17f0" />
+          </linearGradient>
+          <linearGradient id={`${gradientId}-tag`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#ff6fae" />
+            <stop offset="100%" stopColor="#e0399b" />
           </linearGradient>
         </defs>
 
@@ -114,6 +119,9 @@ export default function ElephantMascot({ className = "" }: { className?: string 
         {/* head */}
         <ellipse cx="50" cy="45" rx="30" ry="28" fill={`url(#${gradientId}-body)`} />
 
+        {/* glossy forehead highlight for a bit of 3D shine */}
+        <ellipse cx="41" cy="28" rx="12" ry="7" fill="#ffffff" opacity="0.25" />
+
         {/* blush cheeks */}
         <ellipse cx="26" cy="56" rx="6" ry="4" fill="#ff9ed6" opacity="0.65" />
         <ellipse cx="74" cy="56" rx="6" ry="4" fill="#ff9ed6" opacity="0.65" />
@@ -122,16 +130,35 @@ export default function ElephantMascot({ className = "" }: { className?: string 
         <ellipse cx="41" cy="66" rx="3.6" ry="7" fill="#fffaf3" transform="rotate(-12 41 66)" />
         <ellipse cx="59" cy="66" rx="3.6" ry="7" fill="#fffaf3" transform="rotate(12 59 66)" />
 
-        {/* trunk: soft downward swing, unmistakably an elephant's */}
-        <path
-          d="M50 58 C 45 70, 55 78, 50 90"
-          fill="none"
-          stroke={`url(#${gradientId}-body)`}
-          strokeWidth={13}
-          strokeLinecap="round"
+        {/* trunk: raised up and curled at the tip, holding a little price
+            tag — same swing animation as before, just aimed upward now. */}
+        <g
           className={isDoingTrick ? "animate-elephant-trick-trunk" : ""}
-          style={{ transformBox: "fill-box" as any }}
-        />
+          // view-box (not fill-box) so the pivot is a fixed point in the
+          // SVG's own coordinates — the trunk's base — regardless of how
+          // much extra space the ring/tag shapes add to this group's
+          // bounding box.
+          style={{ transformBox: "view-box" as any, transformOrigin: "50px 58px" }}
+        >
+          <path
+            d="M50 58 C 59 53, 62 42, 64 32 C 66 22, 71 15, 78 13"
+            fill="none"
+            stroke={`url(#${gradientId}-body)`}
+            strokeWidth={12}
+            strokeLinecap="round"
+          />
+          {/* curled tip, holding the tag by a little ring */}
+          <circle cx="80" cy="12" r="6.5" fill="none" stroke="#7a17f0" strokeWidth={3} />
+          <line x1="82" y1="16" x2="86" y2="22" stroke="#7a17f0" strokeWidth={1.6} strokeLinecap="round" />
+          <g transform="translate(90,29) rotate(18)">
+            <rect x="-8" y="-9" width="16" height="17" rx="3.5" fill={`url(#${gradientId}-tag)`} />
+            <circle cx="0" cy="-5.5" r="1.6" fill="#ffffff" opacity="0.9" />
+            {/* "%" glyph, simplified for icon scale */}
+            <line x1="-3.5" y1="4" x2="3.5" y2="-3" stroke="#ffffff" strokeWidth="1.6" strokeLinecap="round" />
+            <circle cx="-3.5" cy="-3" r="1.5" fill="#ffffff" />
+            <circle cx="3.5" cy="4" r="1.5" fill="#ffffff" />
+          </g>
+        </g>
 
         {/* eyes */}
         <circle cx="36" cy="40" r="6" fill="#211033" />
