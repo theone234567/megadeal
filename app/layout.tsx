@@ -15,7 +15,7 @@ import { safeJsonLd } from "@/lib/safeJsonLd";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — Local deals up to 70% off`,
+    default: `${SITE_NAME} — Local deals up to 50% off`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
       : undefined,
   },
   openGraph: {
-    title: `${SITE_NAME} — Local deals up to 70% off`,
+    title: `${SITE_NAME} — Local deals up to 50% off`,
     description: SITE_DESCRIPTION,
     url: SITE_URL,
     siteName: SITE_NAME,
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Local deals up to 70% off`,
+    title: `${SITE_NAME} — Local deals up to 50% off`,
     description: SITE_DESCRIPTION,
   },
 };

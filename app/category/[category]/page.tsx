@@ -24,8 +24,8 @@ export function generateMetadata({
   params: { category: string };
 }): Metadata {
   const category = decodeURIComponent(params.category);
-  const title = `${category} Deals — Up to 70% Off | ${SITE_NAME}`;
-  const description = `Browse today's best ${category} deals in New Zealand. Save up to 70% at real local businesses — new deals added daily.`;
+  const title = `${category} Deals — Up to 50% Off | ${SITE_NAME}`;
+  const description = `Browse today's best ${category} deals in New Zealand. Save up to 50% at real local businesses — new deals added daily.`;
   const url = `${SITE_URL}/category/${encodeURIComponent(category)}`;
 
   return {

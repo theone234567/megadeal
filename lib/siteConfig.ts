@@ -35,7 +35,7 @@ export const SITE_LAUNCHED = process.env.SITE_LAUNCHED === "true";
 export const MEGASHOP_LAUNCHED = process.env.MEGASHOP_LAUNCHED === "true";
 
 export const SITE_DESCRIPTION =
-  "New Zealand's daily deals site — restaurants, spas, activities and getaways at up to 70% off from real local Kiwi businesses.";
+  "New Zealand's daily deals site — restaurants, spas, activities and getaways at up to 50% off from real local Kiwi businesses.";
 
 /**
  * The registered legal entity behind MegaDeal, referenced in /terms and

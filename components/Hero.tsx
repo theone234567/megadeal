@@ -6,7 +6,7 @@ export default function Hero() {
           Today&apos;s hottest local deals
         </p>
         <h1 className="max-w-2xl text-xl font-extrabold leading-tight text-white sm:text-2xl lg:text-3xl">
-          Up to 70% off restaurants, spas, activities &amp; getaways near you
+          Up to 50% off restaurants, spas, activities &amp; getaways near you
         </h1>
         <p className="mt-2.5 max-w-xl text-sm text-brand-50 sm:text-base">
           No vouchers, no checkout — pick a deal, contact the business, and
