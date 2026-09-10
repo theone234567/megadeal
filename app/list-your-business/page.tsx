@@ -210,13 +210,13 @@ export default async function MerchantsPage() {
           </span>
 
           <h1 className={`${fredoka.className} mt-6 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
-            We only succeed if you do.
+            Get your business in front of Auckland customers — for free.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            MegaDeal is built on one idea — value for everyone. Deal
-            hunters get genuine deals, and your business gets honest
-            advertising value in front of them. No commission, no
-            catch, just a platform on your side.
+            MegaDeal is launching in Auckland, and we&apos;re inviting our
+            first group of local businesses to join. Get up to 3 months
+            of advertising free, pay 0% commission on your sales, and
+            reach customers looking for great local deals.
           </p>
 
           <div className="mt-8 flex justify-center">
