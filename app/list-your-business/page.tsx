@@ -335,7 +335,7 @@ export default async function MerchantsPage() {
               <p className="text-xs font-bold uppercase tracking-wide text-slate-500 sm:text-sm">
                 Customer spends
               </p>
-              <p className="mt-2 text-2xl font-extrabold text-slate-900 sm:text-4xl">$100</p>
+              <p className="mt-2 text-2xl font-extrabold text-slate-900 sm:text-4xl">$49</p>
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-wide text-slate-500 sm:text-sm">
@@ -347,7 +347,7 @@ export default async function MerchantsPage() {
               <p className="text-xs font-bold uppercase tracking-wide text-slate-500 sm:text-sm">
                 Your business
               </p>
-              <p className="mt-2 text-2xl font-extrabold text-slate-900 sm:text-4xl">$100</p>
+              <p className="mt-2 text-2xl font-extrabold text-slate-900 sm:text-4xl">$49</p>
             </div>
           </div>
           <p className="mx-auto mt-4 max-w-md text-sm text-slate-600">

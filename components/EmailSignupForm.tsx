@@ -133,7 +133,7 @@ export default function EmailSignupForm({
             className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-slate-300"
           />
           <span>
-            I agree to receive deal emails from MegaDeal and have read the{" "}
+            I agree to receive {audience === "merchant" ? "launch updates for businesses" : "deal emails"} from MegaDeal and have read the{" "}
             <a href="/terms" className={linkClass}>
               terms
             </a>{" "}
