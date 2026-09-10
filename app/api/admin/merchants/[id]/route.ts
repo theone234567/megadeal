@@ -404,17 +404,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           // both, not just the recipient's own.
           const safeReferrerName = escapeHtml(referrerFresh.businessName || "there");
           const safeReferredName = escapeHtml(existing.businessName || "a new business");
+          const referralCreditsLabel = `${REFERRAL_BONUS_CREDITS} bonus deal credit${REFERRAL_BONUS_CREDITS === 1 ? "" : "s"}`;
           await sendTransactionalEmail({
             to: referrerFresh.email,
             subject: "You earned referral credits on MegaDeal!",
             html: `
               <p>Hi ${safeReferrerName},</p>
               <p>Great news — a business you referred, <strong>${safeReferredName}</strong>, has been approved on MegaDeal. We've added
-              ${REFERRAL_BONUS_CREDITS} bonus deal credit${
-              REFERRAL_BONUS_CREDITS === 1 ? "" : "s"
-            } to your account. Thanks for spreading the word!</p>
+              ${referralCreditsLabel} to your account. Thanks for spreading the word!</p>
               <p><a href="${SITE_URL}/portal">View your portal</a></p>
             `,
+            text: `Hi ${referrerFresh.businessName || "there"},\n\nGreat news — a business you referred, ${existing.businessName || "a new business"}, has been approved on MegaDeal. We've added ${referralCreditsLabel} to your account. Thanks for spreading the word!\n\nView your portal: ${SITE_URL}/portal`,
           });
         } catch (err) {
           console.error("[admin/merchants] referral bonus email failed", err);
@@ -428,6 +428,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     try {
       const totalGranted = introGranted + referralBonusGranted + promoGranted;
       const safeName = escapeHtml(existing.businessName || "there");
+      const creditsNote =
+        totalGranted > 0
+          ? `We've added ${totalGranted} free deal credit${totalGranted === 1 ? "" : "s"} to your account${
+              promoGranted > 0
+                ? " (including your WELCOME3 free advertising offer)"
+                : referralBonusGranted > 0
+                ? " (including a referral bonus)"
+                : ""
+            } so you can get started right away.`
+          : "";
       await sendTransactionalEmail({
         to: existing.email,
         subject: "You're approved! Welcome to MegaDeal",
@@ -436,20 +446,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           <p>Good news — your business is approved on MegaDeal. Log in to your
           business portal to submit your first deal:</p>
           <p><a href="${SITE_URL}/portal">Go to your portal</a></p>
-          ${
-            totalGranted > 0
-              ? `<p>We've added ${totalGranted} free deal credit${
-                  totalGranted === 1 ? "" : "s"
-                } to your account${
-                  promoGranted > 0
-                    ? " (including your WELCOME3 free advertising offer)"
-                    : referralBonusGranted > 0
-                    ? " (including a referral bonus)"
-                    : ""
-                } so you can get started right away.</p>`
-              : ""
-          }
+          ${creditsNote ? `<p>${creditsNote}</p>` : ""}
         `,
+        text: `Hi ${existing.businessName || "there"},\n\nGood news — your business is approved on MegaDeal. Log in to your business portal to submit your first deal:\n\n${SITE_URL}/portal${creditsNote ? `\n\n${creditsNote}` : ""}`,
       });
     } catch (err) {
       console.error("[admin/merchants] approval email failed", err);

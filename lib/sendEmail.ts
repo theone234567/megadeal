@@ -10,6 +10,7 @@ export async function sendTransactionalEmail({
   subject,
   html,
   text,
+  replyTo,
 }: {
   to: string;
   subject: string;
@@ -19,6 +20,11 @@ export async function sendTransactionalEmail({
   // message — cheap to avoid, so callers sending anything user-facing
   // should pass one.
   text?: string;
+  // The "from" address is a fixed no-reply@ mailbox nobody reads — pass
+  // this when the email itself invites a reply (e.g. "hit reply, a real
+  // person reads every message"), so that reply actually reaches someone
+  // instead of bouncing or vanishing.
+  replyTo?: string;
 }): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -38,6 +44,7 @@ export async function sendTransactionalEmail({
       subject,
       html,
       ...(text ? { text } : {}),
+      ...(replyTo ? { reply_to: replyTo } : {}),
     }),
   });
 

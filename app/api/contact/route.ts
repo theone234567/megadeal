@@ -68,6 +68,10 @@ export async function POST(req: NextRequest) {
           <p style="white-space:pre-wrap;">${escapeHtml(message)}</p>
         </div>
       `,
+      text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
+      // So hitting reply on the notification goes straight to the person
+      // who contacted you, not into the no-reply@ mailbox.
+      replyTo: email,
     }).catch((err) => console.error("[contact] admin notify failed", err));
   }
 
