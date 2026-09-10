@@ -6,7 +6,9 @@ import { SITE_URL, SITE_NAME, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import { fetchMegaShopProductsForServer } from "@/lib/fetchMegaShopServer";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const products = await fetchMegaShopProductsForServer();
+  // Short-circuits before touching the live product fetch at all while
+  // not launched — same reasoning as the page component below.
+  const products = MEGASHOP_LAUNCHED ? await fetchMegaShopProductsForServer() : [];
   if (products.length === 0 || !MEGASHOP_LAUNCHED) {
     return {
       title: `MegaShop.co.nz — Coming Soon | ${SITE_NAME}`,
@@ -23,7 +25,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function MegaShopPage() {
-  const products = await fetchMegaShopProductsForServer();
+  // Until MEGASHOP_LAUNCHED, always show the coming-soon state — this
+  // skips fetching and rendering the actual product grid entirely,
+  // regardless of how many products exist in Wix. (Also sidesteps a
+  // production incident where rendering that grid was blowing the
+  // Worker's CPU time limit once real products landed in that category —
+  // root cause still under investigation, but nothing here should be
+  // executing pre-launch anyway.)
+  const products = MEGASHOP_LAUNCHED ? await fetchMegaShopProductsForServer() : [];
 
   if (products.length === 0) {
     return (
