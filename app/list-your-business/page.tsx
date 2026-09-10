@@ -16,11 +16,36 @@ import { PercentIcon, ZapIcon, MapPinIcon } from "@/components/icons";
 // approximately live, and this avoids hitting Wix on every single request.
 export const revalidate = 60;
 
+// The root layout's title.template ("%s | MegaDeal") already appends the
+// brand name to whatever <title> a page sets — every other page's title
+// omits "MegaDeal" for that reason, so this one does too, to avoid it
+// rendering as "...— MegaDeal | MegaDeal". openGraph/twitter titles aren't
+// run through that template (they're shown standalone, e.g. on social
+// platforms), so those keep the full brand-inclusive version.
+const LIST_YOUR_BUSINESS_TITLE = "Up to 6 Months Free Advertising for Auckland Businesses";
+const LIST_YOUR_BUSINESS_SOCIAL_TITLE = `${LIST_YOUR_BUSINESS_TITLE} — MegaDeal`;
+const LIST_YOUR_BUSINESS_DESCRIPTION =
+  "Auckland businesses: claim up to 6 months free advertising on MegaDeal before launch. 0% commission, no lock-in, no credit card required.";
+
 export const metadata: Metadata = {
-  title: "Free Advertising for Auckland Businesses — MegaDeal",
-  description:
-    "Auckland businesses: claim up to 6 months free advertising on MegaDeal. 0% commission, no lock-in, no credit card required.",
+  title: LIST_YOUR_BUSINESS_TITLE,
+  description: LIST_YOUR_BUSINESS_DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/list-your-business` },
+  // Without its own openGraph/twitter block this page silently inherits the
+  // root layout's homepage title/description — mismatching the dedicated
+  // opengraph-image.tsx built for this page, which already says "Up to 6
+  // months free advertising".
+  openGraph: {
+    title: LIST_YOUR_BUSINESS_SOCIAL_TITLE,
+    description: LIST_YOUR_BUSINESS_DESCRIPTION,
+    url: `${SITE_URL}/list-your-business`,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: LIST_YOUR_BUSINESS_SOCIAL_TITLE,
+    description: LIST_YOUR_BUSINESS_DESCRIPTION,
+  },
 };
 
 // The exact CTA used everywhere on this page — one wording, always
@@ -214,6 +239,21 @@ export default async function MerchantsPage() {
               audienceType: "Local businesses (restaurants, spas, activities, tours, getaways)",
             },
             url: `${SITE_URL}/list-your-business`,
+            // Structured "Offer" for the pre-launch promo — the same thing
+            // marked up in the FAQPage JSON-LD below, surfaced here too so
+            // it's attached to the Service entity itself, not just an FAQ
+            // answer, for search engines/AI answer engines that read one
+            // but not the other.
+            makesOffer: {
+              "@type": "Offer",
+              name: "Up to 6 months free advertising",
+              description:
+                "Up to 6 months of free advertising credits for qualifying businesses that join MegaDeal before launch, using code WELCOME6. Conditions apply.",
+              price: "0",
+              priceCurrency: "NZD",
+              availability: "https://schema.org/LimitedAvailability",
+              url: `${SITE_URL}/list-your-business`,
+            },
           }),
         }}
       />
