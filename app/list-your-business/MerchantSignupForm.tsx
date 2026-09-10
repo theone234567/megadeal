@@ -59,6 +59,11 @@ export default function MerchantSignupForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  // Pre-filled with WELCOME6 (or a real ?ref= referral code, if that's how
+  // the visitor arrived) — same default as before, just visible and
+  // editable now instead of a hidden field, so someone who wants to swap
+  // in a different referral code they were given can actually do that.
+  const [couponCode, setCouponCode] = useState(referralPrefill || "WELCOME6");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -202,29 +207,28 @@ export default function MerchantSignupForm() {
           className="absolute left-[-9999px] h-0 w-0 opacity-0"
           aria-hidden="true"
         />
-        {/* Referral tracking stays silent — no visible field, just carried
-            through from the ?ref= link someone arrived on. Defaults to
-            WELCOME6 otherwise (same as the old visible field's default)
-            — this is what actually triggers the "up to 6 months free"
-            offer at admin-approval time (see PROMO_CODE in
-            app/api/admin/merchants/[id]/route.ts), so dropping the
-            default here would silently apply the offer to no one who
-            didn't arrive via a referral link. */}
-        <input type="hidden" name="couponCode" value={referralPrefill || "WELCOME6"} />
-        {/* Marketing everywhere else on the site says "use code WELCOME6 at
-            signup" — without this, there was nothing on the actual form
-            confirming that's happening, since the field above is hidden by
-            design. Only claims the WELCOME6 offer specifically when that's
-            really what's being applied (not a referral code). */}
-        {referralPrefill ? (
-          <p className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-2 text-sm text-brand-700">
-            🎉 Signing up via a referral link — thanks!
+        {/* Visible and pre-filled with WELCOME6 (or a real ?ref= referral
+            code) by default — this is what actually triggers the "up to 6
+            months free" offer at admin-approval time (see PROMO_CODE in
+            app/api/admin/merchants/[id]/route.ts), so an empty value here
+            would silently apply no offer at all. Editable so someone with
+            a different referral code can swap it in. */}
+        <div>
+          <label htmlFor="signup-couponCode" className="mb-1 block text-base font-medium text-slate-700">
+            Promo code
+          </label>
+          <input
+            id="signup-couponCode"
+            name="couponCode"
+            type="text"
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+          />
+          <p className="mt-1 text-sm text-slate-500">
+            🎁 WELCOME6 gets you up to 6 months free advertising if you&apos;re approved before launch.
           </p>
-        ) : (
-          <p className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-2 text-sm text-brand-700">
-            🎁 Promo code <strong>WELCOME6</strong> applied — up to 6 months free advertising if you&apos;re approved before launch.
-          </p>
-        )}
+        </div>
 
         <div>
           <label htmlFor="signup-businessName" className="mb-1 block text-base font-medium text-slate-700">
