@@ -38,7 +38,7 @@ export default function Footer() {
       )}
 
       <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
           <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Categories</h4>
             <ul className="space-y-2 text-sm text-slate-600">
@@ -110,6 +110,10 @@ export default function Footer() {
             </ul>
           </div>
           <div>
+            <h4 className="mb-3 text-sm font-bold text-slate-900">Follow us</h4>
+            <SocialLinks />
+          </div>
+          <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Stay in the loop</h4>
             <p className="mb-3 text-sm text-slate-600">
               Get the best local deals in your inbox every week.
@@ -123,12 +127,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-slate-200 pt-6">
-          <h4 className="mb-3 text-sm font-bold text-slate-900">Follow us</h4>
-          <SocialLinks />
-        </div>
-
-        <div className="mt-6 flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 sm:flex-row">
           <p className="text-center text-sm text-slate-500 sm:text-left">
             © {new Date().getFullYear()} MegaDeal. All rights reserved.
           </p>
