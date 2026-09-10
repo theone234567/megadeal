@@ -206,7 +206,7 @@ export default async function MerchantsPage() {
       <section id="hero" className="relative overflow-hidden bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-3xl">
           <span className="inline-flex items-center gap-2 rounded-full bg-ember-500 px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white shadow-card sm:text-base">
-            🚀 Launching in Auckland — founding businesses now open
+            🚀 Coming soon to Auckland — join as a founding business
           </span>
 
           <h1 className={`${fredoka.className} mt-6 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
