@@ -134,7 +134,7 @@ export default function ComingSoonPage() {
           <div className="mt-10 rounded-3xl bg-ember-500 p-8 text-white shadow-card sm:p-10">
             <div className="mx-auto max-w-3xl text-center">
               <h3 className={`${fredoka.className} text-2xl font-bold`}>
-                🎁 Founding businesses get up to 3 months free advertising
+                🎁 First 100 businesses get up to 3 months free advertising
               </h3>
               <p className="mx-auto mt-2 max-w-xl text-sm text-ember-50">
                 Sign up now and get priority placement when we launch — use

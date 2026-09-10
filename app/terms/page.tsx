@@ -99,12 +99,12 @@ export default function TermsPage() {
         amount that was incorrectly deducted.
       </p>
       <p>
-        &quot;Founding business&quot; is a promotional label for businesses
-        that join MegaDeal before or shortly after launch, entitling them to
-        that period&apos;s introductory offer (for example, free advertising
-        credits). It doesn&apos;t give any ownership, equity, shareholding,
-        or other legal or financial interest in MegaDeal or the company that
-        operates it.
+        The &quot;first 100 businesses&quot; offer is a promotional offer for
+        the first 100 businesses that join MegaDeal before or shortly after
+        launch, entitling them to that period&apos;s introductory offer (for
+        example, free advertising credits). It doesn&apos;t give any
+        ownership, equity, shareholding, or other legal or financial
+        interest in MegaDeal or the company that operates it.
       </p>
 
       <h2>4. Accuracy of listings</h2>
