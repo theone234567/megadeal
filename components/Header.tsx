@@ -26,7 +26,7 @@ export default function Header() {
     fetch("/api/merchants/me")
       .then((res) => (res.ok ? res.json() : { item: null }))
       .then(({ item }) => {
-        if (!cancelled) setProfileComplete(Boolean(!item || item.address));
+        if (!cancelled) setProfileComplete(Boolean(!item || (item.address && item.category)));
       })
       .catch(() => {
         // Not fatal — worst case the badge just doesn't show this load.

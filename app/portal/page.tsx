@@ -205,7 +205,7 @@ export default function PortalPage() {
 
           <OnboardingChecklist
             emailVerified={Boolean(member?.loginEmailVerified)}
-            profileComplete={Boolean(merchant.address)}
+            profileComplete={Boolean(merchant.address && merchant.category)}
             hasDeals={deals.length > 0}
           />
 

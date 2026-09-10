@@ -6,7 +6,6 @@ import { useWix } from "@/context/WixProvider";
 import { registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import PasswordField from "@/components/PasswordField";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
-import { CATEGORIES } from "@/lib/categories";
 
 function RequiredTag() {
   return <span className="ml-1 font-normal text-ember-600">Required</span>;
@@ -16,20 +15,13 @@ function RequiredTag() {
  * CRO EXPERIMENT — short initial signup (easy to revert): the form used to
  * also collect legal business name's NZBN, referral code as a visible
  * field, and the full public-profile block (business phone, address,
- * city) inline. Those are now either dropped (NZBN, removed earlier),
- * collected silently (referral code, via the ?ref= URL param — no visible
- * field), or deferred to the portal's "complete your profile" step
- * (address, city, phone — same place bio/hours/website/social already
- * go), so the initial ask is business name, contact name, email,
- * password, mobile, and business category — the minimum needed to create
- * the account and start a review. A category select was added for lead
- * qualification, but nothing on the Merchants record captures it yet —
- * no live Wix connection in this sandbox to add a schema column, and it's
- * deliberately NOT written into an existing free-text field (bio) that
- * gets displayed as the business's public description, since a merchant
- * who doesn't notice and overwrite it would end up with "Category: Food
- * & Drink" as their public bio. Sent as a gtag event instead (see
- * finishAfterAuth) until there's a real field to persist it in.
+ * city, category) inline. Those are now either dropped (NZBN, removed
+ * earlier), collected silently (referral code, via the ?ref= URL param —
+ * no visible field), or deferred to the portal's "complete your profile"
+ * step (address, city, phone, category — same place bio/hours/website/
+ * social already go), so the initial ask is business name, contact name,
+ * email, password, and mobile — the minimum needed to create the account
+ * and start a review.
  */
 
 /** Submits everything the /list-your-business form collected to create (or claim)
@@ -67,7 +59,6 @@ export default function MerchantSignupForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [category, setCategory] = useState("");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -94,12 +85,6 @@ export default function MerchantSignupForm() {
     // completed application, not just a click or an email signup.
     trackMetaPixelEvent("CompleteRegistration", { content_name: "business_signup" });
     window.gtag?.("event", "sign_up", { method: "merchant_signup" });
-    // Business category has nowhere to persist yet — no live Wix
-    // connection in this sandbox to add a schema field for it on the
-    // Merchants collection, and it's not safe to smuggle into an
-    // existing free-text field that gets displayed publicly (bio).
-    // Tracked here instead so it's still visible for lead qualification.
-    if (category) window.gtag?.("event", "category_selected", { category });
     window.location.href = "/portal";
   }
 
@@ -319,29 +304,6 @@ export default function MerchantSignupForm() {
             placeholder="021 234 5678"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
           />
-        </div>
-
-        <div>
-          <label htmlFor="signup-category" className="mb-1 block text-base font-medium text-slate-700">
-            Business category
-            <RequiredTag />
-          </label>
-          <select
-            id="signup-category"
-            required
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-          >
-            <option value="" disabled>
-              Select a category
-            </option>
-            {CATEGORIES.map((c) => (
-              <option key={c.id} value={c.name}>
-                {c.emoji} {c.name}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div>

@@ -4,6 +4,7 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
+import { CATEGORIES } from "@/lib/categories";
 
 const MAX_TEXT_LENGTH = 300;
 // See apply/route.ts — businessHours is a structured-hours JSON blob, not
@@ -74,6 +75,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid price range." }, { status: 400 });
   }
 
+  const category = cleanText(body.category, MAX_TEXT_LENGTH);
+  if (!CATEGORIES.some((c) => c.name === category)) {
+    return NextResponse.json({ error: "Please select a valid business category." }, { status: 400 });
+  }
+
   const bookingEmail = cleanText(body.bookingEmail, MAX_TEXT_LENGTH);
   if (bookingEmail && !EMAIL_RE.test(bookingEmail)) {
     return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
@@ -131,6 +137,7 @@ export async function POST(req: NextRequest) {
     phone,
     address,
     city,
+    category,
     postcode: cleanText(body.postcode, 20),
     bio: cleanText(body.bio, MAX_BIO_LENGTH),
     businessHours: cleanText(body.businessHours, MAX_BUSINESS_HOURS_LENGTH),
