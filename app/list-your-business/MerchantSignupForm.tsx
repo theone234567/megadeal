@@ -207,29 +207,6 @@ export default function MerchantSignupForm() {
           className="absolute left-[-9999px] h-0 w-0 opacity-0"
           aria-hidden="true"
         />
-        {/* Visible and pre-filled with WELCOME6 (or a real ?ref= referral
-            code) by default — this is what actually triggers the "up to 6
-            months free" offer at admin-approval time (see PROMO_CODE in
-            app/api/admin/merchants/[id]/route.ts), so an empty value here
-            would silently apply no offer at all. Editable so someone with
-            a different referral code can swap it in. */}
-        <div>
-          <label htmlFor="signup-couponCode" className="mb-1 block text-base font-medium text-slate-700">
-            Promo code
-          </label>
-          <input
-            id="signup-couponCode"
-            name="couponCode"
-            type="text"
-            value={couponCode}
-            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-          />
-          <p className="mt-1 text-sm text-slate-500">
-            🎁 WELCOME6 gets you up to 6 months free advertising if you&apos;re approved before launch.
-          </p>
-        </div>
-
         <div>
           <label htmlFor="signup-businessName" className="mb-1 block text-base font-medium text-slate-700">
             Business name
@@ -347,6 +324,29 @@ export default function MerchantSignupForm() {
           📍 Address, hours, photos and more — you&apos;ll add those next,
           once you&apos;re in your portal.
         </p>
+
+        {/* Visible and pre-filled with WELCOME6 (or a real ?ref= referral
+            code) by default — this is what actually triggers the "up to 6
+            months free" offer at admin-approval time (see PROMO_CODE in
+            app/api/admin/merchants/[id]/route.ts), so an empty value here
+            would silently apply no offer at all. Editable so someone with
+            a different referral code can swap it in. */}
+        <div>
+          <label htmlFor="signup-couponCode" className="mb-1 block text-base font-medium text-slate-700">
+            Promo code
+          </label>
+          <input
+            id="signup-couponCode"
+            name="couponCode"
+            type="text"
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+          />
+          <p className="mt-1 text-sm text-slate-500">
+            🎁 WELCOME6 gets you up to 6 months free advertising if you&apos;re approved before launch.
+          </p>
+        </div>
 
         <label className="flex items-start gap-2 text-base text-slate-600">
           <input
