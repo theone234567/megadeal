@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 // links (<a>) that don't reduce to clean structured-data text.
 const FAQ_JSONLD = [
   { q: "Do I pay MegaDeal for a deal?", a: "No — MegaDeal never charges customers anything, and there's no voucher to buy. Deals are redeemed and paid for directly with the business, at the discounted price shown on the deal page." },
-  { q: "Do I need an account to use MegaDeal?", a: "No — browsing and redeeming deals needs no sign-up or account at all. Only businesses need to create an account, to list and manage their own deals." },
+  { q: "Do I need an account to use MegaDeal?", a: "No — browsing and redeeming deals needs no signup or account at all. Only businesses need to create an account, to list and manage their own deals." },
   { q: "Is my payment information safe?", a: "There's nothing to keep safe — MegaDeal never asks for or stores your card details. You pay the business directly, however they normally take payment, the same as any other in-person or phone purchase." },
   { q: "How do I redeem a deal?", a: "Open the deal page and tap \"Get this deal\" to reveal the business's contact details and a short code. Get in touch or visit the business directly, quote that code, and pay them at the discounted price." },
   { q: "How long do I have to use a deal?", a: "Every deal shows its own validity window on the deal page. Once it expires, the business is under no obligation to honour the discounted price." },
@@ -39,7 +39,7 @@ const FAQS: Faq[] = [
   },
   {
     q: "Do I need an account to use MegaDeal?",
-    a: "No — browsing and redeeming deals needs no sign-up or account at all. Only businesses need to create an account, to list and manage their own deals.",
+    a: "No — browsing and redeeming deals needs no signup or account at all. Only businesses need to create an account, to list and manage their own deals.",
   },
   {
     q: "Is my payment information safe?",

@@ -108,7 +108,7 @@ const FAQS = [
   },
   {
     q: "Do I need to offer a discount?",
-    a: "MegaDeal is designed around genuine deals and offers. Your offer can be a discount, free extra, package, upgrade or another genuine customer benefit.",
+    a: "MegaDeal is designed around genuine deals and offers. Your offer can be a discount, a free extra, a package, an upgrade, or another genuine customer benefit.",
   },
   {
     q: "When will MegaDeal launch?",
@@ -206,7 +206,7 @@ export default async function MerchantsPage() {
             serviceType: "Local business advertising",
             name: `${SITE_NAME} business advertising`,
             description:
-              "Zero-commission advertising for local New Zealand businesses — customers pay the business direct, and MegaDeal is paid in advertising credits or a subscription, never a cut of sales.",
+              "Zero-commission advertising for local New Zealand businesses — customers pay the business directly, and MegaDeal is paid in advertising credits or a subscription, never a cut of sales.",
             provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
             areaServed: { "@type": "Country", name: "New Zealand" },
             audience: {
@@ -500,7 +500,7 @@ export default async function MerchantsPage() {
             The up-to-6-months-free offer is only available to
             qualifying businesses that join before deals go live on
             MegaDeal — use code{" "}
-            <span className="font-bold">WELCOME6</span> at sign-up.{" "}
+            <span className="font-bold">WELCOME6</span> at signup.{" "}
             <Link href="/terms" className="font-semibold text-white underline hover:no-underline">
               Conditions apply.
             </Link>

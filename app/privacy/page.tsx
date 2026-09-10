@@ -84,7 +84,7 @@ export default function PrivacyPage() {
         email provider (Wix.com), Google&apos;s Places API
         for business-address autocomplete, Google Analytics for site
         traffic reporting, and Meta (Facebook/Instagram) for ad measurement
-        — see &quot;Cookies and advertising&quot; below.
+        — see &quot;Cookies, analytics and advertising&quot; below.
         Some of these providers store or process data on servers outside
         New Zealand. Where that happens, we only share the information
         needed for them to provide their service to us, and we choose

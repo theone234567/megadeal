@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 const CUSTOMER_PERKS = [
   { emoji: "🍽️", text: "Half-price dinners, spa days, weekend adventures and more" },
-  { emoji: "💸", text: "You pay the business direct. No middleman, no markup." },
+  { emoji: "💸", text: "You pay the business directly. No middleman, no markup." },
   { emoji: "🆕", text: "Fresh deals added all the time — always something new to try" },
   { emoji: "🧡", text: "Every deal you grab supports a local Kiwi business" },
   { emoji: "🚀", text: "No commission for businesses means better businesses — and better deals for you" },
@@ -107,7 +107,7 @@ export default function ComingSoonPage() {
             <p className="mx-auto mt-3 max-w-2xl text-slate-600">
               MegaDeal isn&apos;t a marketplace that skims a cut of your sales —
               it&apos;s advertising, plain and simple. You put your offer in front
-              of local customers, they pay you direct, and you keep 100% of it.
+              of local customers, they pay you directly, and you keep 100% of it.
               That&apos;s the whole model.
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
@@ -142,7 +142,7 @@ export default function ComingSoonPage() {
                 <span className="rounded-full bg-white/20 px-2 py-0.5 tracking-wide">
                   WELCOME6
                 </span>{" "}
-                at sign-up.{" "}
+                at signup.{" "}
                 <Link href="/terms" className="underline hover:no-underline">
                   Conditions apply.
                 </Link>
@@ -200,7 +200,7 @@ export default function ComingSoonPage() {
                 <span className="text-lg leading-none">📞</span>
                 <p className="text-xs text-slate-600 sm:text-sm">
                   <span className="font-bold text-slate-800">3. Contact &amp; redeem</span>{" "}
-                  <span className="text-slate-500">— quote the code, pay the business direct</span>
+                  <span className="text-slate-500">— quote the code, pay the business directly</span>
                 </p>
               </div>
             </div>

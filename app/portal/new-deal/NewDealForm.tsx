@@ -411,7 +411,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         {!siteLaunched && (
           <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
             🚧 MegaDeal hasn&apos;t officially launched yet, so we&apos;re not
-            able to accept deals for review just yet. Save this as a draft
+            able to accept deals for review. Save this as a draft
             for now — nothing&apos;s lost, and you can submit it for
             approval the moment we go live.
           </p>
@@ -467,7 +467,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       {!siteLaunched && (
         <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
           🚧 MegaDeal hasn&apos;t officially launched yet, so we&apos;re not
-          accepting deals for review just yet. Build your deal below and
+          accepting deals for review. Build your deal below and
           save it as a draft — you can submit it for approval the moment
           we go live, and we&apos;ll email you when that happens.
         </p>
@@ -575,7 +575,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             <span>
               <span className="block text-sm font-bold text-slate-900">⚡ Make this a Flash Deal</span>
               <span className="block text-xs text-slate-500">
-                Short burst offer (minutes to hours) — great for filling quiet
+                Short-burst offer (minutes to hours) — great for filling quiet
                 spots, e.g. &quot;2-for-1 tonight only&quot;. Shows an animated FLASH badge.
               </span>
             </span>

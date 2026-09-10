@@ -3,7 +3,7 @@ import Link from "next/link";
 const STEPS = [
   { emoji: "🔍", title: "1. Browse", text: "Find a deal near you" },
   { emoji: "🎟️", title: "2. Get the code", text: "Tap \"Get this deal\" for contact details + your code" },
-  { emoji: "📞", title: "3. Contact & redeem", text: "Call, message or visit — quote the code, pay direct" },
+  { emoji: "📞", title: "3. Contact & redeem", text: "Call, message or visit — quote the code, pay directly" },
 ];
 
 /**
