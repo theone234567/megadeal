@@ -23,12 +23,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const deal = await fetchDealForSEO(params.slug);
   if (!deal) {
-    return { title: `Deal not found | ${SITE_NAME}` };
+    return { title: "Deal not found" };
   }
 
   const price = formatMoney(deal.now, deal.currency, deal.formattedNow);
   const businessSuffix = deal.businessName ? ` at ${deal.businessName}` : "";
-  const title = `${deal.name}${businessSuffix} — ${deal.discountPercent > 0 ? `${deal.discountPercent}% off, ` : ""}${price} | ${SITE_NAME}`;
+  // The root layout's title.template ("%s | MegaDeal") already appends the
+  // brand name to this — no "| SITE_NAME" suffix needed here, or the
+  // rendered title doubles up. openGraph/twitter titles aren't run through
+  // that template (shown standalone, e.g. on social platforms), so those
+  // keep the brand-inclusive version.
+  const title = `${deal.name}${businessSuffix} — ${deal.discountPercent > 0 ? `${deal.discountPercent}% off, ` : ""}${price}`;
+  const socialTitle = `${title} | ${SITE_NAME}`;
   const description = stripHtml(deal.description).slice(0, 155) ||
     `${deal.name}${businessSuffix} for ${price}. Grab this deal on ${SITE_NAME} before it's gone.`;
   const url = `${SITE_URL}/deal/${deal.slug}`;
@@ -44,7 +50,7 @@ export async function generateMetadata({
     // might still hold pre-launch test data.
     robots: SITE_LAUNCHED ? undefined : { index: false, follow: true },
     openGraph: {
-      title,
+      title: socialTitle,
       description,
       url,
       siteName: SITE_NAME,
@@ -53,7 +59,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: socialTitle,
       description,
       images: deal.image ? [deal.image] : undefined,
     },

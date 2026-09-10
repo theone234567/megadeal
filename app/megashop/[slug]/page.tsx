@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { fetchMegaShopProductBySlugForServer } from "@/lib/fetchMegaShopServer";
 import { SITE_URL, SITE_NAME, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney } from "@/lib/format";
+import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export async function generateMetadata({
   params,
@@ -12,10 +13,16 @@ export async function generateMetadata({
   params: { slug: string };
 }): Promise<Metadata> {
   const product = await fetchMegaShopProductBySlugForServer(params.slug);
-  if (!product) return { title: `Product not found | ${SITE_NAME}` };
+  if (!product) return { title: "Product not found" };
 
   const price = formatMoney(product.now, product.currency, product.formattedNow);
-  const title = `${product.name} — ${price} | MegaShop.co.nz`;
+  // No "| SITE_NAME" suffix on `title` — the root layout's title.template
+  // already appends "| MegaDeal", so a title with both "MegaShop.co.nz"
+  // and that auto-suffix ended up 3 brand segments deep. openGraph/twitter
+  // titles aren't run through that template, so those keep the
+  // MegaShop.co.nz sub-brand name.
+  const title = `${product.name} — ${price}`;
+  const socialTitle = `${title} | MegaShop.co.nz`;
   const description = product.description.slice(0, 155) || `${product.name} for ${price} on MegaShop.co.nz.`;
   const url = `${SITE_URL}/megashop/${product.slug}`;
 
@@ -28,14 +35,19 @@ export async function generateMetadata({
     // listing — don't let Google index it as one until MEGASHOP_LAUNCHED.
     robots: MEGASHOP_LAUNCHED ? undefined : { index: false, follow: true },
     openGraph: {
-      title,
+      title: socialTitle,
       description,
       url,
       siteName: SITE_NAME,
       images: product.image ? [{ url: product.image, width: 1200, height: 900, alt: product.name }] : undefined,
       type: "website",
     },
-    twitter: { card: "summary_large_image", title, description, images: product.image ? [product.image] : undefined },
+    twitter: {
+      card: "summary_large_image",
+      title: socialTitle,
+      description,
+      images: product.image ? [product.image] : undefined,
+    },
   };
 }
 
@@ -45,9 +57,30 @@ export default async function MegaShopProductPage({ params }: { params: { slug: 
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <Link href="/megashop" className="text-sm text-slate-500 hover:text-brand-700">
-        ← Back to MegaShop
-      </Link>
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: product.name,
+            description: product.description || product.name,
+            image: product.image ? [product.image] : undefined,
+            offers: {
+              "@type": "Offer",
+              url: `${SITE_URL}/megashop/${product.slug}`,
+              priceCurrency: product.currency || "NZD",
+              price: product.now,
+              availability:
+                product.inStock !== false
+                  ? "https://schema.org/InStock"
+                  : "https://schema.org/SoldOut",
+            },
+          }),
+        }}
+      />
+      <Breadcrumbs items={[{ name: "MegaShop", href: "/megashop" }, { name: product.name }]} />
 
       <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-5">
         <div className="lg:col-span-3">

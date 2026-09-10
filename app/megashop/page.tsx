@@ -2,23 +2,25 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import MegaShopProductCard from "@/components/MegaShopProductCard";
-import { SITE_URL, SITE_NAME, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_URL, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import { fetchMegaShopProductsForServer } from "@/lib/fetchMegaShopServer";
 
 export async function generateMetadata(): Promise<Metadata> {
   // Short-circuits before touching the live product fetch at all while
   // not launched — same reasoning as the page component below.
   const products = MEGASHOP_LAUNCHED ? await fetchMegaShopProductsForServer() : [];
+  // No "| SITE_NAME" suffix on either title — the root layout's
+  // title.template already appends "| MegaDeal".
   if (products.length === 0 || !MEGASHOP_LAUNCHED) {
     return {
-      title: `MegaShop.co.nz — Coming Soon | ${SITE_NAME}`,
+      title: "MegaShop.co.nz — Coming Soon",
       description: "MegaShop.co.nz is coming soon. Sign up to hear when it launches and get launch specials.",
       alternates: { canonical: `${SITE_URL}/megashop` },
       robots: { index: false, follow: true },
     };
   }
   return {
-    title: `MegaShop.co.nz — Shop | ${SITE_NAME}`,
+    title: "MegaShop.co.nz — Shop",
     description: "Browse MegaShop.co.nz's product catalog.",
     alternates: { canonical: `${SITE_URL}/megashop` },
   };
@@ -83,7 +85,9 @@ export default async function MegaShopPage() {
       <p className="mt-1 text-sm text-slate-500">
         Shopping is coming soon — checkout isn&apos;t live yet, but here&apos;s a look at what&apos;s in store.
       </p>
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
+      {/* Fills the H1->H3 gap before each product card's own <h3>. */}
+      <h2 className="mt-6 text-xl font-bold text-slate-900">All products</h2>
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
         {products.map((product) => (
           <MegaShopProductCard key={product.id} product={product} />
         ))}

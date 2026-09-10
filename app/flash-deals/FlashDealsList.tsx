@@ -46,12 +46,17 @@ export default function FlashDealsList({ initialDeals }: { initialDeals: Deal[] 
 
   return (
     <>
-      {flash.length > 0 && (
-        <div className="mb-2 flex flex-wrap justify-end gap-2">
-          <SortSelect value={sort} onChange={setSort} />
-          <ViewToggle value={view} onChange={setView} />
-        </div>
-      )}
+      {/* The page's only other heading is the H1 ("Flash Deals") — this
+          fills the H1->H3 gap before DealGrid's per-card <h3>s. */}
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-xl font-bold text-slate-900">Live flash deals</h2>
+        {flash.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            <SortSelect value={sort} onChange={setSort} />
+            <ViewToggle value={view} onChange={setView} />
+          </div>
+        )}
+      </div>
       {sort === "nearest" && (
         <div className="flex justify-end">
           <NearMeStatus status={locationStatus} onRetry={requestLocation} />

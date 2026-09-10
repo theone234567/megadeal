@@ -14,9 +14,18 @@ import { safeJsonLd } from "@/lib/safeJsonLd";
 // force-dynamic.
 export const revalidate = 60;
 
-export function generateStaticParams() {
-  return CATEGORIES.map((c) => ({ category: c.name }));
-}
+// Deliberately NOT using generateStaticParams here (this page used to be
+// statically prerendered at build time) — CategoryDeals is a client
+// component that reads useSearchParams() for the ?city= filter, and a
+// statically-prerendered shell can never know query params at build time.
+// The practical effect: the entire deal grid (and everything below the H1)
+// was silently missing from the server-rendered HTML on every request,
+// only ever appearing after client-side hydration — invisible to any
+// crawler that doesn't execute JavaScript (most AI crawlers included).
+// Removing static prerendering makes this a normal per-request dynamic
+// render instead, so real search params (and the real content) are always
+// part of the HTML response. `revalidate` above still caches it the same
+// way a fully dynamic route would.
 
 export function generateMetadata({
   params,
@@ -24,7 +33,12 @@ export function generateMetadata({
   params: { category: string };
 }): Metadata {
   const category = decodeURIComponent(params.category);
-  const title = `${category} Deals — Up to 50% Off | ${SITE_NAME}`;
+  // No "| SITE_NAME" suffix here — the root layout's title.template
+  // already appends "| MegaDeal", so including it here doubled it up.
+  // openGraph/twitter titles aren't run through that template, so those
+  // keep the brand-inclusive version.
+  const title = `${category} Deals — Up to 50% Off`;
+  const socialTitle = `${title} | ${SITE_NAME}`;
   const description = `Browse today's best ${category} deals in New Zealand. Save up to 50% at real local businesses — new deals added daily.`;
   const url = `${SITE_URL}/category/${encodeURIComponent(category)}`;
 
@@ -38,8 +52,8 @@ export function generateMetadata({
     // same protection: no category page should get indexed while the
     // catalog might still hold pre-launch test data.
     robots: SITE_LAUNCHED ? undefined : { index: false, follow: true },
-    openGraph: { title, description, url, siteName: SITE_NAME, type: "website" },
-    twitter: { card: "summary", title, description },
+    openGraph: { title: socialTitle, description, url, siteName: SITE_NAME, type: "website" },
+    twitter: { card: "summary", title: socialTitle, description },
   };
 }
 

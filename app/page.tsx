@@ -49,6 +49,10 @@ export default async function HomePage({
           }}
         />
       )}
+      {/* Hero carries the page's only <h1> — while searching it's hidden
+          (see below), so this sr-only fallback keeps exactly one <h1>
+          present in that state too, rather than none at all. */}
+      {isSearching && <h1 className="sr-only">{SITE_NAME} — search results</h1>}
       {!isSearching && <Hero />}
       {!isSearching && <FlashDeals initialDeals={deals} />}
       <CategoryNav />

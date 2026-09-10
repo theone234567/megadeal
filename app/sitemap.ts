@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_URL, SITE_LAUNCHED, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import {
   fetchAllLiveDealSlugsForSitemap,
   fetchAllBusinessSlugsForSitemap,
 } from "@/lib/fetchDealServer";
+import { fetchMegaShopProductsForServer } from "@/lib/fetchMegaShopServer";
 import { CATEGORIES } from "@/lib/categories";
 
 // Deals are created/edited by merchants continuously, so a build-time-only
@@ -32,13 +33,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.1 },
   ];
 
+  // MegaShop is gated by its own separate flag, not SITE_LAUNCHED — same
+  // robots:{index:false} gate as its own generateMetadata while not
+  // launched (see app/megashop/page.tsx and app/megashop/[slug]/page.tsx),
+  // so only submit these once MEGASHOP_LAUNCHED is actually true.
+  const megaShopPages: MetadataRoute.Sitemap = [];
+  if (MEGASHOP_LAUNCHED) {
+    megaShopPages.push({ url: `${SITE_URL}/megashop`, changeFrequency: "daily", priority: 0.6 });
+    const products = await fetchMegaShopProductsForServer();
+    megaShopPages.push(
+      ...products.map((p) => ({
+        url: `${SITE_URL}/megashop/${p.slug}`,
+        changeFrequency: "daily" as const,
+        priority: 0.6,
+      }))
+    );
+  }
+
   // These pages carry a matching robots:{index:false} in their own
   // generateMetadata while !SITE_LAUNCHED (they're reachable directly
   // even though "/" redirects to /coming-soon), so don't hand crawlers a
   // sitemap full of URLs they're not allowed to index — submit them only
   // once the site has actually launched.
   if (!SITE_LAUNCHED) {
-    return staticPages;
+    return [...staticPages, ...megaShopPages];
   }
 
   const categoryPages: MetadataRoute.Sitemap = CATEGORIES.map((c) => ({
@@ -62,5 +80,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  return [...staticPages, ...categoryPages, ...dealPages, ...businessPages];
+  // /flash-deals draws from the same live-deal catalog as the pages above,
+  // and carries the same pre-launch robots:{index:false} gate — belongs
+  // here, not in the unconditional staticPages list above.
+  const flashDealsPage: MetadataRoute.Sitemap = [
+    { url: `${SITE_URL}/flash-deals`, changeFrequency: "hourly", priority: 0.6 },
+  ];
+
+  return [
+    ...staticPages,
+    ...categoryPages,
+    ...dealPages,
+    ...businessPages,
+    ...flashDealsPage,
+    ...megaShopPages,
+  ];
 }

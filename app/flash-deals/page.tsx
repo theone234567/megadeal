@@ -12,8 +12,11 @@ import { safeJsonLd } from "@/lib/safeJsonLd";
 // tighter than the other browse pages.
 export const revalidate = 30;
 
+// No "| SITE_NAME" suffix on `title` — the root layout's title.template
+// already appends "| MegaDeal". openGraph/twitter titles aren't run
+// through that template, so those keep the brand-inclusive version.
 export const metadata: Metadata = {
-  title: `Flash Deals — Short-Burst Offers | ${SITE_NAME}`,
+  title: "Flash Deals — Short-Burst Offers",
   description: `All of ${SITE_NAME}'s current flash deals in one place — short-burst offers that end fast, so grab them while they last.`,
   alternates: { canonical: `${SITE_URL}/flash-deals` },
   // Pre-launch, "/" redirects to /coming-soon so visitors never see a
