@@ -47,7 +47,7 @@ const WHY_JOIN_NOW = [
   {
     icon: ZapIcon,
     title: "Get in early",
-    text: "Be among the first businesses featured when MegaDeal launches in Auckland.",
+    text: "Get featured before MegaDeal officially launches in Auckland.",
   },
 ];
 
@@ -229,8 +229,8 @@ export default async function MerchantsPage() {
             Get your business in front of Auckland customers — for free.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            MegaDeal is launching in Auckland, and we&apos;re inviting our
-            first group of local businesses to join. Get up to 6 months
+            MegaDeal is launching in Auckland, and we&apos;re inviting
+            local businesses to join before we do. Get up to 6 months
             of advertising free, pay 0% commission on your sales, and
             reach customers looking for great local deals.
           </p>
@@ -262,9 +262,9 @@ export default async function MerchantsPage() {
             Why join MegaDeal before launch?
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-slate-600">
-            We&apos;re giving our first Auckland businesses a better deal
-            because we want great local businesses on MegaDeal from day
-            one.
+            We&apos;re giving businesses that join before launch a better
+            deal, because we want great local businesses on MegaDeal from
+            day one.
           </p>
           <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-8 text-left sm:grid-cols-2">
             {WHY_JOIN_NOW.map((p) => (

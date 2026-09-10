@@ -132,7 +132,7 @@ export default function AboutPage() {
           <p className="mt-3 text-slate-600">
             We&apos;re launching in Auckland first, with the rest of
             New Zealand following shortly after — Wellington,
-            Christchurch and Queenstown are next on the list. If
+            Christchurch, Hamilton and Queenstown are next on the list. If
             there&apos;s a business you love that you&apos;d like to
             see on MegaDeal, let their owner know — or point them to
             our{" "}

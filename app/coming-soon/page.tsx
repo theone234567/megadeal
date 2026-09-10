@@ -62,7 +62,7 @@ export default function ComingSoonPage() {
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
             We&apos;re building the fun, fair way to discover real local deals — and
             help Kiwi businesses get in front of new customers without giving away a
-            cut of every sale. Be first through the door.
+            cut of every sale. Join before we launch.
           </p>
           <p className="mx-auto mt-2 max-w-xl text-sm font-semibold text-brand-100">
             🚀 Launching in Auckland first, with the rest of NZ following shortly after.
