@@ -19,7 +19,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Free Advertising for Auckland Businesses — MegaDeal",
   description:
-    "Auckland businesses: claim up to 3 months free advertising on MegaDeal. 0% commission, no lock-in, no credit card required.",
+    "Auckland businesses: claim up to 6 months free advertising on MegaDeal. 0% commission, no lock-in, no credit card required.",
   alternates: { canonical: `${SITE_URL}/list-your-business` },
 };
 
@@ -31,7 +31,7 @@ const CTA_LABEL = "CLAIM MY FREE ADVERTISING →";
 const WHY_JOIN_NOW = [
   {
     icon: "🎁",
-    title: "Up to 3 months FREE",
+    title: "Up to 6 months FREE",
     text: "Get started without paying an advertising fee during your introductory period.",
   },
   {
@@ -96,7 +96,7 @@ const BUSINESS_TYPES = [
 const FAQS = [
   {
     q: "Is MegaDeal really free?",
-    a: "New qualifying businesses can receive up to 3 months of free advertising during the launch period. Conditions apply.",
+    a: "New qualifying businesses can receive up to 6 months of free advertising if they join before we launch. Conditions apply.",
   },
   {
     q: "Does MegaDeal take commission?",
@@ -112,7 +112,7 @@ const FAQS = [
   },
   {
     q: "When will MegaDeal launch?",
-    a: "MegaDeal is launching in Auckland first. The first 100 businesses can join before launch and prepare their listings and deals in advance.",
+    a: "MegaDeal is launching in Auckland first. Businesses that join before launch can prepare their listings and deals in advance — and it's the only time the up-to-6-months-free offer is available.",
   },
   {
     q: "How much will advertising cost after the free period?",
@@ -206,7 +206,7 @@ export default async function MerchantsPage() {
       <section id="hero" className="relative overflow-hidden bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-3xl">
           <span className="inline-flex items-center gap-2 rounded-full bg-ember-500 px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white shadow-card sm:text-base">
-            🚀 Coming soon to Auckland — first 100 businesses only
+            🚀 Coming soon to Auckland — up to 6 months free before launch
           </span>
 
           <h1 className={`${fredoka.className} mt-6 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
@@ -214,7 +214,7 @@ export default async function MerchantsPage() {
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
             MegaDeal is launching in Auckland, and we&apos;re inviting our
-            first group of local businesses to join. Get up to 3 months
+            first group of local businesses to join. Get up to 6 months
             of advertising free, pay 0% commission on your sales, and
             reach customers looking for great local deals.
           </p>
@@ -230,7 +230,7 @@ export default async function MerchantsPage() {
           </div>
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-semibold text-brand-50">
-            <span>✓ Up to 3 months free</span>
+            <span>✓ Up to 6 months free</span>
             <span>✓ 0% commission</span>
             <span>✓ No lock-in</span>
             <span>✓ No credit card required</span>
@@ -310,8 +310,7 @@ export default async function MerchantsPage() {
               Claim your free advertising
             </h2>
             <p className="mt-2 text-slate-600">
-              Be one of the first 100 businesses launching with MegaDeal
-              in Auckland.
+              Join the businesses launching with MegaDeal in Auckland.
             </p>
           </div>
           <div className="mt-8">
@@ -443,8 +442,8 @@ export default async function MerchantsPage() {
           <p className="mx-auto mt-3 max-w-xl text-slate-600">
             MegaDeal is launching in Auckland, and we&apos;re
             deliberately starting with a small group of local
-            businesses. The first 100 businesses get up to 3 months free
-            advertising and the opportunity to help shape the platform
+            businesses. Join before launch and get up to 6 months free
+            advertising, plus the opportunity to help shape the platform
             before launch.
           </p>
           {stats && (stats.merchantCount > 0 || stats.waitlistCount > 0) && (
@@ -474,15 +473,19 @@ export default async function MerchantsPage() {
         </div>
       </section>
 
-      {/* First-100 offer — real urgency, no invented scarcity. */}
+      {/* Pre-launch offer — real, time-based urgency (the offer ends at
+          launch, not an invented headcount cap). */}
       <section className="bg-ember-500 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-lg font-extrabold text-white sm:text-xl">
-            First 100 businesses only
+            Pre-launch offer — up to 6 months free
           </p>
           <p className="mx-auto mt-2 max-w-xl text-sm text-ember-50">
-            The up-to-3-months-free offer is available to the first 100
-            qualifying businesses joining during the launch period.
+            The up-to-6-months-free offer is only available to
+            qualifying businesses that join before deals go live on
+            MegaDeal — use code{" "}
+            <span className="font-bold">WELCOME6</span> at sign-up.
+            Conditions apply.
           </p>
           <div className="mt-6 flex justify-center">
             <a
@@ -569,7 +572,7 @@ export default async function MerchantsPage() {
             Ready to get more local customers?
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-lg text-brand-50">
-            Be one of the first 100 businesses on MegaDeal. Get up to 3
+            Join the businesses launching on MegaDeal. Get up to 6
             months free advertising.
           </p>
           <p className="mx-auto mt-2 max-w-xl text-sm font-semibold text-brand-100">

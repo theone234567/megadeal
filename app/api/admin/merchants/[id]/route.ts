@@ -24,13 +24,13 @@ function cleanText(value: unknown, maxLength: number): string {
 
 const INTRO_CREDITS = 2;
 const REFERRAL_BONUS_CREDITS: number = 2;
-// The "up to 3 months free advertising" offer advertised on /list-your-business —
+// The "up to 6 months free advertising" offer advertised on /list-your-business —
 // a business enters this in the same "Referral code" field used for peer
 // referrals. It isn't anyone's real referralCode, so it can never collide
 // with an actual referral match; the two are handled as separate branches
 // below purely for clarity, not because a collision is actually possible.
-const PROMO_CODE = "WELCOME3";
-const PROMO_CODE_CREDITS = 12;
+const PROMO_CODE = "WELCOME6";
+const PROMO_CODE_CREDITS = 24;
 
 /**
  * Atomically flips referralRewarded from not-true to true, server-side,
@@ -67,7 +67,7 @@ async function claimReferralAtomically(adminClient: any, merchantId: string): Pr
   }
 }
 
-/** Same atomic-claim pattern as claimReferralAtomically, for the WELCOME3
+/** Same atomic-claim pattern as claimReferralAtomically, for the WELCOME6
  * promo — stops a merchant being re-approved after a later suspension (or
  * two concurrent approve requests) from granting the promo credits twice. */
 async function claimPromoAtomically(adminClient: any, merchantId: string): Promise<boolean> {
@@ -298,7 +298,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const enteredCode = String(existing.couponCode || "").trim().toUpperCase();
 
-  // WELCOME3 promo: the "up to 3 months free advertising" offer. Checked
+  // WELCOME6 promo: the "up to 6 months free advertising" offer. Checked
   // first since it's a fixed code, not anyone's real referralCode — if it
   // matches, this signup isn't a peer referral at all.
   if (becomingApproved && enteredCode === PROMO_CODE) {
@@ -431,7 +431,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         totalGranted > 0
           ? `We've added ${totalGranted} free deal credit${totalGranted === 1 ? "" : "s"} to your account${
               promoGranted > 0
-                ? " (including your WELCOME3 free advertising offer)"
+                ? " (including your WELCOME6 free advertising offer)"
                 : referralBonusGranted > 0
                 ? " (including a referral bonus)"
                 : ""

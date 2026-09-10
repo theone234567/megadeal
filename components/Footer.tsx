@@ -8,7 +8,7 @@ import EmailSignupForm from "./EmailSignupForm";
 
 export default function Footer() {
   // /list-your-business already is this exact pitch, right down to the
-  // same WELCOME3 offer, ending with the identical banner right after a
+  // same WELCOME6 offer, ending with the identical banner right after a
   // visitor has just seen (or filled in) the signup form reads as pure
   // repetition.
   const pathname = usePathname();
@@ -22,8 +22,8 @@ export default function Footer() {
             <div>
               <h3 className="text-lg font-bold text-white">Own a local business?</h3>
               <p className="text-sm text-brand-100">
-                List your deal on MegaDeal and get up to 3 months free
-                advertising — use code <span className="font-bold">WELCOME3</span> at signup.{" "}
+                List your deal on MegaDeal and get up to 6 months free
+                advertising — use code <span className="font-bold">WELCOME6</span> at signup.{" "}
                 <span className="text-brand-200">Conditions apply.</span>
               </p>
             </div>

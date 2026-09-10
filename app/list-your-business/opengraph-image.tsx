@@ -65,7 +65,7 @@ export default function BusinessesOpengraphImage() {
             maxWidth: 980,
           }}
         >
-          Up to 3 months free advertising
+          Up to 6 months free advertising
         </div>
         <div
           style={{

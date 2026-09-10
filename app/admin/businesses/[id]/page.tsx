@@ -427,7 +427,7 @@ export default function AdminBusinessDetailPage() {
               <dt className="text-slate-500">Bonus status</dt>
               <dd className="font-medium text-slate-800">
                 {merchant.promoRewarded
-                  ? "✓ WELCOME3 promo already granted"
+                  ? "✓ WELCOME6 promo already granted"
                   : merchant.referralRewarded
                   ? "✓ Referral bonus already granted"
                   : "Not yet granted"}
