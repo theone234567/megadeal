@@ -88,6 +88,7 @@ export default async function BusinessProfilePage({
             image: business.logoUrl || undefined,
             url: `${SITE_URL}/business/${business.slug}`,
             telephone: business.phone || undefined,
+            priceRange: business.priceRange || undefined,
             address: business.address
               ? {
                   "@type": "PostalAddress",
