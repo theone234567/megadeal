@@ -37,3 +37,23 @@ export function verifySignupConfirmToken(email: string, token: string | undefine
   if (a.length !== b.length) return false;
   return timingSafeEqual(a, b);
 }
+
+/**
+ * Unlike the confirm token above, an unsubscribe link has to keep working
+ * for as long as someone might still have the email sitting in their
+ * inbox (weeks, months) — no expiry, just a signature over the email
+ * itself, so it's proof of "you received an email addressed to this
+ * inbox" without a database record to look up.
+ */
+export function createUnsubscribeToken(email: string): string {
+  return sign(`unsub.${email}`);
+}
+
+export function verifyUnsubscribeToken(email: string, token: string | undefined | null): boolean {
+  if (!token || !email) return false;
+  const expected = sign(`unsub.${email}`);
+  const a = Buffer.from(token);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
