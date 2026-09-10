@@ -7,7 +7,7 @@ import { fredoka, plusJakartaSans } from "@/lib/fonts";
 
 const TITLE = "MegaDeal is Coming Soon — NZ Local Deals & Free Advertising";
 const DESCRIPTION =
-  "MegaDeal is a Kiwi-owned deals platform launching soon in NZ. Save up to 70% direct from local businesses — advertise commission-free and keep every dollar.";
+  "MegaDeal is a Kiwi-owned deals platform launching soon in NZ. Save up to 50% direct from local businesses — advertise commission-free and keep every dollar.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -54,7 +54,7 @@ export default function ComingSoonPage() {
             🚀 Landing very soon
           </span>
           <h1 className={`${fredoka.className} mx-auto mt-4 max-w-2xl text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
-            Up to 70% off restaurants, spas, activities &amp; getaways near you{" "}
+            Up to 50% off restaurants, spas, activities &amp; getaways near you{" "}
             <span className="inline-block animate-[elephant-idle-ear_3.2s_ease-in-out_infinite]">
               😊
             </span>
@@ -183,7 +183,7 @@ export default function ComingSoonPage() {
                 <span className="text-lg leading-none">🔍</span>
                 <p className="text-xs text-slate-600 sm:text-sm">
                   <span className="font-bold text-slate-800">1. Browse</span>{" "}
-                  <span className="text-slate-500">— real local deals, up to 70% off</span>
+                  <span className="text-slate-500">— real local deals, up to 50% off</span>
                 </p>
               </div>
               <div className="flex items-start gap-2 sm:items-center">
