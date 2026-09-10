@@ -414,7 +414,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
               ${referralCreditsLabel} to your account. Thanks for spreading the word!</p>
               <p><a href="${SITE_URL}/portal">View your portal</a></p>
             `,
-            text: `Hi ${referrerFresh.businessName || "there"},\n\nGreat news — a business you referred, ${existing.businessName || "a new business"}, has been approved on MegaDeal. We've added ${referralCreditsLabel} to your account. Thanks for spreading the word!\n\nView your portal: ${SITE_URL}/portal`,
           });
         } catch (err) {
           console.error("[admin/merchants] referral bonus email failed", err);
@@ -448,7 +447,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           <p><a href="${SITE_URL}/portal">Go to your portal</a></p>
           ${creditsNote ? `<p>${creditsNote}</p>` : ""}
         `,
-        text: `Hi ${existing.businessName || "there"},\n\nGood news — your business is approved on MegaDeal. Log in to your business portal to submit your first deal:\n\n${SITE_URL}/portal${creditsNote ? `\n\n${creditsNote}` : ""}`,
       });
     } catch (err) {
       console.error("[admin/merchants] approval email failed", err);

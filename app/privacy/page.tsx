@@ -80,8 +80,8 @@ export default function PrivacyPage() {
       <p>
         We use a small number of specialist providers to run the site, and
         some personal information is processed by them on our behalf. This
-        includes our headless commerce and member-login provider (Wix.com),
-        our transactional email provider (Resend), Google&apos;s Places API
+        includes our headless commerce, member-login and transactional
+        email provider (Wix.com), Google&apos;s Places API
         for business-address autocomplete, Google Analytics for site
         traffic reporting, and Meta (Facebook/Instagram) for ad measurement
         — see &quot;Cookies and advertising&quot; below.

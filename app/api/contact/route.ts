@@ -5,10 +5,10 @@ import { escapeHtml } from "@/lib/escapeHtml";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // This route stores the message only — it must never add the sender to the
-// Resend marketing audience. There's no consent checkbox on the contact
+// EmailSignups mailing list. There's no consent checkbox on the contact
 // form, so doing that would be sending marketing email without opt-in.
 // If you need to offer a mailing-list opt-in here, add a separate checkbox
-// and call addResendContact() only when it's checked, same as EmailSignupForm.
+// and call insertEmailSignup() only when it's checked, same as EmailSignupForm.
 
 const MAX_LENGTH = 2000;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -68,7 +68,6 @@ export async function POST(req: NextRequest) {
           <p style="white-space:pre-wrap;">${escapeHtml(message)}</p>
         </div>
       `,
-      text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
       // So hitting reply on the notification goes straight to the person
       // who contacted you, not into the no-reply@ mailbox.
       replyTo: email,

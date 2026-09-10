@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
-import { createSignupConfirmToken } from "@/lib/emailSignupToken";
+import { insertEmailSignup, type EmailAudience } from "@/lib/emailSignups";
 import { SITE_URL } from "@/lib/siteConfig";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ALLOWED_AUDIENCES: EmailAudience[] = ["customer", "merchant"];
 
 /**
- * Deal-alert email signup — double opt-in. This route never touches
- * Resend's Audience directly; it only sends a signed confirm link. The
- * contact is added to Resend only once that link is clicked (see
- * verify/route.ts), so nobody's added to the list without proving they
- * control the inbox. No database record needed in between — the token
- * itself carries everything needed to verify.
+ * Deal-alert email signup — double opt-in, stored in Wix Data's
+ * "EmailSignups" collection (see lib/emailSignups.ts). A row is created
+ * immediately with verified: false; only clicking the confirm link in the
+ * email (verify/route.ts) flips it to true, so nobody's counted as
+ * subscribed without proving they control the inbox.
  */
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
@@ -21,6 +21,8 @@ export async function POST(req: NextRequest) {
   }
 
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase().slice(0, 300) : "";
+  const audience: EmailAudience = ALLOWED_AUDIENCES.includes(body.audience) ? body.audience : "customer";
+  const source = typeof body.source === "string" ? body.source.trim().slice(0, 100) : "unknown";
   const consent = body.consent === true;
 
   if (!EMAIL_RE.test(email)) {
@@ -36,9 +38,8 @@ export async function POST(req: NextRequest) {
   // Unauthenticated by nature (that's the point — anyone can sign up), but
   // that also means anyone can POST any email address and trigger a real
   // send to it with no proof they control that inbox. Two limits, both
-  // needed: per-IP stops a single bot looping this endpoint (and running
-  // up the Resend bill); per-email stops the same victim being bombed via
-  // many different/rotating IPs.
+  // needed: per-IP stops a single bot looping this endpoint; per-email
+  // stops the same victim being bombed via many different/rotating IPs.
   const ip = getClientIp(req);
   const [ipLimit, emailLimit] = await Promise.all([
     checkRateLimit(`emailsignup-ip:${ip}`, 5, 60 * 60),
@@ -51,9 +52,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const tokens = await insertEmailSignup({ email, audience, source, verified: false });
+  if (!tokens) {
+    return NextResponse.json(
+      { error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
+  }
+
   try {
-    const token = createSignupConfirmToken(email);
-    const confirmUrl = `${SITE_URL}/api/email-signup/verify?email=${encodeURIComponent(email)}&token=${token}`;
+    const confirmUrl = `${SITE_URL}/api/email-signup/verify?token=${tokens.verifyToken}`;
+    const unsubscribeUrl = `${SITE_URL}/api/email-signup/unsubscribe?token=${tokens.unsubscribeToken}`;
     const sent = await sendTransactionalEmail({
       to: email,
       subject: "Confirm your MegaDeal email alerts 🐘",
@@ -80,9 +89,11 @@ export async function POST(req: NextRequest) {
               to the list unless you click the button above.
             </p>
           </div>
+          <p style="margin:16px 0 0;text-align:center;font-size:12px;color:#a39cae;">
+            <a href="${unsubscribeUrl}" style="color:#a39cae;">Unsubscribe</a>
+          </p>
         </div>
       `,
-      text: `One click and you're in!\n\nThanks for signing up for MegaDeal deal alerts — NZ's best local deals, sniffed out for you. Just confirm this is your email address and we'll take it from there.\n\nConfirm my email: ${confirmUrl}\n\nDidn't sign up for this? No action needed — you won't be added to the list unless you click the link above.`,
     });
     if (!sent) {
       return NextResponse.json(

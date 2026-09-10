@@ -3,7 +3,7 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
-import { addResendContact } from "@/lib/resendAudience";
+import { insertEmailSignup } from "@/lib/emailSignups";
 import { SITE_URL } from "@/lib/siteConfig";
 import { generateReferralCode } from "@/lib/referral";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
@@ -39,22 +39,6 @@ function welcomeEmailHtml(businessName: string): string {
     <p>Thanks for giving MegaDeal a go — welcome to the herd. 🐘</p>
     <p>— The MegaDeal team</p>
   `;
-}
-
-function welcomeEmailText(businessName: string): string {
-  const name = businessName || "there";
-  return [
-    `Hi ${name},`,
-    `You're in! Thanks for signing up to MegaDeal — we're genuinely excited to have ${businessName || "your business"} on board.`,
-    `Here's what happens next:`,
-    `- Our team will take a look at your application — usually within a couple of business days`,
-    `- Once you're approved, you'll have deal credits waiting in your portal, ready to list your first deal straight away`,
-    `- From there it's simple: you set the offer, we bring the customers, and you keep every dollar`,
-    `Check your application status any time: ${SITE_URL}/portal`,
-    `If anything's unclear, or you just want to say hi, hit reply — a real person reads every message.`,
-    `Thanks for giving MegaDeal a go — welcome to the herd.`,
-    `— The MegaDeal team`,
-  ].join("\n\n");
 }
 
 /**
@@ -227,15 +211,20 @@ export async function POST(req: NextRequest) {
       to: member.email,
       subject: `Welcome to MegaDeal, ${businessName}! 🎉`,
       html: welcomeEmailHtml(businessName),
-      text: welcomeEmailText(businessName),
       // The copy above says "hit reply" — without this, "from" is a
       // fixed no-reply@ mailbox and any reply just bounces.
       replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
     }).catch((err) => console.error("[merchants/apply] welcome email failed", err));
 
-    addResendContact(member.email).catch((err) =>
-      console.error("[merchants/apply] Resend sync failed", err)
-    );
+    // Verified true immediately — this email already belongs to a signed-in
+    // Wix member with a verified account, unlike the anonymous customer
+    // double-opt-in flow, so there's nothing left to confirm.
+    insertEmailSignup({
+      email: member.email,
+      audience: "merchant",
+      source: "merchant-signup",
+      verified: true,
+    }).catch((err) => console.error("[merchants/apply] EmailSignups sync failed", err));
   }
 
   return NextResponse.json({ item });
