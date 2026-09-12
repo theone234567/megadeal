@@ -44,8 +44,13 @@ export default function Header() {
   if (isComingSoon) {
     return (
       <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
-        <div className="mx-auto flex min-h-[78px] w-full max-w-[1500px] items-center justify-between gap-5 px-5 py-2 sm:px-8 lg:min-h-[96px] lg:px-10 xl:px-12">
-          <Link href="/coming-soon" aria-label="MegaDeal home" className="shrink-0">
+        {/* Both children are shrink-0, so the row can't absorb an overflow:
+            at 390px a 220px logo plus the full-width button overran the
+            viewport by 36px and scrolled the whole page sideways. The logo
+            steps down and the button drops "Business" on the smallest
+            screens, where the context is obvious anyway. */}
+        <div className="mx-auto flex min-h-[78px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-2 sm:gap-5 sm:px-8 lg:min-h-[96px] lg:px-10 xl:px-12">
+          <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
             {/* megadeal-logo-final.svg was a wrapper around fabricated
                 base64 that no browser can decode — this is the real
                 hand-authored vector logo. */}
@@ -54,16 +59,17 @@ export default function Header() {
               alt="MegaDeal"
               width={860}
               height={220}
-              className="block h-auto w-[220px] sm:w-[255px] lg:w-[300px] xl:w-[320px]"
+              className="block h-auto w-[172px] max-w-full sm:w-[255px] lg:w-[300px] xl:w-[320px]"
               fetchPriority="high"
             />
           </Link>
 
           <Link
             href="/portal"
-            className="shrink-0 rounded-full border border-[#b99aee] bg-white px-5 py-2.5 text-xs font-extrabold text-[#5f1cc8] transition hover:border-[#6d24dc] hover:bg-[#faf8ff] sm:text-sm lg:px-6 lg:py-3"
+            className="shrink-0 rounded-full border border-[#b99aee] bg-white px-4 py-2.5 text-xs font-extrabold text-[#5f1cc8] transition hover:border-[#6d24dc] hover:bg-[#faf8ff] sm:px-5 sm:text-sm lg:px-6 lg:py-3"
           >
-            Business sign in →
+            <span className="sm:hidden">Sign in →</span>
+            <span className="hidden sm:inline">Business sign in →</span>
           </Link>
         </div>
       </header>

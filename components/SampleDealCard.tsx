@@ -9,8 +9,14 @@ import CountdownBadge from "@/components/CountdownBadge";
  * real DealCard component: this never links anywhere and its data is
  * entirely fixed, so it can't accidentally be mistaken for a live deal.
  */
+/** Mockup deadline, measured from when the badge mounts in the browser.
+ *  Must NOT be an absolute date computed here: this is a Server Component
+ *  on statically prerendered pages, so an absolute date would be frozen at
+ *  build time and the sample deal would count down towards expiry as the
+ *  deployment aged (and mismatch on hydration). */
+const SAMPLE_DURATION_MS = 21 * 24 * 60 * 60 * 1000;
+
 export default function SampleDealCard() {
-  const sampleExpiresAt = new Date(Date.now() + 21 * 24 * 60 * 60 * 1000);
 
   return (
     <div className="mx-auto max-w-xs">
@@ -35,7 +41,7 @@ export default function SampleDealCard() {
             </span>
           </div>
           <div className="absolute bottom-2 left-2">
-            <CountdownBadge target={sampleExpiresAt} />
+            <CountdownBadge durationMs={SAMPLE_DURATION_MS} />
           </div>
         </div>
 
