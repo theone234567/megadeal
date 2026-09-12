@@ -89,24 +89,37 @@ export async function registerMember(
   email: string,
   password: string,
   nickname: string,
-  /** VISIBLE-reCAPTCHA token, from the checkbox the visitor ticks.
+  /** reCAPTCHA token(s). Either variant may be supplied.
    *
-   *  Registration and login want different variants, which is not
-   *  obvious and cost a production outage: Wix reads registration's token
-   *  from its `Recaptcha` field (the visible widget) and login's from
-   *  `InvisibleRecaptcha`. An invisible token passed here lands in the
-   *  wrong field, so Wix sees no token at all and answers 403 with
-   *  "missingCaptchaToken" — indistinguishable from sending nothing.
+   *  Wix's guide shows the VISIBLE token (`recaptchaToken`) on register
+   *  and the INVISIBLE one (`invisibleRecaptchaToken`) on login, and they
+   *  travel in separate fields — so passing the wrong one reads to Wix as
+   *  no token at all and returns 403 "missingCaptchaToken", which is
+   *  indistinguishable from sending nothing. That cost an outage once.
+   *
+   *  But the SDK does not enforce the split: RegisterParams extends
+   *  LoginParams, so register accepts both fields exactly as login does.
+   *  Whether Wix's backend accepts an invisible token here is not stated
+   *  anywhere we can check, so the form tries invisible first — no
+   *  checkbox, no friction — and only falls back to the visible widget if
+   *  Wix actually rejects it. This signature takes whichever it has.
    *
    *  Docs: https://dev.wix.com/docs/go-headless/authentication/members/custom-login-page/re-captcha/about-re-captcha
    */
-  recaptchaToken?: string | null
+  captchaTokens?: { recaptchaToken?: string | null; invisibleRecaptchaToken?: string | null }
 ): Promise<AuthOutcome> {
+  const tokens = {
+    ...(captchaTokens?.recaptchaToken ? { recaptchaToken: captchaTokens.recaptchaToken } : {}),
+    ...(captchaTokens?.invisibleRecaptchaToken
+      ? { invisibleRecaptchaToken: captchaTokens.invisibleRecaptchaToken }
+      : {}),
+  };
+
   const state = await client.auth.register({
     email,
     password,
     profile: { nickname },
-    ...(recaptchaToken ? { captchaTokens: { recaptchaToken } } : {}),
+    ...(Object.keys(tokens).length ? { captchaTokens: tokens } : {}),
   });
   const outcome = await resolveState(client, state);
   return outcome.status === "verify" ? { ...outcome, email } : outcome;

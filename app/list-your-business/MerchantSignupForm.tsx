@@ -6,7 +6,7 @@ import { useWix } from "@/context/WixProvider";
 import { registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import PasswordField from "@/components/PasswordField";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
-import { preloadCaptcha } from "@/lib/recaptcha";
+import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
 import RecaptchaCheckbox, { type RecaptchaCheckboxHandle } from "@/components/RecaptchaCheckbox";
 
 function RequiredTag() {
@@ -158,6 +158,16 @@ export default function MerchantSignupForm() {
    *  expires after ~2 minutes, so it is cleared after every attempt. */
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = useRef<RecaptchaCheckboxHandle | null>(null);
+  /**
+   * Whether the visible checkbox has been revealed.
+   *
+   * Starts false and normally stays false: the invisible check runs
+   * silently on submit and only interrupts someone reCAPTCHA finds
+   * suspicious. The checkbox appears only if Wix rejects that token —
+   * which tells us this project requires the visible variant — and from
+   * then on this session uses it.
+   */
+  const [needsVisibleCaptcha, setNeedsVisibleCaptcha] = useState(false);
   // Pre-filled with WELCOME6 (or a real ?ref= referral code, if that's how
   // the visitor arrived) — same default as before, just visible and
   // editable now instead of a hidden field, so someone who wants to swap
@@ -271,10 +281,10 @@ export default function MerchantSignupForm() {
       return;
     }
 
-    // Checked here rather than left to Wix: without a token the request is
-    // certain to come back 403, and "please tick the box" is a far better
-    // thing to show someone than Wix's generic robot error.
-    if (!captchaToken) {
+    // Only once the checkbox is actually showing. Before that the
+    // invisible check runs inside the submit below and there is nothing
+    // for anyone to tick.
+    if (needsVisibleCaptcha && !captchaToken) {
       setSubmitError("Please tick the \u201cI'm not a robot\u201d box below to continue.");
       return;
     }
@@ -285,15 +295,42 @@ export default function MerchantSignupForm() {
 
     setSubmitting(true);
     try {
-      // The token comes from the visible checkbox the visitor has already
-      // ticked (see RecaptchaCheckbox). Registration specifically wants the
-      // visible variant — an invisible token lands in a field Wix doesn't
-      // read on this endpoint and comes back as "missing".
+      // Invisible first, so a normal visitor never sees a challenge at
+      // all — reCAPTCHA only interrupts someone it finds suspicious,
+      // which is the whole point of the invisible variant on a page whose
+      // job is conversions. The visible checkbox is used only once Wix has
+      // told us, by rejecting a token, that it insists on that variant.
+      const tokens = needsVisibleCaptcha
+        ? { recaptchaToken: captchaToken }
+        : {
+            invisibleRecaptchaToken: await getInvisibleCaptchaToken(
+              (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
+            ),
+          };
+
       const outcome = await withTimeout(
-        registerMember(client, email, password, businessName, captchaToken),
+        registerMember(client, email, password, businessName, tokens),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try again — if your account was created, you can sign in to your portal instead."
       );
+
+      // Wix refused the invisible token. Rather than dead-end someone who
+      // filled the whole form in, reveal the checkbox and let them finish
+      // — their answers are all still on screen, and this is the one
+      // outcome that proves the visible variant is required here.
+      if (
+        !needsVisibleCaptcha &&
+        outcome.status === "error" &&
+        (outcome.errorCode === "missingCaptchaToken" ||
+          outcome.errorCode === "invalidCaptchaToken")
+      ) {
+        setNeedsVisibleCaptcha(true);
+        setSubmitError(
+          "One more step — please tick the \u201cI'm not a robot\u201d box below, then submit again."
+        );
+        return;
+      }
+
       await handleOutcome(outcome);
     } catch (err: any) {
       setSubmitError(
@@ -582,14 +619,16 @@ export default function MerchantSignupForm() {
           </span>
         </label>
 
-        {/* Wix requires the VISIBLE checkbox on registration and verifies the
-            token itself, so the site key has to be Wix's own rather than one
-            of ours. It comes straight off the SDK client. */}
-        <RecaptchaCheckbox
-          ref={captchaRef}
-          siteKey={(client?.auth as { captchaVisibleSiteKey?: string } | undefined)?.captchaVisibleSiteKey ?? ""}
-          onChange={setCaptchaToken}
-        />
+        {/* Hidden unless Wix has rejected an invisible token, so the usual
+            signup shows no challenge at all. Wix verifies the token, so the
+            site key must be Wix's own — it comes off the SDK client. */}
+        {needsVisibleCaptcha && (
+          <RecaptchaCheckbox
+            ref={captchaRef}
+            siteKey={(client?.auth as { captchaVisibleSiteKey?: string } | undefined)?.captchaVisibleSiteKey ?? ""}
+            onChange={setCaptchaToken}
+          />
+        )}
 
         {submitError && (
           <p className="text-sm text-ember-600">{submitError}</p>
