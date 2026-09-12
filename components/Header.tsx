@@ -1,13 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import ElephantMascot from "@/components/ElephantMascot";
 import { SearchIcon, UserIcon } from "@/components/icons";
-import { fredoka } from "@/lib/fonts";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
@@ -45,36 +43,19 @@ export default function Header() {
 
   if (isComingSoon) {
     return (
-      <header className="relative z-40 border-b border-slate-100 bg-white">
-        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-5 py-3 sm:px-8 lg:px-10 lg:py-4 xl:max-w-[1320px] 2xl:max-w-[1460px]">
-          <Link href="/" aria-label="MegaDeal home" className="group inline-flex shrink-0 items-center">
-            <span className="relative block pr-[76px] sm:pr-[92px]">
-              <span className={`${fredoka.className} flex items-center leading-none tracking-[-0.045em]`}>
-                <span className="text-[38px] font-bold text-brand-700 sm:text-[44px] lg:text-[48px]">Mega</span>
-                <span
-                  className="ml-1 -rotate-2 bg-ember-500 px-3 py-1.5 text-[35px] font-bold text-white shadow-sm sm:text-[41px] lg:text-[45px]"
-                  style={{ clipPath: "polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%)" }}
-                >
-                  Deal
-                </span>
-              </span>
-              <span className="mt-1.5 block pl-1 text-[11px] font-semibold tracking-[0.03em] text-slate-500 sm:text-xs">
-                Local together.
-              </span>
-              <Image
-                src="/brand/deal-hunter-elephant.svg"
-                alt=""
-                aria-hidden="true"
-                width={130}
-                height={102}
-                className="pointer-events-none absolute -right-1 -top-7 h-[78px] w-[100px] object-contain transition-transform duration-200 group-hover:-rotate-2 group-hover:scale-105 sm:-right-2 sm:-top-8 sm:h-[90px] sm:w-[116px] lg:h-[98px] lg:w-[126px]"
-              />
-            </span>
-          </Link>
+      <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-6 px-5 py-3 sm:px-8 lg:px-10 lg:py-3.5 xl:max-w-[1260px] 2xl:max-w-[1360px]">
+          <div aria-label="MegaDeal" className="shrink-0">
+            <img
+              src="/brand/megadeal-logo-hunter.webp"
+              alt="MegaDeal"
+              className="block h-auto w-[210px] sm:w-[250px] lg:w-[275px]"
+            />
+          </div>
 
           <Link
             href="/portal"
-            className="shrink-0 rounded-full border border-brand-200 bg-white px-4 py-2 text-xs font-extrabold text-brand-700 transition hover:border-brand-700 hover:bg-brand-50 sm:text-sm"
+            className="shrink-0 rounded-full border border-[#b99aee] bg-white px-5 py-2.5 text-xs font-extrabold text-[#5f1cc8] transition hover:border-[#6d24dc] hover:bg-[#faf8ff] sm:text-sm"
           >
             Business sign in →
           </Link>
