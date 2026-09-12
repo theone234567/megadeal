@@ -343,23 +343,40 @@ export default function ComingSoonPage() {
               aria-label={live ? `${name} deals` : `${name} — get notified when MegaDeal launches`}
               className="group overflow-hidden rounded-[18px] border border-[#e9e6f0] bg-white shadow-[0_8px_22px_rgba(28,18,54,.08)] transition hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(28,18,54,.12)]"
             >
-              {/* The tinted background is load-bearing, not decoration: if the
-                  remote photo ever fails the tile degrades to a clean brand
-                  swatch with its icon, instead of a broken-image box. */}
-              <div className="relative aspect-[1.35/1] overflow-hidden bg-[#f3effa]">
-                <img
-                  src={image}
-                  alt=""
-                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <span className="absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#650fc7] shadow-md">
-                  <Icon className="h-5 w-5" />
+              {/* The photo is left completely clear — nothing is drawn on
+                  top of it. The large icon sits BEHIND the image, so it is
+                  invisible whenever the photo loads and becomes a
+                  deliberate-looking brand swatch if the photo ever fails,
+                  instead of a broken-image box. */}
+              <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[#f4efff] to-[#e7d9ff]">
+                <span
+                  aria-hidden
+                  className="absolute inset-0 grid place-items-center text-[#c3aaf0]"
+                >
+                  <Icon className="h-9 w-9" />
                 </span>
+                {/* A CSS background rather than an <img>: these are remote
+                    photos we don't control, and a failed <img> paints the
+                    browser's broken-image glyph in the corner — on all six
+                    tiles at once — whereas a failed background simply isn't
+                    painted, leaving the swatch and icon above looking
+                    intentional. Decorative either way, so nothing is lost
+                    from the accessibility tree. */}
+                <span
+                  aria-hidden
+                  className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-[1.04]"
+                  style={{ backgroundImage: `url("${image}")` }}
+                />
               </div>
-              <div className="flex min-h-[52px] items-center justify-center px-3 py-3 text-center lg:min-h-[58px]">
-                <span className="text-sm font-extrabold leading-tight text-[#241a45] group-hover:text-[#650fc7]">
+
+              {/* Icon lives here instead: its own chip, with predictable
+                  contrast, rather than floating over whatever the photo
+                  happens to contain. */}
+              <div className="flex min-h-[60px] items-center gap-2.5 px-3 py-3 lg:min-h-[64px]">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f2ecff] text-[#650fc7] transition group-hover:bg-[#650fc7] group-hover:text-white">
+                  <Icon className="h-[18px] w-[18px]" />
+                </span>
+                <span className="text-[13px] font-extrabold leading-tight text-[#241a45] transition group-hover:text-[#650fc7] lg:text-sm">
                   {name}
                 </span>
               </div>
