@@ -44,23 +44,21 @@ export default function Header() {
   if (isComingSoon) {
     return (
       <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
-        <div className="mx-auto flex w-full max-w-[1180px] items-center justify-between gap-5 px-5 py-3 sm:px-8 lg:px-10 xl:max-w-[1380px] 2xl:max-w-[1480px]">
-          <div aria-label="MegaDeal" className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <div className="mx-auto flex min-h-[78px] w-full max-w-[1500px] items-center justify-between gap-5 px-5 py-2 sm:px-8 lg:min-h-[92px] lg:px-10 xl:px-12">
+          <Link href="/coming-soon" aria-label="MegaDeal home" className="shrink-0">
             <img
-              src="/brand/deal-hunter-elephant.svg"
-              alt=""
-              aria-hidden="true"
-              className="h-auto w-[54px] sm:w-[64px] lg:w-[72px]"
+              src="/brand/megadeal-logo-exact.webp"
+              alt="MegaDeal"
+              width={600}
+              height={139}
+              className="block h-auto w-[205px] sm:w-[235px] lg:w-[275px] xl:w-[300px]"
+              fetchPriority="high"
             />
-            <div className="flex items-center font-display text-[30px] font-black leading-none tracking-[-0.055em] sm:text-[36px] lg:text-[40px]">
-              <span className="text-[#6d24dc]">Mega</span>
-              <span className="ml-1 -rotate-1 rounded-[12px] bg-[#f0189a] px-2.5 py-2 text-white shadow-sm sm:rounded-[14px] sm:px-3">Deal</span>
-            </div>
-          </div>
+          </Link>
 
           <Link
             href="/portal"
-            className="shrink-0 rounded-full border border-[#b99aee] bg-white px-5 py-2.5 text-xs font-extrabold text-[#5f1cc8] transition hover:border-[#6d24dc] hover:bg-[#faf8ff] sm:text-sm lg:px-6"
+            className="shrink-0 rounded-full border border-[#b99aee] bg-white px-5 py-2.5 text-xs font-extrabold text-[#5f1cc8] transition hover:border-[#6d24dc] hover:bg-[#faf8ff] sm:text-sm lg:px-6 lg:py-3"
           >
             Business sign in →
           </Link>
