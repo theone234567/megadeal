@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
-import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
+import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import EmailSignupForm from "@/components/EmailSignupForm";
+import ElephantMascot from "@/components/ElephantMascot";
 import {
   CheckIcon,
   CompassIcon,
   DumbbellIcon,
   FlowerIcon,
-  HeartIcon,
   LeafIcon,
   MapPinIcon,
   MegaphoneIcon,
@@ -95,62 +95,70 @@ const rollout = [
   ["Hamilton", "Coming soon"],
 ];
 
+const businessBenefits = [
+  "No commission on sales",
+  "Customers deal directly with you",
+  "You control your offer and availability",
+  "Reach new local customers",
+  "A simple way to fill quieter periods",
+];
+
 export default function ComingSoonPage() {
   return (
-    <main className={`${plusJakartaSans.className} overflow-x-hidden bg-white text-[#27135c]`}>
-      <section className="px-5 pb-5 sm:px-8 lg:px-10">
-        <div className="mx-auto max-w-[1024px]">
-          <div className="grid items-start gap-7 lg:grid-cols-[48%_52%] lg:gap-2">
-            <div className="relative z-20 pt-5 lg:pt-8">
-              <p className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#f2199c] sm:text-sm">
+    <main className={`${plusJakartaSans.className} overflow-x-hidden bg-white text-[#201744]`}>
+      <section className="px-5 pb-8 pt-2 sm:px-8 lg:px-10 lg:pb-10">
+        <div className="mx-auto max-w-[1180px]">
+          <div className="grid items-start gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:gap-12">
+            <div className="pt-7 lg:pt-10">
+              <p className="text-xs font-extrabold uppercase tracking-[0.24em] text-[#ef159c] sm:text-sm">
                 Coming soon
               </p>
               <h1
-                className={`${fredoka.className} mt-3 max-w-[510px] text-[44px] font-bold leading-[0.98] tracking-[-0.045em] text-[#341184] sm:text-[54px] lg:text-[58px]`}
+                className={`${fredoka.className} mt-3 max-w-[560px] text-[44px] font-bold leading-[0.98] tracking-[-0.045em] text-[#30107d] sm:text-[58px] lg:text-[64px]`}
               >
                 Auckland, get ready for better days out.
               </h1>
-              <span className="mt-3 block h-1.5 w-44 -rotate-1 rounded-full bg-[#ff2ca7] sm:w-52" />
+              <span className="mt-4 block h-1.5 w-48 rounded-full bg-[#ef159c] sm:w-56" />
 
-              <div className="mt-5 max-w-[520px] text-[15px] leading-6 text-[#2f2860] sm:text-[16px]">
-                <p className="font-semibold">Local deals. Local businesses. Real value for Aucklanders.</p>
+              <div className="mt-5 max-w-[580px] text-[15px] leading-6 text-[#433968] sm:text-[17px] sm:leading-7">
+                <p className="font-bold text-[#2f2262]">Local deals. Local businesses. Real value for Aucklanders.</p>
                 <p className="mt-1">
                   MegaDeal is launching in Auckland first — with Wellington, Christchurch, Queenstown and Hamilton to follow.
                 </p>
               </div>
 
-              <div className="relative z-30 mt-6 grid gap-3.5 sm:grid-cols-2 lg:w-[560px]">
-                <div className="flex min-h-[205px] flex-col rounded-[20px] bg-[#f6f0ff] p-5 shadow-[0_8px_24px_rgba(84,44,150,0.05)]">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#eadcff] text-[#ef159c]">
-                    <HeartIcon className="h-6 w-6" />
+              <div className="mt-7 grid gap-4 sm:grid-cols-2">
+                <div className="flex min-h-[242px] flex-col rounded-[18px] border border-[#e7e1f1] bg-white p-5 shadow-[0_10px_30px_rgba(53,17,126,0.07)] sm:p-6">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#eee7ff] text-[#5c25d9]">
+                    <TicketIcon className="h-6 w-6" />
                   </span>
-                  <h2 className={`${fredoka.className} mt-3 text-[25px] font-bold leading-[1.05] text-[#35117e]`}>
+                  <h2 className={`${fredoka.className} mt-4 text-[25px] font-bold leading-tight text-[#30107d]`}>
                     Love a good deal?
                   </h2>
-                  <p className="mt-2 flex-1 text-sm leading-5 text-[#4c426d]">
-                    Be the first to know when we launch in Auckland and get early access to amazing local offers.
+                  <p className="mt-2 flex-1 text-sm leading-5 text-[#51486f]">
+                    Be the first to know when we launch in Auckland and get early access to local offers.
                   </p>
                   <a
                     href="#get-notified"
-                    className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-[#f3169d] px-5 text-sm font-extrabold text-white shadow-sm transition hover:bg-[#da0f8a]"
+                    className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-[#35117e] px-5 text-sm font-extrabold text-white transition hover:bg-[#4a1ab0]"
                   >
                     Get launch updates →
                   </a>
                 </div>
 
-                <div className="flex min-h-[205px] flex-col rounded-[20px] bg-[#fff8f3] p-5 shadow-[0_8px_24px_rgba(84,44,150,0.05)]">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ffe0f2] text-[#ef159c]">
+                <div className="flex min-h-[242px] flex-col rounded-[18px] bg-[#35117e] p-5 text-white shadow-[0_14px_34px_rgba(53,17,126,0.20)] sm:p-6">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/12 text-white">
                     <StoreIcon className="h-6 w-6" />
                   </span>
-                  <h2 className={`${fredoka.className} mt-3 text-[25px] font-bold leading-[1.05] text-[#35117e]`}>
+                  <h2 className={`${fredoka.className} mt-4 text-[25px] font-bold leading-tight text-white`}>
                     Run a local business?
                   </h2>
-                  <p className="mt-2 flex-1 text-sm leading-5 text-[#4c426d]">
-                    Join before launch and reach new customers with <strong className="font-extrabold text-[#35117e]">up to 6 months advertising free.*</strong>
+                  <p className="mt-2 flex-1 text-sm leading-5 text-[#e8defd]">
+                    Join before launch and reach new customers with <strong className="font-extrabold text-white">up to 6 months advertising free.*</strong>
                   </p>
                   <Link
                     href="/list-your-business"
-                    className="mt-4 inline-flex h-11 items-center justify-center rounded-full bg-gradient-to-r from-[#6c1cf1] to-[#8f24ff] px-5 text-sm font-extrabold text-white shadow-sm transition hover:brightness-95"
+                    className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-sm font-extrabold text-[#35117e] transition hover:bg-[#f4efff]"
                   >
                     List my business →
                   </Link>
@@ -158,110 +166,92 @@ export default function ComingSoonPage() {
               </div>
             </div>
 
-            <div className="relative mx-auto mt-2 w-full max-w-[560px] lg:-mt-20 lg:ml-[-4px] lg:max-w-none">
-              <div className="relative aspect-[0.98/1] overflow-hidden rounded-[48%_52%_52%_48%/38%_42%_58%_62%] bg-[#efe7ff]">
+            <div className="relative mx-auto w-full max-w-[650px] lg:max-w-none">
+              <div className="relative aspect-[1.04/1] overflow-hidden rounded-[34px] bg-[#eee8f9] shadow-[0_24px_60px_rgba(38,19,89,0.13)]">
                 <Image
                   src={AUCKLAND_IMAGE}
                   alt="Auckland CBD skyline and Sky Tower viewed across Waitematā Harbour"
                   fill
                   priority
-                  sizes="(max-width: 1024px) 100vw, 52vw"
+                  sizes="(max-width: 1024px) 100vw, 55vw"
                   className="object-cover object-[52%_50%]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-[#f6c8e5]/5 via-transparent to-[#2d165e]/10" />
-                <div className="absolute left-[34%] top-[11%] rotate-[-5deg] text-center text-[#35117e]">
-                  <p className={`${caveat.className} text-3xl font-bold leading-[0.92] sm:text-4xl lg:text-[42px]`}>
-                    Same city.
-                    <br />
-                    More to love.
-                  </p>
-                  <span className="mx-auto mt-1 block h-1 w-24 -rotate-6 rounded-full bg-[#ff2ca7] sm:w-28" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#21114b]/20 via-transparent to-transparent" />
+
+                <div className="absolute left-5 top-5 rounded-full bg-white/95 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-[#35117e] shadow-sm sm:text-sm">
+                  Auckland • launching first
+                </div>
+
+                <div className="absolute bottom-5 left-5 max-w-[320px] rounded-[16px] bg-[#21114b]/90 px-4 py-3 text-white backdrop-blur-sm">
+                  <p className="text-sm font-extrabold sm:text-base">Same city. More to discover.</p>
+                  <p className="mt-0.5 text-xs text-[#ddd4f5] sm:text-sm">Local offers from businesses around Auckland.</p>
+                </div>
+
+                <div className="absolute bottom-5 right-5 z-20 flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-xl sm:h-28 sm:w-28">
+                  <ElephantMascot className="scale-[2.05] sm:scale-[2.35]" />
                 </div>
               </div>
-
-              <div className="absolute -bottom-4 right-[-18px] hidden h-[132px] w-[150px] overflow-hidden rounded-[40%] bg-white/0 sm:block lg:h-[150px] lg:w-[170px]">
-                <Image
-                  src="/brand/megadeal-logo.webp"
-                  alt="MegaDeal elephant mascot"
-                  width={900}
-                  height={192}
-                  className="absolute right-[-58px] top-[2px] h-[118px] w-auto max-w-none object-contain lg:h-[136px]"
-                />
-              </div>
-
-              <p className={`${caveat.className} absolute -bottom-1 right-[-3px] hidden rotate-[-7deg] text-right text-xl font-bold leading-[0.95] text-[#3f1a9f] sm:block lg:right-[-10px] lg:text-[23px]`}>
-                Local deals from
-                <br />
-                local businesses.
-                <br />
-                For Auckland.
-              </p>
             </div>
           </div>
 
-          <div className="mt-6 grid gap-y-4 border-t border-[#eee8f7] pt-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-x-0">
-            <div className="flex items-center gap-3 lg:border-r lg:border-[#ddd6eb] lg:pr-5">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e9fbf4] text-[#14a66f]">
+          <div className="mt-8 grid overflow-hidden rounded-[18px] border border-[#e9e3f1] bg-[#fbfaff] sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex min-h-[92px] items-center gap-3 px-5 py-4 lg:border-r lg:border-[#e3ddec]">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e5f8f0] text-[#0f9b67]">
                 <LeafIcon className="h-5 w-5" />
               </span>
-              <span className="text-sm font-semibold leading-5 text-[#3d3565]">No vouchers to buy</span>
+              <span className="text-sm font-bold leading-5 text-[#372d5e]">No vouchers to buy</span>
             </div>
-            <div className="flex items-center gap-3 lg:border-r lg:border-[#ddd6eb] lg:px-5">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ffe8f4] text-[#f118a1]">
-                <HeartIcon className="h-5 w-5" />
+            <div className="flex min-h-[92px] items-center gap-3 border-t border-[#e3ddec] px-5 py-4 sm:border-t-0 lg:border-r">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eee7ff] text-[#5d25d9]">
+                <StoreIcon className="h-5 w-5" />
               </span>
-              <span className="text-sm font-semibold leading-5 text-[#3d3565]">Support local businesses</span>
+              <span className="text-sm font-bold leading-5 text-[#372d5e]">Deal directly with local businesses</span>
             </div>
-            <div className="flex items-center gap-3 lg:border-r lg:border-[#ddd6eb] lg:px-5">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#eaf9f3] text-[#15a36b]">
+            <div className="flex min-h-[92px] items-center gap-3 border-t border-[#e3ddec] px-5 py-4 sm:border-t lg:border-r lg:border-t-0">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e5f8f0] text-[#0f9b67]">
                 <UsersIcon className="h-5 w-5" />
               </span>
-              <span className="text-sm font-semibold leading-5 text-[#3d3565]">A fairer way for local communities</span>
+              <span className="text-sm font-bold leading-5 text-[#372d5e]">Support businesses in your city</span>
             </div>
-            <div className="flex items-center gap-3 lg:pl-5">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e9fbf4] text-[#13a66f]">
+            <div className="flex min-h-[92px] items-center gap-3 border-t border-[#e3ddec] px-5 py-4 lg:border-t-0">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eee7ff] text-[#5d25d9]">
                 <MapPinIcon className="h-5 w-5" />
               </span>
-              <span className="text-sm font-semibold leading-5 text-[#3d3565]">
-                <strong className="block text-[#35117e]">Launching in Auckland first</strong>
-                Then Wellington, Christchurch, Queenstown &amp; Hamilton
+              <span className="text-sm font-bold leading-5 text-[#372d5e]">
+                <strong className="block text-[#30107d]">Auckland first</strong>
+                Wellington, Christchurch, Queenstown &amp; Hamilton next
               </span>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="px-5 py-4 sm:px-8 lg:px-10">
-        <div className="mx-auto max-w-[1024px] rounded-[20px] bg-[#f6efff] px-5 py-6 sm:px-7 lg:px-8">
+      <section className="px-5 py-5 sm:px-8 lg:px-10">
+        <div className="mx-auto max-w-[1180px] rounded-[22px] bg-[#35117e] px-5 py-7 text-white sm:px-8 lg:px-9">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <h2 className={`${fredoka.className} text-[30px] font-bold tracking-[-0.03em] text-[#35117e] sm:text-[34px]`}>
+            <h2 className={`${fredoka.className} text-[30px] font-bold tracking-[-0.03em] text-white sm:text-[38px]`}>
               How MegaDeal will work
             </h2>
-            <p className={`${caveat.className} hidden rotate-[-4deg] text-2xl font-bold text-[#5420cf] md:block`}>
-              Local deals made easy.
-            </p>
+            <p className="text-sm font-semibold text-[#cdbdf5]">Simple. Direct. Local.</p>
           </div>
 
-          <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_auto_1fr_auto_1fr] lg:items-center">
+          <div className="mt-6 grid gap-4 lg:grid-cols-3">
             {[
               ["1", SearchIcon, "Find a deal", "Browse offers from local Auckland businesses."],
               ["2", TicketIcon, "Get the deal code", "No payment or voucher purchase required."],
               ["3", PhoneIcon, "Book direct & enjoy", "Contact the business, quote your code and pay them directly."],
-            ].map(([number, Icon, title, copy], index) => {
+            ].map(([number, Icon, title, copy]) => {
               const StepIcon = Icon as typeof SearchIcon;
               return (
-                <div key={String(title)} className="contents">
-                  <div className="grid grid-cols-[40px_54px_1fr] items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#7424f2] text-sm font-extrabold text-white">{number as string}</span>
-                    <span className="flex h-13 w-13 items-center justify-center rounded-full bg-white text-[#7022ee] shadow-sm">
-                      <StepIcon className="h-7 w-7" />
-                    </span>
-                    <div>
-                      <h3 className="font-extrabold text-[#35117e]">{title as string}</h3>
-                      <p className="mt-1 text-sm leading-5 text-[#4a426b]">{copy as string}</p>
-                    </div>
+                <div key={String(title)} className="grid grid-cols-[42px_52px_1fr] items-center gap-3 rounded-[16px] bg-white/8 p-4 ring-1 ring-white/10">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ef159c] text-sm font-extrabold text-white">{number as string}</span>
+                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[#35117e]">
+                    <StepIcon className="h-6 w-6" />
+                  </span>
+                  <div>
+                    <h3 className="font-extrabold text-white">{title as string}</h3>
+                    <p className="mt-1 text-sm leading-5 text-[#ddd4f5]">{copy as string}</p>
                   </div>
-                  {index < 2 && <span className="hidden text-3xl font-bold text-[#7b23f4] lg:block" aria-hidden>→</span>}
                 </div>
               );
             })}
@@ -269,17 +259,17 @@ export default function ComingSoonPage() {
         </div>
       </section>
 
-      <section className="px-5 py-6 sm:px-8 lg:px-10">
-        <div className="mx-auto max-w-[1024px]">
-          <h2 className={`${fredoka.className} text-[30px] font-bold tracking-[-0.03em] text-[#35117e] sm:text-[34px]`}>
+      <section className="px-5 py-7 sm:px-8 lg:px-10">
+        <div className="mx-auto max-w-[1180px]">
+          <h2 className={`${fredoka.className} text-[30px] font-bold tracking-[-0.03em] text-[#30107d] sm:text-[38px]`}>
             Deals across more of what you love
           </h2>
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {categories.map((category) => {
               const Icon = category.icon;
               return (
                 <div key={category.label}>
-                  <div className="relative aspect-[1.35/1] overflow-hidden rounded-[14px] bg-slate-100">
+                  <div className="relative aspect-[1.3/1] overflow-hidden rounded-[14px] bg-slate-100 shadow-sm">
                     <Image
                       src={category.image}
                       alt={`Generic ${category.label.toLowerCase()} category image`}
@@ -287,13 +277,11 @@ export default function ComingSoonPage() {
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
                       className="object-cover"
                     />
-                    <span className="absolute bottom-1 left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border-[3px] border-white bg-white text-[#7022ee] shadow-sm">
+                    <span className="absolute bottom-2 left-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white text-[#4f1fc5] shadow-sm">
                       <Icon className="h-4 w-4" />
                     </span>
                   </div>
-                  <p className="mt-2 text-center text-xs font-extrabold leading-4 text-[#35117e] sm:text-sm">
-                    {category.label}
-                  </p>
+                  <p className="mt-2.5 text-sm font-extrabold leading-4 text-[#30107d]">{category.label}</p>
                 </div>
               );
             })}
@@ -301,16 +289,16 @@ export default function ComingSoonPage() {
         </div>
       </section>
 
-      <section id="get-notified" className="scroll-mt-24 px-5 py-4 sm:px-8 lg:px-10">
-        <div className="mx-auto grid max-w-[1024px] gap-6 rounded-[20px] bg-[#f7f0ff] px-5 py-6 sm:px-7 lg:grid-cols-[1fr_0.38fr] lg:items-center lg:px-8">
+      <section id="get-notified" className="scroll-mt-24 px-5 py-5 sm:px-8 lg:px-10">
+        <div className="mx-auto max-w-[1180px] rounded-[20px] border border-[#e6e0ef] bg-[#f7f5fb] px-5 py-7 sm:px-8 lg:grid lg:grid-cols-[1fr_0.42fr] lg:items-center lg:gap-10 lg:px-9">
           <div>
-            <h2 className={`${fredoka.className} text-[30px] font-bold tracking-[-0.03em] text-[#35117e] sm:text-[34px]`}>
+            <h2 className={`${fredoka.className} text-[30px] font-bold tracking-[-0.03em] text-[#30107d] sm:text-[36px]`}>
               Be the first to know
             </h2>
-            <p className="mt-1.5 max-w-2xl text-sm leading-6 text-[#4a426b] sm:text-base">
+            <p className="mt-1.5 max-w-3xl text-sm leading-6 text-[#544c6c] sm:text-base">
               Sign up and we&apos;ll let you know when we launch in Auckland, plus early access to special offers.
             </p>
-            <div className="mt-4 max-w-2xl">
+            <div className="mt-4 max-w-3xl">
               <EmailSignupForm audience="customer" source="coming-soon" buttonLabel="Keep me posted →" accent="brand" surface="plain" />
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs font-semibold text-[#675e80]">
                 <span>✓ Free to join</span>
@@ -319,55 +307,50 @@ export default function ComingSoonPage() {
               </div>
             </div>
           </div>
-          <div className="relative hidden min-h-[120px] lg:block" aria-hidden>
-            <span className="absolute left-[8%] top-[58%] h-px w-40 border-t border-dashed border-[#7b23f4]" />
-            <span className="absolute left-[45%] top-[16%] rotate-[-10deg] text-5xl text-[#7022ee]">✈</span>
-            <p className={`${caveat.className} absolute right-[2%] top-[20%] rotate-[-8deg] text-right text-3xl font-bold leading-[0.9] text-[#3f1aa8]`}>
-              Be part from
+
+          <div className="mt-6 rounded-[16px] bg-white p-5 ring-1 ring-[#e2dbea] lg:mt-0">
+            <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#7057a5]">Launch order</p>
+            <p className={`${fredoka.className} mt-2 text-2xl font-bold leading-tight text-[#30107d]`}>
+              Auckland first.
               <br />
-              the beginning.
+              New Zealand next.
             </p>
+            <p className="mt-2 text-sm leading-5 text-[#625979]">We&apos;re starting focused, then expanding city by city.</p>
           </div>
         </div>
       </section>
 
-      <section className="px-5 pb-6 pt-3 sm:px-8 lg:px-10">
-        <div className="mx-auto grid max-w-[1024px] gap-4 lg:grid-cols-[1.55fr_0.95fr]">
-          <div className="rounded-[20px] bg-gradient-to-br from-[#fff4fb] via-[#fbf3ff] to-[#f6efff] p-5 sm:p-7">
-            <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#ed1695]">For Auckland businesses</p>
-            <h2 className={`${fredoka.className} mt-2 text-[38px] font-bold leading-[0.95] tracking-[-0.035em] text-[#35117e] sm:text-[46px]`}>
+      <section className="px-5 pb-8 pt-4 sm:px-8 lg:px-10">
+        <div className="mx-auto grid max-w-[1180px] gap-5 lg:grid-cols-[1.55fr_0.95fr]">
+          <div className="rounded-[22px] bg-[#35117e] p-5 text-white shadow-[0_18px_45px_rgba(53,17,126,0.20)] sm:p-8 lg:p-9">
+            <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#ff77c2]">For Auckland businesses</p>
+            <h2 className={`${fredoka.className} mt-2 text-[40px] font-bold leading-[0.96] tracking-[-0.035em] text-white sm:text-[50px]`}>
               Fill quiet times.
               <br />
               Get more customers.
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4a426b] sm:text-base">
-              Turn empty tables, spare capacity and quiet periods into revenue. Join MegaDeal before launch and receive:
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#ded5f5] sm:text-base">
+              Turn empty tables, unused appointments, spare capacity and quiet periods into revenue. Join MegaDeal before launch and receive:
             </p>
 
-            <div className="mt-5 grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-              <div className="rounded-[18px] bg-white p-5 shadow-[0_7px_30px_rgba(80,39,144,0.08)]">
+            <div className="mt-6 grid gap-5 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
+              <div className="rounded-[18px] bg-white/10 p-5 ring-1 ring-white/12">
                 <div className="flex items-center gap-4">
-                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#f0e5ff] text-[#6e1deb]">
+                  <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white text-[#35117e]">
                     <MegaphoneIcon className="h-8 w-8" />
                   </span>
                   <div>
-                    <p className="text-sm font-extrabold text-[#4f3a87]">Up to</p>
-                    <p className={`${fredoka.className} text-[38px] font-bold leading-none text-[#ef159c]`}>6 months</p>
-                    <p className={`${fredoka.className} mt-1 text-[24px] font-bold leading-none text-[#35117e]`}>advertising free.*</p>
+                    <p className="text-sm font-extrabold text-[#d8cff1]">Up to</p>
+                    <p className={`${fredoka.className} text-[40px] font-bold leading-none text-[#ff4eb2]`}>6 months</p>
+                    <p className={`${fredoka.className} mt-1 text-[25px] font-bold leading-none text-white`}>advertising free.*</p>
                   </div>
                 </div>
               </div>
 
               <ul className="grid gap-2.5 pt-1">
-                {[
-                  "No commission on sales",
-                  "Customers deal directly with you",
-                  "You control your offer and availability",
-                  "Reach new local customers",
-                  "A simple, effective way to grow your business",
-                ].map((benefit) => (
-                  <li key={benefit} className="flex items-start gap-2.5 text-sm font-semibold leading-5 text-[#3f3860]">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#e9ddff] text-[#6c1be8]">
+                {businessBenefits.map((benefit) => (
+                  <li key={benefit} className="flex items-start gap-2.5 text-sm font-semibold leading-5 text-[#efe9fb]">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white text-[#35117e]">
                       <CheckIcon className="h-3.5 w-3.5" />
                     </span>
                     {benefit}
@@ -376,35 +359,42 @@ export default function ComingSoonPage() {
               </ul>
             </div>
 
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link href="/list-your-business" className="inline-flex h-11 items-center justify-center rounded-full bg-gradient-to-r from-[#6e1ced] to-[#8925ff] px-7 text-sm font-extrabold text-white transition hover:brightness-95">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
+                href="/list-your-business"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-[#ef159c] px-7 text-sm font-extrabold text-white transition hover:bg-[#d90f8b]"
+              >
                 List my business →
               </Link>
-              <span className="text-sm font-semibold text-[#4a426b]">Use code <strong className="font-extrabold text-[#5f14d8] underline decoration-[#e8199d] decoration-2 underline-offset-4">WELCOME6</strong></span>
+              <span className="text-sm font-semibold text-[#ded5f5]">
+                Use code <strong className="font-extrabold text-white underline decoration-[#ff77c2] decoration-2 underline-offset-4">WELCOME6</strong>
+              </span>
             </div>
-            <p className="mt-3 text-[11px] leading-4 text-[#766f88]">*T&amp;Cs apply. Limited-time offer for eligible new business listings. <Link href="/terms" className="underline hover:text-[#35117e]">See terms</Link>.</p>
+            <p className="mt-3 text-[11px] leading-4 text-[#cfc3ec]">
+              *T&amp;Cs apply. Limited-time offer for eligible new business listings. <Link href="/terms" className="underline hover:text-white">See terms</Link>.
+            </p>
           </div>
 
-          <div className="relative overflow-hidden rounded-[20px] bg-[#f8f3ff] p-5 sm:p-7">
-            <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#6c1be8]">Our launch plan</p>
-            <div className="mt-5 grid gap-0">
+          <div className="relative overflow-hidden rounded-[22px] border border-[#e6e0ef] bg-[#f7f5fb] p-5 sm:p-7 lg:p-8">
+            <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-[#5d25d9]">Our launch plan</p>
+            <div className="mt-6 grid gap-0">
               {rollout.map(([city, status], index) => (
                 <div key={city} className="grid grid-cols-[22px_1fr] gap-3">
                   <div className="relative flex justify-center">
-                    <span className={`relative z-10 mt-1 h-3.5 w-3.5 rounded-full border-[3px] ${index === 0 ? "border-[#ed1695] bg-white" : "border-[#c2bbd2] bg-[#c2bbd2]"}`} />
-                    {index < rollout.length - 1 && <span className="absolute top-4 h-full w-px bg-[#d3cde0]" />}
+                    <span className={`relative z-10 mt-1 h-3.5 w-3.5 rounded-full border-[3px] ${index === 0 ? "border-[#ef159c] bg-white" : "border-[#aaa3b8] bg-[#aaa3b8]"}`} />
+                    {index < rollout.length - 1 && <span className="absolute top-4 h-full w-px bg-[#d2ccd9]" />}
                   </div>
                   <div className="pb-4">
-                    <p className={`font-extrabold ${index === 0 ? "text-[#35117e]" : "text-[#6e6682]"}`}>{city}</p>
-                    <p className={`text-xs font-semibold ${index === 0 ? "text-[#ed1695]" : "text-[#8a8398]"}`}>{status}</p>
+                    <p className={`font-extrabold ${index === 0 ? "text-[#30107d]" : "text-[#5f5870]"}`}>{city}</p>
+                    <p className={`text-xs font-semibold ${index === 0 ? "text-[#ef159c]" : "text-[#868091]"}`}>{status}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <p className={`${caveat.className} absolute right-4 top-16 hidden max-w-[150px] rotate-[-7deg] text-right text-[24px] font-bold leading-[0.95] text-[#3f1aa8] sm:block`}>
-              More local deals across New Zealand coming soon.
-            </p>
-            <div className="absolute -bottom-8 right-7 hidden text-[58px] font-black tracking-[-0.1em] text-[#decaff] sm:block" aria-hidden>NZ</div>
+            <div className="mt-3 rounded-[15px] bg-white p-4 ring-1 ring-[#e2dbea]">
+              <p className="text-sm font-extrabold text-[#30107d]">Focused launch, then steady expansion.</p>
+              <p className="mt-1 text-xs leading-5 text-[#6b637b]">Auckland first, followed by Wellington, Christchurch, Queenstown and Hamilton.</p>
+            </div>
           </div>
         </div>
       </section>
