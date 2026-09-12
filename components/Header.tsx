@@ -16,6 +16,10 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
+  // The two pages real visitors land on before launch — coming-soon and the
+  // business pitch — should carry the same brand mark, rather than one
+  // showing the deal-hunter logo and the other the text wordmark.
+  const usesBrandLogo = isComingSoon || pathname === "/list-your-business";
 
   const [profileComplete, setProfileComplete] = useState(true);
   useEffect(() => {
@@ -80,13 +84,26 @@ export default function Header() {
     <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-y-1">
-          <Link href="/" className="flex items-center gap-0.5 font-display">
-            <span className="animate-wordmark-shake items-center gap-0.5">
-              <span className="text-[1.7rem] font-extrabold tracking-tight text-brand-700">Mega</span>
-              <span className="-rotate-2 rounded-full bg-ember-500 px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-white shadow-card">Deal</span>
-            </span>
-            <ElephantMascot className="ml-1.5 -rotate-3" />
-          </Link>
+          {usesBrandLogo ? (
+            <Link href="/" aria-label="MegaDeal home" className="min-w-0 shrink">
+              <img
+                src="/brand/megadeal-logo-deal-hunter.svg"
+                alt="MegaDeal"
+                width={860}
+                height={220}
+                className="block h-auto w-[172px] max-w-full sm:w-[210px] lg:w-[240px]"
+                fetchPriority="high"
+              />
+            </Link>
+          ) : (
+            <Link href="/" className="flex items-center gap-0.5 font-display">
+              <span className="animate-wordmark-shake items-center gap-0.5">
+                <span className="text-[1.7rem] font-extrabold tracking-tight text-brand-700">Mega</span>
+                <span className="-rotate-2 rounded-full bg-ember-500 px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-white shadow-card">Deal</span>
+              </span>
+              <ElephantMascot className="ml-1.5 -rotate-3" />
+            </Link>
+          )}
 
           <Link href="/portal" className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-brand-700">
             <span className="relative">

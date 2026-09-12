@@ -11,6 +11,7 @@ import EmailCapturePopup from "@/components/EmailCapturePopup";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
 import { SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -54,8 +55,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en-NZ">
-      <body className="min-h-screen bg-white text-slate-900 antialiased">
+    <html lang="en-NZ" className={`${plusJakartaSans.variable} ${fredoka.variable} ${caveat.variable}`}>
+      <body className="min-h-screen bg-white font-sans text-slate-900 antialiased">
         {/* Every deal photo and most API calls come from Wix's domains —
             opening the connection before those requests are discovered
             mid-render shaves the DNS/TLS handshake off the critical path.

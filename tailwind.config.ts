@@ -31,7 +31,14 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["ui-rounded", "Segoe UI", "system-ui", "sans-serif"],
+        // Real brand faces, loaded by next/font in lib/fonts.ts and exposed
+        // as CSS variables on <html> (see app/layout.tsx). The system stacks
+        // stay on as fallbacks for the brief swap window. `display` used to
+        // be the fallback stack alone, so headings rendered as SF Rounded on
+        // macOS, Segoe UI on Windows and something else again on Android.
+        sans: ["var(--font-jakarta)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-fredoka)", "ui-rounded", "Segoe UI", "system-ui", "sans-serif"],
+        handwritten: ["var(--font-caveat)", "cursive"],
       },
       boxShadow: {
         card: "0 1px 2px rgba(16,24,40,0.06), 0 1px 3px rgba(16,24,40,0.10)",
