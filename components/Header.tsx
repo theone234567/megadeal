@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import ElephantMascot from "@/components/ElephantMascot";
 import { SearchIcon, UserIcon } from "@/components/icons";
+import { fredoka } from "@/lib/fonts";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
@@ -14,18 +15,9 @@ export default function Header() {
   const [city, setCity] = useState("");
   const [query, setQuery] = useState("");
   const router = useRouter();
-  // The coming-soon page is deliberately not a normal browse page — there's
-  // no catalog to search yet, and its own design calls for a plain compact
-  // header (logo + a lone sign-in link, no navbar) rather than the search
-  // bar every other page needs. Same per-route override pattern Footer.tsx
-  // already uses for its own business-CTA banner.
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
 
-  // Same "has the deferred profile step been done" signal as the portal's
-  // own onboarding checklist — surfaced here too so a merchant sees they
-  // still have a step left no matter which page they're on, not just once
-  // they're already in the portal.
   const [profileComplete, setProfileComplete] = useState(true);
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -52,13 +44,45 @@ export default function Header() {
     router.push(qs ? `/?${qs}` : "/");
   }
 
+  if (isComingSoon) {
+    return (
+      <header className="relative z-30 bg-white">
+        <div className="mx-auto flex max-w-[1440px] items-start justify-between gap-4 px-5 pb-2 pt-5 sm:px-8 lg:px-10 lg:pt-6">
+          <div>
+            <Link
+              href="/coming-soon"
+              aria-label="MegaDeal coming soon"
+              className={`${fredoka.className} inline-flex items-center gap-1`}
+            >
+              <span className="text-[1.8rem] font-bold tracking-[-0.045em] text-brand-700 sm:text-[2rem]">
+                Mega
+              </span>
+              <span className="-rotate-2 rounded-[15px] bg-ember-500 px-2.5 py-0.5 text-[1.8rem] font-bold tracking-[-0.045em] text-white sm:text-[2rem]">
+                Deal
+              </span>
+              <span className="ml-0.5 origin-left scale-[0.82]">
+                <ElephantMascot className="-rotate-3" />
+              </span>
+            </Link>
+            <p className="mt-0.5 pl-4 text-[11px] font-semibold tracking-[0.04em] text-[#776a9b] sm:text-xs">
+              Local together.
+            </p>
+          </div>
+
+          <Link
+            href="/portal"
+            className="mt-2 shrink-0 text-xs font-bold text-[#321475] transition hover:text-ember-500 sm:text-sm"
+          >
+            Business sign in →
+          </Link>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
-        {/* flex-wrap so a long "Business sign in" label drops to its own
-            line at very narrow widths instead of overflowing the
-            viewport horizontally — the logo and this link never actually
-            share space with anything else, so wrapping costs nothing. */}
         <div className="flex flex-wrap items-center justify-between gap-y-1">
           <Link href="/" className="flex items-center gap-0.5 font-display">
             <span className="animate-wordmark-shake items-center gap-0.5">
@@ -94,7 +118,6 @@ export default function Header() {
           </Link>
         </div>
 
-        {!isComingSoon && (
         <form onSubmit={handleSearch} className="flex w-full items-center gap-2">
           <div className="flex flex-1 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 focus-within:border-brand-400">
             <SearchIcon className="h-4 w-4 shrink-0 text-slate-400" />
@@ -127,7 +150,6 @@ export default function Header() {
             Search
           </button>
         </form>
-        )}
       </div>
     </header>
   );
