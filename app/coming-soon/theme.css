@@ -19,3 +19,8 @@
   background: #ffdff4;
   color: #440e82;
 }
+
+/* The approved artwork already contains the coming-soon footer. */
+.coming-soon-soft + footer {
+  display: none;
+}
