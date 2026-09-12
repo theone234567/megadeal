@@ -156,7 +156,7 @@ export default function ComingSoonPage() {
               Launching first in Auckland
             </div>
             <h1
-              className={`${fredoka.className} mt-4 text-[43px] font-bold leading-[0.94] tracking-[-0.04em] sm:text-[52px] lg:mt-5 lg:text-[70px] lg:font-black lg:tracking-[-0.045em] 2xl:text-[80px]`}
+              className={`${fredoka.className} mt-4 text-3xl font-bold leading-tight sm:text-4xl lg:mt-5 lg:text-5xl`}
             >
               Big local deals are on the way, Auckland.
             </h1>
@@ -219,7 +219,7 @@ export default function ComingSoonPage() {
             </span>
             <div>
               <h2
-                className={`${fredoka.className} text-2xl font-bold leading-tight text-[#191333] lg:text-[29px] lg:font-black`}
+                className={`${fredoka.className} text-2xl font-bold leading-tight text-[#191333] sm:text-3xl`}
               >
                 Love a great deal?
               </h2>
@@ -241,7 +241,7 @@ export default function ComingSoonPage() {
             </span>
             <div>
               <h2
-                className={`${fredoka.className} text-2xl font-bold leading-tight text-[#191333] lg:text-[29px] lg:font-black`}
+                className={`${fredoka.className} text-2xl font-bold leading-tight text-[#191333] sm:text-3xl`}
               >
                 Run a local business?
               </h2>
@@ -286,7 +286,7 @@ export default function ComingSoonPage() {
         <div className="rounded-[22px] bg-[#4d0ca8] px-5 py-7 text-white shadow-[0_16px_40px_rgba(69,16,141,.12)] sm:px-8 sm:py-8 lg:rounded-[26px]">
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
             <div>
-              <h2 className={`${fredoka.className} text-3xl font-bold lg:text-[34px] lg:font-black`}>
+              <h2 className={`${fredoka.className} text-2xl font-bold sm:text-3xl`}>
                 How MegaDeal works
               </h2>
               <p className="mt-1 text-sm font-semibold text-white/70">Simple. Direct. Local.</p>
@@ -319,7 +319,7 @@ export default function ComingSoonPage() {
       <section id="categories" className={`${shell} pb-8 lg:pb-10`}>
         <div className="text-center">
           <h2
-            className={`${fredoka.className} text-3xl font-bold text-[#171128] lg:text-[34px] lg:font-black`}
+            className={`${fredoka.className} text-2xl font-bold text-[#171128] sm:text-3xl`}
           >
             Explore deal categories
           </h2>
@@ -377,7 +377,7 @@ export default function ComingSoonPage() {
             className="scroll-mt-24 rounded-[24px] bg-[#fff0f7] px-5 py-7 sm:px-8 lg:min-h-[330px] lg:px-10 lg:py-9"
           >
             <h2
-              className={`${fredoka.className} max-w-[520px] text-2xl font-bold leading-tight text-[#18122d] lg:text-[31px] lg:font-black lg:leading-[1.25]`}
+              className={`${fredoka.className} max-w-[520px] text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}
             >
               Be first in line for launch deals
             </h2>
@@ -398,7 +398,7 @@ export default function ComingSoonPage() {
 
           <div className="rounded-[24px] bg-[#f3edff] px-5 py-7 sm:px-8 lg:min-h-[330px] lg:px-10 lg:py-9">
             <h2
-              className={`${fredoka.className} max-w-[550px] text-2xl font-bold leading-tight text-[#18122d] lg:text-[31px] lg:font-black lg:leading-[1.25]`}
+              className={`${fredoka.className} max-w-[550px] text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}
             >
               Fill quiet times. Grow local customers.
             </h2>
@@ -428,7 +428,7 @@ export default function ComingSoonPage() {
               <MapPinIcon className="h-6 w-6" />
             </span>
             <div>
-              <h2 className={`${fredoka.className} text-xl font-bold text-[#18122d] lg:text-[24px] lg:font-black`}>
+              <h2 className={`${fredoka.className} text-xl font-bold text-[#18122d] sm:text-2xl`}>
                 Our launch plan
               </h2>
               <p className="mt-1 text-[15px] text-slate-500">Auckland first, then more Kiwi cities.</p>
