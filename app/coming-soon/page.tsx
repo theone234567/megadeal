@@ -7,7 +7,10 @@ import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import EmailSignupForm from "@/components/EmailSignupForm";
+import SampleDealCard from "@/components/SampleDealCard";
+import { getSignupStats } from "@/lib/publicStats";
 import AucklandSkylineArt from "@/components/comingSoon/AucklandSkylineArt";
+import ComingSoonStickyCta from "@/components/comingSoon/ComingSoonStickyCta";
 import {
   CheckIcon,
   DumbbellIcon,
@@ -136,6 +139,13 @@ const businessBenefits = [
 
 const launchCities = ["Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
+/**
+ * Same bar /list-your-business uses. Real counts are far better social
+ * proof than none, but "3 businesses signed up" reads worse than staying
+ * quiet — so nothing is shown until there is a number worth showing.
+ */
+const MIN_APPROVED_BUSINESSES_TO_SHOW_STATS = 33;
+
 function Tick({ children }: { children: ReactNode }) {
   return (
     <li className="flex items-start gap-2.5 text-[15px] font-semibold leading-6 text-[#18122d]">
@@ -147,9 +157,16 @@ function Tick({ children }: { children: ReactNode }) {
   );
 }
 
-export default function ComingSoonPage() {
+export default async function ComingSoonPage() {
+  // Real figures from Wix, never invented. Null (and so hidden) when the
+  // credentials are unavailable or the numbers are still too small.
+  const rawStats = await getSignupStats();
+  const stats =
+    rawStats && rawStats.merchantCount >= MIN_APPROVED_BUSINESSES_TO_SHOW_STATS ? rawStats : null;
+
   return (
-    <main className={`${plusJakartaSans.className} overflow-x-hidden bg-white text-[#171128]`}>
+    <main className={`${plusJakartaSans.className} overflow-x-hidden bg-white pb-16 text-[#171128] lg:pb-0`}>
+      <ComingSoonStickyCta />
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -172,7 +189,7 @@ export default function ComingSoonPage() {
       />
 
       {/* ---------------------------------------------------------------- Hero */}
-      <section className="relative overflow-hidden bg-[#650fc7] text-white">
+      <section id="cs-hero" className="relative overflow-hidden bg-[#650fc7] text-white">
         <div
           className={`${shell} grid items-center gap-6 pb-0 pt-7 sm:gap-10 sm:py-12 lg:min-h-[590px] lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:py-14`}
         >
@@ -196,6 +213,23 @@ export default function ComingSoonPage() {
               <span>0% commission for businesses</span>
               <span>Up to 6 months advertising free*</span>
             </div>
+
+            {stats && (stats.merchantCount > 0 || stats.waitlistCount > 0) && (
+              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-2xl bg-white/12 px-4 py-3 text-[13px] font-semibold text-white/95 ring-1 ring-inset ring-white/20 sm:text-sm">
+                {stats.merchantCount > 0 && (
+                  <span>
+                    <span className="font-extrabold">{stats.merchantCount.toLocaleString()}</span>{" "}
+                    Auckland businesses signed up
+                  </span>
+                )}
+                {stats.waitlistCount > 0 && (
+                  <span>
+                    <span className="font-extrabold">{stats.waitlistCount.toLocaleString()}</span>{" "}
+                    locals waiting for launch day
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {/*
@@ -455,53 +489,137 @@ export default function ComingSoonPage() {
         </div>
       </section>
 
-      {/* ------------------------------------- Signup + business benefits */}
-      <section className={`${shell} pb-8 lg:pb-9`}>
-        <div className="grid items-stretch gap-4 lg:grid-cols-2 lg:gap-6">
-          <div
-            id="launch-updates"
-            className="scroll-mt-24 rounded-[24px] bg-[#fff0f7] px-5 py-7 sm:px-8 lg:min-h-[330px] lg:px-10 lg:py-9"
-          >
-            <h2
-              className={`${fredoka.className} max-w-[520px] text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}
-            >
-              Be first in line for launch deals
-            </h2>
-            <p className="mt-2 text-[15px] leading-6 text-slate-600 lg:mt-3">
-              Get early access to the best local offers in Auckland.
-            </p>
-            <div className="mt-4 max-w-[560px] lg:mt-5">
-              <EmailSignupForm
-                audience="customer"
-                source="coming-soon"
-                buttonLabel="Get launch updates →"
-                accent="ember"
-                surface="plain"
-                layout="stacked"
-              />
+      {/*
+        Deal hunters: show the thing, then ask.
+
+        The email capture used to sit in a plain tinted box two thirds
+        down the page, asking for an address against nothing but a
+        promise. Pairing it with a real example of what a MegaDeal listing
+        looks like makes the offer concrete at the moment of the ask —
+        the card is explicitly badged "Sample preview" so it can't be
+        mistaken for a live deal.
+      */}
+      <section id="launch-updates" className="scroll-mt-20 bg-[#fff5fa] py-10 lg:py-14">
+        <div className={shell}>
+          <div className="grid items-center gap-8 lg:grid-cols-[1fr_minmax(0,360px)] lg:gap-14">
+            <div>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#e81ea3]">
+                For deal hunters
+              </p>
+              <h2
+                className={`${fredoka.className} mt-2 max-w-[560px] text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}
+              >
+                Be first in line for launch deals
+              </h2>
+              <p className="mt-2.5 max-w-[560px] text-[15px] leading-6 text-slate-600 lg:text-base">
+                Real offers from real Auckland businesses — restaurants, spas, activities and
+                getaways. No vouchers to buy, and you deal directly with the business.
+              </p>
+
+              <ul className="mt-5 grid gap-2.5 sm:grid-cols-2 sm:gap-x-8">
+                <Tick>Free to join, unsubscribe anytime</Tick>
+                <Tick>Early access before deals go public</Tick>
+              </ul>
+
+              <div className="mt-6 max-w-[520px]">
+                <EmailSignupForm
+                  audience="customer"
+                  source="coming-soon"
+                  buttonLabel="Get launch updates →"
+                  accent="ember"
+                  surface="plain"
+                  layout="stacked"
+                />
+              </div>
+              {stats && stats.waitlistCount > 0 && (
+                <p className="mt-3 text-sm font-semibold text-[#a3175f]">
+                  Join {stats.waitlistCount.toLocaleString()} locals already on the list.
+                </p>
+              )}
+            </div>
+
+            <div className="mx-auto w-full max-w-[320px] lg:max-w-none">
+              <SampleDealCard />
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="rounded-[24px] bg-[#f3edff] px-5 py-7 sm:px-8 lg:min-h-[330px] lg:px-10 lg:py-9">
-            <h2
-              className={`${fredoka.className} max-w-[550px] text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}
-            >
-              Fill quiet times. Grow local customers.
-            </h2>
-            <p className="mt-2 text-[15px] leading-6 text-slate-600 lg:mt-3">
-              Join before launch and be part of something big in Auckland.
-            </p>
-            <ul className="mt-4 grid gap-2.5 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-4 lg:mt-6 lg:gap-y-5">
-              {businessBenefits.map((item) => (
-                <Tick key={item}>{item}</Tick>
-              ))}
-            </ul>
-            <Link
-              href="/list-your-business"
-              className="mt-5 inline-flex h-12 items-center rounded-full bg-[#6d24dc] px-7 text-sm font-extrabold text-white transition hover:bg-[#530fa1] lg:mt-6"
-            >
-              Claim my free advertising →
-            </Link>
+      {/*
+        Businesses: the page's highest-value action before launch, so it
+        gets a full-width panel of its own rather than sharing a row.
+        The offer is genuinely time-bound — it ends when deals go live —
+        and that is the honest reason to act now, so it is stated plainly
+        instead of being left implicit.
+      */}
+      <section className="bg-[#4d0ca8] py-10 text-white lg:py-14">
+        <div className={shell}>
+          <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
+            <div>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffb3dd]">
+                For local businesses
+              </p>
+              <h2
+                className={`${fredoka.className} mt-2 max-w-[620px] text-2xl font-bold leading-tight sm:text-3xl`}
+              >
+                Fill quiet times. Grow local customers.
+              </h2>
+              <p className="mt-2.5 max-w-[620px] text-[15px] leading-6 text-white/85 lg:text-base">
+                Get in before we launch and your first months of advertising are on us. Once deals
+                go live the offer closes, so the businesses that join now are the ones customers
+                see on day one.
+              </p>
+
+              <ul className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-x-8">
+                {businessBenefits.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-[15px] font-semibold leading-6">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#e81ea3] text-white">
+                      <CheckIcon className="h-3 w-3" />
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+                <Link
+                  href="/list-your-business"
+                  className="inline-flex h-12 items-center rounded-full bg-[#e81ea3] px-7 text-sm font-extrabold text-white shadow-lg transition hover:bg-[#c7128a]"
+                >
+                  Claim my free advertising →
+                </Link>
+                <span className="text-sm font-semibold text-white/75">
+                  Takes about 60 seconds · No credit card
+                </span>
+              </div>
+              {stats && stats.merchantCount > 0 && (
+                <p className="mt-4 text-sm font-semibold text-[#ffb3dd]">
+                  {stats.merchantCount.toLocaleString()} Auckland businesses have already signed up.
+                </p>
+              )}
+            </div>
+
+            <div className="rounded-[24px] bg-white/10 p-6 ring-1 ring-inset ring-white/15 sm:p-7">
+              <p className={`${fredoka.className} text-xl font-bold sm:text-2xl`}>
+                What it costs you
+              </p>
+              <dl className="mt-4 space-y-3 text-[15px]">
+                {[
+                  ["Commission on your sales", "0%"],
+                  ["Advertising before launch", "Free*"],
+                  ["Customer payments", "Direct to you"],
+                  ["Lock-in contract", "None"],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="flex items-baseline justify-between gap-4 border-b border-white/15 pb-3 last:border-0 last:pb-0"
+                  >
+                    <dt className="text-white/80">{label}</dt>
+                    <dd className="shrink-0 font-extrabold">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
         </div>
       </section>
