@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
@@ -46,6 +48,29 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image", title: SOCIAL_TITLE, description: DESCRIPTION },
 };
+
+/**
+ * Real photography beats the illustration whenever it exists.
+ *
+ * Drop a file at public/images/auckland-hero.(jpg|jpeg|webp|avif|png) and
+ * the hero uses it instead of AucklandSkylineArt — no code change needed.
+ * This page is statically prerendered, so the lookup runs once at build
+ * time on Node, never in the Workers runtime.
+ */
+function findHeroPhoto(): string | null {
+  const dir = path.join(process.cwd(), "public", "images");
+  for (const ext of ["avif", "webp", "jpg", "jpeg", "png"]) {
+    const file = `auckland-hero.${ext}`;
+    try {
+      if (fs.existsSync(path.join(dir, file))) return `/images/${file}`;
+    } catch {
+      // public/images may not exist yet — fall through to the illustration.
+    }
+  }
+  return null;
+}
+
+const heroPhoto = findHeroPhoto();
 
 /** One shared page shell width, so every band lines up at every breakpoint. */
 const shell = "mx-auto w-full max-w-[1320px] px-5 sm:px-6 xl:px-10";
@@ -149,7 +174,7 @@ export default function ComingSoonPage() {
       {/* ---------------------------------------------------------------- Hero */}
       <section className="relative overflow-hidden bg-[#650fc7] text-white">
         <div
-          className={`${shell} grid items-center gap-10 py-9 sm:py-12 lg:min-h-[590px] lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:py-14`}
+          className={`${shell} grid items-center gap-6 py-7 sm:gap-10 sm:py-12 lg:min-h-[590px] lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:py-14`}
         >
           <div className="lg:max-w-[640px]">
             <div className="inline-flex rounded-full bg-[#e81ea3] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white shadow-sm sm:px-5 sm:text-sm">
@@ -173,21 +198,34 @@ export default function ComingSoonPage() {
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[720px] pb-5 pr-2 sm:pb-8 sm:pr-7 lg:pt-2">
+          <div className="relative mx-auto w-full max-w-[720px] pb-3 pr-2 sm:pb-8 sm:pr-7 lg:pt-2">
             <div className="relative rotate-[1.5deg]">
+              {/* Much shallower on phones. At 1.22:1 this illustration was
+                  ~390px of an 844px viewport — nearly half the first
+                  screen — which pushed both audience CTAs below the fold.
+                  It's decorative, so on mobile it becomes a banner. */}
               <div
-                className="relative aspect-[1.22/1] overflow-hidden border-[4px] border-white/80 bg-white/10 shadow-2xl sm:aspect-[1.28/1] lg:border-[5px] lg:shadow-[0_30px_80px_rgba(27,5,72,.34)]"
+                className="relative aspect-[1.9/1] overflow-hidden border-[4px] border-white/80 bg-white/10 shadow-2xl sm:aspect-[1.28/1] lg:border-[5px] lg:shadow-[0_30px_80px_rgba(27,5,72,.34)]"
                 style={{ clipPath: "polygon(7% 0, 100% 0, 94% 100%, 0 100%)", borderRadius: "28px" }}
               >
-                <AucklandSkylineArt
-                  shape="fill"
-                  className="h-full w-full -rotate-[1.5deg] scale-[1.08] object-cover"
-                />
+                {heroPhoto ? (
+                  <img
+                    src={heroPhoto}
+                    alt="Auckland city and harbour"
+                    className="h-full w-full -rotate-[1.5deg] scale-[1.08] object-cover"
+                    fetchPriority="high"
+                  />
+                ) : (
+                  <AucklandSkylineArt
+                    shape="fill"
+                    className="h-full w-full -rotate-[1.5deg] scale-[1.08] object-cover"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#241044]/16 via-transparent to-transparent" />
                 <div className="absolute right-3 top-3 -rotate-[1.5deg] rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#650fc7] shadow-sm sm:right-7 sm:top-6 sm:px-5 sm:py-2 sm:text-sm sm:tracking-[0.13em]">
                   Auckland first
                 </div>
-                <div className="absolute bottom-3 left-4 -rotate-[1.5deg] max-w-[70%] rounded-[14px] bg-[#321373]/92 px-4 py-3 text-white shadow-lg backdrop-blur-sm sm:bottom-6 sm:left-8 sm:max-w-[390px] sm:rounded-[18px] sm:px-6 sm:py-4">
+                <div className="absolute bottom-3 left-4 hidden -rotate-[1.5deg] max-w-[70%] rounded-[14px] bg-[#321373]/92 px-4 py-3 text-white shadow-lg backdrop-blur-sm sm:bottom-6 sm:left-8 sm:block sm:max-w-[390px] sm:rounded-[18px] sm:px-6 sm:py-4">
                   <p className={`${fredoka.className} text-base font-bold sm:text-xl sm:font-black`}>
                     Same city. More to discover.
                   </p>
@@ -210,53 +248,63 @@ export default function ComingSoonPage() {
         </div>
       </section>
 
-      {/* ------------------------------------------------- Two audience cards */}
-      <section className={`${shell} relative z-20 pt-6 lg:-mt-7 lg:pt-0`}>
-        <div className="grid gap-4 md:grid-cols-2 lg:gap-5">
-          <article className="flex items-start gap-4 rounded-[22px] border border-[#eee7f6] bg-white p-5 shadow-[0_12px_32px_rgba(40,7,88,.10)] sm:items-center sm:gap-5 lg:min-h-[190px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#ffe1f2] text-[#e81ea3] lg:h-16 lg:w-16">
-              <TicketIcon className="h-6 w-6 lg:h-8 lg:w-8" />
+      {/*
+        Two audience cards — the page's "which are you?" fork.
+
+        Each is a single link rather than a card containing a button, so
+        the whole tile is one large tap target and the inner pill is a
+        <span>. On phones they collapse to a compact row (icon, question,
+        one-line action) because at full height the business CTA sat 1.4
+        screens down on an iPhone 13 — a visitor saw the pitch and the
+        illustration, but no choice at all, in the first screen.
+      */}
+      <section className={`${shell} relative z-20 pt-4 sm:pt-6 lg:-mt-7 lg:pt-0`}>
+        <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:gap-5">
+          <a
+            href="#launch-updates"
+            className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#e81ea3]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[190px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ffe1f2] text-[#e81ea3] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
+              <TicketIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
             </span>
-            <div>
+            <span className="min-w-0 flex-1">
               <h2
-                className={`${fredoka.className} text-2xl font-bold leading-tight text-[#191333] sm:text-3xl`}
+                className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-2xl md:text-3xl`}
               >
                 Love a great deal?
               </h2>
-              <p className="mt-1.5 max-w-[500px] text-[15px] leading-6 text-slate-600 lg:mt-2">
+              <span className="mt-1.5 hidden max-w-[500px] text-[15px] leading-6 text-slate-600 sm:block lg:mt-2">
                 Join free to get early access to local offers when MegaDeal launches in Auckland.
-              </p>
-              <a
-                href="#launch-updates"
-                className="mt-4 inline-flex h-11 items-center rounded-full bg-[#e81ea3] px-6 text-sm font-extrabold text-white transition hover:bg-[#c7128a]"
-              >
+              </span>
+              <span className="mt-0.5 block text-[13px] font-extrabold text-[#e81ea3] sm:mt-4 sm:inline-flex sm:h-11 sm:items-center sm:rounded-full sm:bg-[#e81ea3] sm:px-6 sm:text-sm sm:text-white sm:transition sm:group-hover:bg-[#c7128a]">
                 Get launch updates →
-              </a>
-            </div>
-          </article>
-
-          <article className="flex items-start gap-4 rounded-[22px] border border-[#eee7f6] bg-white p-5 shadow-[0_12px_32px_rgba(40,7,88,.10)] sm:items-center sm:gap-5 lg:min-h-[190px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#650fc7] lg:h-16 lg:w-16">
-              <StoreIcon className="h-6 w-6 lg:h-8 lg:w-8" />
+              </span>
             </span>
-            <div>
+          </a>
+
+          <Link
+            href="/list-your-business"
+            className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#650fc7]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[190px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
+          >
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#650fc7] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
+              <StoreIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
+            </span>
+            <span className="min-w-0 flex-1">
               <h2
-                className={`${fredoka.className} text-2xl font-bold leading-tight text-[#191333] sm:text-3xl`}
+                className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-2xl md:text-3xl`}
               >
                 Run a local business?
               </h2>
-              <p className="mt-1.5 max-w-[540px] text-[15px] leading-6 text-slate-600 lg:mt-2">
+              <span className="mt-1.5 hidden max-w-[540px] text-[15px] leading-6 text-slate-600 sm:block lg:mt-2">
                 Join before launch and reach new customers, fill quieter periods and get up to 6
                 months advertising free with 0% commission.*
-              </p>
-              <Link
-                href="/list-your-business"
-                className="mt-4 inline-flex h-11 items-center rounded-full bg-[#650fc7] px-6 text-sm font-extrabold text-white transition hover:bg-[#530fa1]"
-              >
-                Claim my free advertising →
-              </Link>
-            </div>
-          </article>
+              </span>
+              <span className="mt-0.5 block text-[13px] font-extrabold text-[#650fc7] sm:mt-4 sm:inline-flex sm:h-11 sm:items-center sm:rounded-full sm:bg-[#650fc7] sm:px-6 sm:text-sm sm:text-white sm:transition sm:group-hover:bg-[#530fa1]">
+                <span className="sm:hidden">Up to 6 months free →</span>
+                <span className="hidden sm:inline">Claim my free advertising →</span>
+              </span>
+            </span>
+          </Link>
         </div>
       </section>
 
