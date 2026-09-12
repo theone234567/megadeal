@@ -21,8 +21,18 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# local env files and secrets
+# Broad on purpose: agents and wrangler both write credentials into this repo
+# root. `.dev.vars` is where `wrangler` keeps local secrets and `.env` is the
+# default many tools reach for, and neither was covered by `.env*.local` — a
+# Cloudflare API token dropped in either one would have been committed.
+# `.env.local.example` is force-listed back in; it holds only empty keys and
+# documents what the real file needs.
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+!.env.local.example
 
 # typescript
 *.tsbuildinfo
