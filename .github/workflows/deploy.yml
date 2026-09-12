@@ -1,0 +1,80 @@
+# Deploys the site to Cloudflare Workers on every push to the default
+# branch, and on demand from the Actions tab.
+#
+# Why this exists: the repo had no CI at all, so shipping anything meant
+# being at a computer with Cloudflare credentials and remembering to run
+# `npm run cf:deploy` by hand. A fix for a production outage — nobody
+# could complete a business signup — sat committed and deployable for
+# hours because of that gap, and the live site served a stale build in
+# the meantime.
+#
+# Setup, once: add two repository secrets under
+# Settings -> Secrets and variables -> Actions
+#
+#   CLOUDFLARE_API_TOKEN   a token with the "Edit Cloudflare Workers"
+#                          template permissions
+#   CLOUDFLARE_ACCOUNT_ID  from the Cloudflare dashboard URL, or
+#                          `npx wrangler whoami`
+#
+# Until both exist the deploy step is skipped, so merging this changes
+# nothing on its own.
+
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [claude/deal-website-storefront-9iqkg3]
+  workflow_dispatch:
+
+# Never let two deploys race; cancel an in-flight one if a newer push
+# lands, so the last commit is always what ends up live.
+concurrency:
+  group: deploy-cloudflare
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Fail here rather than halfway through a deploy: a type error
+      # should never reach the build step.
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Check deploy credentials
+        id: creds
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$TOKEN" ] && [ -n "$ACCOUNT" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID not set — built and verified, but not deployed."
+          fi
+
+      # Runs either way, so a broken build is caught even before the
+      # secrets are added.
+      - name: Build
+        run: npm run cf:build
+        env:
+          NEXT_PUBLIC_SITE_URL: https://megadeal.co.nz
+
+      - name: Deploy
+        if: steps.creds.outputs.ready == 'true'
+        run: npx opennextjs-cloudflare deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NEXT_PUBLIC_SITE_URL: https://megadeal.co.nz
