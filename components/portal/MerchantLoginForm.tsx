@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useWix } from "@/context/WixProvider";
 import { loginMember, submitVerificationCode, requestPasswordReset } from "@/lib/wixAuth";
+import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
 import PasswordField from "@/components/PasswordField";
 
 /**
@@ -13,6 +14,12 @@ import PasswordField from "@/components/PasswordField";
  * Custom Login API (client.auth.login) directly instead.
  */
 export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirectTo?: string }) {
+  // Warm reCAPTCHA while the visitor types, so obtaining the token adds
+  // nothing to the wait after they press sign in.
+  useEffect(() => {
+    preloadCaptcha();
+  }, []);
+
   const { client } = useWix();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +34,10 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     setError(null);
     setSubmitting(true);
     try {
-      const outcome = await loginMember(client, email, password);
+      const captchaToken = await getInvisibleCaptchaToken(
+        (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
+      );
+      const outcome = await loginMember(client, email, password, captchaToken);
       if (outcome.status === "success") {
         window.location.href = redirectTo;
       } else if (outcome.status === "verify") {

@@ -74,15 +74,38 @@ export async function registerMember(
   client: WixClient,
   email: string,
   password: string,
-  nickname: string
+  nickname: string,
+  /** Invisible-reCAPTCHA token. Wix rejects registration with
+   *  "missingCaptchaToken" when the site has CAPTCHA protection enabled
+   *  and none is supplied — see lib/recaptcha.ts. Passing undefined
+   *  simply reproduces the old behaviour, so a failure to obtain one can
+   *  never be worse than not trying. */
+  invisibleRecaptchaToken?: string | null
 ): Promise<AuthOutcome> {
-  const state = await client.auth.register({ email, password, profile: { nickname } });
+  const state = await client.auth.register({
+    email,
+    password,
+    profile: { nickname },
+    ...(invisibleRecaptchaToken ? { captchaTokens: { invisibleRecaptchaToken } } : {}),
+  });
   const outcome = await resolveState(client, state);
   return outcome.status === "verify" ? { ...outcome, email } : outcome;
 }
 
-export async function loginMember(client: WixClient, email: string, password: string): Promise<AuthOutcome> {
-  const state = await client.auth.login({ email, password });
+export async function loginMember(
+  client: WixClient,
+  email: string,
+  password: string,
+  /** Same CAPTCHA requirement as registration — Wix applies it to
+   *  loginV2 too, so without this an existing merchant can be locked out
+   *  of their own portal. Optional for the same reason as register. */
+  invisibleRecaptchaToken?: string | null
+): Promise<AuthOutcome> {
+  const state = await client.auth.login({
+    email,
+    password,
+    ...(invisibleRecaptchaToken ? { captchaTokens: { invisibleRecaptchaToken } } : {}),
+  });
   const outcome = await resolveState(client, state);
   return outcome.status === "verify" ? { ...outcome, email } : outcome;
 }

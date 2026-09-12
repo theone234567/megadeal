@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import PasswordField from "@/components/PasswordField";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
+import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
 
 function RequiredTag() {
   return <span className="ml-1 font-normal text-ember-600">Required</span>;
@@ -176,6 +177,12 @@ export default function MerchantSignupForm() {
   const [pendingEmail, setPendingEmail] = useState("");
   const [code, setCode] = useState("");
 
+  // Warm reCAPTCHA while the visitor is still filling the form, so
+  // obtaining the token adds nothing to the wait after they submit.
+  useEffect(() => {
+    preloadCaptcha();
+  }, []);
+
   function trackFormStarted() {
     if (startedRef.current) return;
     startedRef.current = true;
@@ -265,8 +272,18 @@ export default function MerchantSignupForm() {
 
     setSubmitting(true);
     try {
+      // Wix rejects registration with "missingCaptchaToken" when the site
+      // has CAPTCHA protection on, which is what was blocking every
+      // signup. The key comes from the SDK itself. If this returns null
+      // (script blocked, offline, visitor dismissed a challenge) we still
+      // attempt the registration — that is exactly the request we used to
+      // send, so it cannot make things worse.
+      const captchaToken = await getInvisibleCaptchaToken(
+        (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
+      );
+
       const outcome = await withTimeout(
-        registerMember(client, email, password, businessName),
+        registerMember(client, email, password, businessName, captchaToken),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try again — if your account was created, you can sign in to your portal instead."
       );
