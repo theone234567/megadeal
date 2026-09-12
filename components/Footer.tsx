@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { CATEGORIES } from "@/lib/categories";
 import SocialLinks from "./SocialLinks";
 import EmailSignupForm from "./EmailSignupForm";
+import Logo from "./Logo";
 
 /**
  * Before launch, /category/* pages render the full launched-site chrome
@@ -38,6 +39,17 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
   const hideOwnABusinessCta = pathname?.startsWith("/list-your-business") || isComingSoon;
+
+  if (isComingSoon) {
+    return (
+      <footer className="mt-0 border-t border-[#e5e7ef] bg-white">
+        <div className="mx-auto flex min-h-[92px] w-[94%] max-w-[960px] flex-col items-center justify-between gap-4 py-4 sm:flex-row">
+          <div><Logo className="text-[25px]" /><p className="mt-2 text-[11px] italic text-[#101d7d]">Eat. Do. Stay. Fix. For Less.</p></div>
+          <div className="text-center sm:text-right"><nav className="flex justify-center sm:justify-end gap-5 text-xs text-[#111d7c]"><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/contact">Contact</Link><SocialLinks /></nav><p className="mt-4 text-[10px] text-slate-400">© 2024 MegaDeal. All rights reserved.　 |　 Auckland, New Zealand</p></div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="mt-16 border-t border-slate-100 bg-slate-50">
