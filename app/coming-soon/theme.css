@@ -322,6 +322,19 @@
   pointer-events: none;
 }
 
+/* Business CTA copy: keep existing links/routes but present the stronger offer-led wording. */
+.coming-soon-soft main a[href="/list-your-business"] {
+  font-size: 0 !important;
+  white-space: nowrap;
+}
+
+.coming-soon-soft main a[href="/list-your-business"]::after {
+  content: "Claim my free advertising →";
+  font-size: .8125rem;
+  line-height: 1.25rem;
+  font-weight: 800;
+}
+
 .coming-soon-soft a,
 .coming-soon-soft button {
   transition-duration: 160ms;
