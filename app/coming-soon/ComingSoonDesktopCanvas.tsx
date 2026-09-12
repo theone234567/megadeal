@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import EmailSignupForm from "@/components/EmailSignupForm";
+import AucklandSkylineArt from "@/components/comingSoon/AucklandSkylineArt";
 import {
   DumbbellIcon,
   FlowerIcon,
@@ -83,11 +84,9 @@ export default function ComingSoonDesktopCanvas() {
                   className="relative aspect-[1.28/1] overflow-hidden border-[5px] border-white/80 bg-white/10 shadow-[0_30px_80px_rgba(27,5,72,.34)]"
                   style={{ clipPath: "polygon(7% 0, 100% 0, 94% 100%, 0 100%)", borderRadius: "38px" }}
                 >
-                  <img
-                    src="/brand/hero-auckland-final.svg"
-                    alt="Auckland skyline and Sky Tower"
+                  <AucklandSkylineArt
+                    shape="fill"
                     className="h-full w-full -rotate-[1.5deg] scale-[1.08] object-cover"
-                    fetchPriority="high"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#241044]/16 via-transparent to-transparent" />
                   <div className="absolute right-7 top-6 -rotate-[1.5deg] rounded-full bg-white px-5 py-2 text-sm font-extrabold uppercase tracking-[0.13em] text-[#650fc7] shadow-sm">
@@ -101,10 +100,10 @@ export default function ComingSoonDesktopCanvas() {
               </div>
 
               <img
-                src="/brand/megadeal-mascot-final.svg"
-                alt="MegaDeal deal-hunter elephant peeking into the Auckland window"
-                width={420}
-                height={420}
+                src="/brand/deal-hunter-elephant.svg"
+                alt="MegaDeal deal-hunter elephant holding a magnifying glass and a big deals tag"
+                width={360}
+                height={280}
                 className="pointer-events-none absolute -bottom-3 -right-8 z-30 w-[245px] select-none drop-shadow-[0_18px_24px_rgba(38,8,87,.28)] 2xl:w-[275px]"
                 fetchPriority="high"
               />

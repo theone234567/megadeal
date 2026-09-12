@@ -7,6 +7,7 @@ import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import { CheckIcon, MapPinIcon, StoreIcon, TicketIcon } from "@/components/icons";
 import ComingSoonDesktopCanvas from "./ComingSoonDesktopCanvas";
+import AucklandSkylineArt from "@/components/comingSoon/AucklandSkylineArt";
 
 const TITLE = "MegaDeal Auckland — Big Local Deals Are On The Way";
 const DESCRIPTION =
@@ -87,13 +88,9 @@ export default function ComingSoonPage() {
                   className="relative aspect-[1.22/1] overflow-hidden border-[4px] border-white/80 shadow-2xl"
                   style={{ clipPath: "polygon(7% 0, 100% 0, 94% 100%, 0 100%)", borderRadius: "28px" }}
                 >
-                  <img
-                    src="/brand/hero-auckland-final.svg"
-                    alt="Auckland skyline and Sky Tower"
-                    width={512}
-                    height={512}
+                  <AucklandSkylineArt
+                    shape="fill"
                     className="h-full w-full -rotate-[1.5deg] scale-[1.08] object-cover"
-                    fetchPriority="high"
                   />
                   <div className="absolute right-3 top-3 -rotate-[1.5deg] rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#650fc7]">
                     Auckland first
@@ -105,10 +102,10 @@ export default function ComingSoonPage() {
                 </div>
               </div>
               <img
-                src="/brand/megadeal-mascot-final.svg"
-                alt="MegaDeal deal-hunter elephant peeking into the Auckland window"
-                width={420}
-                height={420}
+                src="/brand/deal-hunter-elephant.svg"
+                alt="MegaDeal deal-hunter elephant holding a magnifying glass and a big deals tag"
+                width={360}
+                height={280}
                 className="pointer-events-none absolute -bottom-5 -right-8 z-20 w-[155px] drop-shadow-xl sm:w-[185px]"
                 fetchPriority="high"
               />

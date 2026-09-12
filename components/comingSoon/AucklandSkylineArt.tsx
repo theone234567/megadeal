@@ -7,10 +7,19 @@
  * (drop a file in public/images/ and replace this component's usage in
  * ComingSoonHero with a plain next/image).
  */
-export default function AucklandSkylineArt({ className = "" }: { className?: string }) {
+export default function AucklandSkylineArt({
+  className = "",
+  shape = "circle",
+}: {
+  className?: string;
+  /** "circle" crops to a circle (standalone use); "fill" fills its box so a
+   *  parent frame's own border-radius/clip-path does the cropping. */
+  shape?: "circle" | "fill";
+}) {
   return (
     <svg
       viewBox="0 0 400 400"
+      preserveAspectRatio="xMidYMid slice"
       className={className}
       role="img"
       aria-label="Illustration of the Auckland skyline and harbour at dusk"
@@ -30,7 +39,7 @@ export default function AucklandSkylineArt({ className = "" }: { className?: str
         </clipPath>
       </defs>
 
-      <g clipPath="url(#cs-circle)">
+      <g clipPath={shape === "circle" ? "url(#cs-circle)" : undefined}>
         <rect width="400" height="400" fill="url(#cs-sky)" />
 
         {/* distant buildings */}
