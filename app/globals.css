@@ -300,3 +300,25 @@ div:has(> img[alt^="Auckland CBD skyline"]) {
 img[alt^="Auckland CBD skyline"] {
   opacity: 0 !important;
 }
+
+/* Local-first equivalents of the former next/font/google classes. Keeping
+   these in the application stylesheet makes production builds deterministic
+   in environments that block fonts.googleapis.com. */
+.font-fredoka-variable {
+  --font-fredoka: "Arial Rounded MT Bold", "Trebuchet MS", Arial, sans-serif;
+}
+.font-jakarta-variable {
+  --font-jakarta: "Trebuchet MS", Arial, sans-serif;
+}
+.font-caveat-variable {
+  --font-caveat: "Segoe Print", "Bradley Hand", cursive;
+}
+.font-fredoka-local {
+  font-family: var(--font-fredoka);
+}
+.font-jakarta-local {
+  font-family: var(--font-jakarta);
+}
+.font-caveat-local {
+  font-family: var(--font-caveat);
+}

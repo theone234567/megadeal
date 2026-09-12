@@ -49,9 +49,9 @@ export default function Header() {
             viewport by 36px and scrolled the whole page sideways. The logo
             steps down and the button drops "Business" on the smallest
             screens, where the context is obvious anyway. */}
-        <div className="mx-auto flex min-h-[78px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-2 sm:gap-5 sm:px-8 lg:min-h-[96px] lg:px-10 xl:px-12">
+        <div className="mx-auto flex min-h-[78px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-2 sm:gap-5 sm:px-8 lg:min-h-[78px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
-            <Logo className="text-[26px] sm:text-[34px] lg:text-[40px]" />
+            <Logo className="text-[26px] sm:text-[34px] lg:text-[34px]" />
           </Link>
 
           <Link
