@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // Cloudflare/OpenNext was returning blank remote images through the
+    // Next image optimiser on the coming-soon page. Serve remote images
+    // directly so the Auckland hero and category photography render
+    // reliably in production.
+    unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "upload.wikimedia.org" },
