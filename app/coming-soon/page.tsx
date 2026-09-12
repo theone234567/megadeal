@@ -10,7 +10,6 @@ import EmailSignupForm from "@/components/EmailSignupForm";
 import SampleDealCard from "@/components/SampleDealCard";
 import { getSignupStats } from "@/lib/publicStats";
 import AucklandSkylineArt from "@/components/comingSoon/AucklandSkylineArt";
-import ComingSoonStickyCta from "@/components/comingSoon/ComingSoonStickyCta";
 import {
   CheckIcon,
   DumbbellIcon,
@@ -165,8 +164,7 @@ export default async function ComingSoonPage() {
     rawStats && rawStats.merchantCount >= MIN_APPROVED_BUSINESSES_TO_SHOW_STATS ? rawStats : null;
 
   return (
-    <main className={`${plusJakartaSans.className} overflow-x-hidden bg-white pb-16 text-[#171128] lg:pb-0`}>
-      <ComingSoonStickyCta />
+    <main className={`${plusJakartaSans.className} overflow-x-hidden bg-white text-[#171128]`}>
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -230,6 +228,32 @@ export default async function ComingSoonPage() {
                 )}
               </div>
             )}
+
+            {/*
+              Both audiences get a way to act without scrolling. This
+              replaced a bar that slid in on scroll: a CTA that is simply
+              there from the first frame beats one the visitor has to
+              trigger, and it reads as part of the page rather than an
+              overlay sitting on top of it.
+
+              Business first and filled, because signing up supply is what
+              the pre-launch period is for; the deal-hunter action is the
+              outline button beside it.
+            */}
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center lg:mt-7">
+              <Link
+                href="/list-your-business"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-[#e81ea3] px-7 text-sm font-extrabold text-white shadow-lg transition hover:bg-[#c7128a] active:scale-95 sm:h-[52px]"
+              >
+                Claim free advertising →
+              </Link>
+              <a
+                href="#launch-updates"
+                className="inline-flex h-12 items-center justify-center rounded-full border-2 border-white/70 px-7 text-sm font-extrabold text-white transition hover:border-white hover:bg-white/10 active:scale-95 sm:h-[52px]"
+              >
+                Get launch updates →
+              </a>
+            </div>
           </div>
 
           {/*
@@ -317,7 +341,7 @@ export default async function ComingSoonPage() {
         <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:gap-5">
           <a
             href="#launch-updates"
-            className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#e81ea3]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[190px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
+            className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#e81ea3]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[150px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
           >
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ffe1f2] text-[#e81ea3] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
               <TicketIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
@@ -331,7 +355,7 @@ export default async function ComingSoonPage() {
               <span className="mt-1.5 hidden max-w-[500px] text-[15px] leading-6 text-slate-600 sm:block lg:mt-2">
                 Join free to get early access to local offers when MegaDeal launches in Auckland.
               </span>
-              <span className="mt-0.5 block text-[13px] font-extrabold text-[#e81ea3] sm:mt-4 sm:inline-flex sm:h-11 sm:items-center sm:rounded-full sm:bg-[#e81ea3] sm:px-6 sm:text-sm sm:text-white sm:transition sm:group-hover:bg-[#c7128a]">
+              <span className="mt-0.5 block text-[13px] font-extrabold text-[#e81ea3] underline-offset-4 group-hover:underline sm:mt-2.5 sm:text-sm">
                 Get launch updates →
               </span>
             </span>
@@ -339,7 +363,7 @@ export default async function ComingSoonPage() {
 
           <Link
             href="/list-your-business"
-            className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#650fc7]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[190px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
+            className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#650fc7]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[150px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
           >
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#650fc7] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
               <StoreIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
@@ -354,7 +378,7 @@ export default async function ComingSoonPage() {
                 Join before launch and reach new customers, fill quieter periods and get up to 6
                 months advertising free with 0% commission.*
               </span>
-              <span className="mt-0.5 block text-[13px] font-extrabold text-[#650fc7] sm:mt-4 sm:inline-flex sm:h-11 sm:items-center sm:rounded-full sm:bg-[#650fc7] sm:px-6 sm:text-sm sm:text-white sm:transition sm:group-hover:bg-[#530fa1]">
+              <span className="mt-0.5 block text-[13px] font-extrabold text-[#650fc7] underline-offset-4 group-hover:underline sm:mt-2.5 sm:text-sm">
                 <span className="sm:hidden">Up to 6 months free →</span>
                 <span className="hidden sm:inline">Claim my free advertising →</span>
               </span>
