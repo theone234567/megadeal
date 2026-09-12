@@ -286,3 +286,17 @@ body {
 .animate-elephant-bubble {
   animation: elephant-bubble-pop 1.5s ease-out forwards;
 }
+
+/* Coming-soon hero: use a direct free-to-use Auckland Unsplash photo as a
+   resilient CSS background. This bypasses Next/Image's remote optimisation
+   path on Cloudflare, which was leaving the hero as the lavender fallback. */
+div:has(> img[alt^="Auckland CBD skyline"]) {
+  background-image: url("https://images.unsplash.com/photo-1618130075625-36e167d7c9aa?auto=format&fit=crop&fm=jpg&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&ixlib=rb-4.1.0&q=60&w=3000");
+  background-size: cover;
+  background-position: center 48%;
+  background-repeat: no-repeat;
+}
+
+img[alt^="Auckland CBD skyline"] {
+  opacity: 0 !important;
+}
