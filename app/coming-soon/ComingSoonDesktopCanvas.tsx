@@ -217,40 +217,40 @@ export default function ComingSoonDesktopCanvas() {
           </div>
         </section>
 
-        <section className="px-6 pb-8 xl:px-10">
+        <section className="px-6 pb-9 xl:px-10">
           <div className="mx-auto grid w-full max-w-[1320px] grid-cols-2 items-stretch gap-6">
-            <div className="rounded-[24px] bg-[#fff1f8] p-8">
-              <h2 className="font-display text-[31px] font-black leading-tight text-[#18122d]">Be first in line for launch deals</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">Get early access to the best local offers in Auckland.</p>
-              <div className="mt-5 max-w-[520px]">
+            <div className="min-h-[330px] rounded-[24px] bg-[#fff0f7] px-10 py-9">
+              <h2 className="max-w-[520px] font-display text-[31px] font-black leading-[1.25] text-[#18122d]">Be first in line for launch deals</h2>
+              <p className="mt-3 text-[15px] leading-6 text-slate-600">Get early access to the best local offers in Auckland.</p>
+              <div className="mt-5 max-w-[560px]">
                 <EmailSignupForm
                   audience="customer"
                   source="coming-soon-desktop-inline"
                   buttonLabel="Get launch updates →"
                   accent="ember"
                   surface="plain"
-                  layout="stacked"
+                  layout="row"
                 />
               </div>
             </div>
 
-            <div className="rounded-[24px] bg-[#f4efff] p-8">
-              <h2 className="font-display text-[31px] font-black leading-tight text-[#18122d]">Fill quiet times. Grow local customers.</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">Join before launch and be part of something big in Auckland.</p>
-              <ul className="mt-5 grid grid-cols-2 gap-x-8 gap-y-4 text-sm font-semibold text-[#292243]">
+            <div className="min-h-[330px] rounded-[24px] bg-[#f3edff] px-10 py-9">
+              <h2 className="max-w-[550px] font-display text-[31px] font-black leading-[1.25] text-[#18122d]">Fill quiet times. Grow local customers.</h2>
+              <p className="mt-3 text-[15px] leading-6 text-slate-600">Join before launch and be part of something big in Auckland.</p>
+              <ul className="mt-6 grid grid-cols-2 gap-x-8 gap-y-5 text-[15px] font-semibold leading-6 text-[#18122d]">
                 {[
                   "0% commission on every sale",
                   "Up to 6 months advertising free*",
                   "Customers deal directly with you",
                   "A simple way to fill quieter periods",
                 ].map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 leading-5">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#e81ea3] text-[11px] font-black text-white">✓</span>
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="mt-[1px] shrink-0 font-black text-[#18122d]">✓</span>
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
-              <Link href="/list-your-business" className="mt-6 inline-flex h-11 items-center rounded-full bg-[#650fc7] px-6 text-sm font-extrabold text-white transition hover:bg-[#530fa1]">
+              <Link href="/list-your-business" className="mt-6 inline-flex h-12 items-center rounded-full bg-[#6d24dc] px-7 text-sm font-extrabold text-white transition hover:bg-[#530fa1]">
                 Claim my free advertising →
               </Link>
             </div>
@@ -258,16 +258,16 @@ export default function ComingSoonDesktopCanvas() {
         </section>
 
         <section className="px-6 pb-14 xl:px-10">
-          <div className="mx-auto flex w-full max-w-[1320px] items-center justify-between gap-8 rounded-[22px] bg-[#f5f7fb] px-7 py-6 ring-1 ring-[#e5e8ef]">
+          <div className="mx-auto flex min-h-[120px] w-full max-w-[1320px] items-center justify-between gap-10 rounded-[22px] bg-[#f5f7fb] px-7 py-6 ring-1 ring-[#e5e8ef]">
             <div className="flex items-center gap-4">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#650fc7]"><MapPinIcon className="h-6 w-6" /></span>
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#6d24dc]"><MapPinIcon className="h-6 w-6" /></span>
               <div>
                 <h2 className="font-display text-[24px] font-black text-[#18122d]">Our launch plan</h2>
-                <p className="mt-1 text-sm text-slate-500">Auckland first, then more Kiwi cities.</p>
+                <p className="mt-1 text-[15px] text-slate-500">Auckland first, then more Kiwi cities.</p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center justify-end gap-3 text-sm font-extrabold text-[#1f1836]">
-              <span className="rounded-full bg-[#e81ea3] px-4 py-2 text-white">Auckland • first</span>
+            <div className="flex flex-wrap items-center justify-end gap-x-7 gap-y-3 text-[15px] font-extrabold text-[#1f1836]">
+              <span className="text-[#e81ea3]">Auckland • first</span>
               <span>Wellington</span>
               <span>Christchurch</span>
               <span>Queenstown</span>
