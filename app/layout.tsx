@@ -9,7 +9,7 @@ import GoogleAnalytics from "@/components/GoogleAnalytics";
 import ScrollDepthTracker from "@/components/ScrollDepthTracker";
 import EmailCapturePopup from "@/components/EmailCapturePopup";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/siteConfig";
+import { SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export const metadata: Metadata = {
@@ -112,7 +112,7 @@ export default function RootLayout({
         <WixProvider>
           <Header />
           {children}
-          <Footer />
+          <Footer siteLaunched={SITE_LAUNCHED} />
         </WixProvider>
         <EmailCapturePopup />
       </body>

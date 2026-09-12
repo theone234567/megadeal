@@ -6,15 +6,35 @@ import { CATEGORIES } from "@/lib/categories";
 import SocialLinks from "./SocialLinks";
 import EmailSignupForm from "./EmailSignupForm";
 
-const FOOTER_CATEGORIES = [
-  ...CATEGORIES.map((category) => ({
-    name: category.name,
-    href: `/category/${encodeURIComponent(category.name)}`,
-  })),
-  { name: "Home & Car", href: "/coming-soon#categories" },
-];
+/**
+ * Before launch, /category/* pages render the full launched-site chrome
+ * over an empty "No deals yet" grid, so linking there from the footer
+ * dead-ends every visitor on the pre-launch site. Until we're live, point
+ * the whole column at the coming-soon page's category preview instead —
+ * which is already what "Home & Car" does, since it has no category page
+ * at all (it isn't in lib/categories.ts).
+ */
+function footerCategories(siteLaunched: boolean) {
+  return [
+    ...CATEGORIES.map((category) => ({
+      name: category.name,
+      href: siteLaunched
+        ? `/category/${encodeURIComponent(category.name)}`
+        : "/coming-soon#categories",
+    })),
+    { name: "Home & Car", href: "/coming-soon#categories" },
+  ];
+}
 
-export default function Footer() {
+/**
+ * `siteLaunched` is passed in from the server layout rather than imported
+ * from siteConfig: SITE_LAUNCHED reads a server-only env var (no
+ * NEXT_PUBLIC_ prefix), so importing it into this client component would
+ * evaluate to `false` in the browser bundle no matter what the real
+ * setting is — and disagree with the server render.
+ */
+export default function Footer({ siteLaunched = false }: { siteLaunched?: boolean }) {
+  const FOOTER_CATEGORIES = footerCategories(siteLaunched);
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
   const hideOwnABusinessCta = pathname?.startsWith("/list-your-business") || isComingSoon;

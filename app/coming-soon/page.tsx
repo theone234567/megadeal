@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import EmailSignupForm from "@/components/EmailSignupForm";
@@ -53,31 +53,37 @@ const shell = "mx-auto w-full max-w-[1320px] px-5 sm:px-6 xl:px-10";
 const categories = [
   {
     name: "Food & Drink",
+    hasCategoryPage: true,
     icon: UtensilsIcon,
     image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=720&q=72",
   },
   {
     name: "Beauty & Spa",
+    hasCategoryPage: true,
     icon: FlowerIcon,
     image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=720&q=72",
   },
   {
     name: "Things To Do",
+    hasCategoryPage: true,
     icon: TicketIcon,
     image: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=720&q=72",
   },
   {
     name: "Travel & Getaways",
+    hasCategoryPage: true,
     icon: SuitcaseIcon,
     image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=720&q=72",
   },
   {
     name: "Health & Fitness",
+    hasCategoryPage: true,
     icon: DumbbellIcon,
     image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=720&q=72",
   },
   {
     name: "Home & Car",
+    hasCategoryPage: false,
     icon: WrenchIcon,
     image: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=720&q=72",
   },
@@ -320,10 +326,21 @@ export default function ComingSoonPage() {
           <p className="mt-1 text-sm text-slate-500">A taste of what&apos;s coming to Auckland.</p>
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:mt-6 lg:grid-cols-6 lg:gap-4">
-          {categories.map(({ name, icon: Icon, image }) => (
+          {categories.map(({ name, hasCategoryPage, icon: Icon, image }) => {
+            // Before launch these tiles must NOT go to /category/*. Those
+            // pages render the full launched-site chrome (search, city
+            // picker, category nav) above an empty "No deals ... yet" grid
+            // — exactly what the coming-soon gate exists to hide — so the
+            // most eye-catching block on the page was quietly leaking
+            // visitors out of the funnel into a dead end. Point them at the
+            // launch-updates form instead, which is what someone browsing
+            // categories pre-launch actually wants.
+            const live = SITE_LAUNCHED && hasCategoryPage;
+            return (
             <Link
               key={name}
-              href={name === "Home & Car" ? "/coming-soon#categories" : `/category/${encodeURIComponent(name)}`}
+              href={live ? `/category/${encodeURIComponent(name)}` : "#launch-updates"}
+              aria-label={live ? `${name} deals` : `${name} — get notified when MegaDeal launches`}
               className="group overflow-hidden rounded-[18px] border border-[#e9e6f0] bg-white shadow-[0_8px_22px_rgba(28,18,54,.08)] transition hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(28,18,54,.12)]"
             >
               {/* The tinted background is load-bearing, not decoration: if the
@@ -347,7 +364,8 @@ export default function ComingSoonPage() {
                 </span>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -423,8 +441,16 @@ export default function ComingSoonPage() {
             ))}
           </div>
         </div>
+        {/* The page makes a prominent "up to 6 months advertising free*"
+            claim in three places, so the asterisk has to actually resolve
+            to the conditions rather than dead-ending as grey text. */}
         <p className="mt-4 text-[11px] text-slate-400">
-          *T&amp;Cs apply for eligible new business listings.
+          *Up to 6 months free advertising is for eligible new business listings approved before
+          launch.{" "}
+          <Link href="/terms" className="underline hover:text-[#650fc7]">
+            Terms and Conditions
+          </Link>{" "}
+          apply.
         </p>
       </section>
     </main>

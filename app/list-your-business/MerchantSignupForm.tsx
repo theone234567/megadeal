@@ -345,6 +345,7 @@ export default function MerchantSignupForm() {
             id="signup-businessName"
             required
             name="businessName"
+            autoComplete="organization"
             type="text"
             placeholder="e.g. Harbourside Bistro"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
@@ -360,6 +361,7 @@ export default function MerchantSignupForm() {
             id="signup-contactName"
             required
             name="contactName"
+            autoComplete="name"
             type="text"
             placeholder="Full name"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
@@ -424,6 +426,7 @@ export default function MerchantSignupForm() {
             id="signup-contactPhone"
             required
             name="contactPhone"
+            autoComplete="tel"
             type="tel"
             placeholder="021 234 5678"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
@@ -439,6 +442,7 @@ export default function MerchantSignupForm() {
             id="signup-legalBusinessName"
             required
             name="legalBusinessName"
+            autoComplete="organization"
             type="text"
             placeholder="e.g. Harbourside Bistro Limited"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
@@ -467,6 +471,7 @@ export default function MerchantSignupForm() {
           <input
             id="signup-couponCode"
             name="couponCode"
+            autoComplete="off"
             type="text"
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
