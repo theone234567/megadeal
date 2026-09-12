@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 220" role="img" aria-labelledby="title desc">
+  <title id="title">MegaDeal</title>
+  <desc id="desc">MegaDeal wordmark with a purple deal-hunter elephant and pink Deal tag.</desc>
+  <defs>
+    <linearGradient id="mega" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7A17F0"/>
+      <stop offset="1" stop-color="#5D16C7"/>
+    </linearGradient>
+    <linearGradient id="deal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FB2AA9"/>
+      <stop offset="1" stop-color="#E81EA3"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-30%" width="150%" height="170%">
+      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#3D126E" flood-opacity=".16"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <image href="/brand/deal-hunter-elephant.svg" x="0" y="-7" width="245" height="205" preserveAspectRatio="xMidYMid meet"/>
+    <text x="204" y="146" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-size="112" font-weight="900" letter-spacing="-6" fill="url(#mega)">Mega</text>
+    <path d="M534 48H792c18 0 31 12 31 30v84c0 18-13 30-31 30H534c-18 0-31-12-31-30V78c0-18 13-30 31-30Z" fill="url(#deal)"/>
+    <path d="M792 48l48 72-48 72Z" fill="url(#deal)"/>
+    <circle cx="802" cy="120" r="8.5" fill="#fff" opacity=".9"/>
+    <text x="529" y="151" font-family="Arial Rounded MT Bold, Arial, sans-serif" font-size="103" font-weight="900" letter-spacing="-5" fill="#fff">Deal</text>
+  </g>
+
+  <path d="M825 35l11-18M842 44l18-8M820 17l-1-16" stroke="#FF2AA8" stroke-width="8" stroke-linecap="round"/>
+</svg>
