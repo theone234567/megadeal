@@ -48,7 +48,7 @@ export default function Header() {
         <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-5 py-4 sm:px-8 lg:px-10 lg:py-5">
           <Link href="/coming-soon" aria-label="MegaDeal coming soon" className="block shrink-0">
             <Image
-              src="/brand/megadeal-logo-bold.png"
+              src="/brand/megadeal-logo-bold.svg"
               alt="MegaDeal"
               width={900}
               height={300}
