@@ -7,6 +7,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import ElephantMascot from "@/components/ElephantMascot";
 import { SearchIcon, UserIcon } from "@/components/icons";
+import { fredoka } from "@/lib/fonts";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
@@ -44,22 +45,29 @@ export default function Header() {
 
   if (isComingSoon) {
     return (
-      <header className="relative z-40 border-b border-[#eee9f3] bg-white">
-        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-5 py-4 sm:px-8 lg:px-10 lg:py-5">
-          <Link href="/coming-soon" aria-label="MegaDeal coming soon" className="block shrink-0">
+      <header className="relative z-40 border-b border-[#e8e0f4] bg-white">
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-5 py-3.5 sm:px-8 lg:px-10 lg:py-4 xl:max-w-[1320px] 2xl:max-w-[1460px]">
+          <Link href="/coming-soon" aria-label="MegaDeal coming soon" className="group inline-flex shrink-0 items-center gap-2.5">
+            <span className="block">
+              <span className={`${fredoka.className} flex items-center leading-none tracking-[-0.045em]`}>
+                <span className="text-[30px] font-bold text-[#35117e] sm:text-[34px] lg:text-[37px]">Mega</span>
+                <span className="ml-1 -rotate-2 rounded-[10px] bg-[#ef159c] px-2.5 py-1 text-[28px] font-bold text-white shadow-sm sm:text-[32px] lg:text-[35px]">Deal</span>
+              </span>
+              <span className="mt-1 block pl-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#6c5d8c] sm:text-[11px]">Local together.</span>
+            </span>
             <Image
-              src="/brand/megadeal-logo.webp"
-              alt="MegaDeal"
-              width={420}
-              height={126}
+              src="/brand/megadeal-elephant.svg"
+              alt=""
+              width={180}
+              height={190}
               priority
-              className="h-auto w-[205px] object-contain sm:w-[235px] lg:w-[250px]"
+              className="h-auto w-[48px] transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-105 sm:w-[55px] lg:w-[61px]"
             />
           </Link>
 
           <Link
             href="/portal"
-            className="shrink-0 rounded-full border border-[#dcd3eb] px-4 py-2 text-xs font-extrabold text-[#30107d] transition hover:border-[#30107d] hover:bg-[#f7f4fc] sm:text-sm"
+            className="shrink-0 rounded-full border border-[#d8ceeb] bg-white px-4 py-2 text-xs font-extrabold text-[#35117e] transition hover:border-[#35117e] hover:bg-[#f7f3ff] sm:text-sm"
           >
             Business sign in →
           </Link>
