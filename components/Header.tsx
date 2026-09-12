@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
-import ElephantMascot from "@/components/ElephantMascot";
+import Logo from "@/components/Logo";
 import { SearchIcon, UserIcon } from "@/components/icons";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
@@ -16,10 +16,6 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
-  // The two pages real visitors land on before launch — coming-soon and the
-  // business pitch — should carry the same brand mark, rather than one
-  // showing the deal-hunter logo and the other the text wordmark.
-  const usesBrandLogo = isComingSoon || pathname === "/list-your-business";
 
   const [profileComplete, setProfileComplete] = useState(true);
   useEffect(() => {
@@ -55,17 +51,7 @@ export default function Header() {
             screens, where the context is obvious anyway. */}
         <div className="mx-auto flex min-h-[78px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-2 sm:gap-5 sm:px-8 lg:min-h-[96px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
-            {/* megadeal-logo-final.svg was a wrapper around fabricated
-                base64 that no browser can decode — this is the real
-                hand-authored vector logo. */}
-            <img
-              src="/brand/megadeal-logo-deal-hunter.svg"
-              alt="MegaDeal"
-              width={860}
-              height={220}
-              className="block h-auto w-[172px] max-w-full sm:w-[255px] lg:w-[300px] xl:w-[320px]"
-              fetchPriority="high"
-            />
+            <Logo className="text-[26px] sm:text-[34px] lg:text-[40px]" />
           </Link>
 
           <Link
@@ -84,26 +70,9 @@ export default function Header() {
     <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-y-1">
-          {usesBrandLogo ? (
-            <Link href="/" aria-label="MegaDeal home" className="min-w-0 shrink">
-              <img
-                src="/brand/megadeal-logo-deal-hunter.svg"
-                alt="MegaDeal"
-                width={860}
-                height={220}
-                className="block h-auto w-[172px] max-w-full sm:w-[210px] lg:w-[240px]"
-                fetchPriority="high"
-              />
-            </Link>
-          ) : (
-            <Link href="/" className="flex items-center gap-0.5 font-display">
-              <span className="animate-wordmark-shake items-center gap-0.5">
-                <span className="text-[1.7rem] font-extrabold tracking-tight text-brand-700">Mega</span>
-                <span className="-rotate-2 rounded-full bg-ember-500 px-2.5 py-0.5 text-[1.7rem] font-extrabold tracking-tight text-white shadow-card">Deal</span>
-              </span>
-              <ElephantMascot className="ml-1.5 -rotate-3" />
-            </Link>
-          )}
+          <Link href="/" aria-label="MegaDeal home" className="min-w-0 shrink">
+            <Logo className="text-[24px] sm:text-[28px]" />
+          </Link>
 
           <Link href="/portal" className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-brand-700">
             <span className="relative">
