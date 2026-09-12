@@ -44,14 +44,14 @@ export default function Header() {
   if (isComingSoon) {
     return (
       <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
-        <div className="mx-auto flex min-h-[78px] w-full max-w-[1500px] items-center justify-between gap-5 px-5 py-2 sm:px-8 lg:min-h-[92px] lg:px-10 xl:px-12">
+        <div className="mx-auto flex min-h-[78px] w-full max-w-[1500px] items-center justify-between gap-5 px-5 py-2 sm:px-8 lg:min-h-[96px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="shrink-0">
             <img
-              src="/brand/megadeal-logo-exact.webp"
+              src="/brand/megadeal-logo-final.svg"
               alt="MegaDeal"
               width={600}
               height={139}
-              className="block h-auto w-[205px] sm:w-[235px] lg:w-[275px] xl:w-[300px]"
+              className="block h-auto w-[220px] sm:w-[255px] lg:w-[300px] xl:w-[320px]"
               fetchPriority="high"
             />
           </Link>
