@@ -44,12 +44,12 @@ export default function Header() {
   if (isComingSoon) {
     return (
       <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
-        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-6 px-5 py-3 sm:px-8 lg:px-10 lg:py-3.5 xl:max-w-[1260px] 2xl:max-w-[1360px]">
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-5 py-3 sm:px-8 lg:px-10 lg:py-3.5 xl:max-w-[1260px]">
           <div aria-label="MegaDeal" className="shrink-0">
             <img
-              src="/brand/megadeal-logo-hunter.webp"
+              src="/brand/megadeal-logo-deal-hunter.svg"
               alt="MegaDeal"
-              className="block h-auto w-[210px] sm:w-[250px] lg:w-[275px]"
+              className="block h-auto w-[235px] sm:w-[285px] lg:w-[310px]"
             />
           </div>
 
