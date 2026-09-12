@@ -1,12 +1,12 @@
 .coming-soon-soft {
-  --md-purple: #341184;
+  --md-purple: #35117e;
+  --md-purple-2: #4a1598;
   --md-purple-text: #2f2860;
-  --md-pink: #ff2ca7;
-  --md-pink-2: #f2199c;
-  --md-lavender: #f6efff;
-  --md-cream: #fff8f3;
-  --md-soft: #efe7ff;
-  --md-border: #e9dff5;
+  --md-pink: #ef159c;
+  --md-pink-2: #d90f8b;
+  --md-lavender: #f5f0ff;
+  --md-soft: #eee7ff;
+  --md-border: #e5ddef;
   --md-green: #14a66f;
 }
 
@@ -15,11 +15,86 @@
   color: var(--md-purple-text) !important;
 }
 
-/* Hero cards: return to the softer launch palette without changing layout or copy. */
-.coming-soon-soft main > section:first-of-type .mt-7.grid > div:first-child {
-  background: var(--md-lavender) !important;
-  border-color: var(--md-border) !important;
-  box-shadow: 0 10px 28px rgba(52, 17, 132, 0.08) !important;
+/* HERO — intentionally mirrors /list-your-business: bold purple field,
+   white type, energetic pink accent, and white conversion cards. */
+.coming-soon-soft main > section:first-of-type {
+  position: relative;
+  background: var(--md-purple) !important;
+  color: #fff !important;
+  padding-top: 1.25rem !important;
+  padding-bottom: 2.5rem !important;
+}
+
+.coming-soon-soft main > section:first-of-type::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 82% 12%, rgba(255,255,255,.10), transparent 26rem),
+    radial-gradient(circle at 8% 85%, rgba(239,21,156,.12), transparent 25rem);
+}
+
+.coming-soon-soft main > section:first-of-type > div {
+  position: relative;
+  z-index: 1;
+}
+
+.coming-soon-soft main > section:first-of-type > div > .grid:first-child > div:first-child > p:first-child {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: .45rem .8rem;
+  border-radius: 999px;
+  background: var(--md-pink) !important;
+  color: #fff !important;
+  letter-spacing: .14em !important;
+  box-shadow: 0 8px 22px rgba(20, 4, 52, .18);
+}
+
+.coming-soon-soft main > section:first-of-type h1 {
+  color: #fff !important;
+  text-shadow: 0 3px 18px rgba(24, 5, 60, .14);
+}
+
+.coming-soon-soft main > section:first-of-type h1 + span {
+  background: var(--md-pink) !important;
+}
+
+.coming-soon-soft main > section:first-of-type > div > .grid:first-child > div:first-child > div.mt-5 {
+  color: #e9e1f9 !important;
+}
+
+.coming-soon-soft main > section:first-of-type > div > .grid:first-child > div:first-child > div.mt-5 p:first-child {
+  color: #fff !important;
+}
+
+/* Two clear paths on the purple hero. */
+.coming-soon-soft main > section:first-of-type .mt-7.grid > div:first-child,
+.coming-soon-soft main > section:first-of-type .mt-7.grid > div:nth-child(2) {
+  background: #fff !important;
+  color: var(--md-purple-text) !important;
+  border: 1px solid rgba(255,255,255,.65) !important;
+  box-shadow: 0 18px 40px rgba(19, 4, 53, .22) !important;
+}
+
+.coming-soon-soft main > section:first-of-type .mt-7.grid > div:first-child > span {
+  background: var(--md-soft) !important;
+  color: var(--md-purple) !important;
+}
+
+.coming-soon-soft main > section:first-of-type .mt-7.grid > div:nth-child(2) > span {
+  background: #fde6f4 !important;
+  color: var(--md-pink) !important;
+}
+
+.coming-soon-soft main > section:first-of-type .mt-7.grid h2,
+.coming-soon-soft main > section:first-of-type .mt-7.grid strong {
+  color: var(--md-purple) !important;
+}
+
+.coming-soon-soft main > section:first-of-type .mt-7.grid p {
+  color: #54486f !important;
 }
 
 .coming-soon-soft main > section:first-of-type .mt-7.grid > div:first-child > a {
@@ -31,58 +106,74 @@
   background: var(--md-pink-2) !important;
 }
 
-.coming-soon-soft main > section:first-of-type .mt-7.grid > div:nth-child(2) {
-  background: var(--md-cream) !important;
-  color: var(--md-purple-text) !important;
-  box-shadow: 0 10px 28px rgba(52, 17, 132, 0.08) !important;
-  border: 1px solid #f2e6df !important;
-}
-
-.coming-soon-soft main > section:first-of-type .mt-7.grid > div:nth-child(2) > span {
-  background: #fde4f3 !important;
-  color: var(--md-pink-2) !important;
-}
-
-.coming-soon-soft main > section:first-of-type .mt-7.grid > div:nth-child(2) > h2,
-.coming-soon-soft main > section:first-of-type .mt-7.grid > div:nth-child(2) strong {
-  color: var(--md-purple) !important;
-}
-
-.coming-soon-soft main > section:first-of-type .mt-7.grid > div:nth-child(2) > p {
-  color: #54486f !important;
-}
-
 .coming-soon-soft main > section:first-of-type .mt-7.grid > div:nth-child(2) > a {
   background: var(--md-purple) !important;
   color: #fff !important;
 }
 
-/* Benefit row. */
-.coming-soon-soft main > section:first-of-type .mt-8.grid {
-  background: #fff !important;
-  border-color: var(--md-border) !important;
+.coming-soon-soft main > section:first-of-type .mt-7.grid > div:nth-child(2) > a:hover {
+  background: var(--md-purple-2) !important;
 }
 
-/* How MegaDeal will work: pale lavender instead of a heavy dark block. */
+/* Auckland image: crisp white frame and a larger mascot sticker overlapping it. */
+.coming-soon-soft main > section:first-of-type div:has(> img[alt^="Auckland CBD skyline"]) {
+  border: 7px solid rgba(255,255,255,.16) !important;
+  box-shadow: 0 26px 64px rgba(18, 4, 50, .30) !important;
+}
+
+.coming-soon-soft main > section:first-of-type div:has(> button[aria-label="Boop the MegaDeal elephant"]) {
+  right: -.6rem !important;
+  bottom: -.9rem !important;
+  width: 9.5rem !important;
+  height: 10rem !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.coming-soon-soft button[aria-label="Boop the MegaDeal elephant"] {
+  width: 9.5rem !important;
+  height: 10rem !important;
+  border-radius: 0 !important;
+  background: url("/brand/megadeal-elephant.svg") center bottom / contain no-repeat !important;
+  filter: drop-shadow(0 10px 10px rgba(27, 6, 70, .25));
+}
+
+.coming-soon-soft button[aria-label="Boop the MegaDeal elephant"] > svg {
+  display: none !important;
+}
+
+/* Benefits sit like a white trust bar inside the purple hero. */
+.coming-soon-soft main > section:first-of-type .mt-8.grid {
+  background: #fff !important;
+  border-color: rgba(255,255,255,.28) !important;
+  box-shadow: 0 16px 38px rgba(19, 4, 53, .18) !important;
+}
+
+/* HOW IT WORKS — closer to the business page: white / slate section, purple type. */
 .coming-soon-soft main > section:nth-of-type(2) > div {
-  background: var(--md-lavender) !important;
+  position: relative;
+  overflow: hidden;
+  background: #f7f5fb !important;
   color: var(--md-purple-text) !important;
   border: 1px solid var(--md-border) !important;
   box-shadow: none !important;
 }
 
-.coming-soon-soft main > section:nth-of-type(2) h2 {
+.coming-soon-soft main > section:nth-of-type(2) h2,
+.coming-soon-soft main > section:nth-of-type(2) h3 {
   color: var(--md-purple) !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(2) > div > div:first-child > p {
-  color: #71668a !important;
+  color: #6f6585 !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(2) .mt-6.grid > div {
   background: #fff !important;
   border: 1px solid var(--md-border) !important;
-  box-shadow: 0 8px 20px rgba(52, 17, 132, 0.05) !important;
+  box-shadow: 0 8px 24px rgba(53,17,126,.06) !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(2) .mt-6.grid > div > span:first-child {
@@ -95,51 +186,69 @@
   color: var(--md-purple) !important;
 }
 
-.coming-soon-soft main > section:nth-of-type(2) .mt-6.grid h3 {
-  color: var(--md-purple) !important;
-}
-
 .coming-soon-soft main > section:nth-of-type(2) .mt-6.grid p {
   color: #5c5275 !important;
 }
 
-/* Email signup panel. */
+/* Category cards stay clean and product-led. */
+.coming-soon-soft main > section:nth-of-type(3) h2 {
+  color: var(--md-purple) !important;
+}
+
+/* Customer signup mirrors the light content blocks on /list-your-business. */
 .coming-soon-soft main > section:nth-of-type(4) > div {
-  background: var(--md-lavender) !important;
+  position: relative;
+  overflow: hidden;
+  background: #f7f5fb !important;
   border-color: var(--md-border) !important;
 }
 
+.coming-soon-soft main > section:nth-of-type(4) > div::after {
+  content: "";
+  position: absolute;
+  right: 1.1rem;
+  bottom: -.7rem;
+  width: 5.8rem;
+  height: 6.2rem;
+  background: url("/brand/megadeal-elephant.svg") center / contain no-repeat;
+  opacity: .14;
+  pointer-events: none;
+}
+
 .coming-soon-soft main > section:nth-of-type(4) > div > div:last-child {
+  position: relative;
+  z-index: 1;
   background: #fff !important;
   border-color: var(--md-border) !important;
 }
 
-/* Business section: keep the structure and emphasis, soften the visual weight. */
+/* Business conversion block intentionally returns to the same bold purple
+   family as /list-your-business. */
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child {
-  background: var(--md-cream) !important;
-  color: var(--md-purple-text) !important;
-  border: 1px solid #f1e5dd !important;
-  box-shadow: 0 14px 36px rgba(52, 17, 132, 0.08) !important;
+  background: var(--md-purple) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 18px 45px rgba(53,17,126,.20) !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child > p:first-child {
-  color: var(--md-pink-2) !important;
+  color: #ff77c2 !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child h2,
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child strong {
-  color: var(--md-purple) !important;
+  color: #fff !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child > p,
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child li,
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child > div:last-of-type > span {
-  color: #54486f !important;
+  color: #e9e1f9 !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child .mt-6.grid > div:first-child {
-  background: var(--md-lavender) !important;
-  border: 1px solid var(--md-border) !important;
+  background: rgba(255,255,255,.10) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child .mt-6.grid > div:first-child span {
@@ -147,20 +256,20 @@
   color: var(--md-purple) !important;
 }
 
-.coming-soon-soft main > section:nth-of-type(5) > div > div:first-child .mt-6.grid > div:first-child p {
-  color: #6b5c83 !important;
+.coming-soon-soft main > section:nth-of-type(5) > div > div:first-child .mt-6.grid > div:first-child p:first-child {
+  color: #d8cff1 !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child .mt-6.grid > div:first-child p:nth-child(2) {
-  color: var(--md-pink) !important;
+  color: #ff4eb2 !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child .mt-6.grid > div:first-child p:nth-child(3) {
-  color: var(--md-purple) !important;
+  color: #fff !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child ul span {
-  background: var(--md-soft) !important;
+  background: #fff !important;
   color: var(--md-purple) !important;
 }
 
@@ -170,16 +279,47 @@
 }
 
 .coming-soon-soft main > section:nth-of-type(5) > div > div:first-child > p:last-child {
-  color: #776c87 !important;
+  color: #cec3e7 !important;
 }
 
 .coming-soon-soft main > section:nth-of-type(5) > div > div:last-child {
-  background: var(--md-lavender) !important;
+  position: relative;
+  overflow: hidden;
+  background: #f7f5fb !important;
   border-color: var(--md-border) !important;
 }
 
-/* Keep pink as the energetic accent, not the dominant surface colour. */
+.coming-soon-soft main > section:nth-of-type(5) > div > div:last-child::after {
+  content: "";
+  position: absolute;
+  right: -1rem;
+  bottom: -1.4rem;
+  width: 8.5rem;
+  height: 9rem;
+  background: url("/brand/megadeal-elephant.svg") center / contain no-repeat;
+  opacity: .10;
+  pointer-events: none;
+}
+
 .coming-soon-soft a,
 .coming-soon-soft button {
   transition-duration: 160ms;
+}
+
+@media (max-width: 639px) {
+  .coming-soon-soft main > section:first-of-type {
+    padding-top: .75rem !important;
+  }
+
+  .coming-soon-soft main > section:first-of-type div:has(> button[aria-label="Boop the MegaDeal elephant"]) {
+    width: 7rem !important;
+    height: 7.5rem !important;
+    right: -.35rem !important;
+    bottom: -.45rem !important;
+  }
+
+  .coming-soon-soft button[aria-label="Boop the MegaDeal elephant"] {
+    width: 7rem !important;
+    height: 7.5rem !important;
+  }
 }
