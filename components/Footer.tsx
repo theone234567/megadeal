@@ -6,27 +6,18 @@ import { CATEGORIES } from "@/lib/categories";
 import SocialLinks from "./SocialLinks";
 import EmailSignupForm from "./EmailSignupForm";
 
+const FOOTER_CATEGORIES = [
+  ...CATEGORIES.map((category) => ({
+    name: category.name,
+    href: `/category/${encodeURIComponent(category.name)}`,
+  })),
+  { name: "Home & Car", href: "/coming-soon#categories" },
+];
+
 export default function Footer() {
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
-  const hideOwnABusinessCta = pathname?.startsWith("/list-your-business");
-
-  if (isComingSoon) {
-    return (
-      <footer className="mt-0 bg-white px-5 pb-8 pt-2 sm:px-8 lg:px-10">
-        <div className="mx-auto flex w-full max-w-[1180px] flex-col items-center justify-between gap-5 border-t border-[#eeeaf5] pt-6 sm:flex-row xl:max-w-[1380px] 2xl:max-w-[1480px]">
-          <div className="flex items-center font-display text-[26px] font-black leading-none tracking-[-0.055em] sm:text-[30px]">
-            <span className="text-[#6d24dc]">Mega</span>
-            <span className="ml-1 -rotate-1 rounded-[10px] bg-[#f0189a] px-2 py-1.5 text-white">Deal</span>
-          </div>
-          <p className="text-center text-xs text-slate-400">*T&amp;Cs apply for eligible new business listings.</p>
-          <p className="text-center text-sm font-semibold italic text-[#5f1cc8] sm:text-right">
-            Stronger local communities — together. ♥
-          </p>
-        </div>
-      </footer>
-    );
-  }
+  const hideOwnABusinessCta = pathname?.startsWith("/list-your-business") || isComingSoon;
 
   return (
     <footer className="mt-16 border-t border-slate-100 bg-slate-50">
@@ -52,15 +43,15 @@ export default function Footer() {
         </div>
       )}
 
-      <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
           <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Categories</h4>
             <ul className="space-y-2 text-sm text-slate-600">
-              {CATEGORIES.map((c) => (
-                <li key={c.name}>
-                  <Link href={`/category/${encodeURIComponent(c.name)}`} className="hover:text-brand-700">
-                    {c.name}
+              {FOOTER_CATEGORIES.map((category) => (
+                <li key={category.name}>
+                  <Link href={category.href} className="hover:text-brand-700">
+                    {category.name}
                   </Link>
                 </li>
               ))}
