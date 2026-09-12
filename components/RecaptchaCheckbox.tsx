@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useImperativeHandle, useRef, useState, forwardRef } from "react";
-import { renderVisibleCaptcha, type VisibleCaptchaHandle } from "@/lib/recaptcha";
+import { renderVisibleCaptcha, type CaptchaLoadFailure, type VisibleCaptchaHandle } from "@/lib/recaptcha";
 
 export type RecaptchaCheckboxHandle = {
   /** Clear the solved state so the visitor must tick again. Tokens are
@@ -34,6 +34,7 @@ const RecaptchaCheckbox = forwardRef<RecaptchaCheckboxHandle, Props>(
     const containerRef = useRef<HTMLDivElement | null>(null);
     const handleRef = useRef<VisibleCaptchaHandle | null>(null);
     const [status, setStatus] = useState<"loading" | "ready" | "unavailable">("loading");
+    const [failure, setFailure] = useState<CaptchaLoadFailure | null>(null);
 
     // onChange is called from reCAPTCHA's own callbacks, which are captured
     // once at render time. Routing through a ref keeps those callbacks
@@ -57,9 +58,10 @@ const RecaptchaCheckbox = forwardRef<RecaptchaCheckboxHandle, Props>(
         onToken: (token) => onChangeRef.current(token),
         onExpire: () => onChangeRef.current(null),
         onError: () => onChangeRef.current(null),
-      }).then((handle) => {
+      }).then(({ handle, failure: why }) => {
         if (cancelled) return;
         handleRef.current = handle;
+        setFailure(why ?? null);
         setStatus(handle ? "ready" : "unavailable");
       });
 
@@ -87,9 +89,24 @@ const RecaptchaCheckbox = forwardRef<RecaptchaCheckboxHandle, Props>(
 
         {status === "unavailable" && (
           <p className="text-sm text-ember-600">
-            We couldn&rsquo;t load the security check. It&rsquo;s usually an ad-blocker or a
-            strict privacy setting — try turning those off for this page, or use a different
-            browser. You won&rsquo;t be able to submit until it loads.
+            {/* Only "blocked" and "timeout" are plausibly the visitor's end.
+                The others are ours, and telling someone to disable an
+                ad-blocker they may not even have — to fix our bug — wastes
+                their time and makes us look wrong, which we would be. */}
+            {failure === "blocked" || failure === "timeout" ? (
+              <>
+                We couldn&rsquo;t load the security check. It&rsquo;s usually an ad-blocker or
+                a strict privacy setting — try turning those off for this page, or use a
+                different browser.
+              </>
+            ) : (
+              <>
+                The security check isn&rsquo;t working on our end. This is our fault, not
+                anything you&rsquo;ve done. Please try again shortly, or email us and
+                we&rsquo;ll set your account up manually.
+              </>
+            )}{" "}
+            <span className="opacity-70">[captcha-{failure ?? "unknown"}]</span>
           </p>
         )}
       </div>

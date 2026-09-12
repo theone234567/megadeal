@@ -31,7 +31,11 @@
  */
 
 const SCRIPT_ID = "megadeal-recaptcha-enterprise";
-const SCRIPT_SRC = "https://www.google.com/recaptcha/enterprise.js?render=explicit";
+/** Name of the global Google calls once the API is genuinely usable. Must
+ *  be on `window` under exactly this name for `?onload=` to find it. */
+const READY_CALLBACK = "__megadealRecaptchaReady";
+const SCRIPT_SRC =
+  `https://www.google.com/recaptcha/enterprise.js?render=explicit&onload=${READY_CALLBACK}`;
 
 /** Deliberately short. Without the script there is nothing to wait for,
  *  and the form falls back to telling the visitor the check couldn't load
@@ -60,38 +64,96 @@ type GrecaptchaEnterprise = {
 declare global {
   interface Window {
     grecaptcha?: { enterprise?: GrecaptchaEnterprise };
+    [READY_CALLBACK]?: () => void;
   }
 }
 
-let scriptPromise: Promise<GrecaptchaEnterprise | null> | null = null;
+/** Why the loader gave up, so the UI can say something true rather than
+ *  blaming the visitor's ad-blocker for what might be our own bug. */
+export type CaptchaLoadFailure =
+  /** The script request itself failed — blocked by an extension, or offline. */
+  | "blocked"
+  /** It loaded but never became usable, or the widget refused to render.
+   *  That points at our configuration (site key, domain), not the visitor. */
+  | "unsupported"
+  /** Nothing arrived before the deadline. Usually a slow or filtered network. */
+  | "timeout"
+  /** The Wix client hadn't produced a site key yet — our side, not theirs. */
+  | "no-key";
 
-function loadScript(): Promise<GrecaptchaEnterprise | null> {
+export type LoadResult =
+  | { api: GrecaptchaEnterprise; failure?: undefined }
+  | { api: null; failure: CaptchaLoadFailure };
+
+let scriptPromise: Promise<LoadResult> | null = null;
+
+/**
+ * Loads reCAPTCHA Enterprise and resolves only once the API is actually
+ * usable.
+ *
+ * The signal is Google's own `?onload=` callback, which fires when the
+ * library has finished initialising — NOT the script element's `load`
+ * event. Those are different moments: `enterprise.js` attaches
+ * `grecaptcha.enterprise.render` asynchronously, so a synchronous check at
+ * `load` can legitimately find nothing. A previous version of this file
+ * treated that as failure and resolved null, which meant a perfectly
+ * healthy reCAPTCHA was reported to visitors as "blocked by your
+ * ad-blocker" and the signup form refused to submit.
+ *
+ * A slow poll backs the callback up, in case the script was already
+ * present from an earlier mount (when `onload` will not fire again).
+ */
+function loadScript(): Promise<LoadResult> {
   if (scriptPromise) return scriptPromise;
 
-  scriptPromise = new Promise<GrecaptchaEnterprise | null>((resolve) => {
-    if (typeof window === "undefined") return resolve(null);
-    if (window.grecaptcha?.enterprise?.render) return resolve(window.grecaptcha.enterprise);
+  scriptPromise = new Promise<LoadResult>((resolve) => {
+    if (typeof window === "undefined") {
+      return resolve({ api: null, failure: "unsupported" });
+    }
 
-    const timer = setTimeout(() => resolve(null), LOAD_TIMEOUT_MS);
-
-    const settle = () => {
+    const ready = (): GrecaptchaEnterprise | null => {
       const api = window.grecaptcha?.enterprise;
-      if (!api?.render) {
-        clearTimeout(timer);
-        return resolve(null);
-      }
-      // `enterprise.js` sets up `render` asynchronously after the script
-      // element fires load; `ready` is how it tells us it's usable.
-      if (api.ready) {
-        api.ready(() => {
-          clearTimeout(timer);
-          resolve(window.grecaptcha?.enterprise ?? null);
-        });
-      } else {
-        clearTimeout(timer);
-        resolve(api);
-      }
+      return typeof api?.render === "function" ? api : null;
     };
+
+    const already = ready();
+    if (already) return resolve({ api: already });
+
+    let settled = false;
+    const finish = (result: LoadResult) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      clearInterval(poll);
+      try {
+        delete window[READY_CALLBACK];
+      } catch {
+        /* non-configurable in some browsers; harmless */
+      }
+      resolve(result);
+    };
+
+    // Google calls this when the library is initialised and usable.
+    window[READY_CALLBACK] = () => {
+      const api = ready();
+      finish(api ? { api } : { api: null, failure: "unsupported" });
+    };
+
+    // Covers the case where the script tag already exists (a remount), so
+    // `onload` has fired once and will not fire again.
+    const poll = setInterval(() => {
+      const api = ready();
+      if (api) finish({ api });
+    }, 250);
+
+    const timer = setTimeout(() => {
+      // Distinguish "never arrived" from "arrived but unusable" — the
+      // first is a blocked request, the second points at us.
+      finish({
+        api: null,
+        failure: window.grecaptcha ? "unsupported" : "timeout",
+      });
+    }, LOAD_TIMEOUT_MS);
 
     let script = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
     if (!script) {
@@ -100,17 +162,13 @@ function loadScript(): Promise<GrecaptchaEnterprise | null> {
       script.src = SCRIPT_SRC;
       script.async = true;
       script.defer = true;
+      script.addEventListener(
+        "error",
+        () => finish({ api: null, failure: "blocked" }),
+        { once: true }
+      );
       document.head.appendChild(script);
     }
-    script.addEventListener("load", settle, { once: true });
-    script.addEventListener(
-      "error",
-      () => {
-        clearTimeout(timer);
-        resolve(null);
-      },
-      { once: true }
-    );
   });
 
   return scriptPromise;
@@ -148,11 +206,12 @@ export async function renderVisibleCaptcha(
     onExpire: () => void;
     onError: () => void;
   }
-): Promise<VisibleCaptchaHandle | null> {
-  if (!siteKey || typeof window === "undefined") return null;
+): Promise<{ handle: VisibleCaptchaHandle | null; failure?: CaptchaLoadFailure }> {
+  if (typeof window === "undefined") return { handle: null, failure: "unsupported" };
+  if (!siteKey) return { handle: null, failure: "no-key" };
 
-  const grecaptcha = await loadScript();
-  if (!grecaptcha) return null;
+  const { api: grecaptcha, failure } = await loadScript();
+  if (!grecaptcha) return { handle: null, failure };
 
   try {
     const widgetId = grecaptcha.render(container, {
@@ -164,16 +223,22 @@ export async function renderVisibleCaptcha(
     });
 
     return {
-      reset: () => {
-        try {
-          grecaptcha.reset(widgetId);
-        } catch {
-          /* widget already gone — nothing to clear */
-        }
+      handle: {
+        reset: () => {
+          try {
+            grecaptcha.reset(widgetId);
+          } catch {
+            /* widget already gone — nothing to clear */
+          }
+        },
       },
     };
-  } catch {
-    return null;
+  } catch (err) {
+    // render() throwing means the library loaded but rejected what we
+    // asked of it — almost always the site key or the domain it's allowed
+    // on. Worth surfacing as ours rather than the visitor's problem.
+    console.error("[recaptcha] render failed", err);
+    return { handle: null, failure: "unsupported" };
   }
 }
 
@@ -184,7 +249,7 @@ export async function renderVisibleCaptcha(
 export async function getInvisibleCaptchaToken(siteKey: string): Promise<string | null> {
   if (!siteKey || typeof window === "undefined") return null;
 
-  const grecaptcha = await loadScript();
+  const { api: grecaptcha } = await loadScript();
   if (!grecaptcha) return null;
 
   let container: HTMLElement | null = null;
