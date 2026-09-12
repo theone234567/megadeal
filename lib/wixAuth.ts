@@ -89,18 +89,24 @@ export async function registerMember(
   email: string,
   password: string,
   nickname: string,
-  /** Invisible-reCAPTCHA token. Wix rejects registration with
-   *  "missingCaptchaToken" when the site has CAPTCHA protection enabled
-   *  and none is supplied — see lib/recaptcha.ts. Passing undefined
-   *  simply reproduces the old behaviour, so a failure to obtain one can
-   *  never be worse than not trying. */
-  invisibleRecaptchaToken?: string | null
+  /** VISIBLE-reCAPTCHA token, from the checkbox the visitor ticks.
+   *
+   *  Registration and login want different variants, which is not
+   *  obvious and cost a production outage: Wix reads registration's token
+   *  from its `Recaptcha` field (the visible widget) and login's from
+   *  `InvisibleRecaptcha`. An invisible token passed here lands in the
+   *  wrong field, so Wix sees no token at all and answers 403 with
+   *  "missingCaptchaToken" — indistinguishable from sending nothing.
+   *
+   *  Docs: https://dev.wix.com/docs/go-headless/authentication/members/custom-login-page/re-captcha/about-re-captcha
+   */
+  recaptchaToken?: string | null
 ): Promise<AuthOutcome> {
   const state = await client.auth.register({
     email,
     password,
     profile: { nickname },
-    ...(invisibleRecaptchaToken ? { captchaTokens: { invisibleRecaptchaToken } } : {}),
+    ...(recaptchaToken ? { captchaTokens: { recaptchaToken } } : {}),
   });
   const outcome = await resolveState(client, state);
   return outcome.status === "verify" ? { ...outcome, email } : outcome;

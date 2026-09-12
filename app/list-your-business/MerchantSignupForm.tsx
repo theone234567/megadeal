@@ -6,7 +6,8 @@ import { useWix } from "@/context/WixProvider";
 import { registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import PasswordField from "@/components/PasswordField";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
-import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
+import { preloadCaptcha } from "@/lib/recaptcha";
+import RecaptchaCheckbox, { type RecaptchaCheckboxHandle } from "@/components/RecaptchaCheckbox";
 
 function RequiredTag() {
   return <span className="ml-1 font-normal text-ember-600">Required</span>;
@@ -153,6 +154,10 @@ export default function MerchantSignupForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  /** Token from the visible reCAPTCHA checkbox. Single-use and
+   *  expires after ~2 minutes, so it is cleared after every attempt. */
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<RecaptchaCheckboxHandle | null>(null);
   // Pre-filled with WELCOME6 (or a real ?ref= referral code, if that's how
   // the visitor arrived) — same default as before, just visible and
   // editable now instead of a hidden field, so someone who wants to swap
@@ -266,22 +271,24 @@ export default function MerchantSignupForm() {
       return;
     }
 
+    // Checked here rather than left to Wix: without a token the request is
+    // certain to come back 403, and "please tick the box" is a far better
+    // thing to show someone than Wix's generic robot error.
+    if (!captchaToken) {
+      setSubmitError("Please tick the \u201cI'm not a robot\u201d box below to continue.");
+      return;
+    }
+
     // Snapshot the form NOW, while it's still mounted — finishAfterAuth may
     // not run until after the verify-code screen has replaced it.
     applicationRef.current = readApplicationValues(formData);
 
     setSubmitting(true);
     try {
-      // Wix rejects registration with "missingCaptchaToken" when the site
-      // has CAPTCHA protection on, which is what was blocking every
-      // signup. The key comes from the SDK itself. If this returns null
-      // (script blocked, offline, visitor dismissed a challenge) we still
-      // attempt the registration — that is exactly the request we used to
-      // send, so it cannot make things worse.
-      const captchaToken = await getInvisibleCaptchaToken(
-        (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
-      );
-
+      // The token comes from the visible checkbox the visitor has already
+      // ticked (see RecaptchaCheckbox). Registration specifically wants the
+      // visible variant — an invisible token lands in a field Wix doesn't
+      // read on this endpoint and comes back as "missing".
       const outcome = await withTimeout(
         registerMember(client, email, password, businessName, captchaToken),
         AUTH_TIMEOUT_MS,
@@ -294,6 +301,10 @@ export default function MerchantSignupForm() {
       );
     } finally {
       setSubmitting(false);
+      // reCAPTCHA tokens are single-use. Whatever happened above, this one
+      // is spent — leaving it in state would make the next attempt fail
+      // with a rejected token rather than a missing one.
+      captchaRef.current?.reset();
     }
   }
 
@@ -570,6 +581,15 @@ export default function MerchantSignupForm() {
             .
           </span>
         </label>
+
+        {/* Wix requires the VISIBLE checkbox on registration and verifies the
+            token itself, so the site key has to be Wix's own rather than one
+            of ours. It comes straight off the SDK client. */}
+        <RecaptchaCheckbox
+          ref={captchaRef}
+          siteKey={(client?.auth as { captchaVisibleSiteKey?: string } | undefined)?.captchaVisibleSiteKey ?? ""}
+          onChange={setCaptchaToken}
+        />
 
         {submitError && (
           <p className="text-sm text-ember-600">{submitError}</p>
