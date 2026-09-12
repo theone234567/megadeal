@@ -44,27 +44,22 @@ export default function Header() {
 
   if (isComingSoon) {
     return (
-      <header className="relative z-40 bg-white">
-        <div className="mx-auto flex max-w-[1024px] items-start justify-between gap-4 px-6 pb-2 pt-5 sm:px-8 lg:px-10">
-          <div className="shrink-0">
-            <Link href="/coming-soon" aria-label="MegaDeal coming soon" className="block">
-              <Image
-                src="/brand/megadeal-logo.webp"
-                alt="MegaDeal"
-                width={900}
-                height={192}
-                priority
-                className="h-auto w-[205px] object-contain sm:w-[220px]"
-              />
-            </Link>
-            <p className="mt-1 pl-4 text-xs font-semibold tracking-[0.02em] text-[#705f98]">
-              Local together.
-            </p>
-          </div>
+      <header className="relative z-40 border-b border-[#eee9f3] bg-white">
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-5 py-4 sm:px-8 lg:px-10 lg:py-5">
+          <Link href="/coming-soon" aria-label="MegaDeal coming soon" className="block shrink-0">
+            <Image
+              src="/brand/megadeal-logo-bold.png"
+              alt="MegaDeal"
+              width={900}
+              height={300}
+              priority
+              className="h-auto w-[205px] object-contain sm:w-[235px] lg:w-[250px]"
+            />
+          </Link>
 
           <Link
             href="/portal"
-            className="mt-2 shrink-0 text-xs font-bold text-[#28106f] transition hover:text-[#ef169c] sm:text-sm"
+            className="shrink-0 rounded-full border border-[#dcd3eb] px-4 py-2 text-xs font-extrabold text-[#30107d] transition hover:border-[#30107d] hover:bg-[#f7f4fc] sm:text-sm"
           >
             Business sign in →
           </Link>
