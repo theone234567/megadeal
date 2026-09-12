@@ -38,23 +38,77 @@ const HONEYPOT_RESET_MS = 2000;
  * and start a review.
  */
 
+/** How long to wait on a Wix auth call before giving up. Without this the
+ *  SDK call can hang indefinitely on a flaky connection and the form sits
+ *  on "Submitting…" with no error and no way forward. */
+const AUTH_TIMEOUT_MS = 30_000;
+
+/** Rejects if `promise` hasn't settled within `ms`. The underlying request
+ *  isn't cancelled (the Wix SDK gives us no signal to do that) — we just
+ *  stop waiting on it so the visitor gets an error they can act on. */
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
+/**
+ * Everything the form collected, captured up front.
+ *
+ * These used to be read back off the live <form> element at submit time,
+ * which broke the email-verification path: showing the verify-code screen
+ * unmounts the form, so by the time the code cleared, formRef.current was
+ * null and the whole application was silently dropped — the visitor got an
+ * account but no business record, and no error to tell them.
+ */
+type ApplicationValues = {
+  businessName: string;
+  contactName: string;
+  contactPhone: string;
+  legalBusinessName: string;
+  couponCode: string;
+  honeypot: string;
+  agreedToTerms: boolean;
+};
+
+function readApplicationValues(formData: FormData): ApplicationValues {
+  return {
+    businessName: String(formData.get("businessName") ?? ""),
+    contactName: String(formData.get("contactName") ?? ""),
+    contactPhone: String(formData.get("contactPhone") ?? ""),
+    legalBusinessName: String(formData.get("legalBusinessName") ?? ""),
+    couponCode: String(formData.get("couponCode") ?? ""),
+    honeypot: String(formData.get(HONEYPOT_FIELD) ?? ""),
+    agreedToTerms: formData.get("agreedToTerms") === "on",
+  };
+}
+
 /** Submits everything the /list-your-business form collected to create (or claim)
  *  the business application — called only once the account itself exists
  *  and, if Wix required it, its email is verified. */
-async function submitApplication(formEl: HTMLFormElement) {
-  const formData = new FormData(formEl);
+async function submitApplication(values: ApplicationValues) {
   const res = await fetch("/api/merchants/apply", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      businessName: String(formData.get("businessName") ?? ""),
-      contactName: String(formData.get("contactName") ?? ""),
-      contactPhone: String(formData.get("contactPhone") ?? ""),
-      legalBusinessName: String(formData.get("legalBusinessName") ?? ""),
-      phone: String(formData.get("contactPhone") ?? ""),
-      couponCode: String(formData.get("couponCode") ?? ""),
-      mg_contact_ref: String(formData.get(HONEYPOT_FIELD) ?? ""),
-      agreedToTerms: formData.get("agreedToTerms") === "on",
+      businessName: values.businessName,
+      contactName: values.contactName,
+      contactPhone: values.contactPhone,
+      legalBusinessName: values.legalBusinessName,
+      phone: values.contactPhone,
+      couponCode: values.couponCode,
+      mg_contact_ref: values.honeypot,
+      agreedToTerms: values.agreedToTerms,
     }),
   });
   if (!res.ok) {
@@ -67,8 +121,10 @@ export default function MerchantSignupForm() {
   const { client } = useWix();
   const searchParams = useSearchParams();
   const referralPrefill = searchParams.get("ref") || "";
-  const formRef = useRef<HTMLFormElement>(null);
   const startedRef = useRef(false);
+  /** Snapshot of the form taken at submit time — survives the verify-code
+   *  screen unmounting the form (see ApplicationValues). */
+  const applicationRef = useRef<ApplicationValues | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -97,8 +153,18 @@ export default function MerchantSignupForm() {
   }
 
   async function finishAfterAuth() {
-    if (!formRef.current) return;
-    await submitApplication(formRef.current);
+    // Captured in handleSubmit, before the verify-code screen can unmount
+    // the form. If this is somehow empty we must NOT carry on silently —
+    // the account already exists at this point, so a dropped application
+    // means a business that thinks it applied and never hears back.
+    const values = applicationRef.current;
+    if (!values) {
+      setSubmitError(
+        "Your account was created, but we couldn't save your business details. Please sign in to your portal and finish your profile, or contact us and we'll sort it out."
+      );
+      return;
+    }
+    await submitApplication(values);
     window.gtag?.("event", "form_complete", { form_name: "merchant_signup" });
     // The real conversion event for business-recruitment ad campaigns — a
     // completed application, not just a click or an email signup.
@@ -156,10 +222,24 @@ export default function MerchantSignupForm() {
       setSubmitError("You must agree to the Terms and Conditions to apply.");
       return;
     }
+    if (!client?.auth) {
+      setSubmitError(
+        "We couldn't reach our sign-up service. Please refresh the page and try again."
+      );
+      return;
+    }
+
+    // Snapshot the form NOW, while it's still mounted — finishAfterAuth may
+    // not run until after the verify-code screen has replaced it.
+    applicationRef.current = readApplicationValues(formData);
 
     setSubmitting(true);
     try {
-      const outcome = await registerMember(client, email, password, businessName);
+      const outcome = await withTimeout(
+        registerMember(client, email, password, businessName),
+        AUTH_TIMEOUT_MS,
+        "That took too long. Please check your connection and try again — if your account was created, you can sign in to your portal instead."
+      );
       await handleOutcome(outcome);
     } catch (err: any) {
       setSubmitError(err?.message || "Something went wrong submitting your application. Please try again.");
@@ -171,9 +251,19 @@ export default function MerchantSignupForm() {
   async function handleVerifySubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError(null);
+    if (!client?.auth) {
+      setSubmitError(
+        "We couldn't reach our sign-up service. Please refresh the page and try again."
+      );
+      return;
+    }
     setSubmitting(true);
     try {
-      const outcome = await submitVerificationCode(client, code, pendingState);
+      const outcome = await withTimeout(
+        submitVerificationCode(client, code, pendingState),
+        AUTH_TIMEOUT_MS,
+        "That took too long. Please check your connection and try entering your code again."
+      );
       if (outcome.status === "success") {
         await finishAfterAuth();
       } else if (outcome.status === "error") {
@@ -220,7 +310,7 @@ export default function MerchantSignupForm() {
 
   return (
     <div id="signup" className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
-      <form ref={formRef} onSubmit={handleSubmit} onChangeCapture={trackFormStarted} className="space-y-4">
+      <form onSubmit={handleSubmit} onChangeCapture={trackFormStarted} className="space-y-4">
         <div>
           <label htmlFor="signup-businessName" className="mb-1 block text-base font-medium text-slate-700">
             Business name
