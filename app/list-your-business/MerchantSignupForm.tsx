@@ -63,6 +63,29 @@ function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promi
 }
 
 /**
+ * Turns a thrown value into something safe to put in front of a business
+ * owner.
+ *
+ * The catch blocks here used to render `err.message` verbatim, so a Wix
+ * SDK failure showed the visitor raw internals like "Cannot read
+ * properties of undefined (reading 'validationError')" — meaningless to
+ * them, and it exposes how the integration is wired. Messages we wrote
+ * ourselves still pass through unchanged; runtime/programming errors are
+ * replaced with the caller's fallback and logged instead.
+ */
+function friendlyError(err: unknown, fallback: string): string {
+  const message =
+    err instanceof Error ? err.message : typeof err === "string" ? err : "";
+  // Keep the real error reachable for debugging without showing it.
+  console.error("[merchant signup]", err);
+  if (!message) return fallback;
+  const looksInternal =
+    err instanceof TypeError ||
+    /cannot read propert|is not a function|is not defined|undefined|\bnull\b|[{}<>]/i.test(message);
+  return looksInternal ? fallback : message;
+}
+
+/**
  * Everything the form collected, captured up front.
  *
  * These used to be read back off the live <form> element at submit time,
@@ -242,7 +265,9 @@ export default function MerchantSignupForm() {
       );
       await handleOutcome(outcome);
     } catch (err: any) {
-      setSubmitError(err?.message || "Something went wrong submitting your application. Please try again.");
+      setSubmitError(
+        friendlyError(err, "Something went wrong submitting your application. Please try again.")
+      );
     } finally {
       setSubmitting(false);
     }
@@ -272,7 +297,7 @@ export default function MerchantSignupForm() {
         setSubmitError("That code isn't right — check your email and try again.");
       }
     } catch (err: any) {
-      setSubmitError(err?.message || "That code isn't right. Please try again.");
+      setSubmitError(friendlyError(err, "That code isn't right. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -463,11 +488,11 @@ export default function MerchantSignupForm() {
           />
           <span>
             I agree to MegaDeal&apos;s{" "}
-            <a href="/terms" target="_blank" className="font-semibold underline hover:text-brand-700">
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-brand-700">
               Terms and Conditions
             </a>{" "}
             and{" "}
-            <a href="/privacy" target="_blank" className="font-semibold underline hover:text-brand-700">
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-brand-700">
               Privacy Policy
             </a>
             .

@@ -34,6 +34,11 @@ export async function middleware(request: NextRequest) {
       response.cookies.set("session", JSON.stringify(tokens), {
         path: "/",
         sameSite: "lax",
+        // Deliberately NOT httpOnly: the browser-side Wix SDK reads these
+        // tokens directly (see lib/wixClient.ts / WixProvider). But they
+        // are still credentials, so keep them off plaintext HTTP in
+        // production. Left off locally so http://localhost dev still works.
+        secure: process.env.NODE_ENV === "production",
       });
     } catch {
       // Slow or failed — skip pre-seeding the cookie this once rather than

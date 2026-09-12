@@ -4,8 +4,14 @@
  * Worker's runtime variables (megadeal.co.nz) — everything here reads
  * from it rather than hardcoding a deployment URL.
  */
+// The fallback is the real production domain, NOT a preview deployment
+// URL. Every canonical tag, the sitemap, robots.txt's Host line and all
+// JSON-LD are built from this: if NEXT_PUBLIC_SITE_URL is ever missing or
+// misconfigured on a deploy, a preview-URL fallback would silently tell
+// Google the live site is a duplicate of a stale deployment. Falling back
+// to the canonical domain makes that failure mode harmless.
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://megadeal23456.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://megadeal.co.nz";
 
 export const SITE_NAME = "MegaDeal";
 

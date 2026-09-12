@@ -21,7 +21,13 @@ import {
   WrenchIcon,
 } from "@/components/icons";
 
-const TITLE = "MegaDeal Auckland — Big Local Deals Are On The Way";
+// The root layout wraps every page title in a "%s | MegaDeal" template, so
+// this must NOT carry the brand itself or the tab reads "MegaDeal Auckland
+// — Big Local Deals Are On The Way | MegaDeal". SOCIAL_TITLE is the
+// standalone version: openGraph.title and twitter.title bypass the
+// template, so those do need the brand spelled out.
+const TITLE = "Big Local Deals Are On The Way in Auckland";
+const SOCIAL_TITLE = "MegaDeal Auckland — Big Local Deals Are On The Way";
 const DESCRIPTION =
   "MegaDeal is launching in Auckland first. Deal hunters can join for launch updates, while eligible local businesses can claim up to 6 months free advertising with 0% commission.";
 
@@ -31,14 +37,14 @@ export const metadata: Metadata = {
   alternates: { canonical: `${SITE_URL}/coming-soon` },
   robots: { index: true, follow: true },
   openGraph: {
-    title: TITLE,
+    title: SOCIAL_TITLE,
     description: DESCRIPTION,
     url: `${SITE_URL}/coming-soon`,
     siteName: SITE_NAME,
     type: "website",
     locale: "en_NZ",
   },
-  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
+  twitter: { card: "summary_large_image", title: SOCIAL_TITLE, description: DESCRIPTION },
 };
 
 /** One shared page shell width, so every band lines up at every breakpoint. */
@@ -120,7 +126,7 @@ export default function ComingSoonPage() {
           __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "WebPage",
-            name: TITLE,
+            name: SOCIAL_TITLE,
             description: DESCRIPTION,
             url: `${SITE_URL}/coming-soon`,
             inLanguage: "en-NZ",
