@@ -82,11 +82,14 @@ export default function RootLayout({
             }),
           }}
         />
-        {/* WebSite + SearchAction — the standard hook for Google's sitelinks
-            search box, and a defined "how do I search this site" entry
-            point that AI answer engines can use directly instead of
-            guessing at a URL scheme. Matches the ?q= search homepage
-            already understands (see app/HomeDeals.tsx). */}
+        {/* WebSite, plus a SearchAction once there is something to find.
+            SearchAction is the hook for Google's sitelinks search box and a
+            defined "how do I search this site" entry point for AI answer
+            engines; it matches the ?q= search the homepage understands (see
+            app/HomeDeals.tsx). Before launch "/" redirects to /coming-soon
+            and there are no live deals, so advertising a search endpoint
+            that can only return nothing is a promise the site can't keep —
+            it is added only once SITE_LAUNCHED is true. */}
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
@@ -96,11 +99,15 @@ export default function RootLayout({
               "@type": "WebSite",
               name: SITE_NAME,
               url: SITE_URL,
-              potentialAction: {
-                "@type": "SearchAction",
-                target: `${SITE_URL}/?q={search_term_string}`,
-                "query-input": "required name=search_term_string",
-              },
+              ...(SITE_LAUNCHED
+                ? {
+                    potentialAction: {
+                      "@type": "SearchAction",
+                      target: `${SITE_URL}/?q={search_term_string}`,
+                      "query-input": "required name=search_term_string",
+                    },
+                  }
+                : {}),
             }),
           }}
         />

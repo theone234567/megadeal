@@ -536,7 +536,10 @@ export default function MerchantSignupForm() {
             name="agreedToTerms"
             checked={agreedToTerms}
             onChange={(e) => setAgreedToTerms(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+            /* 20px, not 16px: below 24px this is a hard target to tap on a
+               phone (WCAG 2.2 SC 2.5.8). The wrapping <label> already makes
+               the text tappable too. */
+            className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
           />
           <span>
             I agree to MegaDeal&apos;s{" "}

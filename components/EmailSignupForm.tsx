@@ -130,7 +130,10 @@ export default function EmailSignupForm({
             required
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-slate-300"
+            /* h-5/w-5 keeps the box visually modest while clearing the
+               24px minimum target size (WCAG 2.2 SC 2.5.8) — at 3.5 it was
+               14px, genuinely hard to hit on a phone. */
+            className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300"
           />
           <span>
             I agree to receive {audience === "merchant" ? "launch updates for businesses" : "deal emails"} from MegaDeal and have read the{" "}
