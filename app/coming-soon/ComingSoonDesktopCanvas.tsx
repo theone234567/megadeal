@@ -3,6 +3,23 @@
 import Link from "next/link";
 import { useState } from "react";
 import EmailSignupForm from "@/components/EmailSignupForm";
+import {
+  DumbbellIcon,
+  FlowerIcon,
+  SuitcaseIcon,
+  TicketIcon,
+  UtensilsIcon,
+  WrenchIcon,
+} from "@/components/icons";
+
+const categories = [
+  { name: "Food & Drink", icon: UtensilsIcon },
+  { name: "Beauty & Spa", icon: FlowerIcon },
+  { name: "Things To Do", icon: TicketIcon },
+  { name: "Travel & Getaways", icon: SuitcaseIcon },
+  { name: "Health & Fitness", icon: DumbbellIcon },
+  { name: "Home & Car", icon: WrenchIcon },
+];
 
 export default function ComingSoonDesktopCanvas() {
   const [showSignup, setShowSignup] = useState(false);
@@ -34,6 +51,37 @@ export default function ComingSoonDesktopCanvas() {
             aria-label="Claim my free advertising"
             className="absolute left-[63.4%] top-[34.25%] h-[3.35%] w-[30%] rounded-full outline-none focus-visible:ring-4 focus-visible:ring-white/70"
           />
+
+          {/* Replace the baked category strip so it always matches the live footer taxonomy. */}
+          <div className="absolute left-[2.6%] top-[57.4%] z-20 h-[14.9%] w-[94.8%] bg-white px-[1.1%] pt-[1.1%]">
+            <h2 className="text-center font-display text-[clamp(18px,1.75vw,31px)] font-black leading-none text-[#15112f]">
+              Explore deal categories
+            </h2>
+            <p className="mt-[0.5%] text-center text-[clamp(10px,0.85vw,15px)] text-[#6f6a82]">
+              A taste of what&apos;s coming to Auckland.
+            </p>
+
+            <div className="mt-[1.35%] grid grid-cols-6 gap-[1.05%]">
+              {categories.map(({ name, icon: Icon }) => (
+                <Link
+                  key={name}
+                  href={`/category/${encodeURIComponent(name)}`}
+                  className="group overflow-hidden rounded-[12px] border border-[#ebe7f2] bg-white shadow-[0_5px_14px_rgba(32,20,62,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_9px_20px_rgba(32,20,62,0.12)]"
+                >
+                  <div className="flex aspect-[1.72/1] items-center justify-center bg-[linear-gradient(135deg,#faf7ff_0%,#f1e9ff_55%,#fff4fb_100%)] text-[#6d24dc]">
+                    <span className="flex h-[42%] aspect-square items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-[#e9defb]">
+                      <Icon className="h-[54%] w-[54%]" />
+                    </span>
+                  </div>
+                  <div className="flex min-h-[42px] items-center justify-center px-2 py-2 text-center">
+                    <span className="text-[clamp(9px,0.72vw,13px)] font-extrabold leading-tight text-[#241a45] group-hover:text-[#6d24dc]">
+                      {name}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
 
           <button
             type="button"
