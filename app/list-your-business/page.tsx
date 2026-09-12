@@ -265,7 +265,7 @@ export default async function MerchantsPage() {
             🚀 Coming soon to Auckland — up to 6 months free before launch
           </span>
 
-          <h1 className={`${fredoka.className} mt-6 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
+          <h1 className={`${fredoka.className} mt-6 text-4xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-5xl lg:text-6xl text-white`}>
             Get your business in front of Auckland customers — for free.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
