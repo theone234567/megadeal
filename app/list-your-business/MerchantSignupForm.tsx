@@ -12,6 +12,20 @@ function RequiredTag() {
 }
 
 /**
+ * Honeypot field name. Deliberately NOT anything Chrome's autofill
+ * recognises: it used to be "website2", which Chrome happily autofilled
+ * with the business name for real visitors, tripping the bot branch and
+ * wedging the form on "Submitting…" forever. Anything resembling a real
+ * field label (website, url, company, address…) is unsafe here.
+ */
+const HONEYPOT_FIELD = "mg_contact_ref";
+
+/** How long the fake-success bot branch waits before releasing the form.
+ *  A real visitor should never see this, but if the honeypot ever gets a
+ *  false positive again, the page recovers instead of hanging forever. */
+const HONEYPOT_RESET_MS = 2000;
+
+/**
  * CRO EXPERIMENT — short initial signup (easy to revert): the form used to
  * also collect legal business name's NZBN, referral code as a visible
  * field, and the full public-profile block (business phone, address,
@@ -39,7 +53,7 @@ async function submitApplication(formEl: HTMLFormElement) {
       legalBusinessName: String(formData.get("legalBusinessName") ?? ""),
       phone: String(formData.get("contactPhone") ?? ""),
       couponCode: String(formData.get("couponCode") ?? ""),
-      website2: String(formData.get("website2") ?? ""),
+      mg_contact_ref: String(formData.get(HONEYPOT_FIELD) ?? ""),
       agreedToTerms: formData.get("agreedToTerms") === "on",
     }),
   });
@@ -110,11 +124,20 @@ export default function MerchantSignupForm() {
 
     const formData = new FormData(e.currentTarget);
 
-    // Honeypot — hidden from real visitors via CSS, so only a bot filling
-    // every field would set this. Pretend to succeed either way so a bot
-    // isn't tipped off it was caught.
-    if (String(formData.get("website2") ?? "").trim() !== "") {
+    // Honeypot — positioned off-screen, so only a bot filling every field
+    // should set this. Pretend to succeed so a bot isn't tipped off it was
+    // caught, but release the form after a moment: this branch used to
+    // latch `submitting` on forever with no way out, so a single false
+    // positive (which is exactly what Chrome autofill caused) left the
+    // button stuck on "Submitting…" permanently.
+    if (String(formData.get(HONEYPOT_FIELD) ?? "").trim() !== "") {
       setSubmitting(true);
+      setTimeout(() => {
+        setSubmitting(false);
+        setSubmitError(
+          "We couldn't verify that submission. Please refresh the page and try again, or contact us if it keeps happening."
+        );
+      }, HONEYPOT_RESET_MS);
       return;
     }
 
@@ -198,15 +221,6 @@ export default function MerchantSignupForm() {
   return (
     <div id="signup" className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
       <form ref={formRef} onSubmit={handleSubmit} onChangeCapture={trackFormStarted} className="space-y-4">
-        {/* Honeypot — hidden from real visitors via CSS, so only a bot filling every field would set this. */}
-        <input
-          type="text"
-          name="website2"
-          tabIndex={-1}
-          autoComplete="off"
-          className="absolute left-[-9999px] h-0 w-0 opacity-0"
-          aria-hidden="true"
-        />
         <div>
           <label htmlFor="signup-businessName" className="mb-1 block text-base font-medium text-slate-700">
             Business name
@@ -391,6 +405,31 @@ export default function MerchantSignupForm() {
             Sign in to your business portal
           </a>
         </p>
+
+        {/*
+          Honeypot — last in the DOM so password managers and Chrome's
+          "fill the whole form" heuristic have already finished with the
+          real fields before they reach it, and positioned off-screen with
+          inline styles rather than utility classes so it can't be undone
+          by a Tailwind purge, a cascade collision, or a stylesheet that
+          fails to load. A bot that fills every input still trips it.
+        */}
+        <input
+          type="text"
+          name={HONEYPOT_FIELD}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            left: "-9999px",
+            top: "auto",
+            width: "1px",
+            height: "1px",
+            overflow: "hidden",
+            opacity: 0,
+          }}
+        />
       </form>
     </div>
   );

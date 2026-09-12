@@ -64,7 +64,9 @@ export async function POST(req: NextRequest) {
   // Honeypot: a real visitor never fills this hidden field in. A bot
   // filling every input on the form will. Pretend to succeed either way so
   // we don't tip a bot off that it was caught.
-  if (typeof body.website2 === "string" && body.website2.trim() !== "") {
+  // (Field renamed from "website2" — Chrome autofilled that one for real
+  // visitors, so genuine applications were being silently discarded here.)
+  if (typeof body.mg_contact_ref === "string" && body.mg_contact_ref.trim() !== "") {
     return NextResponse.json({ item: { _id: "ok" } });
   }
 
