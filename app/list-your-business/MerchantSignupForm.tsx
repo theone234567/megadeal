@@ -158,6 +158,13 @@ export default function MerchantSignupForm() {
   // in a different referral code they were given can actually do that.
   const [couponCode, setCouponCode] = useState(referralPrefill || "WELCOME6");
 
+  // Which of the three things the promo field currently holds, so the help
+  // text under it can say what will actually happen rather than always
+  // promising the WELCOME6 offer.
+  const trimmedCoupon = couponCode.trim().toUpperCase();
+  const promoState: "welcome" | "referral" | "empty" =
+    trimmedCoupon === "WELCOME6" ? "welcome" : trimmedCoupon === "" ? "empty" : "referral";
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -477,9 +484,49 @@ export default function MerchantSignupForm() {
             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
           />
-          <p className="mt-1 text-sm text-slate-500">
-            🎁 WELCOME6 gets you up to 6 months free advertising if you&apos;re approved before launch.
-          </p>
+          {/*
+            The promo code and peer referral codes share this one field, and
+            the approval logic treats them as mutually exclusive (see the
+            `if (promo) ... else if (referral)` branches in
+            app/api/admin/merchants/[id]/route.ts). Someone arriving on a
+            ?ref= link therefore has the referrer's code pre-filled here
+            while the rest of the page advertises the 6-month offer — so
+            without this they would have quietly forfeited the much larger
+            offer they came for, and only found out after approval.
+          */}
+          {promoState === "welcome" && (
+            <p className="mt-1 text-sm text-slate-500">
+              🎁 WELCOME6 gets you up to 6 months free advertising if you&apos;re approved before launch.
+            </p>
+          )}
+          {promoState === "referral" && (
+            <p className="mt-1 text-sm text-slate-600">
+              You&apos;re using referral code{" "}
+              <span className="font-semibold">{couponCode.trim()}</span>. A referral code and the
+              WELCOME6 launch offer can&apos;t be combined — only one applies.{" "}
+              <button
+                type="button"
+                onClick={() => setCouponCode("WELCOME6")}
+                className="font-semibold text-brand-600 underline hover:no-underline"
+              >
+                Use WELCOME6 instead
+              </button>{" "}
+              for up to 6 months free advertising.
+            </p>
+          )}
+          {promoState === "empty" && (
+            <p className="mt-1 text-sm text-slate-600">
+              No promo code applied.{" "}
+              <button
+                type="button"
+                onClick={() => setCouponCode("WELCOME6")}
+                className="font-semibold text-brand-600 underline hover:no-underline"
+              >
+                Add WELCOME6
+              </button>{" "}
+              for up to 6 months free advertising if you&apos;re approved before launch.
+            </p>
+          )}
         </div>
 
         <label className="flex items-start gap-2 text-base text-slate-600">
