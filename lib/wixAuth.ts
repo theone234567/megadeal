@@ -25,8 +25,22 @@ const FAILURE_MESSAGES: Record<string, string> = {
     "That password doesn't meet the requirements — try at least 8 characters with a mix of letters and numbers.",
   invalidEmail: "That doesn't look like a valid email address.",
   resetPassword: "This account needs a password reset before you can sign in — use \"Forgot password\" below.",
-  missingCaptchaToken: "We couldn't verify you're not a robot — please try again.",
-  invalidCaptchaToken: "We couldn't verify you're not a robot — please try again.",
+  // These two are opposite failures and used to share one message, which
+  // made a live outage undiagnosable: "couldn't verify you're not a robot"
+  // was shown both when the browser never produced a captcha token and
+  // when it produced one Wix refused. They now read differently, so the
+  // message itself says which half of the handshake broke.
+  //
+  // missingCaptchaToken: we sent no token at all. lib/recaptcha.ts resolves
+  // to null on every failure path, so this means reCAPTCHA never loaded,
+  // never ran, or was dismissed — not that the visitor failed a challenge.
+  missingCaptchaToken:
+    "We couldn't load the security check on this page. It's usually an ad-blocker or a strict privacy setting — try again, or try a different browser. [captcha-missing]",
+  // invalidCaptchaToken: we DID send a token and it was rejected. That
+  // points at the token itself (expired, replayed, or issued for a site
+  // key that isn't valid on this domain) rather than at page load.
+  invalidCaptchaToken:
+    "The security check didn't pass. Please try again. [captcha-rejected]",
 };
 
 /** Persists Wix member tokens the same way login-callback.tsx does for the
