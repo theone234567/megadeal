@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" role="img" aria-labelledby="title desc">
+  <title id="title">MegaDeal deal-hunter elephant</title>
+  <desc id="desc">A cheerful purple baby elephant holding a magnifying glass and a pink big deals tag.</desc>
+  <defs>
+    <linearGradient id="body" x1="80" y1="36" x2="270" y2="230" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a35cff"/>
+      <stop offset="1" stop-color="#650fc7"/>
+    </linearGradient>
+    <linearGradient id="ear" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#d9b7ff"/>
+      <stop offset="1" stop-color="#a35cff"/>
+    </linearGradient>
+    <linearGradient id="tag" x1="170" y1="170" x2="340" y2="245" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fb4fbe"/>
+      <stop offset="1" stop-color="#e81ea3"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="180%" height="190%">
+      <feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#3b0d78" flood-opacity=".22"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <ellipse cx="92" cy="118" rx="63" ry="67" fill="url(#ear)"/>
+    <ellipse cx="258" cy="118" rx="63" ry="67" fill="url(#ear)"/>
+    <ellipse cx="92" cy="120" rx="41" ry="45" fill="#f7a6dc"/>
+    <ellipse cx="258" cy="120" rx="41" ry="45" fill="#f7a6dc"/>
+
+    <ellipse cx="175" cy="115" rx="82" ry="76" fill="url(#body)"/>
+
+    <path d="M137 80c10-8 24-9 35-2M199 78c11-7 25-5 34 4" fill="none" stroke="#4f1498" stroke-width="7" stroke-linecap="round"/>
+
+    <circle cx="145" cy="111" r="18" fill="#fff"/>
+    <circle cx="213" cy="111" r="18" fill="#fff"/>
+    <circle cx="149" cy="113" r="10" fill="#211033"/>
+    <circle cx="209" cy="113" r="10" fill="#211033"/>
+    <circle cx="153" cy="108" r="3.5" fill="#fff"/>
+    <circle cx="213" cy="108" r="3.5" fill="#fff"/>
+
+    <path d="M157 145c12 12 28 13 40 0" fill="none" stroke="#4f1498" stroke-width="6" stroke-linecap="round"/>
+    <path d="M176 141c-3 20-1 42 3 61 3 14 17 16 25 7 6-7 3-17-5-20" fill="none" stroke="url(#body)" stroke-width="27" stroke-linecap="round"/>
+
+    <ellipse cx="125" cy="153" rx="13" ry="8" fill="#ff9ed6" opacity=".55"/>
+    <ellipse cx="228" cy="153" rx="13" ry="8" fill="#ff9ed6" opacity=".55"/>
+
+    <path d="M124 169c-7 21-15 42-29 57" fill="none" stroke="url(#body)" stroke-width="28" stroke-linecap="round"/>
+    <path d="M228 170c8 19 16 36 31 48" fill="none" stroke="url(#body)" stroke-width="28" stroke-linecap="round"/>
+
+    <circle cx="104" cy="106" r="37" fill="#efe7ff" stroke="#3f1979" stroke-width="10"/>
+    <circle cx="104" cy="106" r="27" fill="#fff" opacity=".96"/>
+    <circle cx="104" cy="106" r="12" fill="#211033"/>
+    <circle cx="109" cy="100" r="4" fill="#fff"/>
+    <path d="M78 135l-26 42" stroke="#3f1979" stroke-width="13" stroke-linecap="round"/>
+    <circle cx="58" cy="171" r="11" fill="#650fc7"/>
+
+    <path d="M194 179h120l24 28-26 35H194z" fill="url(#tag)" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+    <circle cx="305" cy="208" r="7" fill="#fff" opacity=".9"/>
+    <text x="250" y="206" text-anchor="middle" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="22">BIG</text>
+    <text x="250" y="230" text-anchor="middle" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="22">DEALS</text>
+
+    <path d="M307 60l13-20M326 72l22-9M300 42l-2-20" stroke="#e81ea3" stroke-width="9" stroke-linecap="round"/>
+  </g>
+</svg>
