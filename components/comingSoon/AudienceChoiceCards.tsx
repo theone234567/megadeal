@@ -4,13 +4,13 @@ import { fredoka } from "@/lib/fonts";
 
 export default function AudienceChoiceCards() {
   return (
-    <section className="px-4 pt-10 sm:px-6 lg:px-8">
-      <div className="mx-auto grid max-w-6xl gap-5 sm:grid-cols-2">
-        <div className="flex flex-col rounded-2xl border border-slate-100 bg-brand-50 p-6 shadow-card sm:p-8">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-ember-600 shadow-sm">
-            <HeartIcon className="h-5 w-5" />
+    <section className="px-6 pt-8 lg:px-10">
+      <div className="mx-auto grid max-w-[1360px] gap-5 sm:grid-cols-2">
+        <div className="flex flex-col rounded-2xl bg-brand-50 p-6 sm:p-8">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-ember-600">
+            <HeartIcon className="h-7 w-7" />
           </span>
-          <h2 className={`${fredoka.className} mt-4 text-xl font-bold text-brand-900`}>
+          <h2 className={`${fredoka.className} mt-4 text-2xl font-bold text-brand-900`}>
             Love a good deal?
           </h2>
           <p className="mt-2 flex-1 text-sm text-slate-600">
@@ -19,17 +19,17 @@ export default function AudienceChoiceCards() {
           </p>
           <a
             href="#get-notified"
-            className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-full bg-ember-500 px-5 py-2.5 text-sm font-bold text-white shadow-card transition hover:bg-ember-600 active:scale-95"
+            className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-full bg-ember-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-ember-600 active:scale-95"
           >
             Get launch updates →
           </a>
         </div>
 
-        <div className="flex flex-col rounded-2xl border border-slate-100 bg-ember-50 p-6 shadow-card sm:p-8">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-brand-600 shadow-sm">
-            <StoreIcon className="h-5 w-5" />
+        <div className="flex flex-col rounded-2xl bg-ember-50 p-6 sm:p-8">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-brand-600">
+            <StoreIcon className="h-7 w-7" />
           </span>
-          <h2 className={`${fredoka.className} mt-4 text-xl font-bold text-brand-900`}>
+          <h2 className={`${fredoka.className} mt-4 text-2xl font-bold text-brand-900`}>
             Run a local business?
           </h2>
           <p className="mt-2 flex-1 text-sm text-slate-600">
@@ -41,7 +41,7 @@ export default function AudienceChoiceCards() {
           </p>
           <Link
             href="/list-your-business"
-            className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95"
+            className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-700 active:scale-95"
           >
             List my business →
           </Link>

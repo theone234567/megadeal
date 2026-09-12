@@ -1,5 +1,3 @@
-import { fredoka } from "@/lib/fonts";
-
 const ROLLOUT = [
   { city: "Auckland", status: "Launching first", active: true },
   { city: "Wellington", status: "Coming next", active: false },
@@ -10,42 +8,24 @@ const ROLLOUT = [
 
 export default function LaunchRoadmap() {
   return (
-    <section className="px-4 pt-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
-        <h2 className={`${fredoka.className} text-center text-2xl font-bold text-brand-900 sm:text-3xl`}>
-          Launching across New Zealand
-        </h2>
-        <ol className="mt-8 space-y-0">
-          {ROLLOUT.map(({ city, status, active }, i) => (
-            <li key={city} className="relative flex gap-4 pb-8 last:pb-0">
-              {i < ROLLOUT.length - 1 && (
+    <section className="px-6 pt-8 lg:px-10">
+      <div className="mx-auto max-w-[1360px] rounded-2xl border border-slate-100 bg-white px-6 py-5 sm:px-8">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 sm:justify-between">
+          <p className="text-sm font-bold text-slate-900">Launching across New Zealand</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            {ROLLOUT.map(({ city, status, active }) => (
+              <div key={city} className="flex items-center gap-1.5">
                 <span
-                  aria-hidden
-                  // bottom-0 (not h-full) so the browser computes the
-                  // height from the <li>'s own content + padding, which
-                  // h-full can't do reliably on an absolutely positioned
-                  // element without an explicit-height ancestor.
-                  className="absolute left-[7px] top-4 bottom-0 w-px bg-slate-200"
+                  className={`h-2 w-2 shrink-0 rounded-full ${active ? "bg-ember-500" : "bg-slate-300"}`}
                 />
-              )}
-              <span
-                className={`relative mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
-                  active ? "bg-ember-500" : "bg-slate-300"
-                }`}
-              >
-                {active && (
-                  <span className="absolute h-4 w-4 animate-ping rounded-full bg-ember-500 opacity-50" />
-                )}
-              </span>
-              <div>
-                <p className="font-bold text-slate-900">{city}</p>
-                <p className={`text-sm ${active ? "font-semibold text-ember-600" : "text-slate-500"}`}>
-                  {status}
-                </p>
+                <span className={`text-xs font-semibold ${active ? "text-ember-600" : "text-slate-500"}`}>
+                  {city}
+                </span>
+                <span className="text-xs text-slate-400">· {status}</span>
               </div>
-            </li>
-          ))}
-        </ol>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

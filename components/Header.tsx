@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import ElephantMascot from "@/components/ElephantMascot";
 import { SearchIcon, UserIcon } from "@/components/icons";
@@ -14,6 +14,13 @@ export default function Header() {
   const [city, setCity] = useState("");
   const [query, setQuery] = useState("");
   const router = useRouter();
+  // The coming-soon page is deliberately not a normal browse page — there's
+  // no catalog to search yet, and its own design calls for a plain compact
+  // header (logo + a lone sign-in link, no navbar) rather than the search
+  // bar every other page needs. Same per-route override pattern Footer.tsx
+  // already uses for its own business-CTA banner.
+  const pathname = usePathname();
+  const isComingSoon = pathname === "/coming-soon";
 
   // Same "has the deferred profile step been done" signal as the portal's
   // own onboarding checklist — surfaced here too so a merchant sees they
@@ -48,7 +55,11 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-100 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+        {/* flex-wrap so a long "Business sign in" label drops to its own
+            line at very narrow widths instead of overflowing the
+            viewport horizontally — the logo and this link never actually
+            share space with anything else, so wrapping costs nothing. */}
+        <div className="flex flex-wrap items-center justify-between gap-y-1">
           <Link href="/" className="flex items-center gap-0.5 font-display">
             <span className="animate-wordmark-shake items-center gap-0.5">
               <span className="text-[1.7rem] font-extrabold tracking-tight text-brand-700">
@@ -83,6 +94,7 @@ export default function Header() {
           </Link>
         </div>
 
+        {!isComingSoon && (
         <form onSubmit={handleSearch} className="flex w-full items-center gap-2">
           <div className="flex flex-1 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 focus-within:border-brand-400">
             <SearchIcon className="h-4 w-4 shrink-0 text-slate-400" />
@@ -115,6 +127,7 @@ export default function Header() {
             Search
           </button>
         </form>
+        )}
       </div>
     </header>
   );
