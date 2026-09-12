@@ -46,17 +46,17 @@ export default function Header() {
     return (
       <header className="relative z-40 border-b border-[#eee7f7] bg-white">
         <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-5 py-4 sm:px-8 lg:px-10 lg:py-5 xl:max-w-[1320px] 2xl:max-w-[1460px]">
-          <Link href="/coming-soon" aria-label="MegaDeal coming soon" className="group inline-flex shrink-0 items-center gap-3 sm:gap-3.5">
+          <Link href="/coming-soon" aria-label="MegaDeal coming soon" className="group inline-flex shrink-0 items-center gap-3 sm:gap-4">
             <span className="block">
               <span className={`${fredoka.className} flex items-center leading-none tracking-[-0.045em]`}>
-                <span className="text-[36px] font-bold text-[#650fc7] sm:text-[42px] lg:text-[46px]">Mega</span>
-                <span className="ml-1 -rotate-2 rounded-[12px] bg-[#e81ea3] px-3 py-1.5 text-[33px] font-bold text-white shadow-sm sm:text-[39px] lg:text-[43px]">Deal</span>
+                <span className="text-[42px] font-bold text-[#650fc7] sm:text-[48px] lg:text-[52px]">Mega</span>
+                <span className="ml-1 -rotate-2 rounded-[13px] bg-[#e81ea3] px-3.5 py-1.5 text-[38px] font-bold text-white shadow-sm sm:text-[44px] lg:text-[48px]">Deal</span>
               </span>
               <span className="mt-1.5 block pl-1 text-[11px] font-semibold tracking-[0.04em] text-[#6b5a8f] sm:text-xs">Local together.</span>
             </span>
             <span
               aria-hidden="true"
-              className="h-[64px] w-[78px] shrink-0 bg-[url('/brand/megadeal-elephant.svg')] bg-contain bg-center bg-no-repeat transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-105 sm:h-[74px] sm:w-[90px] lg:h-[82px] lg:w-[100px]"
+              className="h-[76px] w-[94px] shrink-0 bg-[url('/brand/megadeal-elephant.svg')] bg-contain bg-center bg-no-repeat transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-105 sm:h-[86px] sm:w-[106px] lg:h-[94px] lg:w-[116px]"
             />
           </Link>
 
