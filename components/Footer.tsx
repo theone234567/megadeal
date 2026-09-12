@@ -7,12 +7,26 @@ import SocialLinks from "./SocialLinks";
 import EmailSignupForm from "./EmailSignupForm";
 
 export default function Footer() {
-  // /list-your-business already is this exact pitch, right down to the
-  // same WELCOME6 offer, ending with the identical banner right after a
-  // visitor has just seen (or filled in) the signup form reads as pure
-  // repetition.
   const pathname = usePathname();
+  const isComingSoon = pathname === "/coming-soon";
   const hideOwnABusinessCta = pathname?.startsWith("/list-your-business");
+
+  if (isComingSoon) {
+    return (
+      <footer className="mt-0 bg-white px-5 pb-8 pt-2 sm:px-8 lg:px-10">
+        <div className="mx-auto flex w-full max-w-[1180px] flex-col items-center justify-between gap-5 border-t border-[#eeeaf5] pt-6 sm:flex-row xl:max-w-[1380px] 2xl:max-w-[1480px]">
+          <div className="flex items-center font-display text-[26px] font-black leading-none tracking-[-0.055em] sm:text-[30px]">
+            <span className="text-[#6d24dc]">Mega</span>
+            <span className="ml-1 -rotate-1 rounded-[10px] bg-[#f0189a] px-2 py-1.5 text-white">Deal</span>
+          </div>
+          <p className="text-center text-xs text-slate-400">*T&amp;Cs apply for eligible new business listings.</p>
+          <p className="text-center text-sm font-semibold italic text-[#5f1cc8] sm:text-right">
+            Stronger local communities — together. ♥
+          </p>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="mt-16 border-t border-slate-100 bg-slate-50">
@@ -22,8 +36,7 @@ export default function Footer() {
             <div>
               <h3 className="text-lg font-bold text-white">Own a local business?</h3>
               <p className="text-sm text-brand-100">
-                List your deal on MegaDeal and get up to 6 months free
-                advertising — use code <span className="font-bold">WELCOME6</span> at signup.{" "}
+                List your deal on MegaDeal and get up to 6 months free advertising — use code <span className="font-bold">WELCOME6</span> at signup.{" "}
                 <Link href="/terms" className="text-brand-200 underline hover:text-white">
                   Conditions apply.
                 </Link>
@@ -46,10 +59,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-slate-600">
               {CATEGORIES.map((c) => (
                 <li key={c.name}>
-                  <Link
-                    href={`/category/${encodeURIComponent(c.name)}`}
-                    className="hover:text-brand-700"
-                  >
+                  <Link href={`/category/${encodeURIComponent(c.name)}`} className="hover:text-brand-700">
                     {c.name}
                   </Link>
                 </li>
@@ -59,56 +69,20 @@ export default function Footer() {
           <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Company</h4>
             <ul className="space-y-2 text-sm text-slate-600">
-              <li>
-                <Link href="/list-your-business" className="hover:text-brand-700">
-                  List your business
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="hover:text-brand-700">
-                  About MegaDeal
-                </Link>
-              </li>
-              <li>
-                <Link href="/how-it-works" className="hover:text-brand-700">
-                  How it works
-                </Link>
-              </li>
-              <li>
-                <Link href="/careers" className="hover:text-brand-700">
-                  Careers
-                </Link>
-              </li>
-              <li>
-                <Link href="/coming-soon" className="hover:text-brand-700">
-                  Coming soon
-                </Link>
-              </li>
+              <li><Link href="/list-your-business" className="hover:text-brand-700">List your business</Link></li>
+              <li><Link href="/about" className="hover:text-brand-700">About MegaDeal</Link></li>
+              <li><Link href="/how-it-works" className="hover:text-brand-700">How it works</Link></li>
+              <li><Link href="/careers" className="hover:text-brand-700">Careers</Link></li>
+              <li><Link href="/coming-soon" className="hover:text-brand-700">Coming soon</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Support</h4>
             <ul className="space-y-2 text-sm text-slate-600">
-              <li>
-                <Link href="/help" className="hover:text-brand-700">
-                  Help centre
-                </Link>
-              </li>
-              <li>
-                <Link href="/redeem" className="hover:text-brand-700">
-                  How to redeem a deal
-                </Link>
-              </li>
-              <li>
-                <Link href="/refund-policy" className="hover:text-brand-700">
-                  Refund policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-brand-700">
-                  Contact us
-                </Link>
-              </li>
+              <li><Link href="/help" className="hover:text-brand-700">Help centre</Link></li>
+              <li><Link href="/redeem" className="hover:text-brand-700">How to redeem a deal</Link></li>
+              <li><Link href="/refund-policy" className="hover:text-brand-700">Refund policy</Link></li>
+              <li><Link href="/contact" className="hover:text-brand-700">Contact us</Link></li>
             </ul>
           </div>
           <div>
@@ -117,29 +91,16 @@ export default function Footer() {
           </div>
           <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Stay in the loop</h4>
-            <p className="mb-3 text-sm text-slate-600">
-              Get the best local deals in your inbox every week.
-            </p>
-            <EmailSignupForm
-              audience="customer"
-              source="footer"
-              buttonLabel="Join"
-              surface="plain"
-            />
+            <p className="mb-3 text-sm text-slate-600">Get the best local deals in your inbox every week.</p>
+            <EmailSignupForm audience="customer" source="footer" buttonLabel="Join" surface="plain" />
           </div>
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 sm:flex-row">
-          <p className="text-center text-sm text-slate-500 sm:text-left">
-            © {new Date().getFullYear()} MegaDeal. All rights reserved.
-          </p>
+          <p className="text-center text-sm text-slate-500 sm:text-left">© {new Date().getFullYear()} MegaDeal. All rights reserved.</p>
           <div className="flex gap-4 text-sm text-slate-500">
-            <Link href="/terms" className="hover:text-brand-700">
-              Terms
-            </Link>
-            <Link href="/privacy" className="hover:text-brand-700">
-              Privacy
-            </Link>
+            <Link href="/terms" className="hover:text-brand-700">Terms</Link>
+            <Link href="/privacy" className="hover:text-brand-700">Privacy</Link>
           </div>
         </div>
       </div>
