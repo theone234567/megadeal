@@ -6,9 +6,74 @@ import { useRouter, usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import ElephantMascot from "@/components/ElephantMascot";
 import { SearchIcon, UserIcon } from "@/components/icons";
-import { fredoka } from "@/lib/fonts";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
+
+function ComingSoonLogo() {
+  return (
+    <svg
+      viewBox="0 0 345 88"
+      className="h-auto w-[218px] sm:w-[248px]"
+      role="img"
+      aria-label="MegaDeal"
+    >
+      <defs>
+        <linearGradient id="md-elephant" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#9b63ff" />
+          <stop offset="100%" stopColor="#6720dc" />
+        </linearGradient>
+        <filter id="md-shadow" x="-20%" y="-20%" width="140%" height="150%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#5b25ba" floodOpacity="0.18" />
+        </filter>
+      </defs>
+
+      <text
+        x="2"
+        y="57"
+        fill="#5d18d6"
+        fontFamily="Arial Rounded MT Bold, Arial, sans-serif"
+        fontSize="48"
+        fontWeight="900"
+        letterSpacing="-3"
+      >
+        Mega
+      </text>
+
+      <g transform="translate(129 8) rotate(-2 61 34)" filter="url(#md-shadow)">
+        <rect x="0" y="0" width="122" height="66" rx="17" fill="#ef159d" />
+        <text
+          x="12"
+          y="49"
+          fill="white"
+          fontFamily="Arial Rounded MT Bold, Arial, sans-serif"
+          fontSize="43"
+          fontWeight="900"
+          letterSpacing="-2"
+        >
+          Deal
+        </text>
+      </g>
+
+      <g transform="translate(252 4)" filter="url(#md-shadow)">
+        <ellipse cx="26" cy="36" rx="18" ry="21" fill="#b58aff" />
+        <ellipse cx="70" cy="36" rx="18" ry="21" fill="#b58aff" />
+        <ellipse cx="28" cy="36" rx="10" ry="13" fill="#f5b0df" />
+        <ellipse cx="68" cy="36" rx="10" ry="13" fill="#f5b0df" />
+        <ellipse cx="48" cy="34" rx="27" ry="25" fill="url(#md-elephant)" />
+        <ellipse cx="48" cy="62" rx="21" ry="15" fill="url(#md-elephant)" />
+        <ellipse cx="37" cy="73" rx="8" ry="11" fill="#7130dc" />
+        <ellipse cx="59" cy="73" rx="8" ry="11" fill="#7130dc" />
+        <path d="M53 46 C64 49 66 60 61 67 C58 72 54 68 56 64 C60 57 56 53 50 52" fill="none" stroke="#7130dc" strokeWidth="10" strokeLinecap="round" />
+        <circle cx="38" cy="30" r="5.5" fill="#241046" />
+        <circle cx="58" cy="30" r="5.5" fill="#241046" />
+        <circle cx="39.8" cy="28.2" r="1.7" fill="white" />
+        <circle cx="59.8" cy="28.2" r="1.7" fill="white" />
+        <path d="M42 42 Q48 47 54 42" fill="none" stroke="#371150" strokeWidth="2.8" strokeLinecap="round" />
+        <ellipse cx="48" cy="44" rx="4" ry="2.5" fill="#ff9dcb" />
+      </g>
+    </svg>
+  );
+}
 
 export default function Header() {
   const { member, isLoggedIn } = useWix();
@@ -49,20 +114,8 @@ export default function Header() {
       <header className="relative z-30 bg-white">
         <div className="mx-auto flex max-w-[1440px] items-start justify-between gap-4 px-5 pb-2 pt-5 sm:px-8 lg:px-10 lg:pt-6">
           <div>
-            <Link
-              href="/coming-soon"
-              aria-label="MegaDeal coming soon"
-              className={`${fredoka.className} inline-flex items-center gap-1`}
-            >
-              <span className="text-[1.8rem] font-bold tracking-[-0.045em] text-brand-700 sm:text-[2rem]">
-                Mega
-              </span>
-              <span className="-rotate-2 rounded-[15px] bg-ember-500 px-2.5 py-0.5 text-[1.8rem] font-bold tracking-[-0.045em] text-white sm:text-[2rem]">
-                Deal
-              </span>
-              <span className="ml-0.5 origin-left scale-[0.82]">
-                <ElephantMascot className="-rotate-3" />
-              </span>
+            <Link href="/coming-soon" aria-label="MegaDeal coming soon" className="inline-flex items-center">
+              <ComingSoonLogo />
             </Link>
             <p className="mt-0.5 pl-4 text-[11px] font-semibold tracking-[0.04em] text-[#776a9b] sm:text-xs">
               Local together.
