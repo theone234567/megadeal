@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -44,25 +45,36 @@ export default function Header() {
 
   if (isComingSoon) {
     return (
-      <header className="relative z-40 border-b border-[#eee7f7] bg-white">
-        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-5 py-4 sm:px-8 lg:px-10 lg:py-5 xl:max-w-[1320px] 2xl:max-w-[1460px]">
-          <Link href="/coming-soon" aria-label="MegaDeal coming soon" className="group inline-flex shrink-0 items-center gap-3 sm:gap-4">
-            <span className="block">
+      <header className="relative z-40 border-b border-slate-100 bg-white">
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 px-5 py-3 sm:px-8 lg:px-10 lg:py-4 xl:max-w-[1320px] 2xl:max-w-[1460px]">
+          <Link href="/" aria-label="MegaDeal home" className="group inline-flex shrink-0 items-center">
+            <span className="relative block pr-[76px] sm:pr-[92px]">
               <span className={`${fredoka.className} flex items-center leading-none tracking-[-0.045em]`}>
-                <span className="text-[42px] font-bold text-[#650fc7] sm:text-[48px] lg:text-[52px]">Mega</span>
-                <span className="ml-1 -rotate-2 rounded-[13px] bg-[#e81ea3] px-3.5 py-1.5 text-[38px] font-bold text-white shadow-sm sm:text-[44px] lg:text-[48px]">Deal</span>
+                <span className="text-[38px] font-bold text-brand-700 sm:text-[44px] lg:text-[48px]">Mega</span>
+                <span
+                  className="ml-1 -rotate-2 bg-ember-500 px-3 py-1.5 text-[35px] font-bold text-white shadow-sm sm:text-[41px] lg:text-[45px]"
+                  style={{ clipPath: "polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%)" }}
+                >
+                  Deal
+                </span>
               </span>
-              <span className="mt-1.5 block pl-1 text-[11px] font-semibold tracking-[0.04em] text-[#6b5a8f] sm:text-xs">Local together.</span>
+              <span className="mt-1.5 block pl-1 text-[11px] font-semibold tracking-[0.03em] text-slate-500 sm:text-xs">
+                Local together.
+              </span>
+              <Image
+                src="/brand/deal-hunter-elephant.svg"
+                alt=""
+                aria-hidden="true"
+                width={130}
+                height={102}
+                className="pointer-events-none absolute -right-1 -top-7 h-[78px] w-[100px] object-contain transition-transform duration-200 group-hover:-rotate-2 group-hover:scale-105 sm:-right-2 sm:-top-8 sm:h-[90px] sm:w-[116px] lg:h-[98px] lg:w-[126px]"
+              />
             </span>
-            <span
-              aria-hidden="true"
-              className="h-[76px] w-[94px] shrink-0 bg-[url('/brand/megadeal-elephant.svg')] bg-contain bg-center bg-no-repeat transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-105 sm:h-[86px] sm:w-[106px] lg:h-[94px] lg:w-[116px]"
-            />
           </Link>
 
           <Link
             href="/portal"
-            className="shrink-0 rounded-full border border-[#d9c9ef] bg-white px-4 py-2 text-xs font-extrabold text-[#650fc7] transition hover:border-[#650fc7] hover:bg-[#f7f2ff] sm:text-sm"
+            className="shrink-0 rounded-full border border-brand-200 bg-white px-4 py-2 text-xs font-extrabold text-brand-700 transition hover:border-brand-700 hover:bg-brand-50 sm:text-sm"
           >
             Business sign in →
           </Link>
