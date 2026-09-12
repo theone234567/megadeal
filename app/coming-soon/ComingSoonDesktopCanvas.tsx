@@ -6,97 +6,254 @@ import EmailSignupForm from "@/components/EmailSignupForm";
 import {
   DumbbellIcon,
   FlowerIcon,
+  MapPinIcon,
+  PhoneIcon,
+  SearchIcon,
+  StoreIcon,
   SuitcaseIcon,
   TicketIcon,
   UtensilsIcon,
   WrenchIcon,
+  UsersIcon,
 } from "@/components/icons";
 
+const AUCKLAND_IMAGE =
+  "https://upload.wikimedia.org/wikipedia/commons/3/37/Auckland_CBD_skyline_from_Waitemata_Harbour_entrance.jpg";
+
 const categories = [
-  { name: "Food & Drink", icon: UtensilsIcon },
-  { name: "Beauty & Spa", icon: FlowerIcon },
-  { name: "Things To Do", icon: TicketIcon },
-  { name: "Travel & Getaways", icon: SuitcaseIcon },
-  { name: "Health & Fitness", icon: DumbbellIcon },
-  { name: "Home & Car", icon: WrenchIcon },
+  {
+    name: "Food & Drink",
+    icon: UtensilsIcon,
+    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=82",
+  },
+  {
+    name: "Beauty & Spa",
+    icon: FlowerIcon,
+    image: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=900&q=82",
+  },
+  {
+    name: "Things To Do",
+    icon: TicketIcon,
+    image: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=900&q=82",
+  },
+  {
+    name: "Travel & Getaways",
+    icon: SuitcaseIcon,
+    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=82",
+  },
+  {
+    name: "Health & Fitness",
+    icon: DumbbellIcon,
+    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=82",
+  },
+  {
+    name: "Home & Car",
+    icon: WrenchIcon,
+    image: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=900&q=82",
+  },
 ];
+
+const shell = "mx-auto w-full max-w-[1480px] px-6 xl:px-10";
 
 export default function ComingSoonDesktopCanvas() {
   const [showSignup, setShowSignup] = useState(false);
 
   return (
     <>
-      <section className="relative hidden bg-white lg:block" aria-label="MegaDeal Auckland launch page">
-        <div className="relative mx-auto w-full max-w-[1500px]">
-          <img
-            src="/brand/coming-soon-approved-exact.webp"
-            alt=""
-            aria-hidden="true"
-            width={1055}
-            height={1422}
-            className="block h-auto w-full select-none"
-            draggable={false}
-            fetchPriority="high"
-          />
+      <div className="hidden lg:block">
+        <section className="relative overflow-hidden bg-[radial-gradient(circle_at_18%_4%,#aa49ff_0%,#8f31f3_28%,#741ddd_58%,#6216cb_100%)] text-white">
+          <div className="pointer-events-none absolute -left-20 top-20 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
+          <div className={`${shell} relative z-10 grid min-h-[620px] grid-cols-[0.88fr_1.12fr] items-center gap-14 py-14`}>
+            <div className="max-w-[650px]">
+              <div className="inline-flex rounded-full bg-white/12 px-5 py-2 text-sm font-extrabold uppercase tracking-[0.18em] ring-1 ring-white/15">
+                Launching first in Auckland
+              </div>
+              <h1 className="mt-5 font-display text-[72px] font-black leading-[0.92] tracking-[-0.045em] 2xl:text-[82px]">
+                Big local deals are on the way, Auckland.
+              </h1>
+              <p className="mt-6 max-w-[610px] text-[18px] leading-8 text-white/95 2xl:text-[20px]">
+                MegaDeal is getting ready to launch in Auckland — helping local businesses fill quiet times and helping deal hunters discover standout local offers.
+              </p>
+              <p className="mt-5 text-[17px] font-extrabold leading-7">
+                0% commission for businesses <span className="mx-2 text-white/55">•</span> Up to 6 months advertising free*
+              </p>
+            </div>
 
-          <button
-            type="button"
-            aria-label="Get MegaDeal Auckland launch updates"
-            onClick={() => setShowSignup(true)}
-            className="absolute left-[16.8%] top-[34.0%] h-[3.35%] w-[30%] cursor-pointer rounded-full bg-transparent outline-none focus-visible:ring-4 focus-visible:ring-white/70"
-          />
+            <div className="relative mx-auto w-full max-w-[760px]">
+              <div className="relative aspect-[1.34/1] overflow-hidden rounded-[32px] border-[5px] border-white/80 bg-white/10 shadow-[0_28px_80px_rgba(35,7,82,.30)]">
+                <img
+                  src={AUCKLAND_IMAGE}
+                  alt="Auckland skyline and Sky Tower across Waitematā Harbour"
+                  className="h-full w-full object-cover object-center"
+                  fetchPriority="high"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#241044]/30 via-transparent to-transparent" />
+                <div className="absolute right-6 top-6 rounded-full bg-white px-5 py-2 text-sm font-extrabold uppercase tracking-[0.13em] text-[#6418c9] shadow-sm">
+                  Auckland first
+                </div>
+                <div className="absolute bottom-6 right-6 max-w-[390px] rounded-[18px] bg-[#321373]/94 px-6 py-4 text-white shadow-lg backdrop-blur-sm">
+                  <p className="font-display text-xl font-black">Same city. More to discover.</p>
+                  <p className="mt-1 text-sm text-white/85">Local offers. Local businesses. Better value.</p>
+                </div>
+              </div>
 
-          <Link
-            href="/list-your-business"
-            aria-label="Claim my free advertising"
-            className="absolute left-[63.4%] top-[34.25%] h-[3.35%] w-[30%] rounded-full outline-none focus-visible:ring-4 focus-visible:ring-white/70"
-          />
+              <img
+                src="/brand/megadeal-mascot-big-deals.webp"
+                alt="MegaDeal deal-hunter elephant mascot holding a Big Deals Ahead sign"
+                width={500}
+                height={500}
+                className="pointer-events-none absolute -bottom-16 -left-20 z-20 w-[300px] select-none drop-shadow-[0_18px_24px_rgba(38,8,87,.30)] 2xl:w-[340px]"
+                loading="eager"
+              />
+            </div>
+          </div>
 
-          {/* Replace the baked category strip so it always matches the live footer taxonomy. */}
-          <div className="absolute left-[2.6%] top-[57.4%] z-20 h-[14.9%] w-[94.8%] bg-white px-[1.1%] pt-[1.1%]">
-            <h2 className="text-center font-display text-[clamp(18px,1.75vw,31px)] font-black leading-none text-[#15112f]">
-              Explore deal categories
-            </h2>
-            <p className="mt-[0.5%] text-center text-[clamp(10px,0.85vw,15px)] text-[#6f6a82]">
-              A taste of what&apos;s coming to Auckland.
-            </p>
+          <svg aria-hidden="true" viewBox="0 0 1440 88" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-[72px] w-full text-white">
+            <path d="M0,22 C260,88 520,46 740,52 C970,58 1200,98 1440,30 L1440,88 L0,88 Z" fill="currentColor" />
+          </svg>
+        </section>
 
-            <div className="mt-[1.35%] grid grid-cols-6 gap-[1.05%]">
-              {categories.map(({ name, icon: Icon }) => (
-                <Link
-                  key={name}
-                  href={`/category/${encodeURIComponent(name)}`}
-                  className="group overflow-hidden rounded-[12px] border border-[#ebe7f2] bg-white shadow-[0_5px_14px_rgba(32,20,62,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_9px_20px_rgba(32,20,62,0.12)]"
+        <section className="relative z-20 -mt-12 px-6 xl:px-10">
+          <div className="mx-auto grid w-full max-w-[1320px] grid-cols-2 gap-5">
+            <article className="flex min-h-[190px] items-center gap-5 rounded-[24px] border border-[#eee7f6] bg-white p-7 shadow-[0_18px_42px_rgba(40,7,88,.14)]">
+              <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#ffe1f2] text-[#f0189a]">
+                <TicketIcon className="h-8 w-8" />
+              </span>
+              <div>
+                <h2 className="font-display text-[29px] font-black leading-tight text-[#191333]">Love a great deal?</h2>
+                <p className="mt-2 max-w-[500px] text-[15px] leading-6 text-slate-600">Join free to get early access to local offers when MegaDeal launches in Auckland.</p>
+                <button
+                  type="button"
+                  onClick={() => setShowSignup(true)}
+                  className="mt-4 inline-flex h-11 items-center rounded-full bg-[#f0189a] px-6 text-sm font-extrabold text-white transition hover:bg-[#d81288]"
                 >
-                  <div className="flex aspect-[1.72/1] items-center justify-center bg-[linear-gradient(135deg,#faf7ff_0%,#f1e9ff_55%,#fff4fb_100%)] text-[#6d24dc]">
-                    <span className="flex h-[42%] aspect-square items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-[#e9defb]">
-                      <Icon className="h-[54%] w-[54%]" />
-                    </span>
+                  Get launch updates →
+                </button>
+              </div>
+            </article>
+
+            <article className="flex min-h-[190px] items-center gap-5 rounded-[24px] border border-[#eee7f6] bg-white p-7 shadow-[0_18px_42px_rgba(40,7,88,.14)]">
+              <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#6d24dc]">
+                <StoreIcon className="h-8 w-8" />
+              </span>
+              <div>
+                <h2 className="font-display text-[29px] font-black leading-tight text-[#191333]">Run a local business?</h2>
+                <p className="mt-2 max-w-[540px] text-[15px] leading-6 text-slate-600">Join before launch and reach new customers, fill quieter periods and get up to 6 months advertising free with 0% commission.*</p>
+                <Link href="/list-your-business" className="mt-4 inline-flex h-11 items-center rounded-full bg-[#6d24dc] px-6 text-sm font-extrabold text-white transition hover:bg-[#5d1cc7]">
+                  Claim my free advertising →
+                </Link>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section className="px-6 pt-6 xl:px-10">
+          <div className="mx-auto grid w-full max-w-[1320px] grid-cols-4 overflow-hidden rounded-[18px] bg-[#f7f7fb] ring-1 ring-[#eceaf2]">
+            {[
+              [TicketIcon, "No vouchers to buy"],
+              [StoreIcon, "Deal directly with local businesses"],
+              [UsersIcon, "Support businesses in your city"],
+              [MapPinIcon, "Auckland first • Wellington, Christchurch, Queenstown & Hamilton next"],
+            ].map(([Icon, text], index) => {
+              const I = Icon as typeof TicketIcon;
+              return (
+                <div key={String(text)} className={`flex min-h-[88px] items-center gap-3 px-6 py-4 ${index ? "border-l border-[#e4e1eb]" : ""}`}>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#6d24dc] shadow-sm"><I className="h-5 w-5" /></span>
+                  <p className="text-sm font-bold leading-5 text-[#292243]">{text as string}</p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="px-6 py-10 xl:px-10">
+          <div className="mx-auto w-full max-w-[1320px] rounded-[26px] bg-[#4d0ca8] px-8 py-8 text-white shadow-[0_16px_40px_rgba(69,16,141,.12)]">
+            <div className="flex items-end justify-between gap-6">
+              <div>
+                <h2 className="font-display text-[34px] font-black">How MegaDeal works</h2>
+                <p className="mt-1 text-sm font-semibold text-white/70">Simple. Direct. Local.</p>
+              </div>
+              <p className="text-sm font-semibold italic text-white/75">Local deals made easy.</p>
+            </div>
+            <div className="mt-6 grid grid-cols-3 gap-4">
+              {[
+                ["1", SearchIcon, "Find a deal", "Browse offers from local Auckland businesses."],
+                ["2", TicketIcon, "Get the deal code", "No payment or voucher purchase required."],
+                ["3", PhoneIcon, "Book direct & enjoy", "Contact the business, quote your code and pay them directly."],
+              ].map(([number, Icon, title, copy]) => {
+                const I = Icon as typeof SearchIcon;
+                return (
+                  <div key={String(title)} className="flex min-h-[132px] items-center gap-4 rounded-[18px] border border-white/10 bg-white/5 p-5">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f0189a] text-sm font-extrabold">{number as string}</span>
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-[#6d24dc]"><I className="h-7 w-7" /></span>
+                    <div><h3 className="font-extrabold">{title as string}</h3><p className="mt-1 text-sm leading-5 text-white/70">{copy as string}</p></div>
                   </div>
-                  <div className="flex min-h-[42px] items-center justify-center px-2 py-2 text-center">
-                    <span className="text-[clamp(9px,0.72vw,13px)] font-extrabold leading-tight text-[#241a45] group-hover:text-[#6d24dc]">
-                      {name}
-                    </span>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="px-6 pb-10 xl:px-10">
+          <div className="mx-auto w-full max-w-[1320px]">
+            <div className="text-center">
+              <h2 className="font-display text-[34px] font-black text-[#171128]">Explore deal categories</h2>
+              <p className="mt-1 text-sm text-slate-500">A taste of what&apos;s coming to Auckland.</p>
+            </div>
+
+            <div className="mt-6 grid grid-cols-6 gap-4">
+              {categories.map(({ name, icon: Icon, image }) => (
+                <Link key={name} href={`/category/${encodeURIComponent(name)}`} className="group overflow-hidden rounded-[18px] border border-[#e9e6f0] bg-white shadow-[0_8px_22px_rgba(28,18,54,.08)] transition hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(28,18,54,.12)]">
+                  <div className="relative aspect-[1.35/1] overflow-hidden bg-[#f3effa]">
+                    <img src={image} alt={`${name} deals`} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" loading="lazy" />
+                    <span className="absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#6d24dc] shadow-md"><Icon className="h-5 w-5" /></span>
                   </div>
+                  <div className="flex min-h-[58px] items-center justify-center px-3 py-3 text-center"><span className="text-sm font-extrabold leading-tight text-[#241a45] group-hover:text-[#6d24dc]">{name}</span></div>
                 </Link>
               ))}
             </div>
           </div>
+        </section>
 
-          <button
-            type="button"
-            aria-label="Sign up for MegaDeal launch updates"
-            onClick={() => setShowSignup(true)}
-            className="absolute left-[39.2%] top-[79.7%] h-[3.2%] w-[16.5%] cursor-pointer rounded-full bg-transparent outline-none focus-visible:ring-4 focus-visible:ring-[#7a17f0]/40"
-          />
+        <section className="px-6 pb-8 xl:px-10">
+          <div className="mx-auto grid w-full max-w-[1320px] grid-cols-2 gap-5">
+            <div className="relative overflow-hidden rounded-[24px] bg-[#fff1f8] p-8 pl-[220px]">
+              <img src="/brand/megadeal-mascot-big-deals.webp" alt="MegaDeal deal-hunter elephant mascot" className="absolute -bottom-10 -left-8 w-[235px]" loading="lazy" />
+              <h2 className="font-display text-[31px] font-black text-[#18122d]">Be first in line for launch deals</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">Get early access to the best local offers in Auckland.</p>
+              <div className="mt-4">
+                <EmailSignupForm audience="customer" source="coming-soon-desktop-inline" buttonLabel="Get launch updates →" accent="ember" surface="plain" />
+              </div>
+            </div>
 
-          <Link
-            href="/list-your-business"
-            aria-label="Claim my free advertising for my business"
-            className="absolute left-[61.8%] top-[84.1%] h-[3.0%] w-[22.5%] rounded-full outline-none focus-visible:ring-4 focus-visible:ring-[#7a17f0]/40"
-          />
-        </div>
-      </section>
+            <div className="rounded-[24px] bg-[#f4efff] p-8">
+              <h2 className="font-display text-[31px] font-black text-[#18122d]">Fill quiet times. Grow local customers.</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">Join before launch and be part of something big in Auckland.</p>
+              <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm font-semibold text-[#292243]">
+                <li>✓ 0% commission on every sale</li>
+                <li>✓ Up to 6 months advertising free*</li>
+                <li>✓ Customers deal directly with you</li>
+                <li>✓ A simple way to fill quieter periods</li>
+              </ul>
+              <Link href="/list-your-business" className="mt-5 inline-flex h-11 items-center rounded-full bg-[#6d24dc] px-6 text-sm font-extrabold text-white transition hover:bg-[#5b1bc4]">Claim my free advertising →</Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-6 pb-10 xl:px-10">
+          <div className="mx-auto flex w-full max-w-[1320px] items-center justify-between gap-8 rounded-[20px] bg-[#f5f7fb] p-6 ring-1 ring-[#e8eaf0]">
+            <div className="flex items-start gap-3">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#6d24dc]"><MapPinIcon className="h-6 w-6" /></span>
+              <div><h2 className="font-display text-[24px] font-black text-[#171128]">Our launch plan</h2><p className="mt-1 text-sm text-slate-500">Auckland first, then more Kiwi cities.</p></div>
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-x-5 gap-y-2 text-sm font-bold text-[#292243]">
+              <span className="text-[#f0189a]">Auckland • first</span>
+              <span>Wellington</span><span>Christchurch</span><span>Queenstown</span><span>Hamilton</span>
+            </div>
+          </div>
+          <p className="mx-auto mt-4 w-full max-w-[1320px] text-center text-[11px] text-slate-400">*T&amp;Cs apply for eligible new business listings.</p>
+        </section>
+      </div>
 
       {showSignup && (
         <div
@@ -109,30 +266,12 @@ export default function ComingSoonDesktopCanvas() {
           }}
         >
           <div className="relative w-full max-w-[560px] rounded-[28px] bg-white p-8 shadow-[0_30px_100px_rgba(30,8,65,.35)]">
-            <button
-              type="button"
-              onClick={() => setShowSignup(false)}
-              aria-label="Close launch updates form"
-              className="absolute right-5 top-4 text-3xl leading-none text-slate-400 hover:text-slate-700"
-            >
-              ×
-            </button>
+            <button type="button" onClick={() => setShowSignup(false)} aria-label="Close launch updates form" className="absolute right-5 top-4 text-3xl leading-none text-slate-400 hover:text-slate-700">×</button>
             <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#e81ea3]">Auckland launch</p>
-            <h2 id="launch-signup-title" className="mt-2 font-display text-3xl font-black text-[#1a1230]">
-              Be first in line for launch deals
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Join free and we&apos;ll let you know when MegaDeal launches in Auckland.
-            </p>
+            <h2 id="launch-signup-title" className="mt-2 font-display text-3xl font-black text-[#1a1230]">Be first in line for launch deals</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Join free and we&apos;ll let you know when MegaDeal launches in Auckland.</p>
             <div className="mt-5">
-              <EmailSignupForm
-                audience="customer"
-                source="coming-soon-desktop"
-                buttonLabel="Get launch updates →"
-                accent="ember"
-                surface="plain"
-                layout="stacked"
-              />
+              <EmailSignupForm audience="customer" source="coming-soon-desktop" buttonLabel="Get launch updates →" accent="ember" surface="plain" layout="stacked" />
             </div>
           </div>
         </div>
