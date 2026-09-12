@@ -1,0 +1,24 @@
+/* Large-desktop enhancement for the coming-soon page only.
+   Mobile and tablet layouts are intentionally untouched. */
+
+@media (min-width: 1280px) {
+  .coming-soon-soft main > section > div {
+    max-width: 1320px !important;
+  }
+
+  .coming-soon-soft main > section:first-of-type > div > .grid:first-child {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) !important;
+    gap: 3.5rem !important;
+  }
+}
+
+@media (min-width: 1536px) {
+  .coming-soon-soft main > section > div {
+    max-width: 1460px !important;
+  }
+
+  .coming-soon-soft main > section:first-of-type > div > .grid:first-child {
+    grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr) !important;
+    gap: 4rem !important;
+  }
+}
