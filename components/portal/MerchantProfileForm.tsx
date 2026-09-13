@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AddressAutocompleteField from "@/components/AddressAutocompleteField";
+import PhotoUploadField from "./PhotoUploadField";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
@@ -64,11 +65,19 @@ export default function MerchantProfileForm({
    *  here: a first application must carry consent, and the server refuses
    *  it otherwise. */
   createMode = false,
+  /** Saves a newly chosen logo. Supplied only when there's a record to
+   *  attach one to — the logo has its own upload route, so during
+   *  createMode (no record yet) there is nothing for it to write to and
+   *  the field stays out of the form. */
+  onLogoConfirm,
+  logoError,
 }: {
   merchant: MerchantRecord;
   onSaved: (updated: MerchantRecord) => void;
   startEditing?: boolean;
   createMode?: boolean;
+  onLogoConfirm?: (url: string) => Promise<void>;
+  logoError?: string | null;
 }) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [editing, setEditing] = useState(startEditing);
@@ -194,7 +203,7 @@ export default function MerchantProfileForm({
             <dd className="font-medium text-slate-800">{merchant.email || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-500">Phone</dt>
+            <dt className="text-slate-500">Booking phone number</dt>
             <dd className="font-medium text-slate-800">{merchant.phone || "—"}</dd>
           </div>
           <div className="sm:col-span-2">
@@ -351,27 +360,30 @@ export default function MerchantProfileForm({
           </div>
         </div>
 
+        <div>
+          <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
+        </div>
+
+        {/* Grouped with the other two ways a customer gets in touch, and
+            named for what it's for. On its own above, labelled "Phone", it
+            sat directly under "Contact phone" — two phone fields in a row,
+            one private and one published, distinguished by a single word. */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="profile-phone" className="mb-1 block text-sm font-medium text-slate-700">
-              Phone
+              Booking phone number
               <RequiredTag />
             </label>
             <input
               id="profile-phone"
               required
+              type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              placeholder="The number customers should call to book"
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
           </div>
-        </div>
-
-        <div>
-          <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="profile-bookingUrl" className="mb-1 block text-sm font-medium text-slate-700">
               Booking link
@@ -566,6 +578,26 @@ export default function MerchantProfileForm({
             />
           </div>
         </div>
+
+        {/* In the form, and plainly optional. It used to sit on its own
+            below the whole thing, unlabelled as to whether it was wanted —
+            so someone who had just pressed Save still had a "Choose
+            photo…" control staring at them and no way to tell whether
+            they were finished. It still saves on its own (its own upload
+            route, and a logo change sends the listing back for review),
+            which is why it keeps its confirm step rather than riding along
+            with Save. */}
+        {onLogoConfirm && (
+          <div className="border-t border-slate-100 pt-4">
+            <PhotoUploadField
+              label="Business logo (optional)"
+              currentUrl={merchant.logoUrl || null}
+              warningText="Changing your logo sends your business profile back for review before it shows on the site again. Continue?"
+              onConfirm={onLogoConfirm}
+            />
+            {logoError && <p className="mt-2 text-sm text-red-600">{logoError}</p>}
+          </div>
+        )}
 
         {createMode && (
           <label className="flex items-start gap-2 text-sm text-slate-600">

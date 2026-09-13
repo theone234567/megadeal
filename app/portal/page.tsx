@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useWix } from "@/context/WixProvider";
 import type { DealStatus } from "@/lib/types";
 import DealManageCard, { type DealRecord } from "@/components/portal/DealManageCard";
-import PhotoUploadField from "@/components/portal/PhotoUploadField";
 import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
 import MerchantLoginForm from "@/components/portal/MerchantLoginForm";
 import ReferralCard from "@/components/portal/ReferralCard";
@@ -253,6 +252,8 @@ export default function PortalPage() {
                   merchant={merchant}
                   onSaved={(updated) => setMerchant(updated)}
                   startEditing
+                  onLogoConfirm={handleChangeLogo}
+                  logoError={logoError}
                 />
               </div>
             </section>
@@ -337,25 +338,22 @@ export default function PortalPage() {
 
           <NotificationPreferences notifyReferralBonus={merchant.notifyReferralBonus} />
 
-          <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
-            {/* Only once, and only here when it isn't already leading the
-                page above — two live copies of the same form would fight
-                over the same record, and whichever was saved last would
-                quietly overwrite the other. */}
-            {profileComplete && (
-              <MerchantProfileForm merchant={merchant} onSaved={(updated) => setMerchant(updated)} />
-            )}
-
-            <div className={profileComplete ? "mt-5 border-t border-slate-100 pt-5" : ""}>
-              <PhotoUploadField
-                label="Business logo"
-                currentUrl={merchant.logoUrl || null}
-                warningText="Changing your logo sends your business profile back for review before it shows on the site again. Continue?"
-                onConfirm={handleChangeLogo}
+          {/* Only once, and only here when it isn't already leading the
+              page above — two live copies of the same form would fight
+              over the same record, and whichever was saved last would
+              quietly overwrite the other. The card goes with it: with the
+              logo field moved inside the form, an incomplete listing was
+              left rendering an empty white box here. */}
+          {profileComplete && (
+            <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+              <MerchantProfileForm
+                merchant={merchant}
+                onSaved={(updated) => setMerchant(updated)}
+                onLogoConfirm={handleChangeLogo}
+                logoError={logoError}
               />
-              {logoError && <p className="mt-2 text-sm text-red-600">{logoError}</p>}
             </div>
-          </div>
+          )}
 
           <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
             <div className="flex items-center justify-between">
