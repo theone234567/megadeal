@@ -425,7 +425,12 @@ export default function PortalPage() {
                         <span className="text-xl">🏷️</span>
                       )}
                     </div>
-                    <div className="min-w-0 flex-1">
+                    {/* basis keeps the name from collapsing to nothing at
+                        phone width, where flex-1 alone let the buttons
+                        squeeze it out and the row became a thumbnail next
+                        to two buttons with the deal's name nowhere. Below
+                        that width the buttons wrap to their own line. */}
+                    <div className="min-w-0 flex-1 basis-40">
                       <p className="truncate font-display text-base font-bold text-slate-900">
                         {draft.dealName || "Untitled deal"}
                       </p>
@@ -433,7 +438,7 @@ export default function PortalPage() {
                         Last saved {formatSavedAt(draft._updatedDate)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="ml-auto flex items-center gap-2">
                       <Link
                         href={`/portal/new-deal?draft=${draft._id}`}
                         className="rounded-full bg-ember-500 px-5 py-2.5 text-xs font-extrabold text-white shadow-card transition hover:bg-ember-600 active:scale-95"

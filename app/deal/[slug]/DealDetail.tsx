@@ -108,7 +108,11 @@ export default function DealDetail({
           </div>
 
           <div className="mt-6">
-            <h2 className="mb-2 text-lg font-bold text-slate-900">The fine print</h2>
+            {/* This is the deal's sales copy, not its conditions. It was
+                headed "The fine print", which was wrong even before the
+                merchant's actual conditions started rendering — now that
+                they do, the page had the two labels the wrong way round. */}
+            <h2 className="mb-2 text-lg font-bold text-slate-900">What you get</h2>
             <p className="max-w-none whitespace-pre-line text-sm leading-relaxed text-slate-600">
               {deal.description}
             </p>
@@ -282,6 +286,15 @@ export default function DealDetail({
           )}
         </div>
 
+        {/* NOTE: on a phone this whole panel — the price and the only
+            booking button on the page — stacks below the photo, the
+            description and the entire business section. Ordering it first
+            was tried and is worse: the page then opens on a text card and
+            the photo, which is what sells the deal, drops below it. Doing
+            it properly means photo, then price, then the rest, which needs
+            the photo lifted out into its own grid item, and that risks the
+            sticky behaviour of this panel on desktop. Left as it was
+            deliberately, not overlooked. */}
         <div className="lg:col-span-2">
           <div className="sticky top-24 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
             {deal.categories[0] && (
