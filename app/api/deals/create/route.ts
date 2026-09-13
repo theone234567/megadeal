@@ -75,7 +75,15 @@ export async function POST(req: NextRequest) {
   if (quantityAvailable !== undefined && (!Number.isFinite(quantityAvailable) || quantityAvailable < 1)) {
     return NextResponse.json({ error: "Quantity available must be a positive number." }, { status: 400 });
   }
-  if (photoUrl && !isWixMediaUrl(photoUrl)) {
+  // A deal without a photo is close to unsellable on a grid of deals that
+  // all have one, and it drags down the cards either side of it. Enforced
+  // here rather than only in the form because this route is the boundary:
+  // the form's own check tells the merchant which field is missing, this
+  // one is what makes it true.
+  if (!photoUrl) {
+    return NextResponse.json({ error: "Add a photo of your deal." }, { status: 400 });
+  }
+  if (!isWixMediaUrl(photoUrl)) {
     return NextResponse.json({ error: "Invalid photo." }, { status: 400 });
   }
 

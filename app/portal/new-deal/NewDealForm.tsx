@@ -161,6 +161,15 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
   function handleContinueToPreview(e: React.FormEvent) {
     e.preventDefault();
+    // Caught before the preview rather than on submit. The preview exists to
+    // show the merchant their deal as customers will see it, and the photo
+    // is most of that — previewing a card with an empty image well would
+    // misrepresent the thing they're being asked to approve.
+    if (!photo) {
+      setError("Add a photo before you preview — it's the main image customers see.");
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      return;
+    }
     setError(null);
     setStep("preview");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -631,7 +640,14 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Photo</label>
+          <label htmlFor="deal-photo" className="mb-1 block text-sm font-medium text-slate-700">
+            Photo
+            <span className="ml-1 font-normal text-ember-600">Required</span>
+          </label>
+          <p className="mb-2 text-xs text-slate-500">
+            This is the whole card on the deals page — a real photo of the food, room
+            or treatment does far more than a logo.
+          </p>
           <div className="flex items-center gap-4">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-300">
               {photoPreview ? (
@@ -642,8 +658,13 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               )}
             </div>
             <input
+              id="deal-photo"
               type="file"
               accept="image/*"
+              // Not `required`: a restored draft can't carry the file, so the
+              // browser would block the form over an input the merchant has
+              // no way to see is empty. handleContinueToPreview checks the
+              // state instead and says so in plain words.
               onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
               className="block text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100"
             />
