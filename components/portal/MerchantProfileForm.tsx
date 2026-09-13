@@ -54,11 +54,23 @@ export default function MerchantProfileForm({
    *  what they gave at signup — this is finishing a listing, not starting
    *  one over. */
   startEditing = false,
+  /** No merchant record exists yet — this submission creates one.
+   *
+   *  Posts to /api/merchants/apply rather than /api/merchants/profile,
+   *  because the profile route only ever updates and answers 404 when
+   *  there is nothing to update. apply takes exactly the fields this form
+   *  already sends, so the same form serves both, and it additionally
+   *  requires agreedToTerms, which is why the checkbox below appears only
+   *  here: a first application must carry consent, and the server refuses
+   *  it otherwise. */
+  createMode = false,
 }: {
   merchant: MerchantRecord;
   onSaved: (updated: MerchantRecord) => void;
   startEditing?: boolean;
+  createMode?: boolean;
 }) {
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [editing, setEditing] = useState(startEditing);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,10 +99,16 @@ export default function MerchantProfileForm({
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    // Checked here as well as server-side so the visitor is told which
+    // box is missing, rather than getting a generic 400 back.
+    if (createMode && !agreedToTerms) {
+      setError("Please agree to the Terms and Conditions to submit your listing.");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch("/api/merchants/profile", {
+      const res = await fetch(createMode ? "/api/merchants/apply" : "/api/merchants/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -115,6 +133,9 @@ export default function MerchantProfileForm({
           instagramUrl,
           priceRange,
           amenities,
+          // Only sent when creating. The server requires it on a first
+          // application and ignores it on an update.
+          ...(createMode ? { agreedToTerms } : {}),
         }),
       });
       if (!res.ok) {
@@ -546,6 +567,28 @@ export default function MerchantProfileForm({
           </div>
         </div>
 
+        {createMode && (
+          <label className="flex items-start gap-2 text-sm text-slate-600">
+            <input
+              type="checkbox"
+              checked={agreedToTerms}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+            />
+            <span>
+              I agree to MegaDeal&apos;s{" "}
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-brand-700">
+                Terms and Conditions
+              </a>{" "}
+              and{" "}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-brand-700">
+                Privacy Policy
+              </a>
+              .
+            </span>
+          </label>
+        )}
+
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <div className="flex gap-2">
@@ -555,10 +598,10 @@ export default function MerchantProfileForm({
             className="rounded-full bg-brand-600 px-5 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
           >
             {saving
-              ? startEditing
+              ? createMode || startEditing
                 ? "Submitting…"
                 : "Saving…"
-              : startEditing
+              : createMode || startEditing
                 ? "Submit for approval"
                 : "Save changes"}
           </button>

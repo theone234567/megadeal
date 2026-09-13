@@ -188,6 +188,7 @@ export default function PortalPage() {
       </div>
 
       {!merchant ? (
+        <>
         <div className="mt-6 rounded-2xl border-2 border-ember-200 bg-ember-50/50 p-8 text-center">
           {/* Framed as finishing, not starting. Reaching this screen means
               the account was created but the business details never saved —
@@ -202,13 +203,24 @@ export default function PortalPage() {
             Your account is all set up. We just need your business details to get your listing
             ready — it only takes a minute, and you won&apos;t need to create another password.
           </p>
-          <Link
-            href="/list-your-business#signup"
-            className="mt-5 inline-block rounded-full bg-ember-500 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-ember-600"
-          >
-            Complete my signup →
-          </Link>
         </div>
+
+        {/* The form lives here rather than back on /list-your-business.
+            That page is the marketing pitch with the short signup, which
+            they have already been through — sending them there asks them
+            to repeat work and offers none of the fields still missing.
+            This is the full set (address, hours, socials, bio, price
+            range), and createMode posts it to /api/merchants/apply, the
+            only route that creates rather than updates. */}
+        <div className="mt-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+          <MerchantProfileForm
+            merchant={{} as MerchantRecord}
+            createMode
+            startEditing
+            onSaved={(created) => setMerchant(created)}
+          />
+        </div>
+        </>
       ) : (
         <>
           {/* Order follows what the merchant still has to do.
