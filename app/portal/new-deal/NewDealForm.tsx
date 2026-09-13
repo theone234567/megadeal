@@ -153,6 +153,19 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       .then((res) => (res.ok ? res.json() : { item: null }))
       .then(({ item }) => {
         if (cancelled || !item) return;
+        // Only a draft. The route hands back any deal the caller owns, so
+        // a submitted deal's id in ?draft= would otherwise load that deal
+        // into the new-deal form — where saving is refused and the
+        // merchant is left looking at a live listing in an editor that
+        // won't accept it.
+        if (item.status !== "Draft") {
+          // Also forget the id, or the next save would target that
+          // submitted deal and be refused — leaving the merchant unable to
+          // save a form they are allowed to fill in. Blank id means the
+          // save creates a new draft, which is the right outcome.
+          setDraftId(null);
+          return;
+        }
         const draft = parseDraft(item);
         setDealName(draft.dealName);
         setCategory(draft.category);
