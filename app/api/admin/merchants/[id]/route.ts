@@ -460,3 +460,84 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }
+
+/**
+ * Permanently removes a business record.
+ *
+ * Built for clearing out test businesses, which otherwise accumulate and
+ * make the dashboard harder to read — and which block their own email
+ * from being used to start a fresh application, since getOrClaimMerchant
+ * matches on it.
+ *
+ * Deliberately refuses when the business has any submitted deal. Those
+ * carry a Wix Stores product, a spent credit and possibly live traffic;
+ * deleting the business under them would leave products with no owner and
+ * an audit trail that can't be explained. The admin cancels those first,
+ * which is a decision worth making deliberately rather than as a side
+ * effect of tidying up.
+ *
+ * Drafts are removed with it: nothing was charged, nothing was reviewed,
+ * nothing was ever public. Activity rows go too, so an email reused for a
+ * new application doesn't inherit the previous one's credit history.
+ *
+ * The business's Wix member login is NOT deleted — that lives in Wix
+ * Members, not here. The person can still sign in; they will simply be
+ * asked to start an application, which is what makes this useful for
+ * reusing a test address.
+ */
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  if (!isAdminRequest(req)) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
+  try {
+    const adminClient = createWixAdminClient();
+    const merchant = await adminClient.items.get("Merchants", params.id);
+    if (!merchant) {
+      return NextResponse.json({ error: "Business not found." }, { status: 404 });
+    }
+
+    const email = String(merchant.email || "");
+    let drafts: any[] = [];
+
+    if (email) {
+      const deals = await adminClient.items
+        .query("Deals")
+        .eq("merchantEmail", email)
+        .find();
+      const all = deals.items ?? [];
+      const submitted = all.filter((d: any) => d.status !== "Draft");
+      if (submitted.length > 0) {
+        return NextResponse.json(
+          {
+            error: `This business still has ${submitted.length} submitted deal${
+              submitted.length === 1 ? "" : "s"
+            }. Cancel or remove those first, then delete the business.`,
+          },
+          { status: 409 }
+        );
+      }
+      drafts = all;
+    }
+
+    for (const draft of drafts) {
+      await adminClient.items.remove("Deals", draft._id);
+    }
+
+    if (email) {
+      const activity = await adminClient.items
+        .query("MerchantActivity")
+        .eq("merchantEmail", email)
+        .find();
+      for (const row of activity.items ?? []) {
+        await adminClient.items.remove("MerchantActivity", row._id);
+      }
+    }
+
+    await adminClient.items.remove("Merchants", params.id);
+    return NextResponse.json({ ok: true, deletedDrafts: drafts.length });
+  } catch (err) {
+    console.error("[admin/merchants/[id]] DELETE failed", err);
+    return NextResponse.json({ error: "Couldn't delete that business." }, { status: 500 });
+  }
+}

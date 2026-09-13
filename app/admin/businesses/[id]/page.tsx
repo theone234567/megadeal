@@ -56,6 +56,10 @@ function Field({
 export default function AdminBusinessDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [merchant, setMerchant] = useState<AdminMerchant | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -182,6 +186,22 @@ export default function AdminBusinessDetailPage() {
       instagramUrl !== (merchant.instagramUrl || "") ||
       priceRange !== (merchant.priceRange || "") ||
       amenities !== (merchant.amenities || ""));
+
+  async function remove() {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/admin/merchants/${params.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Couldn't delete that business.");
+      }
+      router.push("/admin");
+    } catch (err: any) {
+      setDeleteError(err?.message || "Couldn't delete that business.");
+      setDeleting(false);
+    }
+  }
 
   async function save() {
     if (!merchant) return;
@@ -386,7 +406,7 @@ export default function AdminBusinessDetailPage() {
                 const parsed = parseBusinessHours(businessHours);
                 if (!parsed) return null;
                 const lines = formatBusinessHoursLines(parsed);
-                return (
+  return (
                   <div className="mb-2 rounded-lg bg-slate-50 p-2.5 text-xs text-slate-500">
                     <p className="mb-0.5 font-semibold text-slate-600">
                       Displays to customers as:
@@ -567,6 +587,64 @@ export default function AdminBusinessDetailPage() {
           ))}
         </section>
       </div>
+
+      {/* Kept at the very bottom, behind a typed confirmation. Deleting a
+          business is irreversible and the usual reason to do it is tidying
+          up test accounts — exactly the situation where a misplaced click
+          on the wrong row is easiest. Typing the name makes that mistake
+          almost impossible without slowing down the real case much. */}
+      <section className="mt-8 rounded-2xl border-2 border-dashed border-red-200 bg-red-50/50 p-5">
+        <h2 className="font-display text-base font-bold text-red-900">Delete this business</h2>
+        <p className="mt-1 max-w-xl text-sm text-red-800/80">
+          Removes the business record, its drafts and its credit history. Submitted
+          deals block the delete — cancel those first. This can&apos;t be undone.
+        </p>
+        <p className="mt-2 max-w-xl text-xs text-red-800/70">
+          Their MegaDeal login isn&apos;t deleted — that lives in Wix Members. They
+          can still sign in, and will be asked to start a new application, which is
+          what frees the email up for testing again.
+        </p>
+        {!confirmingDelete ? (
+          <button
+            onClick={() => setConfirmingDelete(true)}
+            className="mt-4 rounded-full border-2 border-red-300 px-5 py-2.5 text-sm font-extrabold text-red-700 transition hover:bg-red-100 active:scale-95"
+          >
+            Delete business
+          </button>
+        ) : (
+          <div className="mt-4 max-w-md">
+            <label htmlFor="confirm-delete" className="block text-sm font-bold text-red-900">
+              Type <span className="font-mono">{businessName || "the business name"}</span> to confirm
+            </label>
+            <input
+              id="confirm-delete"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              className="mt-1 w-full rounded-xl border-2 border-red-200 px-3 py-2 text-sm outline-none focus:border-red-400"
+            />
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                onClick={remove}
+                disabled={deleting || deleteConfirmText.trim() !== (businessName || "").trim()}
+                className="rounded-full bg-red-600 px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-red-700 active:scale-95 disabled:opacity-40"
+              >
+                {deleting ? "Deleting…" : "Delete permanently"}
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmingDelete(false);
+                  setDeleteConfirmText("");
+                  setDeleteError(null);
+                }}
+                className="rounded-full border-2 border-slate-200 px-5 py-2.5 text-sm font-extrabold text-slate-600 transition hover:bg-white active:scale-95"
+              >
+                Cancel
+              </button>
+            </div>
+            {deleteError && <p className="mt-2 text-sm text-red-700">{deleteError}</p>}
+          </div>
+        )}
+      </section>
     </main>
   );
 }
