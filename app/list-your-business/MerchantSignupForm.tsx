@@ -8,6 +8,7 @@ import PasswordField from "@/components/PasswordField";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
 import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
 import RecaptchaCheckbox, { type RecaptchaCheckboxHandle } from "@/components/RecaptchaCheckbox";
+import { AUTH_TIMEOUT_MS, withTimeout } from "@/lib/withTimeout";
 
 function RequiredTag() {
   return <span className="ml-1 font-normal text-ember-600">Required</span>;
@@ -40,29 +41,6 @@ const HONEYPOT_RESET_MS = 2000;
  * and start a review.
  */
 
-/** How long to wait on a Wix auth call before giving up. Without this the
- *  SDK call can hang indefinitely on a flaky connection and the form sits
- *  on "Submitting…" with no error and no way forward. */
-const AUTH_TIMEOUT_MS = 30_000;
-
-/** Rejects if `promise` hasn't settled within `ms`. The underlying request
- *  isn't cancelled (the Wix SDK gives us no signal to do that) — we just
- *  stop waiting on it so the visitor gets an error they can act on. */
-function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error(message)), ms);
-    promise.then(
-      (value) => {
-        clearTimeout(timer);
-        resolve(value);
-      },
-      (err) => {
-        clearTimeout(timer);
-        reject(err);
-      }
-    );
-  });
-}
 
 /**
  * Turns a thrown value into something safe to put in front of a business
@@ -320,9 +298,16 @@ export default function MerchantSignupForm() {
       // outcome that proves the visible variant is required here.
       if (
         !needsVisibleCaptcha &&
-        outcome.status === "error" &&
-        (outcome.errorCode === "missingCaptchaToken" ||
-          outcome.errorCode === "invalidCaptchaToken")
+        // Wix asking for a CAPTCHA outright is the same situation as it
+        // refusing our silent token: the checkbox is what resolves both.
+        // "user" specifically means Wix judged this attempt suspicious —
+        // which is exactly when a challenge should appear, and previously
+        // dead-ended with "try again in a moment", something no amount of
+        // retrying could clear.
+        (outcome.status === "captcha" ||
+          (outcome.status === "error" &&
+            (outcome.errorCode === "missingCaptchaToken" ||
+              outcome.errorCode === "invalidCaptchaToken")))
       ) {
         setNeedsVisibleCaptcha(true);
         setSubmitError(

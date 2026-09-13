@@ -16,7 +16,11 @@ import type { WixClient } from "./wixClient";
 export type AuthOutcome =
   | { status: "success" }
   | { status: "verify"; pendingState: unknown; email: string }
-  | { status: "captcha"; message: string }
+  /** Wix asked for a CAPTCHA. `kind` says which: "user" means it judged
+   *  this attempt suspicious and wants a human to tick a box; "silent"
+   *  means a background check. Carrying the kind is what lets a form show
+   *  the checkbox only when Wix actually wants one. */
+  | { status: "captcha"; kind: "silent" | "user"; message: string }
   | { status: "error"; message: string; errorCode?: string };
 
 const FAILURE_MESSAGES: Record<string, string> = {
@@ -66,12 +70,23 @@ async function resolveState(client: WixClient, state: any): Promise<AuthOutcome>
     }
     case "EMAIL_VERIFICATION_REQUIRED":
       return { status: "verify", pendingState: state, email: "" };
+    // Wix's own "this needs a CAPTCHA" states. Both used to collapse into
+    // one dead-end message telling the visitor to try again later, which
+    // no amount of retrying could clear — so a visitor Wix found
+    // suspicious could never create an account or reach their portal at
+    // all. They are now distinguishable, and the forms answer them by
+    // showing the checkbox, which is the only thing that resolves either.
     case "SILENT_CAPTCHA_REQUIRED":
+      return {
+        status: "captcha",
+        kind: "silent",
+        message: "We need to run a quick security check.",
+      };
     case "USER_CAPTCHA_REQUIRED":
       return {
         status: "captcha",
-        message:
-          "We need to double-check you're not a robot — please try again in a moment, or contact us if this keeps happening.",
+        kind: "user",
+        message: "We need to check you're not a robot.",
       };
     case "FAILURE":
       return {
@@ -129,15 +144,30 @@ export async function loginMember(
   client: WixClient,
   email: string,
   password: string,
-  /** Same CAPTCHA requirement as registration — Wix applies it to
-   *  loginV2 too, so without this an existing merchant can be locked out
-   *  of their own portal. Optional for the same reason as register. */
-  invisibleRecaptchaToken?: string | null
+  /** reCAPTCHA token(s). Same CAPTCHA requirement as registration — Wix
+   *  applies it to loginV2 too, so without this an existing merchant can
+   *  be locked out of their own portal.
+   *
+   *  Takes the same shape as registerMember rather than a bare positional
+   *  token, so the caller states which variant it is sending. Login
+   *  normally sends the invisible one; if Wix rejects that, the form falls
+   *  back to the visible checkbox and sends `recaptchaToken` instead. The
+   *  two travel in different fields, so a visible token passed as the
+   *  invisible one reads to Wix as no token at all — that exact mix-up is
+   *  what made business signup impossible for hours. */
+  captchaTokens?: { recaptchaToken?: string | null; invisibleRecaptchaToken?: string | null }
 ): Promise<AuthOutcome> {
+  const tokens = {
+    ...(captchaTokens?.recaptchaToken ? { recaptchaToken: captchaTokens.recaptchaToken } : {}),
+    ...(captchaTokens?.invisibleRecaptchaToken
+      ? { invisibleRecaptchaToken: captchaTokens.invisibleRecaptchaToken }
+      : {}),
+  };
+
   const state = await client.auth.login({
     email,
     password,
-    ...(invisibleRecaptchaToken ? { captchaTokens: { invisibleRecaptchaToken } } : {}),
+    ...(Object.keys(tokens).length ? { captchaTokens: tokens } : {}),
   });
   const outcome = await resolveState(client, state);
   return outcome.status === "verify" ? { ...outcome, email } : outcome;

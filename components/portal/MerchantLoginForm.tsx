@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useWix } from "@/context/WixProvider";
 import { loginMember, submitVerificationCode, requestPasswordReset } from "@/lib/wixAuth";
 import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
 import PasswordField from "@/components/PasswordField";
+import RecaptchaCheckbox, { type RecaptchaCheckboxHandle } from "@/components/RecaptchaCheckbox";
+import { AUTH_TIMEOUT_MS, withTimeout } from "@/lib/withTimeout";
 
 /**
  * On-brand sign-in, right here on megadeal.co.nz — the previous flow
@@ -28,27 +30,85 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
   const [pendingState, setPendingState] = useState<unknown>(null);
   const [code, setCode] = useState("");
   const [resetSent, setResetSent] = useState(false);
+  /**
+   * Sign-in uses INVISIBLE reCAPTCHA, which is the whole point: it scores
+   * the attempt silently and only puts a challenge in front of someone it
+   * finds suspicious. A returning merchant signing in normally never sees
+   * anything — no checkbox, no interruption.
+   *
+   * The checkbox below appears only if Wix actually rejects the invisible
+   * token, which is the one signal that this project requires the visible
+   * variant here. Without that fallback a rejection is a dead end, and a
+   * merchant locked out of their own portal has no way forward at all —
+   * the same trap that made business signup impossible.
+   */
+  const [needsVisibleCaptcha, setNeedsVisibleCaptcha] = useState(false);
+  const [visibleCaptchaToken, setVisibleCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<RecaptchaCheckboxHandle | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (needsVisibleCaptcha && !visibleCaptchaToken) {
+      setError("Please tick the \u201cI'm not a robot\u201d box below to continue.");
+      return;
+    }
     setSubmitting(true);
     try {
-      const captchaToken = await getInvisibleCaptchaToken(
-        (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
+      // Which field the token goes in matters: Wix reads the visible
+      // checkbox's token from `Recaptcha` and the silent one from
+      // `InvisibleRecaptcha`. Naming the variant here rather than relying
+      // on argument position is what stops them being swapped.
+      const captchaTokens = needsVisibleCaptcha
+        ? { recaptchaToken: visibleCaptchaToken }
+        : {
+            invisibleRecaptchaToken: await getInvisibleCaptchaToken(
+              (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
+            ),
+          };
+
+      // Timed, like registration already was. Obtaining a token can take
+      // up to 8s to load the script plus 45s waiting on a challenge, and
+      // the Wix call after it was previously unbounded — so a stalled
+      // request could leave the button on "Signing in…" indefinitely with
+      // nothing on screen to explain it.
+      const outcome = await withTimeout(
+        loginMember(client, email, password, captchaTokens),
+        AUTH_TIMEOUT_MS,
+        "That took too long. Please check your connection and try again."
       );
-      const outcome = await loginMember(client, email, password, captchaToken);
+
       if (outcome.status === "success") {
         window.location.href = redirectTo;
       } else if (outcome.status === "verify") {
         setPendingState(outcome.pendingState);
+      } else if (
+        // Wix asked for a CAPTCHA outright — "user" means it judged this
+        // attempt suspicious — or it refused the silent token we sent.
+        // Either way the checkbox is the only thing that resolves it, so
+        // show it rather than leave a merchant locked out of their portal.
+        !needsVisibleCaptcha &&
+        (outcome.status === "captcha" ||
+          (outcome.status === "error" &&
+            (outcome.errorCode === "missingCaptchaToken" ||
+              outcome.errorCode === "invalidCaptchaToken")))
+      ) {
+        setNeedsVisibleCaptcha(true);
+        setError("One more step — please tick the \u201cI'm not a robot\u201d box, then sign in again.");
       } else {
         setError(outcome.message);
       }
-    } catch {
-      setError("Couldn't sign you in. Please try again.");
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message.startsWith("That took too long")
+          ? err.message
+          : "Couldn't sign you in. Please try again."
+      );
     } finally {
       setSubmitting(false);
+      // Tokens are single-use; a retry with a spent one fails as rejected
+      // rather than missing, which is a confusing second failure.
+      captchaRef.current?.reset();
     }
   }
 
@@ -143,6 +203,15 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         autoComplete="current-password"
         inputClassName="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
       />
+      {/* Hidden unless Wix has rejected an invisible token, so a normal
+          sign-in shows no challenge at all. */}
+      {needsVisibleCaptcha && (
+        <RecaptchaCheckbox
+          ref={captchaRef}
+          siteKey={(client.auth as { captchaVisibleSiteKey?: string }).captchaVisibleSiteKey ?? ""}
+          onChange={setVisibleCaptchaToken}
+        />
+      )}
       {error && <p className="text-sm text-ember-600">{error}</p>}
       {resetSent && <p className="text-sm text-green-700">Check your email for a reset link.</p>}
       <button
