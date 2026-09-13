@@ -413,11 +413,11 @@ export default function AdminBusinessDetailPage() {
           <h2 className="text-sm font-bold text-slate-900">Referral &amp; promo</h2>
           <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-slate-500">Entered referral/promo code</dt>
+              <dt className="text-slate-500">Code they entered at signup</dt>
               <dd className="font-medium text-slate-800">{merchant.couponCode || "—"}</dd>
             </div>
             <div>
-              <dt className="text-slate-500">Their own referral code</dt>
+              <dt className="text-slate-500">Their code to share (generated)</dt>
               <dd className="font-medium text-slate-800">
                 {merchant.referralCode || "—"}
                 {merchant.referredBy && ` · Referred by ${merchant.referredBy}`}
