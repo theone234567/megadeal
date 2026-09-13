@@ -23,16 +23,24 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 export default function DealDetail({
   deal,
   relatedDeals,
+  /** Rendered inside the merchant's own preview rather than on the public
+   *  page. The only difference is that a view isn't recorded: the deal has
+   *  no real id yet, and counting the author looking at their own draft
+   *  would put fictional traffic in their analytics before the deal
+   *  exists. */
+  preview = false,
 }: {
   deal: Deal;
   relatedDeals: Deal[];
+  preview?: boolean;
 }) {
   const [showContact, setShowContact] = useState(false);
 
   useEffect(() => {
+    if (preview) return;
     trackDealEvent(deal.id, "view");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deal.id]);
+  }, [deal.id, preview]);
 
   const hasContactInfo = Boolean(
     deal.businessWebsite ||

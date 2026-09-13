@@ -8,6 +8,9 @@ import { uploadPhoto } from "@/lib/imageUpload";
 import { CATEGORIES } from "@/lib/categories";
 import { parseDraft, MAX_DRAFT_TEXT } from "@/lib/dealDraft";
 import { STANDARD_TERMS, renderTerms } from "@/lib/dealTerms";
+import { buildPreviewDeal } from "@/lib/previewDeal";
+import DealCard from "@/components/DealCard";
+import DealDetail from "@/app/deal/[slug]/DealDetail";
 import MerchantLoginForm from "@/components/portal/MerchantLoginForm";
 
 const DURATIONS = [
@@ -29,6 +32,10 @@ interface MerchantRecord {
   _id: string;
   status?: string;
   creditsBalance?: number;
+  /** /api/merchants/me returns the whole record, and the preview reads the
+   *  business fields (booking link, hours, address, socials) straight off
+   *  it so the merchant sees the same panel customers will. */
+  [key: string]: any;
 }
 
 export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean }) {
@@ -395,11 +402,23 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   }
 
   if (step === "preview") {
-    const discountPercent =
-      priceWas && Number(priceWas) > Number(priceNow) && Number(priceNow) > 0
-        ? Math.round(((Number(priceWas) - Number(priceNow)) / Number(priceWas)) * 100)
-        : 0;
     const categoryDef = CATEGORIES.find((c) => c.name === category);
+    const previewDeal = buildPreviewDeal(
+      {
+        dealName,
+        description,
+        terms,
+        category,
+        priceNow,
+        priceWas,
+        quantityAvailable,
+        isFlash,
+        durationDays,
+        durationMinutes,
+        imageUrl: photoPreview,
+      },
+      merchant
+    );
     const durationLabel = isFlash
       ? FLASH_DURATIONS.find((d) => d.minutes === durationMinutes)?.label
       : DURATIONS.find((d) => d.days === durationDays)?.label;
@@ -416,82 +435,54 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
         <h1 className="mt-3 text-2xl font-extrabold text-slate-900">Preview your deal</h1>
         <p className="mt-1 text-sm text-slate-500">
-          This is how your deal card will look to customers. Check everything looks right,
-          then submit it for review.
+          Exactly what customers will see — the card on the deals page, and the
+          page it opens. Anything missing here will be missing when you go live.
         </p>
 
-        <div className="mt-6 max-w-xs">
-          <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card">
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
-              {photoPreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photoPreview} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-slate-300">
-                  <span className="text-4xl">🏷️</span>
-                </div>
-              )}
-              <div className="absolute left-2 top-2 flex flex-col gap-1">
-                {isFlash && (
-                  <span className="inline-block animate-flash-zap rounded-full bg-brand-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
-                    ⚡ FLASH
-                  </span>
-                )}
-                {discountPercent > 0 && (
-                  <span className="rounded-full bg-ember-500 px-2.5 py-1 text-xs font-extrabold text-white shadow">
-                    {discountPercent}% OFF
-                  </span>
-                )}
-              </div>
-              <div className="absolute bottom-2 left-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 px-2.5 py-1 text-xs font-semibold text-white">
-                  ⏱ Live for {durationLabel || "—"}
-                </span>
-              </div>
-            </div>
-            <div className="flex flex-1 flex-col gap-2 p-4">
-              {category && (
-                <span className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-                  {categoryDef ? `${categoryDef.emoji} ${category}` : category}
-                </span>
-              )}
-              <h3 className="line-clamp-2 min-h-[2.75rem] text-sm font-bold text-slate-900">
-                {dealName || "Your deal name"}
-              </h3>
-              <div className="mt-auto flex items-end justify-between pt-1">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xl font-extrabold text-slate-900">
-                    ${priceNow || "0"}
-                  </span>
-                  {priceWas && Number(priceWas) > Number(priceNow) && (
-                    <span className="text-sm text-slate-400 line-through">${priceWas}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-          <p className="mt-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Preview — not yet submitted
+        {/* The real card and the real deal page, built from what they
+            typed — not a summary of the fields. The question a merchant
+            has at this point isn't "did I type that correctly", it's
+            "what will this look like next to everyone else's?", and
+            pre-launch this is the only place they can find out. */}
+        <div className="mt-6">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            On the deals page
           </p>
+          <div className="max-w-xs">
+            <DealCard deal={previewDeal} />
+          </div>
         </div>
 
-        <div className="mt-6 space-y-4 rounded-2xl border border-slate-100 bg-white p-6 text-sm text-slate-700 shadow-card">
-          <div>
-            <p className="font-semibold text-slate-900">Description</p>
-            <p className="mt-1 whitespace-pre-wrap">{description}</p>
-          </div>
-          <div>
-            <p className="font-semibold text-slate-900">Terms &amp; conditions</p>
-            <p className="mt-1 whitespace-pre-wrap">{terms}</p>
-          </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-1 border-t border-slate-100 pt-3 text-xs text-slate-500">
-            <span>
-              Duration: {durationLabel}
-              {isFlash ? " (flash deal)" : ""}
-            </span>
-            {quantityAvailable && <span>Quantity: {quantityAvailable}</span>}
+        <div className="mt-8">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            When they open it
+          </p>
+          <div className="overflow-hidden rounded-2xl border border-slate-200">
+            <DealDetail deal={previewDeal} relatedDeals={[]} preview />
           </div>
         </div>
+
+        <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-2 rounded-2xl bg-slate-50 p-4 text-sm">
+          <div>
+            <dt className="text-slate-500">Category</dt>
+            <dd className="font-semibold text-slate-800">
+              {categoryDef ? `${categoryDef.emoji} ${categoryDef.name}` : "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">Runs for</dt>
+            <dd className="font-semibold text-slate-800">
+              {durationLabel}
+              {isFlash ? " (flash deal)" : ""}
+            </dd>
+          </div>
+          {quantityAvailable && (
+            <div>
+              <dt className="text-slate-500">Quantity</dt>
+              <dd className="font-semibold text-slate-800">{quantityAvailable}</dd>
+            </div>
+          )}
+        </dl>
 
         {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
