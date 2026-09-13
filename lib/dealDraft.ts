@@ -60,7 +60,10 @@ export const EMPTY_DRAFT: DealDraftData = {
   photoMediaId: "",
 };
 
-const MAX_TEXT = 2000;
+/** Matches the maxLength on the matching textareas, so the form stops
+ *  accepting characters at the same point this would quietly drop them. */
+export const MAX_DRAFT_TEXT = 2000;
+const MAX_TEXT = MAX_DRAFT_TEXT;
 
 function text(value: unknown, max = MAX_TEXT): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
@@ -109,9 +112,17 @@ export function parseDraft(row: any): DealDraftData {
   } catch {
     stored = {};
   }
+  // Every column the draft route also writes gets a fallback, not just
+  // the two the portal list happens to show. If draftData is ever missing
+  // or unparseable, the recoverable text is what's left of the draft —
+  // blanking it on screen would mean the next "Save changes" writes those
+  // blanks over the only surviving copy.
   return sanitizeDraft({
     ...stored,
     dealName: stored.dealName || row?.dealName || "",
+    description: stored.description || row?.description || "",
+    terms: stored.terms || row?.terms || "",
+    customTerms: stored.customTerms || (stored.terms ? "" : row?.terms || ""),
     photoUrl: stored.photoUrl || row?.photoUrl || "",
   });
 }

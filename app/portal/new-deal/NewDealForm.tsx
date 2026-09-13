@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { uploadPhoto } from "@/lib/imageUpload";
 import { CATEGORIES } from "@/lib/categories";
-import { parseDraft } from "@/lib/dealDraft";
+import { parseDraft, MAX_DRAFT_TEXT } from "@/lib/dealDraft";
 import { STANDARD_TERMS, renderTerms } from "@/lib/dealTerms";
 import MerchantLoginForm from "@/components/portal/MerchantLoginForm";
 
@@ -69,6 +69,12 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   /** Set once a draft exists server-side, so every later save updates that
    *  row instead of leaving a trail of near-identical drafts behind. */
   const [draftId, setDraftId] = useState<string | null>(searchParams.get("draft"));
+  /** The draft id we arrived with, captured once. Restoring must not key
+   *  off `draftId`, because saving sets that — the effect would refire the
+   *  moment a new draft was created and overwrite the form with the row it
+   *  had just written, losing anything typed during the round-trip. */
+  const [openedDraftId] = useState<string | null>(() => searchParams.get("draft"));
+  const restoredRef = useRef(false);
   /** A photo already uploaded — either restored from a draft or uploaded
    *  when one was saved. `photo` holds a newly picked File that hasn't been
    *  sent anywhere yet; this holds the Wix Media URL once it has. */
@@ -128,9 +134,10 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   // alongside "Duplicate this deal" — the two prefill paths would race and
   // whichever landed second would win silently.
   useEffect(() => {
-    if (!draftId || duplicateId) return;
+    if (!openedDraftId || duplicateId || restoredRef.current) return;
+    restoredRef.current = true;
     let cancelled = false;
-    fetch(`/api/deals/${draftId}`)
+    fetch(`/api/deals/${openedDraftId}`)
       .then((res) => (res.ok ? res.json() : { item: null }))
       .then(({ item }) => {
         if (cancelled || !item) return;
@@ -163,17 +170,21 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draftId, duplicateId]);
+  }, [openedDraftId, duplicateId]);
 
   useEffect(() => {
-    if (!photo) return;
-    // A newly picked file replaces whatever was uploaded before, so the
-    // draft doesn't keep pointing at the old image.
-    setUploaded(null);
+    // No new file: fall back to whatever is already uploaded — a reopened
+    // draft has a photo but no File. Clearing the input has to land here
+    // too, or the preview keeps pointing at a blob URL that has just been
+    // revoked, which renders as a broken image.
+    if (!photo) {
+      setPhotoPreview(uploaded?.url ?? null);
+      return;
+    }
     const url = URL.createObjectURL(photo);
     setPhotoPreview(url);
     return () => URL.revokeObjectURL(url);
-  }, [photo]);
+  }, [photo, uploaded]);
 
   function handleContinueToPreview(e: React.FormEvent) {
     e.preventDefault();
@@ -600,6 +611,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           <textarea
             required
             rows={4}
+            maxLength={MAX_DRAFT_TEXT}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="e.g. Unwind with a full-body deep tissue massage using warm oils, finished with a relaxing foot scrub. Includes a herbal tea on arrival. Book at least 24 hours ahead — walk-ins subject to availability."
@@ -731,7 +743,14 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               // browser would block the form over an input the merchant has
               // no way to see is empty. handleContinueToPreview checks the
               // state instead and says so in plain words.
-              onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                setPhoto(file);
+                // A new file supersedes anything already uploaded, so the
+                // draft stops pointing at the old image and save/submit
+                // knows it has something new to send.
+                if (file) setUploaded(null);
+              }}
               className="block text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100"
             />
           </div>
@@ -773,6 +792,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           <textarea
             id="deal-custom-terms"
             rows={2}
+            maxLength={MAX_DRAFT_TEXT}
             value={customTerms}
             onChange={(e) => setCustomTerms(e.target.value)}
             placeholder="Anything else specific to your deal — e.g. maximum 6 people per booking"

@@ -9,7 +9,11 @@ export async function GET(req: NextRequest) {
 
   try {
     const adminClient = createWixAdminClient();
-    const result = await adminClient.items.query("Deals").find();
+    // Drafts are excluded: a draft has not been submitted, so there is
+    // nothing for an admin to approve or reject, and listing it beside
+    // real submissions invites acting on work the merchant hasn't
+    // finished. It also keeps them out of the row budget below.
+    const result = await adminClient.items.query("Deals").ne("status", "Draft").find();
     return NextResponse.json({ items: result.items ?? [] });
   } catch (err) {
     console.error("[admin/deals] failed", err);

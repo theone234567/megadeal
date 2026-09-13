@@ -16,6 +16,9 @@ export interface AdminDeal {
   [key: string]: any;
 }
 
+// "Draft" is deliberately absent: a draft never reaches this table (see
+// /api/admin/deals), and offering it here would let an admin push a
+// submitted deal back into a state the merchant alone controls.
 const STATUSES: DealStatus[] = ["Pending Approval", "Live", "Paused", "Cancelled"];
 
 function toDateInputValue(iso?: string) {

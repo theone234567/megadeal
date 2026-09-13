@@ -31,7 +31,10 @@ export async function GET() {
   try {
     const adminClient = createWixAdminClient();
     const [dealsResult, merchantsResult] = await Promise.all([
-      adminClient.items.query("Deals").find(),
+      // Keyed by productId below, so rows without one are dropped anyway —
+      // filtering here stops drafts consuming the page of results and
+      // pushing real deals out of the directory.
+      adminClient.items.query("Deals").isNotEmpty("productId").limit(500).find(),
       adminClient.items.query("Merchants").find(),
     ]);
 

@@ -3,6 +3,7 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { sanitizeDraft } from "@/lib/dealDraft";
+import { getOrClaimMerchant } from "@/lib/merchant";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,24 @@ export async function POST(req: NextRequest) {
 
   try {
     const adminClient = createWixAdminClient();
+
+    // Same gate as /api/deals/create. Being a signed-in site member is not
+    // the same as being a merchant: without this, anyone with an account
+    // could write rows into the Deals collection, and a suspended business
+    // could keep preparing listings it is not allowed to publish.
+    const merchant = await getOrClaimMerchant(adminClient, member);
+    if (!merchant) {
+      return NextResponse.json(
+        { error: "No business application found for this account." },
+        { status: 404 }
+      );
+    }
+    if (merchant.status === "Suspended") {
+      return NextResponse.json(
+        { error: "Your account is suspended. Contact us for help." },
+        { status: 403 }
+      );
+    }
 
     const row = {
       dealName: draft.dealName,

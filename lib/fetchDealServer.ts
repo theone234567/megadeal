@@ -80,7 +80,13 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
         search: { cursorPaging: { limit: 100 } },
         fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
       } as any),
-      adminClient.items.query("Deals").find(),
+      // Drafts have no productId and every join below is by productId, so
+      // they could never match — but an unbounded find() returns a default
+      // page of rows, and drafts accumulating in that page would push real
+      // deals out of it. Filtering on the field the join actually needs is
+      // exact and can't drop a legitimate row: anything without a
+      // productId was already unusable here.
+      adminClient.items.query("Deals").isNotEmpty("productId").limit(500).find(),
       adminClient.items.query("Merchants").find(),
     ]);
 
@@ -227,7 +233,12 @@ export async function fetchAllLiveDealSlugsForSitemap(): Promise<
     } as any);
     const products = ((res as any).products ?? []).filter((p: any) => !isMegaShopProduct(p));
 
-    const dealsResult = await adminClient.items.query("Deals").find();
+    // Same reasoning as above: filter to rows the productId join can use.
+    const dealsResult = await adminClient.items
+      .query("Deals")
+      .isNotEmpty("productId")
+      .limit(500)
+      .find();
     const metaByProductId: Record<string, { status: DealStatus | null; expiresAt: string | null }> = {};
     for (const item of dealsResult.items ?? []) {
       if (item.productId) {
