@@ -20,6 +20,14 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  // Stamps every page with the commit it was built from, so which build a
+  // given page came from is visible in its own source. /api/version
+  // reports the same thing without devtools, which is the practical route
+  // on a phone; this one survives being saved or screenshotted.
+  other: {
+    "x-build-sha": process.env.NEXT_PUBLIC_BUILD_SHA ?? "unknown",
+    "x-build-time": process.env.NEXT_PUBLIC_BUILD_TIME ?? "unknown",
+  },
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
   // Google/Bing verification codes, once you have them (see below), go in

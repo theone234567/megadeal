@@ -1,5 +1,27 @@
+// Which commit this bundle was built from, captured at BUILD time.
+//
+// Added after several rounds of "is the fix actually live?" that could
+// not be answered from outside: a stale page and a broken deploy look
+// identical, and guessing wrong sends everyone chasing the wrong bug. The
+// names below are what each builder exports — Cloudflare Workers Builds,
+// Cloudflare Pages, and GitHub Actions respectively.
+//
+// It has to go through `env` rather than being read at request time: on
+// Workers the CI variables exist only while building, so a runtime lookup
+// would always come back empty.
+const BUILD_SHA = (
+  process.env.WORKERS_CI_COMMIT_SHA ||
+  process.env.CF_PAGES_COMMIT_SHA ||
+  process.env.GITHUB_SHA ||
+  "unknown"
+).slice(0, 7);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_BUILD_SHA: BUILD_SHA,
+    NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
+  },
   images: {
     // Cloudflare/OpenNext was returning blank remote images through the
     // Next image optimiser on the coming-soon page. Serve remote images
