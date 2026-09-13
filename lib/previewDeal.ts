@@ -1,4 +1,5 @@
 import type { Deal } from "./types";
+import { businessSlug } from "./slug";
 
 /**
  * Builds a Deal from the new-deal form so the merchant can be shown the
@@ -89,7 +90,13 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     businessPhone: merchant?.phone ?? null,
     businessAddress: merchant?.address ?? null,
     businessCity: merchant?.city ?? null,
-    businessSlug: null,
+    // Derived the same way the live page does, so the "more from this
+    // business" link points where it really will rather than vanishing
+    // from the preview.
+    businessSlug:
+      merchant?.businessName && merchant?._id
+        ? businessSlug(merchant.businessName, merchant._id)
+        : null,
     businessBio: merchant?.bio ?? null,
     businessHours: merchant?.businessHours ?? null,
     businessFacebookUrl: merchant?.facebookUrl ?? null,
@@ -100,8 +107,12 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     businessBookingEmail: merchant?.bookingEmail ?? null,
     businessLat: typeof merchant?.lat === "number" ? merchant.lat : null,
     businessLng: typeof merchant?.lng === "number" ? merchant.lng : null,
-    businessRating: null,
-    businessReviewCount: null,
+    // Genuinely absent rather than omitted: ratings are set by us after a
+    // business has been reviewed, so a deal being written has none, and
+    // showing a made-up one here would be the worst kind of preview.
+    businessRating: typeof merchant?.rating === "number" ? merchant.rating : null,
+    businessReviewCount:
+      typeof merchant?.reviewCount === "number" ? merchant.reviewCount : null,
     dealCode: null,
   };
 }
