@@ -169,6 +169,12 @@ export default function PortalPage() {
     );
   }
 
+  // Address and category are what make a listing findable — a deal with
+  // neither can't be shown on a map or in a category page, so they are the
+  // bar for "set up" rather than a nice-to-have. Same test the header
+  // badge and the onboarding checklist use.
+  const profileComplete = Boolean(merchant?.address && merchant?.category);
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
@@ -196,16 +202,46 @@ export default function PortalPage() {
         </div>
       ) : (
         <>
-          <Link
-            href="/portal/new-deal"
-            className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-ember-500 px-6 py-4 text-center text-base font-bold text-white shadow-card transition hover:bg-ember-600"
-          >
-            + Create a new deal
-          </Link>
+          {/* Order follows what the merchant still has to do.
+              Until the profile has an address and a category, finishing it
+              is the job — a deal without them can't appear on a map or in
+              a category, so "Create a new deal" first was pointing at a
+              dead end, and the form that mattered sat below five other
+              sections at the bottom of the page. Once it's complete the
+              page leads with the deal button again, which is then the
+              genuinely useful action. */}
+          {!profileComplete ? (
+            <section
+              id="finish-setup"
+              className="mt-6 rounded-2xl border-2 border-ember-200 bg-ember-50/50 p-6 shadow-card"
+            >
+              <h2 className="text-lg font-extrabold text-slate-900">
+                Finish your listing
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                We&apos;ve kept everything you gave us at signup. Add your address, category and
+                opening hours so customers can find you — then you can create your first deal.
+              </p>
+              <div className="mt-5 rounded-2xl bg-white p-5">
+                <MerchantProfileForm
+                  merchant={merchant}
+                  onSaved={(updated) => setMerchant(updated)}
+                  startEditing
+                />
+              </div>
+            </section>
+          ) : (
+            <Link
+              href="/portal/new-deal"
+              className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-ember-500 px-6 py-4 text-center text-base font-bold text-white shadow-card transition hover:bg-ember-600"
+            >
+              + Create a new deal
+            </Link>
+          )}
 
           <OnboardingChecklist
             emailVerified={Boolean(member?.loginEmailVerified)}
-            profileComplete={Boolean(merchant.address && merchant.category)}
+            profileComplete={profileComplete}
             hasDeals={deals.length > 0}
           />
 
@@ -262,9 +298,15 @@ export default function PortalPage() {
           <NotificationPreferences notifyReferralBonus={merchant.notifyReferralBonus} />
 
           <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
-            <MerchantProfileForm merchant={merchant} onSaved={(updated) => setMerchant(updated)} />
+            {/* Only once, and only here when it isn't already leading the
+                page above — two live copies of the same form would fight
+                over the same record, and whichever was saved last would
+                quietly overwrite the other. */}
+            {profileComplete && (
+              <MerchantProfileForm merchant={merchant} onSaved={(updated) => setMerchant(updated)} />
+            )}
 
-            <div className="mt-5 border-t border-slate-100 pt-5">
+            <div className={profileComplete ? "mt-5 border-t border-slate-100 pt-5" : ""}>
               <PhotoUploadField
                 label="Business logo"
                 currentUrl={merchant.logoUrl || null}

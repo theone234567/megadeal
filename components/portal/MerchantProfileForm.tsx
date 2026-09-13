@@ -47,11 +47,19 @@ interface MerchantRecord {
 export default function MerchantProfileForm({
   merchant,
   onSaved,
+  /** Open straight into the editable form instead of the summary.
+   *  Set while a listing is still incomplete: the summary is a column of
+   *  em-dashes at that point, so making someone read it and press Edit is
+   *  a step that shows them nothing. Every field is still pre-filled from
+   *  what they gave at signup — this is finishing a listing, not starting
+   *  one over. */
+  startEditing = false,
 }: {
   merchant: MerchantRecord;
   onSaved: (updated: MerchantRecord) => void;
+  startEditing?: boolean;
 }) {
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(startEditing);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
