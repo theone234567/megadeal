@@ -24,7 +24,13 @@ export interface DealDraftData {
   dealName: string;
   category: string;
   description: string;
+  /** The rendered terms string, kept so a draft can be read without
+   *  re-rendering it — the deal record and the public page use this. */
   terms: string;
+  /** Which standard conditions were ticked, so reopening a draft restores
+   *  the boxes rather than dumping the rendered sentence into free text. */
+  selectedTerms: string[];
+  customTerms: string;
   priceNow: string;
   priceWas: string;
   durationDays: number;
@@ -42,6 +48,8 @@ export const EMPTY_DRAFT: DealDraftData = {
   category: "",
   description: "",
   terms: "",
+  selectedTerms: [],
+  customTerms: "",
   priceNow: "",
   priceWas: "",
   durationDays: 30,
@@ -77,6 +85,10 @@ export function sanitizeDraft(input: any): DealDraftData {
     category: text(input?.category, 100),
     description: text(input?.description),
     terms: text(input?.terms),
+    selectedTerms: Array.isArray(input?.selectedTerms)
+      ? input.selectedTerms.filter((id: unknown) => typeof id === "string").slice(0, 40)
+      : [],
+    customTerms: text(input?.customTerms),
     priceNow: text(input?.priceNow, 20),
     priceWas: text(input?.priceWas, 20),
     durationDays: positiveInt(input?.durationDays, 30),

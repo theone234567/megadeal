@@ -7,6 +7,7 @@ import { useWix } from "@/context/WixProvider";
 import { uploadPhoto } from "@/lib/imageUpload";
 import { CATEGORIES } from "@/lib/categories";
 import { parseDraft } from "@/lib/dealDraft";
+import { STANDARD_TERMS, renderTerms } from "@/lib/dealTerms";
 import MerchantLoginForm from "@/components/portal/MerchantLoginForm";
 
 const DURATIONS = [
@@ -42,7 +43,12 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const [dealName, setDealName] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [terms, setTerms] = useState("");
+  /** Which standard conditions are ticked, plus anything specific the
+   *  merchant adds. These two render into the single `terms` string the
+   *  deal record and the public page have always used. */
+  const [selectedTerms, setSelectedTerms] = useState<string[]>([]);
+  const [customTerms, setCustomTerms] = useState("");
+  const terms = renderTerms(selectedTerms, customTerms);
   const [priceNow, setPriceNow] = useState("");
   const [priceWas, setPriceWas] = useState("");
   const [durationDays, setDurationDays] = useState(30);
@@ -95,7 +101,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         if (!original) return;
         setDealName(original.dealName || "");
         setDescription(original.description || "");
-        setTerms(original.terms || "");
+        // An existing deal stores terms as one rendered string, with no
+        // record of which boxes produced it, so it comes back as custom text.
+        setCustomTerms(original.terms || "");
         setPriceNow(original.priceNow !== undefined ? String(original.priceNow) : "");
         setPriceWas(
           original.priceWas && original.priceWas !== original.priceNow
@@ -130,7 +138,8 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         setDealName(draft.dealName);
         setCategory(draft.category);
         setDescription(draft.description);
-        setTerms(draft.terms);
+        setSelectedTerms(draft.selectedTerms);
+        setCustomTerms(draft.customTerms);
         setPriceNow(draft.priceNow);
         setPriceWas(draft.priceWas);
         setDurationDays(draft.durationDays);
@@ -180,6 +189,14 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
       return;
     }
+    // The textarea is no longer `required` — most deals are now described
+    // entirely by tick-boxes and never touch it — so nothing native is
+    // left enforcing that terms exist at all.
+    if (!terms) {
+      setError("Tick at least one condition, or write your own terms.");
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      return;
+    }
     setError(null);
     setStep("preview");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -222,6 +239,8 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             isFlash,
             durationMinutes,
             quantityAvailable,
+            selectedTerms,
+            customTerms,
             photoUrl: media?.url || "",
             photoMediaId: media?.id || "",
           },
@@ -719,15 +738,51 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Terms &amp; conditions</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            Terms &amp; conditions
+            <span className="ml-1 font-normal text-ember-600">Required</span>
+          </label>
+          <p className="mb-2 text-xs text-slate-500">
+            Tick everything that applies. Saying it here saves the awkward
+            conversation when someone turns up expecting something else.
+          </p>
+          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+            {STANDARD_TERMS.map((term) => (
+              <label
+                key={term.id}
+                htmlFor={`term-${term.id}`}
+                className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+              >
+                <input
+                  id={`term-${term.id}`}
+                  type="checkbox"
+                  checked={selectedTerms.includes(term.id)}
+                  onChange={(e) =>
+                    setSelectedTerms((prev) =>
+                      e.target.checked
+                        ? [...prev, term.id]
+                        : prev.filter((id) => id !== term.id)
+                    )
+                  }
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
+                />
+                <span>{term.label}</span>
+              </label>
+            ))}
+          </div>
           <textarea
-            required
-            rows={3}
-            value={terms}
-            onChange={(e) => setTerms(e.target.value)}
-            placeholder="e.g. First in, first served — limited to 50 redemptions. Valid 3 months from when the deal goes live. Not valid with other offers."
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            id="deal-custom-terms"
+            rows={2}
+            value={customTerms}
+            onChange={(e) => setCustomTerms(e.target.value)}
+            placeholder="Anything else specific to your deal — e.g. maximum 6 people per booking"
+            className="mt-3 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
+          {terms && (
+            <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
+              <span className="font-semibold">Customers will see:</span> {terms}
+            </p>
+          )}
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
