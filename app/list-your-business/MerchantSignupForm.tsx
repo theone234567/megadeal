@@ -121,7 +121,7 @@ async function submitApplication(values: ApplicationValues) {
 }
 
 export default function MerchantSignupForm() {
-  const { client } = useWix();
+  const { client, isLoggedIn } = useWix();
   const searchParams = useSearchParams();
   const referralPrefill = searchParams.get("ref") || "";
   const startedRef = useRef(false);
@@ -246,13 +246,20 @@ export default function MerchantSignupForm() {
     const email = String(formData.get("email") ?? "").trim();
     const businessName = String(formData.get("businessName") ?? "").trim();
 
-    if (password.length < 8) {
-      setSubmitError("Your password needs to be at least 8 characters.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setSubmitError("Those passwords don't match.");
-      return;
+    // Only when an account is being created. A signed-in visitor has no
+    // password field rendered, so `password` is "" and these would reject
+    // the form on a credential they were never asked for — which is how
+    // the already-signed-in path stayed broken despite being handled
+    // further down.
+    if (!isLoggedIn) {
+      if (password.length < 8) {
+        setSubmitError("Your password needs to be at least 8 characters.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setSubmitError("Those passwords don't match.");
+        return;
+      }
     }
     if (!agreedToTerms) {
       setSubmitError("You must agree to the Terms and Conditions to apply.");
@@ -276,6 +283,27 @@ export default function MerchantSignupForm() {
     // Snapshot the form NOW, while it's still mounted — finishAfterAuth may
     // not run until after the verify-code screen has replaced it.
     applicationRef.current = readApplicationValues(formData);
+
+    // Already signed in: the Wix account exists, so there is nothing to
+    // register and the application is all that's missing. Without this the
+    // page is a loop — the portal tells someone with no application on
+    // file to "Sign up your business", and registering again answers
+    // "you've already got an account, sign in instead", which is where
+    // they just came from. Reachable in practice: any signup whose
+    // verification timed out leaves exactly this state.
+    if (isLoggedIn) {
+      setSubmitting(true);
+      try {
+        await finishAfterAuth();
+      } catch (err: any) {
+        setSubmitError(
+          friendlyError(err, "Something went wrong saving your business details. Please try again.")
+        );
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -529,54 +557,67 @@ export default function MerchantSignupForm() {
           />
         </div>
 
-        <div>
-          <label htmlFor="signup-email" className="mb-1 block text-base font-medium text-slate-700">
-            Email
-            <RequiredTag />
-          </label>
-          <input
-            id="signup-email"
-            required
-            name="email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@yourbusiness.co.nz"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-          />
-        </div>
+        {/* Credentials are only asked for when there is no account yet.
+            Someone already signed in has one — asking again would be odd,
+            and the fields being `required` would block the form outright
+            on values they have no reason to retype. */}
+        {isLoggedIn ? (
+          <div className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-800">
+            You&rsquo;re already signed in, so we just need your business details below — no new
+            password required.
+          </div>
+        ) : (
+          <>
+            <div>
+              <label htmlFor="signup-email" className="mb-1 block text-base font-medium text-slate-700">
+                Email
+                <RequiredTag />
+              </label>
+              <input
+                id="signup-email"
+                required
+                name="email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@yourbusiness.co.nz"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+              />
+            </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="signup-password" className="mb-1 block text-base font-medium text-slate-700">
-              Password
-              <RequiredTag />
-            </label>
-            <PasswordField
-              id="signup-password"
-              required
-              autoComplete="new-password"
-              value={password}
-              onChange={setPassword}
-              placeholder="At least 8 characters"
-              inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-            />
-          </div>
-          <div>
-            <label htmlFor="signup-confirmPassword" className="mb-1 block text-base font-medium text-slate-700">
-              Confirm password
-              <RequiredTag />
-            </label>
-            <PasswordField
-              id="signup-confirmPassword"
-              required
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={setConfirmPassword}
-              placeholder="Same password again"
-              inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-            />
-          </div>
-        </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="signup-password" className="mb-1 block text-base font-medium text-slate-700">
+                  Password
+                  <RequiredTag />
+                </label>
+                <PasswordField
+                  id="signup-password"
+                  required
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={setPassword}
+                  placeholder="At least 8 characters"
+                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+                />
+              </div>
+              <div>
+                <label htmlFor="signup-confirmPassword" className="mb-1 block text-base font-medium text-slate-700">
+                  Confirm password
+                  <RequiredTag />
+                </label>
+                <PasswordField
+                  id="signup-confirmPassword"
+                  required
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  placeholder="Same password again"
+                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+                />
+              </div>
+            </div>
+          </>
+        )}
 
         <div>
           <label htmlFor="signup-contactPhone" className="mb-1 block text-base font-medium text-slate-700">
