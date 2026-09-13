@@ -9,10 +9,17 @@ import StarRating from "./StarRating";
 export default function DealCard({
   deal,
   distanceKm = null,
+  /** Shown inside the merchant's own preview, where the deal has no page
+   *  to open yet. Renders the identical card without the link, so it can't
+   *  navigate to a slug that 404s — taking their unsaved form with it — and
+   *  Next doesn't prefetch that route just because the card scrolled into
+   *  view. */
+  preview = false,
 }: {
   deal: Deal;
   /** Distance from the viewer, in km — shown as a badge when known. */
   distanceKm?: number | null;
+  preview?: boolean;
 }) {
   const soldOut = !deal.inStock;
   const lowStock =
@@ -21,12 +28,15 @@ export default function DealCard({
     deal.quantityAvailable > 0 &&
     deal.quantityAvailable <= 5;
 
+  const Wrapper = preview ? "div" : Link;
+  const wrapperProps = preview ? {} : { href: `/deal/${deal.slug}` };
+
   return (
-    <Link
-      href={`/deal/${deal.slug}`}
-      className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition hover:-translate-y-0.5 hover:shadow-card-hover ${
-        soldOut ? "opacity-75" : ""
-      }`}
+    <Wrapper
+      {...(wrapperProps as any)}
+      className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition ${
+        preview ? "" : "hover:-translate-y-0.5 hover:shadow-card-hover"
+      } ${soldOut ? "opacity-75" : ""}`}
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
         {deal.image ? (
@@ -114,6 +124,6 @@ export default function DealCard({
           </div>
         </div>
       </div>
-    </Link>
+    </Wrapper>
   );
 }

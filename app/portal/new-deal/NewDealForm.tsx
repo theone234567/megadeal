@@ -423,45 +423,48 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       ? FLASH_DURATIONS.find((d) => d.minutes === durationMinutes)?.label
       : DURATIONS.find((d) => d.days === durationDays)?.label;
 
+    // Not wrapped in <main>: DealDetail below renders the real page, main
+    // landmark and h1 included, and nesting a second set inside it would
+    // be invalid and leave two of each. The banner is chrome around the
+    // real thing rather than a page of its own.
     return (
-      <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
-        <button
-          type="button"
-          onClick={() => setStep("form")}
-          className="text-sm text-slate-500 hover:text-brand-700"
-        >
-          ← Back to edit
-        </button>
+      <div className="pb-10">
+        <div className="border-b border-slate-200 bg-white">
+          <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
+            <button
+              type="button"
+              onClick={() => setStep("form")}
+              className="text-sm font-semibold text-slate-500 hover:text-brand-700"
+            >
+              ← Back to edit
+            </button>
+            <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700">
+              Preview — not live yet
+            </span>
+            <p className="w-full text-xs text-slate-500 sm:w-auto">
+              Exactly what customers see. Anything missing here is missing at launch.
+            </p>
+          </div>
+        </div>
 
-        <h1 className="mt-3 text-2xl font-extrabold text-slate-900">Preview your deal</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Exactly what customers will see — the card on the deals page, and the
-          page it opens. Anything missing here will be missing when you go live.
-        </p>
-
-        {/* The real card and the real deal page, built from what they
-            typed — not a summary of the fields. The question a merchant
-            has at this point isn't "did I type that correctly", it's
-            "what will this look like next to everyone else's?", and
-            pre-launch this is the only place they can find out. */}
-        <div className="mt-6">
+        {/* Full width, matching the live page. Constrained to the form's
+            column it showed the desktop two-column layout crammed into
+            half the space, which is the opposite of what a preview is
+            for. */}
+        <div className="mx-auto mt-6 max-w-5xl px-4 sm:px-6 lg:px-8">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
             On the deals page
           </p>
           <div className="max-w-xs">
-            <DealCard deal={previewDeal} />
+            <DealCard deal={previewDeal} preview />
           </div>
         </div>
 
-        <div className="mt-8">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            When they open it
-          </p>
-          <div className="overflow-hidden rounded-2xl border border-slate-200">
-            <DealDetail deal={previewDeal} relatedDeals={[]} preview />
-          </div>
+        <div className="mt-8 border-t border-slate-200 pt-2">
+          <DealDetail deal={previewDeal} relatedDeals={[]} preview />
         </div>
 
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-2 rounded-2xl bg-slate-50 p-4 text-sm">
           <div>
             <dt className="text-slate-500">Category</dt>
@@ -530,7 +533,8 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             </div>
           )}
         </div>
-      </main>
+        </div>
+      </div>
     );
   }
 

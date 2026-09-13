@@ -353,7 +353,27 @@ export default function DealDetail({
               .
             </p>
 
-            <ShareButtons title={deal.name} size="md" className="mt-4" />
+            {/* The merchant's own conditions. Collected since deals began
+                and never shown until now, which meant a customer's first
+                encounter with "bookings essential" or "valid Monday to
+                Thursday" was being turned away — the one place those
+                sentences exist to prevent. Above the booking buttons
+                deliberately: after them it is an excuse, before them it is
+                information. */}
+            {deal.terms && (
+              <div className="mt-4 rounded-xl bg-slate-50 p-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  Good to know
+                </p>
+                <p className="mt-1 text-sm text-slate-600">{deal.terms}</p>
+              </div>
+            )}
+
+            {/* Hidden while previewing: ShareButtons defaults to the
+                current URL, which here is the merchant's own auth-gated
+                /portal/new-deal page — a link that would be useless to
+                anyone they sent it to. */}
+            {!preview && <ShareButtons title={deal.name} size="md" className="mt-4" />}
 
             <div className="mt-6">
               {!deal.inStock ? (
@@ -363,7 +383,10 @@ export default function DealDetail({
               ) : !showContact ? (
                 <button
                   onClick={() => {
-                    trackDealEvent(deal.id, "click");
+                    // Same reasoning as the view effect above: a preview
+                    // has no real deal id, so recording a click would put
+                    // fictional demand in the merchant's own analytics.
+                    if (!preview) trackDealEvent(deal.id, "click");
                     setShowContact(true);
                   }}
                   className="w-full rounded-full bg-ember-500 py-3 text-center font-bold text-white shadow-card transition hover:bg-ember-600 active:scale-95"

@@ -79,6 +79,9 @@ export function mapProductToDeal(product: any, categoryNamesById?: Record<string
     businessLng: null,
     businessRating: null,
     businessReviewCount: null,
+    // Filled in by the Deals-row merge in fetchDealServer; the product
+    // itself has no concept of the merchant's fine print.
+    terms: null,
     dealCode: null,
   };
 }

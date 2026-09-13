@@ -78,6 +78,7 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     expiresAt,
     status: "Pending Approval",
     isFlash: input.isFlash,
+    terms: input.terms || null,
 
     // Everything below comes from the business profile, exactly as it
     // will on the live page — which is also the point: a merchant who

@@ -39,6 +39,7 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
         isFlash: Boolean(record.isFlash),
         quantityAvailable:
           typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
+        terms: record.terms || null,
         dealCode: record.dealCode || null,
       };
     }
@@ -194,6 +195,7 @@ export async function fetchBusinessProfileBySlug(
           isFlash: Boolean(record.isFlash),
           quantityAvailable:
             typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
+          terms: record.terms || null,
           dealCode: record.dealCode || null,
         };
         deals.push(applyBusinessToDeal(dealBase, business));

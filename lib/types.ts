@@ -27,6 +27,12 @@ export interface Deal {
   expiresAt: string | null;
   status: DealStatus | null;
   isFlash: boolean;
+  /** The merchant's fine print. Collected since deals began and stored on
+   *  the Deals row, but never mapped onto a Deal and never rendered — so
+   *  every condition a merchant set was invisible to the customer it was
+   *  meant to inform, and the first they'd hear of "bookings essential"
+   *  was being turned away at the door. */
+  terms: string | null;
   businessName: string | null;
   businessLogoUrl: string | null;
   businessWebsite: string | null;
