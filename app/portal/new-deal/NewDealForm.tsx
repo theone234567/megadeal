@@ -434,14 +434,14 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             <button
               type="button"
               onClick={() => setStep("form")}
-              className="text-sm font-semibold text-slate-500 hover:text-brand-700"
+              className="rounded-full border-2 border-slate-200 px-4 py-1.5 text-sm font-extrabold text-slate-600 transition hover:border-brand-300 hover:text-brand-700 active:scale-95"
             >
               ← Back to edit
             </button>
-            <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700">
-              Preview — not live yet
+            <span className="rounded-full bg-ember-500 px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-white shadow-sm">
+              👀 Preview
             </span>
-            <p className="w-full text-xs text-slate-500 sm:w-auto">
+            <p className="w-full text-xs font-semibold text-slate-500 sm:w-auto">
               Exactly what customers see. Anything missing here is missing at launch.
             </p>
           </div>
@@ -452,7 +452,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             half the space, which is the opposite of what a preview is
             for. */}
         <div className="mx-auto mt-6 max-w-5xl px-4 sm:px-6 lg:px-8">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-brand-600">
             On the deals page
           </p>
           <div className="max-w-xs">
@@ -713,9 +713,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         </div>
 
         <div>
-          <label htmlFor="deal-photo" className="mb-1 block text-sm font-medium text-slate-700">
+          <label htmlFor="deal-photo" className="mb-1 block font-display text-base font-bold text-slate-900">
             Photo
-            <span className="ml-1 font-normal text-ember-600">Required</span>
+            <span className="ml-1 font-sans text-sm font-normal text-ember-600">Required</span>
           </label>
           <p className="mb-2 text-xs text-slate-500">
             This is the whole card on the deals page — a real photo of the food, room
@@ -752,37 +752,42 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Terms &amp; conditions
-            <span className="ml-1 font-normal text-ember-600">Required</span>
+          <label className="mb-1 block font-display text-base font-bold text-slate-900">
+            The fine print
+            <span className="ml-1 font-sans text-sm font-normal text-ember-600">Required</span>
           </label>
           <p className="mb-2 text-xs text-slate-500">
-            Tick everything that applies. Saying it here saves the awkward
+            Tap everything that applies. Saying it here saves the awkward
             conversation when someone turns up expecting something else.
           </p>
-          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-            {STANDARD_TERMS.map((term) => (
-              <label
-                key={term.id}
-                htmlFor={`term-${term.id}`}
-                className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
-              >
-                <input
-                  id={`term-${term.id}`}
-                  type="checkbox"
-                  checked={selectedTerms.includes(term.id)}
-                  onChange={(e) =>
+          {/* Chips rather than checkboxes: a 16px tick-box is a poor target
+              on the phone most merchants will use, and ten of them in a
+              column reads like a form to endure. These are one tap each and
+              the ticked ones are obvious at a glance. */}
+          <div className="flex flex-wrap gap-2">
+            {STANDARD_TERMS.map((term) => {
+              const on = selectedTerms.includes(term.id);
+              return (
+                <button
+                  key={term.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() =>
                     setSelectedTerms((prev) =>
-                      e.target.checked
-                        ? [...prev, term.id]
-                        : prev.filter((id) => id !== term.id)
+                      on ? prev.filter((id) => id !== term.id) : [...prev, term.id]
                     )
                   }
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
-                />
-                <span>{term.label}</span>
-              </label>
-            ))}
+                  className={`rounded-full border-2 px-3.5 py-2 text-sm font-bold transition active:scale-95 ${
+                    on
+                      ? "border-brand-600 bg-brand-600 text-white shadow-card"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700"
+                  }`}
+                >
+                  {on ? "✓ " : ""}
+                  {term.label}
+                </button>
+              );
+            })}
           </div>
           <textarea
             id="deal-custom-terms"
@@ -794,8 +799,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             className="mt-3 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
           {terms && (
-            <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
-              <span className="font-semibold">Customers will see:</span> {terms}
+            <p className="mt-3 rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-900">
+              <span className="font-display font-bold">Customers will see: </span>
+              {terms}
             </p>
           )}
         </div>
@@ -817,7 +823,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             type="button"
             onClick={saveDraft}
             disabled={savingDraft}
-            className="w-full rounded-full border border-slate-200 py-3 text-center text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 sm:w-auto sm:px-6"
+            className="w-full rounded-full border-2 border-brand-200 py-3 text-center text-sm font-extrabold text-brand-700 transition hover:border-brand-400 hover:bg-brand-50 active:scale-95 disabled:opacity-60 sm:w-auto sm:px-6"
           >
             {savingDraft ? "Saving…" : draftId ? "Save changes" : "Save as draft"}
           </button>
