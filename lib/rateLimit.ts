@@ -57,9 +57,37 @@ export async function checkRateLimit(
   const kv = await getRateLimitKv();
   if (!kv) return { limited: false };
 
-  const count = (Number(await kv.get(key)) || 0) + 1;
+  const now = Date.now();
+  // The window has a fixed end, stored with the count. Previously each
+  // allowed request re-put the key with a fresh full TTL, so the window
+  // slid forward on every call: a merchant making 61 saves spread across a
+  // working day, never an hour apart, would be refused and then have to
+  // sit completely idle for an hour to recover. A window that starts when
+  // the first request lands and genuinely ends an hour later is what the
+  // limits were chosen against.
+  let count = 0;
+  let resetAt = now + windowSeconds * 1000;
+
+  const raw = await kv.get(key);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (typeof parsed?.c === "number" && typeof parsed?.r === "number" && parsed.r > now) {
+        count = parsed.c;
+        resetAt = parsed.r;
+      }
+    } catch {
+      // A value from before this format, or corrupt. Treated as a fresh
+      // window rather than refusing the caller over unreadable bookkeeping.
+    }
+  }
+
+  count += 1;
   if (count > max) return { limited: true };
 
-  await kv.put(key, String(count), { expirationTtl: windowSeconds });
+  // TTL tracks the real remaining window, so the key disappears when the
+  // window actually ends rather than being kept alive by traffic.
+  const ttl = Math.max(1, Math.ceil((resetAt - now) / 1000));
+  await kv.put(key, JSON.stringify({ c: count, r: resetAt }), { expirationTtl: ttl });
   return { limited: false };
 }

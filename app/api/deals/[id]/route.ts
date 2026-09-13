@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
+import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +50,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   const member = await getVerifiedMember(req);
   if (!member?.email) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+  }
+
+  if (await memberRateLimited("deal-delete", member.id, 30, HOUR)) {
+    return NextResponse.json({ error: "That's a lot of deletes at once — please try again shortly." }, { status: 429 });
   }
 
   try {

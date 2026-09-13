@@ -406,7 +406,7 @@ export default function AdminBusinessDetailPage() {
                 const parsed = parseBusinessHours(businessHours);
                 if (!parsed) return null;
                 const lines = formatBusinessHoursLines(parsed);
-  return (
+                return (
                   <div className="mb-2 rounded-lg bg-slate-50 p-2.5 text-xs text-slate-500">
                     <p className="mb-0.5 font-semibold text-slate-600">
                       Displays to customers as:
@@ -614,7 +614,7 @@ export default function AdminBusinessDetailPage() {
         ) : (
           <div className="mt-4 max-w-md">
             <label htmlFor="confirm-delete" className="block text-sm font-bold text-red-900">
-              Type <span className="font-mono">{businessName || "the business name"}</span> to confirm
+              Type <span className="font-mono">{businessName.trim() || params.id}</span> to confirm
             </label>
             <input
               id="confirm-delete"
@@ -625,7 +625,16 @@ export default function AdminBusinessDetailPage() {
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 onClick={remove}
-                disabled={deleting || deleteConfirmText.trim() !== (businessName || "").trim()}
+                // A record with no business name would otherwise compare
+                // "" to "" and enable the button with nothing typed —
+                // turning the confirmation off in exactly the case the
+                // label's fallback text anticipates. Falls back to the id,
+                // which is always present and always has to be typed.
+                disabled={
+                  deleting ||
+                  !deleteConfirmText.trim() ||
+                  deleteConfirmText.trim() !== (businessName.trim() || params.id)
+                }
                 className="rounded-full bg-red-600 px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-red-700 active:scale-95 disabled:opacity-40"
               >
                 {deleting ? "Deleting…" : "Delete permanently"}

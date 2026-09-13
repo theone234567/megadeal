@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
+import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { allowedDealActions } from "@/lib/dealStatus";
 import type { DealStatus } from "@/lib/types";
@@ -15,6 +16,10 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const member = await getVerifiedMember(req);
   if (!member?.email) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+  }
+
+  if (await memberRateLimited("deal-status", member.id, 60, HOUR)) {
+    return NextResponse.json({ error: "That's a lot of changes at once — please try again shortly." }, { status: 429 });
   }
 
   const body = await req.json().catch(() => null);

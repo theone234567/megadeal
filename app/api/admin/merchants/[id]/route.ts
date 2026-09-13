@@ -508,11 +508,22 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       const all = deals.items ?? [];
       const submitted = all.filter((d: any) => d.status !== "Draft");
       if (submitted.length > 0) {
+        // Cancelling doesn't clear this, and that is deliberate. A
+        // submitted deal has a Wix Stores product behind it, and
+        // isDealLive treats a product whose Deals row is missing as live
+        // (a null status passes) — so deleting these rows here would
+        // republish every one of them, cancelled ones included. The only
+        // safe order is to remove the deal and its product together in the
+        // Wix dashboard, which is what this now says.
         return NextResponse.json(
           {
-            error: `This business still has ${submitted.length} submitted deal${
-              submitted.length === 1 ? "" : "s"
-            }. Cancel or remove those first, then delete the business.`,
+            error:
+              `This business has ${submitted.length} submitted deal${
+                submitted.length === 1 ? "" : "s"
+              }. Those have live Stores products behind them, and removing the deal ` +
+              `records alone would put the products back on the site. Delete them in ` +
+              `the Wix dashboard first — Content Manager → Deals, and Stores → Products ` +
+              `— then delete the business here.`,
           },
           { status: 409 }
         );
@@ -525,12 +536,21 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     if (email) {
-      const activity = await adminClient.items
-        .query("MerchantActivity")
-        .eq("merchantEmail", email)
-        .find();
-      for (const row of activity.items ?? []) {
-        await adminClient.items.remove("MerchantActivity", row._id);
+      // Paged, because an unbounded find() returns one default page and a
+      // busy ledger is longer than that — leaving the remainder behind,
+      // which is exactly the inherited credit history this exists to
+      // prevent. Bounded so a runaway query can't loop forever.
+      for (let page = 0; page < 20; page += 1) {
+        const activity = await adminClient.items
+          .query("MerchantActivity")
+          .eq("merchantEmail", email)
+          .limit(100)
+          .find();
+        const rows = activity.items ?? [];
+        if (rows.length === 0) break;
+        for (const row of rows) {
+          await adminClient.items.remove("MerchantActivity", row._id);
+        }
       }
     }
 
@@ -538,6 +558,17 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ ok: true, deletedDrafts: drafts.length });
   } catch (err) {
     console.error("[admin/merchants/[id]] DELETE failed", err);
-    return NextResponse.json({ error: "Couldn't delete that business." }, { status: 500 });
+    // Says "partly" on purpose: this removes drafts, then activity, then
+    // the business, and Wix Data has no transaction across them. A failure
+    // halfway leaves real deletions behind it, and telling the admin
+    // nothing happened would be false.
+    return NextResponse.json(
+      {
+        error:
+          "Couldn't finish deleting that business — some of its drafts or history may " +
+          "already be gone. Reload and check before trying again.",
+      },
+      { status: 500 }
+    );
   }
 }
