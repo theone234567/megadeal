@@ -55,6 +55,22 @@ export async function getOrClaimMerchant(adminClient: any, member: VerifiedMembe
 
   if (!member.email) return null;
 
+  // Claiming is the one privilege escalation in this codebase: it hands a
+  // member an existing business — its credits, its deals, its contact
+  // details, and the ability to publish under its name — on the strength
+  // of an email address alone. Every merchant API route resolves the
+  // caller's business through here, so this single check is what stands
+  // between "signed in" and "signed in as that business".
+  //
+  // An unverified email is not proof of anything: it is a string typed
+  // into a signup form. Wix's own flow does demand a mailed code before
+  // issuing member tokens, which is why this was not exploitable, but
+  // that is a setting in the Wix dashboard rather than anything this code
+  // controls — and a claim is irreversible once _owner is written. The
+  // flag is free now that getCurrentMember asks for the FULL fieldset,
+  // so require it explicitly rather than inheriting the guarantee.
+  if (!member.loginEmailVerified) return null;
+
   const candidates = await adminClient.items
     .query("Merchants")
     .eq("email", member.email.toLowerCase())
