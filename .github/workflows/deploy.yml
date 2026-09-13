@@ -51,6 +51,14 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      # Between typecheck and build for the same reason: these cover the
+      # logic a type error can't reach — terms being rewritten behind a
+      # merchant's back, a draft losing fields, a deal publishing itself,
+      # a query reading one page and calling it the collection. Every case
+      # is a bug that actually happened here.
+      - name: Unit tests
+        run: npm test
+
       - name: Check deploy credentials
         id: creds
         env:
