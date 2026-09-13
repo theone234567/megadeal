@@ -29,7 +29,13 @@ export async function getVerifiedMember(req: NextRequest): Promise<VerifiedMembe
   try {
     const client = createWixClient(tokens);
     if (!client.auth.loggedIn()) return null;
-    const { member } = await client.members.getCurrentMember();
+    // FULL is required, not a nicety. loginEmail and loginEmailVerified
+    // are not in the default (PUBLIC) fieldset, so without this both come
+    // back undefined — and every caller here treats that as fact: the
+    // apply route stored email: "" and emailVerified: false onto real,
+    // verified merchants, which is what put "No email on file" and
+    // "Email pending verification" on accounts that had just verified.
+    const { member } = await client.members.getCurrentMember({ fieldsets: ["FULL"] });
     if (!member?._id) return null;
     return {
       id: member._id,

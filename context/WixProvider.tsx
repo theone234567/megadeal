@@ -43,7 +43,13 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
   const fetchMember = useCallback(async () => {
     try {
       if (client.auth.loggedIn()) {
-        const { member: current } = await client.members.getCurrentMember();
+        // FULL for the same reason as lib/memberAuth.ts: the portal reads
+        // member.loginEmailVerified for its verified badge, and the
+        // default fieldset doesn't return that field at all — so a
+        // verified merchant was told their email was still pending.
+        const { member: current } = await client.members.getCurrentMember({
+          fieldsets: ["FULL"],
+        });
         setMember(current ?? null);
       } else {
         setMember(null);
