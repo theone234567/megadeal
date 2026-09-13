@@ -105,7 +105,7 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
                 <span aria-hidden className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-ember-500" />
               )}
             </span>
-            {isLoggedIn ? member?.profile?.nickname || "My portal" : "Business sign in"}
+            {isLoggedIn ? member?.nickname || "My portal" : "Business sign in"}
             {isLoggedIn && !profileComplete && (
               <span className="rounded-full bg-ember-50 px-2 py-0.5 text-xs font-semibold text-ember-600">1 step left</span>
             )}

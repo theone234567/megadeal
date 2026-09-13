@@ -1,4 +1,3 @@
-import Cookies from "js-cookie";
 import type { Tokens } from "@wix/sdk";
 import type { WixClient } from "./wixClient";
 
@@ -47,17 +46,28 @@ const FAILURE_MESSAGES: Record<string, string> = {
     "The security check didn't pass. Please try again. [captcha-rejected]",
 };
 
-/** Persists Wix member tokens the same way login-callback.tsx does for the
- *  OAuth-redirect path — one shared cookie both paths write to, so the rest
- *  of the app (WixProvider, every client-side Wix data call in the portal)
- *  doesn't need to know which path a given session came from. `secure` is
- *  added here (the original OAuth path didn't set it) since this cookie
- *  necessarily has to stay JS-readable — the client SDK reads it directly
- *  to authenticate every browser-side Wix call the portal makes — so it
- *  can't be made httpOnly without rerouting all of those through server
- *  routes instead, which is a much larger change than this pass. */
-function persistSession(tokens: Tokens) {
-  Cookies.set("session", JSON.stringify(tokens), { path: "/", sameSite: "lax", secure: true });
+/** Hands the freshly-minted member tokens to the server, which stores them
+ *  in an httpOnly cookie this code can never read back.
+ *
+ *  This used to write them into a JS-readable cookie, which meant any XSS
+ *  anywhere on the site could lift a refresh token out of document.cookie
+ *  and keep the account indefinitely. The tokens still pass through the
+ *  browser — the Wix SDK's Custom Login runs here and there is no
+ *  server-side equivalent — but they are no longer left anywhere script
+ *  can find them afterwards.
+ *
+ *  Throws if the server refuses them, so a login that cannot be persisted
+ *  surfaces as a failure rather than a page that looks signed in until the
+ *  next request quietly 401s. */
+async function persistSession(tokens: Tokens) {
+  const res = await fetch("/api/auth/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tokens }),
+  });
+  if (!res.ok) {
+    throw new Error("Signed in, but we couldn't start your session. Please try again.");
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,7 +75,7 @@ async function resolveState(client: WixClient, state: any): Promise<AuthOutcome>
   switch (state.loginState) {
     case "SUCCESS": {
       const tokens = await client.auth.getMemberTokensForDirectLogin(state.data.sessionToken);
-      persistSession(tokens);
+      await persistSession(tokens);
       return { status: "success" };
     }
     case "EMAIL_VERIFICATION_REQUIRED":

@@ -1,6 +1,5 @@
 "use client";
 
-import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import { createWixClient } from "@/lib/wixClient";
 
@@ -27,7 +26,18 @@ export default function LoginCallbackPage() {
           tokens = await client.auth.getMemberTokens(code, state, data);
           attempts += 1;
         }
-        Cookies.set("session", JSON.stringify(tokens), { path: "/", sameSite: "lax", secure: true });
+        // Handed to the server, which puts them in an httpOnly cookie.
+        // Writing them into a readable cookie here was the OAuth-redirect
+        // half of the same problem the Custom Login path had: a refresh
+        // token sitting in document.cookie for any injected script to take.
+        const sessionRes = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tokens }),
+        });
+        if (!sessionRes.ok) {
+          throw new Error("Signed in, but we couldn't start your session. Please try again.");
+        }
         window.location.href = data?.originalUri || "/";
       } catch (e: any) {
         setNextPage(data?.originalUri || "/");

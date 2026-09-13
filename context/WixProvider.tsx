@@ -11,16 +11,32 @@ import {
 } from "react";
 import { createWixClient, type WixClient } from "@/lib/wixClient";
 
+/** The only member details a page is given. Wix's full member object is
+ *  contact data; none of it belongs in the browser just to render a name
+ *  and a badge. */
+export interface SessionMember {
+  id: string;
+  email: string | null;
+  loginEmailVerified: boolean;
+  nickname: string | null;
+}
+
 interface WixContextValue {
   client: WixClient;
-  member: any | null | undefined;
+  member: SessionMember | null | undefined;
   isLoggedIn: boolean;
   logout: () => Promise<void>;
 }
 
 const WixContext = createContext<WixContextValue | null>(null);
 
-function readTokens() {
+function readVisitorTokens() {
+  // Visitor tokens only. Member tokens live in an httpOnly cookie this
+  // cannot see — that's the point of the split — so the client built here
+  // is never a signed-in client, and nothing in the browser should expect
+  // it to be. Its job is the parts of the Wix SDK that genuinely have to
+  // run in the page: Custom Login's register/login/verify state machine,
+  // and the captcha site keys hanging off client.auth.
   const raw = Cookies.get("session");
   if (!raw) return undefined;
   try {
@@ -37,37 +53,49 @@ function readTokens() {
  * portal) and gets passed down for the odd read that still wants it.
  */
 export function WixProvider({ children }: { children: React.ReactNode }) {
-  const client = useMemo(() => createWixClient(readTokens()), []);
-  const [member, setMember] = useState<any | null | undefined>(undefined);
+  const client = useMemo(() => createWixClient(readVisitorTokens()), []);
+  const [member, setMember] = useState<SessionMember | null | undefined>(undefined);
 
   const fetchMember = useCallback(async () => {
+    // Asked of our own server, which reads the httpOnly cookie. This used
+    // to ask Wix directly using tokens read out of document.cookie, and
+    // that requirement is precisely what forced the tokens to be
+    // script-readable in the first place.
     try {
-      if (client.auth.loggedIn()) {
-        // FULL for the same reason as lib/memberAuth.ts: the portal reads
-        // member.loginEmailVerified for its verified badge, and the
-        // default fieldset doesn't return that field at all — so a
-        // verified merchant was told their email was still pending.
-        const { member: current } = await client.members.getCurrentMember({
-          fieldsets: ["FULL"],
-        });
-        setMember(current ?? null);
-      } else {
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) {
         setMember(null);
+        return;
       }
+      const { member: current } = await res.json();
+      setMember(current ?? null);
     } catch {
       setMember(null);
     }
-  }, [client]);
+  }, []);
 
   useEffect(() => {
     fetchMember();
   }, [fetchMember]);
 
   const logout = useCallback(async () => {
-    const { logoutUrl } = await client.auth.logout(window.location.href);
-    Cookies.remove("session");
-    window.location.href = logoutUrl;
-  }, [client]);
+    // The server clears the cookie and builds the Wix logout URL, since
+    // that needs the tokens. If anything goes wrong the session is still
+    // ended here — falling back to the home page is a worse experience
+    // than a clean Wix logout, but never a less safe one.
+    let logoutUrl: string | null = null;
+    try {
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ returnTo: window.location.origin }),
+      });
+      if (res.ok) ({ logoutUrl } = await res.json());
+    } catch {
+      // fall through to the plain redirect below
+    }
+    window.location.href = logoutUrl || "/";
+  }, []);
 
   const value: WixContextValue = {
     client,

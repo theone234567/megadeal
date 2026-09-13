@@ -46,7 +46,7 @@ interface DealDraft {
 }
 
 export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean }) {
-  const { isLoggedIn, member, client } = useWix();
+  const { isLoggedIn, member } = useWix();
   const router = useRouter();
   const searchParams = useSearchParams();
   const duplicateId = searchParams.get("duplicate");
@@ -93,10 +93,14 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   // and photo live on the linked Wix Store product, so those are re-picked.
   useEffect(() => {
     if (!duplicateId || !merchant) return;
-    (client as any).items
-      .get("Deals", duplicateId)
-      .then((original: any) => {
-        if (!original || original.merchantEmail !== member?.email) return;
+    // Server-side, which also moves the ownership check off the client.
+    // Comparing merchantEmail in the page decided what to *show*; by then
+    // the record had already been handed to the browser. The route refuses
+    // to send someone else's deal at all.
+    fetch(`/api/deals/${duplicateId}`)
+      .then((res) => (res.ok ? res.json() : { item: null }))
+      .then(({ item: original }: any) => {
+        if (!original) return;
         setDealName(original.dealName || "");
         setDescription(original.description || "");
         setTerms(original.terms || "");

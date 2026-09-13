@@ -38,22 +38,21 @@ interface MerchantRecord {
 }
 
 export default function PortalPage() {
-  const { client, member, isLoggedIn, logout } = useWix();
+  const { member, isLoggedIn, logout } = useWix();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   const [deals, setDeals] = useState<DealRecord[]>([]);
   const [logoError, setLogoError] = useState<string | null>(null);
 
-  const loadDeals = useCallback(
-    (email: string) => {
-      client.items
-        .query("Deals")
-        .eq("merchantEmail", email)
-        .find()
-        .then((dealsResult: any) => setDeals(dealsResult.items ?? []))
-        .catch(() => setDeals([]));
-    },
-    [client]
-  );
+  // Server-side now: this query used to run in the browser with the
+  // member's own Wix tokens, which is one of the two reasons those tokens
+  // had to be readable by script. The route scopes results to the email
+  // Wix verified for the caller, so it no longer needs an argument.
+  const loadDeals = useCallback(() => {
+    fetch("/api/deals/mine")
+      .then((res) => (res.ok ? res.json() : { items: [] }))
+      .then(({ items }) => setDeals(items ?? []))
+      .catch(() => setDeals([]));
+  }, []);
 
   useEffect(() => {
     if (member === undefined) return; // still resolving auth state
@@ -74,7 +73,7 @@ export default function PortalPage() {
       .then(({ item: record }) => {
         if (cancelled) return;
         setMerchant(record ?? null);
-        if (record?.email) loadDeals(record.email);
+        loadDeals();
       })
       .catch(() => {
         if (!cancelled) setMerchant(null);
