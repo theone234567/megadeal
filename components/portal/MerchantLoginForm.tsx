@@ -45,6 +45,11 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
   const [needsVisibleCaptcha, setNeedsVisibleCaptcha] = useState(false);
   const [visibleCaptchaToken, setVisibleCaptchaToken] = useState<string | null>(null);
   const captchaRef = useRef<RecaptchaCheckboxHandle | null>(null);
+  /** Seconds until another code can be requested. Same brake as signup:
+   *  unthrottled on-demand email is how a sending domain ends up in junk
+   *  folders for everyone. */
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -112,6 +117,64 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     }
   }
 
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((n) => n - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  /**
+   * Sends a fresh verification code, the same way the signup form does.
+   *
+   * This SDK has no resend method, but Wix documents that authentication
+   * returning EMAIL_VERIFICATION_REQUIRED sends a code automatically — so
+   * signing in again while the email is unverified produces a new one
+   * through Wix's own flow. The new pendingState must replace the old,
+   * since the new code is validated against the new state token.
+   */
+  async function handleResendCode() {
+    if (resendCooldown > 0 || submitting) return;
+
+    setError(null);
+    setResendNotice(null);
+    setSubmitting(true);
+    try {
+      const captchaTokens = needsVisibleCaptcha
+        ? { recaptchaToken: visibleCaptchaToken }
+        : {
+            invisibleRecaptchaToken: await getInvisibleCaptchaToken(
+              (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
+            ),
+          };
+
+      const outcome = await withTimeout(
+        loginMember(client, email, password, captchaTokens),
+        AUTH_TIMEOUT_MS,
+        "That took too long. Please check your connection and try again."
+      );
+
+      if (outcome.status === "verify") {
+        setPendingState(outcome.pendingState);
+        setResendNotice("New code sent. It can take a minute to arrive.");
+        setResendCooldown(30);
+      } else if (outcome.status === "success") {
+        // Verified elsewhere in the meantime — just let them in.
+        window.location.href = redirectTo;
+      } else {
+        setError(
+          outcome.status === "error"
+            ? outcome.message
+            : "We couldn't send a new code just now. Please try again shortly."
+        );
+      }
+    } catch {
+      setError("We couldn't send a new code. Please try again.");
+    } finally {
+      setSubmitting(false);
+      captchaRef.current?.reset();
+    }
+  }
+
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -164,6 +227,11 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
           autoFocus
           className="w-full rounded-xl border border-slate-200 px-3 py-2 text-center text-sm tracking-widest outline-none focus:border-brand-400"
         />
+        {resendNotice && (
+          <p role="status" className="text-center text-sm font-semibold text-green-700">
+            {resendNotice}
+          </p>
+        )}
         {error && <p className="text-center text-sm text-ember-600">{error}</p>}
         <button
           type="submit"
@@ -172,6 +240,23 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         >
           {submitting ? "Checking…" : "Verify & sign in"}
         </button>
+
+        {/* Without this, a merchant whose code never arrived is locked out
+            of their own portal with nothing to click. */}
+        <button
+          type="button"
+          onClick={handleResendCode}
+          disabled={submitting || resendCooldown > 0}
+          className="w-full text-center text-sm font-semibold text-brand-700 underline underline-offset-2 transition hover:text-brand-800 disabled:no-underline disabled:opacity-60"
+        >
+          {resendCooldown > 0
+            ? `Resend code in ${resendCooldown}s`
+            : "Didn't get the code? Send it again"}
+        </button>
+
+        <p className="text-center text-xs text-slate-500">
+          Check your spam folder too — it sometimes lands there.
+        </p>
       </form>
     );
   }
