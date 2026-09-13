@@ -7,7 +7,7 @@ import { useWix } from "@/context/WixProvider";
 import { uploadPhoto } from "@/lib/imageUpload";
 import { CATEGORIES } from "@/lib/categories";
 import { parseDraft, MAX_DRAFT_TEXT } from "@/lib/dealDraft";
-import { STANDARD_TERMS, renderTerms } from "@/lib/dealTerms";
+import { STANDARD_TERMS, renderTerms, parseTerms } from "@/lib/dealTerms";
 import { buildPreviewDeal } from "@/lib/previewDeal";
 import DealCard from "@/components/DealCard";
 import DealDetail from "@/app/deal/[slug]/DealDetail";
@@ -114,9 +114,14 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         if (!original) return;
         setDealName(original.dealName || "");
         setDescription(original.description || "");
-        // An existing deal stores terms as one rendered string, with no
-        // record of which boxes produced it, so it comes back as custom text.
-        setCustomTerms(original.terms || "");
+        // An existing deal stores terms as one rendered string with no
+        // record of which boxes produced it, so the chips are recovered by
+        // parsing — and parseTerms falls back to plain custom text unless
+        // the split round-trips exactly, so nothing is ever reordered or
+        // reinterpreted behind the merchant's back.
+        const recovered = parseTerms(original.terms || "");
+        setSelectedTerms(recovered.selectedIds);
+        setCustomTerms(recovered.custom);
         setPriceNow(original.priceNow !== undefined ? String(original.priceNow) : "");
         setPriceWas(
           original.priceWas && original.priceWas !== original.priceNow

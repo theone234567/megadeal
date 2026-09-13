@@ -27,6 +27,18 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     if (deal.status === "Cancelled") {
       return NextResponse.json({ error: "This deal is cancelled." }, { status: 400 });
     }
+    // A draft must not be reachable here. This route moves a deal to
+    // "Pending Approval" as a side effect of changing its photo, which for
+    // a draft would push it into review with no Wix product behind it and
+    // no credit spent — a free listing slot and a deal that can be
+    // approved but can never appear. Drafts change their photo in the deal
+    // form, through /api/deals/draft.
+    if (deal.status === "Draft") {
+      return NextResponse.json(
+        { error: "This deal is still a draft — open it to make changes." },
+        { status: 409 }
+      );
+    }
 
     const nextStatus = "Pending Approval";
     const updated = await adminClient.items.update("Deals", {

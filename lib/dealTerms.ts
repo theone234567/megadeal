@@ -71,6 +71,20 @@ export function renderTerms(selectedIds: string[], custom: string): string {
  * collection has always had.
  */
 export function parseTerms(rendered: string): { selectedIds: string[]; custom: string } {
+  const guess = splitTerms(rendered);
+  // Only trust the split if re-rendering it reproduces the original
+  // exactly. renderTerms always puts standard labels first and custom
+  // text last, so terms written the other way round — "Ask at reception
+  // for the MegaDeal rate. Bookings essential." — would come back
+  // reordered, and re-saving would publish the reordered version. It also
+  // catches a merchant's own sentence that happens to match a label word
+  // for word, which would otherwise become a chip whose untick silently
+  // deleted their text.
+  if (renderTerms(guess.selectedIds, guess.custom) === rendered.trim()) return guess;
+  return { selectedIds: [], custom: rendered.trim() };
+}
+
+function splitTerms(rendered: string): { selectedIds: string[]; custom: string } {
   const idByLabel = new Map(STANDARD_TERMS.map((t) => [t.label.toLowerCase(), t.id]));
   const selectedIds: string[] = [];
   const leftovers: string[] = [];
