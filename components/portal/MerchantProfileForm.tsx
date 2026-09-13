@@ -233,7 +233,9 @@ export default function MerchantProfileForm({
 
   return (
     <div>
-      <h2 className="text-lg font-bold text-slate-900">Edit business details</h2>
+      <h2 className="text-lg font-bold text-slate-900">
+        {startEditing ? "Your business details" : "Edit business details"}
+      </h2>
       <p className="mt-1 text-xs text-amber-700">
         ⚠️ Saving changes sends your profile back for review before it&apos;s shown
         publicly again.
@@ -552,7 +554,13 @@ export default function MerchantProfileForm({
             disabled={saving}
             className="rounded-full bg-brand-600 px-5 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
           >
-            {saving ? "Saving…" : "Save changes"}
+            {saving
+              ? startEditing
+                ? "Submitting…"
+                : "Saving…"
+              : startEditing
+                ? "Submit for approval"
+                : "Save changes"}
           </button>
           <button
             type="button"

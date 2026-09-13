@@ -220,7 +220,10 @@ export default function PortalPage() {
               </h2>
               <p className="mt-1 text-sm text-slate-600">
                 We&apos;ve kept everything you gave us at signup. Add your address, category and
-                opening hours so customers can find you — then you can create your first deal.
+                opening hours so customers can find you.
+              </p>
+              <p className="mt-2 text-sm font-semibold text-slate-700">
+                Saving sends your listing to us for approval.
               </p>
               <div className="mt-5 rounded-2xl bg-white p-5">
                 <MerchantProfileForm
@@ -231,12 +234,36 @@ export default function PortalPage() {
               </div>
             </section>
           ) : (
-            <Link
-              href="/portal/new-deal"
-              className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-ember-500 px-6 py-4 text-center text-base font-bold text-white shadow-card transition hover:bg-ember-600"
-            >
-              + Create a new deal
-            </Link>
+            <>
+              {/* A complete listing that is still Pending is with us for
+                  review. Saying nothing left merchants watching a status
+                  word with no idea whether anything was happening, or how
+                  long to wait. The caveat is deliberately understated: it
+                  has to be true — not every business is a fit — without
+                  reading as a warning to someone who has just signed up. */}
+              {(merchant.status || "Pending") === "Pending" && (
+                <section className="mt-6 rounded-2xl border border-brand-100 bg-brand-50 p-6">
+                  <h2 className="text-lg font-extrabold text-brand-900">
+                    Your listing is with our team
+                  </h2>
+                  <p className="mt-1.5 text-sm text-brand-800">
+                    Most businesses are approved within 12 hours, and we&apos;ll email you the
+                    moment you&apos;re live.
+                  </p>
+                  <p className="mt-2 text-sm text-brand-700/90">
+                    We read every listing to check it&apos;s a genuine New Zealand business, so
+                    now and then we&apos;ll come back with a question first.
+                  </p>
+                </section>
+              )}
+
+              <Link
+                href="/portal/new-deal"
+                className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-ember-500 px-6 py-4 text-center text-base font-bold text-white shadow-card transition hover:bg-ember-600"
+              >
+                + Create a new deal
+              </Link>
+            </>
           )}
 
           <OnboardingChecklist
