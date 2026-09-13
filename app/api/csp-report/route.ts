@@ -16,7 +16,16 @@ import { NextRequest, NextResponse } from "next/server";
  * untrusted text.
  */
 
-export const runtime = "edge";
+// NOT `export const runtime = "edge"`. OpenNext cannot bundle an edge
+// runtime route into the Cloudflare Worker — it fails the whole build with
+// "cannot use the edge runtime … must be defined in a separate function" —
+// and this was the only route in the app that declared it. Every deploy
+// after it was added failed, so four commits of fixes silently never
+// reached production while the live site kept serving an older build and
+// looking like the bugs were unfixed.
+//
+// It bought nothing anyway: the Worker already runs at the edge, so the
+// default runtime is both correct and faster to reason about here.
 
 /** Reports are small. Anything larger is not a real one. */
 const MAX_BYTES = 16 * 1024;
