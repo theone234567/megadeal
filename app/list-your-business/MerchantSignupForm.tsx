@@ -369,21 +369,38 @@ export default function MerchantSignupForm() {
       // Invisible first, so a normal visitor never sees a challenge at
       // all — reCAPTCHA only interrupts someone it finds suspicious,
       // which is the whole point of the invisible variant on a page whose
-      // job is conversions. The visible checkbox is used only once Wix has
-      // told us, by rejecting a token, that it insists on that variant.
-      const tokens = needsVisibleCaptcha
-        ? { recaptchaToken: captchaToken }
-        : {
-            invisibleRecaptchaToken: await getInvisibleCaptchaToken(
-              (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
-            ),
-          };
+      // job is conversions.
+      const attempt = async (useVisible: boolean) =>
+        withTimeout(
+          registerMember(
+            client,
+            email,
+            password,
+            businessName,
+            useVisible
+              ? { recaptchaToken: captchaToken }
+              : {
+                  invisibleRecaptchaToken: await getInvisibleCaptchaToken(
+                    (client.auth as { captchaInvisibleSiteKey?: string })
+                      .captchaInvisibleSiteKey ?? ""
+                  ),
+                }
+          ),
+          AUTH_TIMEOUT_MS,
+          "That took too long. Please check your connection and try again — if your account was created, you can sign in to your portal instead."
+        );
 
-      const outcome = await withTimeout(
-        registerMember(client, email, password, businessName, tokens),
-        AUTH_TIMEOUT_MS,
-        "That took too long. Please check your connection and try again — if your account was created, you can sign in to your portal instead."
-      );
+      let outcome = await attempt(needsVisibleCaptcha);
+
+      // SILENT_CAPTCHA_REQUIRED is Wix asking for another background
+      // check, not for a human. Answering it with a checkbox — as this
+      // did — puts a challenge in front of someone reCAPTCHA never found
+      // suspicious, which is the one thing this form is meant not to do.
+      // One silent retry with a fresh token first; the box is still there
+      // if that fails.
+      if (!needsVisibleCaptcha && outcome.status === "captcha" && outcome.kind === "silent") {
+        outcome = await attempt(false);
+      }
 
       // Wix refused the invisible token. Rather than dead-end someone who
       // filled the whole form in, reveal the checkbox and let them finish
@@ -456,13 +473,21 @@ export default function MerchantSignupForm() {
     setResendNotice(null);
     setSubmitting(true);
     try {
-      const captchaTokens = needsVisibleCaptcha
-        ? { recaptchaToken: captchaToken }
-        : {
-            invisibleRecaptchaToken: await getInvisibleCaptchaToken(
-              (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
-            ),
-          };
+      // Always the invisible variant, whatever registration was refused
+      // for. This is a LOGIN call, and Wix documents login as taking the
+      // invisible token; needsVisibleCaptcha records a decision about the
+      // register endpoint, which is a different check.
+      //
+      // Carrying that flag here also could not work: the checkbox is only
+      // rendered in the main form, and its token is cleared after every
+      // attempt because tokens are single-use — so on this screen it was
+      // always null, every resend went out empty, and Wix refused every
+      // one. The resend could never succeed once the fallback was active.
+      const captchaTokens = {
+        invisibleRecaptchaToken: await getInvisibleCaptchaToken(
+          (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
+        ),
+      };
 
       const outcome = await withTimeout(
         loginMember(client, pendingEmail, password, captchaTokens),

@@ -106,7 +106,7 @@ let scriptPromise: Promise<LoadResult> | null = null;
 function loadScript(): Promise<LoadResult> {
   if (scriptPromise) return scriptPromise;
 
-  scriptPromise = new Promise<LoadResult>((resolve) => {
+  const attempt = new Promise<LoadResult>((resolve) => {
     if (typeof window === "undefined") {
       return resolve({ api: null, failure: "unsupported" });
     }
@@ -169,6 +169,19 @@ function loadScript(): Promise<LoadResult> {
       );
       document.head.appendChild(script);
     }
+  });
+
+  // Only a success is worth remembering. Caching a failure meant one slow
+  // load — a phone on a train, a cold CDN — disabled the security check
+  // for the rest of the page session: every later call got the stale
+  // rejection instantly, the visitor was told it was probably their
+  // ad-blocker, and the form refused to submit even though the script had
+  // since arrived. Clearing the cache lets the next call try again, and
+  // the <script> tag is left in place, so that retry is nearly free and
+  // usually resolves straight from window.grecaptcha.
+  scriptPromise = attempt.then((result) => {
+    if (!result.api) scriptPromise = null;
+    return result;
   });
 
   return scriptPromise;

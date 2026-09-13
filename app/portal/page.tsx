@@ -372,7 +372,13 @@ export default function PortalPage() {
             </div>
             {deals.length === 0 ? (
               <p className="mt-2 text-sm text-slate-500">
-                No deals yet — create your first one above.
+                {/* The create-deal button is hidden until the listing has
+                    an address and a category, so "above" pointed at
+                    nothing for exactly the merchants most likely to read
+                    this line. */}
+                {profileComplete
+                  ? "No deals yet — create your first one above."
+                  : "No deals yet. Finish your listing above and you can create your first deal."}
               </p>
             ) : (
               <ul className="mt-4 space-y-3">

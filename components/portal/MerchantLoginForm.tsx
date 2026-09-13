@@ -64,24 +64,38 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
       // checkbox's token from `Recaptcha` and the silent one from
       // `InvisibleRecaptcha`. Naming the variant here rather than relying
       // on argument position is what stops them being swapped.
-      const captchaTokens = needsVisibleCaptcha
-        ? { recaptchaToken: visibleCaptchaToken }
-        : {
-            invisibleRecaptchaToken: await getInvisibleCaptchaToken(
-              (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
-            ),
-          };
-
       // Timed, like registration already was. Obtaining a token can take
       // up to 8s to load the script plus 45s waiting on a challenge, and
       // the Wix call after it was previously unbounded — so a stalled
       // request could leave the button on "Signing in…" indefinitely with
       // nothing on screen to explain it.
-      const outcome = await withTimeout(
-        loginMember(client, email, password, captchaTokens),
-        AUTH_TIMEOUT_MS,
-        "That took too long. Please check your connection and try again."
-      );
+      const attempt = async (useVisible: boolean) =>
+        withTimeout(
+          loginMember(
+            client,
+            email,
+            password,
+            useVisible
+              ? { recaptchaToken: visibleCaptchaToken }
+              : {
+                  invisibleRecaptchaToken: await getInvisibleCaptchaToken(
+                    (client.auth as { captchaInvisibleSiteKey?: string })
+                      .captchaInvisibleSiteKey ?? ""
+                  ),
+                }
+          ),
+          AUTH_TIMEOUT_MS,
+          "That took too long. Please check your connection and try again."
+        );
+
+      let outcome = await attempt(needsVisibleCaptcha);
+
+      // A silent check asked for is a silent check answered — showing a
+      // returning merchant a checkbox because Wix wanted another
+      // background pass is friction for nothing. One retry first.
+      if (!needsVisibleCaptcha && outcome.status === "captcha" && outcome.kind === "silent") {
+        outcome = await attempt(false);
+      }
 
       if (outcome.status === "success") {
         window.location.href = redirectTo;
@@ -139,13 +153,21 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     setResendNotice(null);
     setSubmitting(true);
     try {
-      const captchaTokens = needsVisibleCaptcha
-        ? { recaptchaToken: visibleCaptchaToken }
-        : {
-            invisibleRecaptchaToken: await getInvisibleCaptchaToken(
-              (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
-            ),
-          };
+      // Always the invisible variant, whatever registration was refused
+      // for. This is a LOGIN call, and Wix documents login as taking the
+      // invisible token; needsVisibleCaptcha records a decision about the
+      // register endpoint, which is a different check.
+      //
+      // Carrying that flag here also could not work: the checkbox is only
+      // rendered in the main form, and its token is cleared after every
+      // attempt because tokens are single-use — so on this screen it was
+      // always null, every resend went out empty, and Wix refused every
+      // one. The resend could never succeed once the fallback was active.
+      const captchaTokens = {
+        invisibleRecaptchaToken: await getInvisibleCaptchaToken(
+          (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
+        ),
+      };
 
       const outcome = await withTimeout(
         loginMember(client, email, password, captchaTokens),
