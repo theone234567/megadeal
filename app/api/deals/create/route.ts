@@ -262,13 +262,32 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await incrementCreditsAtomically(adminClient, merchant._id, -1);
-  await logMerchantActivity(adminClient, {
-    merchantEmail: member.email,
-    type: "credit",
-    amount: -1,
-    description: `Deal created: "${dealName}"`,
-  });
+  // Past this point the submission has succeeded: the deal exists and is
+  // in review. What follows is bookkeeping, and a failure in it must not
+  // become a 500 — the merchant would be told to try again, resubmit, and
+  // end up with a second Stores product, a second deal and a second credit
+  // charged for the one they already have. A missing ledger line is a far
+  // smaller problem than a duplicate charge, and both failures are loud in
+  // the logs rather than silent.
+  try {
+    await incrementCreditsAtomically(adminClient, merchant._id, -1);
+  } catch (err) {
+    console.error(
+      `[deals/create] CREDIT NOT DEDUCTED for merchant ${merchant._id} on deal ${deal?._id}`,
+      err
+    );
+  }
+
+  try {
+    await logMerchantActivity(adminClient, {
+      merchantEmail: member.email,
+      type: "credit",
+      amount: -1,
+      description: `Deal created: "${dealName}"`,
+    });
+  } catch (err) {
+    console.error("[deals/create] activity log failed", err);
+  }
 
   return NextResponse.json({ item: deal });
   } catch (err) {
