@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
-import { registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
+import { loginMember, registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import PasswordField from "@/components/PasswordField";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
 import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
@@ -168,6 +168,12 @@ export default function MerchantSignupForm() {
   // itself gets submitted.
   const [pendingState, setPendingState] = useState<unknown>(null);
   const [pendingEmail, setPendingEmail] = useState("");
+  /** Seconds left before another code can be requested. Sending email on
+   *  demand needs a brake: without one an impatient visitor can fire off a
+   *  dozen in a few seconds, which is a spam complaint waiting to happen
+   *  and can get a sending domain thrown into junk folders for everyone. */
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendNotice, setResendNotice] = useState<string | null>(null);
   const [code, setCode] = useState("");
 
   // Warm reCAPTCHA while the visitor is still filling the form, so
@@ -330,6 +336,79 @@ export default function MerchantSignupForm() {
     }
   }
 
+  // Counts the cooldown down once a second while it is running.
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((n) => n - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
+
+  /**
+   * Sends a fresh verification code.
+   *
+   * There is no resend method in this SDK. Wix documents
+   * resendVerificationCodeEmail() only for the Velo / frontend members
+   * module, and @wix/auto_sdk_identity_verification exports just `start`
+   * and `verifyDuringAuthentication` — the /auth/resend path appears in
+   * its routing metadata but nothing wraps it.
+   *
+   * So this uses documented behaviour instead of an undocumented endpoint:
+   * Wix states that when authentication returns EMAIL_VERIFICATION_REQUIRED
+   * "an email with a verification code is sent automatically". Signing in
+   * with the credentials just used to register returns exactly that state
+   * for an account whose email is not yet verified — so the code arrives,
+   * and the fresh pendingState replaces the old one, which matters because
+   * the previous state token is what the new code is checked against.
+   *
+   * https://dev.wix.com/docs/go-headless/develop-your-project/self-managed-headless/authentication/members/custom-login-page/custom-login/custom-login-using-the-js-sdk
+   */
+  async function handleResendCode() {
+    if (resendCooldown > 0 || submitting || !client?.auth) return;
+
+    setSubmitError(null);
+    setResendNotice(null);
+    setSubmitting(true);
+    try {
+      const captchaTokens = needsVisibleCaptcha
+        ? { recaptchaToken: captchaToken }
+        : {
+            invisibleRecaptchaToken: await getInvisibleCaptchaToken(
+              (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
+            ),
+          };
+
+      const outcome = await withTimeout(
+        loginMember(client, pendingEmail, password, captchaTokens),
+        AUTH_TIMEOUT_MS,
+        "That took too long. Please check your connection and try again."
+      );
+
+      if (outcome.status === "verify") {
+        // Swap in the new state token — the fresh code is checked against
+        // this one, so keeping the old would reject a perfectly good code.
+        setPendingState(outcome.pendingState);
+        setResendNotice(`New code sent to ${pendingEmail}. It can take a minute to arrive.`);
+        setResendCooldown(30);
+      } else if (outcome.status === "success") {
+        // Already verified in another tab or on another device — nothing
+        // left to enter, so finish the application rather than sit on a
+        // code screen that can no longer be satisfied.
+        await finishAfterAuth();
+      } else {
+        setSubmitError(
+          outcome.status === "error"
+            ? outcome.message
+            : "We couldn't send a new code just now. Please try again shortly."
+        );
+      }
+    } catch (err: any) {
+      setSubmitError(friendlyError(err, "We couldn't send a new code. Please try again."));
+    } finally {
+      setSubmitting(false);
+      captchaRef.current?.reset();
+    }
+  }
+
   async function handleVerifySubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError(null);
@@ -377,6 +456,11 @@ export default function MerchantSignupForm() {
             autoFocus
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-sm tracking-widest outline-none focus:border-brand-400"
           />
+          {resendNotice && (
+            <p role="status" className="text-sm font-semibold text-green-700">
+              {resendNotice}
+            </p>
+          )}
           {submitError && <p className="text-sm text-ember-600">{submitError}</p>}
           <button
             type="submit"
@@ -385,6 +469,26 @@ export default function MerchantSignupForm() {
           >
             {submitting ? "Checking…" : "Verify & finish signing up"}
           </button>
+
+          {/* Codes go missing — spam folders, typo'd addresses, slow mail.
+              Without this the only way out was abandoning the signup, and
+              the account already exists by this point, so starting again
+              with the same address just returns "you already have an
+              account". A dead end at the last step of the funnel. */}
+          <button
+            type="button"
+            onClick={handleResendCode}
+            disabled={submitting || resendCooldown > 0}
+            className="w-full text-center text-sm font-semibold text-brand-700 underline underline-offset-2 transition hover:text-brand-800 disabled:no-underline disabled:opacity-60"
+          >
+            {resendCooldown > 0
+              ? `Resend code in ${resendCooldown}s`
+              : "Didn't get the code? Send it again"}
+          </button>
+
+          <p className="text-center text-xs text-slate-500">
+            Check your spam folder too — it sometimes lands there.
+          </p>
         </form>
       </div>
     );
