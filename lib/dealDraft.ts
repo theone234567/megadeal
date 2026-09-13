@@ -1,3 +1,5 @@
+import { parseTerms } from "./dealTerms";
+
 /**
  * A deal the merchant hasn't submitted yet.
  *
@@ -103,6 +105,84 @@ export function sanitizeDraft(input: any): DealDraftData {
   };
 }
 
+/**
+ * The three values a draft needs that the Deals collection has no column
+ * for, kept in `statusNote`.
+ *
+ * `draftData` is a new field, and adding a field to a Wix collection is a
+ * dashboard job — so until that happens, writing to it may not persist,
+ * and a draft would reopen having lost its category, its duration and the
+ * media id for its photo. Everything else already has a real column.
+ *
+ * statusNote is the one existing text field provably free on a draft: the
+ * portal shows it only on a Paused or Cancelled deal, and the admin deals
+ * route excludes drafts entirely, so nothing displays it and nothing else
+ * writes it here. Submission clears it, so a deal that is later rejected
+ * gets a clean note field.
+ *
+ * The marker makes the value unmistakable if a human ever does see it,
+ * and means a restore only ever parses a string this wrote.
+ */
+const SUPPLEMENT_PREFIX = "#megadeal-draft:";
+
+export function encodeSupplement(draft: DealDraftData): string {
+  return (
+    SUPPLEMENT_PREFIX +
+    JSON.stringify({
+      c: draft.category,
+      dd: draft.durationDays,
+      dm: draft.durationMinutes,
+      pm: draft.photoMediaId,
+    })
+  );
+}
+
+function decodeSupplement(value: unknown): Record<string, any> {
+  if (typeof value !== "string" || !value.startsWith(SUPPLEMENT_PREFIX)) return {};
+  try {
+    const parsed = JSON.parse(value.slice(SUPPLEMENT_PREFIX.length));
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+/** Numbers on the row, strings in the form. Blank stays blank rather than
+ *  becoming a misleading 0. */
+function numToText(value: unknown): string {
+  return typeof value === "number" && Number.isFinite(value) ? String(value) : "";
+}
+
+function textToNum(value: string): number | null {
+  if (!value.trim()) return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * The Deals row for a draft: real columns wherever one exists, so the
+ * draft survives on its own even if `draftData` is silently dropped.
+ */
+export function draftToRow(draft: DealDraftData, merchantEmail: string) {
+  return {
+    dealName: draft.dealName,
+    description: draft.description,
+    terms: draft.terms,
+    photoUrl: draft.photoUrl,
+    priceNow: textToNum(draft.priceNow),
+    priceWas: textToNum(draft.priceWas),
+    quantityAvailable: textToNum(draft.quantityAvailable),
+    isFlash: draft.isFlash,
+    merchantEmail,
+    status: "Draft",
+    // Written in the hope the field exists; harmless if it doesn't,
+    // because everything above and the supplement below cover the same
+    // ground. Preferred on read, since it is the exact editing state.
+    draftData: JSON.stringify(draft),
+    statusNote: encodeSupplement(draft),
+  };
+}
+
 /** Reads a draft back off a Deals row, falling back to the row's own
  *  columns so a draft is still usable if draftData is ever missing. */
 export function parseDraft(row: any): DealDraftData {
@@ -117,12 +197,27 @@ export function parseDraft(row: any): DealDraftData {
   // or unparseable, the recoverable text is what's left of the draft —
   // blanking it on screen would mean the next "Save changes" writes those
   // blanks over the only surviving copy.
+  const extra = decodeSupplement(row?.statusNote);
+  const renderedTerms = stored.terms || row?.terms || "";
+  // The ticked boxes aren't stored anywhere of their own — they're read
+  // back out of the rendered sentence, which has always had a column.
+  const fromTerms = parseTerms(renderedTerms);
+
   return sanitizeDraft({
     ...stored,
     dealName: stored.dealName || row?.dealName || "",
     description: stored.description || row?.description || "",
-    terms: stored.terms || row?.terms || "",
-    customTerms: stored.customTerms || (stored.terms ? "" : row?.terms || ""),
+    terms: renderedTerms,
+    selectedTerms: stored.selectedTerms ?? fromTerms.selectedIds,
+    customTerms: stored.customTerms ?? fromTerms.custom,
+    category: stored.category || extra.c || "",
+    durationDays: stored.durationDays || extra.dd || 30,
+    durationMinutes: stored.durationMinutes || extra.dm || 60,
+    isFlash: stored.isFlash ?? Boolean(row?.isFlash),
+    priceNow: stored.priceNow || numToText(row?.priceNow),
+    priceWas: stored.priceWas || numToText(row?.priceWas),
+    quantityAvailable: stored.quantityAvailable || numToText(row?.quantityAvailable),
     photoUrl: stored.photoUrl || row?.photoUrl || "",
+    photoMediaId: stored.photoMediaId || extra.pm || "",
   });
 }

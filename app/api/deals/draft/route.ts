@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
-import { sanitizeDraft } from "@/lib/dealDraft";
+import { sanitizeDraft, draftToRow } from "@/lib/dealDraft";
 import { getOrClaimMerchant } from "@/lib/merchant";
 
 export const dynamic = "force-dynamic";
@@ -64,15 +64,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const row = {
-      dealName: draft.dealName,
-      description: draft.description,
-      terms: draft.terms,
-      photoUrl: draft.photoUrl,
-      merchantEmail: member.email,
-      status: "Draft",
-      draftData: JSON.stringify(draft),
-    };
+    const row = draftToRow(draft, member.email);
 
     if (draftId) {
       const existing = await adminClient.items.get("Deals", draftId);

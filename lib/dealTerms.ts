@@ -58,3 +58,34 @@ export function renderTerms(selectedIds: string[], custom: string): string {
   const text = lines.join(". ");
   return /[.!?]$/.test(text) ? text : `${text}.`;
 }
+
+/**
+ * Reads a rendered terms string back into the boxes that produced it.
+ *
+ * renderTerms joins with ". ", so splitting on that and matching each
+ * piece against the known labels recovers the selection exactly —
+ * anything that doesn't match is what the merchant typed themselves.
+ *
+ * This exists so a draft's terms survive without anywhere to store the
+ * ticked ids: the rendered sentence is already in a column the Deals
+ * collection has always had.
+ */
+export function parseTerms(rendered: string): { selectedIds: string[]; custom: string } {
+  const idByLabel = new Map(STANDARD_TERMS.map((t) => [t.label.toLowerCase(), t.id]));
+  const selectedIds: string[] = [];
+  const leftovers: string[] = [];
+
+  for (const raw of rendered.split(". ")) {
+    const piece = raw.replace(/\.$/, "").trim();
+    if (!piece) continue;
+    const id = idByLabel.get(piece.toLowerCase());
+    if (id) selectedIds.push(id);
+    else leftovers.push(piece);
+  }
+
+  const custom = leftovers.join(". ");
+  return {
+    selectedIds,
+    custom: custom ? (/[.!?]$/.test(custom) ? custom : `${custom}.`) : "",
+  };
+}

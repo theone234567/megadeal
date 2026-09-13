@@ -215,10 +215,12 @@ export async function POST(req: NextRequest) {
     productId,
     isFlash,
     dealCode: generateDealCode(),
-    // The editing copy has served its purpose; leaving it behind would
-    // mean a submitted deal still carrying a stale second version of
-    // itself that nothing reads but everything would have to reason about.
+    // The editing copies have served their purpose. Leaving draftData
+    // behind would mean a submitted deal carrying a stale second version
+    // of itself; leaving the statusNote supplement behind would put
+    // machine text in the field an admin uses to explain a rejection.
     draftData: "",
+    statusNote: "",
   };
 
   // Submitting a draft promotes that row rather than inserting a second
