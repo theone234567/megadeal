@@ -285,7 +285,21 @@ export default function AdminBusinessDetailPage() {
           <h1 className="text-2xl font-extrabold text-slate-900">
             {merchant.businessName || "—"}
           </h1>
-          <p className="text-sm text-slate-500">{merchant.email}</p>
+          {/* Rendered even when empty. A bare {merchant.email} in a <p>
+              shows nothing at all when the field is blank, which reads as
+              "I forgot to look" rather than "there is no email here" —
+              and a merchant with no email on file is exactly the record an
+              admin most needs to notice, since there is no way to contact
+              them and nothing for an account to link to. */}
+          {merchant.email ? (
+            <p className="text-sm text-slate-500">
+              <a href={`mailto:${merchant.email}`} className="hover:text-brand-700 hover:underline">
+                {merchant.email}
+              </a>
+            </p>
+          ) : (
+            <p className="text-sm font-semibold text-amber-700">⚠️ No email on file</p>
+          )}
         </div>
       </div>
 
