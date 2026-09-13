@@ -11,7 +11,6 @@ import MerchantLoginForm from "@/components/portal/MerchantLoginForm";
 import ReferralCard from "@/components/portal/ReferralCard";
 import ActivityFeed from "@/components/portal/ActivityFeed";
 import NotificationPreferences from "@/components/portal/NotificationPreferences";
-import OnboardingChecklist from "@/components/portal/OnboardingChecklist";
 import ExportDealsButton from "@/components/portal/ExportDealsButton";
 
 interface MerchantRecord {
@@ -172,7 +171,10 @@ export default function PortalPage() {
   // Address and category are what make a listing findable — a deal with
   // neither can't be shown on a map or in a category page, so they are the
   // bar for "set up" rather than a nice-to-have. Same test the header
-  // badge and the onboarding checklist use.
+  // badge uses. It also decides whether the listing form is still on
+  // screen: once these are saved the application is in, and the form is
+  // replaced by its status rather than left sitting there inviting a
+  // resubmit.
   const profileComplete = Boolean(merchant?.address && merchant?.category);
 
   return (
@@ -265,11 +267,12 @@ export default function PortalPage() {
               {(merchant.status || "Pending") === "Pending" && (
                 <section className="mt-6 rounded-2xl border border-brand-100 bg-brand-50 p-6">
                   <h2 className="text-lg font-extrabold text-brand-900">
-                    Your listing is with our team
+                    Thanks — your application is in 🎉
                   </h2>
                   <p className="mt-1.5 text-sm text-brand-800">
-                    Most businesses are approved within 12 hours, and we&apos;ll email you the
-                    moment you&apos;re live.
+                    It&apos;s with our team now. Most businesses are approved within 12 hours, and
+                    we&apos;ll email you the moment you&apos;re live — there&apos;s nothing else
+                    you need to do.
                   </p>
                   <p className="mt-2 text-sm text-brand-700/90">
                     We read every listing to check it&apos;s a genuine New Zealand business, so
@@ -286,12 +289,6 @@ export default function PortalPage() {
               </Link>
             </>
           )}
-
-          <OnboardingChecklist
-            emailVerified={Boolean(member?.loginEmailVerified)}
-            profileComplete={profileComplete}
-            hasDeals={deals.length > 0}
-          />
 
           <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
@@ -316,25 +313,20 @@ export default function PortalPage() {
                 {merchant.status || "Pending"}
               </p>
               <p className="mt-1 text-sm text-slate-500">
-                We&apos;ll email you once your first deal is ready to go live.
+                {(merchant.status || "Pending") === "Approved"
+                  ? "You're approved — you can list deals whenever you're ready."
+                  : "We'll email you as soon as you're approved, usually within 12 hours."}
               </p>
-              {member?.loginEmailVerified ? (
+              {/* No "verify your email" prompt here. Reaching the portal at
+                  all means the code from the signup email was already
+                  entered and accepted by Wix, so prompting for it again —
+                  and offering a sign-out-and-back-in to resend it — asked
+                  merchants to redo a step they had just finished. The
+                  badge below is confirmation, not a task. */}
+              {member?.loginEmailVerified && (
                 <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
                   ✓ Email verified
                 </p>
-              ) : (
-                <div className="mt-2">
-                  <p className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
-                    ⏳ Check your inbox to verify your email
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Didn&apos;t get a code, or missed it?{" "}
-                    <button onClick={logout} className="font-semibold text-brand-600 hover:underline">
-                      Sign out and back in
-                    </button>{" "}
-                    to get a fresh one.
-                  </p>
-                </div>
               )}
             </div>
           </div>
