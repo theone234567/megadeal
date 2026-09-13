@@ -235,9 +235,32 @@ export async function POST(req: NextRequest) {
   // one — otherwise the merchant would watch their deal go off for review
   // while the draft it came from sat in the portal beside it, looking
   // unsubmitted.
-  const deal = draftRow
-    ? await adminClient.items.update("Deals", { ...draftRow, ...fields })
-    : await adminClient.items.insert("Deals", fields);
+  let deal;
+  try {
+    deal = draftRow
+      ? await adminClient.items.update("Deals", { ...draftRow, ...fields })
+      : await adminClient.items.insert("Deals", fields);
+  } catch (err) {
+    // The Stores product already exists at this point. Leaving it behind
+    // used to publish it: a product with no Deals row reads as a deal with
+    // no status, and isDealLive treats that as live — so a failure here
+    // put an unapproved, ownerless deal on the site. The listing now
+    // ignores such products, and this removes them as well, so a failed
+    // submission leaves nothing behind at all.
+    console.error("[deals/create] deal row write failed, removing orphaned product", err);
+    try {
+      await adminClient.fetchWithAuth(
+        `https://www.wixapis.com/stores/v3/products/${productId}`,
+        { method: "DELETE" }
+      );
+    } catch (cleanupErr) {
+      console.error("[deals/create] orphaned product cleanup failed", cleanupErr);
+    }
+    return NextResponse.json(
+      { error: "Couldn't save your deal. Nothing was charged — please try again." },
+      { status: 500 }
+    );
+  }
 
   await incrementCreditsAtomically(adminClient, merchant._id, -1);
   await logMerchantActivity(adminClient, {

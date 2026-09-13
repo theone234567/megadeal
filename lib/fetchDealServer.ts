@@ -44,6 +44,10 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
       };
     }
 
+    // Same rule as the listing: no Deals row, no deal. Without this an
+    // orphaned Stores product had its own public page, complete with
+    // schema.org markup telling Google it was a real offer.
+    if (!record) return null;
     if (!isDealLive(deal)) return null;
 
     if (merchantEmail) {
@@ -111,7 +115,20 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
       .map((p: any) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
       .map((deal: Deal) => {
         const meta = metaByProductId[deal.id];
-        if (!meta) return deal;
+        // A product with no Deals row is not a MegaDeal deal. It used to
+        // be returned as-is, and mapProductToDeal leaves status null,
+        // which isDealLive reads as live — so such a product went straight
+        // onto the site with no approval and no business attached to it.
+        //
+        // That is reachable: /api/deals/create makes the Wix Stores
+        // product first and writes the Deals row second, so a failure
+        // between the two leaves an orphan that publishes itself. It also
+        // meant deleting a Deals row in the Wix dashboard silently
+        // republished the product it belonged to.
+        //
+        // The Deals collection is what defines a deal here; Stores is only
+        // the catalogue behind it. No row, nothing to show.
+        if (!meta) return null;
         return {
           ...deal,
           expiresAt: meta.expiresAt ?? null,
@@ -123,7 +140,7 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
           dealCode: meta.dealCode || null,
         };
       })
-      .filter((deal: Deal) => isDealLive(deal))
+      .filter((deal: Deal | null): deal is Deal => deal !== null && isDealLive(deal))
       .map((deal: Deal) => {
         const meta = metaByProductId[deal.id];
         const business = meta?.merchantEmail
