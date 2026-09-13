@@ -98,8 +98,25 @@ const nextConfig = {
         "https://www.facebook.com",
         "https://www.google-analytics.com https://*.analytics.google.com",
       ].join(" "),
-      // reCAPTCHA draws its challenge in an iframe from www.google.com.
-      "frame-src 'self' https://www.google.com",
+      // Two different iframes, and missing the second would break auth.
+      //
+      // reCAPTCHA draws its challenge in one. The Wix SDK draws the other:
+      // getMemberTokensForDirectLogin completes login by loading the OAuth
+      // authorize URL in a hidden iframe on the Wix site and waiting for a
+      // postMessage back with the code. Block that frame and the promise
+      // never settles — every signup and sign-in hangs at the final step,
+      // with no error, because nothing failed, it just never answers.
+      //
+      // Caught from a live console: the report-only policy was already
+      // logging "Framing 'https://<site>.wixsite.com/' violates ...
+      // frame-src" during a real signup. Report-only meant it was logged
+      // and allowed; enforcing without this line would have turned that
+      // log into a total auth outage.
+      [
+        "frame-src 'self'",
+        "https://www.google.com",                        // reCAPTCHA challenge
+        "https://*.wixsite.com https://*.wix.com https://*.editorx.io", // Wix OAuth authorize
+      ].join(" "),
       // No <object>/<embed>, and nothing may re-point relative URLs.
       "object-src 'none'",
       "base-uri 'self'",
