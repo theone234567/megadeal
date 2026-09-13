@@ -146,6 +146,35 @@ const nextConfig = {
     return [
       { source: "/:path*", headers: securityHeaders },
       {
+        // Make HTML revalidate on every request.
+        //
+        // Next's default for a prerendered page is
+        // "s-maxage=60, stale-while-revalidate" — and with no limit on the
+        // stale window, Cloudflare may keep serving the previous build
+        // indefinitely while it refreshes in the background. On a site
+        // that deploys on every push that is not a small delay: it served
+        // hours-old pages after a fix had shipped, which made a fixed bug
+        // look unfixed and sent us chasing it repeatedly. It is also what
+        // produced "Refused to execute script … MIME type ('text/html')"
+        // errors — stale HTML asking for chunk filenames that a newer
+        // build had already replaced.
+        //
+        // no-cache does not mean "don't store": the browser and CDN still
+        // keep a copy and revalidate with the ETag, so an unchanged page
+        // costs a 304, not a re-download. Correctness over a few
+        // milliseconds, on pages whose whole job is converting a visitor.
+        //
+        // Everything under _next/static is excluded: those filenames
+        // contain a content hash, so they are genuinely immutable and keep
+        // their one-year cache. That split — immutable assets, revalidated
+        // HTML — is the point.
+        // API routes are excluded because several set their own
+        // Cache-Control (/api/version needs no-store), and two
+        // Cache-Control headers on one response is ambiguous.
+        source: "/((?!_next/static|_next/image|api/).*)",
+        headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }],
+      },
+      {
         source: "/api/:path*",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
       },
