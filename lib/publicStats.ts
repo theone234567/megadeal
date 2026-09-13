@@ -1,4 +1,5 @@
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { queryAllItems } from "@/lib/queryAll";
 
 export interface SignupStats {
   merchantCount: number;
@@ -23,16 +24,31 @@ export interface SignupStats {
 export async function getSignupStats(): Promise<SignupStats | null> {
   try {
     const adminClient = createWixAdminClient();
-    const [merchantsResult, signupsResult] = await Promise.all([
-      adminClient.items.query("Merchants").eq("status", "Approved").find(),
-      adminClient.items.query("EmailSignups").eq("audience", "customer").eq("verified", true).find(),
+    // Both paged. These two numbers are shown to visitors as counts of
+    // real businesses and real subscribers, and an unpaged read caps at
+    // Wix's default page of 50 — so past 50 the figures would freeze while
+    // still being presented as true, which is the one thing a trust
+    // signal must never do.
+    const [merchants, signups] = await Promise.all([
+      queryAllItems(
+        () => adminClient.items.query("Merchants").eq("status", "Approved"),
+        "Merchants (stats)"
+      ),
+      queryAllItems(
+        () =>
+          adminClient.items
+            .query("EmailSignups")
+            .eq("audience", "customer")
+            .eq("verified", true),
+        "EmailSignups (stats)"
+      ),
     ]);
 
-    const merchantCount = merchantsResult.items?.length ?? 0;
+    const merchantCount = merchants.length;
     // unsubscribed is only ever explicitly set true on opt-out — filtering
     // in JS (rather than .eq("unsubscribed", false) in the query) avoids
     // excluding rows where it was never set at all.
-    const waitlistCount = (signupsResult.items ?? []).filter((i: any) => !i.unsubscribed).length;
+    const waitlistCount = signups.filter((i: any) => !i.unsubscribed).length;
 
     return { merchantCount, waitlistCount };
   } catch (err) {

@@ -5,6 +5,7 @@ import { businessSlug } from "./slug";
 import { CATEGORY_NAME_BY_ID, isMegaShopProduct } from "./categories";
 import { mapMerchantToBusiness, applyBusinessToDeal, type PublicBusiness } from "./business";
 import { isDealLive } from "./dealVisibility";
+import { queryAllItems } from "./queryAll";
 import type { Deal, DealStatus } from "./types";
 
 /**
@@ -92,7 +93,7 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
       // exact and can't drop a legitimate row: anything without a
       // productId was already unusable here.
       adminClient.items.query("Deals").isNotEmpty("productId").limit(500).find(),
-      adminClient.items.query("Merchants").find(),
+      queryAllItems(() => adminClient.items.query("Merchants"), "Merchants (deal listing)"),
     ]);
 
     const products = ((productsRes as any).products ?? [])
@@ -105,7 +106,7 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
     }
 
     const businessByEmail: Record<string, PublicBusiness> = {};
-    for (const m of merchantsResult.items ?? []) {
+    for (const m of merchantsResult) {
       if (m.email && m.businessName && m._id) {
         businessByEmail[String(m.email).toLowerCase()] = mapMerchantToBusiness(m);
       }
@@ -173,8 +174,14 @@ export async function fetchBusinessProfileBySlug(
     if (!idPrefix || !/^[0-9a-f]{8}$/.test(idPrefix)) return null;
 
     const adminClient = createWixAdminClient();
-    const merchantsResult = await adminClient.items.query("Merchants").find();
-    const merchant = (merchantsResult.items ?? []).find(
+    // Paged: this scans for one merchant by id prefix, and a single
+    // default page of 50 meant every business past the 50th got a 404 on
+    // their own public profile.
+    const merchants = await queryAllItems(
+      () => adminClient.items.query("Merchants"),
+      "Merchants (business profile)"
+    );
+    const merchant = merchants.find(
       (m: any) => typeof m._id === "string" && m._id.startsWith(idPrefix)
     );
     if (!merchant || !merchant.businessName || merchant.status === "Suspended") {
@@ -231,8 +238,13 @@ export async function fetchBusinessProfileBySlug(
 export async function fetchAllBusinessSlugsForSitemap(): Promise<string[]> {
   try {
     const adminClient = createWixAdminClient();
-    const merchantsResult = await adminClient.items.query("Merchants").find();
-    return (merchantsResult.items ?? [])
+    // Paged: an unpaged read capped the sitemap at 50 businesses, so
+    // every business past that was never submitted to Google at all.
+    const merchants = await queryAllItems(
+      () => adminClient.items.query("Merchants"),
+      "Merchants (sitemap)"
+    );
+    return merchants
       .filter((m: any) => m.businessName && m._id && m.status !== "Suspended")
       .map((m: any) => businessSlug(m.businessName, m._id));
   } catch {

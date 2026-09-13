@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { queryAllItems } from "@/lib/queryAll";
 import { mapMerchantToBusiness, type PublicBusiness } from "@/lib/business";
 
 // No request-derived data to force dynamic rendering automatically (unlike
@@ -35,11 +36,11 @@ export async function GET() {
       // filtering here stops drafts consuming the page of results and
       // pushing real deals out of the directory.
       adminClient.items.query("Deals").isNotEmpty("productId").limit(500).find(),
-      adminClient.items.query("Merchants").find(),
+      queryAllItems(() => adminClient.items.query("Merchants"), "Merchants (directory)"),
     ]);
 
     const businessByEmail: Record<string, PublicBusiness> = {};
-    for (const m of merchantsResult.items ?? []) {
+    for (const m of merchantsResult) {
       if (m.email && m.businessName && m._id) {
         businessByEmail[String(m.email).toLowerCase()] = mapMerchantToBusiness(m);
       }
