@@ -42,6 +42,10 @@ interface MerchantRecord {
   instagramUrl?: string;
   priceRange?: string;
   amenities?: string;
+  /** Pending / Approved / Suspended. Decides whether an edit costs the
+   *  merchant live visibility, which is the only case worth warning about. */
+  status?: string;
+  logoUrl?: string;
   [key: string]: any;
 }
 
@@ -266,10 +270,19 @@ export default function MerchantProfileForm({
       <h2 className="text-lg font-bold text-slate-900">
         {startEditing ? "Your business details" : "Edit business details"}
       </h2>
-      <p className="mt-1 text-xs text-amber-700">
-        ⚠️ Saving changes sends your profile back for review before it&apos;s shown
-        publicly again.
-      </p>
+      {/* Only once there's a live listing for a re-review to take down.
+          Before approval this warned about a consequence that can't
+          happen: a first application is already in the queue, so "sends
+          your profile back for review" described the thing the merchant
+          was in the middle of doing, and read as a penalty for doing it.
+          Suspended is left out for the same reason — nothing of theirs is
+          showing publicly, so saving costs them no visibility. */}
+      {merchant.status === "Approved" && (
+        <p className="mt-1 text-xs text-amber-700">
+          ⚠️ Saving changes sends your listing back for review, so it comes off the site
+          until we&apos;ve had a look. That&apos;s usually well under a day.
+        </p>
+      )}
 
       <form onSubmit={handleSave} className="mt-4 space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -592,7 +605,11 @@ export default function MerchantProfileForm({
             <PhotoUploadField
               label="Business logo (optional)"
               currentUrl={merchant.logoUrl || null}
-              warningText="Changing your logo sends your business profile back for review before it shows on the site again. Continue?"
+              warningText={
+                merchant.status === "Approved"
+                  ? "Changing your logo sends your listing back for review, so it comes off the site until we've had a look. Continue?"
+                  : "Use this logo?"
+              }
               onConfirm={onLogoConfirm}
             />
             {logoError && <p className="mt-2 text-sm text-red-600">{logoError}</p>}
