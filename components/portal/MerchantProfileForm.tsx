@@ -5,7 +5,7 @@ import AddressAutocompleteField from "@/components/AddressAutocompleteField";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
-import { CATEGORIES } from "@/lib/categories";
+import { BUSINESS_CATEGORIES } from "@/lib/categories";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 
@@ -481,8 +481,8 @@ export default function MerchantProfileForm({
               <option value="" disabled>
                 Select a category
               </option>
-              {CATEGORIES.map((c) => (
-                <option key={c.id} value={c.name}>
+              {BUSINESS_CATEGORIES.map((c) => (
+                <option key={c.name} value={c.name}>
                   {c.emoji} {c.name}
                 </option>
               ))}

@@ -40,3 +40,40 @@ export function isMegaShopProduct(product: any): boolean {
     product?.allCategoriesInfo?.categories?.some((c: any) => c?.id === MEGASHOP_CATEGORY_ID)
   );
 }
+
+/**
+ * What a business can classify itself as in the portal — a superset of the
+ * storefront categories above.
+ *
+ * These are deliberately separate lists. CATEGORIES drives the storefront:
+ * the nav, the sitemap, /category/[name] pages, and the Wix Stores category
+ * a deal's product is filed under — so every entry there needs a real Wix
+ * category id. A business category needs no id at all: the portal form and
+ * the Merchants record both store the name as plain text.
+ *
+ * Conflating the two is why "Home & Car" had nowhere to go. It's a real
+ * kind of NZ business (mechanics, detailers, cleaners, tradies) and the
+ * coming-soon page has always advertised it — already flagged there as
+ * hasCategoryPage: false, which is exactly this distinction. It had no Wix
+ * category id, so adding it to CATEGORIES would have produced a nav link
+ * and a sitemap entry pointing at a category page with nothing behind it.
+ *
+ * To give it a storefront page later: create the category in Wix Stores,
+ * then move the entry up into CATEGORIES with its real id. Nothing else
+ * needs to change — businesses already classified stay valid, because both
+ * lists are matched by name.
+ */
+export interface BusinessCategoryDef {
+  name: string;
+  emoji: string;
+}
+
+export const BUSINESS_CATEGORIES: BusinessCategoryDef[] = [
+  ...CATEGORIES.map(({ name, emoji }) => ({ name, emoji })),
+  { name: "Home & Car", emoji: "🔧" },
+];
+
+/** Server-side validation for a submitted business category. */
+export function isBusinessCategory(value: string): boolean {
+  return BUSINESS_CATEGORIES.some((c) => c.name === value);
+}

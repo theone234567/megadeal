@@ -171,11 +171,13 @@ export default function MerchantSignupForm() {
       .then(({ item }) => {
         if (!cancelled) setExistingBusiness(item ?? null);
       })
-      // A failed lookup stays unknown. It used to resolve to null, which
-      // meant one flaky request re-opened the overwrite path silently —
-      // the opposite of what a guard should do when it can't see.
+      // A failed lookup resolves to null, which no longer re-opens
+      // anything: being signed in is what closes the form, and this only
+      // picks which wording to close it with. Leaving it unknown would
+      // now strand a signed-in visitor on the loading skeleton forever
+      // whenever this request failed.
       .catch(() => {
-        if (!cancelled) setExistingBusiness(undefined);
+        if (!cancelled) setExistingBusiness(null);
       });
     return () => {
       cancelled = true;
@@ -338,29 +340,25 @@ export default function MerchantSignupForm() {
     // verification timed out leaves exactly this state.
     // Unknown is not permission. Submitting here is what destroys data,
     // so it waits for a definite answer rather than assuming a safe one.
-    if (!authResolved || (isLoggedIn && existingBusiness === undefined)) {
+    if (!authResolved) {
       setSubmitError("Just checking your account — try again in a moment.");
       return;
     }
 
-    if (isLoggedIn && existingBusiness) {
-      setSubmitError(
-        `You're signed in as ${existingBusiness.businessName || "an existing business"}. Sending this form would replace that business's details rather than add a new one — sign out first to list a different business.`
-      );
-      return;
-    }
-
+    // Signed in at all is the disqualifier, not "signed in and holding a
+    // business record". Since listings are completed in the portal, a
+    // member can legitimately be signed in with no Merchants row yet —
+    // and the old guard read that absence as permission and opened the
+    // whole form, which is the reported bug. Whichever side of that line
+    // they're on, this form is the wrong place for them: with a business
+    // it overwrites one, without a business the portal is already holding
+    // their half-finished listing.
     if (isLoggedIn) {
-      setSubmitting(true);
-      try {
-        await finishAfterAuth();
-      } catch (err: any) {
-        setSubmitError(
-          friendlyError(err, "Something went wrong saving your business details. Please try again.")
-        );
-      } finally {
-        setSubmitting(false);
-      }
+      setSubmitError(
+        existingBusiness
+          ? `You're signed in as ${existingBusiness.businessName || "an existing business"}. Sending this form would replace that business's details rather than add a new one — sign out first to list a different business.`
+          : "You're already signed in — finish your listing in your portal rather than starting a second signup. Sign out first to list a different business."
+      );
       return;
     }
 
@@ -627,11 +625,13 @@ export default function MerchantSignupForm() {
     );
   }
 
-  // Signed in with a business already attached: don't show the form at
-  // all. Letting someone fill in twenty fields and only then telling them
-  // it would overwrite their existing business wastes their time, and the
-  // one time they ignore the warning it costs them their listing.
-  if (isLoggedIn && existingBusiness) {
+  // Signed in at all: don't show the form. Letting someone fill in twenty
+  // fields and only then telling them it would overwrite their existing
+  // business wastes their time, and the one time they ignore the warning
+  // it costs them their listing. A signed-in member with no business yet
+  // is the same story from the other end — their listing is waiting in
+  // the portal, and a second signup here is not what they want either.
+  if (isLoggedIn) {
     return (
       <div
         id="signup"
@@ -640,21 +640,36 @@ export default function MerchantSignupForm() {
         <h3 className="text-lg font-bold text-brand-900">
           You&apos;re already signed in
         </h3>
-        <p className="mt-2 text-sm text-brand-800">
-          This account is linked to{" "}
-          <strong>{existingBusiness.businessName || "a business"}</strong>. You can manage it from
-          your portal.
-        </p>
-        <p className="mt-2 text-sm text-brand-700/90">
-          Listing a second, different business? Sign out first — otherwise this form would update
-          the business above rather than create a new one.
-        </p>
+        {existingBusiness ? (
+          <>
+            <p className="mt-2 text-sm text-brand-800">
+              This account is linked to{" "}
+              <strong>{existingBusiness.businessName || "a business"}</strong>. You can manage it
+              from your portal.
+            </p>
+            <p className="mt-2 text-sm text-brand-700/90">
+              Listing a second, different business? Sign out first — otherwise this form would
+              update the business above rather than create a new one.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 text-sm text-brand-800">
+              Your account is all set — there&apos;s nothing left to do on this page. The last step
+              is your business details, and that&apos;s waiting for you in your portal.
+            </p>
+            <p className="mt-2 text-sm text-brand-700/90">
+              Listing a different business? Sign out first and sign up with that business&apos;s own
+              email address.
+            </p>
+          </>
+        )}
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
           <a
             href="/portal"
             className="inline-flex h-11 items-center justify-center rounded-full bg-brand-600 px-6 text-sm font-bold text-white transition hover:bg-brand-700"
           >
-            Go to my portal →
+            {existingBusiness ? "Go to my portal →" : "Finish my listing →"}
           </a>
           <button
             type="button"

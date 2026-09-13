@@ -4,7 +4,7 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
-import { CATEGORIES } from "@/lib/categories";
+import { isBusinessCategory } from "@/lib/categories";
 
 const MAX_TEXT_LENGTH = 300;
 // See apply/route.ts — businessHours is a structured-hours JSON blob, not
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
   }
 
   const category = cleanText(body.category, MAX_TEXT_LENGTH);
-  if (!CATEGORIES.some((c) => c.name === category)) {
+  if (!isBusinessCategory(category)) {
     return NextResponse.json({ error: "Please select a valid business category." }, { status: 400 });
   }
 

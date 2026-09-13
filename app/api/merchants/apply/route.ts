@@ -8,6 +8,7 @@ import { SITE_URL } from "@/lib/siteConfig";
 import { generateReferralCode } from "@/lib/referral";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
+import { isBusinessCategory } from "@/lib/categories";
 import { escapeHtml } from "@/lib/escapeHtml";
 
 const MAX_TEXT_LENGTH = 300;
@@ -102,6 +103,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid price range." }, { status: 400 });
   }
 
+  // The portal's "finish your signup" form posts here, and it asks for a
+  // category — but this route never read one, so it was dropped on the
+  // floor. The portal then decides the listing is complete from address
+  // AND category, so the merchant could submit a full, correct form as
+  // many times as they liked and still be told to finish their listing,
+  // with nothing on screen explaining why. Optional here because the
+  // original short signup form didn't collect it and older records
+  // predate it; validated whenever one is actually supplied.
+  const category = cleanText(body.category, MAX_TEXT_LENGTH);
+  if (category && !isBusinessCategory(category)) {
+    return NextResponse.json({ error: "Please select a valid business category." }, { status: 400 });
+  }
+
   const bookingEmail = cleanText(body.bookingEmail, MAX_TEXT_LENGTH);
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (bookingEmail && !EMAIL_RE.test(bookingEmail)) {
@@ -158,6 +172,7 @@ export async function POST(req: NextRequest) {
       phone,
       address,
       city,
+      category,
       postcode: cleanText(body.postcode, 20),
       website,
       bio: cleanText(body.bio, MAX_BIO_LENGTH),
@@ -182,6 +197,12 @@ export async function POST(req: NextRequest) {
       item = await adminClient.items.update("Merchants", {
         ...existing,
         ...fields,
+        // Since category is optional above, a submission that omits it
+        // must not blank out one already on the record — this route
+        // spreads fields over the whole existing item, so an empty string
+        // would otherwise overwrite a good value and knock the listing
+        // back to incomplete.
+        category: category || existing.category || "",
         // Same convention as /api/merchants/profile: resubmitting details
         // sends it back for review, same as any other edit would.
         status: "Pending",
