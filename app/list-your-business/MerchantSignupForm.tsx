@@ -121,7 +121,7 @@ async function submitApplication(values: ApplicationValues) {
 }
 
 export default function MerchantSignupForm() {
-  const { client, isLoggedIn, logout } = useWix();
+  const { client, member, isLoggedIn, logout } = useWix();
   const searchParams = useSearchParams();
   const referralPrefill = searchParams.get("ref") || "";
   const startedRef = useRef(false);
@@ -151,7 +151,16 @@ export default function MerchantSignupForm() {
     { businessName?: string } | null | undefined
   >(undefined);
 
+  // WixProvider starts with member === undefined and resolves it
+  // asynchronously, so isLoggedIn is false on the first render for a
+  // signed-in visitor too. Acting on that was the whole bug: the effect
+  // recorded "no business" before anyone had looked, the form rendered,
+  // and submitting overwrote the very record the guard existed to
+  // protect. Nothing may be concluded until member has resolved.
+  const authResolved = member !== undefined;
+
   useEffect(() => {
+    if (!authResolved) return;
     if (!isLoggedIn) {
       setExistingBusiness(null);
       return;
@@ -162,16 +171,16 @@ export default function MerchantSignupForm() {
       .then(({ item }) => {
         if (!cancelled) setExistingBusiness(item ?? null);
       })
-      // Treat an unknown answer as "none": the server still refuses to
-      // create a duplicate, and blocking a genuine signup because one
-      // lookup failed is the worse outcome.
+      // A failed lookup stays unknown. It used to resolve to null, which
+      // meant one flaky request re-opened the overwrite path silently —
+      // the opposite of what a guard should do when it can't see.
       .catch(() => {
-        if (!cancelled) setExistingBusiness(null);
+        if (!cancelled) setExistingBusiness(undefined);
       });
     return () => {
       cancelled = true;
     };
-  }, [isLoggedIn]);
+  }, [authResolved, isLoggedIn]);
   /**
    * Whether the visible checkbox has been revealed.
    *
@@ -327,6 +336,13 @@ export default function MerchantSignupForm() {
     // "you've already got an account, sign in instead", which is where
     // they just came from. Reachable in practice: any signup whose
     // verification timed out leaves exactly this state.
+    // Unknown is not permission. Submitting here is what destroys data,
+    // so it waits for a definite answer rather than assuming a safe one.
+    if (!authResolved || (isLoggedIn && existingBusiness === undefined)) {
+      setSubmitError("Just checking your account — try again in a moment.");
+      return;
+    }
+
     if (isLoggedIn && existingBusiness) {
       setSubmitError(
         `You're signed in as ${existingBusiness.businessName || "an existing business"}. Sending this form would replace that business's details rather than add a new one — sign out first to list a different business.`
@@ -561,6 +577,27 @@ export default function MerchantSignupForm() {
             Check your spam folder too — it sometimes lands there.
           </p>
         </form>
+      </div>
+    );
+  }
+
+  // Don't show a form we might have to refuse. While the account is still
+  // resolving, a signed-in visitor would otherwise see every field live
+  // and fillable, type the lot, and only then be told it can't be sent —
+  // which is both the reported complaint and the window the overwrite
+  // happened in.
+  if (!authResolved || (isLoggedIn && existingBusiness === undefined)) {
+    return (
+      <div
+        id="signup"
+        className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8"
+      >
+        <p className="text-sm font-semibold text-slate-500">Checking your account…</p>
+        <div aria-hidden className="mt-4 space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-11 animate-pulse rounded-xl bg-slate-100" />
+          ))}
+        </div>
       </div>
     );
   }
