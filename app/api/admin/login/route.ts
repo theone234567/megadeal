@@ -52,7 +52,13 @@ export async function POST(req: NextRequest) {
   const res = NextResponse.json({ ok: true });
   res.cookies.set(ADMIN_COOKIE_NAME, createAdminSessionToken(), {
     httpOnly: true,
-    secure: true,
+    // Matches the convention the other two cookies in this app already
+    // follow (lib/memberSession.ts, middleware.ts): always secure in
+    // production, off locally so http://localhost works. Hardcoded true,
+    // the browser silently refused to store this over plain HTTP, so a
+    // local admin login appeared to succeed and then every request to the
+    // dashboard came back 401 with nothing on screen explaining why.
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 12,
