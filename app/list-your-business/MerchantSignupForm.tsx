@@ -121,7 +121,7 @@ async function submitApplication(values: ApplicationValues) {
 }
 
 export default function MerchantSignupForm() {
-  const { client, isLoggedIn } = useWix();
+  const { client, isLoggedIn, logout } = useWix();
   const searchParams = useSearchParams();
   const referralPrefill = searchParams.get("ref") || "";
   const startedRef = useRef(false);
@@ -136,6 +136,42 @@ export default function MerchantSignupForm() {
    *  expires after ~2 minutes, so it is cleared after every attempt. */
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = useRef<RecaptchaCheckboxHandle | null>(null);
+  /**
+   * The business already attached to the signed-in account, if any.
+   * undefined while unknown, null once we know there is none.
+   *
+   * This decides whether submitting is safe. /api/merchants/apply updates
+   * the signed-in member's existing record rather than adding a second
+   * one — so a merchant signed in as one business, filling this form in
+   * for another, would not create it: they would overwrite the business
+   * they already have, name, address, phone and all, and send it back to
+   * Pending. Nothing on screen warned them.
+   */
+  const [existingBusiness, setExistingBusiness] = useState<
+    { businessName?: string } | null | undefined
+  >(undefined);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setExistingBusiness(null);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/merchants/me")
+      .then((res) => (res.ok ? res.json() : { item: null }))
+      .then(({ item }) => {
+        if (!cancelled) setExistingBusiness(item ?? null);
+      })
+      // Treat an unknown answer as "none": the server still refuses to
+      // create a duplicate, and blocking a genuine signup because one
+      // lookup failed is the worse outcome.
+      .catch(() => {
+        if (!cancelled) setExistingBusiness(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn]);
   /**
    * Whether the visible checkbox has been revealed.
    *
@@ -291,6 +327,13 @@ export default function MerchantSignupForm() {
     // "you've already got an account, sign in instead", which is where
     // they just came from. Reachable in practice: any signup whose
     // verification timed out leaves exactly this state.
+    if (isLoggedIn && existingBusiness) {
+      setSubmitError(
+        `You're signed in as ${existingBusiness.businessName || "an existing business"}. Sending this form would replace that business's details rather than add a new one — sign out first to list a different business.`
+      );
+      return;
+    }
+
     if (isLoggedIn) {
       setSubmitting(true);
       try {
@@ -518,6 +561,47 @@ export default function MerchantSignupForm() {
             Check your spam folder too — it sometimes lands there.
           </p>
         </form>
+      </div>
+    );
+  }
+
+  // Signed in with a business already attached: don't show the form at
+  // all. Letting someone fill in twenty fields and only then telling them
+  // it would overwrite their existing business wastes their time, and the
+  // one time they ignore the warning it costs them their listing.
+  if (isLoggedIn && existingBusiness) {
+    return (
+      <div
+        id="signup"
+        className="scroll-mt-[140px] rounded-2xl border border-brand-100 bg-brand-50 p-6 shadow-card sm:p-8"
+      >
+        <h3 className="text-lg font-bold text-brand-900">
+          You&apos;re already signed in
+        </h3>
+        <p className="mt-2 text-sm text-brand-800">
+          This account is linked to{" "}
+          <strong>{existingBusiness.businessName || "a business"}</strong>. You can manage it from
+          your portal.
+        </p>
+        <p className="mt-2 text-sm text-brand-700/90">
+          Listing a second, different business? Sign out first — otherwise this form would update
+          the business above rather than create a new one.
+        </p>
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          <a
+            href="/portal"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-brand-600 px-6 text-sm font-bold text-white transition hover:bg-brand-700"
+          >
+            Go to my portal →
+          </a>
+          <button
+            type="button"
+            onClick={() => void logout()}
+            className="inline-flex h-11 items-center justify-center rounded-full border border-brand-300 px-6 text-sm font-bold text-brand-700 transition hover:bg-white"
+          >
+            Sign out to list another business
+          </button>
+        </div>
       </div>
     );
   }
