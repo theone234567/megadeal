@@ -188,16 +188,25 @@ export default function PortalPage() {
       </div>
 
       {!merchant ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-slate-200 p-8 text-center">
-          <p className="text-slate-600">
-            You&apos;re signed in, but we don&apos;t have a business
-            application on file for this account yet.
+        <div className="mt-6 rounded-2xl border-2 border-ember-200 bg-ember-50/50 p-8 text-center">
+          {/* Framed as finishing, not starting. Reaching this screen means
+              the account was created but the business details never saved —
+              usually a signup that dropped part-way. "We don't have an
+              application on file" states the system's problem and reads as
+              "begin again", which is discouraging and wrong: nothing they
+              did was lost, there is simply one step left. */}
+          <h2 className="text-xl font-extrabold text-slate-900">
+            One step left — finish your signup
+          </h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
+            Your account is all set up. We just need your business details to get your listing
+            ready — it only takes a minute, and you won&apos;t need to create another password.
           </p>
           <Link
             href="/list-your-business#signup"
-            className="mt-4 inline-block rounded-full bg-ember-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-ember-600"
+            className="mt-5 inline-block rounded-full bg-ember-500 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-ember-600"
           >
-            Sign up your business
+            Complete my signup →
           </Link>
         </div>
       ) : (
