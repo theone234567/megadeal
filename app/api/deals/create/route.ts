@@ -102,6 +102,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "You don't have any deal credits left. Contact us to top up." }, { status: 403 });
   }
 
+  // Resolved before anything is created, so a bad draft id fails while
+  // nothing has happened yet — no orphaned product, no spent credit.
+  let draftRow: any = null;
+  const draftId = typeof body.draftId === "string" ? body.draftId : null;
+  if (draftId) {
+    draftRow = await adminClient.items.get("Deals", draftId);
+    if (!draftRow) {
+      return NextResponse.json({ error: "That draft no longer exists." }, { status: 404 });
+    }
+    if ((draftRow.merchantEmail || "").toLowerCase() !== member.email.toLowerCase()) {
+      return NextResponse.json({ error: "This isn't your draft." }, { status: 403 });
+    }
+    // Without this, passing a Live deal's id would rewrite it wholesale
+    // and send it back through approval, spending a credit to do so.
+    if (draftRow.status !== "Draft") {
+      return NextResponse.json(
+        { error: "That deal has already been submitted." },
+        { status: 409 }
+      );
+    }
+  }
+
   // Create the Wix Store product first — if this fails, nothing else has
   // happened yet (no Deals row, no credit spent), so it's safe to just
   // return an error and let the merchant retry.
@@ -179,7 +201,7 @@ export async function POST(req: NextRequest) {
     Date.now() + (isFlash ? durationMinutes * 60_000 : durationDays * 86_400_000)
   ).toISOString();
 
-  const deal = await adminClient.items.insert("Deals", {
+  const fields = {
     dealName,
     description,
     terms,
@@ -193,7 +215,19 @@ export async function POST(req: NextRequest) {
     productId,
     isFlash,
     dealCode: generateDealCode(),
-  });
+    // The editing copy has served its purpose; leaving it behind would
+    // mean a submitted deal still carrying a stale second version of
+    // itself that nothing reads but everything would have to reason about.
+    draftData: "",
+  };
+
+  // Submitting a draft promotes that row rather than inserting a second
+  // one — otherwise the merchant would watch their deal go off for review
+  // while the draft it came from sat in the portal beside it, looking
+  // unsubmitted.
+  const deal = draftRow
+    ? await adminClient.items.update("Deals", { ...draftRow, ...fields })
+    : await adminClient.items.insert("Deals", fields);
 
   await incrementCreditsAtomically(adminClient, merchant._id, -1);
   await logMerchantActivity(adminClient, {

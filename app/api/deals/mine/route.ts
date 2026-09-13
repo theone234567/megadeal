@@ -22,7 +22,10 @@ export async function GET(req: NextRequest) {
     const adminClient = createWixAdminClient();
     const result = await adminClient.items
       .query("Deals")
-      .eq("merchantEmail", member.email.toLowerCase())
+      // Raw, not lower-cased: /api/deals/create writes member.email as it
+      // comes from Wix, so normalising only here would silently match
+      // nothing for any address Wix returns with capitals in it.
+      .eq("merchantEmail", member.email)
       .find();
     return NextResponse.json({ items: result.items ?? [] });
   } catch (err) {

@@ -34,3 +34,42 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
+
+/**
+ * Throws away one of the caller's drafts.
+ *
+ * Drafts only. A submitted deal is withdrawn by moving it to Cancelled,
+ * which keeps the record, the credit history and anything the admin has
+ * said about it — deleting outright would destroy an audit trail that
+ * someone may need to explain a decision later. A draft has none of that
+ * behind it: nothing was charged, nothing was reviewed, nothing was ever
+ * public.
+ */
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const member = await getVerifiedMember(req);
+  if (!member?.email) {
+    return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+  }
+
+  try {
+    const adminClient = createWixAdminClient();
+    const deal = await adminClient.items.get("Deals", params.id);
+    if (!deal) {
+      return NextResponse.json({ error: "Deal not found." }, { status: 404 });
+    }
+    if ((deal.merchantEmail || "").toLowerCase() !== member.email.toLowerCase()) {
+      return NextResponse.json({ error: "This isn't your deal." }, { status: 403 });
+    }
+    if (deal.status !== "Draft") {
+      return NextResponse.json(
+        { error: "Only a draft can be deleted. Cancel the deal instead." },
+        { status: 409 }
+      );
+    }
+    await adminClient.items.remove("Deals", params.id);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[deals/[id]] DELETE failed", err);
+    return NextResponse.json({ error: "Couldn't delete that draft." }, { status: 500 });
+  }
+}

@@ -1,4 +1,11 @@
-export type DealStatus = "Pending Approval" | "Live" | "Paused" | "Cancelled";
+/**
+ * "Draft" is a deal the merchant is still writing: saved server-side, but
+ * with no Wix Stores product behind it and no credit spent. That absence
+ * is what keeps it off the storefront — every public read starts from a
+ * product and joins Deals by productId, so a draft has nothing to be
+ * found by. It is not a filter anyone can forget to apply.
+ */
+export type DealStatus = "Draft" | "Pending Approval" | "Live" | "Paused" | "Cancelled";
 
 export interface Deal {
   id: string;

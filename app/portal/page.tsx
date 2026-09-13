@@ -37,6 +37,21 @@ interface MerchantRecord {
   [key: string]: any;
 }
 
+/** "3 minutes ago" beats a timestamp here: the only question a merchant
+ *  has about a draft is whether it holds the work they just did. */
+function formatSavedAt(iso?: string): string {
+  if (!iso) return "just now";
+  const then = new Date(iso).getTime();
+  if (!Number.isFinite(then)) return "just now";
+  const mins = Math.floor((Date.now() - then) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} minute${mins === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+}
+
 export default function PortalPage() {
   const { member, isLoggedIn, logout } = useWix();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
@@ -117,6 +132,19 @@ export default function PortalPage() {
     setDeals((prev) => prev.map((d) => (d._id === deal._id ? updated : d)));
   }
 
+  async function handleDeleteDraft(draft: DealRecord) {
+    if (!window.confirm(`Delete "${draft.dealName || "this draft"}"? This can't be undone.`)) {
+      return;
+    }
+    const res = await fetch(`/api/deals/${draft._id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      window.alert(data.error || "Couldn't delete that draft.");
+      return;
+    }
+    setDeals((prev) => prev.filter((d) => d._id !== draft._id));
+  }
+
   async function handleChangeLogo(dataUrl: string) {
     if (!merchant) return;
     setLogoError(null);
@@ -174,6 +202,13 @@ export default function PortalPage() {
   // replaced by its status rather than left sitting there inviting a
   // resubmit.
   const profileComplete = Boolean(merchant?.address && merchant?.category);
+
+  // A draft has never been reviewed, never been public and never cost a
+  // credit, so it doesn't belong in the same list as deals that have. It
+  // is also excluded from the CSV export, which reports performance —
+  // something a draft has none of.
+  const drafts = deals.filter((d) => d.status === "Draft");
+  const submittedDeals = deals.filter((d) => d.status !== "Draft");
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
@@ -354,12 +389,68 @@ export default function PortalPage() {
             </div>
           )}
 
+          {/* Drafts sit above submitted deals and in their own card. They
+              are the merchant's unfinished work, so the useful actions are
+              "carry on" and "throw away" — not the pause/cancel controls a
+              submitted deal carries, none of which mean anything for
+              something that was never reviewed and never public. */}
+          {drafts.length > 0 && (
+            <div className="mt-6 rounded-2xl border border-brand-100 bg-brand-50/40 p-6">
+              <h2 className="text-lg font-bold text-brand-900">
+                Drafts {drafts.length > 1 && `(${drafts.length})`}
+              </h2>
+              <p className="mt-1 text-sm text-brand-800/80">
+                Saved to your account, not just this browser. Nothing here is public,
+                and none of it has used a credit.
+              </p>
+              <ul className="mt-4 space-y-3">
+                {drafts.map((draft) => (
+                  <li
+                    key={draft._id}
+                    className="flex flex-wrap items-center gap-3 rounded-xl bg-white p-3 shadow-sm"
+                  >
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 text-slate-300">
+                      {draft.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={draft.photoUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-xl">🏷️</span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold text-slate-900">
+                        {draft.dealName || "Untitled deal"}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Last saved {formatSavedAt(draft._updatedDate)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/portal/new-deal?draft=${draft._id}`}
+                        className="rounded-full bg-brand-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-brand-700"
+                      >
+                        Continue
+                      </Link>
+                      <button
+                        onClick={() => handleDeleteDraft(draft)}
+                        className="rounded-full border border-slate-200 px-4 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-50"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-slate-900">Your deals</h2>
-              <ExportDealsButton deals={deals} />
+              <ExportDealsButton deals={submittedDeals} />
             </div>
-            {deals.length === 0 ? (
+            {submittedDeals.length === 0 ? (
               <p className="mt-2 text-sm text-slate-500">
                 {/* The create-deal button is hidden until the listing has
                     an address and a category, so "above" pointed at
@@ -371,7 +462,7 @@ export default function PortalPage() {
               </p>
             ) : (
               <ul className="mt-4 space-y-3">
-                {deals.map((deal) => (
+                {submittedDeals.map((deal) => (
                   <DealManageCard
                     key={deal._id}
                     deal={deal}

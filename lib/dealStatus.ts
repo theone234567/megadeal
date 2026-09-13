@@ -1,6 +1,7 @@
 import type { DealStatus } from "./types";
 
 export const DEAL_STATUS_STYLES: Record<DealStatus, string> = {
+  Draft: "bg-brand-50 text-brand-700 border-brand-200",
   "Pending Approval": "bg-amber-50 text-amber-700 border-amber-200",
   Live: "bg-emerald-50 text-emerald-700 border-emerald-200",
   Paused: "bg-slate-100 text-slate-600 border-slate-200",
@@ -34,6 +35,11 @@ export function allowedDealActions(status: DealStatus | null): DealStatusAction[
       ];
     case "Pending Approval":
       return [{ label: "Withdraw submission", target: "Cancelled", danger: true }];
+    // A draft isn't in the workflow yet, so none of the pause/cancel
+    // transitions apply. Its two actions — keep editing, or throw it away —
+    // are not status changes and live on the card itself.
+    case "Draft":
+      return [];
     case "Cancelled":
       return [];
     case null:

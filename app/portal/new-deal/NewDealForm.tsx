@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { uploadPhoto } from "@/lib/imageUpload";
 import { CATEGORIES } from "@/lib/categories";
+import { parseDraft } from "@/lib/dealDraft";
 import MerchantLoginForm from "@/components/portal/MerchantLoginForm";
 
 const DURATIONS = [
@@ -27,22 +28,6 @@ interface MerchantRecord {
   _id: string;
   status?: string;
   creditsBalance?: number;
-}
-
-/** What actually gets saved as a local draft — deliberately excludes the
- *  photo (a File object can't survive JSON, so it isn't restorable) and
- *  anything server-side (credits, merchant identity). */
-interface DealDraft {
-  dealName: string;
-  category: string;
-  description: string;
-  terms: string;
-  priceNow: string;
-  priceWas: string;
-  durationDays: number;
-  isFlash: boolean;
-  durationMinutes: number;
-  quantityAvailable: string;
 }
 
 export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean }) {
@@ -74,7 +59,14 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
   const [draftRestored, setDraftRestored] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
-  const draftKey = member?.email ? `megadeal-deal-draft:${member.email.toLowerCase()}` : null;
+  const [savingDraft, setSavingDraft] = useState(false);
+  /** Set once a draft exists server-side, so every later save updates that
+   *  row instead of leaving a trail of near-identical drafts behind. */
+  const [draftId, setDraftId] = useState<string | null>(searchParams.get("draft"));
+  /** A photo already uploaded — either restored from a draft or uploaded
+   *  when one was saved. `photo` holds a newly picked File that hasn't been
+   *  sent anywhere yet; this holds the Wix Media URL once it has. */
+  const [uploaded, setUploaded] = useState<{ url: string; id: string } | null>(null);
 
   useEffect(() => {
     if (member === undefined) return;
@@ -124,36 +116,51 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [duplicateId, merchant]);
 
-  // Restore a locally-saved draft — only while pre-launch submissions are
-  // disabled is a draft ever created (see saveDraft below), and never when
-  // arriving via "Duplicate this deal" so the two prefill paths can't race.
+  // Reopen a saved draft, arriving as ?draft=<id> from the portal. Never
+  // alongside "Duplicate this deal" — the two prefill paths would race and
+  // whichever landed second would win silently.
   useEffect(() => {
-    if (!draftKey || duplicateId) return;
-    try {
-      const raw = localStorage.getItem(draftKey);
-      if (!raw) return;
-      const draft: Partial<DealDraft> = JSON.parse(raw);
-      setDealName(draft.dealName ?? "");
-      setCategory(draft.category ?? "");
-      setDescription(draft.description ?? "");
-      setTerms(draft.terms ?? "");
-      setPriceNow(draft.priceNow ?? "");
-      setPriceWas(draft.priceWas ?? "");
-      if (draft.durationDays) setDurationDays(draft.durationDays);
-      setIsFlash(Boolean(draft.isFlash));
-      if (draft.durationMinutes) setDurationMinutes(draft.durationMinutes);
-      setQuantityAvailable(draft.quantityAvailable ?? "");
-      setDraftRestored(true);
-    } catch {
-      // Corrupt or old draft shape — just start from a blank form.
-    }
-  }, [draftKey, duplicateId]);
+    if (!draftId || duplicateId) return;
+    let cancelled = false;
+    fetch(`/api/deals/${draftId}`)
+      .then((res) => (res.ok ? res.json() : { item: null }))
+      .then(({ item }) => {
+        if (cancelled || !item) return;
+        const draft = parseDraft(item);
+        setDealName(draft.dealName);
+        setCategory(draft.category);
+        setDescription(draft.description);
+        setTerms(draft.terms);
+        setPriceNow(draft.priceNow);
+        setPriceWas(draft.priceWas);
+        setDurationDays(draft.durationDays);
+        setIsFlash(draft.isFlash);
+        setDurationMinutes(draft.durationMinutes);
+        setQuantityAvailable(draft.quantityAvailable);
+        // The photo comes back too, which the old local drafts could never
+        // do — a File can't be serialised, so restoring one always meant
+        // hunting for the image again.
+        if (draft.photoUrl) {
+          setUploaded({ url: draft.photoUrl, id: draft.photoMediaId });
+          setPhotoPreview(draft.photoUrl);
+        }
+        setDraftRestored(true);
+      })
+      .catch(() => {
+        // Nothing to restore — the form is simply blank, which is a fine
+        // place to start from.
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftId, duplicateId]);
 
   useEffect(() => {
-    if (!photo) {
-      setPhotoPreview(null);
-      return;
-    }
+    if (!photo) return;
+    // A newly picked file replaces whatever was uploaded before, so the
+    // draft doesn't keep pointing at the old image.
+    setUploaded(null);
     const url = URL.createObjectURL(photo);
     setPhotoPreview(url);
     return () => URL.revokeObjectURL(url);
@@ -165,7 +172,10 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
     // show the merchant their deal as customers will see it, and the photo
     // is most of that — previewing a card with an empty image well would
     // misrepresent the thing they're being asked to approve.
-    if (!photo) {
+    // Either a file just picked, or one already uploaded with a reopened
+    // draft — a restored draft has a photo but no File, and rejecting it
+    // would demand the merchant re-pick an image already on screen.
+    if (!photo && !uploaded) {
       setError("Add a photo before you preview — it's the main image customers see.");
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
       return;
@@ -175,29 +185,61 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  /** Saves everything except the photo to this browser only — used while
-   *  MegaDeal hasn't launched and real submissions aren't being accepted
-   *  yet, so a merchant's work isn't lost between now and launch day. */
-  function saveDraft() {
-    if (!draftKey) return;
+  /** Saves the deal as it stands, server-side, so it survives a closed
+   *  browser, a cleared cache and a different device — none of which the
+   *  old localStorage draft did. Also used pre-launch, when submissions
+   *  aren't being accepted yet, so a merchant's work isn't lost between
+   *  now and launch day.
+   *
+   *  Deliberately does not require a complete form: a draft is unfinished
+   *  by definition, and refusing to save one for a missing price would
+   *  defeat the point of having drafts. */
+  async function saveDraft() {
+    setSavingDraft(true);
+    setError(null);
     try {
-      const draft: DealDraft = {
-        dealName,
-        category,
-        description,
-        terms,
-        priceNow,
-        priceWas,
-        durationDays,
-        isFlash,
-        durationMinutes,
-        quantityAvailable,
-      };
-      localStorage.setItem(draftKey, JSON.stringify(draft));
+      // The photo has to become a real URL before the draft can hold it —
+      // this is what makes a restored draft keep its image.
+      let media = uploaded;
+      if (photo && !media) {
+        media = await uploadPhoto(photo);
+        setUploaded(media);
+      }
+
+      const res = await fetch("/api/deals/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draftId,
+          draft: {
+            dealName,
+            category,
+            description,
+            terms,
+            priceNow,
+            priceWas,
+            durationDays,
+            isFlash,
+            durationMinutes,
+            quantityAvailable,
+            photoUrl: media?.url || "",
+            photoMediaId: media?.id || "",
+          },
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Couldn't save your draft.");
+      }
+      const { item } = await res.json();
+      // Held on to so the next save updates this draft rather than
+      // creating another one beside it.
+      if (item?._id) setDraftId(item._id);
       setDraftSaved(true);
-    } catch {
-      // Storage unavailable — not fatal, the merchant's fields are still
-      // right there on screen, just not persisted across visits.
+    } catch (err: any) {
+      setError(err?.message || "Couldn't save your draft. Please try again.");
+    } finally {
+      setSavingDraft(false);
     }
   }
 
@@ -205,11 +247,20 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
     setError(null);
     setSubmitting(true);
     try {
-      const uploaded = photo ? await uploadPhoto(photo) : null;
+      // Reuses the already-uploaded image where there is one: a draft
+      // reopened from the portal has a photo but no File, and re-uploading
+      // on every submit would also leave a duplicate in the media library
+      // each time.
+      let media = uploaded;
+      if (photo && !media) {
+        media = await uploadPhoto(photo);
+        setUploaded(media);
+      }
       const res = await fetch("/api/deals/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          draftId,
           dealName,
           category,
           description,
@@ -219,20 +270,13 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           isFlash,
           ...(isFlash ? { durationMinutes } : { durationDays }),
           quantityAvailable: quantityAvailable ? Number(quantityAvailable) : undefined,
-          photoUrl: uploaded?.url || "",
-          photoMediaId: uploaded?.id || "",
+          photoUrl: media?.url || "",
+          photoMediaId: media?.id || "",
         }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Something went wrong submitting your deal.");
-      }
-      if (draftKey) {
-        try {
-          localStorage.removeItem(draftKey);
-        } catch {
-          // Fine either way — the draft is harmless once actually submitted.
-        }
       }
       setSubmitted(true);
     } catch (err: any) {
@@ -424,9 +468,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         {!siteLaunched && (
           <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
             🚧 MegaDeal hasn&apos;t officially launched yet, so we&apos;re not
-            able to accept deals for review. Save this as a draft
-            for now — nothing&apos;s lost, and you can submit it for
-            approval the moment we go live.
+            able to accept deals for review. Save it for now — it&apos;s kept
+            with your account, not just this browser, and you can submit it
+            for approval the moment we go live.
           </p>
         )}
 
@@ -452,12 +496,15 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               <button
                 type="button"
                 onClick={saveDraft}
-                className="rounded-full bg-brand-600 px-8 py-3 text-center text-sm font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95"
+                disabled={savingDraft}
+                className="rounded-full bg-brand-600 px-8 py-3 text-center text-sm font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
               >
-                💾 Save as draft
+                {savingDraft ? "Saving…" : draftId ? "💾 Save changes" : "💾 Save as draft"}
               </button>
-              {draftSaved && (
-                <p className="text-xs font-semibold text-emerald-600">Draft saved ✓</p>
+              {draftSaved && !savingDraft && (
+                <p className="text-xs font-semibold text-emerald-600">
+                  Saved to your portal ✓
+                </p>
               )}
             </div>
           )}
@@ -493,8 +540,8 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       )}
       {draftRestored && (
         <p className="mt-3 rounded-xl border border-brand-100 bg-brand-50 p-3 text-sm text-brand-700">
-          📝 Restored your saved draft — pick up right where you left off.
-          Your photo wasn&apos;t saved with it, so re-add that below.
+          📝 Picked up your saved draft, photo and all — carry on where you
+          left off.
         </p>
       )}
 
@@ -685,12 +732,29 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <button
-          type="submit"
-          className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 sm:w-auto sm:px-8"
-        >
-          Preview deal →
-        </button>
+        {/* Saving is available here, not only from the preview. The preview
+            demands a complete, valid deal — which is the wrong bar for
+            saving unfinished work, and left a merchant interrupted halfway
+            with no way to keep what they had typed. */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <button
+            type="submit"
+            className="w-full rounded-full bg-brand-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 sm:w-auto sm:px-8"
+          >
+            Preview deal →
+          </button>
+          <button
+            type="button"
+            onClick={saveDraft}
+            disabled={savingDraft}
+            className="w-full rounded-full border border-slate-200 py-3 text-center text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60 sm:w-auto sm:px-6"
+          >
+            {savingDraft ? "Saving…" : draftId ? "Save changes" : "Save as draft"}
+          </button>
+          {draftSaved && !savingDraft && (
+            <span className="text-xs font-semibold text-emerald-600">Saved ✓</span>
+          )}
+        </div>
       </form>
     </main>
   );
