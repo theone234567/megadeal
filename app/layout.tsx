@@ -13,6 +13,7 @@ import { SOCIAL_URLS } from "@/components/SocialLinks";
 import { SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
+import { getMegadealArt } from "@/lib/megadealAssets";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -130,7 +131,7 @@ export default function RootLayout({
           <ScrollDepthTracker />
         </Suspense>
         <WixProvider>
-          <Header />
+          <Header logoSrc={getMegadealArt().logo} />
           {children}
           <Footer siteLaunched={SITE_LAUNCHED} />
         </WixProvider>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
@@ -9,13 +10,36 @@ import { SearchIcon, UserIcon } from "@/components/icons";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
-export default function Header() {
+/**
+ * @param logoSrc Supplied logo PNG, resolved at build time in the server
+ *   layout — this component is a client component and cannot read the
+ *   filesystem itself. Null until the artwork is added, in which case the
+ *   existing vector Logo renders instead, so the header is never empty.
+ */
+export default function Header({ logoSrc = null }: { logoSrc?: string | null }) {
   const { member, isLoggedIn } = useWix();
   const [city, setCity] = useState("");
   const [query, setQuery] = useState("");
   const router = useRouter();
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
+
+  /** The wordmark, sized by the caller. `em`-based sizing on the vector
+   *  Logo is what lets one className drive both variants, so the PNG is
+   *  given a matching height and an auto width rather than fixed pixels. */
+  const brand = (sizeClass: string) =>
+    logoSrc ? (
+      <Image
+        src={logoSrc}
+        alt="MegaDeal"
+        width={520}
+        height={150}
+        priority
+        className={`h-auto w-auto select-none ${sizeClass}`}
+      />
+    ) : (
+      <Logo className={sizeClass} />
+    );
 
   const [profileComplete, setProfileComplete] = useState(true);
   useEffect(() => {
@@ -51,7 +75,7 @@ export default function Header() {
             screens, where the context is obvious anyway. */}
         <div className="mx-auto flex min-h-[78px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-2 sm:gap-5 sm:px-8 lg:min-h-[96px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
-            <Logo className="text-[26px] sm:text-[34px] lg:text-[40px]" />
+            {brand("max-h-[38px] text-[26px] sm:max-h-[50px] sm:text-[34px] lg:max-h-[58px] lg:text-[40px]")}
           </Link>
 
           <Link
@@ -71,7 +95,7 @@ export default function Header() {
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-y-1">
           <Link href="/" aria-label="MegaDeal home" className="min-w-0 shrink">
-            <Logo className="text-[24px] sm:text-[28px]" />
+            {brand("max-h-[34px] text-[24px] sm:max-h-[40px] sm:text-[28px]")}
           </Link>
 
           <Link href="/portal" className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-brand-700">

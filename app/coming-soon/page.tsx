@@ -10,6 +10,8 @@ import EmailSignupForm from "@/components/EmailSignupForm";
 import SampleDealCard from "@/components/SampleDealCard";
 import { getSignupStats } from "@/lib/publicStats";
 import AucklandSkylineArt from "@/components/comingSoon/AucklandSkylineArt";
+import MascotFigure from "@/components/megadeal/MascotFigure";
+import { getMegadealArt } from "@/lib/megadealAssets";
 import {
   CheckIcon,
   DumbbellIcon,
@@ -73,6 +75,18 @@ function findHeroPhoto(): string | null {
 }
 
 const heroPhoto = findHeroPhoto();
+
+/**
+ * Supplied mascot / skyline artwork, resolved once at build time. Each
+ * entry is null until the PNG is added to public/megadeal, and every use
+ * below falls back to the vector already shipping — so the page is whole
+ * either way. See public/megadeal/README.md.
+ */
+const art = getMegadealArt();
+
+/** The supplied skyline card wins over a photo drop, which in turn wins
+ *  over the illustration. All three are the same slot in the layout. */
+const heroCardImage = art.aucklandCard ?? heroPhoto;
 
 /** One shared page shell width, so every band lines up at every breakpoint. */
 const shell = "mx-auto w-full max-w-[1320px] px-5 sm:px-6 xl:px-10";
@@ -187,7 +201,13 @@ export default async function ComingSoonPage() {
       />
 
       {/* ---------------------------------------------------------------- Hero */}
-      <section id="cs-hero" className="relative overflow-hidden bg-[#650fc7] text-white">
+      {/* Gradient rather than the flat fill it replaced: brand-500 into
+          brand-800 gives the hero depth behind the white skyline card and
+          the mascot, without introducing any colour outside the palette. */}
+      <section
+        id="cs-hero"
+        className="relative overflow-hidden bg-[#650fc7] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 text-white"
+      >
         <div
           className={`${shell} grid items-center gap-6 pb-0 pt-7 sm:gap-10 sm:py-12 lg:min-h-[590px] lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:py-14`}
         >
@@ -274,9 +294,9 @@ export default async function ComingSoonPage() {
           <div className="relative -mx-5 pb-0 sm:mx-auto sm:w-full sm:max-w-[720px] sm:pb-8 sm:pr-7 lg:pt-2">
             <div className="relative sm:rotate-[1.5deg]">
               <div className="relative aspect-[2/1] overflow-hidden border-y border-white/20 bg-white/10 sm:aspect-[1.28/1] sm:rounded-[28px] sm:border-[4px] sm:border-white/80 sm:shadow-2xl sm:[clip-path:polygon(7%_0,100%_0,94%_100%,0_100%)] lg:border-[5px] lg:shadow-[0_30px_80px_rgba(27,5,72,.34)]">
-                {heroPhoto ? (
+                {heroCardImage ? (
                   <img
-                    src={heroPhoto}
+                    src={heroCardImage}
                     alt="Auckland city and harbour"
                     className="h-full w-full object-cover sm:-rotate-[1.5deg] sm:scale-[1.08]"
                     fetchPriority="high"
@@ -304,24 +324,26 @@ export default async function ComingSoonPage() {
 
                 {/* Mobile: inside the picture, clear of both edges so the
                     mascot's tag can't be clipped. */}
-                <img
-                  src="/brand/deal-hunter-elephant.svg"
+                <MascotFigure
+                  src={art.mascotBigDeals}
+                  fallbackSrc="/brand/deal-hunter-elephant.svg"
                   alt=""
                   width={360}
                   height={280}
-                  className="pointer-events-none absolute bottom-0 right-2 w-[112px] select-none drop-shadow-xl sm:hidden"
+                  className="absolute bottom-0 right-2 h-auto w-[112px] drop-shadow-xl sm:hidden"
                 />
               </div>
             </div>
 
             {/* Desktop: overhangs the frame, as designed. */}
-            <img
-              src="/brand/deal-hunter-elephant.svg"
+            <MascotFigure
+              src={art.mascotBigDeals}
+              fallbackSrc="/brand/deal-hunter-elephant.svg"
               alt="MegaDeal deal-hunter elephant holding a magnifying glass and a big deals tag"
               width={360}
               height={280}
-              className="pointer-events-none absolute -bottom-5 -right-8 z-30 hidden w-[185px] select-none drop-shadow-xl sm:block lg:-bottom-3 lg:w-[245px] lg:drop-shadow-[0_18px_24px_rgba(38,8,87,.28)] 2xl:w-[275px]"
-              fetchPriority="high"
+              priority
+              className="absolute -bottom-5 -right-8 z-30 hidden h-auto w-[185px] drop-shadow-xl sm:block lg:-bottom-3 lg:w-[245px] lg:drop-shadow-[0_18px_24px_rgba(38,8,87,.28)] 2xl:w-[275px]"
             />
           </div>
         </div>
@@ -562,7 +584,19 @@ export default async function ComingSoonPage() {
               )}
             </div>
 
-            <div className="mx-auto w-full max-w-[320px] lg:max-w-none">
+            <div className="relative mx-auto w-full max-w-[320px] lg:max-w-none">
+              {/* Waves at the signup form across the grid. Hidden below lg:
+                  the column is the card's own width there, so the mascot
+                  would either overlap the price or push the card down the
+                  page — and this section's job is the email field. */}
+              <MascotFigure
+                src={art.mascotWave}
+                fallbackSrc="/brand/megadeal-elephant.svg"
+                alt=""
+                width={320}
+                height={250}
+                className="absolute -left-24 -top-14 z-10 hidden h-auto w-[120px] -scale-x-100 drop-shadow-[0_12px_20px_rgba(69,16,141,.18)] lg:block xl:-left-32 xl:w-[148px]"
+              />
               <SampleDealCard />
             </div>
           </div>
@@ -576,8 +610,20 @@ export default async function ComingSoonPage() {
         and that is the honest reason to act now, so it is stated plainly
         instead of being left implicit.
       */}
-      <section className="bg-[#4d0ca8] py-10 text-white lg:py-14">
-        <div className={shell}>
+      <section className="relative overflow-hidden bg-[#4d0ca8] py-10 text-white lg:py-14">
+        {/* Decorative, and deliberately low-contrast: this band is the
+            page's highest-value action, so the mascot sits behind the
+            offer rather than competing with it. aria-hidden via empty alt;
+            pointer-events are off so it can never eat a tap on the CTA. */}
+        <MascotFigure
+          src={art.mascotJump}
+          fallbackSrc="/brand/megadeal-elephant.svg"
+          alt=""
+          width={300}
+          height={340}
+          className="absolute -bottom-6 right-2 hidden h-auto w-[150px] opacity-[0.18] lg:block xl:right-10 xl:w-[190px]"
+        />
+        <div className={`${shell} relative z-10`}>
           <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
             <div>
               <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffb3dd]">
