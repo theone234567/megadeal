@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
+import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { sanitizeDraft, draftToRow } from "@/lib/dealDraft";
@@ -26,6 +27,13 @@ export async function POST(req: NextRequest) {
   const member = await getVerifiedMember(req);
   if (!member?.email) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+  }
+
+  if (await memberRateLimited("deal-draft", member.id, 60, HOUR)) {
+    return NextResponse.json(
+      { error: "That's a lot of saving at once — give it a moment and try again." },
+      { status: 429 }
+    );
   }
 
   const body = await req.json().catch(() => null);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
+import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
@@ -29,6 +30,13 @@ export async function POST(req: NextRequest) {
   const member = await getVerifiedMember(req);
   if (!member) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+  }
+
+  if (await memberRateLimited("merchant-profile", member.id, 20, HOUR)) {
+    return NextResponse.json(
+      { error: "You've saved that a lot in a short time. Please try again shortly." },
+      { status: 429 }
+    );
   }
 
   const body = await req.json().catch(() => null);

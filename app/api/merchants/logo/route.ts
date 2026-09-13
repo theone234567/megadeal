@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
+import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { getOrClaimMerchant } from "@/lib/merchant";
@@ -8,6 +9,13 @@ export async function POST(req: NextRequest) {
   const member = await getVerifiedMember(req);
   if (!member) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });
+  }
+
+  if (await memberRateLimited("merchant-logo", member.id, 20, HOUR)) {
+    return NextResponse.json(
+      { error: "That's a lot of logo changes at once — please try again in a little while." },
+      { status: 429 }
+    );
   }
 
   const body = await req.json().catch(() => null);
