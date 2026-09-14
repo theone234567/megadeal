@@ -35,7 +35,7 @@ import {
 const TITLE = "Big Local Deals Are On The Way in Auckland";
 const SOCIAL_TITLE = "MegaDeal Auckland — Big Local Deals Are On The Way";
 const DESCRIPTION =
-  "MegaDeal is launching in Auckland first. Deal hunters can join for launch updates, while eligible local businesses can claim up to 6 months free advertising with 0% commission.";
+  "MegaDeal is launching in Auckland first. Join for launch updates, or claim up to 6 months free advertising for your business — 0% commission.";
 
 export const metadata: Metadata = {
   title: TITLE,

@@ -6,7 +6,7 @@ import { fredoka, plusJakartaSans } from "@/lib/fonts";
 export const metadata: Metadata = {
   title: "Careers",
   description:
-    "MegaDeal is a small team helping local NZ businesses reach new customers without a cut of sales — see what we look for and how to get in touch about future roles.",
+    "MegaDeal is a small team helping local NZ businesses reach new customers without a cut of sales. See what we look for and how to get in touch.",
   alternates: { canonical: `${SITE_URL}/careers` },
 };
 

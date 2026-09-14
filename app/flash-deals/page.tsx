@@ -31,8 +31,17 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/flash-deals`,
     siteName: SITE_NAME,
     type: "website",
+    // Named explicitly. Every other page picks up app/opengraph-image.tsx
+    // automatically, but this route's own openGraph block was resolving
+    // without any image, so a shared link came through as a bare grey card
+    // — the one context where the picture is most of the click.
+    images: [`${SITE_URL}/opengraph-image`],
   },
-  twitter: { card: "summary", title: `Flash Deals | ${SITE_NAME}` },
+  twitter: {
+    card: "summary_large_image",
+    title: `Flash Deals | ${SITE_NAME}`,
+    images: [`${SITE_URL}/opengraph-image`],
+  },
 };
 
 export default async function FlashDealsPage() {
