@@ -1,8 +1,29 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+
+/**
+ * Composes the opening of a "this deal wasn't honoured" report from the
+ * link on a deal page, so the message arrives naming the deal instead of
+ * as "a deal I saw didn't work", which costs an email round-trip before
+ * anything can be looked into.
+ *
+ * Deliberately NOT a free-text ?message= parameter. That would let anyone
+ * put arbitrary prose in front of a visitor under MegaDeal's own branding
+ * and invite them to send it. Only a slug is accepted, only the characters
+ * a slug can contain survive, and the sentence around it is written here.
+ * The person still reads and edits the whole thing before sending.
+ */
+function reportPrefill(params: URLSearchParams): string {
+  const slug = (params.get("deal") || "").replace(/[^a-zA-Z0-9-]/g, "").slice(0, 120);
+  if (!slug) return "";
+  return `I'd like to report a problem with a MegaDeal offer.\n\nDeal: ${slug}\n\nWhat happened:\n`;
+}
 
 export default function ContactForm() {
+  const searchParams = useSearchParams();
+  const prefill = reportPrefill(new URLSearchParams(searchParams?.toString() ?? ""));
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +99,9 @@ export default function ContactForm() {
           required
           name="message"
           rows={5}
+          // defaultValue, not value: this seeds the box and then gets out
+          // of the way, so the person can rewrite any of it.
+          defaultValue={prefill}
           className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
         />
       </div>

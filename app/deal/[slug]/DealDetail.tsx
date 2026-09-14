@@ -437,6 +437,54 @@ export default function DealDetail({
                 </div>
               )}
             </div>
+
+            {/* The question this site never answered.
+                
+                Nothing is bought here: there is no voucher, no receipt and
+                no checkout, so a customer weighing up a deal has nothing to
+                wave at the counter and no idea what happens if the business
+                shrugs. The panel above says what to do to redeem — but only
+                after "Get this deal" is pressed, which is after the moment
+                of doubt, not during it. This sits under the button, always
+                visible, and says the same three things on every deal.
+
+                Every line is something that is actually true: deals are
+                created as "Pending Approval" and only an admin moves them
+                live (app/api/deals/create), payment is direct to the
+                business by design, and the report link goes somewhere that
+                exists and arrives naming this deal. Nothing here promises
+                an outcome MegaDeal cannot deliver — no refund, no
+                guarantee, no cover. It says what is real, which for an
+                unfamiliar site is worth more than a badge. */}
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                How MegaDeal works
+              </p>
+              <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-slate-600">
+                <li>
+                  🎟️ <span className="font-semibold text-slate-700">Nothing to buy here.</span> You pay{" "}
+                  {deal.businessName || "the business"} directly at the deal price.
+                </li>
+                <li>
+                  ✅ <span className="font-semibold text-slate-700">We check every deal</span> before it
+                  goes live.
+                </li>
+                <li>
+                  🛟 Deal not honoured?{" "}
+                  {preview ? (
+                    <span className="font-semibold text-brand-700">Tell us</span>
+                  ) : (
+                    <Link
+                      href={`/contact?deal=${encodeURIComponent(deal.slug)}`}
+                      className="font-semibold text-brand-700 underline underline-offset-2 hover:text-brand-800"
+                    >
+                      Tell us
+                    </Link>
+                  )}{" "}
+                  and we&apos;ll look into it.
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
