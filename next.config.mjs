@@ -76,6 +76,11 @@ const nextConfig = {
         "https://www.google.com https://www.gstatic.com", // reCAPTCHA Enterprise
         "https://connect.facebook.net",                   // Meta Pixel
         "https://www.googletagmanager.com",               // GA4
+        // Cloudflare injects its Web Analytics beacon into every response
+        // itself. It appears in no source file, so nothing in this repo
+        // could have revealed it — only loading the live site with the
+        // policy enforcing did.
+        "https://static.cloudflareinsights.com",
       ].filter(Boolean).join(" "),
       // Tailwind ships as a stylesheet, but Next still injects inline
       // <style> during hydration, so this cannot be tightened either.
@@ -104,6 +109,7 @@ const nextConfig = {
         "https://www.google.com",                         // reCAPTCHA
         "https://www.facebook.com",
         "https://www.google-analytics.com https://*.analytics.google.com",
+        "https://cloudflareinsights.com",                 // where the beacon reports to
       ].join(" "),
       // Two different iframes, and missing the second would break auth.
       //
