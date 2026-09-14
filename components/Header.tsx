@@ -24,11 +24,14 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
 
-  /** The wordmark, sized by the caller. `em`-based sizing on the vector
-   *  Logo is what lets one className drive both variants, so the PNG is
-   *  given a matching height and an auto width rather than fixed pixels. */
+  /**
+   * The coming-soon page deliberately uses the transparent vector lockup:
+   * it matches the refreshed purple/lavender brand direction and lets the
+   * mascot-to-wordmark spacing scale cleanly with CSS. The launched site
+   * continues to use the supplied production artwork whenever available.
+   */
   const brand = (sizeClass: string) =>
-    logoSrc ? (
+    !isComingSoon && logoSrc ? (
       <Image
         src={logoSrc}
         alt="MegaDeal"
@@ -68,14 +71,12 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
   if (isComingSoon) {
     return (
       <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
-        {/* Both children are shrink-0, so the row can't absorb an overflow:
-            at 390px a 220px logo plus the full-width button overran the
-            viewport by 36px and scrolled the whole page sideways. The logo
-            steps down and the button drops "Business" on the smallest
-            screens, where the context is obvious anyway. */}
-        <div className="mx-auto flex min-h-[78px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-2 sm:gap-5 sm:px-8 lg:min-h-[96px] lg:px-10 xl:px-12">
+        {/* One responsive header, not separate desktop/mobile markup. The
+            larger lockup still leaves enough room for the compact sign-in
+            action on narrow phones and grows substantially on desktop. */}
+        <div className="mx-auto flex min-h-[92px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[108px] sm:gap-5 sm:px-8 lg:min-h-[122px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
-            {brand("max-h-[38px] text-[26px] sm:max-h-[50px] sm:text-[34px] lg:max-h-[58px] lg:text-[40px]")}
+            {brand("text-[34px] sm:text-[43px] lg:text-[50px] xl:text-[54px]")}
           </Link>
 
           <Link
