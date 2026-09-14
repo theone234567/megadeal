@@ -393,7 +393,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   try {
     base = (await adminClient.items.get("Merchants", existing._id)) || existing;
   } catch (err) {
+    // Falling back to `existing` here would undo the increment that just
+    // succeeded: the full-item update below writes every field from this
+    // object, and `existing` still holds the balance as it was before.
+    // That is the exact bug this ordering exists to prevent, so the
+    // fallback carries the balance forward rather than the stale one. It
+    // can still lose a debit that landed in the same moment — the narrow
+    // window the re-read is there to close — but it cannot lose ours.
     console.error("[admin/merchants] re-read before update failed", err);
+    base = creditsApplied
+      ? { ...existing, creditsBalance: existingCredits + creditsDelta }
+      : existing;
   }
 
   const updated = await adminClient.items.update("Merchants", {
