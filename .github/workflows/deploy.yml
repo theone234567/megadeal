@@ -79,6 +79,52 @@ jobs:
         env:
           NEXT_PUBLIC_SITE_URL: https://megadeal.co.nz
 
+      # Screenshots of / , /coming-soon, /list-your-business, /portal and
+      # /megashop at four widths, uploaded as a build artifact for a human
+      # to glance at — never a reason to fail this job. See the long
+      # comment at the top of scripts/capture-screenshots.mjs for why this
+      # is deliberately artifacts-for-review rather than a pixel-diff gate:
+      # short version, this project is still in active design iteration,
+      # a strict visual assertion sitting in front of the only deploy path
+      # would need re-approving after nearly every real change, and two of
+      # the five pages need live Wix data or a signed-in session this job
+      # doesn't have anyway.
+      #
+      # Runs against the actual Cloudflare Workers runtime (opennextjs
+      # preview, i.e. workerd/Miniflare), not `next start` — deliberately.
+      # A real bug shipped once that rendered correctly under `next start`
+      # and was broken in production, because the two runtimes disagree
+      # about what's available at request time (see lib/megadealAssets.ts).
+      # A screenshot pass against `next start` would have shown the site
+      # "working" the entire time that bug was live; this is the local
+      # environment that actually would have caught it.
+      #
+      # Reuses the .open-next output the Build step above already
+      # produced — calling the opennextjs CLI directly, not `npm run
+      # cf:preview`, which would rebuild everything from scratch.
+      - name: Capture screenshots (non-blocking)
+        continue-on-error: true
+        run: |
+          npx playwright install --with-deps chromium
+          npx opennextjs-cloudflare preview > /tmp/preview.log 2>&1 &
+          for i in $(seq 1 40); do
+            curl -s -o /dev/null http://localhost:8787/coming-soon && break
+            sleep 3
+          done
+          npm run screenshots
+        env:
+          NEXT_PUBLIC_SITE_URL: https://megadeal.co.nz
+
+      - name: Upload screenshots
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshot-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Deploy
         if: steps.creds.outputs.ready == 'true'
         run: npx opennextjs-cloudflare deploy

@@ -37,11 +37,11 @@ describe("getMegadealArt", () => {
     // Values, not just "didn't throw": a version of this bug that quietly
     // returned all-null while still avoiding fs would pass a weaker test
     // and still ship a page full of SVG fallbacks.
-    expect(art.logo).toBe("/megadeal/megadeal-logo.png");
-    expect(art.aucklandCard).toBe("/megadeal/hero-auckland-card.png");
-    expect(art.mascotBigDeals).toBe("/megadeal/mascot-big-deals.png");
-    expect(art.mascotWave).toBe("/megadeal/mascot-wave.png");
-    expect(art.mascotJump).toBe("/megadeal/mascot-jump.png");
+    expect(art.logo).toBe("/megadeal/megadeal-logo.webp");
+    expect(art.aucklandCard).toBe("/megadeal/hero-auckland-card.webp");
+    expect(art.mascotBigDeals).toBe("/megadeal/mascot-big-deals.webp");
+    expect(art.mascotWave).toBe("/megadeal/mascot-wave.webp");
+    expect(art.mascotJump).toBe("/megadeal/mascot-jump.webp");
   });
 
   it("HERO_PHOTO resolves the same way, for the same reason", async () => {

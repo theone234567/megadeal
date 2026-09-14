@@ -7,11 +7,11 @@
 import type { MegadealArt } from "./megadealAssets";
 
 export const MEGADEAL_ART: MegadealArt = {
-  "logo": "/megadeal/megadeal-logo.png",
-  "aucklandCard": "/megadeal/hero-auckland-card.png",
-  "mascotBigDeals": "/megadeal/mascot-big-deals.png",
-  "mascotWave": "/megadeal/mascot-wave.png",
-  "mascotJump": "/megadeal/mascot-jump.png"
+  "logo": "/megadeal/megadeal-logo.webp",
+  "aucklandCard": "/megadeal/hero-auckland-card.webp",
+  "mascotBigDeals": "/megadeal/mascot-big-deals.webp",
+  "mascotWave": "/megadeal/mascot-wave.webp",
+  "mascotJump": "/megadeal/mascot-jump.webp"
 };
 
 /** Real Auckland photography, if public/images/auckland-hero.* exists —

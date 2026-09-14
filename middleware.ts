@@ -1,69 +1,50 @@
-import { createClient, OAuthStrategy } from "@wix/sdk";
 import { NextResponse, type NextRequest } from "next/server";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
 
-const WIX_CLIENT_ID =
-  process.env.NEXT_PUBLIC_WIX_CLIENT_ID || "a5df1008-85ea-4479-8a49-8b0576ae9714";
-
-export async function middleware(request: NextRequest) {
+/**
+ * Pre-launch gate only. This used to also proactively fetch and cookie a
+ * Wix visitor token for any request with no "session" cookie yet — a live
+ * call to Wix's OAuth endpoint, capped at 1.2s, sitting in front of every
+ * first-touch page load (and, since that cookie carried no maxAge, every
+ * new browser session, not just first-ever visits).
+ *
+ * It bought one thing: WixProvider's client-side Wix client could start
+ * with a pre-seeded visitor token instead of generating its own on first
+ * use. Nothing else ever read that cookie — checked every server route
+ * and every component in this codebase; the only consumer was that one
+ * optional constructor argument. And the client already generates its own
+ * visitor tokens on demand when something actually needs them (Custom
+ * Login's register/login/verify, or a captcha site key) — confirmed by
+ * how sign-in/sign-up already worked before this cookie existed for
+ * anything. The overwhelming majority of page views — someone browsing
+ * deals, reading a static page — never touch a Wix visitor token at all.
+ *
+ * So this was a guaranteed, synchronous cost on the critical path of
+ * nearly every request, buying a client-side optimization only a minority
+ * of visits ever cashed in. Worse for SEO than it looks: Core Web Vitals
+ * field data (TTFB in particular) comes from real visitor traffic and
+ * factors into ranking, so this was working against the SEO fixes
+ * elsewhere in this codebase, quietly, since a bounded 1.2s timeout never
+ * surfaces as a visible error.
+ *
+ * Removed rather than tuned. The token generation still happens — just
+ * lazily, client-side, only in the three flows that actually call
+ * client.auth (MerchantSignupForm, MerchantLoginForm, /login-callback) —
+ * exactly where ChatGPT's original review of this codebase suggested
+ * deferring it to.
+ */
+export function middleware(request: NextRequest) {
   if (!SITE_LAUNCHED && request.nextUrl.pathname === "/") {
     return NextResponse.redirect(new URL("/coming-soon", request.url));
-  }
-
-  if (!request.cookies.get("session")) {
-    const response = NextResponse.next();
-    const wixClient = createClient({
-      auth: OAuthStrategy({ clientId: WIX_CLIENT_ID }),
-    });
-    // generateVisitorTokens is a live call to Wix's (documented elsewhere
-    // in this codebase as flaky) visitor OAuth endpoint. Every first-time
-    // visitor with no session cookie yet — someone opening the site fresh
-    // from a Google search result, or following an email confirmation
-    // link's redirect — used to sit on a blank/loading screen for however
-    // long that call took, however long that was. This cookie only
-    // pre-seeds a convenience for WixProvider/lib/memberAuth.ts; the
-    // client-side Wix SDK (lib/wixClient.ts) generates its own visitor
-    // tokens on demand if none exist, so it's safe to give up after a
-    // short timeout and let the page render without one rather than block
-    // first paint on a possibly-slow external API.
-    try {
-      const tokens = await Promise.race([
-        wixClient.auth.generateVisitorTokens(),
-        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 1200)),
-      ]);
-      response.cookies.set("session", JSON.stringify(tokens), {
-        path: "/",
-        sameSite: "lax",
-        // Deliberately NOT httpOnly: the browser-side Wix SDK reads these
-        // tokens directly (see lib/wixClient.ts / WixProvider). But they
-        // are still credentials, so keep them off plaintext HTTP in
-        // production. Left off locally so http://localhost dev still works.
-        secure: process.env.NODE_ENV === "production",
-      });
-    } catch {
-      // Slow or failed — skip pre-seeding the cookie this once rather than
-      // hold up the page; the next request without one just retries.
-    }
-    return response;
   }
 }
 
 export const config = {
-  // Only real pages need a visitor session cookie (WixProvider's client-side
-  // reads it, and lib/memberAuth.ts re-derives the signed-in merchant from
-  // it on API routes) — by the time any fetch() call hits /api/*, the
-  // cookie's already set from loading the page itself. Static/generated
-  // utility routes (sitemap, robots, manifest, icons, and every API route)
-  // never need this middleware to run at all, and skipping it removes a
-  // live Wix API round-trip from their critical path — including, notably,
-  // Google's sitemap crawler, which has little patience for that extra
-  // network hop on what should be a trivial static file. The first
-  // alternation catches opengraph-image/icon routes wherever they're
-  // nested (e.g. app/list-your-business/opengraph-image.tsx serving
-  // /list-your-business/opengraph-image, not just the root /opengraph-image) —
-  // Next.js lets any route segment override these with its own file, and
-  // each one still deserves the same bypass a social-media link scraper
-  // benefits from.
+  // Unchanged: static/generated utility routes and every API route never
+  // need this middleware to run at all — skipping it keeps Google's
+  // sitemap crawler (and everything else hitting those paths) off this
+  // function's critical path entirely, which matters even more now that
+  // this function is meant to be the fast, boring case for everyone else.
   matcher: [
     "/((?!(?:.*/)?(?:favicon\\.ico|sitemap\\.xml|robots\\.txt|manifest\\.webmanifest|opengraph-image|icon|security\\.txt)(?:/.*)?$)(?!_next/static|_next/image|.well-known|api/).*)",
   ],

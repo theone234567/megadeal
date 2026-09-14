@@ -220,7 +220,7 @@ export default async function ComingSoonPage() {
         <div
           className={`${shell} grid items-center gap-6 pb-0 pt-7 sm:gap-10 sm:py-12 lg:min-h-[590px] lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:py-14`}
         >
-          <div className="lg:max-w-[640px]">
+          <div className="order-1 lg:max-w-[640px]">
             <div className="inline-flex rounded-full bg-[#e81ea3] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white shadow-sm sm:px-5 sm:text-sm">
               Launching first in Auckland
             </div>
@@ -287,7 +287,7 @@ export default async function ComingSoonPage() {
             keeps the mascot inside the picture at a size that doesn't
             bury the skyline.
           */}
-          <div className="relative -mx-5 pb-0 sm:mx-auto sm:w-full sm:max-w-[720px] sm:pb-8 sm:pr-7 lg:pt-2">
+          <div className="relative order-3 -mx-5 pb-0 sm:mx-auto sm:w-full sm:max-w-[720px] sm:pb-8 sm:pr-7 lg:order-2 lg:pt-2">
             {hasComposedCard ? (
               /* The card as delivered: a plain box at the artwork's own
                  native ratio (4/3, exactly — it fills that canvas corner to
@@ -295,26 +295,21 @@ export default async function ComingSoonPage() {
                  no added border, no clip-path. The tilt, border and shadow
                  a viewer sees are the image's own pixels, not CSS built
                  around them, so there is nothing left to double up. */
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
+              /* z-10: keeps this above the mobile in-picture mascot and
+                 any future overlay; the desktop mascot overhangs it and
+                 sits at z-30, in front, by design.
+                 aspect-[16/10] on mobile only, back to the photo's own
+                 native aspect-[4/3] from sm: up — a shorter crop asked
+                 for specifically on mobile, where it was costing more
+                 scroll than its own visual payoff justified; the desktop
+                 presentation was already working and stays as is. */
+              <div className="relative z-10 aspect-[16/10] w-full overflow-hidden rounded-2xl sm:aspect-[4/3]">
                 <img
                   src={art.aucklandCard as string}
                   alt="Auckland city and harbour"
                   className="h-full w-full object-cover"
                   fetchPriority="high"
                 />
-
-                <div className="absolute right-3 top-3 rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#650fc7] shadow-sm sm:right-6 sm:top-5 sm:px-5 sm:py-2 sm:text-sm sm:tracking-[0.13em]">
-                  Auckland first
-                </div>
-
-                <div className="absolute bottom-3 left-4 hidden max-w-[70%] rounded-[14px] bg-[#321373]/92 px-4 py-3 text-white shadow-lg backdrop-blur-sm sm:bottom-5 sm:left-7 sm:block sm:max-w-[380px] sm:rounded-[18px] sm:px-6 sm:py-4">
-                  <p className={`${fredoka.className} text-base font-bold sm:text-xl`}>
-                    Same city. More to discover.
-                  </p>
-                  <p className="mt-0.5 text-[11px] text-white/85 sm:mt-1 sm:text-sm">
-                    Local offers. Local businesses. Better value.
-                  </p>
-                </div>
 
                 {/* Mobile: inside the picture, clear of both edges so the
                     mascot's tag can't be clipped. */}
@@ -349,19 +344,6 @@ export default async function ComingSoonPage() {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#241044]/16 via-transparent to-transparent" />
 
-                  <div className="absolute right-3 top-3 rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#650fc7] shadow-sm sm:right-7 sm:top-6 sm:-rotate-[1.5deg] sm:px-5 sm:py-2 sm:text-sm sm:tracking-[0.13em]">
-                    Auckland first
-                  </div>
-
-                  <div className="absolute bottom-3 left-4 hidden max-w-[70%] rounded-[14px] bg-[#321373]/92 px-4 py-3 text-white shadow-lg backdrop-blur-sm sm:bottom-6 sm:left-8 sm:block sm:max-w-[390px] sm:-rotate-[1.5deg] sm:rounded-[18px] sm:px-6 sm:py-4">
-                    <p className={`${fredoka.className} text-base font-bold sm:text-xl`}>
-                      Same city. More to discover.
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-white/85 sm:mt-1 sm:text-sm">
-                      Local offers. Local businesses. Better value.
-                    </p>
-                  </div>
-
                   {/* Mobile: inside the picture, clear of both edges so the
                       mascot's tag can't be clipped. */}
                   <MascotFigure
@@ -376,7 +358,15 @@ export default async function ComingSoonPage() {
               </div>
             )}
 
-            {/* Desktop: overhangs the frame, as designed. */}
+            {/* Desktop: overhangs the frame, as designed.
+                A "legs tucked behind the card" version was tried here (z-0,
+                pulled up behind the card's opaque content) but this
+                artwork is a head/shoulders/tag bust with no legs drawn —
+                geometrically there was nothing distinct to hide, so it
+                just buried almost the whole character behind the card.
+                Reverted to the fully-visible overhang until a full-body
+                mascot pose (or a card photo with the mascot already
+                composited in) makes that effect possible. */}
             <MascotFigure
               src={art.mascotBigDeals}
               fallbackSrc="/brand/deal-hunter-elephant.svg"
@@ -387,66 +377,79 @@ export default async function ComingSoonPage() {
               className="absolute -bottom-5 -right-8 z-30 hidden h-auto w-[185px] drop-shadow-xl sm:block lg:-bottom-3 lg:w-[245px] lg:drop-shadow-[0_18px_24px_rgba(38,8,87,.28)] 2xl:w-[275px]"
             />
           </div>
-        </div>
-      </section>
 
-      {/*
-        Two audience cards — the page's "which are you?" fork.
+          {/*
+            Two audience cards — the page's "which are you?" fork, and now
+            a grid item in the hero itself rather than a separate section
+            after it.
 
-        Each is a single link rather than a card containing a button, so
-        the whole tile is one large tap target and the inner pill is a
-        <span>. On phones they collapse to a compact row (icon, question,
-        one-line action) because at full height the business CTA sat 1.4
-        screens down on an iPhone 13 — a visitor saw the pitch and the
-        illustration, but no choice at all, in the first screen.
-      */}
-      <section className={`${shell} relative z-20 pt-4 sm:pt-6 lg:-mt-7 lg:pt-0`}>
-        <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:gap-5">
-          <a
-            href="#launch-updates"
-            className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#e81ea3]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[150px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
-          >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ffe1f2] text-[#e81ea3] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
-              <TicketIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <h2
-                className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-2xl md:text-3xl`}
+            Order, not just position, is what changed. This used to follow
+            the hero unconditionally in DOM order — meaning on a phone,
+            where everything stacks in one column, it followed the entire
+            photo card too: on an iPhone SE it sat fully below the fold, on
+            an iPhone 13 only its top sliver was visible. The photo is
+            atmospheric; this is the actual decision a visitor came here to
+            make, and it was consistently losing the race to be seen first.
+            order-2 (mobile) puts it right after the pitch and before the
+            photo; lg:order-3 with lg:col-span-2 restores exactly the
+            previous desktop arrangement — text and photo side by side,
+            this spanning both beneath them, same overlap as before.
+
+            Each card is a single link rather than a card containing a
+            button, so the whole tile is one large tap target and the
+            inner pill is a <span>. On phones they collapse to a compact
+            row (icon, question, one-line action) for the same reason as
+            the reorder: get to a choice fast.
+          */}
+          <div className="order-2 -mx-5 px-5 pt-4 sm:mx-0 sm:px-0 sm:pt-6 lg:order-3 lg:col-span-2 lg:-mt-7 lg:pt-0">
+            <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:gap-5">
+              <a
+                href="#launch-updates"
+                className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#e81ea3]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[150px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
               >
-                Love a great deal?
-              </h2>
-              <span className="mt-1.5 hidden max-w-[500px] text-[15px] leading-6 text-slate-600 sm:block lg:mt-2">
-                Join free to get early access to local offers when MegaDeal launches in Auckland.
-              </span>
-              <span className="mt-0.5 block text-[13px] font-extrabold text-[#e81ea3] underline-offset-4 group-hover:underline sm:mt-2.5 sm:text-sm">
-                Get launch updates →
-              </span>
-            </span>
-          </a>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ffe1f2] text-[#e81ea3] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
+                  <TicketIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <h2
+                    className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-2xl md:text-3xl`}
+                  >
+                    Love a great deal?
+                  </h2>
+                  <span className="mt-1.5 hidden max-w-[500px] text-[15px] leading-6 text-slate-600 sm:block lg:mt-2">
+                    Join free to get early access to local offers when MegaDeal launches in Auckland.
+                  </span>
+                  <span className="mt-0.5 block text-[13px] font-extrabold text-[#e81ea3] underline-offset-4 group-hover:underline sm:mt-2.5 sm:text-sm">
+                    Get launch updates →
+                  </span>
+                </span>
+              </a>
 
-          <Link
-            href="/list-your-business"
-            className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#650fc7]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[150px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
-          >
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#650fc7] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
-              <StoreIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <h2
-                className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-2xl md:text-3xl`}
+              <Link
+                href="/list-your-business"
+                className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#650fc7]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[150px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
               >
-                Run a local business?
-              </h2>
-              <span className="mt-1.5 hidden max-w-[540px] text-[15px] leading-6 text-slate-600 sm:block lg:mt-2">
-                Join before launch and reach new customers, fill quieter periods and get up to 6
-                months advertising free with 0% commission.*
-              </span>
-              <span className="mt-0.5 block text-[13px] font-extrabold text-[#650fc7] underline-offset-4 group-hover:underline sm:mt-2.5 sm:text-sm">
-                <span className="sm:hidden">Up to 6 months free →</span>
-                <span className="hidden sm:inline">Claim my free advertising →</span>
-              </span>
-            </span>
-          </Link>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#650fc7] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
+                  <StoreIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <h2
+                    className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-2xl md:text-3xl`}
+                  >
+                    Run a local business?
+                  </h2>
+                  <span className="mt-1.5 hidden max-w-[540px] text-[15px] leading-6 text-slate-600 sm:block lg:mt-2">
+                    Join before launch and reach new customers, fill quieter periods and get up to 6
+                    months advertising free with 0% commission.*
+                  </span>
+                  <span className="mt-0.5 block text-[13px] font-extrabold text-[#650fc7] underline-offset-4 group-hover:underline sm:mt-2.5 sm:text-sm">
+                    <span className="sm:hidden">Up to 6 months free →</span>
+                    <span className="hidden sm:inline">Claim my free advertising →</span>
+                  </span>
+                </span>
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 

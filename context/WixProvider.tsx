@@ -1,6 +1,5 @@
 "use client";
 
-import Cookies from "js-cookie";
 import {
   createContext,
   useCallback,
@@ -30,22 +29,6 @@ interface WixContextValue {
 
 const WixContext = createContext<WixContextValue | null>(null);
 
-function readVisitorTokens() {
-  // Visitor tokens only. Member tokens live in an httpOnly cookie this
-  // cannot see — that's the point of the split — so the client built here
-  // is never a signed-in client, and nothing in the browser should expect
-  // it to be. Its job is the parts of the Wix SDK that genuinely have to
-  // run in the page: Custom Login's register/login/verify state machine,
-  // and the captcha site keys hanging off client.auth.
-  const raw = Cookies.get("session");
-  if (!raw) return undefined;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return undefined;
-  }
-}
-
 /**
  * MegaDeal is an advertising directory, not a payment processor — customers
  * never buy anything through the site, so there's no cart/checkout concept
@@ -53,7 +36,16 @@ function readVisitorTokens() {
  * portal) and gets passed down for the odd read that still wants it.
  */
 export function WixProvider({ children }: { children: React.ReactNode }) {
-  const client = useMemo(() => createWixBrowserClient(readVisitorTokens()), []);
+  // No pre-seeded visitor tokens: middleware used to fetch and cookie one
+  // speculatively on every first-touch request, at a real cost to every
+  // visitor for a benefit only the sign-in/sign-up flows below ever
+  // cashed in (see middleware.ts). The SDK generates its own on demand,
+  // lazily, the first time one of those flows actually calls client.auth
+  // — this client is never a signed-in client regardless (member tokens
+  // live in an httpOnly cookie this can't see), so a visitor token only
+  // ever mattered for Custom Login's register/login/verify state machine
+  // and the captcha site keys hanging off client.auth in the first place.
+  const client = useMemo(() => createWixBrowserClient(), []);
   const [member, setMember] = useState<SessionMember | null | undefined>(undefined);
 
   const fetchMember = useCallback(async () => {

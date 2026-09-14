@@ -37,8 +37,11 @@ later. Confirm which build is live at `/api/version`.
 
 ## Format notes
 
-PNG is what the pack was delivered as and what the table assumes. `.webp`
-and `.avif` are also accepted, in that order of preference — a smaller
-export can be swapped in later with no code change. Keep transparent
+PNG is what the pack was originally delivered as, but the files actually
+committed here are `.webp` — the PNGs were 8-11x larger for the same look
+(a 2MB hero photo alone) and were the slowest thing on the page to load.
+Resolution order is PNG, then `.webp`, then `.avif`, so dropping in a new
+PNG under one of the names below still works and simply takes priority
+over the existing `.webp` until that's cleaned up too. Keep transparent
 backgrounds on the mascots: they sit over a purple gradient and a white
 box behind them would show.
