@@ -60,6 +60,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Already confirmed and still on the list: there is nothing to confirm,
+  // so sending another "confirm your email" would be asking them to redo
+  // something they've already done. The response is the same either way —
+  // whether an address is subscribed isn't something this endpoint should
+  // tell whoever typed it in.
+  if (tokens.alreadySubscribed) {
+    return NextResponse.json({ ok: true });
+  }
+
   try {
     const confirmUrl = `${SITE_URL}/api/email-signup/verify?token=${tokens.verifyToken}`;
     const unsubscribeUrl = `${SITE_URL}/api/email-signup/unsubscribe?token=${tokens.unsubscribeToken}`;

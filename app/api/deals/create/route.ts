@@ -269,12 +269,20 @@ export async function POST(req: NextRequest) {
   // charged for the one they already have. A missing ledger line is a far
   // smaller problem than a duplicate charge, and both failures are loud in
   // the logs rather than silent.
+  // incrementCreditsAtomically doesn't throw — it reports failure by
+  // returning false — so the try/catch that used to wrap this call caught
+  // nothing and a refused debit passed for a successful one. The merchant
+  // kept the credit and got the deal, silently.
+  let debited = false;
   try {
-    await incrementCreditsAtomically(adminClient, merchant._id, -1);
+    debited = await incrementCreditsAtomically(adminClient, merchant._id, -1);
   } catch (err) {
+    console.error("[deals/create] credit debit threw", err);
+  }
+  if (!debited) {
     console.error(
-      `[deals/create] CREDIT NOT DEDUCTED for merchant ${merchant._id} on deal ${deal?._id}`,
-      err
+      `[deals/create] CREDIT NOT DEDUCTED for merchant ${merchant._id} on deal ${deal?._id} — ` +
+        `the deal is live and in review but the balance is unchanged.`
     );
   }
 
@@ -282,7 +290,10 @@ export async function POST(req: NextRequest) {
     await logMerchantActivity(adminClient, {
       merchantEmail: member.email,
       type: "credit",
-      amount: -1,
+      // Only claim the charge that actually happened. A -1 line against an
+      // unchanged balance is worse than no line: it sends the merchant
+      // looking for a credit that was never taken.
+      amount: debited ? -1 : 0,
       description: `Deal created: "${dealName}"`,
     });
   } catch (err) {

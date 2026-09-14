@@ -2,6 +2,7 @@ import "server-only";
 import { createWixAdminClient } from "./wixAdmin";
 import { mapProductToDeal } from "./mapDeal";
 import { isMegaShopProduct } from "./categories";
+import { searchAllProducts } from "./searchAllProducts";
 import type { Deal } from "./types";
 
 const FULL_FIELDS = ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"];
@@ -15,11 +16,8 @@ const FULL_FIELDS = ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"];
 export async function fetchMegaShopProductsForServer(): Promise<Deal[]> {
   try {
     const adminClient = createWixAdminClient();
-    const res = await adminClient.productsV3.searchProducts({
-      cursorPaging: { limit: 100 },
-      fields: FULL_FIELDS,
-    } as any);
-    const products = ((res as any).products ?? []).filter(isMegaShopProduct);
+    const all = await searchAllProducts(adminClient, FULL_FIELDS, "MegaShop catalogue");
+    const products = all.filter(isMegaShopProduct);
     return products.map((p: any) => mapProductToDeal(p, {}));
   } catch (err) {
     console.error("[fetchMegaShopProductsForServer] failed", err);

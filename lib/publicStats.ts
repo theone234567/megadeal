@@ -48,7 +48,20 @@ export async function getSignupStats(): Promise<SignupStats | null> {
     // unsubscribed is only ever explicitly set true on opt-out — filtering
     // in JS (rather than .eq("unsubscribed", false) in the query) avoids
     // excluding rows where it was never set at all.
-    const waitlistCount = signups.filter((i: any) => !i.unsubscribed).length;
+    //
+    // Counted by distinct address. Signups were inserted without a dedupe
+    // check until recently, so one person who signed up twice is two rows —
+    // and this number is shown to businesses as real subscribers, which
+    // makes quietly counting them twice the worst kind of wrong. New rows
+    // are deduped at the source now (lib/emailSignups.ts); this stops the
+    // ones already in the collection from inflating the figure.
+    const distinct = new Set<string>();
+    for (const row of signups as any[]) {
+      if (row.unsubscribed) continue;
+      const email = String(row.email || "").trim().toLowerCase();
+      if (email) distinct.add(email);
+    }
+    const waitlistCount = distinct.size;
 
     return { merchantCount, waitlistCount };
   } catch (err) {

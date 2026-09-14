@@ -276,16 +276,36 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const adminSetCredits = patch.creditsBalance !== undefined;
   const existingCredits = Number(existing.creditsBalance) || 0;
 
-  // Base credits: whatever the admin explicitly set this save, or the
-  // existing balance if they left it untouched. Captured before newCredits
-  // picks up intro/referral additions below, so the ledger entry only
-  // reflects the admin's own manual adjustment, not those.
-  let newCredits = adminSetCredits ? patch.creditsBalance : existingCredits;
-  const adminAdjustDelta = adminSetCredits ? patch.creditsBalance - existingCredits : 0;
+  // Credits are deliberately never written through the full-item update
+  // further down. That update rewrites every field of the record from a
+  // read taken at the top of this request, and credits have a second,
+  // independent writer: /api/deals/create debits one atomically the moment
+  // a merchant submits a deal. A full-item write would silently hand that
+  // spent credit back from the stale read — the merchant gets a free deal
+  // and nothing anywhere records why the numbers stopped adding up.
+  //
+  // So every credit change here is expressed as a delta and applied with
+  // INCREMENT_FIELD, which composes with a concurrent debit instead of
+  // overwriting it. An explicit number typed by the admin becomes a delta
+  // against the balance they were looking at when they typed it: if a deal
+  // is submitted in the same moment, the result is the admin's intended
+  // change applied on top of that debit, rather than the debit being
+  // undone. That is what "set their balance to 5" actually means.
+  const adminAdjustDelta = adminSetCredits ? Number(patch.creditsBalance) - existingCredits : 0;
+  delete patch.creditsBalance;
+
   let introGranted = 0;
   let referralBonusGranted = 0;
   let promoGranted = 0;
   let referrer: any = null;
+  let referrerCredited = false;
+
+  // Collected non-fatal problems. The merchant record still saves when one
+  // of these happens, so they mustn't fail the request — but they also
+  // mustn't vanish into server logs, since an admin has no other way to
+  // notice that a merchant never got their "you're approved" email or that
+  // a credit grant didn't land. Surfaced to the caller as `warnings`.
+  const warnings: string[] = [];
 
   // First-time approval: grant a small number of free introductory credits
   // so a newly-approved merchant can submit a deal straight away, without
@@ -294,7 +314,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   // deliberate manual entry) and the merchant currently has none.
   if (becomingApproved && !adminSetCredits && existingCredits === 0) {
     introGranted = INTRO_CREDITS;
-    newCredits += introGranted;
   }
 
   const enteredCode = String(existing.couponCode || "").trim().toUpperCase();
@@ -305,48 +324,87 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (becomingApproved && enteredCode === PROMO_CODE) {
     if (await claimPromoAtomically(adminClient, existing._id)) {
       promoGranted = PROMO_CODE_CREDITS;
-      newCredits += promoGranted;
       patch.promoRewarded = true;
     }
-  } else if (becomingApproved && existing.couponCode) {
+  } else if (becomingApproved && enteredCode) {
     // Referral bonus: if this merchant signed up with someone else's referral
     // code, both sides get a bonus once this merchant is approved. The claim
     // itself is an atomic conditional patch (see claimReferralAtomically) so
     // concurrent approve requests for the same merchant can't both succeed.
+    //
+    // Matched on the upper-cased code, not the raw string the business
+    // typed. generateReferralCode only ever produces upper case, and Wix
+    // Data's eq() is case-sensitive — so a referrer who told someone their
+    // code over the phone, and had it typed back in lower case, simply
+    // never got paid. Nothing failed visibly; the bonus just didn't happen.
     const referrerResult = await adminClient.items
       .query("Merchants")
-      .eq("referralCode", existing.couponCode)
+      .eq("referralCode", enteredCode)
       .find();
     const candidate = (referrerResult.items ?? []).find((m: any) => m._id !== existing._id) || null;
     if (candidate && (await claimReferralAtomically(adminClient, existing._id))) {
       referrer = candidate;
       referralBonusGranted = REFERRAL_BONUS_CREDITS;
-      newCredits += referralBonusGranted;
       patch.referralRewarded = true;
       patch.referredBy = candidate.businessName || candidate.email || null;
       // The referrer isn't part of this record's own patch below, so their
       // credit bump is a separate atomic increment on their own record.
-      await incrementCreditsAtomically(adminClient, referrer._id, REFERRAL_BONUS_CREDITS);
+      //
+      // Whether it worked matters. The claim above is one-shot — it has
+      // already flipped referralRewarded, so this bonus can never be
+      // granted again — and the ledger line and the "you earned referral
+      // credits" email below would otherwise cheerfully tell the referrer
+      // about credits that were never added to their balance.
+      referrerCredited = await incrementCreditsAtomically(
+        adminClient,
+        referrer._id,
+        REFERRAL_BONUS_CREDITS
+      );
+      if (!referrerCredited) {
+        warnings.push(
+          `Referral bonus for ${referrer.businessName || referrer.email || referrer._id} FAILED to apply. ` +
+            `Add ${REFERRAL_BONUS_CREDITS} credits to them manually — this bonus cannot be granted again automatically.`
+        );
+      }
     }
   }
 
-  if (becomingApproved || adminSetCredits) {
-    patch.creditsBalance = newCredits;
+  // Credits first, then the record. Applying the delta before the
+  // full-item update means two things: a grant still lands if the update
+  // itself fails (the referral and promo claims above are one-shot, so a
+  // lost grant is lost for good), and the update reads back a balance that
+  // already includes it instead of writing a stale one straight back over.
+  const creditsDelta = adminAdjustDelta + introGranted + referralBonusGranted + promoGranted;
+  let creditsApplied = creditsDelta === 0;
+  if (creditsDelta !== 0) {
+    creditsApplied = await incrementCreditsAtomically(adminClient, existing._id, creditsDelta);
+    if (!creditsApplied) {
+      warnings.push(
+        `Credits were NOT changed (${creditsDelta > 0 ? "+" : ""}${creditsDelta} did not apply). ` +
+          `Everything else saved — set the balance again to retry.`
+      );
+    }
+  }
+
+  // Re-read so the full-item update carries the balance as it stands now,
+  // including the increment above and the atomic referral/promo claims,
+  // rather than the copy read at the top of this request.
+  let base = existing;
+  try {
+    base = (await adminClient.items.get("Merchants", existing._id)) || existing;
+  } catch (err) {
+    console.error("[admin/merchants] re-read before update failed", err);
   }
 
   const updated = await adminClient.items.update("Merchants", {
-    ...existing,
+    ...base,
     ...patch,
   });
 
-  // Collected non-fatal problems from here on: the merchant record itself
-  // already saved successfully above, so a notification failure shouldn't
-  // fail the request — but it also shouldn't vanish into server logs only,
-  // since an admin has no other way to notice a merchant never got their
-  // "you're approved" email. Surfaced to the caller as `warnings`.
-  const warnings: string[] = [];
-
-  if (adminAdjustDelta !== 0 && existing.email) {
+  // Every ledger line below is conditioned on creditsApplied: the feed is
+  // the merchant's only record of why their balance is what it is, and a
+  // line for credits that never arrived makes it worse than having none.
+  if (creditsApplied && adminAdjustDelta !== 0 && existing.email) {
     await logMerchantActivity(adminClient, {
       merchantEmail: existing.email,
       type: "credit",
@@ -354,7 +412,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       description: "Credits adjusted by admin",
     });
   }
-  if (introGranted > 0 && existing.email) {
+  if (creditsApplied && introGranted > 0 && existing.email) {
     await logMerchantActivity(adminClient, {
       merchantEmail: existing.email,
       type: "credit",
@@ -362,7 +420,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       description: "Free intro credits on approval",
     });
   }
-  if (referralBonusGranted > 0 && existing.email) {
+  if (creditsApplied && referralBonusGranted > 0 && existing.email) {
     await logMerchantActivity(adminClient, {
       merchantEmail: existing.email,
       type: "credit",
@@ -370,7 +428,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       description: "Referral bonus for signing up with a referral code",
     });
   }
-  if (promoGranted > 0 && existing.email) {
+  if (creditsApplied && promoGranted > 0 && existing.email) {
     await logMerchantActivity(adminClient, {
       merchantEmail: existing.email,
       type: "credit",
@@ -379,7 +437,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     });
   }
 
-  if (referrer) {
+  if (referrer && referrerCredited) {
     let referrerFresh: any = null;
     try {
       referrerFresh = await adminClient.items.get("Merchants", referrer._id);
@@ -426,7 +484,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   if (becomingApproved && existing.email) {
     try {
-      const totalGranted = introGranted + referralBonusGranted + promoGranted;
+      const totalGranted = creditsApplied ? introGranted + referralBonusGranted + promoGranted : 0;
       const safeName = escapeHtml(existing.businessName || "there");
       const creditsNote =
         totalGranted > 0

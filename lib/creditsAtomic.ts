@@ -29,8 +29,22 @@ export async function incrementCreditsAtomically(
         }),
       }
     );
-    return res.ok;
-  } catch {
+    if (!res.ok) {
+      // A rejected increment used to be indistinguishable from a successful
+      // one at every call site: the deal-creation debit is wrapped in a
+      // try/catch, but nothing here throws, so a refused debit meant a free
+      // deal and an untouched balance with no trace of either. Callers now
+      // act on the boolean; this makes the reason findable when they do.
+      const body = await res.text().catch(() => "");
+      console.error(
+        `[credits] increment of ${amount} on merchant ${merchantId} rejected (${res.status})`,
+        body.slice(0, 500)
+      );
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error(`[credits] increment of ${amount} on merchant ${merchantId} threw`, err);
     return false;
   }
 }

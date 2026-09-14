@@ -6,6 +6,7 @@ import { CATEGORY_NAME_BY_ID, isMegaShopProduct } from "./categories";
 import { mapMerchantToBusiness, applyBusinessToDeal, type PublicBusiness } from "./business";
 import { isDealLive } from "./dealVisibility";
 import { queryAllItems } from "./queryAll";
+import { searchAllProducts } from "./searchAllProducts";
 import type { Deal, DealStatus } from "./types";
 
 /**
@@ -82,10 +83,11 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
   try {
     const adminClient = createWixAdminClient();
     const [productsRes, dealsResult, merchantsResult] = await Promise.all([
-      adminClient.productsV3.searchProducts({
-        search: { cursorPaging: { limit: 100 } },
-        fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
-      } as any),
+      searchAllProducts(
+        adminClient,
+        ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
+        "deal listing"
+      ),
       // Drafts have no productId and every join below is by productId, so
       // they could never match — but an unbounded find() returns a default
       // page of rows, and drafts accumulating in that page would push real
@@ -96,9 +98,7 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
       queryAllItems(() => adminClient.items.query("Merchants"), "Merchants (deal listing)"),
     ]);
 
-    const products = ((productsRes as any).products ?? [])
-      .filter(Boolean)
-      .filter((p: any) => !isMegaShopProduct(p));
+    const products = productsRes.filter((p: any) => !isMegaShopProduct(p));
 
     const metaByProductId: Record<string, any> = {};
     for (const item of dealsResult.items ?? []) {
@@ -258,11 +258,8 @@ export async function fetchAllLiveDealSlugsForSitemap(): Promise<
 > {
   try {
     const adminClient = createWixAdminClient();
-    const res = await adminClient.productsV3.searchProducts({
-      cursorPaging: { limit: 100 },
-      fields: ["ALL_CATEGORIES_INFO"],
-    } as any);
-    const products = ((res as any).products ?? []).filter((p: any) => !isMegaShopProduct(p));
+    const allProducts = await searchAllProducts(adminClient, ["ALL_CATEGORIES_INFO"], "sitemap");
+    const products = allProducts.filter((p: any) => !isMegaShopProduct(p));
 
     // Same reasoning as above: filter to rows the productId join can use.
     const dealsResult = await adminClient.items
