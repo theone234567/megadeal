@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
@@ -12,6 +10,7 @@ import { getSignupStats } from "@/lib/publicStats";
 import AucklandSkylineArt from "@/components/comingSoon/AucklandSkylineArt";
 import MascotFigure from "@/components/megadeal/MascotFigure";
 import { getMegadealArt } from "@/lib/megadealAssets";
+import { HERO_PHOTO } from "@/lib/megadealAssetManifest.generated";
 import {
   CheckIcon,
   DumbbellIcon,
@@ -57,24 +56,17 @@ export const metadata: Metadata = {
  * Real photography beats the illustration whenever it exists.
  *
  * Drop a file at public/images/auckland-hero.(jpg|jpeg|webp|avif|png) and
- * the hero uses it instead of AucklandSkylineArt — no code change needed.
- * This page is statically prerendered, so the lookup runs once at build
- * time on Node, never in the Workers runtime.
+ * the hero uses it instead of AucklandSkylineArt — no code change needed,
+ * just a rebuild. Resolved at build time by
+ * scripts/generate-megadeal-manifest.mjs into HERO_PHOTO, not checked live
+ * here: this page awaits getSignupStats() below, which makes it a
+ * dynamic/revalidating route, and its top-level code genuinely re-runs
+ * inside the live Cloudflare Workers runtime on every render — where a
+ * direct fs.existsSync check silently fails every time (see the long
+ * comment in lib/megadealAssets.ts, which had the identical bug for the
+ * supplied mascot art).
  */
-function findHeroPhoto(): string | null {
-  const dir = path.join(process.cwd(), "public", "images");
-  for (const ext of ["avif", "webp", "jpg", "jpeg", "png"]) {
-    const file = `auckland-hero.${ext}`;
-    try {
-      if (fs.existsSync(path.join(dir, file))) return `/images/${file}`;
-    } catch {
-      // public/images may not exist yet — fall through to the illustration.
-    }
-  }
-  return null;
-}
-
-const heroPhoto = findHeroPhoto();
+const heroPhoto = HERO_PHOTO;
 
 /**
  * Supplied mascot / skyline artwork, resolved once at build time. Each
@@ -267,30 +259,17 @@ export default async function ComingSoonPage() {
             )}
 
             {/*
-              Both audiences get a way to act without scrolling. This
-              replaced a bar that slid in on scroll: a CTA that is simply
-              there from the first frame beats one the visitor has to
-              trigger, and it reads as part of the page rather than an
-              overlay sitting on top of it.
-
-              Business first and filled, because signing up supply is what
-              the pre-launch period is for; the deal-hunter action is the
-              outline button beside it.
+              No button row here on purpose. This used to carry its own
+              "Claim free advertising" / "Get launch updates" pair — the
+              exact same fork, to the exact same two destinations, as the
+              two-card section immediately below it. A visitor hit the same
+              decision twice in one screen before scrolling past the fold.
+              Cards, not buttons, are the singular fork now: same two
+              destinations, but with real explanatory copy per audience
+              instead of a bare three-word pill, and already designed to
+              sit hero-adjacent (see the negative margin pulling that
+              section up into this one on desktop, right below).
             */}
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center lg:mt-7">
-              <Link
-                href="/list-your-business"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[#e81ea3] px-7 text-sm font-extrabold text-white shadow-lg transition hover:bg-[#c7128a] active:scale-95 sm:h-[52px]"
-              >
-                Claim free advertising →
-              </Link>
-              <a
-                href="#launch-updates"
-                className="inline-flex h-12 items-center justify-center rounded-full border-2 border-white/70 px-7 text-sm font-extrabold text-white transition hover:border-white hover:bg-white/10 active:scale-95 sm:h-[52px]"
-              >
-                Get launch updates →
-              </a>
-            </div>
           </div>
 
           {/*

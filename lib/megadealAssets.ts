@@ -1,41 +1,4 @@
-import fs from "node:fs";
-import path from "node:path";
-
-/**
- * Resolves the mascot / brand artwork in public/megadeal/.
- *
- * These are supplied artwork rather than anything generated here, so the
- * page cannot assume they exist. Every lookup returns null when the file
- * is missing and each caller falls back to the vector artwork the site
- * already ships — so the page is always complete, and drops the real
- * illustrations in automatically on the next build once they land. That is
- * the same arrangement findHeroPhoto() already uses for the Auckland
- * photo, kept deliberately consistent.
- *
- * Shipping <Image> tags pointing at files that aren't there would put six
- * broken-image glyphs on the live signup page, which is worse than the
- * illustration it replaces.
- *
- * The lookups run at build time on Node (this page is statically
- * prerendered), never in the Workers runtime, where fs does not exist.
- */
-
-const DIR = path.join(process.cwd(), "public", "megadeal");
-
-function resolve(basename: string): string | null {
-  // png first: that's what the artwork was delivered as. The others let a
-  // smaller export be swapped in later without touching code.
-  for (const ext of ["png", "webp", "avif"]) {
-    try {
-      if (fs.existsSync(path.join(DIR, `${basename}.${ext}`))) {
-        return `/megadeal/${basename}.${ext}`;
-      }
-    } catch {
-      // public/megadeal may not exist yet — fall through to the fallback.
-    }
-  }
-  return null;
-}
+import { MEGADEAL_ART } from "./megadealAssetManifest.generated";
 
 export type MegadealArt = {
   /** Wordmark + elephant lockup for the header. */
@@ -51,14 +14,30 @@ export type MegadealArt = {
 };
 
 /**
- * Reads once per build. Call from a server component only.
+ * Resolves the mascot / brand artwork in public/megadeal/.
+ *
+ * This used to check the filesystem directly with fs.existsSync() on the
+ * assumption that it would only ever run at build time on Node — true for
+ * app/layout.tsx's own call (a purely synchronous module, prerendered once
+ * and never re-executed), but not for every caller. app/coming-soon/page.tsx
+ * makes its own separate call to this function, and that page awaits a
+ * live Wix Data read (getSignupStats), which makes it a dynamic/revalidating
+ * route: its top-level code, including this call, genuinely re-runs inside
+ * the live Cloudflare Workers runtime on every render. fs does not work
+ * there, existsSync silently returned false for every asset, and the whole
+ * page fell back to the vector illustrations — deterministically, on every
+ * single render, which is why purging Cloudflare's cache didn't help: it
+ * wasn't stale cached content, it was the correct output of code that
+ * cannot run where it was running.
+ *
+ * MEGADEAL_ART is generated at build time instead (see
+ * scripts/generate-megadeal-manifest.mjs, wired in as this project's
+ * "prebuild" script) by the exact same existsSync check — but run once, on
+ * Node, writing the result as a plain object literal with no filesystem
+ * access in the file that ships. Reading that is safe anywhere this module
+ * is evaluated, because there is no longer anything runtime-dependent left
+ * to differ.
  */
 export function getMegadealArt(): MegadealArt {
-  return {
-    logo: resolve("megadeal-logo"),
-    aucklandCard: resolve("hero-auckland-card"),
-    mascotBigDeals: resolve("mascot-big-deals"),
-    mascotWave: resolve("mascot-wave"),
-    mascotJump: resolve("mascot-jump"),
-  };
+  return MEGADEAL_ART;
 }

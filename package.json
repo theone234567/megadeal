@@ -3,15 +3,15 @@
   "version": "0.1.8",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/generate-megadeal-manifest.mjs && next dev",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build": "next build",
+    "build": "node scripts/generate-megadeal-manifest.mjs && next build",
     "start": "next start",
     "lint": "next lint",
-    "cf:build": "opennextjs-cloudflare build",
-    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
+    "cf:build": "node scripts/generate-megadeal-manifest.mjs && opennextjs-cloudflare build",
+    "cf:preview": "node scripts/generate-megadeal-manifest.mjs && opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf:deploy": "node scripts/generate-megadeal-manifest.mjs && opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@wix/data": "^1.0.0",
