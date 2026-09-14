@@ -98,7 +98,11 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
             {brand("max-h-[34px] text-[24px] sm:max-h-[40px] sm:text-[28px]")}
           </Link>
 
-          <Link href="/portal" className="flex shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-brand-700">
+          {/* py-2: the link's text is 20px tall, which is a small thing to
+              hit with a thumb at the very top of a phone screen. The
+              padding grows the target to 36px and the row by 2px, since
+              the logo beside it is already 34px. */}
+          <Link href="/portal" className="flex shrink-0 items-center gap-1.5 py-2 text-sm font-semibold text-slate-600 hover:text-brand-700">
             <span className="relative">
               <UserIcon className="h-4 w-4" />
               {isLoggedIn && !profileComplete && (
@@ -113,7 +117,11 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
         </div>
 
         <form onSubmit={handleSearch} className="flex w-full items-center gap-2">
-          <div className="flex flex-1 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 focus-within:border-brand-400">
+          {/* A label, not a div. The pill is 38px tall but the input inside
+              it is only 20px, and tapping a div's padding focuses nothing —
+              so two thirds of what looks like a search box did nothing when
+              tapped. As a label the whole pill focuses the field. */}
+          <label className="flex flex-1 cursor-text items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 focus-within:border-brand-400">
             <SearchIcon className="h-4 w-4 shrink-0 text-slate-400" />
             <input
               value={query}
@@ -123,7 +131,7 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
               placeholder="Search massages, dinners, getaways…"
               className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
             />
-          </div>
+          </label>
           <select
             value={city}
             onChange={(e) => setCity(e.target.value)}

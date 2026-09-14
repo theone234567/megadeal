@@ -130,9 +130,11 @@ export default function EmailSignupForm({
             required
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
-            /* h-5/w-5 keeps the box visually modest while clearing the
-               24px minimum target size (WCAG 2.2 SC 2.5.8) — at 3.5 it was
-               14px, genuinely hard to hit on a phone. */
+            /* 20px, up from 14px, which was genuinely hard to hit on a
+               phone. It is the wrapping <label> rather than the box itself
+               that satisfies the 24px minimum target size (WCAG 2.2 SC
+               2.5.8) — the whole consent line toggles it, so the box stays
+               visually modest without the target being small. */
             className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300"
           />
           <span>

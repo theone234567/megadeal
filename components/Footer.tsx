@@ -67,10 +67,10 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
           <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Categories</h4>
-            <ul className="space-y-2 text-sm text-slate-600">
+            <ul className="space-y-1 text-sm text-slate-600">
               {FOOTER_CATEGORIES.map((category) => (
                 <li key={category.name}>
-                  <Link href={category.href} className="hover:text-brand-700">
+                  <Link href={category.href} className="inline-block py-1 hover:text-brand-700">
                     {category.name}
                   </Link>
                 </li>
@@ -79,21 +79,21 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
           </div>
           <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Company</h4>
-            <ul className="space-y-2 text-sm text-slate-600">
-              <li><Link href="/list-your-business" className="hover:text-brand-700">List your business</Link></li>
-              <li><Link href="/about" className="hover:text-brand-700">About MegaDeal</Link></li>
-              <li><Link href="/how-it-works" className="hover:text-brand-700">How it works</Link></li>
-              <li><Link href="/careers" className="hover:text-brand-700">Careers</Link></li>
-              <li><Link href="/coming-soon" className="hover:text-brand-700">Coming soon</Link></li>
+            <ul className="space-y-1 text-sm text-slate-600">
+              <li><Link href="/list-your-business" className="inline-block py-1 hover:text-brand-700">List your business</Link></li>
+              <li><Link href="/about" className="inline-block py-1 hover:text-brand-700">About MegaDeal</Link></li>
+              <li><Link href="/how-it-works" className="inline-block py-1 hover:text-brand-700">How it works</Link></li>
+              <li><Link href="/careers" className="inline-block py-1 hover:text-brand-700">Careers</Link></li>
+              <li><Link href="/coming-soon" className="inline-block py-1 hover:text-brand-700">Coming soon</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="mb-3 text-sm font-bold text-slate-900">Support</h4>
-            <ul className="space-y-2 text-sm text-slate-600">
-              <li><Link href="/help" className="hover:text-brand-700">Help centre</Link></li>
-              <li><Link href="/redeem" className="hover:text-brand-700">How to redeem a deal</Link></li>
-              <li><Link href="/refund-policy" className="hover:text-brand-700">Refund policy</Link></li>
-              <li><Link href="/contact" className="hover:text-brand-700">Contact us</Link></li>
+            <ul className="space-y-1 text-sm text-slate-600">
+              <li><Link href="/help" className="inline-block py-1 hover:text-brand-700">Help centre</Link></li>
+              <li><Link href="/redeem" className="inline-block py-1 hover:text-brand-700">How to redeem a deal</Link></li>
+              <li><Link href="/refund-policy" className="inline-block py-1 hover:text-brand-700">Refund policy</Link></li>
+              <li><Link href="/contact" className="inline-block py-1 hover:text-brand-700">Contact us</Link></li>
             </ul>
           </div>
           <div>
@@ -110,8 +110,8 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
         <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 sm:flex-row">
           <p className="text-center text-sm text-slate-500 sm:text-left">© {new Date().getFullYear()} MegaDeal. All rights reserved.</p>
           <div className="flex gap-4 text-sm text-slate-500">
-            <Link href="/terms" className="hover:text-brand-700">Terms</Link>
-            <Link href="/privacy" className="hover:text-brand-700">Privacy</Link>
+            <Link href="/terms" className="inline-block py-1 hover:text-brand-700">Terms</Link>
+            <Link href="/privacy" className="inline-block py-1 hover:text-brand-700">Privacy</Link>
           </div>
         </div>
       </div>

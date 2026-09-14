@@ -47,6 +47,13 @@ const nextConfig = {
     ];
   },
   async headers() {
+    // The canonical origin this build will be served from. Defaults to the
+    // production domain, exactly as lib/siteConfig.ts does, so a missing
+    // variable never silently downgrades the live site's headers.
+    const servedOverHttps = (
+      process.env.NEXT_PUBLIC_SITE_URL || "https://megadeal.co.nz"
+    ).startsWith("https://");
+
     // Content-Security-Policy.
     //
     // This matters more here than on a typical marketing site: the Wix
@@ -137,7 +144,25 @@ const nextConfig = {
       // exfiltrates a half-typed signup to somewhere else.
       "form-action 'self'",
       "frame-ancestors 'none'",
-      "upgrade-insecure-requests",
+      // upgrade-insecure-requests and HSTS below are both conditional on
+      // the canonical origin actually being https. On an http origin they
+      // don't harden anything — they break it:
+      //
+      //  - upgrade-insecure-requests rewrites every same-origin request to
+      //    https://, so on http://localhost the browser tries a TLS
+      //    handshake against a plain HTTP server and every navigation dies
+      //    with ERR_SSL_PROTOCOL_ERROR. That is not a theoretical dev
+      //    annoyance: it is why a local run of the built site could not
+      //    follow its own "/" redirect to /coming-soon.
+      //  - Strict-Transport-Security is worse, because it persists. HSTS is
+      //    keyed by host and ignores the port, so a two-year max-age
+      //    picked up from http://localhost:4640 force-upgrades every other
+      //    project that person ever runs on localhost, long after this one
+      //    is closed — and nothing on the page explains why.
+      //
+      // Production is unaffected: NEXT_PUBLIC_SITE_URL is the https
+      // megadeal.co.nz origin, so both are emitted exactly as before.
+      ...(servedOverHttps ? ["upgrade-insecure-requests"] : []),
     ].join("; ");
 
     // Report-Only by default. A CSP that blocks a third-party script the
@@ -176,10 +201,14 @@ const nextConfig = {
         key: "Permissions-Policy",
         value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
       },
-      {
-        key: "Strict-Transport-Security",
-        value: "max-age=63072000; includeSubDomains; preload",
-      },
+      ...(servedOverHttps
+        ? [
+            {
+              key: "Strict-Transport-Security",
+              value: "max-age=63072000; includeSubDomains; preload",
+            },
+          ]
+        : []),
     ];
     return [
       { source: "/:path*", headers: securityHeaders },
