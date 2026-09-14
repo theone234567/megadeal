@@ -89,6 +89,13 @@ const nextConfig = {
         "https://www.facebook.com",                       // Pixel beacon
         "https://www.google.com https://www.gstatic.com", // reCAPTCHA
         "https://www.google-analytics.com",
+        // Leaflet tiles. Both maps — the deals map, and the address pin a
+        // merchant drags during signup — load tiles as plain <img>.
+        // Leaflet itself is bundled from npm and its markers are emoji
+        // divIcons, so the tiles are the only external thing either map
+        // needs. Without this, enforcing leaves two grey boxes, one of
+        // them mid-signup.
+        "https://*.tile.openstreetmap.org",
       ].join(" "),
       [
         "connect-src 'self'",
@@ -134,7 +141,15 @@ const nextConfig = {
     // ships observing first: violations are reported and nothing is
     // blocked. Once /api/csp-report has been quiet for a few days of real
     // traffic, set CSP_ENFORCE=1 (or flip the default here) to enforce.
-    const cspEnforced = process.env.CSP_ENFORCE === "1";
+    // Enforcing by default now. It shipped report-only to find out what a
+    // real policy would break without breaking it first; that pass is done
+    // — the Wix login iframe and the OpenStreetMap tiles were the two gaps
+    // it found, and both are in the policy above.
+    //
+    // CSP_ENFORCE=0 drops back to report-only without a code change, which
+    // is the fastest way out if something does break. Read at build time,
+    // not per request, so either way it needs a rebuild to take effect.
+    const cspEnforced = process.env.CSP_ENFORCE !== "0";
 
     const securityHeaders = [
       {
