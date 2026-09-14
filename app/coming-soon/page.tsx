@@ -294,32 +294,23 @@ export default async function ComingSoonPage() {
                  corner with no transparent margin to speak of), no rotate,
                  no added border, no clip-path. The tilt, border and shadow
                  a viewer sees are the image's own pixels, not CSS built
-                 around them, so there is nothing left to double up. */
-              /* z-10: keeps this above the mobile in-picture mascot and
-                 any future overlay; the desktop mascot overhangs it and
-                 sits at z-30, in front, by design.
+                 around them, so there is nothing left to double up.
+                 The mascot is composited into this photo itself (standing
+                 on the beach, Rangitoto in the background), so there is no
+                 separate MascotFigure overlay here any more — the earlier
+                 versions (a plain skyline photo, or the vector fallback)
+                 needed the elephant added in CSS on top; this one doesn't.
                  aspect-[16/10] on mobile only, back to the photo's own
                  native aspect-[4/3] from sm: up — a shorter crop asked
                  for specifically on mobile, where it was costing more
                  scroll than its own visual payoff justified; the desktop
                  presentation was already working and stays as is. */
-              <div className="relative z-10 aspect-[16/10] w-full overflow-hidden rounded-2xl sm:aspect-[4/3]">
+              <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl sm:aspect-[4/3]">
                 <img
                   src={art.aucklandCard as string}
-                  alt="Auckland city and harbour"
+                  alt="The MegaDeal elephant mascot with a magnifying glass, standing on an Auckland beach with Rangitoto Island in the background"
                   className="h-full w-full object-cover"
                   fetchPriority="high"
-                />
-
-                {/* Mobile: inside the picture, clear of both edges so the
-                    mascot's tag can't be clipped. */}
-                <MascotFigure
-                  src={art.mascotBigDeals}
-                  fallbackSrc="/brand/deal-hunter-elephant.svg"
-                  alt=""
-                  width={360}
-                  height={280}
-                  className="absolute bottom-0 right-2 h-auto w-[112px] drop-shadow-xl sm:hidden"
                 />
               </div>
             ) : (
@@ -358,24 +349,13 @@ export default async function ComingSoonPage() {
               </div>
             )}
 
-            {/* Desktop: overhangs the frame, as designed.
-                A "legs tucked behind the card" version was tried here (z-0,
-                pulled up behind the card's opaque content) but this
-                artwork is a head/shoulders/tag bust with no legs drawn —
-                geometrically there was nothing distinct to hide, so it
-                just buried almost the whole character behind the card.
-                Reverted to the fully-visible overhang until a full-body
-                mascot pose (or a card photo with the mascot already
-                composited in) makes that effect possible. */}
-            <MascotFigure
-              src={art.mascotBigDeals}
-              fallbackSrc="/brand/deal-hunter-elephant.svg"
-              alt="MegaDeal deal-hunter elephant holding a magnifying glass and a big deals tag"
-              width={360}
-              height={280}
-              priority
-              className="absolute -bottom-5 -right-8 z-30 hidden h-auto w-[185px] drop-shadow-xl sm:block lg:-bottom-3 lg:w-[245px] lg:drop-shadow-[0_18px_24px_rgba(38,8,87,.28)] 2xl:w-[275px]"
-            />
+            {/* The overhanging desktop MascotFigure that used to sit here
+                is gone: it existed to put the elephant on top of a plain
+                skyline photo, and this photo already has him in it (see
+                the comment above hasComposedCard's <img>). Bringing it
+                back would double him up. The fallback branch above still
+                keeps its own in-picture mascot, since it has no elephant
+                of its own to fall back on. */}
           </div>
 
           {/*
