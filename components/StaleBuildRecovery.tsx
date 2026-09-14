@@ -72,16 +72,45 @@ export default function StaleBuildRecovery() {
     };
 
     const onError = (event: ErrorEvent) => {
+      // A <script> that 404s reports the failure on the element itself,
+      // with no message and no Error — and that event does not bubble, so
+      // it only reaches here in the capture phase. Listening without
+      // capture (as this did) meant the most common symptom of a stale
+      // build, the MIME refusal on a missing chunk, never arrived at all.
+      const target = event.target as HTMLScriptElement | null;
+      if (target && target !== (window as unknown as HTMLScriptElement)) {
+        const src = typeof target.src === "string" ? target.src : "";
+        if (src.includes("/_next/static/")) {
+          recover();
+          return;
+        }
+      }
       if (isChunkError(event.error) || isChunkError(event.message)) recover();
     };
     const onRejection = (event: PromiseRejectionEvent) => {
       if (isChunkError(event.reason)) recover();
     };
 
-    window.addEventListener("error", onError);
+    // Capture, so element-level resource failures are seen.
+    window.addEventListener("error", onError, true);
     window.addEventListener("unhandledrejection", onRejection);
+
+    // A page that has been up and working for a few seconds is proof the
+    // bundle it loaded is intact, so the one-attempt guard is cleared for
+    // the next deploy. Without this the guard is spent for the rest of the
+    // session after a single recovery — and on a site that deploys on
+    // every push, a second deploy in one sitting is routine, not exotic.
+    const settled = window.setTimeout(() => {
+      try {
+        sessionStorage.removeItem(RELOAD_FLAG);
+      } catch {
+        // Storage unavailable — nothing to clear.
+      }
+    }, 10_000);
+
     return () => {
-      window.removeEventListener("error", onError);
+      window.clearTimeout(settled);
+      window.removeEventListener("error", onError, true);
       window.removeEventListener("unhandledrejection", onRejection);
     };
   }, []);
