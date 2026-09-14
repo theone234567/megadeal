@@ -283,7 +283,11 @@ export async function fetchAllLiveDealSlugsForSitemap(): Promise<
     return products
       .filter((p: any) => {
         const meta = metaByProductId[p.id ?? p._id];
-        return !meta || isDealLive(meta);
+        // `!meta ||` used to pass products with no Deals row, which is the
+        // opposite of what the listing and the detail page now do — so the
+        // sitemap and IndexNow were handing Google URLs that 404. A product
+        // with no row is not a deal here, and must not be advertised as one.
+        return Boolean(meta) && isDealLive(meta);
       })
       .map((p: any) => ({
         slug: p.slug ?? p.id ?? p._id,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { queryAllByEmail } from "@/lib/queryAll";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL } from "@/lib/siteConfig";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
@@ -501,11 +502,16 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     let drafts: any[] = [];
 
     if (email) {
-      const deals = await adminClient.items
-        .query("Deals")
-        .eq("merchantEmail", email)
-        .find();
-      const all = deals.items ?? [];
+      // Paged and case-tolerant. This guard decides whether deleting the
+      // business would orphan live Stores products, and it was reading one
+      // default page of 50 under a single casing — so a business with
+      // submitted deals past that page, or stored under the other casing,
+      // was deleted anyway and its products left published with no owner.
+      const all = await queryAllByEmail(
+        (e) => adminClient.items.query("Deals").eq("merchantEmail", e),
+        email,
+        "Deals (delete guard)"
+      );
       const submitted = all.filter((d: any) => d.status !== "Draft");
       if (submitted.length > 0) {
         // Cancelling doesn't clear this, and that is deliberate. A
@@ -540,17 +546,13 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       // busy ledger is longer than that — leaving the remainder behind,
       // which is exactly the inherited credit history this exists to
       // prevent. Bounded so a runaway query can't loop forever.
-      for (let page = 0; page < 20; page += 1) {
-        const activity = await adminClient.items
-          .query("MerchantActivity")
-          .eq("merchantEmail", email)
-          .limit(100)
-          .find();
-        const rows = activity.items ?? [];
-        if (rows.length === 0) break;
-        for (const row of rows) {
-          await adminClient.items.remove("MerchantActivity", row._id);
-        }
+      const activity = await queryAllByEmail(
+        (e) => adminClient.items.query("MerchantActivity").eq("merchantEmail", e),
+        email,
+        "MerchantActivity (delete)"
+      );
+      for (const row of activity) {
+        await adminClient.items.remove("MerchantActivity", row._id);
       }
     }
 

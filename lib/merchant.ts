@@ -1,4 +1,5 @@
 import type { VerifiedMember } from "./memberAuth";
+import { queryAllByEmail } from "./queryAll";
 
 /**
  * Brings a Merchants record's copy of the member's email details back in
@@ -22,7 +23,11 @@ import type { VerifiedMember } from "./memberAuth";
 async function syncMemberFields(adminClient: any, record: any, member: VerifiedMember) {
   const patch: Record<string, any> = {};
 
-  const email = member.email?.toLowerCase();
+  // Raw, not lower-cased. Every other writer — the apply route, deal
+  // creation, the activity log — stores the address exactly as Wix gives
+  // it, and Wix Data's eq() is case-sensitive, so lower-casing only here
+  // split Merchants.email away from every column that joins to it.
+  const email = member.email;
   if (email && record.email !== email) patch.email = email;
   if (record.emailVerified !== member.loginEmailVerified) {
     patch.emailVerified = member.loginEmailVerified;
@@ -71,11 +76,15 @@ export async function getOrClaimMerchant(adminClient: any, member: VerifiedMembe
   // so require it explicitly rather than inheriting the guarantee.
   if (!member.loginEmailVerified) return null;
 
-  const candidates = await adminClient.items
-    .query("Merchants")
-    .eq("email", member.email.toLowerCase())
-    .find();
-  const match = (candidates.items ?? []).find((m: any) => !m._owner);
+  // Both casings: rows written before the write side was made consistent
+  // may carry either, and a claim that misses leaves a merchant staring at
+  // "finish your signup" over a business they already have.
+  const candidates = await queryAllByEmail(
+    (email) => adminClient.items.query("Merchants").eq("email", email),
+    member.email,
+    "Merchants (claim)"
+  );
+  const match = candidates.find((m: any) => !m._owner);
   if (!match) return null;
 
   return adminClient.items.update("Merchants", {

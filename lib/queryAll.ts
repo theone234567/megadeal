@@ -52,3 +52,42 @@ export async function queryAllItems(
   );
   return all;
 }
+
+/**
+ * Reads every row matching an email, under either casing it may be stored.
+ *
+ * Emails are written raw here — as Wix hands them over — by the apply
+ * route, deal creation and the activity log. One writer disagreed
+ * (getOrClaimMerchant lower-cased Merchants.email), and Wix Data's eq()
+ * is case-sensitive, so the two stopped matching for any address with a
+ * capital in it. That is not cosmetic: the admin delete guard asks "does
+ * this business have submitted deals?" through exactly such a join, and a
+ * miss there deletes a business out from under live Stores products.
+ *
+ * The write side is now consistent again, but existing rows still carry
+ * whichever casing was in force when they were written, and nothing here
+ * can migrate them. Querying both casings is exact, costs one extra
+ * request only when an address actually has capitals, and cannot miss a
+ * row that either convention produced.
+ */
+export async function queryAllByEmail(
+  build: (email: string) => any,
+  email: string,
+  label: string
+): Promise<any[]> {
+  const variants = Array.from(new Set([email, email.toLowerCase()].filter(Boolean)));
+
+  const seen = new Set<string>();
+  const rows: any[] = [];
+  for (const variant of variants) {
+    for (const row of await queryAllItems(() => build(variant), `${label} [${variant}]`)) {
+      const id = row?._id;
+      if (typeof id === "string") {
+        if (seen.has(id)) continue;
+        seen.add(id);
+      }
+      rows.push(row);
+    }
+  }
+  return rows;
+}

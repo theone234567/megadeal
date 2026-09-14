@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { queryAllByEmail } from "@/lib/queryAll";
 
 export const dynamic = "force-dynamic";
 
@@ -20,14 +21,15 @@ export async function GET(req: NextRequest) {
 
   try {
     const adminClient = createWixAdminClient();
-    const result = await adminClient.items
-      .query("Deals")
-      // Raw, not lower-cased: /api/deals/create writes member.email as it
-      // comes from Wix, so normalising only here would silently match
-      // nothing for any address Wix returns with capitals in it.
-      .eq("merchantEmail", member.email)
-      .find();
-    return NextResponse.json({ items: result.items ?? [] });
+    // Paged and case-tolerant: a merchant's deals accumulate (live,
+    // expired, cancelled, drafts), and one default page of 50 quietly
+    // hid the rest of their own portal from them.
+    const items = await queryAllByEmail(
+      (email) => adminClient.items.query("Deals").eq("merchantEmail", email),
+      member.email,
+      "Deals (mine)"
+    );
+    return NextResponse.json({ items });
   } catch (err) {
     console.error("[deals/mine] failed", err);
     return NextResponse.json({ error: "Couldn't load your deals." }, { status: 500 });

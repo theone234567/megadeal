@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { queryAllByEmail } from "@/lib/queryAll";
 import { getOrClaimMerchant } from "@/lib/merchant";
 
 export const dynamic = "force-dynamic";
@@ -25,12 +26,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ items: [] });
     }
 
-    const result = await adminClient.items
-      .query("MerchantActivity")
-      .eq("merchantEmail", merchant.email)
-      .find();
+    // Read everything before sorting. Wix returns a default page of 50 in
+    // no particular order, so sorting after that picked the newest of an
+    // arbitrary 50 — once a merchant passed that many entries, genuinely
+    // new ones could stop appearing at the top of their own ledger.
+    const rows = await queryAllByEmail(
+      (email) => adminClient.items.query("MerchantActivity").eq("merchantEmail", email),
+      merchant.email,
+      "MerchantActivity (portal)"
+    );
 
-    const items = (result.items ?? [])
+    const items = rows
       .sort(
         (a: any, b: any) =>
           new Date(b._createdDate ?? 0).getTime() - new Date(a._createdDate ?? 0).getTime()

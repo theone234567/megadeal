@@ -8,7 +8,14 @@ export function isWixMediaUrl(url: unknown): url is string {
   if (typeof url !== "string" || url.length > 500) return false;
   try {
     const parsed = new URL(url);
-    return parsed.protocol === "https:" && parsed.hostname.endsWith("wixstatic.com");
+    if (parsed.protocol !== "https:") return false;
+    // endsWith("wixstatic.com") alone also matches evil-wixstatic.com and
+    // notwixstatic.com — any host an attacker can register. A merchant
+    // could then point a deal or logo photo at a server they control and
+    // have it served from our pages. The dot matters: either the domain
+    // itself, or something genuinely beneath it.
+    const host = parsed.hostname.toLowerCase();
+    return host === "wixstatic.com" || host.endsWith(".wixstatic.com");
   } catch {
     return false;
   }

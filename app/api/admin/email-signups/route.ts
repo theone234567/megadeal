@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { queryAllItems } from "@/lib/queryAll";
 
 export async function GET(req: NextRequest) {
   if (!isAdminRequest(req)) {
@@ -9,8 +10,8 @@ export async function GET(req: NextRequest) {
 
   try {
     const adminClient = createWixAdminClient();
-    const result = await adminClient.items.query("EmailSignups").find();
-    return NextResponse.json({ items: result.items ?? [] });
+    const items = await queryAllItems(() => adminClient.items.query("EmailSignups"), "EmailSignups (admin)");
+    return NextResponse.json({ items });
   } catch (err) {
     console.error("[admin/email-signups] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

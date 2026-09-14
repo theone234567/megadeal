@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { queryAllByEmail } from "@/lib/queryAll";
 
 const MAX_ITEMS = 100;
 
@@ -22,12 +23,16 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ items: [] });
     }
 
-    const result = await adminClient.items
-      .query("MerchantActivity")
-      .eq("merchantEmail", merchant.email)
-      .find();
+    // Same as the merchant-facing feed: read everything, then sort, then
+    // slice. Sorting a default page of 50 unordered rows made the
+    // MAX_ITEMS slice below unreachable and hid recent entries.
+    const rows = await queryAllByEmail(
+      (email) => adminClient.items.query("MerchantActivity").eq("merchantEmail", email),
+      merchant.email,
+      "MerchantActivity (admin)"
+    );
 
-    const items = (result.items ?? [])
+    const items = rows
       .sort(
         (a: any, b: any) =>
           new Date(b._createdDate ?? 0).getTime() - new Date(a._createdDate ?? 0).getTime()
