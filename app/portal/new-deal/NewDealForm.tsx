@@ -11,7 +11,7 @@ import { STANDARD_TERMS, renderTerms, parseTerms } from "@/lib/dealTerms";
 import { buildPreviewDeal } from "@/lib/previewDeal";
 import DealCard from "@/components/DealCard";
 import DealDetail from "@/app/deal/[slug]/DealDetail";
-import MerchantLoginForm from "@/components/portal/MerchantLoginForm";
+import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
 
 const DURATIONS = [
   { label: "1 week", days: 7 },
@@ -351,15 +351,11 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
   if (!isLoggedIn) {
     return (
-      <main className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center px-4 text-center">
-        <span className="text-4xl">🔒</span>
-        <h1 className="mt-3 text-xl font-bold text-slate-900">Create a deal</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Sign in to your business account to create a deal. Only your own
-          account can create deals on it.
-        </p>
-        <MerchantLoginForm redirectTo="/portal/new-deal" />
-      </main>
+      <PortalAuthScreen
+        title="Create a deal"
+        intro="Sign in to your business account to write your next deal. Only your own account can create deals on it."
+        redirectTo="/portal/new-deal"
+      />
     );
   }
 

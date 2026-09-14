@@ -6,7 +6,7 @@ import { useWix } from "@/context/WixProvider";
 import type { DealStatus } from "@/lib/types";
 import DealManageCard, { type DealRecord } from "@/components/portal/DealManageCard";
 import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
-import MerchantLoginForm from "@/components/portal/MerchantLoginForm";
+import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
 import ReferralCard from "@/components/portal/ReferralCard";
 import ActivityFeed from "@/components/portal/ActivityFeed";
 import NotificationPreferences from "@/components/portal/NotificationPreferences";
@@ -176,21 +176,10 @@ export default function PortalPage() {
 
   if (!isLoggedIn) {
     return (
-      <main className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center px-4 text-center">
-        <span className="text-4xl">🔒</span>
-        <h1 className="mt-3 text-xl font-bold text-slate-900">Business portal</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          Sign in to view your business details, deal credits and active
-          deals. Only you can see your own account.
-        </p>
-        <MerchantLoginForm />
-        <p className="mt-4 text-sm text-slate-500">
-          New here?{" "}
-          <Link href="/list-your-business#signup" className="font-semibold text-brand-600 hover:underline">
-            Sign up your business
-          </Link>
-        </p>
-      </main>
+      <PortalAuthScreen
+        title="Business portal"
+        intro="Your deals, your credits and your listing — all in one place. Only you can see your own account."
+      />
     );
   }
 

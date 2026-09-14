@@ -15,6 +15,16 @@ import { AUTH_TIMEOUT_MS, withTimeout } from "@/lib/withTimeout";
  * moment a returning merchant needs to trust the site. This calls Wix's
  * Custom Login API (client.auth.login) directly instead.
  */
+/**
+ * Fields sized for what this form is: the gate to someone's business
+ * account, usually opened on a phone. They were 36px tall with a hairline
+ * border and no focus ring beyond a border tint — small to hit, and hard
+ * to tell apart from the page. A visible ring also means keyboard focus
+ * is actually apparent, which a border colour change alone barely is.
+ */
+const INPUT_CLASS =
+  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-200";
+
 export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirectTo?: string }) {
   // Warm reCAPTCHA while the visitor types, so obtaining the token adds
   // nothing to the wait after they press sign in.
@@ -233,7 +243,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
 
   if (pendingState) {
     return (
-      <form onSubmit={handleVerify} className="mt-6 w-full max-w-xs space-y-3 text-left">
+      <form onSubmit={handleVerify} className="w-full space-y-3 text-left">
         <p className="text-center text-sm text-slate-500">
           Enter the code we just emailed to <strong>{email}</strong>.
         </p>
@@ -247,18 +257,22 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
           onChange={(e) => setCode(e.target.value)}
           placeholder="Verification code"
           autoFocus
-          className="w-full rounded-xl border border-slate-200 px-3 py-2 text-center text-sm tracking-widest outline-none focus:border-brand-400"
+          className={`${INPUT_CLASS} text-center tracking-[0.3em]`}
         />
         {resendNotice && (
-          <p role="status" className="text-center text-sm font-semibold text-green-700">
+          <p role="status" className="rounded-xl bg-green-50 px-3 py-2.5 text-center text-sm font-semibold text-green-800">
             {resendNotice}
           </p>
         )}
-        {error && <p className="text-center text-sm text-ember-600">{error}</p>}
+        {error && (
+          <p className="rounded-xl bg-red-50 px-3 py-2.5 text-center text-sm font-medium text-red-700">
+            {error}
+          </p>
+        )}
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-full bg-brand-600 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 disabled:opacity-60"
+          className="w-full rounded-full bg-brand-600 py-3.5 text-base font-extrabold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60 disabled:active:scale-100"
         >
           {submitting ? "Checking…" : "Verify & sign in"}
         </button>
@@ -269,7 +283,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
           type="button"
           onClick={handleResendCode}
           disabled={submitting || resendCooldown > 0}
-          className="w-full text-center text-sm font-semibold text-brand-700 underline underline-offset-2 transition hover:text-brand-800 disabled:no-underline disabled:opacity-60"
+          className="w-full rounded-lg py-2 text-center text-sm font-semibold text-brand-700 underline underline-offset-2 transition hover:text-brand-800 disabled:no-underline disabled:opacity-60"
         >
           {resendCooldown > 0
             ? `Resend code in ${resendCooldown}s`
@@ -284,7 +298,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-6 w-full max-w-xs space-y-3 text-left">
+    <form onSubmit={handleSubmit} className="w-full space-y-3 text-left">
       <label htmlFor="login-email" className="sr-only">
         Email
       </label>
@@ -296,7 +310,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         onChange={(e) => setEmail(e.target.value)}
         placeholder="you@yourbusiness.co.nz"
         autoComplete="email"
-        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+        className={INPUT_CLASS}
       />
       <label htmlFor="login-password" className="sr-only">
         Password
@@ -308,7 +322,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         onChange={setPassword}
         placeholder="Password"
         autoComplete="current-password"
-        inputClassName="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+        inputClassName={INPUT_CLASS}
       />
       {/* Hidden unless Wix has rejected an invisible token, so a normal
           sign-in shows no challenge at all. */}
@@ -319,19 +333,27 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
           onChange={setVisibleCaptchaToken}
         />
       )}
-      {error && <p className="text-sm text-ember-600">{error}</p>}
-      {resetSent && <p className="text-sm text-green-700">Check your email for a reset link.</p>}
+      {error && (
+        <p className="rounded-xl bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
+          {error}
+        </p>
+      )}
+      {resetSent && (
+        <p className="rounded-xl bg-green-50 px-3 py-2.5 text-sm font-medium text-green-800">
+          Check your email for a reset link.
+        </p>
+      )}
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-full bg-brand-600 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 disabled:opacity-60"
+        className="w-full rounded-full bg-brand-600 py-3.5 text-base font-extrabold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60 disabled:active:scale-100"
       >
         {submitting ? "Signing in…" : "Sign in"}
       </button>
       <button
         type="button"
         onClick={handleForgotPassword}
-        className="w-full text-center text-xs font-medium text-slate-500 hover:text-brand-700"
+        className="w-full rounded-lg py-2 text-center text-sm font-medium text-slate-500 transition hover:text-brand-700"
       >
         Forgot password?
       </button>
