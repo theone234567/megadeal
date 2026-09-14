@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createWixClient } from "@/lib/wixClient";
+import { createWixBrowserClient } from "@/lib/wixBrowserClient";
 
 export default function LoginCallbackPage() {
   const [nextPage, setNextPage] = useState<string | null>(null);
@@ -13,7 +13,7 @@ export default function LoginCallbackPage() {
       localStorage.removeItem("oauthRedirectData");
       const data = raw ? JSON.parse(raw) : null;
 
-      const client = createWixClient();
+      const client = createWixBrowserClient();
 
       try {
         const { code, state } = client.auth.parseFromUrl();

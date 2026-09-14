@@ -2,6 +2,16 @@ import type { Tokens } from "@wix/sdk";
 import type { WixClient } from "./wixClient";
 
 /**
+ * Everything in this module talks to `client.auth` and nothing else, so it
+ * accepts anything carrying one rather than a fully-moduled client. That
+ * is what lets the browser use the stripped-down client from
+ * lib/wixBrowserClient.ts — which has no modules at all — while the server
+ * keeps passing its member-capable one. Typing it as the full WixClient
+ * would silently require @wix/members in the page bundle for no reason.
+ */
+type AuthClient = Pick<WixClient, "auth">;
+
+/**
  * Thin wrapper around Wix's Custom Login authentication API
  * (client.auth.register/login/processVerification) — see
  * https://dev.wix.com/docs/go-headless/develop-your-project/authentication/members/custom-login-page/custom-login-using-the-js-sdk
@@ -71,7 +81,7 @@ async function persistSession(tokens: Tokens) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function resolveState(client: WixClient, state: any): Promise<AuthOutcome> {
+async function resolveState(client: AuthClient, state: any): Promise<AuthOutcome> {
   switch (state.loginState) {
     case "SUCCESS": {
       const tokens = await client.auth.getMemberTokensForDirectLogin(state.data.sessionToken);
@@ -110,7 +120,7 @@ async function resolveState(client: WixClient, state: any): Promise<AuthOutcome>
 }
 
 export async function registerMember(
-  client: WixClient,
+  client: AuthClient,
   email: string,
   password: string,
   nickname: string,
@@ -151,7 +161,7 @@ export async function registerMember(
 }
 
 export async function loginMember(
-  client: WixClient,
+  client: AuthClient,
   email: string,
   password: string,
   /** reCAPTCHA token(s). Same CAPTCHA requirement as registration — Wix
@@ -184,7 +194,7 @@ export async function loginMember(
 }
 
 export async function submitVerificationCode(
-  client: WixClient,
+  client: AuthClient,
   verificationCode: string,
   pendingState: unknown
 ): Promise<AuthOutcome> {
@@ -193,6 +203,6 @@ export async function submitVerificationCode(
   return resolveState(client, state);
 }
 
-export async function requestPasswordReset(client: WixClient, email: string): Promise<void> {
+export async function requestPasswordReset(client: AuthClient, email: string): Promise<void> {
   await client.auth.sendPasswordResetEmail(email, `${window.location.origin}/login-callback`);
 }

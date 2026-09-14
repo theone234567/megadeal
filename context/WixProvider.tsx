@@ -9,7 +9,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { createWixClient, type WixClient } from "@/lib/wixClient";
+import { createWixBrowserClient, type WixBrowserClient } from "@/lib/wixBrowserClient";
 
 /** The only member details a page is given. Wix's full member object is
  *  contact data; none of it belongs in the browser just to render a name
@@ -22,7 +22,7 @@ export interface SessionMember {
 }
 
 interface WixContextValue {
-  client: WixClient;
+  client: WixBrowserClient;
   member: SessionMember | null | undefined;
   isLoggedIn: boolean;
   logout: () => Promise<void>;
@@ -53,7 +53,7 @@ function readVisitorTokens() {
  * portal) and gets passed down for the odd read that still wants it.
  */
 export function WixProvider({ children }: { children: React.ReactNode }) {
-  const client = useMemo(() => createWixClient(readVisitorTokens()), []);
+  const client = useMemo(() => createWixBrowserClient(readVisitorTokens()), []);
   const [member, setMember] = useState<SessionMember | null | undefined>(undefined);
 
   const fetchMember = useCallback(async () => {

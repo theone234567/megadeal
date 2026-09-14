@@ -1,16 +1,26 @@
 import { createClient, OAuthStrategy, type Tokens } from "@wix/sdk";
-import { productsV3 } from "@wix/stores";
-import { items } from "@wix/data";
 import { members } from "@wix/members";
+import { WIX_CLIENT_ID } from "./wixClientId";
 
-export const WIX_CLIENT_ID =
-  process.env.NEXT_PUBLIC_WIX_CLIENT_ID || "a5df1008-85ea-4479-8a49-8b0576ae9714";
+export { WIX_CLIENT_ID };
 
-// No cart/ecom/redirects modules: MegaDeal is an advertising directory, not
-// a payment processor, so there's no checkout flow anywhere in the app.
+/**
+ * The member-scoped Wix client used by server code (session, logout,
+ * memberAuth). `members` is here because those paths call
+ * getCurrentMember; nothing else is, and that is deliberate.
+ *
+ * `productsV3` and `items` used to be attached as well and were never
+ * called through this client by anyone, on either side of the wire —
+ * product and data access goes through createWixAdminClient, which has its
+ * own copies. Carrying them here cost 392 kB of Stores SDK in the browser
+ * bundle of every page on the site.
+ *
+ * Browser code must use createWixBrowserClient (lib/wixBrowserClient.ts)
+ * instead, which drops `members` too.
+ */
 export function createWixClient(tokens?: Tokens) {
   return createClient({
-    modules: { productsV3, items, members },
+    modules: { members },
     auth: OAuthStrategy({
       clientId: WIX_CLIENT_ID,
       tokens,
