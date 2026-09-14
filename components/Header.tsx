@@ -25,20 +25,20 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
   const isComingSoon = pathname === "/coming-soon";
 
   /**
-   * The coming-soon page deliberately uses the transparent vector lockup:
-   * it matches the refreshed purple/lavender brand direction and lets the
-   * mascot-to-wordmark spacing scale cleanly with CSS. The launched site
-   * continues to use the supplied production artwork whenever available.
+   * Use the supplied production logo artwork wherever it exists. It is the
+   * clearest version of the mascot + wordmark at real header sizes and keeps
+   * the exact artwork consistent across the site. The vector remains only a
+   * resilient fallback if the asset is ever missing.
    */
   const brand = (sizeClass: string) =>
-    !isComingSoon && logoSrc ? (
+    logoSrc ? (
       <Image
         src={logoSrc}
         alt="MegaDeal"
         width={520}
         height={150}
         priority
-        className={`h-auto w-auto select-none ${sizeClass}`}
+        className={`h-auto w-auto select-none object-contain ${sizeClass}`}
       />
     ) : (
       <Logo className={sizeClass} />
@@ -71,12 +71,12 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
   if (isComingSoon) {
     return (
       <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
-        {/* One responsive header, not separate desktop/mobile markup. The
-            larger lockup still leaves enough room for the compact sign-in
-            action on narrow phones and grows substantially on desktop. */}
-        <div className="mx-auto flex min-h-[92px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[108px] sm:gap-5 sm:px-8 lg:min-h-[122px] lg:px-10 xl:px-12">
+        {/* One responsive header for desktop and mobile. The production
+            lockup is intentionally larger than before, but is still capped
+            so it leaves the business sign-in action room on narrow phones. */}
+        <div className="mx-auto flex min-h-[98px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[114px] sm:gap-5 sm:px-8 lg:min-h-[130px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
-            {brand("text-[34px] sm:text-[43px] lg:text-[50px] xl:text-[54px]")}
+            {brand("max-h-[52px] max-w-[215px] sm:max-h-[64px] sm:max-w-[285px] lg:max-h-[72px] lg:max-w-[330px] xl:max-h-[76px] xl:max-w-[360px]")}
           </Link>
 
           <Link
