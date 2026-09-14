@@ -182,7 +182,7 @@ export default function AdminDashboardPage() {
       {tab === "merchants" && (
         <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
           {merchants === null ? (
-            <p className="text-sm text-slate-400">Loading…</p>
+            error ? null : <p className="text-sm text-slate-400">Loading…</p>
           ) : merchants.length === 0 ? (
             <p className="text-sm text-slate-500">No business applications yet.</p>
           ) : (
@@ -223,7 +223,7 @@ export default function AdminDashboardPage() {
       {tab === "deals" && (
         <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
           {deals === null ? (
-            <p className="text-sm text-slate-400">Loading…</p>
+            error ? null : <p className="text-sm text-slate-400">Loading…</p>
           ) : deals.length === 0 ? (
             <p className="text-sm text-slate-500">No deals yet.</p>
           ) : (
@@ -295,7 +295,7 @@ export default function AdminDashboardPage() {
 
           <div className="mt-4 overflow-x-auto">
             {subscribers === null ? (
-              <p className="text-sm text-slate-400">Loading…</p>
+              error ? null : <p className="text-sm text-slate-400">Loading…</p>
             ) : (
               (() => {
                 const filtered = verifiedOnly
