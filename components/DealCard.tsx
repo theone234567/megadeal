@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Deal } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
 import { dealEndsAt } from "@/lib/socialProof";
+import { dealSaving } from "@/lib/dealSaving";
 import CountdownBadge from "./CountdownBadge";
 import StarRating from "./StarRating";
 
@@ -27,6 +28,8 @@ export default function DealCard({
     deal.quantityAvailable !== null &&
     deal.quantityAvailable > 0 &&
     deal.quantityAvailable <= 5;
+
+  const saving = dealSaving(deal.was, deal.now);
 
   const Wrapper = preview ? "div" : Link;
   const wrapperProps = preview ? {} : { href: `/deal/${deal.slug}` };
@@ -97,9 +100,17 @@ export default function DealCard({
         <h3 className="line-clamp-2 min-h-[2.75rem] text-sm font-bold text-slate-900 group-hover:text-brand-700">
           {deal.name}
         </h3>
-        {deal.businessName && (
+        {/* City rides along on the business line instead of claiming a line
+            of its own. On a national grid, "which town is this in" is one
+            of the first things a person needs and the card never said it —
+            the distance badge below only appears for the minority who
+            grant location access, so for everyone else a Dunedin massage
+            and an Auckland one looked identical. */}
+        {(deal.businessName || deal.businessCity) && (
           <p className="-mt-1 truncate text-xs font-medium text-slate-500">
-            by {deal.businessName}
+            {deal.businessName ? `by ${deal.businessName}` : ""}
+            {deal.businessName && deal.businessCity ? " · " : ""}
+            {deal.businessCity ?? ""}
           </p>
         )}
         {deal.businessRating !== null && (
@@ -122,6 +133,17 @@ export default function DealCard({
               </span>
             )}
           </div>
+          {/* This row has always been justify-between with a single child —
+              a gap the layout reserved and never filled. The cash saving
+              belongs in it: it sits right beside the two prices it is the
+              difference between, which is where someone comparing them is
+              already looking. Brand-50 rather than a new green, so it
+              reads as a chip without competing with the ember % badge. */}
+          {saving !== null && (
+            <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-extrabold text-brand-700">
+              Save {formatMoney(saving, deal.currency)}
+            </span>
+          )}
         </div>
       </div>
     </Wrapper>

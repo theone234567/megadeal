@@ -8,6 +8,13 @@ import CountdownBadge from "@/components/CountdownBadge";
  * something concrete to picture instead of just abstract copy. Not the
  * real DealCard component: this never links anywhere and its data is
  * entirely fixed, so it can't accidentally be mistaken for a live deal.
+ *
+ * The cost of that is drift, and it has already happened once: the real
+ * card gained a city and a cash-saving chip while this one kept showing
+ * the older layout. This is the card a business decides to sign up on the
+ * strength of, so it being out of date is not a cosmetic problem — it is
+ * showing them something other than what they'd get. Any change to
+ * DealCard's body needs mirroring here until the two are merged.
  */
 /** Mockup deadline, measured from when the badge mounts in the browser.
  *  Must NOT be an absolute date computed here: this is a Server Component
@@ -53,7 +60,7 @@ export default function SampleDealCard() {
             60-Minute Hot Stone Massage
           </h3>
           <p className="-mt-1 truncate text-xs font-medium text-slate-500">
-            by Mega Massages
+            by Mega Massages &middot; Auckland
           </p>
 
           <div className="mt-auto flex items-end justify-between pt-1">
@@ -65,6 +72,9 @@ export default function SampleDealCard() {
                 {formatMoney(99, "NZD", null)}
               </span>
             </div>
+            <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-extrabold text-brand-700">
+              Save {formatMoney(50, "NZD", null)}
+            </span>
           </div>
         </div>
       </div>
