@@ -500,14 +500,6 @@ export default async function ComingSoonPage() {
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:mt-6 lg:grid-cols-6 lg:gap-4">
           {categories.map(({ name, hasCategoryPage, icon: Icon, image }) => {
-            // Before launch these tiles must NOT go to /category/*. Those
-            // pages render the full launched-site chrome (search, city
-            // picker, category nav) above an empty "No deals ... yet" grid
-            // — exactly what the coming-soon gate exists to hide — so the
-            // most eye-catching block on the page was quietly leaking
-            // visitors out of the funnel into a dead end. Point them at the
-            // launch-updates form instead, which is what someone browsing
-            // categories pre-launch actually wants.
             const live = SITE_LAUNCHED && hasCategoryPage;
             return (
             <Link
@@ -516,11 +508,6 @@ export default async function ComingSoonPage() {
               aria-label={live ? `${name} deals` : `${name} — get notified when MegaDeal launches`}
               className="group overflow-hidden rounded-[18px] border border-[#e9e6f0] bg-white shadow-[0_8px_22px_rgba(28,18,54,.08)] transition hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(28,18,54,.12)]"
             >
-              {/* The photo is left completely clear — nothing is drawn on
-                  top of it. The large icon sits BEHIND the image, so it is
-                  invisible whenever the photo loads and becomes a
-                  deliberate-looking brand swatch if the photo ever fails,
-                  instead of a broken-image box. */}
               <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[#f4efff] to-[#e7d9ff]">
                 <span
                   aria-hidden
@@ -528,23 +515,12 @@ export default async function ComingSoonPage() {
                 >
                   <Icon className="h-9 w-9" />
                 </span>
-                {/* A CSS background rather than an <img>: these are remote
-                    photos we don't control, and a failed <img> paints the
-                    browser's broken-image glyph in the corner — on all six
-                    tiles at once — whereas a failed background simply isn't
-                    painted, leaving the swatch and icon above looking
-                    intentional. Decorative either way, so nothing is lost
-                    from the accessibility tree. */}
                 <span
                   aria-hidden
                   className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-[1.04]"
                   style={{ backgroundImage: `url("${image}")` }}
                 />
               </div>
-
-              {/* Icon lives here instead: its own chip, with predictable
-                  contrast, rather than floating over whatever the photo
-                  happens to contain. */}
               <div className="flex min-h-[60px] items-center gap-2.5 px-3 py-3 lg:min-h-[64px]">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f2ecff] text-[#650fc7] transition group-hover:bg-[#650fc7] group-hover:text-white">
                   <Icon className="h-[18px] w-[18px]" />
@@ -559,16 +535,6 @@ export default async function ComingSoonPage() {
         </div>
       </section>
 
-      {/*
-        Deal hunters: show the thing, then ask.
-
-        The email capture used to sit in a plain tinted box two thirds
-        down the page, asking for an address against nothing but a
-        promise. Pairing it with a real example of what a MegaDeal listing
-        looks like makes the offer concrete at the moment of the ask —
-        the card is explicitly badged "Sample preview" so it can't be
-        mistaken for a live deal.
-      */}
       <section id="launch-updates" className="scroll-mt-20 bg-[#fff5fa] py-10 lg:py-14">
         <div className={shell}>
           <div className="grid items-center gap-8 lg:grid-cols-[1fr_minmax(0,360px)] lg:gap-14">
@@ -609,10 +575,6 @@ export default async function ComingSoonPage() {
             </div>
 
             <div className="relative mx-auto w-full max-w-[320px] lg:max-w-none">
-              {/* Waves at the signup form across the grid. Hidden below lg:
-                  the column is the card's own width there, so the mascot
-                  would either overlap the price or push the card down the
-                  page — and this section's job is the email field. */}
               <MascotFigure
                 src={art.mascotWave}
                 fallbackSrc="/brand/megadeal-elephant.svg"
@@ -627,18 +589,7 @@ export default async function ComingSoonPage() {
         </div>
       </section>
 
-      {/*
-        Businesses: the page's highest-value action before launch, so it
-        gets a full-width panel of its own rather than sharing a row.
-        The offer is genuinely time-bound — it ends when deals go live —
-        and that is the honest reason to act now, so it is stated plainly
-        instead of being left implicit.
-      */}
       <section className="relative overflow-hidden bg-[#4d0ca8] py-10 text-white lg:py-14">
-        {/* Decorative, and deliberately low-contrast: this band is the
-            page's highest-value action, so the mascot sits behind the
-            offer rather than competing with it. aria-hidden via empty alt;
-            pointer-events are off so it can never eat a tap on the CTA. */}
         <MascotFigure
           src={art.mascotJump}
           fallbackSrc="/brand/megadeal-elephant.svg"
@@ -719,29 +670,70 @@ export default async function ComingSoonPage() {
       </section>
 
       {/* --------------------------------------------------- Launch plan */}
-      <section className={`${shell} pb-10 lg:pb-14`}>
-        <div className="flex flex-col gap-5 rounded-[22px] bg-[#f5f7fb] px-5 py-6 ring-1 ring-[#e5e8ef] sm:px-7 lg:min-h-[120px] lg:flex-row lg:items-center lg:justify-between lg:gap-10">
-          <div className="flex items-center gap-4">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#6d24dc]">
-              <MapPinIcon className="h-6 w-6" />
-            </span>
-            <div>
-              <h2 className={`${fredoka.className} text-xl font-bold text-[#18122d] sm:text-2xl`}>
-                Our launch plan
-              </h2>
-              <p className="mt-1 text-[15px] text-slate-500">Auckland first, then more Kiwi cities.</p>
+      <section className={`${shell} py-10 lg:py-14`}>
+        <div className="overflow-hidden rounded-[24px] bg-[#f8f6fc] px-5 py-7 ring-1 ring-[#ece7f2] sm:px-8 sm:py-9 lg:rounded-[28px] lg:px-10 lg:py-10">
+          <div className="max-w-[700px]">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#e81ea3]">
+              Where we&apos;re heading
+            </p>
+            <h2 className={`${fredoka.className} mt-2 text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}>
+              Auckland first. Then nationwide.
+            </h2>
+            <p className="mt-2.5 text-[15px] leading-6 text-slate-600 lg:text-base">
+              We&apos;re starting local, learning what works, then taking MegaDeal to more New Zealand communities.
+            </p>
+          </div>
+
+          <div className="relative mt-7 lg:mt-9">
+            <div className="absolute bottom-6 left-5 top-6 w-px bg-[#d8c8ed] lg:hidden" aria-hidden />
+            <div className="absolute left-[16.7%] right-[16.7%] top-5 hidden h-px bg-[#d8c8ed] lg:block" aria-hidden />
+
+            <div className="relative grid gap-5 lg:grid-cols-3 lg:gap-6">
+              <div className="relative grid grid-cols-[42px_minmax(0,1fr)] gap-4 lg:block">
+                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[#e81ea3] text-xs font-extrabold text-white shadow-[0_6px_18px_rgba(232,30,163,.24)] lg:mx-auto">
+                  01
+                </div>
+                <div className="rounded-[20px] bg-[#650fc7] p-5 text-white shadow-[0_14px_34px_rgba(77,12,168,.18)] lg:mt-5 lg:min-h-[190px] lg:p-6">
+                  <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-white ring-1 ring-inset ring-white/20">
+                    Launching first
+                  </span>
+                  <h3 className={`${fredoka.className} mt-3 text-xl font-bold`}>Auckland Launch</h3>
+                  <p className="mt-2 text-sm leading-6 text-white/82">
+                    Discover launch deals from businesses across Auckland.
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative grid grid-cols-[42px_minmax(0,1fr)] gap-4 lg:block">
+                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xs font-extrabold text-[#650fc7] ring-2 ring-[#d8c8ed] lg:mx-auto">
+                  02
+                </div>
+                <div className="rounded-[20px] bg-white p-5 ring-1 ring-[#e9e4ef] lg:mt-5 lg:min-h-[190px] lg:p-6">
+                  <h3 className={`${fredoka.className} text-xl font-bold text-[#18122d]`}>Growing Across NZ</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    We&apos;ll expand into more cities and regions as the MegaDeal community grows.
+                  </p>
+                  <p className="mt-3 text-xs font-bold leading-5 text-[#6d24dc]">
+                    {launchCities.join(" • ")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="relative grid grid-cols-[42px_minmax(0,1fr)] gap-4 lg:block">
+                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xs font-extrabold text-[#650fc7] ring-2 ring-[#d8c8ed] lg:mx-auto">
+                  03
+                </div>
+                <div className="rounded-[20px] bg-white p-5 ring-1 ring-[#e9e4ef] lg:mt-5 lg:min-h-[190px] lg:p-6">
+                  <h3 className={`${fredoka.className} text-xl font-bold text-[#18122d]`}>Nationwide MegaDeals</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    One place to discover great deals from local businesses throughout New Zealand.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-extrabold text-[#1f1836] lg:justify-end lg:gap-x-7 lg:gap-y-3 lg:text-[15px]">
-            <span className="text-[#e81ea3]">Auckland • first</span>
-            {launchCities.map((cityName) => (
-              <span key={cityName}>{cityName}</span>
-            ))}
-          </div>
         </div>
-        {/* The page makes a prominent "up to 6 months advertising free*"
-            claim in three places, so the asterisk has to actually resolve
-            to the conditions rather than dead-ending as grey text. */}
+
         <p className="mt-4 text-[11px] text-slate-400">
           *Up to 6 months free advertising is for eligible new business listings approved before
           launch.{" "}

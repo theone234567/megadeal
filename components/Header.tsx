@@ -10,12 +10,6 @@ import { SearchIcon, UserIcon } from "@/components/icons";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
-/**
- * @param logoSrc Supplied logo PNG, resolved at build time in the server
- *   layout — this component is a client component and cannot read the
- *   filesystem itself. Null until the artwork is added, in which case the
- *   existing vector Logo renders instead, so the header is never empty.
- */
 export default function Header({ logoSrc = null }: { logoSrc?: string | null }) {
   const { member, isLoggedIn } = useWix();
   const [city, setCity] = useState("");
@@ -24,18 +18,15 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
 
-  /** The wordmark, sized by the caller. `em`-based sizing on the vector
-   *  Logo is what lets one className drive both variants, so the PNG is
-   *  given a matching height and an auto width rather than fixed pixels. */
   const brand = (sizeClass: string) =>
-    logoSrc ? (
+    !isComingSoon && logoSrc ? (
       <Image
         src={logoSrc}
         alt="MegaDeal"
         width={520}
         height={150}
         priority
-        className={`h-auto w-auto select-none ${sizeClass}`}
+        className={`h-auto w-auto select-none object-contain ${sizeClass}`}
       />
     ) : (
       <Logo className={sizeClass} />
@@ -68,14 +59,9 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
   if (isComingSoon) {
     return (
       <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
-        {/* Both children are shrink-0, so the row can't absorb an overflow:
-            at 390px a 220px logo plus the full-width button overran the
-            viewport by 36px and scrolled the whole page sideways. The logo
-            steps down and the button drops "Business" on the smallest
-            screens, where the context is obvious anyway. */}
-        <div className="mx-auto flex min-h-[78px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-2 sm:gap-5 sm:px-8 lg:min-h-[96px] lg:px-10 xl:px-12">
+        <div className="mx-auto flex min-h-[94px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[108px] sm:gap-5 sm:px-8 lg:min-h-[118px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
-            {brand("max-h-[38px] text-[26px] sm:max-h-[50px] sm:text-[34px] lg:max-h-[58px] lg:text-[40px]")}
+            {brand("text-[34px] sm:text-[42px] lg:text-[48px] xl:text-[52px]")}
           </Link>
 
           <Link
@@ -98,10 +84,6 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
             {brand("max-h-[34px] text-[24px] sm:max-h-[40px] sm:text-[28px]")}
           </Link>
 
-          {/* py-2: the link's text is 20px tall, which is a small thing to
-              hit with a thumb at the very top of a phone screen. The
-              padding grows the target to 36px and the row by 2px, since
-              the logo beside it is already 34px. */}
           <Link href="/portal" className="flex shrink-0 items-center gap-1.5 py-2 text-sm font-semibold text-slate-600 hover:text-brand-700">
             <span className="relative">
               <UserIcon className="h-4 w-4" />
@@ -117,10 +99,6 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
         </div>
 
         <form onSubmit={handleSearch} className="flex w-full items-center gap-2">
-          {/* A label, not a div. The pill is 38px tall but the input inside
-              it is only 20px, and tapping a div's padding focuses nothing —
-              so two thirds of what looks like a search box did nothing when
-              tapped. As a label the whole pill focuses the field. */}
           <label className="flex flex-1 cursor-text items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 focus-within:border-brand-400">
             <SearchIcon className="h-4 w-4 shrink-0 text-slate-400" />
             <input
