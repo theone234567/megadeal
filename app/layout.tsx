@@ -14,6 +14,7 @@ import { SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/site
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
+import { MegadealArtProvider } from "@/context/MegadealArtProvider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -64,6 +65,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Resolved once per request, here rather than at each call site — the
+  // header logo and the MegadealArtProvider (which reaches the portal's
+  // mascot, several client components deeper) both need the same result.
+  const megadealArt = getMegadealArt();
+
   return (
     <html lang="en-NZ" className={`${plusJakartaSans.variable} ${fredoka.variable} ${caveat.variable}`}>
       <body className="min-h-screen bg-white font-sans text-slate-900 antialiased">
@@ -130,11 +136,13 @@ export default function RootLayout({
           <GoogleAnalytics />
           <ScrollDepthTracker />
         </Suspense>
-        <WixProvider>
-          <Header logoSrc={getMegadealArt().logo} />
-          {children}
-          <Footer siteLaunched={SITE_LAUNCHED} />
-        </WixProvider>
+        <MegadealArtProvider art={megadealArt}>
+          <WixProvider>
+            <Header logoSrc={megadealArt.logo} />
+            {children}
+            <Footer siteLaunched={SITE_LAUNCHED} />
+          </WixProvider>
+        </MegadealArtProvider>
         <EmailCapturePopup />
       </body>
     </html>

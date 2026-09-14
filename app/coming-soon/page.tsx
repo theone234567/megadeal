@@ -88,6 +88,23 @@ const art = getMegadealArt();
  *  over the illustration. All three are the same slot in the layout. */
 const heroCardImage = art.aucklandCard ?? heroPhoto;
 
+/**
+ * The supplied card (art.aucklandCard) is a finished illustration — its
+ * own white border, drop shadow and few-degree tilt are already baked
+ * into the pixels, filling its canvas edge to edge. The photo/SVG
+ * fallbacks below it are raw, unframed content instead: a plain skyline
+ * photo, or a flat vector fill.
+ *
+ * Those two need different treatment, not the same box. A raw photo needs
+ * the CSS to build the "tilted photo card" look around it (the rotate,
+ * the white border, the angled clip-path). Wrapping the *already-composed*
+ * card in that same CSS card doubles every one of those effects: a second
+ * white border, at a slightly different angle to the one already drawn in
+ * the image, showed through beside it — most visibly at the top-right
+ * corner, which is what actually looked "off" about the Auckland card.
+ */
+const hasComposedCard = Boolean(art.aucklandCard);
+
 /** One shared page shell width, so every band lines up at every breakpoint. */
 const shell = "mx-auto w-full max-w-[1320px] px-5 sm:px-6 xl:px-10";
 
@@ -292,28 +309,26 @@ export default async function ComingSoonPage() {
             bury the skyline.
           */}
           <div className="relative -mx-5 pb-0 sm:mx-auto sm:w-full sm:max-w-[720px] sm:pb-8 sm:pr-7 lg:pt-2">
-            <div className="relative sm:rotate-[1.5deg]">
-              <div className="relative aspect-[2/1] overflow-hidden border-y border-white/20 bg-white/10 sm:aspect-[1.28/1] sm:rounded-[28px] sm:border-[4px] sm:border-white/80 sm:shadow-2xl sm:[clip-path:polygon(7%_0,100%_0,94%_100%,0_100%)] lg:border-[5px] lg:shadow-[0_30px_80px_rgba(27,5,72,.34)]">
-                {heroCardImage ? (
-                  <img
-                    src={heroCardImage}
-                    alt="Auckland city and harbour"
-                    className="h-full w-full object-cover sm:-rotate-[1.5deg] sm:scale-[1.08]"
-                    fetchPriority="high"
-                  />
-                ) : (
-                  <AucklandSkylineArt
-                    shape="fill"
-                    className="h-full w-full object-cover sm:-rotate-[1.5deg] sm:scale-[1.08]"
-                  />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#241044]/16 via-transparent to-transparent" />
+            {hasComposedCard ? (
+              /* The card as delivered: a plain box at the artwork's own
+                 native ratio (4/3, exactly — it fills that canvas corner to
+                 corner with no transparent margin to speak of), no rotate,
+                 no added border, no clip-path. The tilt, border and shadow
+                 a viewer sees are the image's own pixels, not CSS built
+                 around them, so there is nothing left to double up. */
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
+                <img
+                  src={art.aucklandCard as string}
+                  alt="Auckland city and harbour"
+                  className="h-full w-full object-cover"
+                  fetchPriority="high"
+                />
 
-                <div className="absolute right-3 top-3 rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#650fc7] shadow-sm sm:right-7 sm:top-6 sm:-rotate-[1.5deg] sm:px-5 sm:py-2 sm:text-sm sm:tracking-[0.13em]">
+                <div className="absolute right-3 top-3 rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#650fc7] shadow-sm sm:right-6 sm:top-5 sm:px-5 sm:py-2 sm:text-sm sm:tracking-[0.13em]">
                   Auckland first
                 </div>
 
-                <div className="absolute bottom-3 left-4 hidden max-w-[70%] rounded-[14px] bg-[#321373]/92 px-4 py-3 text-white shadow-lg backdrop-blur-sm sm:bottom-6 sm:left-8 sm:block sm:max-w-[390px] sm:-rotate-[1.5deg] sm:rounded-[18px] sm:px-6 sm:py-4">
+                <div className="absolute bottom-3 left-4 hidden max-w-[70%] rounded-[14px] bg-[#321373]/92 px-4 py-3 text-white shadow-lg backdrop-blur-sm sm:bottom-5 sm:left-7 sm:block sm:max-w-[380px] sm:rounded-[18px] sm:px-6 sm:py-4">
                   <p className={`${fredoka.className} text-base font-bold sm:text-xl`}>
                     Same city. More to discover.
                   </p>
@@ -333,7 +348,54 @@ export default async function ComingSoonPage() {
                   className="absolute bottom-0 right-2 h-auto w-[112px] drop-shadow-xl sm:hidden"
                 />
               </div>
-            </div>
+            ) : (
+              /* No supplied card yet: build the "tilted photo card" look
+                 around whatever raw content is available (a photo drop, or
+                 failing that the flat vector fill) — same treatment as
+                 before art.aucklandCard existed. */
+              <div className="relative sm:rotate-[1.5deg]">
+                <div className="relative aspect-[2/1] overflow-hidden border-y border-white/20 bg-white/10 sm:aspect-[1.28/1] sm:rounded-[28px] sm:border-[4px] sm:border-white/80 sm:shadow-2xl sm:[clip-path:polygon(7%_0,100%_0,94%_100%,0_100%)] lg:border-[5px] lg:shadow-[0_30px_80px_rgba(27,5,72,.34)]">
+                  {heroCardImage ? (
+                    <img
+                      src={heroCardImage}
+                      alt="Auckland city and harbour"
+                      className="h-full w-full object-cover sm:-rotate-[1.5deg] sm:scale-[1.08]"
+                      fetchPriority="high"
+                    />
+                  ) : (
+                    <AucklandSkylineArt
+                      shape="fill"
+                      className="h-full w-full object-cover sm:-rotate-[1.5deg] sm:scale-[1.08]"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#241044]/16 via-transparent to-transparent" />
+
+                  <div className="absolute right-3 top-3 rounded-full bg-white px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#650fc7] shadow-sm sm:right-7 sm:top-6 sm:-rotate-[1.5deg] sm:px-5 sm:py-2 sm:text-sm sm:tracking-[0.13em]">
+                    Auckland first
+                  </div>
+
+                  <div className="absolute bottom-3 left-4 hidden max-w-[70%] rounded-[14px] bg-[#321373]/92 px-4 py-3 text-white shadow-lg backdrop-blur-sm sm:bottom-6 sm:left-8 sm:block sm:max-w-[390px] sm:-rotate-[1.5deg] sm:rounded-[18px] sm:px-6 sm:py-4">
+                    <p className={`${fredoka.className} text-base font-bold sm:text-xl`}>
+                      Same city. More to discover.
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-white/85 sm:mt-1 sm:text-sm">
+                      Local offers. Local businesses. Better value.
+                    </p>
+                  </div>
+
+                  {/* Mobile: inside the picture, clear of both edges so the
+                      mascot's tag can't be clipped. */}
+                  <MascotFigure
+                    src={art.mascotBigDeals}
+                    fallbackSrc="/brand/deal-hunter-elephant.svg"
+                    alt=""
+                    width={360}
+                    height={280}
+                    className="absolute bottom-0 right-2 h-auto w-[112px] drop-shadow-xl sm:hidden"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Desktop: overhangs the frame, as designed. */}
             <MascotFigure

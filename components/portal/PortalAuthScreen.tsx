@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import ElephantMascot from "@/components/ElephantMascot";
+import MascotFigure from "@/components/megadeal/MascotFigure";
+import { useMegadealArt } from "@/context/MegadealArtProvider";
 import MerchantLoginForm from "./MerchantLoginForm";
 
 /**
@@ -28,6 +31,8 @@ export default function PortalAuthScreen({
   intro: string;
   redirectTo?: string;
 }) {
+  const art = useMegadealArt();
+
   // -mb-16 below cancels the footer's own mt-16. That margin is the site's
   // spacing convention and looks like ordinary whitespace on every page
   // whose <main> is white — but a margin cannot be painted over, so against
@@ -49,13 +54,25 @@ export default function PortalAuthScreen({
           site-wide change and doesn't belong in this one.) */}
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-10 sm:py-14">
         <div className="overflow-hidden rounded-3xl bg-white shadow-card-hover">
-          {/* The brand actually showing up. A white disc behind the mascot
-              because it was drawn to sit on white beside the wordmark, and
-              a purple ground would eat its outline. */}
-          <div className="bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 px-6 py-7 text-center">
-            <span className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow">
-              <ElephantMascot className="h-11 w-11" />
-            </span>
+          {/* The mascot overlaps the top edge rather than sitting inside a
+              tiny badge circle. The earlier version boxed it into an 11x11
+              (44px) disc, sized for the old flat hand-drawn icon — but the
+              supplied illustrations are detailed 3D renders, the same
+              artwork used at 120-190px everywhere else on the site
+              (app/coming-soon/page.tsx). Shrunk to 44px that detail turns
+              to mush; shown at its own scale it reads the way it was
+              actually drawn. "Waving" doubles as a plain-language greeting
+              on a sign-in screen, which the old icon's static face didn't. */}
+          <div className="relative bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 px-6 pb-7 pt-16 text-center">
+            <MascotFigure
+              src={art.mascotWave}
+              fallbackSrc="/brand/megadeal-elephant.svg"
+              alt=""
+              width={320}
+              height={250}
+              priority
+              className="absolute left-1/2 top-0 h-auto w-[128px] -translate-x-1/2 -translate-y-[42%] drop-shadow-[0_10px_18px_rgba(37,10,77,.35)]"
+            />
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-100">
               MegaDeal for business
             </p>

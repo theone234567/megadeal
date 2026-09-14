@@ -1,11 +1,17 @@
 /**
  * The MegaDeal logo: deal-hunter elephant + "Mega" + the pink Deal tag.
  *
- * Replaces two different treatments that had drifted apart — an <img> to
- * /brand/megadeal-logo-deal-hunter.svg on the landing pages, and a
- * hand-assembled text wordmark plus the interactive ElephantMascot
- * everywhere else — with one component, so the mark is identical on
- * every page.
+ * Fallback only now: the root layout resolves the real logo artwork in
+ * public/megadeal/ (see lib/megadealAssets.ts) and Header renders that PNG
+ * whenever it's present, which today it always is. This vector version
+ * renders only if that file is ever missing on a future deploy — the
+ * header has to draw *something*, and a broken-image glyph is worse than
+ * a simpler mark. It used to be the header's only option, replacing an
+ * <img> to /brand/megadeal-logo-deal-hunter.svg (a file that never
+ * actually painted — SVG pulled in through <img> is a sandboxed document
+ * that ignores its own internal references, so that logo shipped as a
+ * wordmark with an empty space where the elephant should be) and a
+ * hand-assembled text wordmark used everywhere else.
  *
  * Two things were broken in the SVG file it replaces:
  *
