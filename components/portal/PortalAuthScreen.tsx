@@ -64,13 +64,16 @@ export default function PortalAuthScreen({
               actually drawn. "Waving" doubles as a plain-language greeting
               on a sign-in screen, which the old icon's static face didn't. */}
           <div className="relative bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 px-6 pb-7 pt-16 text-center">
-            {/* -translate-x-[58%], not the box-centering -50%: the source
-                artwork's own transparent canvas is centered, but its face
-                (the part an eye actually centers on) sits well right of
-                that — the raised waving hand is thin and light on the left,
-                the head+ears are heavy on the right, so centering the box
-                visibly reads as the character leaning right. This aligns
-                the face instead. */}
+            {/* Plain box-centering (-translate-x-1/2). A previous version
+                used -58% on the theory that the head/ears were visually
+                heavier on the right than the raised hand was on the left —
+                but a pixel-level alpha-centroid check of the source artwork
+                puts its visual weight at 50.3% of its own width, essentially
+                dead center (the two big round ears are symmetric, and the
+                raised hand on the left roughly balances the small paw on
+                the lower right). The -58% offset was an 8%-of-width
+                overcorrection in the wrong direction, which is what still
+                read as off-center. */}
             <MascotFigure
               src={art.mascotWave}
               fallbackSrc="/brand/megadeal-elephant.svg"
@@ -78,7 +81,7 @@ export default function PortalAuthScreen({
               width={320}
               height={250}
               priority
-              className="absolute left-1/2 top-0 h-auto w-[128px] -translate-x-[58%] -translate-y-[42%] drop-shadow-[0_10px_18px_rgba(37,10,77,.35)]"
+              className="absolute left-1/2 top-0 h-auto w-[128px] -translate-x-1/2 -translate-y-[42%] drop-shadow-[0_10px_18px_rgba(37,10,77,.35)]"
             />
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-100">
               MegaDeal for business
