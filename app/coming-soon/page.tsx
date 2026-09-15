@@ -168,10 +168,16 @@ const launchCities = ["Wellington", "Christchurch", "Queenstown", "Hamilton"];
  */
 const MIN_APPROVED_BUSINESSES_TO_SHOW_STATS = 33;
 
-function Tick({ children }: { children: ReactNode }) {
+/** Defaults to the brand purple; the deal-hunters section below passes
+ *  the teal accent instead so its checkmarks match that section's own
+ *  color, not the page's default. */
+function Tick({ children, color = "#650fc7" }: { children: ReactNode; color?: string }) {
   return (
     <li className="flex items-start gap-2.5 text-[15px] font-semibold leading-6 text-[#18122d]">
-      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#650fc7] text-white">
+      <span
+        className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white"
+        style={{ backgroundColor: color }}
+      >
         <CheckIcon className="h-3 w-3" />
       </span>
       <span>{children}</span>
@@ -535,11 +541,11 @@ export default async function ComingSoonPage() {
         </div>
       </section>
 
-      <section id="launch-updates" className="scroll-mt-20 bg-[#fff5fa] py-10 lg:py-14">
+      <section id="launch-updates" className="scroll-mt-20 bg-[#f0fdfa] py-10 lg:py-14">
         <div className={shell}>
           <div className="grid items-center gap-8 lg:grid-cols-[1fr_minmax(0,360px)] lg:gap-14">
             <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#c7128a]">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#0f766e]">
                 For deal hunters
               </p>
               <h2
@@ -553,8 +559,8 @@ export default async function ComingSoonPage() {
               </p>
 
               <ul className="mt-5 grid gap-2.5 sm:grid-cols-2 sm:gap-x-8">
-                <Tick>Free to join, unsubscribe anytime</Tick>
-                <Tick>Early access before deals go public</Tick>
+                <Tick color="#0f766e">Free to join, unsubscribe anytime</Tick>
+                <Tick color="#0f766e">Early access before deals go public</Tick>
               </ul>
 
               <div className="mt-6 max-w-[520px]">
@@ -568,7 +574,7 @@ export default async function ComingSoonPage() {
                 />
               </div>
               {stats && stats.waitlistCount > 0 && (
-                <p className="mt-3 text-sm font-semibold text-[#a3175f]">
+                <p className="mt-3 text-sm font-semibold text-[#0f766e]">
                   Join {stats.waitlistCount.toLocaleString()} locals already on the list.
                 </p>
               )}
