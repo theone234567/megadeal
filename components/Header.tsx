@@ -23,9 +23,16 @@ export default function Header() {
   // One size everywhere — this used to differ between the coming-soon
   // header and every other page's, which read as inconsistent branding
   // just like the old SVG-vs-raster split did.
+  //
+  // 36/44/48px: standard professional header-logo height (most sites
+  // land in a 32-48px range regardless of brand). The mark had been
+  // pushed up to 72-126px across several "bigger" requests in a row —
+  // legible, but blown up that far a character-based logo reads as a
+  // kids'-app icon rather than a business wordmark, no matter how the
+  // character itself is drawn.
   const LOGO_SIZE = {
-    imageHeight: "h-[72px] sm:h-[90px] lg:h-[108px] xl:h-[126px]",
-    svgTextSize: "text-[38px] sm:text-[47px] lg:text-[54px] xl:text-[59px]",
+    imageHeight: "h-9 sm:h-11 lg:h-12",
+    svgTextSize: "text-[19px] sm:text-[23px] lg:text-[25px]",
   };
 
   // The supplied lockup (elephant peeking over the "MegaDeal" wordmark,
@@ -74,7 +81,7 @@ export default function Header() {
   if (isComingSoon) {
     return (
       <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
-        <div className="mx-auto flex min-h-[88px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-2 sm:min-h-[106px] sm:gap-5 sm:px-8 lg:min-h-[124px] lg:px-10 xl:px-12">
+        <div className="mx-auto flex min-h-[60px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[68px] sm:gap-5 sm:px-8 lg:min-h-[72px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
             {brand()}
           </Link>
