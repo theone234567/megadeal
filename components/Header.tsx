@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
+import { useMegadealArt } from "@/context/MegadealArtProvider";
 import Logo from "@/components/Logo";
 import { SearchIcon, UserIcon } from "@/components/icons";
 
@@ -11,19 +13,33 @@ const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilto
 
 export default function Header() {
   const { member, isLoggedIn } = useWix();
+  const art = useMegadealArt();
   const [city, setCity] = useState("");
   const [query, setQuery] = useState("");
   const router = useRouter();
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
 
-  // The site header used to have two different logo treatments — the
-  // supplied raster wordmark (public/megadeal/megadeal-logo.webp)
-  // everywhere, and this SVG lockup only on /coming-soon. That meant most
-  // of the site (about, portal, admin, every legal page) still showed the
-  // older cluttered logo after the SVG one was refined, since nothing
-  // else routed through it. The SVG is now the one logo everywhere.
-  const brand = (sizeClass: string) => <Logo className={sizeClass} />;
+  // The supplied lockup (elephant peeking over the "MegaDeal" wordmark,
+  // "Deal" styled as a price tag) is the real logo — used everywhere, at
+  // a generous size since at the small sizes this header used before,
+  // its detail just read as clutter. Falls back to the plain SVG mark
+  // only if the file hasn't been supplied yet — which needs its own
+  // font-size-based sizing (it scales itself in em units) rather than
+  // the image's height classes, hence the two size props below.
+  const brand = (size: { imageHeight: string; svgTextSize: string }) =>
+    art.logo ? (
+      <Image
+        src={art.logo}
+        alt="MegaDeal"
+        width={2172}
+        height={724}
+        priority
+        className={`w-auto select-none object-contain ${size.imageHeight}`}
+      />
+    ) : (
+      <Logo className={size.svgTextSize} />
+    );
 
   const [profileComplete, setProfileComplete] = useState(true);
   useEffect(() => {
@@ -54,7 +70,10 @@ export default function Header() {
       <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
         <div className="mx-auto flex min-h-[94px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[108px] sm:gap-5 sm:px-8 lg:min-h-[118px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
-            {brand("text-[34px] sm:text-[42px] lg:text-[48px] xl:text-[52px]")}
+            {brand({
+              imageHeight: "h-16 sm:h-20 lg:h-24 xl:h-28",
+              svgTextSize: "text-[34px] sm:text-[42px] lg:text-[48px] xl:text-[52px]",
+            })}
           </Link>
 
           <Link
@@ -74,7 +93,7 @@ export default function Header() {
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-y-1">
           <Link href="/" aria-label="MegaDeal home" className="min-w-0 shrink">
-            {brand("max-h-[34px] text-[24px] sm:max-h-[40px] sm:text-[28px]")}
+            {brand({ imageHeight: "h-12 sm:h-14", svgTextSize: "text-[26px] sm:text-[30px]" })}
           </Link>
 
           <Link href="/portal" className="flex shrink-0 items-center gap-1.5 py-2 text-sm font-semibold text-slate-600 hover:text-brand-700">
