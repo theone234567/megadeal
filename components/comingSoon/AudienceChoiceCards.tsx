@@ -19,7 +19,7 @@ export default function AudienceChoiceCards() {
           </p>
           <a
             href="#get-notified"
-            className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-full bg-ember-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-ember-600 active:scale-95"
+            className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-full bg-ember-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-ember-700 active:scale-95"
           >
             Get launch updates →
           </a>

@@ -46,7 +46,7 @@ export default function MegaShopProductCard({ product }: { product: Deal }) {
         )}
 
         {product.discountPercent > 0 && (
-          <span className="absolute left-2 top-2 rounded-full bg-ember-500 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+          <span className="absolute left-2 top-2 rounded-full bg-ember-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
             {product.discountPercent}% OFF
           </span>
         )}

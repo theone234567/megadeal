@@ -43,7 +43,7 @@ export default function SampleDealCard() {
             className="object-cover"
           />
           <div className="absolute left-2 top-9 flex flex-col gap-1">
-            <span className="rounded-full bg-ember-500 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+            <span className="rounded-full bg-ember-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
               50% OFF
             </span>
           </div>

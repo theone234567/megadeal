@@ -402,7 +402,7 @@ export default function DealDetail({
                     if (!preview) trackDealEvent(deal.id, "click");
                     setShowContact(true);
                   }}
-                  className="w-full rounded-full bg-ember-500 py-3 text-center font-bold text-white shadow-card transition hover:bg-ember-600 active:scale-95"
+                  className="w-full rounded-full bg-ember-600 py-3 text-center font-bold text-white shadow-card transition hover:bg-ember-700 active:scale-95"
                 >
                   Get this deal
                 </button>

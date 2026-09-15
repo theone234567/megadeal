@@ -66,7 +66,7 @@ export default function DealCard({
 
         {!soldOut && deal.discountPercent > 0 && (
           <div className="absolute left-2 top-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-ember-500 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+            <span className="inline-flex items-center gap-1 rounded-full bg-ember-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
               {deal.isFlash && <span className="animate-flash-zap">⚡</span>}
               {deal.discountPercent}% OFF
             </span>

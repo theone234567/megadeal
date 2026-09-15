@@ -67,7 +67,7 @@ export default function BusinessLaunchOffer() {
             </p>
             <Link
               href="/list-your-business"
-              className="mx-auto mt-6 flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-ember-500 py-3.5 text-center font-bold text-white transition hover:bg-ember-600 active:scale-95"
+              className="mx-auto mt-6 flex w-full max-w-xs items-center justify-center gap-2 rounded-full bg-ember-600 py-3.5 text-center font-bold text-white transition hover:bg-ember-700 active:scale-95"
             >
               List my business →
             </Link>

@@ -55,7 +55,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
             </div>
             <Link
               href="/list-your-business"
-              className="shrink-0 rounded-full bg-ember-500 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-ember-600"
+              className="shrink-0 rounded-full bg-ember-600 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-ember-700"
             >
               List your deal →
             </Link>

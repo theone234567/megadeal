@@ -221,7 +221,7 @@ export default async function ComingSoonPage() {
           className={`${shell} grid items-center gap-6 pb-0 pt-7 sm:gap-10 sm:py-12 lg:min-h-[590px] lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:py-14`}
         >
           <div className="order-1 lg:max-w-[640px]">
-            <div className="inline-flex rounded-full bg-[#e81ea3] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white shadow-sm sm:px-5 sm:text-sm">
+            <div className="inline-flex rounded-full bg-[#c7128a] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white shadow-sm sm:px-5 sm:text-sm">
               Launching first in Auckland
             </div>
             <h1
@@ -387,7 +387,7 @@ export default async function ComingSoonPage() {
                 href="#launch-updates"
                 className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#e81ea3]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[150px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ffe1f2] text-[#e81ea3] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ffe1f2] text-[#c7128a] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
                   <TicketIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
                 </span>
                 <span className="min-w-0 flex-1">
@@ -399,7 +399,7 @@ export default async function ComingSoonPage() {
                   <span className="mt-1.5 hidden max-w-[500px] text-[15px] leading-6 text-slate-600 sm:block lg:mt-2">
                     Join free to get early access to local offers when MegaDeal launches in Auckland.
                   </span>
-                  <span className="mt-0.5 block text-[13px] font-extrabold text-[#e81ea3] underline-offset-4 group-hover:underline sm:mt-2.5 sm:text-sm">
+                  <span className="mt-0.5 block text-[13px] font-extrabold text-[#c7128a] underline-offset-4 group-hover:underline sm:mt-2.5 sm:text-sm">
                     Get launch updates →
                   </span>
                 </span>
@@ -472,7 +472,7 @@ export default async function ComingSoonPage() {
                 key={title}
                 className="flex items-center gap-4 rounded-[18px] border border-white/10 bg-white/5 p-4 lg:min-h-[132px] lg:p-5"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e81ea3] text-sm font-extrabold">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#c7128a] text-sm font-extrabold">
                   {number}
                 </span>
                 <span className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-[#650fc7] sm:flex">
@@ -539,7 +539,7 @@ export default async function ComingSoonPage() {
         <div className={shell}>
           <div className="grid items-center gap-8 lg:grid-cols-[1fr_minmax(0,360px)] lg:gap-14">
             <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#e81ea3]">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#c7128a]">
                 For deal hunters
               </p>
               <h2
@@ -618,7 +618,7 @@ export default async function ComingSoonPage() {
               <ul className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-x-8">
                 {businessBenefits.map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-[15px] font-semibold leading-6">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#e81ea3] text-white">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#c7128a] text-white">
                       <CheckIcon className="h-3 w-3" />
                     </span>
                     <span>{item}</span>
@@ -629,7 +629,7 @@ export default async function ComingSoonPage() {
               <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
                 <Link
                   href="/list-your-business"
-                  className="inline-flex h-12 items-center rounded-full bg-[#e81ea3] px-7 text-sm font-extrabold text-white shadow-lg transition hover:bg-[#c7128a]"
+                  className="inline-flex h-12 items-center rounded-full bg-[#c7128a] px-7 text-sm font-extrabold text-white shadow-lg transition hover:bg-[#a10f70]"
                 >
                   Claim my free advertising →
                 </Link>
@@ -673,7 +673,7 @@ export default async function ComingSoonPage() {
       <section className={`${shell} py-10 lg:py-14`}>
         <div className="overflow-hidden rounded-[24px] bg-[#f8f6fc] px-5 py-7 ring-1 ring-[#ece7f2] sm:px-8 sm:py-9 lg:rounded-[28px] lg:px-10 lg:py-10">
           <div className="max-w-[700px]">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#e81ea3]">
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#c7128a]">
               Where we&apos;re heading
             </p>
             <h2 className={`${fredoka.className} mt-2 text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}>
@@ -690,7 +690,7 @@ export default async function ComingSoonPage() {
 
             <div className="relative grid gap-5 lg:grid-cols-3 lg:gap-6">
               <div className="relative grid grid-cols-[42px_minmax(0,1fr)] gap-4 lg:block">
-                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[#e81ea3] text-xs font-extrabold text-white shadow-[0_6px_18px_rgba(232,30,163,.24)] lg:mx-auto">
+                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[#c7128a] text-xs font-extrabold text-white shadow-[0_6px_18px_rgba(232,30,163,.24)] lg:mx-auto">
                   01
                 </div>
                 <div className="rounded-[20px] bg-[#650fc7] p-5 text-white shadow-[0_14px_34px_rgba(77,12,168,.18)] lg:mt-5 lg:min-h-[190px] lg:p-6">
@@ -734,7 +734,7 @@ export default async function ComingSoonPage() {
           </div>
         </div>
 
-        <p className="mt-4 text-[11px] text-slate-400">
+        <p className="mt-4 text-[11px] text-slate-500">
           *Up to 6 months free advertising is for eligible new business listings approved before
           launch.{" "}
           <Link href="/terms" className="underline hover:text-[#650fc7]">

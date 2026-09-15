@@ -84,7 +84,7 @@ export default function EmailSignupForm({
 
   const buttonClass =
     accent === "ember"
-      ? "bg-ember-500 hover:bg-ember-600"
+      ? "bg-ember-600 hover:bg-ember-700"
       : "bg-brand-600 hover:bg-brand-700";
 
   const inputClass =
@@ -92,7 +92,7 @@ export default function EmailSignupForm({
       ? "border border-slate-200 bg-white text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400"
       : "border border-white/40 bg-white/95 text-slate-800 outline-none placeholder:text-slate-400 focus:border-white";
 
-  const mutedTextClass = surface === "plain" ? "text-slate-500" : "text-white/80";
+  const mutedTextClass = surface === "plain" ? "text-slate-600" : "text-white/80";
   const linkClass =
     surface === "plain"
       ? "underline hover:text-brand-700"

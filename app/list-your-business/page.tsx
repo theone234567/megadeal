@@ -261,7 +261,7 @@ export default async function MerchantsPage() {
       {/* Hero */}
       <section id="hero" className="relative overflow-hidden bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-3xl">
-          <span className="inline-flex items-center gap-2 rounded-full bg-ember-500 px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white shadow-card sm:text-base">
+          <span className="inline-flex items-center gap-2 rounded-full bg-ember-600 px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white shadow-card sm:text-base">
             🚀 Coming soon to Auckland — up to 6 months free before launch
           </span>
 
@@ -400,12 +400,12 @@ export default async function MerchantsPage() {
                 </span>
                 <div>
                   <p className="font-bold text-slate-900">{t.label}</p>
-                  <p className="text-sm text-slate-500">{t.hook}</p>
+                  <p className="text-sm text-slate-600">{t.hook}</p>
                 </div>
               </div>
             ))}
           </div>
-          <p className="mt-6 text-sm text-slate-500">
+          <p className="mt-6 text-sm text-slate-600">
             Also welcome: bars, yoga &amp; pilates studios, workshops and
             classes, entertainment and nightlife venues, and anything
             else local with something to offer.
@@ -531,7 +531,7 @@ export default async function MerchantsPage() {
 
       {/* Pre-launch offer — real, time-based urgency (the offer ends at
           launch, not an invented headcount cap). */}
-      <section className="bg-ember-500 px-4 py-10 sm:px-6 lg:px-8">
+      <section className="bg-ember-600 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-lg font-extrabold text-white sm:text-xl">
             Pre-launch offer — up to 6 months free

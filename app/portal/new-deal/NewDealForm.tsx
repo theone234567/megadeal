@@ -367,7 +367,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         </p>
         <Link
           href="/list-your-business#signup"
-          className="mt-4 inline-block rounded-full bg-ember-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-ember-600"
+          className="mt-4 inline-block rounded-full bg-ember-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-ember-700"
         >
           Sign up your business
         </Link>
@@ -452,7 +452,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             >
               ← Back to edit
             </button>
-            <span className="rounded-full bg-ember-500 px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-white shadow-sm">
+            <span className="rounded-full bg-ember-600 px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-white shadow-sm">
               👀 Preview
             </span>
             <p className="w-full text-xs font-semibold text-slate-500 sm:w-auto">

@@ -307,7 +307,7 @@ export default function PortalPage() {
 
               <Link
                 href="/portal/new-deal"
-                className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-ember-500 px-6 py-4 text-center text-base font-bold text-white shadow-card transition hover:bg-ember-600"
+                className="mt-6 flex items-center justify-center gap-2 rounded-2xl bg-ember-600 px-6 py-4 text-center text-base font-bold text-white shadow-card transition hover:bg-ember-700"
               >
                 + Create a new deal
               </Link>
@@ -430,7 +430,7 @@ export default function PortalPage() {
                     <div className="ml-auto flex items-center gap-2">
                       <Link
                         href={`/portal/new-deal?draft=${draft._id}`}
-                        className="rounded-full bg-ember-500 px-5 py-2.5 text-xs font-extrabold text-white shadow-card transition hover:bg-ember-600 active:scale-95"
+                        className="rounded-full bg-ember-600 px-5 py-2.5 text-xs font-extrabold text-white shadow-card transition hover:bg-ember-700 active:scale-95"
                       >
                         Keep going →
                       </Link>
