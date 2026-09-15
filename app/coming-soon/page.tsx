@@ -494,6 +494,102 @@ export default async function ComingSoonPage() {
         </div>
       </section>
 
+      {/* ---------------------------------------------- For local businesses
+          Placed right after "How MegaDeal works" rather than after the
+          consumer signup section below — the previous order ran four
+          consumer-only sections in a row (trust strip, how it works,
+          categories, deal-hunter signup) before a business owner saw
+          anything for them again. This is the first thing a business
+          owner who doesn't click the hero card sees. */}
+      <section className="relative overflow-hidden bg-[#650fc7] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 py-10 text-white lg:py-14">
+        <MascotFigure
+          src={art.mascotJump}
+          fallbackSrc="/brand/megadeal-elephant.svg"
+          alt=""
+          width={300}
+          height={340}
+          className="absolute -bottom-6 right-2 hidden h-auto w-[150px] opacity-[0.18] lg:block xl:right-10 xl:w-[190px]"
+        />
+        <div className={`${shell} relative z-10`}>
+          <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
+            <div>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffb3dd]">
+                For local businesses
+              </p>
+              <h2
+                className={`${fredoka.className} mt-2 max-w-[620px] text-2xl font-bold leading-tight sm:text-3xl`}
+              >
+                Fill quiet times. Grow local customers.
+              </h2>
+              {/* Answers "is this even for my business?" before the reader
+                  gets to the offer — a business owner's first question,
+                  not a second-order detail. Kept to one line rather than
+                  repeating the category grid below (which is written for
+                  shoppers, not businesses) so the same list isn't
+                  maintained in two places with two different framings. */}
+              <p className="mt-3 text-[15px] font-semibold leading-6 text-white">
+                From cafés and salons to gyms and tour operators — if you serve local customers, you belong here.
+              </p>
+              <p className="mt-2.5 max-w-[620px] text-[15px] leading-6 text-white/85 lg:text-base">
+                Get in before we launch and your first months of advertising are on us. Once deals
+                go live the offer closes, so the businesses that join now are the ones customers
+                see on day one.
+              </p>
+
+              <ul className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-x-8">
+                {businessBenefits.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-[15px] font-semibold leading-6">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#c7128a] text-white">
+                      <CheckIcon className="h-3 w-3" />
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+                <Link
+                  href="/list-your-business"
+                  className="inline-flex h-12 items-center rounded-full bg-[#c7128a] px-7 text-sm font-extrabold text-white shadow-lg transition hover:bg-[#a10f70]"
+                >
+                  Claim my free advertising →
+                </Link>
+                <span className="text-sm font-semibold text-white/75">
+                  Takes about 60 seconds · No credit card
+                </span>
+              </div>
+              {stats && stats.merchantCount > 0 && (
+                <p className="mt-4 text-sm font-semibold text-[#ffb3dd]">
+                  {stats.merchantCount.toLocaleString()} Auckland businesses have already signed up.
+                </p>
+              )}
+            </div>
+
+            <div className="rounded-[24px] bg-white/10 p-6 ring-1 ring-inset ring-white/15 sm:p-7">
+              <p className={`${fredoka.className} text-xl font-bold sm:text-2xl`}>
+                What it costs you
+              </p>
+              <dl className="mt-4 space-y-3 text-[15px]">
+                {[
+                  ["Commission on your sales", "0%"],
+                  ["Advertising before launch", "Free*"],
+                  ["Customer payments", "Direct to you"],
+                  ["Lock-in contract", "None"],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="flex items-baseline justify-between gap-4 border-b border-white/15 pb-3 last:border-0 last:pb-0"
+                  >
+                    <dt className="text-white/80">{label}</dt>
+                    <dd className="shrink-0 font-extrabold">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ---------------------------------------------------- Categories */}
       <section id="categories" className={`${shell} pb-8 lg:pb-10`}>
         <div className="text-center">
@@ -590,86 +686,6 @@ export default async function ComingSoonPage() {
                 className="absolute -left-24 -top-14 z-10 hidden h-auto w-[120px] -scale-x-100 drop-shadow-[0_12px_20px_rgba(69,16,141,.18)] lg:block xl:-left-32 xl:w-[148px]"
               />
               <SampleDealCard />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="relative overflow-hidden bg-[#650fc7] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 py-10 text-white lg:py-14">
-        <MascotFigure
-          src={art.mascotJump}
-          fallbackSrc="/brand/megadeal-elephant.svg"
-          alt=""
-          width={300}
-          height={340}
-          className="absolute -bottom-6 right-2 hidden h-auto w-[150px] opacity-[0.18] lg:block xl:right-10 xl:w-[190px]"
-        />
-        <div className={`${shell} relative z-10`}>
-          <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
-            <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffb3dd]">
-                For local businesses
-              </p>
-              <h2
-                className={`${fredoka.className} mt-2 max-w-[620px] text-2xl font-bold leading-tight sm:text-3xl`}
-              >
-                Fill quiet times. Grow local customers.
-              </h2>
-              <p className="mt-2.5 max-w-[620px] text-[15px] leading-6 text-white/85 lg:text-base">
-                Get in before we launch and your first months of advertising are on us. Once deals
-                go live the offer closes, so the businesses that join now are the ones customers
-                see on day one.
-              </p>
-
-              <ul className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-x-8">
-                {businessBenefits.map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-[15px] font-semibold leading-6">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#c7128a] text-white">
-                      <CheckIcon className="h-3 w-3" />
-                    </span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
-                <Link
-                  href="/list-your-business"
-                  className="inline-flex h-12 items-center rounded-full bg-[#c7128a] px-7 text-sm font-extrabold text-white shadow-lg transition hover:bg-[#a10f70]"
-                >
-                  Claim my free advertising →
-                </Link>
-                <span className="text-sm font-semibold text-white/75">
-                  Takes about 60 seconds · No credit card
-                </span>
-              </div>
-              {stats && stats.merchantCount > 0 && (
-                <p className="mt-4 text-sm font-semibold text-[#ffb3dd]">
-                  {stats.merchantCount.toLocaleString()} Auckland businesses have already signed up.
-                </p>
-              )}
-            </div>
-
-            <div className="rounded-[24px] bg-white/10 p-6 ring-1 ring-inset ring-white/15 sm:p-7">
-              <p className={`${fredoka.className} text-xl font-bold sm:text-2xl`}>
-                What it costs you
-              </p>
-              <dl className="mt-4 space-y-3 text-[15px]">
-                {[
-                  ["Commission on your sales", "0%"],
-                  ["Advertising before launch", "Free*"],
-                  ["Customer payments", "Direct to you"],
-                  ["Lock-in contract", "None"],
-                ].map(([label, value]) => (
-                  <div
-                    key={label}
-                    className="flex items-baseline justify-between gap-4 border-b border-white/15 pb-3 last:border-0 last:pb-0"
-                  >
-                    <dt className="text-white/80">{label}</dt>
-                    <dd className="shrink-0 font-extrabold">{value}</dd>
-                  </div>
-                ))}
-              </dl>
             </div>
           </div>
         </div>
