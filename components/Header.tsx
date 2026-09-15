@@ -68,11 +68,11 @@ export default function Header() {
   if (isComingSoon) {
     return (
       <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
-        <div className="mx-auto flex min-h-[94px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[108px] sm:gap-5 sm:px-8 lg:min-h-[118px] lg:px-10 xl:px-12">
+        <div className="mx-auto flex min-h-[132px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[152px] sm:gap-5 sm:px-8 lg:min-h-[166px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
             {brand({
-              imageHeight: "h-16 sm:h-20 lg:h-24 xl:h-28",
-              svgTextSize: "text-[34px] sm:text-[42px] lg:text-[48px] xl:text-[52px]",
+              imageHeight: "h-24 sm:h-[7.5rem] lg:h-36 xl:h-[10.5rem]",
+              svgTextSize: "text-[51px] sm:text-[63px] lg:text-[72px] xl:text-[78px]",
             })}
           </Link>
 
@@ -93,7 +93,7 @@ export default function Header() {
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-y-1">
           <Link href="/" aria-label="MegaDeal home" className="min-w-0 shrink">
-            {brand({ imageHeight: "h-12 sm:h-14", svgTextSize: "text-[26px] sm:text-[30px]" })}
+            {brand({ imageHeight: "h-[72px] sm:h-[84px]", svgTextSize: "text-[39px] sm:text-[45px]" })}
           </Link>
 
           <Link href="/portal" className="flex shrink-0 items-center gap-1.5 py-2 text-sm font-semibold text-slate-600 hover:text-brand-700">
