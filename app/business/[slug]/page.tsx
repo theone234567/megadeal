@@ -20,7 +20,7 @@ export async function generateMetadata({
   params: { slug: string };
 }): Promise<Metadata> {
   const result = await fetchBusinessProfileBySlug(params.slug);
-  if (!result) return { title: `Business not found | ${SITE_NAME}` };
+  if (!result) return { title: "Business not found" };
 
   const { business, deals } = result;
   const title = `${business.businessName} — Deals & Contact Info`;

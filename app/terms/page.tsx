@@ -133,7 +133,7 @@ export default function TermsPage() {
         their advertising (for example, showing prices to consumers
         inclusive of GST where required). If something looks wrong, tell us
         via our{" "}
-        <a href="/contact" className="text-brand-600 hover:underline">
+        <a href="/contact" className="text-brand-600 underline hover:text-brand-700">
           contact page
         </a>
         .
@@ -150,7 +150,7 @@ export default function TermsPage() {
       <h2>5. Refunds and disputes</h2>
       <p>
         See our{" "}
-        <a href="/refund-policy" className="text-brand-600 hover:underline">
+        <a href="/refund-policy" className="text-brand-600 underline hover:text-brand-700">
           refund policy
         </a>{" "}
         — in short, MegaDeal never charges customers, so there&apos;s
@@ -280,7 +280,7 @@ export default function TermsPage() {
       <h2>16. Contact</h2>
       <p>
         Questions about these terms? Reach us via our{" "}
-        <a href="/contact" className="text-brand-600 hover:underline">
+        <a href="/contact" className="text-brand-600 underline hover:text-brand-700">
           contact page
         </a>
         .

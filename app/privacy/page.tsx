@@ -41,7 +41,7 @@ export default function PrivacyPage() {
         </li>
         <li>
           <strong>Communications</strong> — anything you send us through the{" "}
-          <a href="/contact" className="text-brand-600 hover:underline">
+          <a href="/contact" className="text-brand-600 underline hover:text-brand-700">
             contact form
           </a>{" "}
           or by email.
@@ -118,7 +118,7 @@ export default function PrivacyPage() {
         to individually identify you. You can opt out using Google&apos;s{" "}
         <a
           href="https://tools.google.com/dlpage/gaoptout"
-          className="text-brand-600 hover:underline"
+          className="text-brand-600 underline hover:text-brand-700"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -135,7 +135,7 @@ export default function PrivacyPage() {
         this through your{" "}
         <a
           href="https://www.facebook.com/adpreferences"
-          className="text-brand-600 hover:underline"
+          className="text-brand-600 underline hover:text-brand-700"
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -164,7 +164,7 @@ export default function PrivacyPage() {
       </ul>
       <p>
         To exercise any of these, reach out via our{" "}
-        <a href="/contact" className="text-brand-600 hover:underline">
+        <a href="/contact" className="text-brand-600 underline hover:text-brand-700">
           contact page
         </a>
         . We&apos;ll normally respond within 20 working days, as required by
@@ -173,7 +173,7 @@ export default function PrivacyPage() {
         of the Privacy Commissioner at{" "}
         <a
           href="https://www.privacy.org.nz"
-          className="text-brand-600 hover:underline"
+          className="text-brand-600 underline hover:text-brand-700"
           target="_blank"
           rel="noopener noreferrer"
         >

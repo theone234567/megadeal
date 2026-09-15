@@ -23,7 +23,7 @@ export default function RefundPolicyPage() {
       <p>
         If a business can&apos;t or won&apos;t honour a deal that&apos;s
         still live and within its validity window, let us know via our{" "}
-        <a href="/contact" className="text-brand-600 hover:underline">
+        <a href="/contact" className="text-brand-600 underline hover:text-brand-700">
           contact page
         </a>
         . We&apos;ll follow up with the business directly and, where it&apos;s
@@ -56,7 +56,7 @@ export default function RefundPolicyPage() {
         account, except where we agree otherwise at our discretion or need
         to correct a balance that&apos;s wrong because of a system error or
         mistake (see our{" "}
-        <a href="/terms" className="text-brand-600 hover:underline">
+        <a href="/terms" className="text-brand-600 underline hover:text-brand-700">
           Terms
         </a>
         ). If we
@@ -64,7 +64,7 @@ export default function RefundPolicyPage() {
         future, the specific payment, cancellation and refund terms for
         that will be shown at checkout and referenced here. For billing
         questions in the meantime, reach out via our{" "}
-        <a href="/contact" className="text-brand-600 hover:underline">
+        <a href="/contact" className="text-brand-600 underline hover:text-brand-700">
           contact page
         </a>
         .

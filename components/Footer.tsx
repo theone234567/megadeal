@@ -45,7 +45,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-brand-700 px-6 py-6 text-center sm:flex-row sm:text-left">
             <div>
-              <h3 className="text-lg font-bold text-white">Own a local business?</h3>
+              <h2 className="text-lg font-bold text-white">Own a local business?</h2>
               <p className="text-sm text-brand-100">
                 List your deal on MegaDeal and get up to 6 months free advertising — use code <span className="font-bold">WELCOME6</span> at signup.{" "}
                 <Link href="/terms" className="text-brand-200 underline hover:text-white">
@@ -66,7 +66,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
           <div>
-            <h4 className="mb-3 text-sm font-bold text-slate-900">Categories</h4>
+            <h2 className="mb-3 text-sm font-bold text-slate-900">Categories</h2>
             <ul className="space-y-1 text-sm text-slate-600">
               {FOOTER_CATEGORIES.map((category) => (
                 <li key={category.name}>
@@ -78,7 +78,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
             </ul>
           </div>
           <div>
-            <h4 className="mb-3 text-sm font-bold text-slate-900">Company</h4>
+            <h2 className="mb-3 text-sm font-bold text-slate-900">Company</h2>
             <ul className="space-y-1 text-sm text-slate-600">
               <li><Link href="/list-your-business" className="inline-block py-1 hover:text-brand-700">List your business</Link></li>
               <li><Link href="/about" className="inline-block py-1 hover:text-brand-700">About MegaDeal</Link></li>
@@ -88,7 +88,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
             </ul>
           </div>
           <div>
-            <h4 className="mb-3 text-sm font-bold text-slate-900">Support</h4>
+            <h2 className="mb-3 text-sm font-bold text-slate-900">Support</h2>
             <ul className="space-y-1 text-sm text-slate-600">
               <li><Link href="/help" className="inline-block py-1 hover:text-brand-700">Help centre</Link></li>
               <li><Link href="/redeem" className="inline-block py-1 hover:text-brand-700">How to redeem a deal</Link></li>
@@ -97,11 +97,11 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
             </ul>
           </div>
           <div>
-            <h4 className="mb-3 text-sm font-bold text-slate-900">Follow us</h4>
+            <h2 className="mb-3 text-sm font-bold text-slate-900">Follow us</h2>
             <SocialLinks />
           </div>
           <div>
-            <h4 className="mb-3 text-sm font-bold text-slate-900">Stay in the loop</h4>
+            <h2 className="mb-3 text-sm font-bold text-slate-900">Stay in the loop</h2>
             <p className="mb-3 text-sm text-slate-600">Get the best local deals in your inbox every week.</p>
             <EmailSignupForm audience="customer" source="footer" buttonLabel="Join" surface="plain" />
           </div>
