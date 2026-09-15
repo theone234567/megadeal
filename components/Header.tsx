@@ -20,14 +20,20 @@ export default function Header() {
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
 
+  // One size everywhere — this used to differ between the coming-soon
+  // header and every other page's, which read as inconsistent branding
+  // just like the old SVG-vs-raster split did.
+  const LOGO_SIZE = {
+    imageHeight: "h-[72px] sm:h-[90px] lg:h-[108px] xl:h-[126px]",
+    svgTextSize: "text-[38px] sm:text-[47px] lg:text-[54px] xl:text-[59px]",
+  };
+
   // The supplied lockup (elephant peeking over the "MegaDeal" wordmark,
-  // "Deal" styled as a price tag) is the real logo — used everywhere, at
-  // a generous size since at the small sizes this header used before,
-  // its detail just read as clutter. Falls back to the plain SVG mark
-  // only if the file hasn't been supplied yet — which needs its own
-  // font-size-based sizing (it scales itself in em units) rather than
-  // the image's height classes, hence the two size props below.
-  const brand = (size: { imageHeight: string; svgTextSize: string }) =>
+  // "Deal" styled as a price tag) is the real logo. Falls back to the
+  // plain SVG mark only if the file hasn't been supplied yet — which
+  // needs its own font-size-based sizing (it scales itself in em units)
+  // rather than the image's height classes, hence LOGO_SIZE carries both.
+  const brand = () =>
     art.logo ? (
       <Image
         src={art.logo}
@@ -35,10 +41,10 @@ export default function Header() {
         width={2172}
         height={724}
         priority
-        className={`w-auto select-none object-contain ${size.imageHeight}`}
+        className={`w-auto select-none object-contain ${LOGO_SIZE.imageHeight}`}
       />
     ) : (
-      <Logo className={size.svgTextSize} />
+      <Logo className={LOGO_SIZE.svgTextSize} />
     );
 
   const [profileComplete, setProfileComplete] = useState(true);
@@ -68,12 +74,9 @@ export default function Header() {
   if (isComingSoon) {
     return (
       <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
-        <div className="mx-auto flex min-h-[132px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[152px] sm:gap-5 sm:px-8 lg:min-h-[166px] lg:px-10 xl:px-12">
+        <div className="mx-auto flex min-h-[88px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-2 sm:min-h-[106px] sm:gap-5 sm:px-8 lg:min-h-[124px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
-            {brand({
-              imageHeight: "h-24 sm:h-[7.5rem] lg:h-36 xl:h-[10.5rem]",
-              svgTextSize: "text-[51px] sm:text-[63px] lg:text-[72px] xl:text-[78px]",
-            })}
+            {brand()}
           </Link>
 
           <Link
@@ -93,7 +96,7 @@ export default function Header() {
       <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-y-1">
           <Link href="/" aria-label="MegaDeal home" className="min-w-0 shrink">
-            {brand({ imageHeight: "h-[72px] sm:h-[84px]", svgTextSize: "text-[39px] sm:text-[45px]" })}
+            {brand()}
           </Link>
 
           <Link href="/portal" className="flex shrink-0 items-center gap-1.5 py-2 text-sm font-semibold text-slate-600 hover:text-brand-700">
