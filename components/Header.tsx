@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
@@ -10,7 +9,7 @@ import { SearchIcon, UserIcon } from "@/components/icons";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
-export default function Header({ logoSrc = null }: { logoSrc?: string | null }) {
+export default function Header() {
   const { member, isLoggedIn } = useWix();
   const [city, setCity] = useState("");
   const [query, setQuery] = useState("");
@@ -18,19 +17,13 @@ export default function Header({ logoSrc = null }: { logoSrc?: string | null }) 
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
 
-  const brand = (sizeClass: string) =>
-    !isComingSoon && logoSrc ? (
-      <Image
-        src={logoSrc}
-        alt="MegaDeal"
-        width={520}
-        height={150}
-        priority
-        className={`h-auto w-auto select-none object-contain ${sizeClass}`}
-      />
-    ) : (
-      <Logo className={sizeClass} />
-    );
+  // The site header used to have two different logo treatments — the
+  // supplied raster wordmark (public/megadeal/megadeal-logo.webp)
+  // everywhere, and this SVG lockup only on /coming-soon. That meant most
+  // of the site (about, portal, admin, every legal page) still showed the
+  // older cluttered logo after the SVG one was refined, since nothing
+  // else routed through it. The SVG is now the one logo everywhere.
+  const brand = (sizeClass: string) => <Logo className={sizeClass} />;
 
   const [profileComplete, setProfileComplete] = useState(true);
   useEffect(() => {

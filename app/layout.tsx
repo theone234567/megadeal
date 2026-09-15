@@ -138,7 +138,7 @@ export default function RootLayout({
         </Suspense>
         <MegadealArtProvider art={megadealArt}>
           <WixProvider>
-            <Header logoSrc={megadealArt.logo} />
+            <Header />
             {children}
             <Footer siteLaunched={SITE_LAUNCHED} />
           </WixProvider>
