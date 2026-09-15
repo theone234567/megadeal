@@ -541,7 +541,7 @@ export default async function ComingSoonPage() {
         </div>
       </section>
 
-      <section id="launch-updates" className="scroll-mt-20 bg-[#f0fdfa] py-10 lg:py-14">
+      <section id="launch-updates" className="scroll-mt-20 bg-[#ccfbf1] py-10 lg:py-14">
         <div className={shell}>
           <div className="grid items-center gap-8 lg:grid-cols-[1fr_minmax(0,360px)] lg:gap-14">
             <div>
