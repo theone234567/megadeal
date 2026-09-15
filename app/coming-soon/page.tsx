@@ -456,7 +456,7 @@ export default async function ComingSoonPage() {
 
       {/* ------------------------------------------------- How MegaDeal works */}
       <section className={`${shell} py-8 lg:py-10`}>
-        <div className="rounded-[22px] bg-[#4d0ca8] px-5 py-7 text-white shadow-[0_16px_40px_rgba(69,16,141,.12)] sm:px-8 sm:py-8 lg:rounded-[26px]">
+        <div className="rounded-[22px] bg-[#650fc7] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 px-5 py-7 text-white shadow-[0_16px_40px_rgba(69,16,141,.12)] sm:px-8 sm:py-8 lg:rounded-[26px]">
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
             <div>
               <h2 className={`${fredoka.className} text-2xl font-bold sm:text-3xl`}>
@@ -589,7 +589,7 @@ export default async function ComingSoonPage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[#4d0ca8] py-10 text-white lg:py-14">
+      <section className="relative overflow-hidden bg-[#650fc7] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 py-10 text-white lg:py-14">
         <MascotFigure
           src={art.mascotJump}
           fallbackSrc="/brand/megadeal-elephant.svg"
