@@ -103,7 +103,7 @@ export default async function CategoryPage({
           />
         )}
         <Breadcrumbs items={[{ name: category }]} />
-        <h1 className="mb-5 text-2xl font-extrabold text-slate-900">{category}</h1>
+        <h1 className="font-display mb-5 text-2xl font-bold text-slate-900">{category}</h1>
         <Suspense fallback={null}>
           <CategoryDeals category={category} initialDeals={deals} />
         </Suspense>

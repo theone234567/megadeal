@@ -485,7 +485,7 @@ export default async function ComingSoonPage() {
                   <Icon className="h-7 w-7" />
                 </span>
                 <div>
-                  <h3 className="font-extrabold">{title}</h3>
+                  <h3 className="font-display font-bold">{title}</h3>
                   <p className="mt-1 text-sm leading-5 text-white/70">{copy}</p>
                 </div>
               </div>

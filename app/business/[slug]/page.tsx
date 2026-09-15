@@ -141,7 +141,7 @@ export default async function BusinessProfilePage({
             </div>
           )}
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+            <h1 className="font-display text-2xl font-bold text-slate-900 sm:text-3xl">
               {business.businessName}
             </h1>
             {business.rating !== null && (
@@ -323,7 +323,7 @@ export default async function BusinessProfilePage({
           <HowToUseStrip bare />
         </div>
       )}
-      <h2 className="mb-5 mt-6 text-xl font-bold text-slate-900">
+      <h2 className="font-display mb-5 mt-6 text-xl font-bold text-slate-900">
         {deals.length > 0
           ? `${deals.length} live deal${deals.length === 1 ? "" : "s"} from ${business.businessName}`
           : `No live deals from ${business.businessName} right now`}

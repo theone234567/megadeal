@@ -38,7 +38,7 @@ export default function FlashDeals({ initialDeals }: { initialDeals: Deal[] }) {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-4 flex items-center justify-between gap-2">
           <Link href="/flash-deals" className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-white hover:underline">⚡ Flash Deals</h2>
+            <h2 className="font-display text-xl font-bold text-white hover:underline">⚡ Flash Deals</h2>
             <span className="animate-pulse rounded-full bg-ember-600 px-2.5 py-0.5 text-xs font-bold text-white">
               Ending soon
             </span>

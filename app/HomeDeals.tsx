@@ -74,7 +74,7 @@ export default function HomeDeals({ initialDeals }: { initialDeals: Deal[] }) {
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-slate-900">{heading}</h2>
+        <h2 className="font-display text-xl font-bold text-slate-900">{heading}</h2>
         <div className="flex flex-wrap items-center gap-2">
           <SortSelect value={sort} onChange={setSort} />
           <ViewToggle value={view} onChange={setView} />

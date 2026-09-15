@@ -40,7 +40,7 @@ export default async function MegaShopPage() {
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-4 py-20 text-center">
         <span className="text-4xl">🛍️</span>
-        <h1 className="mt-3 text-2xl font-extrabold text-slate-900 sm:text-3xl">
+        <h1 className="font-display mt-3 text-2xl font-bold text-slate-900 sm:text-3xl">
           MegaShop.co.nz — Coming soon
         </h1>
         <p className="mt-3 text-slate-600">
@@ -61,7 +61,7 @@ export default async function MegaShopPage() {
 
         <div className="mt-14 w-full max-w-md border-t border-slate-100 pt-10">
           <span className="text-3xl">🤝</span>
-          <h2 className="mt-2 text-xl font-bold text-slate-900">
+          <h2 className="font-display mt-2 text-xl font-bold text-slate-900">
             Wholesale suppliers wanted
           </h2>
           <p className="mt-2 text-sm text-slate-600">
@@ -81,12 +81,12 @@ export default async function MegaShopPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-extrabold text-slate-900">MegaShop.co.nz</h1>
+      <h1 className="font-display text-2xl font-bold text-slate-900">MegaShop.co.nz</h1>
       <p className="mt-1 text-sm text-slate-500">
         Shopping is coming soon — checkout isn&apos;t live yet, but here&apos;s a look at what&apos;s in store.
       </p>
       {/* Fills the H1->H3 gap before each product card's own <h3>. */}
-      <h2 className="mt-6 text-xl font-bold text-slate-900">All products</h2>
+      <h2 className="font-display mt-6 text-xl font-bold text-slate-900">All products</h2>
       <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
         {products.map((product) => (
           <MegaShopProductCard key={product.id} product={product} />

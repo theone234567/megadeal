@@ -59,7 +59,7 @@ export default function MegaShopProductCard({ product }: { product: Deal }) {
       </div>
 
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-2 min-h-[2.75rem] text-sm font-bold text-slate-900 group-hover:text-brand-700">
+        <h3 className="font-display line-clamp-2 min-h-[2.875rem] text-[15px] font-bold leading-5 text-slate-900 group-hover:text-brand-700">
           {product.name}
         </h3>
 

@@ -5,7 +5,7 @@ export default function Hero() {
         <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-100 sm:text-sm">
           Today&apos;s hottest local deals
         </p>
-        <h1 className="max-w-2xl text-xl font-extrabold leading-tight text-white sm:text-2xl lg:text-3xl">
+        <h1 className="font-display max-w-2xl text-xl font-bold leading-tight text-white sm:text-2xl lg:text-3xl">
           Up to 50% off restaurants, spas, activities &amp; getaways near you
         </h1>
         <p className="mt-2.5 max-w-xl text-sm text-brand-50 sm:text-base">

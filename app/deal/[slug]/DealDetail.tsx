@@ -119,7 +119,7 @@ export default function DealDetail({
                 headed "The fine print", which was wrong even before the
                 merchant's actual conditions started rendering — now that
                 they do, the page had the two labels the wrong way round. */}
-            <h2 className="mb-2 text-lg font-bold text-slate-900">What you get</h2>
+            <h2 className="font-display mb-2 text-lg font-bold text-slate-900">What you get</h2>
             <p className="max-w-none whitespace-pre-line text-sm leading-relaxed text-slate-600">
               {deal.description}
             </p>
@@ -127,7 +127,7 @@ export default function DealDetail({
 
           {deal.businessName && (hasAboutContent || hasContactInfo) && (
             <div className="mt-6 border-t border-slate-100 pt-6">
-              <h2 className="mb-2 text-lg font-bold text-slate-900">
+              <h2 className="font-display mb-2 text-lg font-bold text-slate-900">
                 About {deal.businessName}
               </h2>
               {deal.businessPriceRange && (
@@ -309,7 +309,7 @@ export default function DealDetail({
                 {deal.categories[0]}
               </span>
             )}
-            <h1 className="mt-1 text-2xl font-extrabold leading-snug text-slate-900">
+            <h1 className="font-display mt-1 text-2xl font-bold leading-snug text-slate-900">
               {deal.name}
             </h1>
             {deal.businessName && (
@@ -499,7 +499,7 @@ export default function DealDetail({
       {otherBusinessDeals.length > 0 && (
         <div className="mt-10 border-t border-slate-100 pt-8">
           <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-xl font-bold text-slate-900">
+            <h2 className="font-display text-xl font-bold text-slate-900">
               More deals from {deal.businessName}
             </h2>
             {deal.businessSlug && (
@@ -514,7 +514,7 @@ export default function DealDetail({
 
       {relatedDeals.length > 0 && (
         <div className="mt-10 border-t border-slate-100 pt-8">
-          <h2 className="mb-5 text-xl font-bold text-slate-900">You might also like</h2>
+          <h2 className="font-display mb-5 text-xl font-bold text-slate-900">You might also like</h2>
           <DealGrid deals={relatedDeals} />
         </div>
       )}

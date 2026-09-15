@@ -313,7 +313,7 @@ export default async function MerchantsPage() {
                   {typeof p.icon === "string" ? p.icon : <p.icon className="h-5 w-5" />}
                 </span>
                 <div>
-                  <h3 className="font-bold text-slate-900">{p.title}</h3>
+                  <h3 className="font-display font-bold text-slate-900">{p.title}</h3>
                   <p className="mt-1 text-sm text-slate-500">{p.text}</p>
                 </div>
               </div>
@@ -426,7 +426,7 @@ export default async function MerchantsPage() {
                   {p.emoji}
                 </span>
                 <div>
-                  <h3 className="font-bold text-slate-900">{p.title}</h3>
+                  <h3 className="font-display font-bold text-slate-900">{p.title}</h3>
                   <p className="mt-1 text-sm text-slate-500">{p.text}</p>
                 </div>
               </div>
@@ -477,7 +477,7 @@ export default async function MerchantsPage() {
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-sm font-extrabold text-white">
                   {s.number}
                 </span>
-                <h3 className="mt-3 font-bold text-slate-900">{s.title}</h3>
+                <h3 className="font-display mt-3 font-bold text-slate-900">{s.title}</h3>
                 <p className="mt-1 text-sm text-slate-500">{s.text}</p>
               </div>
             ))}

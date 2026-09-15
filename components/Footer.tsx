@@ -45,7 +45,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-brand-700 px-6 py-6 text-center sm:flex-row sm:text-left">
             <div>
-              <h2 className="text-lg font-bold text-white">Own a local business?</h2>
+              <h2 className="font-display text-lg font-bold text-white">Own a local business?</h2>
               <p className="text-sm text-brand-100">
                 List your deal on MegaDeal and get up to 6 months free advertising — use code <span className="font-bold">WELCOME6</span> at signup.{" "}
                 <Link href="/terms" className="text-brand-200 underline hover:text-white">

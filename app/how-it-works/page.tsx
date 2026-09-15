@@ -142,7 +142,7 @@ function StepGrid({ steps, cols }: { steps: Step[]; cols: string }) {
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-sm font-extrabold text-white">
             {s.number}
           </span>
-          <h3 className="mt-3 font-bold text-slate-900">{s.title}</h3>
+          <h3 className="font-display mt-3 font-bold text-slate-900">{s.title}</h3>
           <p className="mt-1 text-sm leading-relaxed text-slate-600">{s.text}</p>
         </div>
       ))}

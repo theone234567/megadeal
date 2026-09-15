@@ -114,7 +114,7 @@ export default function AboutPage() {
                   <d.icon className="h-5 w-5" />
                 </span>
                 <div>
-                  <h3 className="font-bold text-slate-900">{d.title}</h3>
+                  <h3 className="font-display font-bold text-slate-900">{d.title}</h3>
                   <p className="mt-1 text-sm text-slate-500">{d.text}</p>
                 </div>
               </div>
