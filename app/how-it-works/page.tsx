@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export const metadata: Metadata = {
   title: "How It Works",
@@ -15,6 +16,9 @@ interface Step {
   number: string;
   title: string;
   text: ReactNode;
+  // Plain-string version for JSON-LD (HowTo steps need a text value, not
+  // JSX) — only needed where `text` isn't already a plain string.
+  schemaText?: string;
 }
 
 const CUSTOMER_STEPS: Step[] = [
@@ -43,6 +47,8 @@ const CUSTOMER_STEPS: Step[] = [
         for the general process.
       </>
     ),
+    schemaText:
+      "Contact or visit the business, mention the MegaDeal offer, and pay them directly at the discounted price. How and when you redeem is up to the business — some deals need a booking, others are walk-in.",
   },
   {
     number: "4",
@@ -65,6 +71,8 @@ const BUSINESS_STEPS: Step[] = [
         your new business portal.
       </>
     ),
+    schemaText:
+      "Set up your login and tell us about your business on the business page — one form, a couple of minutes, and you're straight into your new business portal.",
   },
   {
     number: "2",
@@ -97,6 +105,8 @@ const BUSINESS_STEPS: Step[] = [
         any time.
       </>
     ),
+    schemaText:
+      "Your deal stays queued and ready from the moment you submit it — it goes live for customers the moment MegaDeal officially launches, not before. You'll get an email when that happens.",
   },
   {
     number: "6",
@@ -104,6 +114,25 @@ const BUSINESS_STEPS: Step[] = [
     text: "Once your free credits run out, you can top up your account from your portal whenever you're ready to list another deal.",
   },
 ];
+
+function stepSchemaText(step: Step): string {
+  return step.schemaText ?? (typeof step.text === "string" ? step.text : step.title);
+}
+
+function howToJsonLd(name: string, description: string, steps: Step[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name,
+    description,
+    step: steps.map((s) => ({
+      "@type": "HowToStep",
+      position: Number(s.number),
+      name: s.title,
+      text: stepSchemaText(s),
+    })),
+  };
+}
 
 function StepGrid({ steps, cols }: { steps: Step[]; cols: string }) {
   return (
@@ -124,6 +153,35 @@ function StepGrid({ steps, cols }: { steps: Step[]; cols: string }) {
 export default function HowItWorksPage() {
   return (
     <main className={plusJakartaSans.className}>
+      {/* Structured how-to data for both flows on this page — the direct
+          target for "how does MegaDeal work" style questions to an AI
+          answer engine, which can otherwise only pull from the prose. */}
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd(
+            howToJsonLd(
+              `How to redeem a deal on ${SITE_NAME}`,
+              "How customers find and redeem a local deal on MegaDeal, free of charge.",
+              CUSTOMER_STEPS
+            )
+          ),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd(
+            howToJsonLd(
+              `How to list a deal on ${SITE_NAME}`,
+              "How a local business applies, gets approved, and lists a deal on MegaDeal.",
+              BUSINESS_STEPS
+            )
+          ),
+        }}
+      />
       {/* Hero */}
       <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">

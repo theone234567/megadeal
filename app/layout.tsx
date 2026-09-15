@@ -96,6 +96,16 @@ export default function RootLayout({
               url: SITE_URL,
               description: SITE_DESCRIPTION,
               areaServed: { "@type": "Country", name: "New Zealand" },
+              // Same lockup Header.tsx renders — gives Google/AI answer
+              // engines an actual brand image to attach to this entity
+              // (used in Knowledge Panels and AI-generated citations),
+              // alongside the sameAs profiles below.
+              logo: {
+                "@type": "ImageObject",
+                url: `${SITE_URL}/megadeal/megadeal-logo.webp`,
+                width: 2172,
+                height: 724,
+              },
               // Ties the brand's social profiles to this entity for Google —
               // one of the standard signals behind a Knowledge Panel.
               sameAs: SOCIAL_URLS,
