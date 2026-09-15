@@ -72,8 +72,22 @@ export default async function DealPage({ params }: { params: { slug: string } })
 
   const allDeals = await fetchAllLiveDealsServer();
   const others = allDeals.filter((d) => d.id !== deal.id);
-  const sameCategory = others.filter((d) => d.categories.some((c) => deal.categories.includes(c)));
-  const relatedDeals = (sameCategory.length > 0 ? sameCategory : others).slice(0, 4);
+
+  // Same business first: someone who liked this deal is often more
+  // interested in this specific business's other offers than in a
+  // same-category deal from a stranger. Capped higher than "you might
+  // also like" below since it's the more relevant list.
+  const otherBusinessDeals = deal.businessSlug
+    ? others.filter((d) => d.businessSlug === deal.businessSlug).slice(0, 8)
+    : [];
+  const otherBusinessDealIds = new Set(otherBusinessDeals.map((d) => d.id));
+
+  // "You might also like" fills in with same-category deals from OTHER
+  // businesses — excluding anything already shown above so the same deal
+  // never appears twice on the page.
+  const remainingOthers = others.filter((d) => !otherBusinessDealIds.has(d.id));
+  const sameCategory = remainingOthers.filter((d) => d.categories.some((c) => deal.categories.includes(c)));
+  const relatedDeals = (sameCategory.length > 0 ? sameCategory : remainingOthers).slice(0, 4);
 
   return (
     <>
@@ -108,7 +122,7 @@ export default async function DealPage({ params }: { params: { slug: string } })
           }),
         }}
       />
-      <DealDetail deal={deal} relatedDeals={relatedDeals} />
+      <DealDetail deal={deal} relatedDeals={relatedDeals} otherBusinessDeals={otherBusinessDeals} />
     </>
   );
 }

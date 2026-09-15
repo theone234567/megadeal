@@ -23,6 +23,12 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 export default function DealDetail({
   deal,
   relatedDeals,
+  /** Other live deals from this same business, nearest-relevance first —
+   *  see app/deal/[slug]/page.tsx for how this is kept mutually exclusive
+   *  with relatedDeals so nothing shows twice on the page. Optional and
+   *  defaults to empty for the merchant-portal preview, which has no
+   *  other-deals data (and no business page to link to yet). */
+  otherBusinessDeals = [],
   /** Rendered inside the merchant's own preview rather than on the public
    *  page. The only difference is that a view isn't recorded: the deal has
    *  no real id yet, and counting the author looking at their own draft
@@ -32,6 +38,7 @@ export default function DealDetail({
 }: {
   deal: Deal;
   relatedDeals: Deal[];
+  otherBusinessDeals?: Deal[];
   preview?: boolean;
 }) {
   const [showContact, setShowContact] = useState(false);
@@ -488,6 +495,22 @@ export default function DealDetail({
           </div>
         </div>
       </div>
+
+      {otherBusinessDeals.length > 0 && (
+        <div className="mt-10 border-t border-slate-100 pt-8">
+          <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xl font-bold text-slate-900">
+              More deals from {deal.businessName}
+            </h2>
+            {deal.businessSlug && (
+              <Link href={`/business/${deal.businessSlug}`} className="text-sm font-semibold text-brand-600 hover:text-brand-700">
+                View all →
+              </Link>
+            )}
+          </div>
+          <DealGrid deals={otherBusinessDeals} />
+        </div>
+      )}
 
       {relatedDeals.length > 0 && (
         <div className="mt-10 border-t border-slate-100 pt-8">
