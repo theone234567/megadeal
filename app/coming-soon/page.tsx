@@ -440,12 +440,12 @@ export default async function ComingSoonPage() {
       </section>
 
       {/* ----------------------------------------------------- Trust strip */}
-      <section className={`${shell} pt-5 lg:pt-6`}>
+      <section className={`${shell} py-6 lg:py-8`}>
         <div className="grid overflow-hidden rounded-[18px] bg-[#f7f7fb] ring-1 ring-[#eceaf2] sm:grid-cols-2 lg:grid-cols-4">
           {trustPoints.map(([Icon, text], index) => (
             <div
               key={text}
-              className={`flex min-h-[72px] items-center gap-3 px-5 py-4 lg:min-h-[88px] lg:px-6 ${
+              className={`flex min-h-[80px] items-center gap-3 px-5 py-5 lg:min-h-[100px] lg:px-7 ${
                 index ? "border-t border-[#e4e1eb] sm:border-t-0" : ""
               } ${index % 2 ? "sm:border-l sm:border-[#e4e1eb]" : ""} ${
                 index >= 2 ? "sm:border-t sm:border-[#e4e1eb] lg:border-t-0" : ""
@@ -500,24 +500,34 @@ export default async function ComingSoonPage() {
           consumer-only sections in a row (trust strip, how it works,
           categories, deal-hunter signup) before a business owner saw
           anything for them again. This is the first thing a business
-          owner who doesn't click the hero card sees. */}
-      <section className="relative overflow-hidden bg-[#650fc7] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 py-10 text-white lg:py-14">
+          owner who doesn't click the hero card sees.
+
+          Light background rather than the full purple gradient this used
+          to share with "How MegaDeal works" right above it: once the two
+          sections became neighbours, back-to-back full-bleed purple read
+          as one long undifferentiated block instead of two distinct
+          ideas — worse on mobile, where they stack with nothing but a
+          thin trust strip between them. brand-50 keeps the section tied
+          to the palette without adding to that run; purple/pink stay as
+          accents (badges, checkmarks, the CTA button) rather than the
+          whole background. */}
+      <section className="relative overflow-hidden bg-brand-50 py-10 lg:py-14">
         <MascotFigure
           src={art.mascotJump}
           fallbackSrc="/brand/megadeal-elephant.svg"
           alt=""
           width={300}
           height={340}
-          className="absolute -bottom-6 right-2 hidden h-auto w-[150px] opacity-[0.18] lg:block xl:right-10 xl:w-[190px]"
+          className="absolute -bottom-6 right-2 hidden h-auto w-[150px] opacity-[0.35] lg:block xl:right-10 xl:w-[190px]"
         />
         <div className={`${shell} relative z-10`}>
           <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
             <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ffb3dd]">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-ember-600">
                 For local businesses
               </p>
               <h2
-                className={`${fredoka.className} mt-2 max-w-[620px] text-2xl font-bold leading-tight sm:text-3xl`}
+                className={`${fredoka.className} mt-2 max-w-[620px] text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}
               >
                 Fill quiet times. Grow local customers.
               </h2>
@@ -527,10 +537,10 @@ export default async function ComingSoonPage() {
                   repeating the category grid below (which is written for
                   shoppers, not businesses) so the same list isn't
                   maintained in two places with two different framings. */}
-              <p className="mt-3 text-[15px] font-semibold leading-6 text-white">
+              <p className="mt-3 text-[15px] font-semibold leading-6 text-[#18122d]">
                 From cafés and salons to gyms and tour operators — if you serve local customers, you belong here.
               </p>
-              <p className="mt-2.5 max-w-[620px] text-[15px] leading-6 text-white/85 lg:text-base">
+              <p className="mt-2.5 max-w-[620px] text-[15px] leading-6 text-slate-600 lg:text-base">
                 Get in before we launch and your first months of advertising are on us. Once deals
                 go live the offer closes, so the businesses that join now are the ones customers
                 see on day one.
@@ -538,7 +548,7 @@ export default async function ComingSoonPage() {
 
               <ul className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-x-8">
                 {businessBenefits.map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-[15px] font-semibold leading-6">
+                  <li key={item} className="flex items-start gap-2.5 text-[15px] font-semibold leading-6 text-[#18122d]">
                     <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#c7128a] text-white">
                       <CheckIcon className="h-3 w-3" />
                     </span>
@@ -554,19 +564,19 @@ export default async function ComingSoonPage() {
                 >
                   Claim my free advertising →
                 </Link>
-                <span className="text-sm font-semibold text-white/75">
+                <span className="text-sm font-semibold text-slate-600">
                   Takes about 60 seconds · No credit card
                 </span>
               </div>
               {stats && stats.merchantCount > 0 && (
-                <p className="mt-4 text-sm font-semibold text-[#ffb3dd]">
+                <p className="mt-4 text-sm font-semibold text-ember-600">
                   {stats.merchantCount.toLocaleString()} Auckland businesses have already signed up.
                 </p>
               )}
             </div>
 
-            <div className="rounded-[24px] bg-white/10 p-6 ring-1 ring-inset ring-white/15 sm:p-7">
-              <p className={`${fredoka.className} text-xl font-bold sm:text-2xl`}>
+            <div className="rounded-[24px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px_34px_rgba(77,12,168,.10)] sm:p-7">
+              <p className={`${fredoka.className} text-xl font-bold text-[#18122d] sm:text-2xl`}>
                 What it costs you
               </p>
               <dl className="mt-4 space-y-3 text-[15px]">
@@ -578,10 +588,10 @@ export default async function ComingSoonPage() {
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className="flex items-baseline justify-between gap-4 border-b border-white/15 pb-3 last:border-0 last:pb-0"
+                    className="flex items-baseline justify-between gap-4 border-b border-[#eee7f6] pb-3 last:border-0 last:pb-0"
                   >
-                    <dt className="text-white/80">{label}</dt>
-                    <dd className="shrink-0 font-extrabold">{value}</dd>
+                    <dt className="text-slate-500">{label}</dt>
+                    <dd className="shrink-0 font-extrabold text-[#18122d]">{value}</dd>
                   </div>
                 ))}
               </dl>
