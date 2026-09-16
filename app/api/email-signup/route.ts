@@ -76,12 +76,11 @@ export async function POST(req: NextRequest) {
       to: email,
       subject: "Confirm your MegaDeal email alerts 🐘",
       html: `
-        <div style="max-width:480px;margin:0 auto;font-family:'Segoe UI',ui-rounded,system-ui,sans-serif;">
-          <div style="background:linear-gradient(135deg,#7a17f0,#440e82);border-radius:20px 20px 0 0;padding:28px 32px;text-align:center;">
-            <span style="font-size:28px;font-weight:800;color:#ffffff;vertical-align:middle;">Mega</span><span style="font-size:28px;font-weight:800;color:#ffffff;background:#e81ea3;border-radius:9999px;padding:2px 14px;vertical-align:middle;">Deal</span>
-            <img src="${SITE_URL}/email-logo.png" width="28" height="28" alt="" style="vertical-align:middle;margin-left:8px;border-radius:8px;" />
+        <div style="max-width:480px;margin:0 auto;font-family:'Segoe UI',ui-rounded,system-ui,sans-serif;background:#ffffff;border:1px solid #f1f0f4;border-radius:20px;overflow:hidden;">
+          <div style="padding:28px 32px 4px;text-align:center;">
+            <img src="${SITE_URL}/megadeal/megadeal-logo.webp" width="150" height="50" alt="MegaDeal" style="display:inline-block;height:auto;max-width:170px;" />
           </div>
-          <div style="background:#ffffff;border:1px solid #f1f0f4;border-top:none;border-radius:0 0 20px 20px;padding:32px;">
+          <div style="padding:16px 32px 32px;">
             <h1 style="margin:0 0 12px;font-size:20px;color:#211033;">One click and you're in 🎉</h1>
             <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#4b4358;">
               Thanks for signing up for MegaDeal deal alerts — NZ's best local

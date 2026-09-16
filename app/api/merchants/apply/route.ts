@@ -27,19 +27,30 @@ function cleanText(value: unknown, maxLength: number): string {
 
 function welcomeEmailHtml(businessName: string): string {
   const safeName = escapeHtml(businessName);
+  // Same lockup + card treatment as the deal-alert confirmation email (see
+  // app/api/email-signup/route.ts) — this used to be bare unstyled
+  // paragraphs with no logo or brand color at all, despite being the first
+  // real email a new business owner gets.
   return `
-    <p>Hi ${safeName || "there"},</p>
-    <p>🎉 You're in! Thanks for signing up to MegaDeal — we're genuinely excited to have ${safeName || "your business"} on board.</p>
-    <p>Here's what happens next:</p>
-    <ul>
-      <li>Our team will take a look at your application — usually within a couple of business days</li>
-      <li>Once you're approved, you'll have deal credits waiting in your portal, ready to list your first deal straight away</li>
-      <li>From there it's simple: you set the offer, we bring the customers, and you keep every dollar</li>
-    </ul>
-    <p>You can check your application status, manage your profile, and keep an eye on your credits anytime from your <a href="${SITE_URL}/portal">business portal</a>.</p>
-    <p>If anything's unclear, or you just want to say hi, hit reply — a real person reads every message.</p>
-    <p>Thanks for giving MegaDeal a go — welcome to the herd. 🐘</p>
-    <p>— The MegaDeal team</p>
+    <div style="max-width:480px;margin:0 auto;font-family:'Segoe UI',ui-rounded,system-ui,sans-serif;background:#ffffff;border:1px solid #f1f0f4;border-radius:20px;overflow:hidden;">
+      <div style="padding:28px 32px 4px;text-align:center;">
+        <img src="${SITE_URL}/megadeal/megadeal-logo.webp" width="150" height="50" alt="MegaDeal" style="display:inline-block;height:auto;max-width:170px;" />
+      </div>
+      <div style="padding:16px 32px 32px;font-size:15px;line-height:1.6;color:#4b4358;">
+        <p style="margin:0 0 16px;">Hi ${safeName || "there"},</p>
+        <p style="margin:0 0 16px;">🎉 You're in! Thanks for signing up to MegaDeal — we're genuinely excited to have ${safeName || "your business"} on board.</p>
+        <p style="margin:0 0 8px;">Here's what happens next:</p>
+        <ul style="margin:0 0 16px;padding-left:20px;">
+          <li style="margin-bottom:6px;">Our team will take a look at your application — usually within a couple of business days</li>
+          <li style="margin-bottom:6px;">Once you're approved, you'll have deal credits waiting in your portal, ready to list your first deal straight away</li>
+          <li>From there it's simple: you set the offer, we bring the customers, and you keep every dollar</li>
+        </ul>
+        <p style="margin:0 0 16px;">You can check your application status, manage your profile, and keep an eye on your credits anytime from your <a href="${SITE_URL}/portal" style="color:#7a17f0;font-weight:700;">business portal</a>.</p>
+        <p style="margin:0 0 16px;">If anything's unclear, or you just want to say hi, hit reply — a real person reads every message.</p>
+        <p style="margin:0 0 16px;">Thanks for giving MegaDeal a go — welcome to the herd. 🐘</p>
+        <p style="margin:0;">— The MegaDeal team</p>
+      </div>
+    </div>
   `;
 }
 
