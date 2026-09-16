@@ -98,7 +98,7 @@ async function claimPromoAtomically(adminClient: any, merchantId: string): Promi
 }
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
   try {
@@ -115,7 +115,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
@@ -556,7 +556,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
  * reusing a test address.
  */
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 

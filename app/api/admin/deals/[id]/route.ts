@@ -8,7 +8,7 @@ import { SITE_URL } from "@/lib/siteConfig";
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 

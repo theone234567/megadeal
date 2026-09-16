@@ -14,7 +14,7 @@ import { CATEGORIES } from "@/lib/categories";
 // live from here on). Safe to re-run any time; IndexNow submissions are
 // idempotent notifications, not a one-shot claim.
 export async function POST(req: NextRequest) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 

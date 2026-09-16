@@ -12,7 +12,7 @@ const MAX_ITEMS = 100;
  * business by ID instead of the caller's own account.
  */
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 

@@ -4,7 +4,7 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 import { queryAllItems } from "@/lib/queryAll";
 
 export async function GET(req: NextRequest) {
-  if (!isAdminRequest(req)) {
+  if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
