@@ -3,6 +3,7 @@ import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { insertEmailSignup, type EmailAudience } from "@/lib/emailSignups";
 import { SITE_URL } from "@/lib/siteConfig";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { brandedEmailHtml } from "@/lib/emailTemplate";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ALLOWED_AUDIENCES: EmailAudience[] = ["customer", "merchant"];
@@ -75,14 +76,10 @@ export async function POST(req: NextRequest) {
     const sent = await sendTransactionalEmail({
       to: email,
       subject: "Confirm your MegaDeal email alerts 🐘",
-      html: `
-        <div style="max-width:480px;margin:0 auto;font-family:'Segoe UI',ui-rounded,system-ui,sans-serif;background:#ffffff;border:1px solid #f1f0f4;border-radius:20px;overflow:hidden;">
-          <div style="padding:28px 32px 4px;text-align:center;">
-            <img src="${SITE_URL}/megadeal/megadeal-logo.webp" width="150" height="50" alt="MegaDeal" style="display:inline-block;height:auto;max-width:170px;" />
-          </div>
-          <div style="padding:16px 32px 32px;">
+      html:
+        brandedEmailHtml(`
             <h1 style="margin:0 0 12px;font-size:20px;color:#211033;">One click and you're in 🎉</h1>
-            <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#4b4358;">
+            <p style="margin:0 0 20px;">
               Thanks for signing up for MegaDeal deal alerts — NZ's best local
               deals, sniffed out for you. Just confirm this is your email
               address and we'll take it from there.
@@ -92,16 +89,14 @@ export async function POST(req: NextRequest) {
                 Confirm my email
               </a>
             </div>
-            <p style="margin:0;font-size:13px;line-height:1.6;color:#8b8494;">
+            <p style="margin:0;font-size:13px;color:#8b8494;">
               Didn't sign up for this? No action needed — you won't be added
               to the list unless you click the button above.
             </p>
-          </div>
-          <p style="margin:16px 0 0;text-align:center;font-size:12px;color:#a39cae;">
-            <a href="${unsubscribeUrl}" style="color:#a39cae;">Unsubscribe</a>
-          </p>
-        </div>
-      `,
+        `) +
+        `<p style="margin:16px 0 0;text-align:center;font-size:12px;color:#a39cae;">
+          <a href="${unsubscribeUrl}" style="color:#a39cae;">Unsubscribe</a>
+        </p>`,
     });
     if (!sent) {
       return NextResponse.json(

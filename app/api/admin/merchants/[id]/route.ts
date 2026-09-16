@@ -7,6 +7,7 @@ import { SITE_URL } from "@/lib/siteConfig";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { escapeHtml } from "@/lib/escapeHtml";
+import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 
@@ -477,12 +478,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           await sendTransactionalEmail({
             to: referrerFresh.email,
             subject: "You earned referral credits on MegaDeal!",
-            html: `
-              <p>Hi ${safeReferrerName},</p>
-              <p>Great news — a business you referred, <strong>${safeReferredName}</strong>, has been approved on MegaDeal. We've added
+            html: brandedEmailHtml(`
+              <p style="margin:0 0 16px;">Hi ${safeReferrerName},</p>
+              <p style="margin:0 0 16px;">Great news — a business you referred, <strong>${safeReferredName}</strong>, has been approved on MegaDeal. We've added
               ${referralCreditsLabel} to your account. Thanks for spreading the word!</p>
-              <p><a href="${SITE_URL}/portal">View your portal</a></p>
-            `,
+              <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#7a17f0;font-weight:700;">View your portal</a></p>
+            `),
           });
         } catch (err) {
           console.error("[admin/merchants] referral bonus email failed", err);
@@ -509,13 +510,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       await sendTransactionalEmail({
         to: existing.email,
         subject: "You're approved! Welcome to MegaDeal",
-        html: `
-          <p>Hi ${safeName},</p>
-          <p>Good news — your business is approved on MegaDeal. Log in to your
+        html: brandedEmailHtml(`
+          <p style="margin:0 0 16px;">Hi ${safeName},</p>
+          <p style="margin:0 0 16px;">Good news — your business is approved on MegaDeal. Log in to your
           business portal to submit your first deal:</p>
-          <p><a href="${SITE_URL}/portal">Go to your portal</a></p>
-          ${creditsNote ? `<p>${creditsNote}</p>` : ""}
-        `,
+          <p style="margin:0 0 16px;"><a href="${SITE_URL}/portal" style="color:#7a17f0;font-weight:700;">Go to your portal</a></p>
+          ${creditsNote ? `<p style="margin:0;">${creditsNote}</p>` : ""}
+        `),
       });
     } catch (err) {
       console.error("[admin/merchants] approval email failed", err);

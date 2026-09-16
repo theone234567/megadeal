@@ -11,6 +11,7 @@ import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { isBusinessCategory } from "@/lib/categories";
 import { escapeHtml } from "@/lib/escapeHtml";
+import { brandedEmailHtml } from "@/lib/emailTemplate";
 
 const MAX_TEXT_LENGTH = 300;
 // businessHours holds a serialized structured-hours JSON blob (7 days,
@@ -27,16 +28,7 @@ function cleanText(value: unknown, maxLength: number): string {
 
 function welcomeEmailHtml(businessName: string): string {
   const safeName = escapeHtml(businessName);
-  // Same lockup + card treatment as the deal-alert confirmation email (see
-  // app/api/email-signup/route.ts) — this used to be bare unstyled
-  // paragraphs with no logo or brand color at all, despite being the first
-  // real email a new business owner gets.
-  return `
-    <div style="max-width:480px;margin:0 auto;font-family:'Segoe UI',ui-rounded,system-ui,sans-serif;background:#ffffff;border:1px solid #f1f0f4;border-radius:20px;overflow:hidden;">
-      <div style="padding:28px 32px 4px;text-align:center;">
-        <img src="${SITE_URL}/megadeal/megadeal-logo.webp" width="150" height="50" alt="MegaDeal" style="display:inline-block;height:auto;max-width:170px;" />
-      </div>
-      <div style="padding:16px 32px 32px;font-size:15px;line-height:1.6;color:#4b4358;">
+  return brandedEmailHtml(`
         <p style="margin:0 0 16px;">Hi ${safeName || "there"},</p>
         <p style="margin:0 0 16px;">🎉 You're in! Thanks for signing up to MegaDeal — we're genuinely excited to have ${safeName || "your business"} on board.</p>
         <p style="margin:0 0 8px;">Here's what happens next:</p>
@@ -49,9 +41,7 @@ function welcomeEmailHtml(businessName: string): string {
         <p style="margin:0 0 16px;">If anything's unclear, or you just want to say hi, hit reply — a real person reads every message.</p>
         <p style="margin:0 0 16px;">Thanks for giving MegaDeal a go — welcome to the herd. 🐘</p>
         <p style="margin:0;">— The MegaDeal team</p>
-      </div>
-    </div>
-  `;
+  `);
 }
 
 /**
