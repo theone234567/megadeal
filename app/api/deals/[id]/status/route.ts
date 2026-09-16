@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
-import { allowedDealActions } from "@/lib/dealStatus";
+import { allowedDealActions, hasDealExpired } from "@/lib/dealStatus";
 import type { DealStatus } from "@/lib/types";
 
 /**
@@ -41,6 +41,22 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const allowed = allowedDealActions(deal.status ?? "Live").some((a) => a.target === target);
     if (!allowed) {
       return NextResponse.json({ error: "That status change isn't allowed." }, { status: 400 });
+    }
+
+    // Pausing never stops this deal's clock — expiresAt is an absolute
+    // deadline set once at submission, and nothing here extends it. That's
+    // fine while there's time left, but resuming a deal whose deadline has
+    // already passed would flip it back to "Live" while isDealLive keeps
+    // it off the storefront anyway — a merchant clicking "Make live" and
+    // getting nothing, with no explanation. Caught here instead.
+    if (target === "Live" && hasDealExpired(deal.expiresAt)) {
+      return NextResponse.json(
+        {
+          error:
+            "This deal's run already ended, so it can't be made live again. Duplicate it from the portal to relist with a fresh run.",
+        },
+        { status: 409 }
+      );
     }
 
     const updated = await adminClient.items.update("Deals", { ...deal, status: target });

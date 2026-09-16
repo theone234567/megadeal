@@ -50,3 +50,16 @@ export function allowedDealActions(status: DealStatus | null): DealStatusAction[
       ];
   }
 }
+
+/**
+ * True if a deal's run has already ended — expiresAt is an absolute
+ * deadline, set once at submission, and pausing never extends it. That's
+ * unremarkable while a deal is Live, but it means resuming a Paused deal
+ * (see app/api/deals/[id]/status/route.ts) is only meaningful if the
+ * deadline hasn't already passed; otherwise "Make live" would flip the
+ * status back while isDealLive keeps it off the storefront anyway, with
+ * nothing telling the merchant why.
+ */
+export function hasDealExpired(expiresAt: string | null | undefined, now: number = Date.now()): boolean {
+  return Boolean(expiresAt) && new Date(expiresAt as string).getTime() <= now;
+}

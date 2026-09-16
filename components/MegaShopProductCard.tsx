@@ -5,10 +5,8 @@ import { formatMoney } from "@/lib/format";
 
 /**
  * MegaShop's own plain product card — deliberately not DealCard, which
- * shows a countdown badge that falls back to a made-up "urgency" timer
- * (dealEndsAt) when expiresAt is null. That's fine for a deal, but a
- * regular store product has no real expiry and showing a fake one would
- * be misleading.
+ * shows a countdown badge. A regular store product has no real expiry, so
+ * this card never renders one at all.
  */
 export default function MegaShopProductCard({ product }: { product: Deal }) {
   const soldOut = !product.inStock;

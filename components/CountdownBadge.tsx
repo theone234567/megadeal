@@ -46,14 +46,23 @@ export default function CountdownBadge({
     const deadline =
       targetTime !== null ? new Date(targetTime) : new Date(Date.now() + (durationMs ?? 0));
 
-    const tick = () => setParts(getParts(deadline));
+    // A self-rescheduling timeout rather than setInterval, so the cadence
+    // actually reacts as time passes rather than being fixed forever at
+    // whatever it was when the badge first mounted. A badge opened 3 hours
+    // before expiry used to stay on 60s ticks even after crossing into its
+    // final hour — the fine-grained window the comment below exists for —
+    // because setInterval's period is set once and never revisited.
+    let timeoutId: ReturnType<typeof setTimeout>;
+    function tick() {
+      setParts(getParts(deadline));
+      const msLeft = deadline.getTime() - Date.now();
+      if (msLeft <= 0) return; // Reached zero — nothing left to count down.
+      // Under an hour left is exactly when minutes matter most, so refresh
+      // every 15s in that window instead of only once a minute.
+      timeoutId = setTimeout(tick, msLeft < 60 * 60 * 1000 ? 15_000 : 60_000);
+    }
     tick();
-
-    // Under an hour left is exactly when minutes matter most, so refresh
-    // every 15s in that window instead of only once a minute.
-    const msLeft = deadline.getTime() - Date.now();
-    const interval = setInterval(tick, msLeft < 60 * 60 * 1000 ? 15_000 : 60_000);
-    return () => clearInterval(interval);
+    return () => clearTimeout(timeoutId);
   }, [targetTime, durationMs]);
 
   const baseClass =

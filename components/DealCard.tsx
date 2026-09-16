@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Deal } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
-import { dealEndsAt } from "@/lib/socialProof";
 import { dealSaving } from "@/lib/dealSaving";
 import CountdownBadge from "./CountdownBadge";
 import StarRating from "./StarRating";
@@ -83,9 +82,7 @@ export default function DealCard({
                 Only {deal.quantityAvailable} left
               </span>
             ) : (
-              <CountdownBadge
-                target={deal.expiresAt ? new Date(deal.expiresAt) : dealEndsAt(deal.id)}
-              />
+              deal.expiresAt && <CountdownBadge target={new Date(deal.expiresAt)} />
             )}
           </div>
         )}

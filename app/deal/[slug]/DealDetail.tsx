@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Deal } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
-import { dealEndsAt } from "@/lib/socialProof";
+import { isDealLive } from "@/lib/dealVisibility";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
 import CountdownBadge from "@/components/CountdownBadge";
 import DealGrid from "@/components/DealGrid";
@@ -42,6 +42,21 @@ export default function DealDetail({
   preview?: boolean;
 }) {
   const [showContact, setShowContact] = useState(false);
+
+  // A customer can sit on this exact page for a while — it's the page
+  // where they decide to act, not just scroll past. Without re-checking,
+  // a deal that expires while the tab is open kept showing a live "Get
+  // this deal" button and a working redeem code indefinitely: a fresh page
+  // load re-fetches (see app/deal/[slug]/page.tsx's isDealLive check) and
+  // 404s once expired, but nothing here ever told an *already-open* tab.
+  // Same 30s re-check interval as the category grid and flash deals.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (preview) return;
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, [preview]);
+  const live = preview || isDealLive(deal, now);
 
   useEffect(() => {
     if (preview) return;
@@ -107,11 +122,11 @@ export default function DealDetail({
                 🏷️
               </div>
             )}
-            <div className="absolute bottom-3 left-3 flex gap-2">
-              <CountdownBadge
-                target={deal.expiresAt ? new Date(deal.expiresAt) : dealEndsAt(deal.id)}
-              />
-            </div>
+            {live && deal.expiresAt && (
+              <div className="absolute bottom-3 left-3 flex gap-2">
+                <CountdownBadge target={new Date(deal.expiresAt)} />
+              </div>
+            )}
           </div>
 
           <div className="mt-6">
@@ -396,7 +411,11 @@ export default function DealDetail({
             {!preview && <ShareButtons title={deal.name} size="md" className="mt-4" />}
 
             <div className="mt-6">
-              {!deal.inStock ? (
+              {!live ? (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 py-3 text-center text-sm font-bold text-slate-500">
+                  This deal has ended
+                </div>
+              ) : !deal.inStock ? (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 py-3 text-center text-sm font-bold text-slate-500">
                   Sold out — check back soon
                 </div>
