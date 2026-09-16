@@ -133,7 +133,7 @@ const categories = [
   },
   {
     name: "Home & Car",
-    hasCategoryPage: false,
+    hasCategoryPage: true,
     icon: WrenchIcon,
     image: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=720&q=72",
   },

@@ -10,20 +10,15 @@ import EmailSignupForm from "./EmailSignupForm";
  * Before launch, /category/* pages render the full launched-site chrome
  * over an empty "No deals yet" grid, so linking there from the footer
  * dead-ends every visitor on the pre-launch site. Until we're live, point
- * the whole column at the coming-soon page's category preview instead —
- * which is already what "Home & Car" does, since it has no category page
- * at all (it isn't in lib/categories.ts).
+ * the whole column at the coming-soon page's category preview instead.
  */
 function footerCategories(siteLaunched: boolean) {
-  return [
-    ...CATEGORIES.map((category) => ({
-      name: category.name,
-      href: siteLaunched
-        ? `/category/${encodeURIComponent(category.name)}`
-        : "/coming-soon#categories",
-    })),
-    { name: "Home & Car", href: "/coming-soon#categories" },
-  ];
+  return CATEGORIES.map((category) => ({
+    name: category.name,
+    href: siteLaunched
+      ? `/category/${encodeURIComponent(category.name)}`
+      : "/coming-soon#categories",
+  }));
 }
 
 /**

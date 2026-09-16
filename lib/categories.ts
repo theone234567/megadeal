@@ -16,6 +16,7 @@ export const CATEGORIES: CategoryDef[] = [
   { id: "606adf09-ff58-490b-97f6-960587bf9cb1", name: "Things To Do", emoji: "🎟️" },
   { id: "870d3932-8296-4120-8dde-71159aa2bdf1", name: "Travel & Getaways", emoji: "✈️" },
   { id: "909fc5df-6473-4a39-99e9-c23e665e9288", name: "Health & Fitness", emoji: "🏋️" },
+  { id: "9f5ab7d9-624c-4cc2-b923-7c3a2e97aa6d", name: "Home & Car", emoji: "🔧" },
 ];
 
 export const CATEGORY_NAME_BY_ID: Record<string, string> = Object.fromEntries(
@@ -51,27 +52,21 @@ export function isMegaShopProduct(product: any): boolean {
  * category id. A business category needs no id at all: the portal form and
  * the Merchants record both store the name as plain text.
  *
- * Conflating the two is why "Home & Car" had nowhere to go. It's a real
- * kind of NZ business (mechanics, detailers, cleaners, tradies) and the
- * coming-soon page has always advertised it — already flagged there as
- * hasCategoryPage: false, which is exactly this distinction. It had no Wix
- * category id, so adding it to CATEGORIES would have produced a nav link
- * and a sitemap entry pointing at a category page with nothing behind it.
- *
- * To give it a storefront page later: create the category in Wix Stores,
- * then move the entry up into CATEGORIES with its real id. Nothing else
- * needs to change — businesses already classified stay valid, because both
- * lists are matched by name.
+ * "Home & Car" used to live only here, with no Wix category id and no
+ * storefront page (coming-soon page flagged it hasCategoryPage: false).
+ * Now that it has a real Wix Stores category, it's part of CATEGORIES
+ * above and this list is simply every storefront category, unchanged in
+ * shape so any future business-only category still has somewhere to go.
  */
 export interface BusinessCategoryDef {
   name: string;
   emoji: string;
 }
 
-export const BUSINESS_CATEGORIES: BusinessCategoryDef[] = [
-  ...CATEGORIES.map(({ name, emoji }) => ({ name, emoji })),
-  { name: "Home & Car", emoji: "🔧" },
-];
+export const BUSINESS_CATEGORIES: BusinessCategoryDef[] = CATEGORIES.map(({ name, emoji }) => ({
+  name,
+  emoji,
+}));
 
 /** Server-side validation for a submitted business category. */
 export function isBusinessCategory(value: string): boolean {
