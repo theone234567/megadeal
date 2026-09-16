@@ -697,6 +697,7 @@ export default function MerchantSignupForm() {
             name="businessName"
             autoComplete="organization"
             type="text"
+            maxLength={300}
             placeholder="e.g. Harbourside Bistro"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
           />
@@ -713,6 +714,7 @@ export default function MerchantSignupForm() {
             name="contactName"
             autoComplete="name"
             type="text"
+            maxLength={300}
             placeholder="Full name"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
           />
@@ -791,9 +793,20 @@ export default function MerchantSignupForm() {
             name="contactPhone"
             autoComplete="tel"
             type="tel"
+            maxLength={300}
             placeholder="021 234 5678"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
           />
+          {/* This one number does double duty until the portal separates them
+              (see MerchantProfileForm: "Contact phone" vs "Booking phone
+              number") — worth saying so up front rather than letting someone
+              discover their mobile is now public by finding it on their own
+              listing. */}
+          <p className="mt-1 text-sm text-slate-500">
+            We&apos;ll use this to reach you about your application, and show it to
+            customers as your booking number too — you can set a different
+            public number later in your portal.
+          </p>
         </div>
 
         <div>
@@ -807,6 +820,7 @@ export default function MerchantSignupForm() {
             name="legalBusinessName"
             autoComplete="organization"
             type="text"
+            maxLength={300}
             placeholder="e.g. Harbourside Bistro Limited"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
           />
@@ -836,6 +850,7 @@ export default function MerchantSignupForm() {
             name="couponCode"
             autoComplete="off"
             type="text"
+            maxLength={50}
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"

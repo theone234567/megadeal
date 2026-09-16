@@ -294,6 +294,7 @@ export default function MerchantProfileForm({
             <input
               id="profile-businessName"
               required
+              maxLength={300}
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -306,6 +307,7 @@ export default function MerchantProfileForm({
             </label>
             <input
               id="profile-website"
+              maxLength={300}
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -322,6 +324,7 @@ export default function MerchantProfileForm({
             <input
               id="profile-legalBusinessName"
               required
+              maxLength={300}
               value={legalBusinessName}
               onChange={(e) => setLegalBusinessName(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -337,6 +340,7 @@ export default function MerchantProfileForm({
               value={nzbn}
               onChange={(e) => setNzbn(e.target.value)}
               inputMode="numeric"
+              maxLength={13}
               placeholder="13-digit NZBN, if you have one"
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
@@ -352,6 +356,7 @@ export default function MerchantProfileForm({
             <input
               id="profile-contactName"
               required
+              maxLength={300}
               value={contactName}
               onChange={(e) => setContactName(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -365,6 +370,7 @@ export default function MerchantProfileForm({
             <input
               id="profile-contactPhone"
               required
+              maxLength={300}
               value={contactPhone}
               onChange={(e) => setContactPhone(e.target.value)}
               type="tel"
@@ -391,6 +397,7 @@ export default function MerchantProfileForm({
               id="profile-phone"
               required
               type="tel"
+              maxLength={300}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="The number customers should call to book"
@@ -404,6 +411,7 @@ export default function MerchantProfileForm({
             </label>
             <input
               id="profile-bookingUrl"
+              maxLength={300}
               value={bookingUrl}
               onChange={(e) => setBookingUrl(e.target.value)}
               placeholder="Your booking/reservation page, if you have one"
@@ -418,6 +426,7 @@ export default function MerchantProfileForm({
             <input
               id="profile-bookingEmail"
               type="email"
+              maxLength={300}
               value={bookingEmail}
               onChange={(e) => setBookingEmail(e.target.value)}
               placeholder="bookings@yourbusiness.co.nz"
@@ -483,6 +492,7 @@ export default function MerchantProfileForm({
             </label>
             <input
               id="profile-postcode"
+              maxLength={20}
               value={postcode}
               onChange={(e) => setPostcode(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -523,6 +533,7 @@ export default function MerchantProfileForm({
             </label>
             <input
               id="profile-facebookUrl"
+              maxLength={300}
               value={facebookUrl}
               onChange={(e) => setFacebookUrl(e.target.value)}
               placeholder="https://facebook.com/yourbusiness"
@@ -536,6 +547,7 @@ export default function MerchantProfileForm({
             </label>
             <input
               id="profile-instagramUrl"
+              maxLength={300}
               value={instagramUrl}
               onChange={(e) => setInstagramUrl(e.target.value)}
               placeholder="https://instagram.com/yourbusiness"
@@ -553,6 +565,7 @@ export default function MerchantProfileForm({
             id="profile-bio"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
+            maxLength={600}
             rows={3}
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
@@ -584,6 +597,7 @@ export default function MerchantProfileForm({
             </label>
             <input
               id="profile-amenities"
+              maxLength={300}
               value={amenities}
               onChange={(e) => setAmenities(e.target.value)}
               placeholder="e.g. Vegan options, Free parking"
