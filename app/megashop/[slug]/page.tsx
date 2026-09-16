@@ -7,6 +7,9 @@ import { SITE_URL, SITE_NAME, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney } from "@/lib/format";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
+// See app/megashop/page.tsx for why this was missing and what it means.
+export const revalidate = 60;
+
 export async function generateMetadata({
   params,
 }: {

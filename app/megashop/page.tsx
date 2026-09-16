@@ -5,6 +5,12 @@ import MegaShopProductCard from "@/components/MegaShopProductCard";
 import { SITE_URL, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import { fetchMegaShopProductsForServer } from "@/lib/fetchMegaShopServer";
 
+// Missing here (and on the product detail page below) while every other
+// live-Wix-data page in the app sets this explicitly — see the comment on
+// app/business/[slug]/page.tsx's revalidate for what that gap means in
+// practice. Same 60s window as the deal-listing pages this mirrors.
+export const revalidate = 60;
+
 export async function generateMetadata(): Promise<Metadata> {
   // Short-circuits before touching the live product fetch at all while
   // not launched — same reasoning as the page component below.

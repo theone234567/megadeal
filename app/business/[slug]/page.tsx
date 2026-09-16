@@ -14,6 +14,15 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { parseBusinessHours, formatBusinessHoursLines, toOpeningHoursSpecification, isOpenNow } from "@/lib/businessHours";
 
+// Every other page that fetches live Wix data (homepage, category pages,
+// the deal page, flash deals) sets an explicit revalidate window — this
+// one didn't, which under Next's defaults means the whole page (deals
+// shown, ratings, hours, "Open now") gets cached after the first request
+// and never refreshes again on its own, not even after a new deployment's
+// worth of real changes, until something triggers a rebuild of this exact
+// URL. Same 60s window as the category pages this is closest to in shape.
+export const revalidate = 60;
+
 export async function generateMetadata({
   params,
 }: {
