@@ -254,6 +254,10 @@ export default function MerchantProfileForm({
       <h2 className="text-lg font-bold text-slate-900">
         {startEditing ? "Your business details" : "Edit business details"}
       </h2>
+      <p className="mt-1 text-sm text-slate-500">
+        Everything you fill in below shows up on your public listing — except your postcode,
+        which we keep to ourselves.
+      </p>
       {/* Only once there's a live listing for a re-review to take down.
           Before approval this warned about a consequence that can't
           happen: a first application is already in the queue, so "sends
