@@ -555,7 +555,7 @@ export default async function MerchantsPage() {
             </p>
             <p>We&apos;d love you to be part of our launch.</p>
             <div className="pt-1">
-              <p className={`${caveat.className} text-3xl leading-none text-brand-700`}>Nicholas</p>
+              <p className={`${caveat.className} text-3xl leading-none text-brand-700`}>Nick</p>
               <p className="mt-1 text-sm text-slate-500">Founder, MegaDeal</p>
             </div>
           </div>
