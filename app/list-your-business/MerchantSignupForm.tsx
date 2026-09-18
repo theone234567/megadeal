@@ -551,13 +551,15 @@ export default function MerchantSignupForm() {
 
   if (pendingState) {
     return (
-      <div className="rounded-2xl border border-brand-100 bg-brand-50 p-6">
+      <div className="mx-auto max-w-sm rounded-2xl border border-brand-100 bg-brand-50 p-6 text-center">
         <h3 className="text-lg font-bold text-brand-800">Almost there — check your email</h3>
         <p className="mt-2 text-sm text-brand-700">
-          We&apos;ve sent a verification code to <strong>{pendingEmail}</strong>. Enter it below to
-          finish creating your account.
+          We&apos;ve sent a verification code to <strong>{pendingEmail}</strong>.
         </p>
-        <form onSubmit={handleVerifySubmit} className="mt-4 max-w-xs space-y-3">
+        <p className="mt-1 text-sm text-brand-700">
+          Enter it below to finish creating your account.
+        </p>
+        <form onSubmit={handleVerifySubmit} className="mx-auto mt-4 max-w-xs space-y-3">
           <input
             required
             value={code}
