@@ -784,7 +784,7 @@ export default function MerchantSignupForm() {
 
         <div>
           <label htmlFor="signup-contactPhone" className="mb-1 block text-base font-medium text-slate-700">
-            Mobile
+            Phone number
             <RequiredTag />
           </label>
           <input
@@ -794,13 +794,13 @@ export default function MerchantSignupForm() {
             autoComplete="tel"
             type="tel"
             maxLength={300}
-            placeholder="021 234 5678"
+            placeholder="021 234 5678 or 09 123 4567"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
           />
           {/* This one number does double duty until the portal separates them
               (see MerchantProfileForm: "Contact phone" vs "Booking phone
               number") — worth saying so up front rather than letting someone
-              discover their mobile is now public by finding it on their own
+              discover their number is now public by finding it on their own
               listing. */}
           <p className="mt-1 text-sm text-slate-500">
             We&apos;ll use this to reach you about your application, and show it to
