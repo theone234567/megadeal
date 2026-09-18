@@ -553,6 +553,11 @@ export default async function MerchantsPage() {
               opportunity to help shape how MegaDeal supports businesses as
               we grow.
             </p>
+            <p>
+              And honestly, there&apos;s nothing to lose — it&apos;s
+              completely free to join, no credit card, no commitment, and
+              0% commission.
+            </p>
             <p>We&apos;d love you to be part of our launch.</p>
             <div className="pt-1">
               <p className={`${caveat.className} text-3xl leading-none text-brand-700`}>Nick</p>
