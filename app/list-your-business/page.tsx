@@ -9,8 +9,8 @@ import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { getSignupStats } from "@/lib/publicStats";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
-import { PercentIcon, ZapIcon, MapPinIcon } from "@/components/icons";
+import { fredoka, plusJakartaSans, caveat } from "@/lib/fonts";
+import { PercentIcon, ZapIcon, MapPinIcon, CheckIcon } from "@/components/icons";
 
 // Re-checked at most once a minute — the counts only need to be
 // approximately live, and this avoids hitting Wix on every single request.
@@ -52,6 +52,17 @@ export const metadata: Metadata = {
 // scrolling to the signup form, so a visitor never has to work out which
 // button is "the" button.
 const CTA_LABEL = "CLAIM MY FREE ADVERTISING →";
+
+// Same circled-checkmark treatment as the coming-soon page's Tick
+// component — plain "✓ text" here was the only trust row on the site not
+// using it, white-on-brand rather than that component's colored-circle
+// version since this row sits directly on the dark hero background.
+const HERO_TRUST_ITEMS = [
+  "Up to 6 months free",
+  "0% commission",
+  "No lock-in",
+  "No credit card required",
+];
 
 const WHY_JOIN_NOW = [
   {
@@ -285,12 +296,16 @@ export default async function MerchantsPage() {
             </a>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-semibold text-brand-50">
-            <span>✓ Up to 6 months free</span>
-            <span>✓ 0% commission</span>
-            <span>✓ No lock-in</span>
-            <span>✓ No credit card required</span>
-          </div>
+          <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 text-sm font-semibold text-brand-50">
+            {HERO_TRUST_ITEMS.map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white text-brand-700">
+                  <CheckIcon className="h-3 w-3" />
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -516,16 +531,27 @@ export default async function MerchantsPage() {
               )}
             </div>
           )}
-          <p className="mx-auto mt-6 max-w-xl text-slate-600">
-            MegaDeal is New Zealand-owned and run — we&apos;re a local
-            business too. We&apos;re not going to pretend we&apos;re
-            already the biggest deal site in the country. We&apos;re
-            building it — and we&apos;d rather build it with local
-            businesses than build it without them.
-          </p>
-          <p className="mx-auto mt-3 max-w-xl text-sm italic text-slate-500">
-            — Nick, Founder of MegaDeal
-          </p>
+          <div className="mx-auto mt-6 max-w-xl space-y-4 text-left text-slate-600">
+            <p>
+              MegaDeal is New Zealand-owned and operated, launching first in
+              Auckland with a clear goal: helping people discover great
+              local offers and giving businesses a new way to reach
+              customers.
+            </p>
+            <p>
+              As a local business ourselves, we understand the importance
+              of making every marketing dollar count. That&apos;s why
+              we&apos;re inviting Auckland businesses to join ahead of
+              launch, with up to six months of free advertising and the
+              opportunity to help shape how MegaDeal supports businesses as
+              we grow.
+            </p>
+            <p>We&apos;d love you to be part of our launch.</p>
+            <div className="pt-1">
+              <p className={`${caveat.className} text-3xl leading-none text-brand-700`}>Nicholas</p>
+              <p className="mt-1 text-sm text-slate-500">Founder, MegaDeal</p>
+            </div>
+          </div>
         </div>
       </section>
 
