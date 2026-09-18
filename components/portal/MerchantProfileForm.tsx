@@ -303,6 +303,23 @@ export default function MerchantProfileForm({
           </div>
         </div>
 
+        <div>
+          <label htmlFor="profile-bio" className="mb-1 block text-sm font-medium text-slate-700">
+            About your business
+            <RequiredTag />
+          </label>
+          <textarea
+            id="profile-bio"
+            required
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            maxLength={600}
+            rows={3}
+            placeholder="A couple of sentences customers will see on your listing — what you do and what makes you worth choosing."
+            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+          />
+        </div>
+
         {/* Legal name, NZBN and contact details are collected once at
             signup and don't need re-asking here — this block only exists
             for the createMode recovery form (an account whose signup
@@ -551,21 +568,6 @@ export default function MerchantProfileForm({
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
           </div>
-        </div>
-
-        <div>
-          <label htmlFor="profile-bio" className="mb-1 block text-sm font-medium text-slate-700">
-            About your business
-            <OptionalTag />
-          </label>
-          <textarea
-            id="profile-bio"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            maxLength={600}
-            rows={3}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-          />
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -73,6 +73,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Required here (not at initial signup — see apply/route.ts, where the
+  // short first-touch form never collects it). By the time a merchant is
+  // back in the portal editing their profile, the field is on screen and
+  // customers rely on it to know what the business actually does.
+  const bio = cleanText(body.bio, MAX_BIO_LENGTH);
+  if (!bio) {
+    return NextResponse.json({ error: "About your business is required." }, { status: 400 });
+  }
+
   const nzbn = normalizeNzbn(body.nzbn);
   if (!isValidNzbnFormat(nzbn)) {
     return NextResponse.json({ error: "NZBN must be 13 digits." }, { status: 400 });
@@ -147,7 +156,7 @@ export async function POST(req: NextRequest) {
     city,
     category,
     postcode: cleanText(body.postcode, 20),
-    bio: cleanText(body.bio, MAX_BIO_LENGTH),
+    bio,
     businessHours: cleanText(body.businessHours, MAX_BUSINESS_HOURS_LENGTH),
     bookingUrl,
     bookingEmail,
