@@ -85,11 +85,16 @@ type ApplicationValues = {
 };
 
 function readApplicationValues(formData: FormData): ApplicationValues {
+  // No separate "Business name" field on this form anymore — the legal
+  // name doubles as the trading name until the merchant sets a different
+  // public one in the portal (see MerchantProfileForm's own "Business
+  // name" field, which /api/merchants/apply also accepts on later edits).
+  const legalBusinessName = String(formData.get("legalBusinessName") ?? "");
   return {
-    businessName: String(formData.get("businessName") ?? ""),
+    businessName: legalBusinessName,
     contactName: String(formData.get("contactName") ?? ""),
     contactPhone: String(formData.get("contactPhone") ?? ""),
-    legalBusinessName: String(formData.get("legalBusinessName") ?? ""),
+    legalBusinessName,
     couponCode: String(formData.get("couponCode") ?? ""),
     honeypot: String(formData.get(HONEYPOT_FIELD) ?? ""),
     agreedToTerms: formData.get("agreedToTerms") === "on",
@@ -291,7 +296,10 @@ export default function MerchantSignupForm() {
     }
 
     const email = String(formData.get("email") ?? "").trim();
-    const businessName = String(formData.get("businessName") ?? "").trim();
+    // No separate "Business name" field — the legal name (below) is what
+    // Wix's member nickname and the application both use, same as
+    // readApplicationValues.
+    const businessName = String(formData.get("legalBusinessName") ?? "").trim();
 
     // Only when an account is being created. A signed-in visitor has no
     // password field rendered, so `password` is "" and these would reject
@@ -689,20 +697,24 @@ export default function MerchantSignupForm() {
     <div id="signup" className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
       <form onSubmit={handleSubmit} onChangeCapture={trackFormStarted} className="space-y-4">
         <div>
-          <label htmlFor="signup-businessName" className="mb-1 block text-base font-medium text-slate-700">
-            Business name
+          <label htmlFor="signup-legalBusinessName" className="mb-1 block text-base font-medium text-slate-700">
+            Legal / registered business name
             <RequiredTag />
           </label>
           <input
-            id="signup-businessName"
+            id="signup-legalBusinessName"
             required
-            name="businessName"
+            name="legalBusinessName"
             autoComplete="organization"
             type="text"
             maxLength={300}
-            placeholder="e.g. Harbourside Bistro"
+            placeholder="e.g. Harbourside Bistro Limited"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
           />
+          <p className="mt-1 text-sm text-slate-500">
+            Must be a New Zealand registered Limited company — we
+            don&apos;t currently accept sole traders or partnerships.
+          </p>
         </div>
 
         <div>
@@ -808,27 +820,6 @@ export default function MerchantSignupForm() {
             We&apos;ll use this to reach you about your application, and show it to
             customers as your booking number too — you can set a different
             public number later in your portal.
-          </p>
-        </div>
-
-        <div>
-          <label htmlFor="signup-legalBusinessName" className="mb-1 block text-base font-medium text-slate-700">
-            Legal / registered business name
-            <RequiredTag />
-          </label>
-          <input
-            id="signup-legalBusinessName"
-            required
-            name="legalBusinessName"
-            autoComplete="organization"
-            type="text"
-            maxLength={300}
-            placeholder="e.g. Harbourside Bistro Limited"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-          />
-          <p className="mt-1 text-sm text-slate-500">
-            Must be a New Zealand registered Limited company — we
-            don&apos;t currently accept sole traders or partnerships.
           </p>
         </div>
 
