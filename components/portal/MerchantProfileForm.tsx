@@ -183,22 +183,6 @@ export default function MerchantProfileForm({
             <dd className="font-medium text-slate-800">{merchant.businessName || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-500">Legal / registered business name</dt>
-            <dd className="font-medium text-slate-800">{merchant.legalBusinessName || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">NZBN</dt>
-            <dd className="font-medium text-slate-800">{merchant.nzbn || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Contact name</dt>
-            <dd className="font-medium text-slate-800">{merchant.contactName || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Contact phone</dt>
-            <dd className="font-medium text-slate-800">{merchant.contactPhone || "—"}</dd>
-          </div>
-          <div>
             <dt className="text-slate-500">Website</dt>
             <dd className="font-medium text-slate-800">{merchant.website || "—"}</dd>
           </div>
@@ -315,69 +299,78 @@ export default function MerchantProfileForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="profile-legalBusinessName" className="mb-1 block text-sm font-medium text-slate-700">
-              Legal / registered business name
-              <RequiredTag />
-            </label>
-            <input
-              id="profile-legalBusinessName"
-              required
-              maxLength={300}
-              value={legalBusinessName}
-              onChange={(e) => setLegalBusinessName(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-            />
-          </div>
-          <div>
-            <label htmlFor="profile-nzbn" className="mb-1 block text-sm font-medium text-slate-700">
-              NZBN
-              <OptionalTag />
-            </label>
-            <input
-              id="profile-nzbn"
-              value={nzbn}
-              onChange={(e) => setNzbn(e.target.value)}
-              inputMode="numeric"
-              maxLength={13}
-              placeholder="13-digit NZBN, if you have one"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-            />
-          </div>
-        </div>
+        {/* Legal name, NZBN and contact details are collected once at
+            signup and don't need re-asking here — this block only exists
+            for the createMode recovery form (an account whose signup
+            dropped before that first save ever happened), where nothing
+            has been given yet. */}
+        {createMode && (
+          <>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="profile-legalBusinessName" className="mb-1 block text-sm font-medium text-slate-700">
+                  Legal / registered business name
+                  <RequiredTag />
+                </label>
+                <input
+                  id="profile-legalBusinessName"
+                  required
+                  maxLength={300}
+                  value={legalBusinessName}
+                  onChange={(e) => setLegalBusinessName(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
+              <div>
+                <label htmlFor="profile-nzbn" className="mb-1 block text-sm font-medium text-slate-700">
+                  NZBN
+                  <OptionalTag />
+                </label>
+                <input
+                  id="profile-nzbn"
+                  value={nzbn}
+                  onChange={(e) => setNzbn(e.target.value)}
+                  inputMode="numeric"
+                  maxLength={13}
+                  placeholder="13-digit NZBN, if you have one"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
+            </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="profile-contactName" className="mb-1 block text-sm font-medium text-slate-700">
-              Contact name
-              <RequiredTag />
-            </label>
-            <input
-              id="profile-contactName"
-              required
-              maxLength={300}
-              value={contactName}
-              onChange={(e) => setContactName(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-            />
-          </div>
-          <div>
-            <label htmlFor="profile-contactPhone" className="mb-1 block text-sm font-medium text-slate-700">
-              Contact phone
-              <RequiredTag />
-            </label>
-            <input
-              id="profile-contactPhone"
-              required
-              maxLength={300}
-              value={contactPhone}
-              onChange={(e) => setContactPhone(e.target.value)}
-              type="tel"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-            />
-          </div>
-        </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="profile-contactName" className="mb-1 block text-sm font-medium text-slate-700">
+                  Contact name
+                  <RequiredTag />
+                </label>
+                <input
+                  id="profile-contactName"
+                  required
+                  maxLength={300}
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
+              <div>
+                <label htmlFor="profile-contactPhone" className="mb-1 block text-sm font-medium text-slate-700">
+                  Contact phone
+                  <RequiredTag />
+                </label>
+                <input
+                  id="profile-contactPhone"
+                  required
+                  maxLength={300}
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  type="tel"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
+            </div>
+          </>
+        )}
 
         <div>
           <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
