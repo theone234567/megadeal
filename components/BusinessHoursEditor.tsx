@@ -2,12 +2,39 @@
 
 import {
   DAYS,
+  TIME_OPTIONS,
   emptySchedule,
+  formatTime12h,
   parseBusinessHours,
   serializeBusinessHours,
   type BusinessHoursData,
   type DaySchedule,
 } from "@/lib/businessHours";
+
+function TimeSelect({
+  value,
+  onChange,
+  ariaLabel,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  ariaLabel: string;
+}) {
+  return (
+    <select
+      aria-label={ariaLabel}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm outline-none focus:border-brand-400"
+    >
+      {TIME_OPTIONS.map((t) => (
+        <option key={t} value={t}>
+          {formatTime12h(t)}
+        </option>
+      ))}
+    </select>
+  );
+}
 
 /**
  * Structured opening-hours editor: per day, closed/open toggle plus any
@@ -93,28 +120,24 @@ export default function BusinessHoursEditor({
               <div className="mt-2 space-y-1.5">
                 {day.ranges.map((range, ri) => (
                   <div key={ri} className="flex items-center gap-2">
-                    <input
-                      type="time"
-                      aria-label={`${day.day} opening time`}
+                    <TimeSelect
+                      ariaLabel={`${day.day} opening time`}
                       value={range.open}
-                      onChange={(e) => {
+                      onChange={(v) => {
                         const ranges = [...day.ranges];
-                        ranges[ri] = { ...range, open: e.target.value };
+                        ranges[ri] = { ...range, open: v };
                         updateDay(i, { ...day, ranges });
                       }}
-                      className="rounded-lg border border-slate-200 px-2 py-1 text-sm"
                     />
                     <span className="text-slate-500">–</span>
-                    <input
-                      type="time"
-                      aria-label={`${day.day} closing time`}
+                    <TimeSelect
+                      ariaLabel={`${day.day} closing time`}
                       value={range.close}
-                      onChange={(e) => {
+                      onChange={(v) => {
                         const ranges = [...day.ranges];
-                        ranges[ri] = { ...range, close: e.target.value };
+                        ranges[ri] = { ...range, close: v };
                         updateDay(i, { ...day, ranges });
                       }}
-                      className="rounded-lg border border-slate-200 px-2 py-1 text-sm"
                     />
                     {day.ranges.length > 1 && (
                       <button

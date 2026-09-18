@@ -77,6 +77,16 @@ export function serializeBusinessHours(data: BusinessHoursData): string {
   return JSON.stringify(data);
 }
 
+/** Every quarter-hour of the day as "HH:MM", for a time <select> — a
+ *  fixed list scrolls and keyboard-jumps (type "9" to land near 9am)
+ *  far better than the native time input's per-segment steppers, and
+ *  business hours are round numbers in practice anyway. */
+export const TIME_OPTIONS: string[] = Array.from({ length: 24 * 4 }, (_, i) => {
+  const h = Math.floor(i / 4);
+  const m = (i % 4) * 15;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+});
+
 /** "17:30" -> "5:30pm", "09:00" -> "9am" */
 export function formatTime12h(t: string): string {
   const [hStr, mStr] = t.split(":");
