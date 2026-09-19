@@ -17,7 +17,7 @@ import {
 } from "@/components/icons";
 import { SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
+import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
 
 // Was noindex/nofollow while the page was still built from spec docs
@@ -286,16 +286,6 @@ export default function RestaurantAdvertisingPage() {
                 Launching first in <strong className="font-extrabold">Auckland</strong>
               </div>
 
-              {/* Handwritten caption — width capped so it can't run under
-                  the Auckland tag anchored to the opposite corner. */}
-              <div className="absolute -bottom-2 left-4 max-w-[200px] sm:left-6">
-                <p className={`${caveat.className} text-2xl text-white drop-shadow-[0_2px_6px_rgba(0,0,0,.35)]`}>
-                  Good food. New faces.
-                </p>
-                <p className="text-xs font-medium leading-snug text-white/75">
-                  Your next regular starts with a first visit.
-                </p>
-              </div>
             </div>
           </div>
         </section>
