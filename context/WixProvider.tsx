@@ -24,7 +24,7 @@ interface WixContextValue {
   client: WixBrowserClient;
   member: SessionMember | null | undefined;
   isLoggedIn: boolean;
-  logout: () => Promise<void>;
+  logout: (returnTo?: string) => Promise<void>;
 }
 
 const WixContext = createContext<WixContextValue | null>(null);
@@ -70,23 +70,24 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
     fetchMember();
   }, [fetchMember]);
 
-  const logout = useCallback(async () => {
+  const logout = useCallback(async (returnTo?: string) => {
     // The server clears the cookie and builds the Wix logout URL, since
     // that needs the tokens. If anything goes wrong the session is still
     // ended here — falling back to the home page is a worse experience
     // than a clean Wix logout, but never a less safe one.
+    const target = returnTo || window.location.origin;
     let logoutUrl: string | null = null;
     try {
       const res = await fetch("/api/auth/logout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ returnTo: window.location.origin }),
+        body: JSON.stringify({ returnTo: target }),
       });
       if (res.ok) ({ logoutUrl } = await res.json());
     } catch {
       // fall through to the plain redirect below
     }
-    window.location.href = logoutUrl || "/";
+    window.location.href = logoutUrl || target;
   }, []);
 
   const value: WixContextValue = {

@@ -59,6 +59,35 @@ export default function PortalPage() {
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   const [deals, setDeals] = useState<DealRecord[]>([]);
   const [photosError, setPhotosError] = useState<string | null>(null);
+  // Mirrors the same check /admin does in reverse — being signed into
+  // both an admin session and a business account in the same browser is
+  // confusing about which one a given click is acting as.
+  const [adminAlsoActive, setAdminAlsoActive] = useState(false);
+  const [signingOutAdmin, setSigningOutAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    let cancelled = false;
+    fetch("/api/admin/session")
+      .then((res) => (res.ok ? res.json() : { isAdmin: false }))
+      .then(({ isAdmin }) => {
+        if (!cancelled) setAdminAlsoActive(Boolean(isAdmin));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn]);
+
+  async function handleSignOutAdmin() {
+    setSigningOutAdmin(true);
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+      setAdminAlsoActive(false);
+    } finally {
+      setSigningOutAdmin(false);
+    }
+  }
 
   // Server-side now: this query used to run in the browser with the
   // member's own Wix tokens, which is one of the two reasons those tokens
@@ -210,12 +239,29 @@ export default function PortalPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-extrabold text-slate-900">Business portal</h1>
         <button
-          onClick={logout}
+          onClick={() => logout()}
           className="text-sm font-medium text-slate-500 hover:text-brand-700"
         >
           Sign out
         </button>
       </div>
+
+      {adminAlsoActive && (
+        <div className="mt-4 rounded-2xl border-2 border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-bold text-amber-900">⚠️ You&apos;re also signed in as admin</p>
+          <p className="mt-1 text-sm text-amber-800">
+            Being signed into both at once gets confusing about which account you&apos;re acting
+            as. Worth signing out of admin while you&apos;re only using this business portal.
+          </p>
+          <button
+            onClick={handleSignOutAdmin}
+            disabled={signingOutAdmin}
+            className="mt-2 rounded-full border-2 border-amber-600 px-4 py-1.5 text-sm font-bold text-amber-800 hover:bg-amber-100 disabled:opacity-60"
+          >
+            {signingOutAdmin ? "Signing out…" : "Sign out of admin"}
+          </button>
+        </div>
+      )}
 
       {!merchant ? (
         <>

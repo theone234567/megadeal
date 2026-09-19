@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import MerchantRow, { type AdminMerchant } from "@/components/admin/MerchantRow";
 import DealRow, { type AdminDeal } from "@/components/admin/DealRow";
 import SubscriberRow, { type AdminSubscriber } from "@/components/admin/SubscriberRow";
+import { useWix } from "@/context/WixProvider";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const { isLoggedIn: businessAlsoActive, member: businessMember, logout: logoutBusiness } = useWix();
+  const [signingOutBusiness, setSigningOutBusiness] = useState(false);
   const [tab, setTab] = useState<"merchants" | "deals" | "subscribers">("merchants");
   const [merchants, setMerchants] = useState<AdminMerchant[] | null>(null);
   const [deals, setDeals] = useState<AdminDeal[] | null>(null);
@@ -58,6 +61,11 @@ export default function AdminDashboardPage() {
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" });
     router.push("/admin/login");
+  }
+
+  async function handleSignOutBusiness() {
+    setSigningOutBusiness(true);
+    await logoutBusiness(`${window.location.origin}/admin`);
   }
 
   async function handleIndexNowSubmitAll() {
@@ -149,6 +157,26 @@ export default function AdminDashboardPage() {
           </button>
         </div>
       </div>
+
+      {businessAlsoActive && (
+        <div className="mt-4 rounded-2xl border-2 border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-bold text-amber-900">
+            ⚠️ You&apos;re also signed in as a business{businessMember?.email ? ` (${businessMember.email})` : ""}
+          </p>
+          <p className="mt-1 text-sm text-amber-800">
+            Being signed into both at once gets confusing about which account you&apos;re acting
+            as. Worth signing out of the business account while you&apos;re only using this admin
+            dashboard.
+          </p>
+          <button
+            onClick={handleSignOutBusiness}
+            disabled={signingOutBusiness}
+            className="mt-2 rounded-full border-2 border-amber-600 px-4 py-1.5 text-sm font-bold text-amber-800 hover:bg-amber-100 disabled:opacity-60"
+          >
+            {signingOutBusiness ? "Signing out…" : "Sign out of business account"}
+          </button>
+        </div>
+      )}
 
       <div className="mt-6 flex gap-2">
         <button

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import MascotFigure from "@/components/megadeal/MascotFigure";
 import { useMegadealArt } from "@/context/MegadealArtProvider";
@@ -32,6 +33,39 @@ export default function PortalAuthScreen({
   redirectTo?: string;
 }) {
   const art = useMegadealArt();
+
+  // Being signed into both at once is confusing (which account is this
+  // page even acting as?) and not something a real visitor should ever
+  // land in deliberately — it only ever happened by opening the admin
+  // password form and a business login in the same browser. undefined
+  // while the check is in flight, so the form doesn't flash on then off.
+  const [adminActive, setAdminActive] = useState<boolean | undefined>(undefined);
+  const [signingOutAdmin, setSigningOutAdmin] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/session")
+      .then((res) => (res.ok ? res.json() : { isAdmin: false }))
+      .then(({ isAdmin }) => {
+        if (!cancelled) setAdminActive(Boolean(isAdmin));
+      })
+      .catch(() => {
+        if (!cancelled) setAdminActive(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function signOutAdmin() {
+    setSigningOutAdmin(true);
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+    } finally {
+      setAdminActive(false);
+      setSigningOutAdmin(false);
+    }
+  }
 
   // -mb-16 below cancels the footer's own mt-16. That margin is the site's
   // spacing convention and looks like ordinary whitespace on every page
@@ -91,21 +125,44 @@ export default function PortalAuthScreen({
           </div>
 
           <div className="px-5 py-6 sm:px-7">
-            <MerchantLoginForm redirectTo={redirectTo} />
+            {adminActive ? (
+              <div className="rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 text-center">
+                <p className="text-sm font-bold text-amber-900">⚠️ You&apos;re signed in as admin</p>
+                <p className="mt-1.5 text-sm text-amber-800">
+                  The admin dashboard and a business account are two different logins — being in
+                  both at once gets confusing about which one you&apos;re acting as. Sign out of
+                  admin first, then sign in here as the business.
+                </p>
+                <button
+                  onClick={signOutAdmin}
+                  disabled={signingOutAdmin}
+                  className="mt-3 rounded-full bg-amber-600 px-5 py-2 text-sm font-bold text-white hover:bg-amber-700 disabled:opacity-60"
+                >
+                  {signingOutAdmin ? "Signing out…" : "Sign out of admin"}
+                </button>
+              </div>
+            ) : (
+              <MerchantLoginForm redirectTo={redirectTo} />
+            )}
           </div>
         </div>
 
         {/* Signing up is the second real action on this screen, not a
-            footnote — it used to be a text link trailing the form. */}
-        <div className="mt-5 rounded-2xl border border-brand-100 bg-white px-5 py-5 text-center">
-          <p className="text-sm font-semibold text-slate-700">New to MegaDeal?</p>
-          <Link
-            href="/list-your-business#signup"
-            className="mt-3 inline-block rounded-full border-2 border-brand-600 px-5 py-2.5 text-sm font-extrabold text-brand-700 transition hover:bg-brand-600 hover:text-white active:scale-95"
-          >
-            Sign up your business →
-          </Link>
-        </div>
+            footnote — it used to be a text link trailing the form. Hidden
+            while an admin session is active for the same reason the login
+            form above is — signing up would just create the same
+            signed-in-as-both mess with a brand-new account. */}
+        {!adminActive && (
+          <div className="mt-5 rounded-2xl border border-brand-100 bg-white px-5 py-5 text-center">
+            <p className="text-sm font-semibold text-slate-700">New to MegaDeal?</p>
+            <Link
+              href="/list-your-business#signup"
+              className="mt-3 inline-block rounded-full border-2 border-brand-600 px-5 py-2.5 text-sm font-extrabold text-brand-700 transition hover:bg-brand-600 hover:text-white active:scale-95"
+            >
+              Sign up your business →
+            </Link>
+          </div>
+        )}
       </div>
     </main>
   );
