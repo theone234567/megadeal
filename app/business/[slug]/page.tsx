@@ -57,7 +57,13 @@ export async function generateMetadata({
       description,
       url,
       siteName: SITE_NAME,
-      images: business.logoUrl ? [{ url: business.logoUrl, width: 512, height: 512, alt: business.businessName }] : undefined,
+      // Every photo, not just the first — social platforms that support
+      // multiple OG images (Facebook, LinkedIn) pick whichever renders
+      // best, and the rest cost nothing extra to list.
+      images:
+        business.photos.length > 0
+          ? business.photos.map((url) => ({ url, width: 512, height: 512, alt: business.businessName }))
+          : undefined,
       type: "website",
     },
     twitter: { card: "summary", title, description },
@@ -94,7 +100,10 @@ export default async function BusinessProfilePage({
             "@type": "LocalBusiness",
             name: business.businessName,
             description: business.bio || undefined,
-            image: business.logoUrl || undefined,
+            // schema.org LocalBusiness.image accepts either one URL or an
+            // array — Google's Merchant/LocalBusiness rich-result docs
+            // specifically recommend multiple angles when available.
+            image: business.photos.length > 0 ? business.photos : undefined,
             url: `${SITE_URL}/business/${business.slug}`,
             telephone: business.phone || undefined,
             priceRange: business.priceRange || undefined,
@@ -187,6 +196,33 @@ export default async function BusinessProfilePage({
               >
                 {a}
               </span>
+            ))}
+          </div>
+        )}
+
+        {/* Only past 1 photo — a single photo is already shown as the
+            avatar above, so a one-tile gallery here would just repeat it. */}
+        {business.photos.length > 1 && (
+          <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {business.photos.map((url, i) => (
+              <div
+                key={url + i}
+                className="relative aspect-square overflow-hidden rounded-xl border border-slate-100 bg-slate-50"
+              >
+                <Image
+                  src={url}
+                  // Real, distinct alt text per photo — what actually shows
+                  // up in Google Image Search and to screen readers, unlike
+                  // the empty alt on the small avatar above (decorative,
+                  // since the business name right next to it already says
+                  // the same thing).
+                  alt={`${business.businessName} — photo ${i + 1}`}
+                  fill
+                  sizes="(min-width: 640px) 25vw, 33vw"
+                  loading="lazy"
+                  className="object-cover"
+                />
+              </div>
             ))}
           </div>
         )}

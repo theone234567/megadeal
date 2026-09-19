@@ -1,4 +1,5 @@
 import { businessSlug } from "./slug";
+import { parseBusinessPhotos } from "./businessPhotos";
 import type { Deal } from "./types";
 
 /**
@@ -12,6 +13,7 @@ import type { Deal } from "./types";
 export interface PublicBusiness {
   businessName: string;
   logoUrl: string | null;
+  photos: string[];
   website: string | null;
   phone: string | null;
   address: string | null;
@@ -37,6 +39,7 @@ export function mapMerchantToBusiness(merchant: any): PublicBusiness {
   return {
     businessName: merchant.businessName,
     logoUrl: merchant.logoUrl || null,
+    photos: parseBusinessPhotos(merchant.photos),
     website: merchant.website || null,
     phone: merchant.phone || null,
     address: merchant.address || null,

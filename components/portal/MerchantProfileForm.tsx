@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import AddressAutocompleteField from "@/components/AddressAutocompleteField";
-import PhotoUploadField from "./PhotoUploadField";
+import PhotoGalleryField from "./PhotoGalleryField";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
+import { parseBusinessPhotos } from "@/lib/businessPhotos";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
 import { BUSINESS_CATEGORIES } from "@/lib/categories";
 
@@ -46,6 +47,7 @@ interface MerchantRecord {
    *  merchant live visibility, which is the only case worth warning about. */
   status?: string;
   logoUrl?: string;
+  photos?: string;
   [key: string]: any;
 }
 
@@ -69,19 +71,19 @@ export default function MerchantProfileForm({
    *  here: a first application must carry consent, and the server refuses
    *  it otherwise. */
   createMode = false,
-  /** Saves a newly chosen logo. Supplied only when there's a record to
-   *  attach one to — the logo has its own upload route, so during
-   *  createMode (no record yet) there is nothing for it to write to and
-   *  the field stays out of the form. */
-  onLogoConfirm,
-  logoError,
+  /** Saves the photo set. Supplied only when there's a record to attach
+   *  photos to — photos have their own save route, so during createMode
+   *  (no record yet) there is nothing for them to write to and the field
+   *  stays out of the form. */
+  onPhotosConfirm,
+  photosError,
 }: {
   merchant: MerchantRecord;
   onSaved: (updated: MerchantRecord) => void;
   startEditing?: boolean;
   createMode?: boolean;
-  onLogoConfirm?: (url: string) => Promise<void>;
-  logoError?: string | null;
+  onPhotosConfirm?: (photos: string[]) => Promise<void>;
+  photosError?: string | null;
 }) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [editing, setEditing] = useState(startEditing);
@@ -243,6 +245,24 @@ export default function MerchantProfileForm({
           <div className="sm:col-span-2">
             <dt className="text-slate-500">About</dt>
             <dd className="font-medium text-slate-800">{merchant.bio || "—"}</dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="text-slate-500">Photos</dt>
+            <dd className="mt-1 flex flex-wrap gap-2">
+              {parseBusinessPhotos(merchant.photos).length > 0 ? (
+                parseBusinessPhotos(merchant.photos).map((url, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={url + i}
+                    src={url}
+                    alt=""
+                    className="h-14 w-14 rounded-lg border border-slate-200 object-cover"
+                  />
+                ))
+              ) : (
+                <span className="font-medium text-slate-800">—</span>
+              )}
+            </dd>
           </div>
         </dl>
       </div>
@@ -605,27 +625,25 @@ export default function MerchantProfileForm({
           <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
         </div>
 
-        {/* In the form, and plainly optional. It used to sit on its own
-            below the whole thing, unlabelled as to whether it was wanted —
-            so someone who had just pressed Save still had a "Choose
-            photo…" control staring at them and no way to tell whether
-            they were finished. It still saves on its own (its own upload
-            route, and a logo change sends the listing back for review),
-            which is why it keeps its confirm step rather than riding along
-            with Save. */}
-        {onLogoConfirm && (
+        {/* Saves on its own (its own save route, and a photo change sends
+            the listing back for review), which is why it keeps its own
+            confirm step rather than riding along with the main Save. */}
+        {onPhotosConfirm && (
           <div className="border-t border-slate-100 pt-4">
-            <PhotoUploadField
-              label="Business logo (optional)"
-              currentUrl={merchant.logoUrl || null}
+            <p className="mb-2 block text-sm font-medium text-slate-700">
+              Business photo
+              <RequiredTag />
+            </p>
+            <PhotoGalleryField
+              photos={parseBusinessPhotos(merchant.photos)}
               warningText={
                 merchant.status === "Approved"
-                  ? "Changing your logo sends your listing back for review, so it comes off the site until we've had a look. Continue?"
-                  : "Use this logo?"
+                  ? "Changing your photos sends your listing back for review, so it comes off the site until we've had a look. Continue?"
+                  : "Save these photos?"
               }
-              onConfirm={onLogoConfirm}
+              onConfirm={onPhotosConfirm}
             />
-            {logoError && <p className="mt-2 text-sm text-red-600">{logoError}</p>}
+            {photosError && <p className="mt-2 text-sm text-red-600">{photosError}</p>}
           </div>
         )}
 

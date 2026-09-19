@@ -11,6 +11,7 @@ import ReferralCard from "@/components/portal/ReferralCard";
 import ActivityFeed from "@/components/portal/ActivityFeed";
 import NotificationPreferences from "@/components/portal/NotificationPreferences";
 import ExportDealsButton from "@/components/portal/ExportDealsButton";
+import { parseBusinessPhotos } from "@/lib/businessPhotos";
 
 interface MerchantRecord {
   _id: string;
@@ -31,6 +32,7 @@ interface MerchantRecord {
   creditsBalance?: number;
   status?: string;
   logoUrl?: string;
+  photos?: string;
   emailVerified?: boolean;
   referralCode?: string;
   notifyReferralBonus?: boolean;
@@ -56,7 +58,7 @@ export default function PortalPage() {
   const { member, isLoggedIn, logout } = useWix();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   const [deals, setDeals] = useState<DealRecord[]>([]);
-  const [logoError, setLogoError] = useState<string | null>(null);
+  const [photosError, setPhotosError] = useState<string | null>(null);
 
   // Server-side now: this query used to run in the browser with the
   // member's own Wix tokens, which is one of the two reasons those tokens
@@ -145,23 +147,23 @@ export default function PortalPage() {
     setDeals((prev) => prev.filter((d) => d._id !== draft._id));
   }
 
-  async function handleChangeLogo(dataUrl: string) {
+  async function handleChangePhotos(photos: string[]) {
     if (!merchant) return;
-    setLogoError(null);
+    setPhotosError(null);
     try {
-      const res = await fetch("/api/merchants/logo", {
+      const res = await fetch("/api/merchants/photos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ logoUrl: dataUrl }),
+        body: JSON.stringify({ photos }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Couldn't save your logo.");
+        throw new Error(data.error || "Couldn't save your photos.");
       }
       const { item: updated } = await res.json();
       setMerchant(updated);
     } catch (err: any) {
-      setLogoError(err?.message || "Couldn't save your logo. Please try again.");
+      setPhotosError(err?.message || "Couldn't save your photos. Please try again.");
       throw err;
     }
   }
@@ -189,8 +191,12 @@ export default function PortalPage() {
   // badge uses. It also decides whether the listing form is still on
   // screen: once these are saved the application is in, and the form is
   // replaced by its status rather than left sitting there inviting a
-  // resubmit.
-  const profileComplete = Boolean(merchant?.address && merchant?.category);
+  // resubmit. At least one photo is required for the same reason a listing
+  // with no address can't be found — a listing with no photo isn't one a
+  // customer would trust enough to click.
+  const profileComplete = Boolean(
+    merchant?.address && merchant?.category && parseBusinessPhotos(merchant?.photos).length > 0
+  );
 
   // A draft has never been reviewed, never been public and never cost a
   // credit, so it doesn't belong in the same list as deals that have. It
@@ -275,8 +281,8 @@ export default function PortalPage() {
                   merchant={merchant}
                   onSaved={(updated) => setMerchant(updated)}
                   startEditing
-                  onLogoConfirm={handleChangeLogo}
-                  logoError={logoError}
+                  onPhotosConfirm={handleChangePhotos}
+                  photosError={photosError}
                 />
               </div>
             </section>
@@ -365,15 +371,15 @@ export default function PortalPage() {
               page above — two live copies of the same form would fight
               over the same record, and whichever was saved last would
               quietly overwrite the other. The card goes with it: with the
-              logo field moved inside the form, an incomplete listing was
+              photos field moved inside the form, an incomplete listing was
               left rendering an empty white box here. */}
           {profileComplete && (
             <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
               <MerchantProfileForm
                 merchant={merchant}
                 onSaved={(updated) => setMerchant(updated)}
-                onLogoConfirm={handleChangeLogo}
-                logoError={logoError}
+                onPhotosConfirm={handleChangePhotos}
+                photosError={photosError}
               />
             </div>
           )}
