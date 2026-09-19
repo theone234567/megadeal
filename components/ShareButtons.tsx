@@ -4,12 +4,20 @@ import { useEffect, useState } from "react";
 
 export default function ShareButtons({
   title,
+  text,
   url: urlOverride,
   label = "Share this deal",
   size = "sm",
   className = "",
 }: {
   title: string;
+  /** A short, persuasive line to carry alongside the link — what an email
+   *  body, WhatsApp message or SMS actually shows the recipient, since none
+   *  of those support rich HTML. Without this, the native share sheet and
+   *  WhatsApp/X links had only `title` to work with, which reads as a bare
+   *  label rather than something written to be read and acted on. Falls
+   *  back to `title` when omitted, so this is safe to leave off. */
+  text?: string;
   /** Defaults to the current page's URL; pass this to share a fixed URL
    * instead (e.g. the site's homepage) regardless of the page it's shown on. */
   url?: string;
@@ -30,7 +38,7 @@ export default function ShareButtons({
 
   async function nativeShare() {
     try {
-      await (navigator as any).share({ title, url });
+      await (navigator as any).share({ title, text: text || title, url });
     } catch {
       // User cancelled the share sheet — nothing to do.
     }
@@ -66,7 +74,7 @@ export default function ShareButtons({
   }
 
   const encodedUrl = encodeURIComponent(url);
-  const encodedTitle = encodeURIComponent(title);
+  const encodedShareText = encodeURIComponent(text || title);
   const btnClass = `flex items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-brand-400 hover:text-brand-600 ${
     isMd ? "h-11 w-11" : "h-8 w-8"
   }`;
@@ -91,7 +99,7 @@ export default function ShareButtons({
         </svg>
       </a>
       <a
-        href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
+        href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedShareText}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Share on X"
@@ -102,7 +110,7 @@ export default function ShareButtons({
         </svg>
       </a>
       <a
-        href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`}
+        href={`https://wa.me/?text=${encodedShareText}%20${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Share on WhatsApp"

@@ -45,6 +45,7 @@ export default function ReferralCard({ referralCode }: { referralCode?: string }
       </div>
       <ShareButtons
         title="Join me on MegaDeal — advertise your business for free"
+        text="I'm advertising my business for free on MegaDeal and thought of you! Sign up with my link and we'll both get 2 bonus deal credits — no cost, no commission:"
         url={referralUrl}
         label="Share your referral link"
         className="mt-3"
