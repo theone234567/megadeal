@@ -32,10 +32,19 @@ export type AuthOutcome =
   | { status: "captcha"; kind: "silent" | "user"; message: string }
   | { status: "error"; message: string; errorCode?: string };
 
+// Wix returns the same "invalidPassword" errorCode whether the problem is
+// a signup password that's too weak, or a login attempt with the wrong
+// password for an existing account — two completely different problems
+// with completely different fixes. resolveState below picks the right one
+// for the call it came from; this is the signup-flow copy.
+const REGISTER_INVALID_PASSWORD_MESSAGE =
+  "That password doesn't meet the requirements — try at least 8 characters with a mix of letters and numbers.";
+const LOGIN_INVALID_PASSWORD_MESSAGE =
+  'That password isn\'t right for this account. Try again, or use "Forgot password" below.';
+
 const FAILURE_MESSAGES: Record<string, string> = {
   emailAlreadyExists: "You've already got an account with this email — sign in instead.",
-  invalidPassword:
-    "That password doesn't meet the requirements — try at least 8 characters with a mix of letters and numbers.",
+  invalidPassword: REGISTER_INVALID_PASSWORD_MESSAGE,
   invalidEmail: "That doesn't look like a valid email address.",
   resetPassword: "This account needs a password reset before you can sign in — use \"Forgot password\" below.",
   // These two are opposite failures and used to share one message, which
@@ -81,7 +90,14 @@ async function persistSession(tokens: Tokens) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function resolveState(client: AuthClient, state: any): Promise<AuthOutcome> {
+async function resolveState(
+  client: AuthClient,
+  state: any,
+  // Verification-code submission (the only caller that omits this) can't
+  // itself produce an invalidPassword failure, so which default it gets
+  // doesn't change any real outcome.
+  flow: "login" | "register" = "login"
+): Promise<AuthOutcome> {
   switch (state.loginState) {
     case "SUCCESS": {
       const tokens = await client.auth.getMemberTokensForDirectLogin(state.data.sessionToken);
@@ -108,12 +124,15 @@ async function resolveState(client: AuthClient, state: any): Promise<AuthOutcome
         kind: "user",
         message: "We need to check you're not a robot.",
       };
-    case "FAILURE":
-      return {
-        status: "error",
-        message: (state.errorCode && FAILURE_MESSAGES[state.errorCode]) || state.error || "Something went wrong. Please try again.",
-        errorCode: state.errorCode,
-      };
+    case "FAILURE": {
+      const message =
+        state.errorCode === "invalidPassword" && flow === "login"
+          ? LOGIN_INVALID_PASSWORD_MESSAGE
+          : (state.errorCode && FAILURE_MESSAGES[state.errorCode]) ||
+            state.error ||
+            "Something went wrong. Please try again.";
+      return { status: "error", message, errorCode: state.errorCode };
+    }
     default:
       return { status: "error", message: "Something went wrong. Please try again." };
   }
@@ -156,7 +175,7 @@ export async function registerMember(
     profile: { nickname },
     ...(Object.keys(tokens).length ? { captchaTokens: tokens } : {}),
   });
-  const outcome = await resolveState(client, state);
+  const outcome = await resolveState(client, state, "register");
   return outcome.status === "verify" ? { ...outcome, email } : outcome;
 }
 
@@ -189,7 +208,7 @@ export async function loginMember(
     password,
     ...(Object.keys(tokens).length ? { captchaTokens: tokens } : {}),
   });
-  const outcome = await resolveState(client, state);
+  const outcome = await resolveState(client, state, "login");
   return outcome.status === "verify" ? { ...outcome, email } : outcome;
 }
 
