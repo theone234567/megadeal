@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
-import { adminResetMemberPassword } from "@/lib/adminResetPassword";
+import { adminResetMemberPassword } from "@/lib/wixPassword";
 
 /**
- * Stopgap while "Forgot password" (app/list-your-business/MerchantLoginForm.tsx)
- * 404s — see lib/adminResetPassword.ts for why. Lets an admin unblock a
- * locked-out business from the dashboard: generates a new password and sets
- * it directly, no email involved. The admin is responsible for relaying it
- * to the business themselves.
+ * Manual override for when a business can't use the self-service "Forgot
+ * password" flow (app/reset-password) — e.g. their reset email hasn't
+ * arrived, or they've lost access to that inbox entirely. Generates a new
+ * password and sets it directly, no email involved; the admin is
+ * responsible for relaying it to the business themselves.
  */
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   if (!(await isAdminRequest(req))) {
@@ -25,6 +25,19 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     if (!email) {
       return NextResponse.json(
         { error: "This business has no account email on file." },
+        { status: 400 }
+      );
+    }
+    // See app/api/auth/request-password-reset/route.ts for why this
+    // matters: without a real Wix Member already linked (_owner set),
+    // adminResetMemberPassword's Sign On step would silently create a
+    // brand-new member for this email instead of resetting anything.
+    if (!merchant._owner) {
+      return NextResponse.json(
+        {
+          error:
+            "Nobody has signed in with this business's email yet, so there's no account to reset. It'll link automatically the first time they sign in.",
+        },
         { status: 400 }
       );
     }

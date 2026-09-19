@@ -12,19 +12,20 @@ function generateTempPassword(length = 12): string {
 }
 
 /**
- * Forces a brand-new password for an existing member, entirely server-side —
- * no email, no Wix-hosted page. Stopgap for "Forgot password" on
- * /list-your-business, which currently 404s: that flow emails a link to a
- * password-reset page Wix itself is supposed to host, and this headless
- * project's connected Wix site has nothing published there to show.
+ * Sets a member's password directly, entirely server-side — no email, no
+ * Wix-hosted page. Mints the member a session via an admin-authorized Sign
+ * On (proves control of the account via WIX_API_KEY, not the member's
+ * password), exchanges it for real member tokens, then calls Change
+ * Password exactly as the member would from a "change password" screen.
  *
- * Mechanism: an admin-authorized Sign On (proves control of the account via
- * WIX_API_KEY, not the member's password) mints a session for the member,
- * which is then exchanged for real member tokens and used to call Change
- * Password exactly as the member would from a "change password" screen —
- * the same two-step flow getMemberTokensForExternalLoginWithSession wraps.
+ * Two callers: adminResetMemberPassword below (an admin picks the business,
+ * we pick the password) and the public self-service reset flow in
+ * app/api/auth/confirm-password-reset (the member picks the password, after
+ * proving it's really them via a one-time emailed token — see
+ * lib/passwordResetTokens.ts for why that flow exists instead of Wix's own
+ * "forgot password" email, which 404s for this project).
  */
-export async function adminResetMemberPassword(email: string): Promise<string> {
+export async function setMemberPassword(email: string, newPassword: string): Promise<void> {
   const apiKey = process.env.WIX_API_KEY;
   if (!apiKey) {
     throw new Error("Admin Wix credentials are not configured (WIX_API_KEY).");
@@ -33,7 +34,6 @@ export async function adminResetMemberPassword(email: string): Promise<string> {
   const client = createWixClient();
   const tokens = await client.auth.getMemberTokensForExternalLoginWithSession(email, apiKey);
 
-  const newPassword = generateTempPassword();
   const memberClient = createWixClient(tokens);
   const res = await memberClient.fetchWithAuth(
     "https://www.wixapis.com/_api/iam/authentication/v2/change-password",
@@ -47,6 +47,12 @@ export async function adminResetMemberPassword(email: string): Promise<string> {
     const text = await res.text().catch(() => "");
     throw new Error(`Wix rejected the new password (${res.status}). ${text}`.trim());
   }
+}
 
+/** Admin-tool variant: generates the password itself and returns it, for
+ *  display once in the admin dashboard. */
+export async function adminResetMemberPassword(email: string): Promise<string> {
+  const newPassword = generateTempPassword();
+  await setMemberPassword(email, newPassword);
   return newPassword;
 }

@@ -221,7 +221,3 @@ export async function submitVerificationCode(
   const state = await client.auth.processVerification({ verificationCode }, pendingState as any);
   return resolveState(client, state);
 }
-
-export async function requestPasswordReset(client: AuthClient, email: string): Promise<void> {
-  await client.auth.sendPasswordResetEmail(email, `${window.location.origin}/login-callback`);
-}

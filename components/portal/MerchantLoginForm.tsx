@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useWix } from "@/context/WixProvider";
-import { loginMember, submitVerificationCode, requestPasswordReset } from "@/lib/wixAuth";
+import { loginMember, submitVerificationCode } from "@/lib/wixAuth";
 import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
 import PasswordField from "@/components/PasswordField";
 import RecaptchaCheckbox, { type RecaptchaCheckboxHandle } from "@/components/RecaptchaCheckbox";
@@ -234,7 +234,16 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     }
     setError(null);
     try {
-      await requestPasswordReset(client, email);
+      // Our own reset flow (app/reset-password), not Wix's — see
+      // lib/passwordResetTokens.ts for why. Always resolves the same way
+      // regardless of whether the email matches an account, so this
+      // can't be used to find out which addresses have signed up.
+      const res = await fetch("/api/auth/request-password-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error();
       setResetSent(true);
     } catch {
       setError("Couldn't send a reset email. Please try again.");
