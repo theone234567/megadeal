@@ -86,7 +86,12 @@ export default function PortalAuthScreen({
           flex-column body with a growing wrapper around the page, which
           would also tidy the 404s and the other short pages; that is a
           site-wide change and doesn't belong in this one.) */}
-      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-10 sm:py-14">
+      {/* py trimmed down from py-10/py-14: this screen sits below the sticky
+          site header, and a real desktop browser window is usually shorter
+          than the full screen height once chrome (tabs, address bar) is
+          subtracted — the old padding pushed the sign-in card itself below
+          the fold on ordinary laptop-sized windows, not just short ones. */}
+      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-6 sm:py-8">
         <div className="overflow-hidden rounded-3xl bg-white shadow-card-hover">
           {/* The mascot overlaps the top edge rather than sitting inside a
               tiny badge circle. The earlier version boxed it into an 11x11
@@ -97,7 +102,7 @@ export default function PortalAuthScreen({
               to mush; shown at its own scale it reads the way it was
               actually drawn. "Waving" doubles as a plain-language greeting
               on a sign-in screen, which the old icon's static face didn't. */}
-          <div className="relative bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 px-6 pb-7 pt-28 text-center">
+          <div className="relative bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 px-6 pb-6 pt-28 text-center">
             {/* Plain box-centering (-translate-x-1/2). A previous version
                 used -58% on the theory that the head/ears were visually
                 heavier on the right than the raised hand was on the left —
@@ -124,7 +129,7 @@ export default function PortalAuthScreen({
             <p className="mx-auto mt-2 max-w-xs text-sm leading-relaxed text-brand-50">{intro}</p>
           </div>
 
-          <div className="px-5 py-6 sm:px-7">
+          <div className="px-5 py-5 sm:px-7">
             {adminActive ? (
               <div className="rounded-2xl border-2 border-amber-200 bg-amber-50 p-4 text-center">
                 <p className="text-sm font-bold text-amber-900">⚠️ You&apos;re signed in as admin</p>
@@ -153,7 +158,7 @@ export default function PortalAuthScreen({
             form above is — signing up would just create the same
             signed-in-as-both mess with a brand-new account. */}
         {!adminActive && (
-          <div className="mt-5 rounded-2xl border border-brand-100 bg-white px-5 py-5 text-center">
+          <div className="mt-4 rounded-2xl border border-brand-100 bg-white px-5 py-5 text-center">
             <p className="text-sm font-semibold text-slate-700">New to MegaDeal?</p>
             <Link
               href="/list-your-business#signup"

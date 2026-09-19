@@ -307,7 +307,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-3 text-left">
+    <form onSubmit={handleSubmit} className="w-full space-y-2.5 text-left">
       <label htmlFor="login-email" className="sr-only">
         Email
       </label>
