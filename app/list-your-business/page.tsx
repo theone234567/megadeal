@@ -551,20 +551,21 @@ export default async function MerchantsPage() {
           )}
           <div className="mx-auto mt-6 max-w-xl space-y-4 text-left text-slate-600">
             <p>
-              We&apos;re New Zealand-owned and operated, with a clear goal:
-              helping people discover great local offers, and giving
-              businesses a new way to reach customers.
+              MegaDeal is New Zealand-owned and operated, and we&apos;re
+              launching first in Auckland with a small group of local
+              businesses. Our goal is simple: help people discover great
+              local offers and give businesses a new way to reach
+              customers.
             </p>
             <p>
-              As a local business ourselves, we understand the importance
-              of making every marketing dollar count. That&apos;s why
-              we&apos;re inviting Auckland businesses to join ahead of
-              launch, with up to six months of free advertising and a say
-              in how MegaDeal supports businesses as we grow.
+              As a local business ourselves, we know every marketing
+              dollar matters. Join before launch and get up to six
+              months of free advertising, plus the opportunity to help
+              shape the platform from the start.
             </p>
             <p>
-              And honestly, there&apos;s nothing to lose — it&apos;s
-              completely free to join, no credit card, no commitment, and
+              There&apos;s nothing to lose — it&apos;s completely free
+              to join, with no credit card required, no commitment and
               0% commission.
             </p>
             <p>We&apos;d love you to be part of our launch.</p>
