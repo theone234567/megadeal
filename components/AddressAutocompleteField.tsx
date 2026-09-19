@@ -60,6 +60,7 @@ export default function AddressAutocompleteField({
   label = "Business address",
   required = true,
   helperText = "Pick a suggestion so we can show customers a map/directions link.",
+  errorText,
 }: {
   id?: string;
   address: string;
@@ -71,6 +72,10 @@ export default function AddressAutocompleteField({
   label?: string;
   required?: boolean;
   helperText?: string;
+  /** Server-side validation message for this field, shown in red under the
+   *  input in place of helperText — set from the parent form's per-field
+   *  error response after a failed submit. */
+  errorText?: string | null;
 }) {
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -156,9 +161,15 @@ export default function AddressAutocompleteField({
         }}
         onFocus={() => setShowSuggestions(true)}
         placeholder="Start typing your street address…"
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+        className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${
+          errorText ? "border-red-400 focus:border-red-500" : "border-slate-200 focus:border-brand-400"
+        }`}
       />
-      {helperText && <p className="mt-1 text-xs text-slate-500">{helperText}</p>}
+      {errorText ? (
+        <p className="mt-1 text-xs text-red-600">{errorText}</p>
+      ) : (
+        helperText && <p className="mt-1 text-xs text-slate-500">{helperText}</p>
+      )}
 
       {showSuggestions && suggestions.length > 0 && (
         <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-card-hover">

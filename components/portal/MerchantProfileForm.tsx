@@ -91,6 +91,11 @@ export default function MerchantProfileForm({
   const [editing, setEditing] = useState(startEditing);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Keyed by the same name used in each field's id (e.g. "businessName" for
+  // #profile-businessName) — set from the server's per-field validation
+  // response so a merchant sees exactly which fields are wrong, not just a
+  // single message at the bottom of a long form.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [businessName, setBusinessName] = useState(merchant.businessName || "");
   const [contactName, setContactName] = useState(merchant.contactName || "");
@@ -124,6 +129,7 @@ export default function MerchantProfileForm({
     }
     setSaving(true);
     setError(null);
+    setFieldErrors({});
     try {
       const res = await fetch(createMode ? "/api/merchants/apply" : "/api/merchants/profile", {
         method: "POST",
@@ -157,7 +163,26 @@ export default function MerchantProfileForm({
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Couldn't save your profile.");
+        const fieldCount = data.fields && typeof data.fields === "object" ? Object.keys(data.fields).length : 0;
+        if (fieldCount > 0) {
+          setFieldErrors(data.fields);
+          // Bring the first problem field into view rather than leaving the
+          // merchant to scroll a long form hunting for what's wrong.
+          const firstField = Object.keys(data.fields)[0];
+          requestAnimationFrame(() => {
+            const el = document.getElementById(`profile-${firstField}`);
+            el?.scrollIntoView({ behavior: "smooth", block: "center" });
+            el?.focus();
+          });
+        }
+        // With more than one bad field, the messages are already shown
+        // inline next to each one — repeating them all in a single banner
+        // too is redundant, so the banner just points down at them.
+        throw new Error(
+          fieldCount > 1
+            ? `Please fix the ${fieldCount} highlighted fields below.`
+            : data.error || "Couldn't save your profile."
+        );
       }
       const { item } = await res.json();
       onSaved(item);
@@ -167,6 +192,16 @@ export default function MerchantProfileForm({
     } finally {
       setSaving(false);
     }
+  }
+
+  function errorBorderClass(name: string): string {
+    return fieldErrors[name]
+      ? "border-red-400 focus:border-red-500"
+      : "border-slate-200 focus:border-brand-400";
+  }
+
+  function FieldError({ name }: { name: string }) {
+    return fieldErrors[name] ? <p className="mt-1 text-xs text-red-600">{fieldErrors[name]}</p> : null;
   }
 
   if (!editing) {
@@ -307,8 +342,9 @@ export default function MerchantProfileForm({
               maxLength={300}
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("businessName")}`}
             />
+            <FieldError name="businessName" />
           </div>
           <div>
             <label htmlFor="profile-website" className="mb-1 block text-sm font-medium text-slate-700">
@@ -320,8 +356,9 @@ export default function MerchantProfileForm({
               maxLength={300}
               value={website}
               onChange={(e) => setWebsite(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("website")}`}
             />
+            <FieldError name="website" />
           </div>
         </div>
 
@@ -339,8 +376,9 @@ export default function MerchantProfileForm({
             maxLength={MAX_BIO_LENGTH}
             rows={3}
             placeholder="A couple of sentences customers will see on your listing — what you do and what makes you worth choosing."
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bio")}`}
           />
+          <FieldError name="bio" />
           <p className="mt-1 text-xs text-slate-400">
             {bio.length < MIN_BIO_LENGTH
               ? `At least ${MIN_BIO_LENGTH} characters (${MIN_BIO_LENGTH - bio.length} to go)`
@@ -367,8 +405,9 @@ export default function MerchantProfileForm({
                   maxLength={300}
                   value={legalBusinessName}
                   onChange={(e) => setLegalBusinessName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("legalBusinessName")}`}
                 />
+                <FieldError name="legalBusinessName" />
               </div>
               <div>
                 <label htmlFor="profile-nzbn" className="mb-1 block text-sm font-medium text-slate-700">
@@ -382,8 +421,9 @@ export default function MerchantProfileForm({
                   inputMode="numeric"
                   maxLength={13}
                   placeholder="13-digit NZBN, if you have one"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("nzbn")}`}
                 />
+                <FieldError name="nzbn" />
               </div>
             </div>
 
@@ -399,8 +439,9 @@ export default function MerchantProfileForm({
                   maxLength={300}
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("contactName")}`}
                 />
+                <FieldError name="contactName" />
               </div>
               <div>
                 <label htmlFor="profile-contactPhone" className="mb-1 block text-sm font-medium text-slate-700">
@@ -414,8 +455,9 @@ export default function MerchantProfileForm({
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
                   type="tel"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("contactPhone")}`}
                 />
+                <FieldError name="contactPhone" />
               </div>
             </div>
           </>
@@ -439,8 +481,9 @@ export default function MerchantProfileForm({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="The number customers should call to book"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("phone")}`}
             />
+            <FieldError name="phone" />
           </div>
           <div>
             <label htmlFor="profile-bookingUrl" className="mb-1 block text-sm font-medium text-slate-700">
@@ -453,8 +496,9 @@ export default function MerchantProfileForm({
               value={bookingUrl}
               onChange={(e) => setBookingUrl(e.target.value)}
               placeholder="Your booking/reservation page, if you have one"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bookingUrl")}`}
             />
+            <FieldError name="bookingUrl" />
           </div>
           <div>
             <label htmlFor="profile-bookingEmail" className="mb-1 block text-sm font-medium text-slate-700">
@@ -468,8 +512,9 @@ export default function MerchantProfileForm({
               value={bookingEmail}
               onChange={(e) => setBookingEmail(e.target.value)}
               placeholder="bookings@yourbusiness.co.nz"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bookingEmail")}`}
             />
+            <FieldError name="bookingEmail" />
           </div>
         </div>
 
@@ -498,6 +543,7 @@ export default function MerchantProfileForm({
             setLon(newLng);
           }}
           helperText="Pick a suggestion to keep your map location accurate."
+          errorText={fieldErrors.address}
         />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -511,7 +557,7 @@ export default function MerchantProfileForm({
               required
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+              className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${errorBorderClass("city")}`}
             >
               <option value="" disabled>
                 Select a city
@@ -522,6 +568,7 @@ export default function MerchantProfileForm({
                 </option>
               ))}
             </select>
+            <FieldError name="city" />
           </div>
           <div>
             <label htmlFor="profile-postcode" className="mb-1 block text-sm font-medium text-slate-700">
@@ -549,7 +596,7 @@ export default function MerchantProfileForm({
               required
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+              className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${errorBorderClass("category")}`}
             >
               <option value="" disabled>
                 Select a category
@@ -560,6 +607,7 @@ export default function MerchantProfileForm({
                 </option>
               ))}
             </select>
+            <FieldError name="category" />
           </div>
         </div>
 
@@ -575,8 +623,9 @@ export default function MerchantProfileForm({
               value={facebookUrl}
               onChange={(e) => setFacebookUrl(e.target.value)}
               placeholder="https://facebook.com/yourbusiness"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("facebookUrl")}`}
             />
+            <FieldError name="facebookUrl" />
           </div>
           <div>
             <label htmlFor="profile-instagramUrl" className="mb-1 block text-sm font-medium text-slate-700">
@@ -589,8 +638,9 @@ export default function MerchantProfileForm({
               value={instagramUrl}
               onChange={(e) => setInstagramUrl(e.target.value)}
               placeholder="https://instagram.com/yourbusiness"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("instagramUrl")}`}
             />
+            <FieldError name="instagramUrl" />
           </div>
         </div>
 
@@ -657,25 +707,29 @@ export default function MerchantProfileForm({
         )}
 
         {createMode && (
-          <label className="flex items-start gap-2 text-sm text-slate-600">
-            <input
-              type="checkbox"
-              checked={agreedToTerms}
-              onChange={(e) => setAgreedToTerms(e.target.checked)}
-              className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
-            />
-            <span>
-              I agree to MegaDeal&apos;s{" "}
-              <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-brand-700">
-                Terms and Conditions
-              </a>{" "}
-              and{" "}
-              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-brand-700">
-                Privacy Policy
-              </a>
-              .
-            </span>
-          </label>
+          <div>
+            <label className="flex items-start gap-2 text-sm text-slate-600">
+              <input
+                id="profile-agreedToTerms"
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+              />
+              <span>
+                I agree to MegaDeal&apos;s{" "}
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-brand-700">
+                  Terms and Conditions
+                </a>{" "}
+                and{" "}
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold underline hover:text-brand-700">
+                  Privacy Policy
+                </a>
+                .
+              </span>
+            </label>
+            <FieldError name="agreedToTerms" />
+          </div>
         )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}

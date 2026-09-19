@@ -45,34 +45,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
+  // Collected rather than returned as soon as one fails, so a merchant who's
+  // missing several fields sees all of them at once instead of fixing one,
+  // resubmitting, and being told about the next.
+  const fieldErrors: Record<string, string> = {};
+
   const businessName = cleanText(body.businessName, MAX_TEXT_LENGTH);
-  if (!businessName) {
-    return NextResponse.json({ error: "Business name is required." }, { status: 400 });
-  }
+  if (!businessName) fieldErrors.businessName = "Business name is required.";
 
   const contactName = cleanText(body.contactName, MAX_TEXT_LENGTH);
+  if (!contactName) fieldErrors.contactName = "Contact name is required.";
   const contactPhone = cleanText(body.contactPhone, MAX_TEXT_LENGTH);
+  if (!contactPhone) fieldErrors.contactPhone = "Contact phone is required.";
   const legalBusinessName = cleanText(body.legalBusinessName, MAX_TEXT_LENGTH);
-  if (!contactName || !contactPhone || !legalBusinessName) {
-    return NextResponse.json(
-      { error: "Contact name, contact phone and legal business name are required." },
-      { status: 400 }
-    );
-  }
+  if (!legalBusinessName) fieldErrors.legalBusinessName = "Legal business name is required.";
 
   // Same required set as signup (app/api/merchants/apply/route.ts) — without
   // this, a merchant could blank out their public phone/address/city here
   // and it would save silently, degrading a listing that was required to
   // have all three when it was first approved.
   const phone = cleanText(body.phone, MAX_TEXT_LENGTH);
+  if (!phone) fieldErrors.phone = "Booking phone number is required.";
   const address = cleanText(body.address, MAX_TEXT_LENGTH);
+  if (!address) fieldErrors.address = "Address is required.";
   const city = cleanText(body.city, MAX_TEXT_LENGTH);
-  if (!phone || !address || !city) {
-    return NextResponse.json(
-      { error: "Phone, address and city are required." },
-      { status: 400 }
-    );
-  }
+  if (!city) fieldErrors.city = "City is required.";
 
   // Required here (not at initial signup — see apply/route.ts, where the
   // short first-touch form never collects it). By the time a merchant is
@@ -80,52 +77,45 @@ export async function POST(req: NextRequest) {
   // customers rely on it to know what the business actually does.
   const bio = cleanText(body.bio, MAX_BIO_LENGTH);
   if (bio.length < MIN_BIO_LENGTH) {
-    return NextResponse.json(
-      { error: `About your business needs at least ${MIN_BIO_LENGTH} characters — enough for a real sentence customers can act on.` },
-      { status: 400 }
-    );
+    fieldErrors.bio = `At least ${MIN_BIO_LENGTH} characters needed (currently ${bio.length}).`;
   }
 
   const nzbn = normalizeNzbn(body.nzbn);
-  if (!isValidNzbnFormat(nzbn)) {
-    return NextResponse.json({ error: "NZBN must be 13 digits." }, { status: 400 });
-  }
+  if (!isValidNzbnFormat(nzbn)) fieldErrors.nzbn = "NZBN must be 13 digits.";
 
   const priceRange = cleanText(body.priceRange, 4);
-  if (!ALLOWED_PRICE_RANGES.includes(priceRange)) {
-    return NextResponse.json({ error: "Invalid price range." }, { status: 400 });
-  }
+  if (!ALLOWED_PRICE_RANGES.includes(priceRange)) fieldErrors.priceRange = "Invalid price range.";
 
   const category = cleanText(body.category, MAX_TEXT_LENGTH);
-  if (!isBusinessCategory(category)) {
-    return NextResponse.json({ error: "Please select a valid business category." }, { status: 400 });
-  }
+  if (!isBusinessCategory(category)) fieldErrors.category = "Please select a business category.";
 
   const bookingEmail = cleanText(body.bookingEmail, MAX_TEXT_LENGTH);
-  if (bookingEmail && !EMAIL_RE.test(bookingEmail)) {
-    return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
-  }
+  if (bookingEmail && !EMAIL_RE.test(bookingEmail)) fieldErrors.bookingEmail = "Enter a valid booking email.";
 
   const website = cleanText(body.website, MAX_TEXT_LENGTH);
-  if (!isSafeOptionalUrl(website)) {
-    return NextResponse.json({ error: "Enter a valid website address." }, { status: 400 });
-  }
+  if (!isSafeOptionalUrl(website)) fieldErrors.website = "Enter a valid website address.";
   const bookingUrl = cleanText(body.bookingUrl, MAX_TEXT_LENGTH);
-  if (!isSafeOptionalUrl(bookingUrl)) {
-    return NextResponse.json({ error: "Enter a valid booking link." }, { status: 400 });
-  }
+  if (!isSafeOptionalUrl(bookingUrl)) fieldErrors.bookingUrl = "Enter a valid booking link.";
 
   const facebookUrl = cleanText(body.facebookUrl, MAX_TEXT_LENGTH);
   if (!isValidSocialUrl(facebookUrl, "facebook")) {
-    return NextResponse.json(
-      { error: "Enter a valid Facebook page URL (e.g. facebook.com/yourbusiness)." },
-      { status: 400 }
-    );
+    fieldErrors.facebookUrl = "Enter a valid Facebook page URL (e.g. facebook.com/yourbusiness).";
   }
   const instagramUrl = cleanText(body.instagramUrl, MAX_TEXT_LENGTH);
   if (!isValidSocialUrl(instagramUrl, "instagram")) {
+    fieldErrors.instagramUrl = "Enter a valid Instagram profile URL (e.g. instagram.com/yourbusiness).";
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    const messages = Object.values(fieldErrors);
     return NextResponse.json(
-      { error: "Enter a valid Instagram profile URL (e.g. instagram.com/yourbusiness)." },
+      {
+        error:
+          messages.length === 1
+            ? messages[0]
+            : `Please fix ${messages.length} fields: ${messages.join(" ")}`,
+        fields: fieldErrors,
+      },
       { status: 400 }
     );
   }

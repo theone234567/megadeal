@@ -80,37 +80,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ item: { _id: "ok" } });
   }
 
+  // Collected rather than returned as soon as one fails, so an applicant
+  // missing several fields sees all of them at once instead of fixing one,
+  // resubmitting, and being told about the next.
+  const fieldErrors: Record<string, string> = {};
+
   const businessName = cleanText(body.businessName, MAX_TEXT_LENGTH);
+  if (!businessName) fieldErrors.businessName = "Business name is required.";
   const contactName = cleanText(body.contactName, MAX_TEXT_LENGTH);
+  if (!contactName) fieldErrors.contactName = "Contact name is required.";
   const contactPhone = cleanText(body.contactPhone, MAX_TEXT_LENGTH);
+  if (!contactPhone) fieldErrors.contactPhone = "Contact phone is required.";
   const legalBusinessName = cleanText(body.legalBusinessName, MAX_TEXT_LENGTH);
+  if (!legalBusinessName) fieldErrors.legalBusinessName = "Legal business name is required.";
   const phone = cleanText(body.phone, MAX_TEXT_LENGTH);
-  const address = cleanText(body.address, MAX_TEXT_LENGTH);
-  const city = cleanText(body.city, MAX_TEXT_LENGTH);
+  if (!phone) fieldErrors.phone = "Phone is required.";
 
   // Address and city are deferred to the portal's "complete your profile"
   // step (same pattern as bio/hours/website/social below) — the initial
   // signup only needs enough to create the account and start a review,
   // not the full public-listing details yet.
-  if (!businessName || !contactName || !contactPhone || !legalBusinessName || !phone) {
-    return NextResponse.json(
-      {
-        error:
-          "Business name, contact name, contact phone, legal business name and phone are required.",
-      },
-      { status: 400 }
-    );
-  }
+  const address = cleanText(body.address, MAX_TEXT_LENGTH);
+  const city = cleanText(body.city, MAX_TEXT_LENGTH);
 
   const nzbn = normalizeNzbn(body.nzbn);
-  if (!isValidNzbnFormat(nzbn)) {
-    return NextResponse.json({ error: "NZBN must be 13 digits." }, { status: 400 });
-  }
+  if (!isValidNzbnFormat(nzbn)) fieldErrors.nzbn = "NZBN must be 13 digits.";
 
   const priceRange = cleanText(body.priceRange, 4);
-  if (!ALLOWED_PRICE_RANGES.includes(priceRange)) {
-    return NextResponse.json({ error: "Invalid price range." }, { status: 400 });
-  }
+  if (!ALLOWED_PRICE_RANGES.includes(priceRange)) fieldErrors.priceRange = "Invalid price range.";
 
   // The portal's "finish your signup" form posts here, and it asks for a
   // category — but this route never read one, so it was dropped on the
@@ -122,42 +119,41 @@ export async function POST(req: NextRequest) {
   // predate it; validated whenever one is actually supplied.
   const category = cleanText(body.category, MAX_TEXT_LENGTH);
   if (category && !isBusinessCategory(category)) {
-    return NextResponse.json({ error: "Please select a valid business category." }, { status: 400 });
+    fieldErrors.category = "Please select a business category.";
   }
 
   const bookingEmail = cleanText(body.bookingEmail, MAX_TEXT_LENGTH);
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (bookingEmail && !EMAIL_RE.test(bookingEmail)) {
-    return NextResponse.json({ error: "Enter a valid booking email." }, { status: 400 });
-  }
+  if (bookingEmail && !EMAIL_RE.test(bookingEmail)) fieldErrors.bookingEmail = "Enter a valid booking email.";
 
   const website = cleanText(body.website, MAX_TEXT_LENGTH);
-  if (!isSafeOptionalUrl(website)) {
-    return NextResponse.json({ error: "Enter a valid website address." }, { status: 400 });
-  }
+  if (!isSafeOptionalUrl(website)) fieldErrors.website = "Enter a valid website address.";
   const bookingUrl = cleanText(body.bookingUrl, MAX_TEXT_LENGTH);
-  if (!isSafeOptionalUrl(bookingUrl)) {
-    return NextResponse.json({ error: "Enter a valid booking link." }, { status: 400 });
-  }
+  if (!isSafeOptionalUrl(bookingUrl)) fieldErrors.bookingUrl = "Enter a valid booking link.";
 
   const facebookUrl = cleanText(body.facebookUrl, MAX_TEXT_LENGTH);
   if (!isValidSocialUrl(facebookUrl, "facebook")) {
-    return NextResponse.json(
-      { error: "Enter a valid Facebook page URL (e.g. facebook.com/yourbusiness)." },
-      { status: 400 }
-    );
+    fieldErrors.facebookUrl = "Enter a valid Facebook page URL (e.g. facebook.com/yourbusiness).";
   }
   const instagramUrl = cleanText(body.instagramUrl, MAX_TEXT_LENGTH);
   if (!isValidSocialUrl(instagramUrl, "instagram")) {
-    return NextResponse.json(
-      { error: "Enter a valid Instagram profile URL (e.g. instagram.com/yourbusiness)." },
-      { status: 400 }
-    );
+    fieldErrors.instagramUrl = "Enter a valid Instagram profile URL (e.g. instagram.com/yourbusiness).";
   }
 
   if (body.agreedToTerms !== true) {
+    fieldErrors.agreedToTerms = "You must agree to the Terms and Conditions to apply.";
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    const messages = Object.values(fieldErrors);
     return NextResponse.json(
-      { error: "You must agree to the Terms and Conditions to apply." },
+      {
+        error:
+          messages.length === 1
+            ? messages[0]
+            : `Please fix ${messages.length} fields: ${messages.join(" ")}`,
+        fields: fieldErrors,
+      },
       { status: 400 }
     );
   }
