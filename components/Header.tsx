@@ -89,9 +89,10 @@ export default function Header() {
     return (
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white">
         <div className="mx-auto flex h-[87px] w-full max-w-[1184px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/advertise/restaurants" aria-label="MegaDeal home" className="flex min-w-0 shrink items-center gap-2">
+          <Link href="/advertise/restaurants" aria-label="MegaDeal home" className="flex min-w-0 shrink items-center gap-3">
             {brand()}
-            <span className="hidden shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-500 sm:inline-block">
+            <span className="hidden h-5 w-px shrink-0 bg-slate-200 sm:block" aria-hidden />
+            <span className="hidden shrink-0 text-sm text-slate-500 sm:inline-block">
               for business
             </span>
           </Link>

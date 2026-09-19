@@ -53,9 +53,6 @@ export const metadata: Metadata = {
 // "WELCOME6")`) — so this is accurate today, not a claim to prefill.
 const SIGNUP_HREF = "/list-your-business#signup";
 
-const FOOD_PHOTO_URL =
-  "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&h=720&q=80";
-
 // `a` is the plain-text answer — the single source of truth, and what
 // feeds the FAQPage JSON-LD below. Two answers additionally need an
 // embedded /terms link on screen; `render`, when present, is what's
@@ -206,8 +203,8 @@ export default function RestaurantAdvertisingPage() {
         >
           <div className="mx-auto grid max-w-[1184px] grid-cols-1 items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.08fr_1fr] lg:gap-[60px] lg:px-8 lg:pb-[85px] lg:pt-[78px]">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-white/80">
-                For Auckland restaurants &amp; cafés
+              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/80">
+                <UtensilsIcon className="h-3.5 w-3.5" /> For Auckland restaurants &amp; cafés
               </p>
               <h1
                 className={`${fredoka.className} mt-3 text-[40px] font-semibold leading-[1.08] sm:text-[52px] lg:text-[62px]`}
@@ -256,8 +253,8 @@ export default function RestaurantAdvertisingPage() {
                 style={{ transform: "rotate(2deg)" }}
               >
                 <Image
-                  src={FOOD_PHOTO_URL}
-                  alt="A plated restaurant meal, ready to serve"
+                  src="/megadeal/restaurants/restaurant-hero.webp"
+                  alt="A wood-fired pizza and a burrata salad on a restaurant table"
                   fill
                   sizes="(min-width: 1024px) 420px, 90vw"
                   className="object-cover"
@@ -266,27 +263,33 @@ export default function RestaurantAdvertisingPage() {
               </div>
 
               {/* 0% commission sticker */}
-              <div
-                className="absolute -left-4 top-6 rounded-2xl bg-white px-4 py-3 text-center shadow-card sm:-left-6"
-                style={{ transform: "rotate(-4deg)" }}
-              >
-                <p className="text-lg font-extrabold" style={{ color: "#6519C7" }}>
-                  0% commission
-                </p>
-                <p className="text-[11px] font-semibold text-slate-500">More stays with you</p>
+              <div className="absolute -left-4 top-6 flex items-baseline gap-1.5 rounded-2xl bg-white px-4 py-3 shadow-card sm:-left-6">
+                <span className="text-3xl font-extrabold leading-none" style={{ color: "#241138" }}>
+                  0%
+                </span>
+                <span className="text-xs font-semibold leading-tight" style={{ color: "#706178" }}>
+                  commission.
+                  <br />
+                  More stays with you.
+                </span>
               </div>
 
               {/* Auckland launch label */}
-              <div className="absolute -right-2 bottom-24 rounded-full bg-[#1d4ed8] px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-card sm:bottom-28">
-                Launching first in Auckland
+              <div
+                className="absolute -bottom-3 -right-2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-card sm:-right-4"
+                style={{ backgroundColor: "#ADDFFF", color: "#1e293b" }}
+              >
+                <MapPinIcon className="h-3.5 w-3.5" />
+                Launching first in <strong className="font-extrabold">Auckland</strong>
               </div>
 
-              {/* Handwritten caption */}
-              <div className="absolute -bottom-2 left-4 sm:left-6">
+              {/* Handwritten caption — width capped so it can't run under
+                  the Auckland tag anchored to the opposite corner. */}
+              <div className="absolute -bottom-2 left-4 max-w-[200px] sm:left-6">
                 <p className={`${caveat.className} text-2xl text-white drop-shadow-[0_2px_6px_rgba(0,0,0,.35)]`}>
                   Good food. New faces.
                 </p>
-                <p className="text-xs font-medium text-white/75">
+                <p className="text-xs font-medium leading-snug text-white/75">
                   Your next regular starts with a first visit.
                 </p>
               </div>
@@ -304,7 +307,7 @@ export default function RestaurantAdvertisingPage() {
               <CreditCardIcon className="h-4 w-4 text-[#6519C7]" /> Customers pay you directly
             </span>
             <span className="flex items-center gap-2">
-              <CheckIcon className="h-4 w-4 text-[#6519C7]" /> Your offers. Your terms.
+              <CalendarIcon className="h-4 w-4 text-[#6519C7]" /> Your offers. Your terms.
             </span>
           </div>
         </section>
