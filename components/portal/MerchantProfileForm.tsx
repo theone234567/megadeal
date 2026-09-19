@@ -393,10 +393,6 @@ export default function MerchantProfileForm({
           </>
         )}
 
-        <div>
-          <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
-        </div>
-
         {/* Grouped with the other two ways a customer gets in touch, and
             named for what it's for. On its own above, labelled "Phone", it
             sat directly under "Contact phone" — two phone fields in a row,
@@ -603,6 +599,10 @@ export default function MerchantProfileForm({
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
           </div>
+        </div>
+
+        <div>
+          <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
         </div>
 
         {/* In the form, and plainly optional. It used to sit on its own

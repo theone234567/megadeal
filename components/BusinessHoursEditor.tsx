@@ -98,21 +98,37 @@ export default function BusinessHoursEditor({
           <div key={day.day} className="rounded-xl border border-slate-200 bg-white p-2.5">
             <div className="flex items-center justify-between">
               <span className="w-10 text-sm font-semibold text-slate-700">{day.day}</span>
-              <label className="flex items-center gap-1.5 text-xs text-slate-500">
-                <input
-                  type="checkbox"
-                  aria-label={`${day.day} closed`}
-                  checked={day.closed}
-                  onChange={(e) =>
-                    updateDay(i, {
-                      ...day,
-                      closed: e.target.checked,
-                      ranges: e.target.checked ? day.ranges : day.ranges.length ? day.ranges : [{ open: "09:00", close: "17:00" }],
-                    })
-                  }
-                  className="h-4 w-4 rounded border-slate-300"
-                />
-                Closed
+              {/* An "Open" switch, off by default, rather than a "Closed"
+                  checkbox checked by default — a fresh schedule used to
+                  show seven boxes all ticked "Closed", which read as the
+                  business being shut every day rather than as a blank
+                  template. Toggling the state merchants actually think
+                  about first (which days they're open) is also the more
+                  natural direction for a checkbox-shaped control. */}
+              <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
+                Open
+                <span className="relative inline-block h-5 w-9 shrink-0">
+                  <input
+                    type="checkbox"
+                    aria-label={`${day.day} open`}
+                    checked={!day.closed}
+                    onChange={(e) => {
+                      const open = e.target.checked;
+                      updateDay(i, {
+                        ...day,
+                        closed: !open,
+                        ranges: open
+                          ? day.ranges.length
+                            ? day.ranges
+                            : [{ open: "09:00", close: "17:00" }]
+                          : day.ranges,
+                      });
+                    }}
+                    className="peer sr-only"
+                  />
+                  <span className="absolute inset-0 rounded-full bg-slate-300 transition-colors peer-checked:bg-brand-600 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-400 peer-focus-visible:ring-offset-1" />
+                  <span className="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
+                </span>
               </label>
             </div>
 
