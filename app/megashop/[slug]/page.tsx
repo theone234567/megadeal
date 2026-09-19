@@ -11,11 +11,12 @@ import { wixImageUrl } from "@/lib/wixImageUrl";
 // See app/megashop/page.tsx for why this was missing and what it means.
 export const revalidate = 60;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const product = await fetchMegaShopProductBySlugForServer(params.slug);
   if (!product) return { title: "Product not found" };
 
@@ -55,7 +56,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function MegaShopProductPage({ params }: { params: { slug: string } }) {
+export default async function MegaShopProductPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const product = await fetchMegaShopProductBySlugForServer(params.slug);
   if (!product) notFound();
 

@@ -4,7 +4,8 @@ import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const member = await getVerifiedMember(req);
   if (!member?.email) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });

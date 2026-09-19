@@ -12,7 +12,8 @@ import type { DealStatus } from "@/lib/types";
  * a deal out of "Pending Approval" into "Live" no matter what request they
  * craft, because that transition is never in `allowedDealActions`.
  */
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const member = await getVerifiedMember(req);
   if (!member?.email) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });

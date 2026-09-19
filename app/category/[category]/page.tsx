@@ -27,11 +27,12 @@ export const revalidate = 60;
 // part of the HTML response. `revalidate` above still caches it the same
 // way a fully dynamic route would.
 
-export function generateMetadata({
-  params,
-}: {
-  params: { category: string };
-}): Metadata {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ category: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const category = decodeURIComponent(params.category);
   // No "| SITE_NAME" suffix here — the root layout's title.template
   // already appends "| MegaDeal", so including it here doubled it up.
@@ -57,11 +58,12 @@ export function generateMetadata({
   };
 }
 
-export default async function CategoryPage({
-  params,
-}: {
-  params: { category: string };
-}) {
+export default async function CategoryPage(
+  props: {
+    params: Promise<{ category: string }>;
+  }
+) {
+  const params = await props.params;
   const category = decodeURIComponent(params.category);
   // The route matches any string, but only these 5 categories are real —
   // anything else (a typo'd link, a scraped/guessed URL) previously

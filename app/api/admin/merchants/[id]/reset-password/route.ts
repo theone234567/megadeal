@@ -10,7 +10,8 @@ import { adminResetMemberPassword } from "@/lib/wixPassword";
  * password and sets it directly, no email involved; the admin is
  * responsible for relaying it to the business themselves.
  */
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }

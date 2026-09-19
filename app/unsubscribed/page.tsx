@@ -6,11 +6,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function UnsubscribedPage({
-  searchParams,
-}: {
-  searchParams: { ok?: string };
-}) {
+export default async function UnsubscribedPage(
+  props: {
+    searchParams: Promise<{ ok?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const ok = searchParams.ok === "1";
 
   return (

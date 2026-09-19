@@ -24,11 +24,12 @@ import { wixImageUrl } from "@/lib/wixImageUrl";
 // URL. Same 60s window as the category pages this is closest to in shape.
 export const revalidate = 60;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const result = await fetchBusinessProfileBySlug(params.slug);
   if (!result) return { title: "Business not found" };
 
@@ -71,11 +72,12 @@ export async function generateMetadata({
   };
 }
 
-export default async function BusinessProfilePage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function BusinessProfilePage(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+) {
+  const params = await props.params;
   const result = await fetchBusinessProfileBySlug(params.slug);
   if (!result) notFound();
   const { business, deals } = result;

@@ -11,7 +11,8 @@ const MAX_ITEMS = 100;
  * reads from (see /api/merchants/activity), just admin-scoped to a given
  * business by ID instead of the caller's own account.
  */
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }

@@ -14,7 +14,8 @@ export const dynamic = "force-dynamic";
  * check is server-side now, so a deal belonging to someone else is never
  * sent at all.
  */
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const member = await getVerifiedMember(req);
   if (!member?.email) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });
@@ -46,7 +47,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
  * behind it: nothing was charged, nothing was reviewed, nothing was ever
  * public.
  */
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const member = await getVerifiedMember(req);
   if (!member?.email) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });

@@ -19,11 +19,12 @@ import { safeJsonLd } from "@/lib/safeJsonLd";
 // last minute is up to 60s behind, not a correctness bug.
 export const revalidate = 60;
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: { q?: string };
-}) {
+export default async function HomePage(
+  props: {
+    searchParams: Promise<{ q?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const isSearching = Boolean(searchParams.q?.trim());
   const deals = await fetchAllLiveDealsServer();
   const listedDeals = deals.slice(0, 20);

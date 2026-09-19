@@ -16,11 +16,12 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const deal = await fetchDealForSEO(params.slug);
   if (!deal) {
     return { title: "Deal not found" };
@@ -66,7 +67,8 @@ export async function generateMetadata({
   };
 }
 
-export default async function DealPage({ params }: { params: { slug: string } }) {
+export default async function DealPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const deal = await fetchDealForSEO(params.slug);
   if (!deal) notFound();
 
