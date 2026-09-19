@@ -520,9 +520,7 @@ export default async function MerchantsPage() {
           <p className="mx-auto mt-3 max-w-xl text-slate-600">
             MegaDeal is launching in Auckland, and we&apos;re
             deliberately starting with a small group of local
-            businesses. Join before launch and get up to 6 months free
-            advertising, plus the opportunity to help shape the platform
-            before launch.
+            businesses so we can get it right before opening up further.
           </p>
           {stats && (stats.merchantCount > 0 || stats.waitlistCount > 0) && (
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 rounded-2xl border border-brand-100 bg-brand-50 px-6 py-5">
@@ -540,18 +538,16 @@ export default async function MerchantsPage() {
           )}
           <div className="mx-auto mt-6 max-w-xl space-y-4 text-left text-slate-600">
             <p>
-              MegaDeal is New Zealand-owned and operated, launching first in
-              Auckland with a clear goal: helping people discover great
-              local offers and giving businesses a new way to reach
-              customers.
+              We&apos;re New Zealand-owned and operated, with a clear goal:
+              helping people discover great local offers, and giving
+              businesses a new way to reach customers.
             </p>
             <p>
               As a local business ourselves, we understand the importance
               of making every marketing dollar count. That&apos;s why
               we&apos;re inviting Auckland businesses to join ahead of
-              launch, with up to six months of free advertising and the
-              opportunity to help shape how MegaDeal supports businesses as
-              we grow.
+              launch, with up to six months of free advertising and a say
+              in how MegaDeal supports businesses as we grow.
             </p>
             <p>
               And honestly, there&apos;s nothing to lose — it&apos;s
