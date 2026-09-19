@@ -35,6 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/careers`, changeFrequency: "monthly", priority: 0.2 },
     { url: `${SITE_URL}/terms`, changeFrequency: "yearly", priority: 0.1 },
     { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.1 },
+    { url: `${SITE_URL}/refund-policy`, changeFrequency: "yearly", priority: 0.1 },
   ];
 
   // MegaShop is gated by its own separate flag, not SITE_LAUNCHED — same
