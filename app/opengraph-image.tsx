@@ -1,10 +1,26 @@
 import { ImageResponse } from "next/og";
 import { SITE_DESCRIPTION } from "@/lib/siteConfig";
+import { getLogoDataUri } from "@/lib/ogLogo";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OpengraphImage() {
+// Real logo file is 2172x724 (≈3:1) — sized to its own ratio rather than a
+// fixed height, so it can't come out stretched or squashed.
+const LOGO_WIDTH = 760;
+const LOGO_HEIGHT = Math.round((LOGO_WIDTH * 724) / 2172);
+
+export default async function OpengraphImage() {
+  // Falls back to the site name in plain text if the logo fetch ever fails
+  // (a network hiccup fetching our own asset) — a share card with no
+  // branding at all beats one that fails to render.
+  let logoDataUri: string | null = null;
+  try {
+    logoDataUri = await getLogoDataUri();
+  } catch (err) {
+    console.error("[opengraph-image] logo fetch failed", err);
+  }
+
   return new ImageResponse(
     (
       <div
@@ -19,39 +35,12 @@ export default function OpengraphImage() {
           padding: 80,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-          <span style={{ fontSize: 96, fontWeight: 800, color: "white" }}>Mega</span>
-          <span
-            style={{
-              fontSize: 96,
-              fontWeight: 800,
-              color: "#7a17f0",
-              background: "white",
-              borderRadius: 999,
-              padding: "0 24px",
-              transform: "rotate(-2deg)",
-            }}
-          >
-            Deal
-          </span>
-          {/* Vector elephant instead of the emoji — Satori composites emoji
-              as rasterized Twemoji glyphs, which can leave a faint dark
-              fringe around the edges; plain shapes have nothing to fringe. */}
-          <svg width="90" height="90" viewBox="0 0 100 100" style={{ marginLeft: 16 }}>
-            <ellipse cx="15" cy="48" rx="17" ry="22" fill="#eee0ff" />
-            <ellipse cx="85" cy="48" rx="17" ry="22" fill="#eee0ff" />
-            <ellipse cx="50" cy="45" rx="30" ry="28" fill="#f7f2ff" />
-            <path
-              d="M50 58 C 45 70, 55 78, 50 90"
-              fill="none"
-              stroke="#f7f2ff"
-              strokeWidth="13"
-              strokeLinecap="round"
-            />
-            <circle cx="36" cy="40" r="6" fill="#440e82" />
-            <circle cx="64" cy="40" r="6" fill="#440e82" />
-          </svg>
-        </div>
+        {logoDataUri ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoDataUri} width={LOGO_WIDTH} height={LOGO_HEIGHT} alt="" />
+        ) : (
+          <span style={{ fontSize: 80, fontWeight: 800, color: "white" }}>MegaDeal</span>
+        )}
         <div
           style={{
             marginTop: 32,
