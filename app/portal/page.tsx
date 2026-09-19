@@ -313,7 +313,7 @@ export default function PortalPage() {
               className="mt-6 rounded-2xl border-2 border-ember-200 bg-ember-50/50 p-6 shadow-card"
             >
               <h2 className="text-lg font-extrabold text-slate-900">
-                Finish your listing
+                Almost there — finish your listing
               </h2>
               <p className="mt-1 text-sm text-slate-600">
                 We&apos;ve kept everything you gave us at signup. Add your address, category and
