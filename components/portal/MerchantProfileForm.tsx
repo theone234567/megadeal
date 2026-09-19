@@ -10,6 +10,8 @@ import type { AddressSuggestion } from "@/lib/googlePlaces";
 import { BUSINESS_CATEGORIES } from "@/lib/categories";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
+const MIN_BIO_LENGTH = 50;
+const MAX_BIO_LENGTH = 600;
 
 function RequiredTag() {
   return <span className="ml-1 font-normal text-ember-600">Required</span>;
@@ -333,11 +335,17 @@ export default function MerchantProfileForm({
             required
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            maxLength={600}
+            minLength={MIN_BIO_LENGTH}
+            maxLength={MAX_BIO_LENGTH}
             rows={3}
             placeholder="A couple of sentences customers will see on your listing — what you do and what makes you worth choosing."
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
+          <p className="mt-1 text-xs text-slate-400">
+            {bio.length < MIN_BIO_LENGTH
+              ? `At least ${MIN_BIO_LENGTH} characters (${MIN_BIO_LENGTH - bio.length} to go)`
+              : `${bio.length}/${MAX_BIO_LENGTH} characters`}
+          </p>
         </div>
 
         {/* Legal name, NZBN and contact details are collected once at

@@ -12,6 +12,7 @@ const MAX_TEXT_LENGTH = 300;
 // a single-line field, so it needs its own generous length cap.
 const MAX_BUSINESS_HOURS_LENGTH = 4000;
 const MAX_BIO_LENGTH = 600;
+const MIN_BIO_LENGTH = 50;
 const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -78,8 +79,11 @@ export async function POST(req: NextRequest) {
   // back in the portal editing their profile, the field is on screen and
   // customers rely on it to know what the business actually does.
   const bio = cleanText(body.bio, MAX_BIO_LENGTH);
-  if (!bio) {
-    return NextResponse.json({ error: "About your business is required." }, { status: 400 });
+  if (bio.length < MIN_BIO_LENGTH) {
+    return NextResponse.json(
+      { error: `About your business needs at least ${MIN_BIO_LENGTH} characters — enough for a real sentence customers can act on.` },
+      { status: 400 }
+    );
   }
 
   const nzbn = normalizeNzbn(body.nzbn);
