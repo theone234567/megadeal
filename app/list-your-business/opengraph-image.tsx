@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getLogoDataUri } from "@/lib/ogLogo";
+import { getOgFonts } from "@/lib/ogFonts";
 
 // Route-segment override of the root app/opengraph-image.tsx — Next.js
 // picks this one for any /list-your-business URL instead of the generic
@@ -15,27 +16,33 @@ const LOGO_WIDTH = 620;
 const LOGO_HEIGHT = Math.round((LOGO_WIDTH * 724) / 2172);
 
 export default async function BusinessesOpengraphImage() {
-  // Falls back to plain text if the logo fetch ever fails (a network
-  // hiccup fetching our own asset) — a share card with no branding at all
-  // beats one that fails to render.
-  let logoDataUri: string | null = null;
-  try {
-    logoDataUri = await getLogoDataUri();
-  } catch (err) {
-    console.error("[opengraph-image] logo fetch failed", err);
-  }
+  // Both fetches degrade independently rather than failing the whole
+  // card: no logo falls back to plain text, no fonts falls back to
+  // ImageResponse's own generic sans. A network hiccup fetching our own
+  // assets should never be the reason a share card doesn't render at all.
+  const [logoDataUri, fonts] = await Promise.all([
+    getLogoDataUri().catch((err) => {
+      console.error("[opengraph-image] logo fetch failed", err);
+      return null;
+    }),
+    getOgFonts().catch((err) => {
+      console.error("[opengraph-image] font fetch failed", err);
+      return [];
+    }),
+  ]);
 
   return new ImageResponse(
     (
       <div
         style={{
+          position: "relative",
           width: "100%",
           height: "100%",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #7a17f0 0%, #e81ea3 100%)",
+          background: "#ffffff",
           padding: 80,
         }}
       >
@@ -43,16 +50,19 @@ export default async function BusinessesOpengraphImage() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logoDataUri} width={LOGO_WIDTH} height={LOGO_HEIGHT} alt="" />
         ) : (
-          <span style={{ fontSize: 64, fontWeight: 800, color: "white" }}>MegaDeal</span>
+          <span style={{ fontSize: 64, fontWeight: 700, fontFamily: "Fredoka", color: "#7a17f0" }}>
+            MegaDeal
+          </span>
         )}
 
         <div
           style={{
             display: "flex",
-            marginTop: 40,
-            fontSize: 60,
-            fontWeight: 800,
-            color: "white",
+            marginTop: 44,
+            fontSize: 58,
+            fontFamily: "Fredoka",
+            fontWeight: 700,
+            color: "#1e293b",
             textAlign: "center",
             maxWidth: 980,
           }}
@@ -64,15 +74,34 @@ export default async function BusinessesOpengraphImage() {
             display: "flex",
             marginTop: 20,
             fontSize: 32,
+            fontFamily: "Plus Jakarta Sans",
             fontWeight: 600,
-            color: "#f7e6fb",
+            color: "#475569",
             textAlign: "center",
           }}
         >
           Zero commission. List your NZ business deal today.
         </div>
+
+        {/* Same "conditions apply" convention the footer's own free-
+            advertising CTA already uses (components/Footer.tsx) — the offer
+            is real but has eligibility terms, and this is often the only
+            part of the page someone actually sees before deciding to click. */}
+        <div
+          style={{
+            display: "flex",
+            position: "absolute",
+            bottom: 48,
+            fontSize: 22,
+            fontFamily: "Plus Jakarta Sans",
+            fontWeight: 600,
+            color: "#94a3b8",
+          }}
+        >
+          Conditions apply
+        </div>
       </div>
     ),
-    { ...size }
+    { ...size, fonts }
   );
 }

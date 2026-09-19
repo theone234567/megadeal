@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { SITE_DESCRIPTION } from "@/lib/siteConfig";
 import { getLogoDataUri } from "@/lib/ogLogo";
+import { getOgFonts } from "@/lib/ogFonts";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -11,15 +12,20 @@ const LOGO_WIDTH = 760;
 const LOGO_HEIGHT = Math.round((LOGO_WIDTH * 724) / 2172);
 
 export default async function OpengraphImage() {
-  // Falls back to the site name in plain text if the logo fetch ever fails
-  // (a network hiccup fetching our own asset) — a share card with no
-  // branding at all beats one that fails to render.
-  let logoDataUri: string | null = null;
-  try {
-    logoDataUri = await getLogoDataUri();
-  } catch (err) {
-    console.error("[opengraph-image] logo fetch failed", err);
-  }
+  // Both fetches degrade independently rather than failing the whole
+  // card: no logo falls back to plain text, no fonts falls back to
+  // ImageResponse's own generic sans. A network hiccup fetching our own
+  // assets should never be the reason a share card doesn't render at all.
+  const [logoDataUri, fonts] = await Promise.all([
+    getLogoDataUri().catch((err) => {
+      console.error("[opengraph-image] logo fetch failed", err);
+      return null;
+    }),
+    getOgFonts().catch((err) => {
+      console.error("[opengraph-image] font fetch failed", err);
+      return [];
+    }),
+  ]);
 
   return new ImageResponse(
     (
@@ -31,7 +37,7 @@ export default async function OpengraphImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #7a17f0 0%, #e81ea3 100%)",
+          background: "#ffffff",
           padding: 80,
         }}
       >
@@ -39,13 +45,17 @@ export default async function OpengraphImage() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logoDataUri} width={LOGO_WIDTH} height={LOGO_HEIGHT} alt="" />
         ) : (
-          <span style={{ fontSize: 80, fontWeight: 800, color: "white" }}>MegaDeal</span>
+          <span style={{ fontSize: 80, fontWeight: 700, fontFamily: "Fredoka", color: "#7a17f0" }}>
+            MegaDeal
+          </span>
         )}
         <div
           style={{
-            marginTop: 32,
+            marginTop: 36,
             fontSize: 32,
-            color: "white",
+            fontFamily: "Plus Jakarta Sans",
+            fontWeight: 600,
+            color: "#475569",
             textAlign: "center",
             maxWidth: 900,
           }}
@@ -54,6 +64,6 @@ export default async function OpengraphImage() {
         </div>
       </div>
     ),
-    { ...size }
+    { ...size, fonts }
   );
 }
