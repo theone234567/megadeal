@@ -133,6 +133,7 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
 
           <PhotoUploadField
             label="Deal photo"
+            filenameLabel={deal.dealName}
             currentUrl={deal.photoUrl || null}
             disabled={isCancelled}
             disabledText="This deal is cancelled, so its photo can't be changed."

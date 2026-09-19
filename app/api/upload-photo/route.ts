@@ -13,6 +13,29 @@ const MAX_BYTES = 3_000_000;
 // compression, never vector art.
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
+// Longest slug we'll keep before appending the disambiguating suffix — well
+// under any filesystem/URL limit, just short enough that the Media Manager
+// listing stays scannable.
+const MAX_SLUG_LENGTH = 60;
+
+/**
+ * Turns a free-text label (business name, deal name — ultimately whatever a
+ * merchant typed) into a clean, URL-safe filename fragment. Runs server-side
+ * so the label is never trusted as-is: this is the only thing standing
+ * between "World's #1 Fish & Chips!! 🐟" (or something actually offensive)
+ * and a public, permanent, googleable Wix Media filename.
+ */
+function slugify(input: string): string {
+  return input
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "") // strip accents after NFKD decomposition
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, MAX_SLUG_LENGTH)
+    .replace(/-+$/g, ""); // slice() can leave a trailing hyphen mid-word
+}
+
 /**
  * Uploads a client-compressed photo to Wix Media Manager and returns its
  * real, CDN-hosted URL (plus the Wix media id, needed when attaching the
@@ -48,6 +71,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => null);
   const dataUrl = body?.dataUrl;
+  const label = typeof body?.label === "string" ? body.label : "";
   const match =
     typeof dataUrl === "string"
       ? dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/)
@@ -68,7 +92,13 @@ export async function POST(req: NextRequest) {
   try {
     const adminClient = createWixAdminClient();
     const ext = mimeType.split("/")[1]?.split("+")[0] || "jpg";
-    const fileName = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    // A short random suffix, not the label alone, disambiguates repeat
+    // uploads under the same business/deal name — Wix addresses the file by
+    // the id it returns, never by this name, so the suffix only needs to
+    // avoid two uploads looking identical in the Media Manager listing.
+    const suffix = Math.random().toString(36).slice(2, 8);
+    const slug = slugify(label);
+    const fileName = `${slug || "megadeal-photo"}-${suffix}.${ext}`;
 
     const genRes = await adminClient.fetchWithAuth(
       "https://www.wixapis.com/site-media/v1/files/generate-upload-url",

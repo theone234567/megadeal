@@ -65,12 +65,12 @@ export interface UploadedPhoto {
  * — smaller records, a real cached/optimized image, and a URL that can be
  * reused as product media.
  */
-export async function uploadPhoto(file: File): Promise<UploadedPhoto> {
+export async function uploadPhoto(file: File, label?: string): Promise<UploadedPhoto> {
   const dataUrl = await fileToCompressedDataUrl(file);
   const res = await fetch("/api/upload-photo", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ dataUrl }),
+    body: JSON.stringify({ dataUrl, label }),
   });
   const body = await res.json().catch(() => null);
   if (!res.ok || !body?.url || !body?.id) {

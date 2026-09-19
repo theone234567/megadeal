@@ -9,6 +9,8 @@ interface PhotoGalleryFieldProps {
   photos: string[];
   warningText: string;
   onConfirm: (photos: string[]) => Promise<void>;
+  /** Business name — used to give each upload a readable, SEO-friendly filename. */
+  label?: string;
 }
 
 /**
@@ -17,7 +19,7 @@ interface PhotoGalleryFieldProps {
  * nothing reaches the server (and nothing sends the listing back for
  * review) until Confirm, same as the single-logo field it replaced.
  */
-export default function PhotoGalleryField({ photos, warningText, onConfirm }: PhotoGalleryFieldProps) {
+export default function PhotoGalleryField({ photos, warningText, onConfirm, label }: PhotoGalleryFieldProps) {
   // Staged working copy. null until the visitor makes a change, so
   // "nothing to confirm" is exactly "no local edits yet" rather than
   // needing a second dirty flag kept in sync with this array.
@@ -41,7 +43,7 @@ export default function PhotoGalleryField({ photos, warningText, onConfirm }: Ph
     setError(null);
     setUploading(true);
     try {
-      const { url } = await uploadPhoto(file);
+      const { url } = await uploadPhoto(file, label);
       setStaged([...current, url]);
     } catch (err: any) {
       setError(err?.message || "Couldn't upload that photo. Please try again.");

@@ -255,7 +255,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       // this is what makes a restored draft keep its image.
       let media = uploaded;
       if (photo && !media) {
-        media = await uploadPhoto(photo);
+        media = await uploadPhoto(photo, dealName);
         setUploaded(media);
       }
 
@@ -308,7 +308,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       // each time.
       let media = uploaded;
       if (photo && !media) {
-        media = await uploadPhoto(photo);
+        media = await uploadPhoto(photo, dealName);
         setUploaded(media);
       }
       const res = await fetch("/api/deals/create", {

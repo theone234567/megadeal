@@ -636,6 +636,7 @@ export default function MerchantProfileForm({
             </p>
             <PhotoGalleryField
               photos={parseBusinessPhotos(merchant.photos)}
+              label={merchant.businessName}
               warningText={
                 merchant.status === "Approved"
                   ? "Changing your photos sends your listing back for review, so it comes off the site until we've had a look. Continue?"

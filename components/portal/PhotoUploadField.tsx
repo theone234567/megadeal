@@ -10,6 +10,8 @@ interface PhotoUploadFieldProps {
   disabled?: boolean;
   disabledText?: string;
   onConfirm: (url: string) => Promise<void>;
+  /** Deal name — used to give the upload a readable, SEO-friendly filename. Falls back to `label`. */
+  filenameLabel?: string;
 }
 
 export default function PhotoUploadField({
@@ -19,6 +21,7 @@ export default function PhotoUploadField({
   disabled,
   disabledText,
   onConfirm,
+  filenameLabel,
 }: PhotoUploadFieldProps) {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -51,7 +54,7 @@ export default function PhotoUploadField({
     setSaving(true);
     setError(null);
     try {
-      const { url } = await uploadPhoto(pendingFile);
+      const { url } = await uploadPhoto(pendingFile, filenameLabel || label);
       await onConfirm(url);
       cancel();
     } catch (err: any) {
