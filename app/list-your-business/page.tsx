@@ -120,13 +120,16 @@ const WHAT_YOU_GET = [
   },
 ];
 
+// Matches lib/categories.ts's CATEGORIES exactly (name + emoji) — the
+// site's real storefront categories, not an independently-invented list
+// that could drift from what /category/[name] and the nav actually show.
 const BUSINESS_TYPES = [
-  { emoji: "🍽️", label: "Restaurants & Cafes", hook: "Turn a quiet Tuesday into a busier one" },
-  { emoji: "💆", label: "Beauty & Spas", hook: "Fill more of your quiet appointment slots" },
-  { emoji: "🏋️", label: "Gyms & Fitness", hook: "Get more people into your off-peak classes" },
-  { emoji: "🚐", label: "Tours & Activities", hook: "Sell more of the seats that would've gone empty" },
-  { emoji: "🏨", label: "Getaways & Stays", hook: "Get more bookings on the nights that need it" },
-  { emoji: "🧹", label: "Home Services", hook: "Keep your booking calendar busier" },
+  { emoji: "🍽️", label: "Food & Drink", hook: "Turn a quiet Tuesday into a busier one" },
+  { emoji: "💆", label: "Beauty & Spa", hook: "Fill more of your quiet appointment slots" },
+  { emoji: "🎟️", label: "Things To Do", hook: "Sell more of the seats that would've gone empty" },
+  { emoji: "✈️", label: "Travel & Getaways", hook: "Get more bookings on the nights that need it" },
+  { emoji: "🏋️", label: "Health & Fitness", hook: "Get more people into your off-peak classes" },
+  { emoji: "🔧", label: "Home & Car", hook: "Keep your booking calendar busier" },
 ];
 
 const FAQS = [
@@ -423,7 +426,7 @@ export default async function MerchantsPage() {
                 <div>
                   <p className="font-bold text-slate-900">
                     {t.label}
-                    {t.label === "Restaurants & Cafes" && (
+                    {t.label === "Food & Drink" && (
                       <>
                         {" "}
                         <Link
