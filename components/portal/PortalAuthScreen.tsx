@@ -81,7 +81,7 @@ export default function PortalAuthScreen({
               width={320}
               height={250}
               priority
-              className="absolute left-1/2 top-0 h-auto w-[128px] -translate-x-1/2 -translate-y-[42%] drop-shadow-[0_10px_18px_rgba(37,10,77,.35)]"
+              className="absolute left-1/2 top-0 h-auto w-[128px] -translate-x-1/2 -translate-y-[28%] drop-shadow-[0_10px_18px_rgba(37,10,77,.35)]"
             />
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-100">
               MegaDeal for business

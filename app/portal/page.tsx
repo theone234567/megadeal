@@ -178,7 +178,7 @@ export default function PortalPage() {
     return (
       <PortalAuthScreen
         title="Business portal"
-        intro="Your deals, your credits and your listing — all in one place. Only you can see your own account."
+        intro="Your deals, your credits and your listing — all in one place."
       />
     );
   }
