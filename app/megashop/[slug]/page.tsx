@@ -6,6 +6,7 @@ import { fetchMegaShopProductBySlugForServer } from "@/lib/fetchMegaShopServer";
 import { SITE_URL, SITE_NAME, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney } from "@/lib/format";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { wixImageUrl } from "@/lib/wixImageUrl";
 
 // See app/megashop/page.tsx for why this was missing and what it means.
 export const revalidate = 60;
@@ -90,7 +91,7 @@ export default async function MegaShopProductPage({ params }: { params: { slug: 
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100">
             {product.image ? (
               <Image
-                src={product.image}
+                src={wixImageUrl(product.image, 1200, 900)}
                 alt={product.name}
                 fill
                 sizes="(min-width: 1024px) 60vw, 100vw"

@@ -15,6 +15,7 @@ import { trackDealEvent } from "@/lib/trackDeal";
 import { parseBusinessHours, formatBusinessHoursLines, isOpenNow } from "@/lib/businessHours";
 import StarRating from "@/components/StarRating";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { wixImageUrl } from "@/lib/wixImageUrl";
 
 // The deal (and its related deals) are fetched server-side (see page.tsx)
 // so the description, price, and business info are present in the raw
@@ -110,7 +111,7 @@ export default function DealDetail({
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100">
             {deal.image ? (
               <Image
-                src={deal.image}
+                src={wixImageUrl(deal.image, 1200, 900)}
                 alt={deal.name}
                 fill
                 sizes="(min-width: 1024px) 60vw, 100vw"
@@ -335,7 +336,7 @@ export default function DealDetail({
                 {deal.businessLogoUrl ? (
                   <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-slate-50">
                     <Image
-                      src={deal.businessLogoUrl}
+                      src={wixImageUrl(deal.businessLogoUrl, 64, 64)}
                       alt={deal.businessName}
                       fill
                       sizes="28px"

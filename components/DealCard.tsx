@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Deal } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
 import { dealSaving } from "@/lib/dealSaving";
+import { wixImageUrl } from "@/lib/wixImageUrl";
 import CountdownBadge from "./CountdownBadge";
 import StarRating from "./StarRating";
 
@@ -43,7 +44,7 @@ export default function DealCard({
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
         {deal.image ? (
           <Image
-            src={deal.image}
+            src={wixImageUrl(deal.image, 800, 600)}
             alt={deal.name}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"

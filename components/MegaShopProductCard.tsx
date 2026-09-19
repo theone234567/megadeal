@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Deal } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
+import { wixImageUrl } from "@/lib/wixImageUrl";
 
 /**
  * MegaShop's own plain product card — deliberately not DealCard, which
@@ -23,7 +24,7 @@ export default function MegaShopProductCard({ product }: { product: Deal }) {
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
         {product.image ? (
           <Image
-            src={product.image}
+            src={wixImageUrl(product.image, 800, 600)}
             alt={product.name}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"

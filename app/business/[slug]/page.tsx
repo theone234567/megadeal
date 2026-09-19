@@ -13,6 +13,7 @@ import ShareButtons from "@/components/ShareButtons";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { parseBusinessHours, formatBusinessHoursLines, toOpeningHoursSpecification, isOpenNow } from "@/lib/businessHours";
+import { wixImageUrl } from "@/lib/wixImageUrl";
 
 // Every other page that fetches live Wix data (homepage, category pages,
 // the deal page, flash deals) sets an explicit revalidate window — this
@@ -146,7 +147,7 @@ export default async function BusinessProfilePage({
           {business.logoUrl ? (
             <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
               <Image
-                src={business.logoUrl}
+                src={wixImageUrl(business.logoUrl, 160, 160)}
                 alt={business.businessName}
                 fill
                 sizes="80px"
@@ -210,7 +211,7 @@ export default async function BusinessProfilePage({
                 className="relative aspect-square overflow-hidden rounded-xl border border-slate-100 bg-slate-50"
               >
                 <Image
-                  src={url}
+                  src={wixImageUrl(url, 600, 600)}
                   // Real, distinct alt text per photo — what actually shows
                   // up in Google Image Search and to screen readers, unlike
                   // the empty alt on the small avatar above (decorative,
