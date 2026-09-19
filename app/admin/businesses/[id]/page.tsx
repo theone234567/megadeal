@@ -97,6 +97,13 @@ export default function AdminBusinessDetailPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
 
+  // "Forgot password" on the public site currently 404s (see
+  // lib/adminResetPassword.ts) — this is the stopgap until that's fixed:
+  // set a new password directly and relay it to the business yourself.
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState<string | null>(null);
+  const [resetPasswordError, setResetPasswordError] = useState<string | null>(null);
+
   function seedFrom(item: AdminMerchant) {
     setStatus(item.status || "Pending");
     setCredits(item.creditsBalance ?? 0);
@@ -200,6 +207,26 @@ export default function AdminBusinessDetailPage() {
     } catch (err: any) {
       setDeleteError(err?.message || "Couldn't delete that business.");
       setDeleting(false);
+    }
+  }
+
+  async function resetPassword() {
+    setResettingPassword(true);
+    setResetPasswordError(null);
+    setNewPassword(null);
+    try {
+      const res = await fetch(`/api/admin/merchants/${params.id}/reset-password`, {
+        method: "POST",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Couldn't reset the password.");
+      }
+      setNewPassword(data.password);
+    } catch (err: any) {
+      setResetPasswordError(err?.message || "Couldn't reset the password. Please try again.");
+    } finally {
+      setResettingPassword(false);
     }
   }
 
@@ -348,6 +375,38 @@ export default function AdminBusinessDetailPage() {
         it does <strong>not</strong> send it back for the business's own
         review, unlike when they edit it themselves from their portal.
       </p>
+
+      <section className="mt-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-card">
+        <h2 className="text-sm font-bold text-slate-900">Account access</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          Stopgap while the site&apos;s own &quot;Forgot password&quot; email link is
+          broken. Sets a new password directly — nothing is emailed to the
+          business, so you&apos;ll need to pass it on to them yourself.
+        </p>
+        <button
+          onClick={resetPassword}
+          disabled={resettingPassword || !merchant.email}
+          className="mt-3 rounded-full border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 active:scale-95 disabled:opacity-40"
+        >
+          {resettingPassword ? "Generating…" : "Generate new password"}
+        </button>
+        {newPassword && (
+          <div className="mt-3 rounded-xl border border-brand-100 bg-brand-50 p-3">
+            <p className="text-xs font-semibold text-brand-900">
+              New password — shown once, won&apos;t be shown again:
+            </p>
+            <p className="mt-1 select-all font-mono text-base font-bold text-brand-900">
+              {newPassword}
+            </p>
+            <p className="mt-1 text-xs text-brand-700/80">
+              This is already set — the business can sign in with it right away.
+            </p>
+          </div>
+        )}
+        {resetPasswordError && (
+          <p className="mt-2 text-sm text-red-600">{resetPasswordError}</p>
+        )}
+      </section>
 
       <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
         <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card sm:col-span-2">
