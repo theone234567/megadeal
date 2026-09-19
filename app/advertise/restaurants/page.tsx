@@ -20,11 +20,14 @@ import { safeJsonLd } from "@/lib/safeJsonLd";
 import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
 
-// Staging/review only — flip to `undefined` (inherits the root layout's
-// index:true) once this page is approved for public launch. See the
-// handoff's own instruction: "Keep staging out of search... explicitly
-// review and remove any page-level noindex that should no longer apply."
-const PAGE_LIVE_FOR_SEARCH = false;
+// Was noindex/nofollow while the page was still built from spec docs
+// alone (no real photo, approximated layout details). Flipped to
+// indexable now that it uses the real supplied assets and matches the
+// reference screenshots, matching /list-your-business's own precedent
+// of being indexable pre-launch (see app/sitemap.ts's unconditional
+// staticPages — business-recruitment pages target a different audience
+// than the consumer-facing pages still gated behind SITE_LAUNCHED).
+const PAGE_LIVE_FOR_SEARCH = true;
 
 const TITLE = "Restaurant Advertising Auckland";
 const DESCRIPTION =

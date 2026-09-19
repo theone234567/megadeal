@@ -23,6 +23,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     { url: `${SITE_URL}/list-your-business`, changeFrequency: "weekly", priority: 0.6 },
+    // Same unconditional bucket as /list-your-business, not gated behind
+    // SITE_LAUNCHED — it targets restaurant owners considering signup,
+    // not consumers, so it's fine (and intended) to be findable pre-launch.
+    { url: `${SITE_URL}/advertise/restaurants`, changeFrequency: "weekly", priority: 0.5 },
     { url: `${SITE_URL}/how-it-works`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/redeem`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/help`, changeFrequency: "monthly", priority: 0.3 },

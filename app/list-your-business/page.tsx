@@ -421,7 +421,20 @@ export default async function MerchantsPage() {
                   {t.emoji}
                 </span>
                 <div>
-                  <p className="font-bold text-slate-900">{t.label}</p>
+                  <p className="font-bold text-slate-900">
+                    {t.label}
+                    {t.label === "Restaurants & Cafes" && (
+                      <>
+                        {" "}
+                        <Link
+                          href="/advertise/restaurants"
+                          className="font-semibold text-brand-600 underline decoration-brand-300 underline-offset-2 hover:text-brand-700"
+                        >
+                          (restaurant &amp; café details)
+                        </Link>
+                      </>
+                    )}
+                  </p>
                   <p className="text-sm text-slate-600">{t.hook}</p>
                 </div>
               </div>
