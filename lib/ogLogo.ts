@@ -1,4 +1,5 @@
-import { SITE_URL } from "./siteConfig";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 /**
  * The real MegaDeal logo (elephant + wordmark), pre-rendered to PNG
@@ -7,23 +8,21 @@ import { SITE_URL } from "./siteConfig";
  *
  * PNG rather than the site's own WebP: ImageResponse's renderer (Satori)
  * has inconsistent WebP support across versions, while PNG is universally
- * safe. Fetched by absolute URL rather than read from disk with `fs` —
- * this route runs wherever the Next build ends up deployed (this project
- * targets Cloudflare Workers via OpenNext), and `fs.readFileSync` needs a
- * real filesystem that a Worker doesn't have; `fetch` works everywhere.
+ * safe.
  *
- * Cached per server instance (module-level, not per-request) since the
- * logo doesn't change between requests — avoids re-fetching and
- * re-encoding ~200KB on every single share-card render.
+ * Read from disk at build time, not fetched by URL. opengraph-image routes
+ * with no dynamic params are prerendered once during `next build` — a real
+ * Node process with a real filesystem, unlike this project's Cloudflare
+ * Workers *runtime* (which is what ruled out `fs` for anything that runs
+ * per-request). A same-origin fetch here would in fact be a build-time
+ * chicken-and-egg bug: the asset this fetch wants doesn't exist on
+ * production yet, because deploying it is the whole point of this build.
  */
 let cachedDataUri: string | null = null;
 
-export async function getLogoDataUri(): Promise<string> {
+export function getLogoDataUri(): string {
   if (cachedDataUri) return cachedDataUri;
-  const res = await fetch(`${SITE_URL}/megadeal/megadeal-logo-og.png`);
-  if (!res.ok) throw new Error(`Couldn't fetch OG logo: ${res.status}`);
-  const buf = await res.arrayBuffer();
-  const base64 = Buffer.from(buf).toString("base64");
-  cachedDataUri = `data:image/png;base64,${base64}`;
+  const buf = readFileSync(join(process.cwd(), "public/megadeal/megadeal-logo-og.png"));
+  cachedDataUri = `data:image/png;base64,${buf.toString("base64")}`;
   return cachedDataUri;
 }

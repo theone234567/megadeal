@@ -15,21 +15,23 @@ export const contentType = "image/png";
 const LOGO_WIDTH = 620;
 const LOGO_HEIGHT = Math.round((LOGO_WIDTH * 724) / 2172);
 
-export default async function BusinessesOpengraphImage() {
-  // Both fetches degrade independently rather than failing the whole
-  // card: no logo falls back to plain text, no fonts falls back to
-  // ImageResponse's own generic sans. A network hiccup fetching our own
-  // assets should never be the reason a share card doesn't render at all.
-  const [logoDataUri, fonts] = await Promise.all([
-    getLogoDataUri().catch((err) => {
-      console.error("[opengraph-image] logo fetch failed", err);
-      return null;
-    }),
-    getOgFonts().catch((err) => {
-      console.error("[opengraph-image] font fetch failed", err);
-      return [];
-    }),
-  ]);
+export default function BusinessesOpengraphImage() {
+  // Both reads degrade independently rather than failing the whole card:
+  // no logo falls back to plain text, no fonts falls back to
+  // ImageResponse's own generic sans. A missing/unreadable asset should
+  // never be the reason a share card doesn't render at all.
+  let logoDataUri: string | null = null;
+  try {
+    logoDataUri = getLogoDataUri();
+  } catch (err) {
+    console.error("[opengraph-image] logo read failed", err);
+  }
+  let fonts: ReturnType<typeof getOgFonts> = [];
+  try {
+    fonts = getOgFonts();
+  } catch (err) {
+    console.error("[opengraph-image] font read failed", err);
+  }
 
   return new ImageResponse(
     (
