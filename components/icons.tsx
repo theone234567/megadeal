@@ -273,3 +273,22 @@ export function LeafIcon({ className = "h-4 w-4" }: IconProps) {
     </svg>
   );
 }
+
+export function ArrowRightIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <line x1="4" y1="12" x2="19" y2="12" />
+      <polyline points="13,6 19,12 13,18" />
+    </svg>
+  );
+}
+
+export function ReceiptIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z" />
+      <line x1="9" y1="8" x2="15" y2="8" />
+      <line x1="9" y1="12" x2="15" y2="12" />
+    </svg>
+  );
+}

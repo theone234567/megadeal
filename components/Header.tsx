@@ -19,6 +19,7 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
+  const isRestaurantLanding = pathname === "/advertise/restaurants";
 
   // One size everywhere — this used to differ between the coming-soon
   // header and every other page's, which read as inconsistent branding
@@ -76,6 +77,47 @@ export default function Header() {
     if (city) params.set("city", city);
     const qs = params.toString();
     router.push(qs ? `/?${qs}` : "/");
+  }
+
+  // Compact, purpose-built header for the restaurant advertising landing
+  // page — the standard header's search bar and city selector have nothing
+  // to do with a page whose only job is getting a restaurant owner into
+  // signup, and would compete with that page's own CTA. Sticky (unlike the
+  // coming-soon header) so "List my restaurant" stays reachable on a page
+  // long enough to need it.
+  if (isRestaurantLanding) {
+    return (
+      <header className="sticky top-0 z-30 border-b border-slate-100 bg-white">
+        <div className="mx-auto flex h-[87px] w-full max-w-[1184px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+          <Link href="/advertise/restaurants" aria-label="MegaDeal home" className="flex min-w-0 shrink items-center gap-2">
+            {brand()}
+            <span className="hidden shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-500 sm:inline-block">
+              for business
+            </span>
+          </Link>
+
+          <nav className="hidden items-center gap-7 text-sm font-semibold text-[#241138] lg:flex">
+            <a href="#why-megadeal" className="transition hover:text-[#6519C7]">
+              Why MegaDeal
+            </a>
+            <a href="#how-it-works" className="transition hover:text-[#6519C7]">
+              How it works
+            </a>
+            <a href="#questions" className="transition hover:text-[#6519C7]">
+              FAQs
+            </a>
+          </nav>
+
+          <a
+            href="#launch-offer"
+            data-cta-section="header"
+            className="shrink-0 rounded-full bg-[#C81287] px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#DC168F] sm:px-5 sm:text-sm"
+          >
+            List my restaurant
+          </a>
+        </div>
+      </header>
+    );
   }
 
   if (isComingSoon) {

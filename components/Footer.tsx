@@ -32,7 +32,10 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
   const FOOTER_CATEGORIES = footerCategories(siteLaunched);
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
-  const hideOwnABusinessCta = pathname?.startsWith("/list-your-business") || isComingSoon;
+  const hideOwnABusinessCta =
+    pathname?.startsWith("/list-your-business") ||
+    pathname?.startsWith("/advertise/restaurants") ||
+    isComingSoon;
 
   return (
     <footer className="mt-16 border-t border-slate-100 bg-slate-50">
