@@ -102,7 +102,7 @@ export default function PortalAuthScreen({
               to mush; shown at its own scale it reads the way it was
               actually drawn. "Waving" doubles as a plain-language greeting
               on a sign-in screen, which the old icon's static face didn't. */}
-          <div className="relative bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 px-6 pb-6 pt-28 text-center">
+          <div className="relative bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 px-6 pb-6 pt-[100px] text-center">
             {/* Plain box-centering (-translate-x-1/2). A previous version
                 used -58% on the theory that the head/ears were visually
                 heavier on the right than the raised hand was on the left —

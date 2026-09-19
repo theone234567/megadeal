@@ -319,9 +319,6 @@ export default function PortalPage() {
                 We&apos;ve kept everything you gave us at signup. Add your address, category and
                 opening hours so customers can find you.
               </p>
-              <p className="mt-2 text-sm font-semibold text-slate-700">
-                Saving sends your listing to us for approval.
-              </p>
               <div className="mt-5 rounded-2xl bg-white p-5">
                 <MerchantProfileForm
                   merchant={merchant}
