@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Script from "next/script";
 
@@ -16,16 +16,24 @@ const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
  * workflow, so Cloudflare's own "Builds" page is never consulted). Absent
  * that var, this renders nothing and costs nothing.
  *
- * Fires PageView on first load and again on every client-side route
- * change, since Next.js App Router navigation doesn't reload the page
- * (the pixel's own auto PageView on init only covers the first one).
+ * Fires PageView again on every client-side route change, since Next.js
+ * App Router navigation doesn't reload the page — the pixel's own auto
+ * PageView on init (below) already covers the first load, so this effect
+ * skips its own first run (isFirstRender) rather than also firing then;
+ * without that guard the initial page load fired two PageViews for the
+ * one visit, inflating counts before a campaign ever got to see them.
  */
 export default function MetaPixel() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
     if (!PIXEL_ID) return;
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     window.fbq?.("track", "PageView");
   }, [pathname, searchParams]);
 
