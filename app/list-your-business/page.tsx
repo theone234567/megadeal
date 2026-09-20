@@ -435,11 +435,11 @@ export default async function MerchantsPage() {
       {/* Fit — for anyone who scrolled past the form to see if this is
           really built for them first. */}
       <section className="bg-brand-50 px-4 py-14 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-5xl">
           <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             Turn quieter times into new customers.
           </h2>
-          <div className="mt-3 max-w-2xl space-y-3 text-slate-600">
+          <div className="mt-3 max-w-3xl space-y-3 text-slate-600">
             <p>
               Every business has quieter moments — tables waiting to be
               filled, gaps in the appointment book, or a class with
