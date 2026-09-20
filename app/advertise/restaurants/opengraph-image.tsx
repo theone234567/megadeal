@@ -63,7 +63,7 @@ export default function RestaurantsOpengraphImage() {
             maxWidth: 1000,
           }}
         >
-          Turn quieter tables into new regulars.
+          Turn Auckland's quieter restaurant tables into new regulars.
         </div>
         <div
           style={{

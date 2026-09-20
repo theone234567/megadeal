@@ -214,7 +214,7 @@ export default function RestaurantAdvertisingPage() {
               <h1
                 className={`${fredoka.className} mt-3 text-[40px] font-semibold leading-[1.08] sm:text-[52px] lg:text-[62px]`}
               >
-                Turn quieter tables into{" "}
+                Turn Auckland&rsquo;s quieter restaurant tables into{" "}
                 <span style={{ color: "#ADDFFF" }}>new regulars.</span>
               </h1>
               <p className="mt-5 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
