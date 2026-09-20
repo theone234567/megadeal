@@ -9,7 +9,6 @@ import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
 import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
 import ReferralCard from "@/components/portal/ReferralCard";
 import ActivityFeed from "@/components/portal/ActivityFeed";
-import NotificationPreferences from "@/components/portal/NotificationPreferences";
 import ExportDealsButton from "@/components/portal/ExportDealsButton";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
 
@@ -363,52 +362,56 @@ export default function PortalPage() {
             </>
           )}
 
-          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Deal credits
+          {/* Deal credits used to sit in a 2-column grid beside Application
+              status, with "Recent activity" as an unrelated box further
+              down the page — two disconnected views of the same balance.
+              This is the merchant's actual credit ledger: balance and
+              top-up info up top, the history of what earned or spent each
+              credit embedded right below it in the same card, the way a
+              bank statement pairs a balance with its transactions instead
+              of filing them separately. */}
+          <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Deal credits
+            </p>
+            <p className="mt-1 text-4xl font-extrabold text-brand-700">
+              {merchant.creditsBalance ?? 0}
+            </p>
+            <p className="mt-1 text-sm text-slate-500">
+              1 credit = 1 deal listing.{" "}
+              <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
+                Contact us to top up.
+              </Link>
+            </p>
+            <ActivityFeed />
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              Application status
+            </p>
+            <p className="mt-1 text-2xl font-extrabold text-slate-900">
+              {merchant.status || "Pending"}
+            </p>
+            <p className="mt-1 text-sm text-slate-500">
+              {(merchant.status || "Pending") === "Approved"
+                ? "You're approved — you can list deals whenever you're ready."
+                : "We'll email you as soon as you're approved, usually within 12 hours."}
+            </p>
+            {/* No "verify your email" prompt here. Reaching the portal at
+                all means the code from the signup email was already
+                entered and accepted by Wix, so prompting for it again —
+                and offering a sign-out-and-back-in to resend it — asked
+                merchants to redo a step they had just finished. The
+                badge below is confirmation, not a task. */}
+            {member?.loginEmailVerified && (
+              <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
+                ✓ Email verified
               </p>
-              <p className="mt-1 text-4xl font-extrabold text-brand-700">
-                {merchant.creditsBalance ?? 0}
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                1 credit = 1 deal listing.{" "}
-                <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
-                  Contact us to top up.
-                </Link>
-              </p>
-            </div>
-            <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Application status
-              </p>
-              <p className="mt-1 text-2xl font-extrabold text-slate-900">
-                {merchant.status || "Pending"}
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                {(merchant.status || "Pending") === "Approved"
-                  ? "You're approved — you can list deals whenever you're ready."
-                  : "We'll email you as soon as you're approved, usually within 12 hours."}
-              </p>
-              {/* No "verify your email" prompt here. Reaching the portal at
-                  all means the code from the signup email was already
-                  entered and accepted by Wix, so prompting for it again —
-                  and offering a sign-out-and-back-in to resend it — asked
-                  merchants to redo a step they had just finished. The
-                  badge below is confirmation, not a task. */}
-              {member?.loginEmailVerified && (
-                <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-700">
-                  ✓ Email verified
-                </p>
-              )}
-            </div>
+            )}
           </div>
 
           <ReferralCard referralCode={merchant.referralCode} />
-
-          <ActivityFeed />
-
-          <NotificationPreferences notifyReferralBonus={merchant.notifyReferralBonus} />
 
           {/* Only once, and only here when it isn't already leading the
               page above — two live copies of the same form would fight

@@ -28,12 +28,20 @@ export default function ActivityFeed() {
     };
   }, []);
 
+  // No chrome of its own (border/shadow/background) — this is meant to be
+  // embedded directly inside the Deal credits card, as the ledger of what
+  // actually moved that balance, not a second disconnected box floating
+  // further down the page. Renders nothing at all while there's no
+  // activity yet, so a brand-new merchant's credits card doesn't show an
+  // empty "Recent activity" heading with nothing under it.
   if (!items || items.length === 0) return null;
 
   return (
-    <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
-      <h2 className="text-lg font-bold text-slate-900">Recent activity</h2>
-      <ul className="mt-3 divide-y divide-slate-100">
+    <div className="mt-5 border-t border-slate-100 pt-5">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        Recent activity
+      </h3>
+      <ul className="mt-2 divide-y divide-slate-100">
         {items.map((item) => (
           <li key={item._id} className="flex items-start justify-between gap-3 py-2.5 text-sm">
             <div className="flex items-start gap-2">
