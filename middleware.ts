@@ -1,5 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SITE_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
+
+const CANONICAL_HOST = new URL(SITE_URL).hostname;
+
+/**
+ * This codebase is still git-connected to a Vercel project left over from
+ * before the move to Cloudflare Workers (megadeal23456.vercel.app) — it
+ * kept auto-deploying every push in parallel with the real site, and Bing
+ * indexed it as a live duplicate. A permanent redirect to the canonical
+ * host is the strongest signal to get a search engine to drop a stray
+ * domain in favor of the real one, far more than a canonical tag or
+ * robots.txt alone, and it also catches any other stray host this same
+ * build ever ends up served from (a Cloudflare preview *.workers.dev URL,
+ * a future duplicate deployment) without needing to know about it here.
+ * Skips localhost/127.0.0.1 so local dev and the CI preview step (which
+ * hits localhost:8787) aren't redirected into a live domain.
+ */
+function isCanonicalHost(host: string) {
+  return host === CANONICAL_HOST || host === "localhost" || host === "127.0.0.1";
+}
 
 /**
  * Pre-launch gate only. This used to also proactively fetch and cookie a
@@ -34,6 +53,13 @@ import { SITE_LAUNCHED } from "@/lib/siteConfig";
  * deferring it to.
  */
 export function middleware(request: NextRequest) {
+  if (!isCanonicalHost(request.nextUrl.hostname)) {
+    return NextResponse.redirect(
+      new URL(request.nextUrl.pathname + request.nextUrl.search, SITE_URL),
+      308
+    );
+  }
+
   if (!SITE_LAUNCHED && request.nextUrl.pathname === "/") {
     return NextResponse.redirect(new URL("/coming-soon", request.url));
   }
