@@ -10,7 +10,7 @@ import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { getSignupStats } from "@/lib/publicStats";
 import { fredoka, plusJakartaSans, caveat } from "@/lib/fonts";
-import { PercentIcon, ZapIcon, MapPinIcon, CheckIcon } from "@/components/icons";
+import { PercentIcon, ZapIcon, MapPinIcon, CheckIcon, UtensilsIcon, FlowerIcon, TicketIcon, SuitcaseIcon, DumbbellIcon, WrenchIcon } from "@/components/icons";
 
 // Re-checked at most once a minute — the counts only need to be
 // approximately live, and this avoids hitting Wix on every single request.
@@ -120,42 +120,45 @@ const WHAT_YOU_GET = [
   },
 ];
 
-// Matches lib/categories.ts's CATEGORIES exactly (name + emoji) — the
-// site's real storefront categories, not an independently-invented list
-// that could drift from what /category/[name] and the nav actually show.
+// Names match lib/categories.ts's CATEGORIES exactly — the site's real
+// storefront categories, not an independently-invented list that could
+// drift from what /category/[name] and the nav actually show. Icons are
+// this component's own line-icon set (components/icons.tsx), each picked
+// to match the emoji CATEGORIES already uses for the same category
+// elsewhere on the site (Food & Drink's 🍽️, Things To Do's 🎟️, etc).
 const BUSINESS_TYPES = [
   {
-    emoji: "🍽️",
+    icon: UtensilsIcon,
     label: "Food & Drink",
     description:
       "Give diners a reason to visit during your quieter services. From midweek set menus to lunch specials and café combos, create an offer that works for your kitchen and your customers.",
   },
   {
-    emoji: "💆",
+    icon: FlowerIcon,
     label: "Beauty & Spa",
     description:
       "Make more of the gaps in your appointment book. Introduce new clients to your salon or spa with selected treatments, packages or a little extra with their booking.",
   },
   {
-    emoji: "🎟️",
+    icon: TicketIcon,
     label: "Things To Do",
     description:
       "Bring more people to your tours, activities and experiences. Promote available spaces on selected dates and give locals a reason to try something different.",
   },
   {
-    emoji: "✈️",
+    icon: SuitcaseIcon,
     label: "Travel & Getaways",
     description:
       "Give guests a reason to book your quieter dates. Showcase your accommodation with a stay package, an added extra or an offer on selected nights.",
   },
   {
-    emoji: "🏋️",
+    icon: DumbbellIcon,
     label: "Health & Fitness",
     description:
       "Introduce new customers to your gym, yoga studio, Pilates sessions or fitness classes. An introductory offer or class package can help them take the first step.",
   },
   {
-    emoji: "🔧",
+    icon: WrenchIcon,
     label: "Home & Car",
     description:
       "Turn available time in your schedule into opportunities for new bookings. Promote selected services or packages that help local customers discover what your business offers.",
@@ -435,11 +438,18 @@ export default async function MerchantsPage() {
       {/* Fit — for anyone who scrolled past the form to see if this is
           really built for them first. */}
       <section className="bg-brand-50 px-4 py-14 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl">
+        {/* Single container at every step — heading, intro, grid and closing
+            line all share this exact left edge and max-width, so nothing
+            in the section reads as its own narrower column. 1120px sits
+            between this page's other two grid sections' max-w-5xl
+            (1024px) and max-w-6xl — wide enough that two ~500px cards
+            with this much copy get real room, without the row going so
+            wide that a 2-column grid starts to feel sparse. */}
+        <div className="mx-auto max-w-[1120px]">
           <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             Turn quieter times into new customers.
           </h2>
-          <div className="mt-3 max-w-3xl space-y-3 text-slate-600">
+          <div className="mt-3 space-y-3 text-slate-600">
             <p>
               Every business has quieter moments — tables waiting to be
               filled, gaps in the appointment book, or a class with
@@ -462,27 +472,37 @@ export default async function MerchantsPage() {
               worth coming back for.
             </p>
           </div>
-          <div className="mt-8 grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
+          {/* Explicit repeat(2, minmax(0,1fr)) via Tailwind's grid-cols-2 —
+              min-[700px] rather than the sm: breakpoint (640px) so the
+              switch to one column happens closer to where these longer
+              descriptions actually start feeling tight on their own line
+              length, not at an arbitrary framework default. min-w-0 on
+              every card stops its text/link from overflowing the grid
+              track (the default min-width:auto on a grid item sizes it to
+              its longest unbreakable content instead of the track). */}
+          <div className="mt-8 grid grid-cols-1 gap-6 min-[700px]:grid-cols-2">
             {BUSINESS_TYPES.map((t) => (
-              <div key={t.label} className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-lg shadow-sm">
-                  {t.emoji}
+              <div
+                key={t.label}
+                className="flex min-w-0 flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-sm"
+              >
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-100">
+                  <t.icon className="h-6 w-6 text-brand-600" />
                 </span>
-                <div>
-                  <p className="font-bold text-slate-900">
-                    {t.label === "Food & Drink" ? (
-                      <Link
-                        href="/advertise/restaurants"
-                        className="text-brand-600 underline decoration-brand-300 underline-offset-2 hover:text-brand-700"
-                      >
-                        {t.label} →
-                      </Link>
-                    ) : (
-                      t.label
-                    )}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-600">{t.description}</p>
-                </div>
+                {t.label === "Food & Drink" ? (
+                  <Link
+                    href="/advertise/restaurants"
+                    className={`${fredoka.className} mt-4 inline-flex w-fit items-center gap-1 rounded-sm text-xl text-slate-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2`}
+                  >
+                    {t.label}
+                    <span aria-hidden className="text-brand-600">
+                      →
+                    </span>
+                  </Link>
+                ) : (
+                  <h3 className={`${fredoka.className} mt-4 text-xl text-slate-900`}>{t.label}</h3>
+                )}
+                <p className="mt-2 text-base leading-[1.65] text-slate-600">{t.description}</p>
               </div>
             ))}
           </div>
