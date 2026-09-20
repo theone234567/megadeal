@@ -4,17 +4,20 @@ import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Script from "next/script";
 
-const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+const PIXEL_ID = "1478448350759686";
 
 /**
- * Loads the Meta (Facebook) Pixel base code site-wide, only when
- * NEXT_PUBLIC_META_PIXEL_ID is configured. Since this is a NEXT_PUBLIC_
- * var, Next.js inlines it at build time — it has to be set where the
- * build actually runs, which for this project is the "Build" step's env
- * block in .github/workflows/deploy.yml, not anywhere in the Cloudflare
- * dashboard (this project deploys by pushing a pre-built Worker via that
- * workflow, so Cloudflare's own "Builds" page is never consulted). Absent
- * that var, this renders nothing and costs nothing.
+ * Loads the Meta (Facebook) Pixel base code site-wide.
+ *
+ * Hardcoded rather than read from NEXT_PUBLIC_META_PIXEL_ID: that var is
+ * set in .github/workflows/deploy.yml's Build step, but the live site
+ * still shipped with fbq undefined and no #meta-pixel script — this
+ * repo's "Deploy" step (the one that actually pushes to Cloudflare) has
+ * been skipped on every run since the workflow was created, so nothing
+ * built by CI, this env var included, has ever reached production
+ * through it. A literal here needs no deploy-time config to take effect,
+ * and it isn't a secret — a Pixel ID is already visible in every page's
+ * HTML once the site loads.
  *
  * Fires PageView again on every client-side route change, since Next.js
  * App Router navigation doesn't reload the page — the pixel's own auto
@@ -29,15 +32,12 @@ export default function MetaPixel() {
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    if (!PIXEL_ID) return;
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
     window.fbq?.("track", "PageView");
   }, [pathname, searchParams]);
-
-  if (!PIXEL_ID) return null;
 
   return (
     <>
