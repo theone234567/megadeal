@@ -124,12 +124,42 @@ const WHAT_YOU_GET = [
 // site's real storefront categories, not an independently-invented list
 // that could drift from what /category/[name] and the nav actually show.
 const BUSINESS_TYPES = [
-  { emoji: "🍽️", label: "Food & Drink", hook: "Turn a quiet Tuesday into a busier one" },
-  { emoji: "💆", label: "Beauty & Spa", hook: "Fill more of your quiet appointment slots" },
-  { emoji: "🎟️", label: "Things To Do", hook: "Sell more of the seats that would've gone empty" },
-  { emoji: "✈️", label: "Travel & Getaways", hook: "Get more bookings on the nights that need it" },
-  { emoji: "🏋️", label: "Health & Fitness", hook: "Get more people into your off-peak classes" },
-  { emoji: "🔧", label: "Home & Car", hook: "Keep your booking calendar busier" },
+  {
+    emoji: "🍽️",
+    label: "Food & Drink",
+    description:
+      "Give diners a reason to visit during your quieter services. From midweek set menus to lunch specials and café combos, create an offer that works for your kitchen and your customers.",
+  },
+  {
+    emoji: "💆",
+    label: "Beauty & Spa",
+    description:
+      "Make more of the gaps in your appointment book. Introduce new clients to your salon or spa with selected treatments, packages or a little extra with their booking.",
+  },
+  {
+    emoji: "🎟️",
+    label: "Things To Do",
+    description:
+      "Bring more people to your tours, activities and experiences. Promote available spaces on selected dates and give locals a reason to try something different.",
+  },
+  {
+    emoji: "✈️",
+    label: "Travel & Getaways",
+    description:
+      "Give guests a reason to book your quieter dates. Showcase your accommodation with a stay package, an added extra or an offer on selected nights.",
+  },
+  {
+    emoji: "🏋️",
+    label: "Health & Fitness",
+    description:
+      "Introduce new customers to your gym, yoga studio, Pilates sessions or fitness classes. An introductory offer or class package can help them take the first step.",
+  },
+  {
+    emoji: "🔧",
+    label: "Home & Car",
+    description:
+      "Turn available time in your schedule into opportunities for new bookings. Promote selected services or packages that help local customers discover what your business offers.",
+  },
 ];
 
 const FAQS = [
@@ -407,17 +437,32 @@ export default async function MerchantsPage() {
       <section className="bg-brand-50 px-4 py-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
           <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
-            Got empty tables, unused appointments or spare capacity?
+            Turn quieter times into new customers.
           </h2>
-          <p className="mt-2 max-w-2xl text-slate-600">
-            Turn empty capacity into paying customers. A quiet Tuesday
-            night. An empty treatment room. A gym class with spare
-            places. A tour with seats still available. A hotel room
-            that would otherwise sit empty. MegaDeal gives you a simple
-            way to turn that spare capacity into a reason for customers
-            to choose you.
-          </p>
-          <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-3 max-w-2xl space-y-3 text-slate-600">
+            <p>
+              Every business has quieter moments — tables waiting to be
+              filled, gaps in the appointment book, or a class with
+              room for a few more people. Those spaces are an
+              opportunity to introduce someone new to what you do best.
+            </p>
+            <p>
+              MegaDeal gives you a simple way to promote offers that
+              give locals a reason to choose your business. You decide
+              what to offer, when it&apos;s available and the
+              conditions that work for you, so you can focus on the
+              days, times or services that could use a boost.
+            </p>
+            <p>
+              It doesn&apos;t have to mean a big discount. A lunch
+              combo, a treatment package, an introductory class or a
+              complimentary extra can give customers a reason to try
+              something new. Choose an offer that makes sense for your
+              customers and your margins, then give them an experience
+              worth coming back for.
+            </p>
+          </div>
+          <div className="mt-8 grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
             {BUSINESS_TYPES.map((t) => (
               <div key={t.label} className="flex items-start gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-lg shadow-sm">
@@ -425,28 +470,32 @@ export default async function MerchantsPage() {
                 </span>
                 <div>
                   <p className="font-bold text-slate-900">
-                    {t.label}
-                    {t.label === "Food & Drink" && (
-                      <>
-                        {" "}
-                        <Link
-                          href="/advertise/restaurants"
-                          className="font-semibold text-brand-600 underline decoration-brand-300 underline-offset-2 hover:text-brand-700"
-                        >
-                          (restaurant &amp; café details)
-                        </Link>
-                      </>
+                    {t.label === "Food & Drink" ? (
+                      <Link
+                        href="/advertise/restaurants"
+                        className="text-brand-600 underline decoration-brand-300 underline-offset-2 hover:text-brand-700"
+                      >
+                        {t.label} →
+                      </Link>
+                    ) : (
+                      t.label
                     )}
                   </p>
-                  <p className="text-sm text-slate-600">{t.hook}</p>
+                  <p className="mt-1 text-sm text-slate-600">{t.description}</p>
                 </div>
               </div>
             ))}
           </div>
-          <p className="mt-6 text-sm text-slate-600">
-            Also welcome: bars, yoga &amp; pilates studios, workshops and
-            classes, entertainment and nightlife venues, and anything
-            else local with something to offer.
+          <p className="mt-8 text-sm text-slate-600">
+            <span className="font-bold text-slate-900">Don&apos;t see your business here?</span>{" "}
+            We welcome enquiries from a wide range of local businesses.{" "}
+            <Link
+              href="/contact"
+              className="font-semibold text-brand-600 underline decoration-brand-300 underline-offset-2 hover:text-brand-700"
+            >
+              Get in touch
+            </Link>{" "}
+            and tell us what you offer.
           </p>
         </div>
       </section>
