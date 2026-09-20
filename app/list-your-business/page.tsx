@@ -126,40 +126,56 @@ const WHAT_YOU_GET = [
 // this component's own line-icon set (components/icons.tsx), each picked
 // to match the emoji CATEGORIES already uses for the same category
 // elsewhere on the site (Food & Drink's 🍽️, Things To Do's 🎟️, etc).
+//
+// Each gets its own accent instead of one flat brand-purple circle
+// repeated six times — six identical icons read as decoration, six
+// distinct colours read as six different things, which is the point of
+// having a per-category icon at all. Deliberately outside the brand
+// purple/ember range (already carrying the page's CTAs and links) so
+// these don't compete with or get mistaken for a clickable accent, and
+// spread across the wheel (warm/cool alternating) rather than clustered,
+// so adjacent cards in the 2-column grid never land on near-identical
+// hues.
 const BUSINESS_TYPES = [
   {
     icon: UtensilsIcon,
     label: "Food & Drink",
+    color: { bg: "bg-orange-100", icon: "text-orange-600" },
     description:
       "Give diners a reason to visit during your quieter services. From midweek set menus to lunch specials and café combos, create an offer that works for your kitchen and your customers.",
   },
   {
     icon: FlowerIcon,
     label: "Beauty & Spa",
+    color: { bg: "bg-teal-100", icon: "text-teal-600" },
     description:
       "Make more of the gaps in your appointment book. Introduce new clients to your salon or spa with selected treatments, packages or a little extra with their booking.",
   },
   {
     icon: TicketIcon,
     label: "Things To Do",
+    color: { bg: "bg-sky-100", icon: "text-sky-600" },
     description:
       "Bring more people to your tours, activities and experiences. Promote available spaces on selected dates and give locals a reason to try something different.",
   },
   {
     icon: SuitcaseIcon,
     label: "Travel & Getaways",
+    color: { bg: "bg-indigo-100", icon: "text-indigo-600" },
     description:
       "Give guests a reason to book your quieter dates. Showcase your accommodation with a stay package, an added extra or an offer on selected nights.",
   },
   {
     icon: DumbbellIcon,
     label: "Health & Fitness",
+    color: { bg: "bg-emerald-100", icon: "text-emerald-600" },
     description:
       "Introduce new customers to your gym, yoga studio, Pilates sessions or fitness classes. An introductory offer or class package can help them take the first step.",
   },
   {
     icon: WrenchIcon,
     label: "Home & Car",
+    color: { bg: "bg-amber-100", icon: "text-amber-600" },
     description:
       "Turn available time in your schedule into opportunities for new bookings. Promote selected services or packages that help local customers discover what your business offers.",
   },
@@ -486,8 +502,10 @@ export default async function MerchantsPage() {
                 key={t.label}
                 className="flex min-w-0 flex-col rounded-2xl border border-slate-100 bg-white p-6 shadow-sm"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-100">
-                  <t.icon className="h-6 w-6 text-brand-600" />
+                <span
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${t.color.bg}`}
+                >
+                  <t.icon className={`h-6 w-6 ${t.color.icon}`} />
                 </span>
                 {t.label === "Food & Drink" ? (
                   <Link
