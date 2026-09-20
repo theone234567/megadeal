@@ -74,10 +74,21 @@ jobs:
 
       # Runs either way, so a broken build is caught even before the
       # secrets are added.
+      #
+      # NEXT_PUBLIC_* values get compiled into the JS bundle right here —
+      # this is the only place that matters for them. This project deploys
+      # via this workflow, pushing straight to Cloudflare Workers with
+      # `opennextjs-cloudflare deploy` below; Cloudflare's own dashboard
+      # "Settings -> Builds -> Environment variables" page is for projects
+      # where Cloudflare runs the build itself, which isn't what happens
+      # here, so anything set there is silently never used. Not a secret —
+      # a Pixel ID is already visible in every page's HTML once the site
+      # loads — so it's a plain value here rather than a repo secret.
       - name: Build
         run: npm run cf:build
         env:
           NEXT_PUBLIC_SITE_URL: https://megadeal.co.nz
+          NEXT_PUBLIC_META_PIXEL_ID: "1478448350759686"
 
       # Screenshots of / , /coming-soon, /list-your-business, /portal and
       # /megashop at four widths, uploaded as a build artifact for a human

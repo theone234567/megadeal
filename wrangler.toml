@@ -32,10 +32,14 @@ invocation_logs = true
 
 # NEXT_PUBLIC_GA_MEASUREMENT_ID (components/GoogleAnalytics.tsx) and
 # NEXT_PUBLIC_META_PIXEL_ID (components/MetaPixel.tsx) aren't set here —
-# Next.js inlines NEXT_PUBLIC_* values at build time, so they live in the
-# Cloudflare dashboard under this Worker's Settings -> Builds ->
-# Environment variables, not [vars] in this file (which is only read at
-# request time, too late for a value that has to already be in the bundle).
+# Next.js inlines NEXT_PUBLIC_* values at build time, so they have to live
+# wherever the build actually runs. For this project that's the "Build"
+# step's env block in .github/workflows/deploy.yml, NOT the Cloudflare
+# dashboard's "Builds -> Environment variables" page — this project
+# deploys by pushing a pre-built Worker via that workflow, so Cloudflare
+# never runs a build of its own and that dashboard page is never
+# consulted. [vars] in this file isn't right either — it's only read at
+# request time, too late for a value that has to already be in the bundle.
 #
 # META_CAPI_ACCESS_TOKEN (lib/metaCapi.ts) is the opposite case: a
 # server-only secret for Meta's Conversions API that must never reach the
