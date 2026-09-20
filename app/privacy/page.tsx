@@ -142,7 +142,27 @@ export default function PrivacyPage() {
           Facebook ad preferences
         </a>
         . Standard browser tracking-protection or ad-blocking tools will
-        generally block both of these.
+        generally block the Pixel.
+      </p>
+      <p>
+        Alongside the Pixel, we may also send Meta a small amount of
+        signup information directly from our own servers when a business
+        registers — known as Meta&apos;s Conversions API. Meta only ever
+        receives your email address and phone number in hashed
+        (non-readable) form, never as plain text, along with which ad
+        campaign (if any) brought you to the site. Because this runs on
+        our server rather than in your browser, it isn&apos;t affected by
+        browser tracking-protection or ad-blocking tools the way the Pixel
+        is — the{" "}
+        <a
+          href="https://www.facebook.com/adpreferences"
+          className="text-brand-600 underline hover:text-brand-700"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Facebook ad preferences
+        </a>{" "}
+        link above still gives you control over how Meta uses it.
       </p>
 
       <h2>Data retention</h2>

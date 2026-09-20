@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
@@ -12,6 +13,8 @@ import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { isBusinessCategory } from "@/lib/categories";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
+import { sendMetaCapiEvent } from "@/lib/metaCapi";
+import { getClientIp } from "@/lib/rateLimit";
 
 const MAX_TEXT_LENGTH = 300;
 // businessHours holds a serialized structured-hours JSON blob (7 days,
@@ -255,5 +258,39 @@ export async function POST(req: NextRequest) {
     }).catch((err) => console.error("[merchants/apply] EmailSignups sync failed", err));
   }
 
-  return NextResponse.json({ item });
+  // Only on a genuine first application — this route is also called when
+  // resubmitting an edited profile (see the `existing` branch above), and
+  // that isn't a new conversion. The eventId is generated here rather than
+  // on the client so it always exists exactly once per real registration,
+  // whichever of the two forms that post here created it (the main signup
+  // form, or the portal's "finish your signup" recovery flow) — handed
+  // back in the response so the caller's browser-side Pixel event can
+  // share it, which is what lets Meta dedupe the two into one conversion.
+  let metaEventId: string | undefined;
+  if (isNewApplication && member.email) {
+    metaEventId = randomUUID();
+    const attribution = body.attribution && typeof body.attribution === "object" ? body.attribution : {};
+    sendMetaCapiEvent({
+      eventName: "CompleteRegistration",
+      eventId: metaEventId,
+      eventSourceUrl: cleanText(body.eventSourceUrl, 500) || `${SITE_URL}/list-your-business`,
+      userData: {
+        email: member.email,
+        phone: contactPhone || phone,
+        clientIp: getClientIp(req),
+        userAgent: req.headers.get("user-agent") || undefined,
+        fbp: cleanText(body.fbp, 200) || undefined,
+        fbc: cleanText(body.fbc, 300) || undefined,
+      },
+      customData: {
+        content_name: "business_signup",
+        utm_source: cleanText(attribution.utm_source, 200) || undefined,
+        utm_medium: cleanText(attribution.utm_medium, 200) || undefined,
+        utm_campaign: cleanText(attribution.utm_campaign, 200) || undefined,
+        utm_content: cleanText(attribution.utm_content, 200) || undefined,
+      },
+    }).catch((err) => console.error("[merchants/apply] Meta CAPI event failed", err));
+  }
+
+  return NextResponse.json({ item, metaEventId });
 }

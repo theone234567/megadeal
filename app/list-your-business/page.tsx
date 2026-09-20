@@ -5,6 +5,7 @@ import SampleDealCard from "@/components/SampleDealCard";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import StickyApplyBar from "@/components/StickyApplyBar";
 import ConversionTracker from "@/components/ConversionTracker";
+import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
@@ -284,6 +285,7 @@ export default async function MerchantsPage() {
     <main className={plusJakartaSans.className}>
       <StickyApplyBar />
       <ConversionTracker />
+      <ViewContentTracker contentName="list_your_business" />
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger

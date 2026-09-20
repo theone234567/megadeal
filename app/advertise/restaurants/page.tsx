@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import ConversionTracker from "@/components/ConversionTracker";
+import ViewContentTracker from "@/components/ViewContentTracker";
 import MascotFigure from "@/components/megadeal/MascotFigure";
 import {
   CalendarIcon,
@@ -184,6 +185,7 @@ export default function RestaurantAdvertisingPage() {
   return (
     <main className={plusJakartaSans.className}>
       <ConversionTracker />
+      <ViewContentTracker contentName="advertise_restaurants" />
 
       {/* Skip link — this page has no site-wide equivalent to inherit, so
           it's scoped here rather than added to the global layout. */}

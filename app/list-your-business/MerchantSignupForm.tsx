@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { loginMember, registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import PasswordField from "@/components/PasswordField";
-import { trackMetaPixelEvent } from "@/lib/metaPixel";
+import { trackMetaPixelEvent, trackMetaCustomEvent } from "@/lib/metaPixel";
+import { getAttribution, getFbc, getFbp } from "@/lib/attribution";
 import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
 import RecaptchaCheckbox, { type RecaptchaCheckboxHandle } from "@/components/RecaptchaCheckbox";
 import { AUTH_TIMEOUT_MS, withTimeout } from "@/lib/withTimeout";
@@ -103,8 +104,11 @@ function readApplicationValues(formData: FormData): ApplicationValues {
 
 /** Submits everything the /list-your-business form collected to create (or claim)
  *  the business application — called only once the account itself exists
- *  and, if Wix required it, its email is verified. */
-async function submitApplication(values: ApplicationValues) {
+ *  and, if Wix required it, its email is verified. Returns the Meta event
+ *  ID the server generated for this conversion (see /api/merchants/apply
+ *  and lib/metaCapi.ts), so the caller's browser-side Pixel event can
+ *  share it — undefined when this was a resubmission, not a first signup. */
+async function submitApplication(values: ApplicationValues): Promise<string | undefined> {
   const res = await fetch("/api/merchants/apply", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -117,12 +121,22 @@ async function submitApplication(values: ApplicationValues) {
       couponCode: values.couponCode,
       mg_contact_ref: values.honeypot,
       agreedToTerms: values.agreedToTerms,
+      // First-touch ad attribution (see lib/attribution.ts) — carried
+      // through to Meta's Conversions API as this conversion's custom_data
+      // so ad campaigns can eventually be judged on actual registrations,
+      // not just clicks.
+      attribution: getAttribution() ?? undefined,
+      fbp: getFbp(),
+      fbc: getFbc(),
+      eventSourceUrl: window.location.href,
     }),
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     throw new Error(data.error || "Your account was created, but we couldn't save your business details. Please contact us so we can sort it out.");
   }
+  const data = await res.json().catch(() => ({}));
+  return typeof data.metaEventId === "string" ? data.metaEventId : undefined;
 }
 
 export default function MerchantSignupForm() {
@@ -238,6 +252,12 @@ export default function MerchantSignupForm() {
     if (startedRef.current) return;
     startedRef.current = true;
     window.gtag?.("event", "form_start", { form_name: "merchant_signup" });
+    // No standard Meta event fits "started the registration form" — it's
+    // not a completed Lead and InitiateCheckout is a commerce term that
+    // doesn't apply here, so this is a custom event (see
+    // trackMetaCustomEvent in lib/metaPixel.ts) rather than one of
+    // Meta's fixed standard ones.
+    trackMetaCustomEvent("StartBusinessRegistration", { content_name: "business_signup" });
   }
 
   async function finishAfterAuth() {
@@ -252,11 +272,14 @@ export default function MerchantSignupForm() {
       );
       return;
     }
-    await submitApplication(values);
+    const metaEventId = await submitApplication(values);
     window.gtag?.("event", "form_complete", { form_name: "merchant_signup" });
     // The real conversion event for business-recruitment ad campaigns — a
-    // completed application, not just a click or an email signup.
-    trackMetaPixelEvent("CompleteRegistration", { content_name: "business_signup" });
+    // completed application, not just a click or an email signup. Shares
+    // metaEventId with the server-side Conversions API call the apply
+    // route just made for the same conversion, so Meta dedupes the two
+    // into one instead of double-counting (see lib/metaCapi.ts).
+    trackMetaPixelEvent("CompleteRegistration", { content_name: "business_signup" }, metaEventId);
     window.gtag?.("event", "sign_up", { method: "merchant_signup" });
     window.location.href = "/portal";
   }

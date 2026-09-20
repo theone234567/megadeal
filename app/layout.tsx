@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import MetaPixel from "@/components/MetaPixel";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import ScrollDepthTracker from "@/components/ScrollDepthTracker";
+import AttributionCapture from "@/components/AttributionCapture";
 import StaleBuildRecovery from "@/components/StaleBuildRecovery";
 import EmailCapturePopup from "@/components/EmailCapturePopup";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
@@ -145,6 +146,7 @@ export default function RootLayout({
           <MetaPixel />
           <GoogleAnalytics />
           <ScrollDepthTracker />
+          <AttributionCapture />
         </Suspense>
         <MegadealArtProvider art={megadealArt}>
           <WixProvider>

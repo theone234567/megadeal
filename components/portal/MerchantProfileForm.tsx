@@ -7,6 +7,8 @@ import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
+import { trackMetaPixelEvent } from "@/lib/metaPixel";
+import { getAttribution, getFbc, getFbp } from "@/lib/attribution";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 const MIN_BIO_LENGTH = 50;
@@ -154,7 +156,15 @@ export default function MerchantProfileForm({
           amenities,
           // Only sent when creating. The server requires it on a first
           // application and ignores it on an update.
-          ...(createMode ? { agreedToTerms } : {}),
+          ...(createMode
+            ? {
+                agreedToTerms,
+                attribution: getAttribution() ?? undefined,
+                fbp: getFbp(),
+                fbc: getFbc(),
+                eventSourceUrl: window.location.href,
+              }
+            : {}),
         }),
       });
       if (!res.ok) {
@@ -180,7 +190,16 @@ export default function MerchantProfileForm({
             : data.error || "Couldn't save your profile."
         );
       }
-      const { item } = await res.json();
+      const { item, metaEventId } = await res.json();
+      // This is the same conversion the signup form fires
+      // CompleteRegistration for — this is the other route that reaches
+      // it, via the portal's "finish your signup" recovery screen for an
+      // account whose original signup dropped before this step ran.
+      // metaEventId only comes back on a genuine first application (see
+      // /api/merchants/apply), so this never double-fires on a later edit.
+      if (createMode && metaEventId) {
+        trackMetaPixelEvent("CompleteRegistration", { content_name: "business_signup" }, metaEventId);
+      }
       onSaved(item);
       setEditing(false);
     } catch (err: any) {

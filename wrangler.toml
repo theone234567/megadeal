@@ -36,3 +36,10 @@ invocation_logs = true
 # Cloudflare dashboard under this Worker's Settings -> Builds ->
 # Environment variables, not [vars] in this file (which is only read at
 # request time, too late for a value that has to already be in the bundle).
+#
+# META_CAPI_ACCESS_TOKEN (lib/metaCapi.ts) is the opposite case: a
+# server-only secret for Meta's Conversions API that must never reach the
+# browser, so it does NOT get a NEXT_PUBLIC_ prefix and does NOT belong
+# here either — set it under this Worker's Settings -> Variables and
+# Secrets (runtime, encrypted) instead. It reuses NEXT_PUBLIC_META_PIXEL_ID
+# above for which pixel to report events against.
