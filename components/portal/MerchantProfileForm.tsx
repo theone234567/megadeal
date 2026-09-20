@@ -255,12 +255,21 @@ export default function MerchantProfileForm({
             <dt className="text-slate-500">Booking email</dt>
             <dd className="font-medium text-slate-800">{merchant.bookingEmail || "—"}</dd>
           </div>
-          <div>
+          <div className="sm:col-span-2">
             <dt className="text-slate-500">Socials</dt>
             <dd className="font-medium text-slate-800">
-              {[merchant.facebookUrl && "Facebook", merchant.instagramUrl && "Instagram"]
-                .filter(Boolean)
-                .join(", ") || "—"}
+              {merchant.facebookUrl || merchant.instagramUrl ? (
+                <>
+                  {merchant.facebookUrl && (
+                    <p className="break-all">Facebook: {merchant.facebookUrl}</p>
+                  )}
+                  {merchant.instagramUrl && (
+                    <p className="break-all">Instagram: {merchant.instagramUrl}</p>
+                  )}
+                </>
+              ) : (
+                "—"
+              )}
             </dd>
           </div>
           <div>
