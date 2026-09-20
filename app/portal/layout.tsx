@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import IdlePortalSignOut from "@/components/portal/IdlePortalSignOut";
 
 // The merchant portal shows a signed-in merchant's own private business
 // data (applications, deal drafts, credits) — never something to index.
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      {children}
+      <IdlePortalSignOut />
+    </>
+  );
 }
