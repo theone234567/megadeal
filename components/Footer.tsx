@@ -37,6 +37,12 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
     pathname?.startsWith("/advertise/restaurants") ||
     isComingSoon;
 
+  // The portal has its own dedicated layout (PortalShell) — the large
+  // marketing footer (category links, "own a business" banner, social
+  // links) has nothing to do with a merchant managing their account and
+  // just adds scroll length under every portal page.
+  if (pathname?.startsWith("/portal")) return null;
+
   return (
     <footer className="mt-16 border-t border-slate-100 bg-slate-50">
       {!hideOwnABusinessCta && (

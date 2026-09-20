@@ -321,70 +321,48 @@ export default function MerchantProfileForm({
         </p>
       )}
 
-      <form onSubmit={handleSave} className="mt-4 space-y-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="profile-businessName" className="mb-1 block text-sm font-medium text-slate-700">
-              Business name
-              <RequiredTag />
-            </label>
-            <input
-              id="profile-businessName"
-              required
-              maxLength={300}
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("businessName")}`}
-            />
-            <FieldError name="businessName" />
-          </div>
-          <div>
-            <label htmlFor="profile-website" className="mb-1 block text-sm font-medium text-slate-700">
-              Website
-              <OptionalTag />
-            </label>
-            <input
-              id="profile-website"
-              maxLength={300}
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("website")}`}
-            />
-            <FieldError name="website" />
-          </div>
-        </div>
+      <form onSubmit={handleSave} className="mt-4 space-y-8">
+        <section className="space-y-4">
+          <h2 className="text-base font-bold text-slate-900">Business information</h2>
 
-        <div>
-          <label htmlFor="profile-bio" className="mb-1 block text-sm font-medium text-slate-700">
-            About your business
-            <RequiredTag />
-          </label>
-          <textarea
-            id="profile-bio"
-            required
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            minLength={MIN_BIO_LENGTH}
-            maxLength={MAX_BIO_LENGTH}
-            rows={3}
-            placeholder="A couple of sentences customers will see on your listing — what you do and what makes you worth choosing."
-            className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bio")}`}
-          />
-          <FieldError name="bio" />
-          <p className="mt-1 text-xs text-slate-400">
-            {bio.length < MIN_BIO_LENGTH
-              ? `At least ${MIN_BIO_LENGTH} characters (${MIN_BIO_LENGTH - bio.length} to go)`
-              : `${bio.length}/${MAX_BIO_LENGTH} characters`}
-          </p>
-        </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="profile-businessName" className="mb-1 block text-sm font-medium text-slate-700">
+                Business name
+                <RequiredTag />
+              </label>
+              <input
+                id="profile-businessName"
+                required
+                maxLength={300}
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("businessName")}`}
+              />
+              <FieldError name="businessName" />
+            </div>
+            <div>
+              <label htmlFor="profile-website" className="mb-1 block text-sm font-medium text-slate-700">
+                Website
+                <OptionalTag />
+              </label>
+              <input
+                id="profile-website"
+                maxLength={300}
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("website")}`}
+              />
+              <FieldError name="website" />
+            </div>
+          </div>
 
-        {/* Legal name, NZBN and contact details are collected once at
-            signup and don't need re-asking here — this block only exists
-            for the createMode recovery form (an account whose signup
-            dropped before that first save ever happened), where nothing
-            has been given yet. */}
-        {createMode && (
-          <>
+          {/* Legal name and NZBN are collected once at signup and don't
+              need re-asking here — this block only exists for the
+              createMode recovery form (an account whose signup dropped
+              before that first save ever happened), where nothing has
+              been given yet. */}
+          {createMode && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="profile-legalBusinessName" className="mb-1 block text-sm font-medium text-slate-700">
@@ -418,7 +396,120 @@ export default function MerchantProfileForm({
                 <FieldError name="nzbn" />
               </div>
             </div>
+          )}
 
+          <AddressAutocompleteField
+            id="profile-address"
+            address={address}
+            onAddressChange={(value) => {
+              setAddress(value);
+              setLat(null);
+              setLon(null);
+            }}
+            onSelect={(s: AddressSuggestion) => {
+              setAddress(s.label || s.street);
+              if (s.postcode) setPostcode(s.postcode);
+              if (s.city) {
+                const match = CITIES.find((c) => c.toLowerCase() === s.city!.toLowerCase());
+                setCity(match ?? "Other");
+              }
+              setLat(s.lat ?? null);
+              setLon(s.lon ?? null);
+            }}
+            lat={lat}
+            lon={lon}
+            onPinMove={(newLat, newLng) => {
+              setLat(newLat);
+              setLon(newLng);
+            }}
+            helperText="Pick a suggestion to keep your map location accurate."
+            errorText={fieldErrors.address}
+          />
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="profile-city" className="mb-1 block text-sm font-medium text-slate-700">
+                City
+                <RequiredTag />
+              </label>
+              <select
+                id="profile-city"
+                required
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${errorBorderClass("city")}`}
+              >
+                <option value="" disabled>
+                  Select a city
+                </option>
+                {CITIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <FieldError name="city" />
+            </div>
+            <div>
+              <label htmlFor="profile-postcode" className="mb-1 block text-sm font-medium text-slate-700">
+                Postcode
+                <OptionalTag />
+              </label>
+              <input
+                id="profile-postcode"
+                maxLength={20}
+                value={postcode}
+                onChange={(e) => setPostcode(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="profile-priceRange" className="mb-1 block text-sm font-medium text-slate-700">
+                Price range
+                <OptionalTag />
+              </label>
+              <select
+                id="profile-priceRange"
+                value={priceRange}
+                onChange={(e) => setPriceRange(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+              >
+                <option value="">Not applicable</option>
+                <option value="$">$ — Budget-friendly</option>
+                <option value="$$">$$ — Moderate</option>
+                <option value="$$$">$$$ — Upmarket</option>
+                <option value="$$$$">$$$$ — Premium</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="profile-amenities" className="mb-1 block text-sm font-medium text-slate-700">
+                Features &amp; amenities
+                <OptionalTag />
+              </label>
+              <input
+                id="profile-amenities"
+                maxLength={300}
+                value={amenities}
+                onChange={(e) => setAmenities(e.target.value)}
+                placeholder="e.g. Vegan options, Free parking"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-4 border-t border-slate-100 pt-6">
+          <h2 className="text-base font-bold text-slate-900">Contact and booking details</h2>
+
+          {/* Contact name/phone are collected once at signup and don't
+              need re-asking here — this block only exists for the
+              createMode recovery form (an account whose signup dropped
+              before that first save ever happened), where nothing has
+              been given yet. */}
+          {createMode && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="profile-contactName" className="mb-1 block text-sm font-medium text-slate-700">
@@ -452,228 +543,155 @@ export default function MerchantProfileForm({
                 <FieldError name="contactPhone" />
               </div>
             </div>
-          </>
-        )}
+          )}
 
-        {/* Grouped with the other two ways a customer gets in touch, and
-            named for what it's for. On its own above, labelled "Phone", it
-            sat directly under "Contact phone" — two phone fields in a row,
-            one private and one published, distinguished by a single word. */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="profile-phone" className="mb-1 block text-sm font-medium text-slate-700">
-              Booking phone number
-              <RequiredTag />
-            </label>
-            <input
-              id="profile-phone"
-              required
-              type="tel"
-              maxLength={300}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="The number customers should call to book"
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("phone")}`}
-            />
-            <FieldError name="phone" />
-          </div>
-          <div>
-            <label htmlFor="profile-bookingUrl" className="mb-1 block text-sm font-medium text-slate-700">
-              Booking link
-              <OptionalTag />
-            </label>
-            <input
-              id="profile-bookingUrl"
-              maxLength={300}
-              value={bookingUrl}
-              onChange={(e) => setBookingUrl(e.target.value)}
-              placeholder="Your booking/reservation page, if you have one"
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bookingUrl")}`}
-            />
-            <FieldError name="bookingUrl" />
-          </div>
-          <div>
-            <label htmlFor="profile-bookingEmail" className="mb-1 block text-sm font-medium text-slate-700">
-              Booking email
-              <OptionalTag />
-            </label>
-            <input
-              id="profile-bookingEmail"
-              type="email"
-              maxLength={300}
-              value={bookingEmail}
-              onChange={(e) => setBookingEmail(e.target.value)}
-              placeholder="bookings@yourbusiness.co.nz"
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bookingEmail")}`}
-            />
-            <FieldError name="bookingEmail" />
-          </div>
-        </div>
-
-        <AddressAutocompleteField
-          id="profile-address"
-          address={address}
-          onAddressChange={(value) => {
-            setAddress(value);
-            setLat(null);
-            setLon(null);
-          }}
-          onSelect={(s: AddressSuggestion) => {
-            setAddress(s.label || s.street);
-            if (s.postcode) setPostcode(s.postcode);
-            if (s.city) {
-              const match = CITIES.find((c) => c.toLowerCase() === s.city!.toLowerCase());
-              setCity(match ?? "Other");
-            }
-            setLat(s.lat ?? null);
-            setLon(s.lon ?? null);
-          }}
-          lat={lat}
-          lon={lon}
-          onPinMove={(newLat, newLng) => {
-            setLat(newLat);
-            setLon(newLng);
-          }}
-          helperText="Pick a suggestion to keep your map location accurate."
-          errorText={fieldErrors.address}
-        />
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="profile-city" className="mb-1 block text-sm font-medium text-slate-700">
-              City
-              <RequiredTag />
-            </label>
-            <select
-              id="profile-city"
-              required
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${errorBorderClass("city")}`}
-            >
-              <option value="" disabled>
-                Select a city
-              </option>
-              {CITIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-            <FieldError name="city" />
-          </div>
-          <div>
-            <label htmlFor="profile-postcode" className="mb-1 block text-sm font-medium text-slate-700">
-              Postcode
-              <OptionalTag />
-            </label>
-            <input
-              id="profile-postcode"
-              maxLength={20}
-              value={postcode}
-              onChange={(e) => setPostcode(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-            />
-          </div>
-        </div>
-
-        <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Socials</p>
+          {/* Grouped with the other two ways a customer gets in touch, and
+              named for what it's for. On its own above, labelled "Phone", it
+              sat directly under "Contact phone" — two phone fields in a row,
+              one private and one published, distinguished by a single word. */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="profile-facebookUrl" className="mb-1 block text-sm font-medium text-slate-700">
-                Facebook
-                <OptionalTag />
+              <label htmlFor="profile-phone" className="mb-1 block text-sm font-medium text-slate-700">
+                Booking phone number
+                <RequiredTag />
               </label>
               <input
-                id="profile-facebookUrl"
+                id="profile-phone"
+                required
+                type="tel"
                 maxLength={300}
-                value={facebookUrl}
-                onChange={(e) => setFacebookUrl(e.target.value)}
-                placeholder="https://facebook.com/yourbusiness"
-                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("facebookUrl")}`}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="The number customers should call to book"
+                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("phone")}`}
               />
-              <FieldError name="facebookUrl" />
+              <FieldError name="phone" />
             </div>
             <div>
-              <label htmlFor="profile-instagramUrl" className="mb-1 block text-sm font-medium text-slate-700">
-                Instagram
+              <label htmlFor="profile-bookingUrl" className="mb-1 block text-sm font-medium text-slate-700">
+                Booking link
                 <OptionalTag />
               </label>
               <input
-                id="profile-instagramUrl"
+                id="profile-bookingUrl"
                 maxLength={300}
-                value={instagramUrl}
-                onChange={(e) => setInstagramUrl(e.target.value)}
-                placeholder="https://instagram.com/yourbusiness"
-                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("instagramUrl")}`}
+                value={bookingUrl}
+                onChange={(e) => setBookingUrl(e.target.value)}
+                placeholder="Your booking/reservation page, if you have one"
+                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bookingUrl")}`}
               />
-              <FieldError name="instagramUrl" />
+              <FieldError name="bookingUrl" />
+            </div>
+            <div>
+              <label htmlFor="profile-bookingEmail" className="mb-1 block text-sm font-medium text-slate-700">
+                Booking email
+                <OptionalTag />
+              </label>
+              <input
+                id="profile-bookingEmail"
+                type="email"
+                maxLength={300}
+                value={bookingEmail}
+                onChange={(e) => setBookingEmail(e.target.value)}
+                placeholder="bookings@yourbusiness.co.nz"
+                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bookingEmail")}`}
+              />
+              <FieldError name="bookingEmail" />
             </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="profile-priceRange" className="mb-1 block text-sm font-medium text-slate-700">
-              Price range
-              <OptionalTag />
-            </label>
-            <select
-              id="profile-priceRange"
-              value={priceRange}
-              onChange={(e) => setPriceRange(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
-            >
-              <option value="">Not applicable</option>
-              <option value="$">$ — Budget-friendly</option>
-              <option value="$$">$$ — Moderate</option>
-              <option value="$$$">$$$ — Upmarket</option>
-              <option value="$$$$">$$$$ — Premium</option>
-            </select>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Socials</p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="profile-facebookUrl" className="mb-1 block text-sm font-medium text-slate-700">
+                  Facebook
+                  <OptionalTag />
+                </label>
+                <input
+                  id="profile-facebookUrl"
+                  maxLength={300}
+                  value={facebookUrl}
+                  onChange={(e) => setFacebookUrl(e.target.value)}
+                  placeholder="https://facebook.com/yourbusiness"
+                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("facebookUrl")}`}
+                />
+                <FieldError name="facebookUrl" />
+              </div>
+              <div>
+                <label htmlFor="profile-instagramUrl" className="mb-1 block text-sm font-medium text-slate-700">
+                  Instagram
+                  <OptionalTag />
+                </label>
+                <input
+                  id="profile-instagramUrl"
+                  maxLength={300}
+                  value={instagramUrl}
+                  onChange={(e) => setInstagramUrl(e.target.value)}
+                  placeholder="https://instagram.com/yourbusiness"
+                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("instagramUrl")}`}
+                />
+                <FieldError name="instagramUrl" />
+              </div>
+            </div>
           </div>
-          <div>
-            <label htmlFor="profile-amenities" className="mb-1 block text-sm font-medium text-slate-700">
-              Features &amp; amenities
-              <OptionalTag />
-            </label>
-            <input
-              id="profile-amenities"
-              maxLength={300}
-              value={amenities}
-              onChange={(e) => setAmenities(e.target.value)}
-              placeholder="e.g. Vegan options, Free parking"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-            />
-          </div>
-        </div>
+        </section>
 
-        <div>
+        <section className="space-y-4 border-t border-slate-100 pt-6">
+          <h2 className="text-base font-bold text-slate-900">Opening hours</h2>
           <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
-        </div>
+        </section>
 
-        {/* Saves on its own (its own save route, and a photo change sends
-            the listing back for review), which is why it keeps its own
-            confirm step rather than riding along with the main Save. */}
-        {onPhotosConfirm && (
-          <div className="border-t border-slate-100 pt-4">
-            <p className="mb-2 block text-sm font-medium text-slate-700">
-              Business photo
+        <section className="space-y-4 border-t border-slate-100 pt-6">
+          <h2 className="text-base font-bold text-slate-900">Description and photos</h2>
+
+          <div>
+            <label htmlFor="profile-bio" className="mb-1 block text-sm font-medium text-slate-700">
+              About your business
               <RequiredTag />
-            </p>
-            <PhotoGalleryField
-              photos={parseBusinessPhotos(merchant.photos)}
-              label={merchant.businessName}
-              warningText={
-                merchant.status === "Approved"
-                  ? "Changing your photos sends your listing back for review, so it comes off the site until we've had a look. Continue?"
-                  : "Save these photos?"
-              }
-              onConfirm={onPhotosConfirm}
+            </label>
+            <textarea
+              id="profile-bio"
+              required
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              minLength={MIN_BIO_LENGTH}
+              maxLength={MAX_BIO_LENGTH}
+              rows={3}
+              placeholder="A couple of sentences customers will see on your listing — what you do and what makes you worth choosing."
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bio")}`}
             />
-            {photosError && <p className="mt-2 text-sm text-red-600">{photosError}</p>}
+            <FieldError name="bio" />
+            <p className="mt-1 text-xs text-slate-400">
+              {bio.length < MIN_BIO_LENGTH
+                ? `At least ${MIN_BIO_LENGTH} characters (${MIN_BIO_LENGTH - bio.length} to go)`
+                : `${bio.length}/${MAX_BIO_LENGTH} characters`}
+            </p>
           </div>
-        )}
+
+          {/* Saves on its own (its own save route, and a photo change sends
+              the listing back for review), which is why it keeps its own
+              confirm step rather than riding along with the main Save. */}
+          {onPhotosConfirm && (
+            <div>
+              <p className="mb-2 block text-sm font-medium text-slate-700">
+                Business photo
+                <RequiredTag />
+              </p>
+              <PhotoGalleryField
+                photos={parseBusinessPhotos(merchant.photos)}
+                label={merchant.businessName}
+                warningText={
+                  merchant.status === "Approved"
+                    ? "Changing your photos sends your listing back for review, so it comes off the site until we've had a look. Continue?"
+                    : "Save these photos?"
+                }
+                onConfirm={onPhotosConfirm}
+              />
+              {photosError && <p className="mt-2 text-sm text-red-600">{photosError}</p>}
+            </div>
+          )}
+        </section>
 
         {createMode && (
           <div>

@@ -55,7 +55,7 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+        className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3 text-left"
       >
         <span className="font-medium text-slate-800">{deal.dealName || "Untitled deal"}</span>
         <span className="flex shrink-0 items-center gap-3">

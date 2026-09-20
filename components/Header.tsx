@@ -20,6 +20,11 @@ export default function Header() {
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
   const isRestaurantLanding = pathname === "/advertise/restaurants";
+  // The portal has its own dedicated top bar (components/portal/PortalShell.tsx)
+  // with its own account/sign-out access — the consumer search bar and city
+  // selector this header carries have nothing to do with a merchant managing
+  // their own business, and competed with the portal's own account controls.
+  const isPortal = pathname?.startsWith("/portal");
 
   // One size everywhere — this used to differ between the coming-soon
   // header and every other page's, which read as inconsistent branding
@@ -85,6 +90,8 @@ export default function Header() {
   // signup, and would compete with that page's own CTA. Sticky (unlike the
   // coming-soon header) so "List my restaurant" stays reachable on a page
   // long enough to need it.
+  if (isPortal) return null;
+
   if (isRestaurantLanding) {
     return (
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white">
