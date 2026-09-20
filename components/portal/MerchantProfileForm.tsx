@@ -256,7 +256,7 @@ export default function MerchantProfileForm({
             <dd className="font-medium text-slate-800">{merchant.bookingEmail || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-500">Social</dt>
+            <dt className="text-slate-500">Socials</dt>
             <dd className="font-medium text-slate-800">
               {[merchant.facebookUrl && "Facebook", merchant.instagramUrl && "Instagram"]
                 .filter(Boolean)
@@ -577,36 +577,39 @@ export default function MerchantProfileForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="profile-facebookUrl" className="mb-1 block text-sm font-medium text-slate-700">
-              Facebook
-              <OptionalTag />
-            </label>
-            <input
-              id="profile-facebookUrl"
-              maxLength={300}
-              value={facebookUrl}
-              onChange={(e) => setFacebookUrl(e.target.value)}
-              placeholder="https://facebook.com/yourbusiness"
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("facebookUrl")}`}
-            />
-            <FieldError name="facebookUrl" />
-          </div>
-          <div>
-            <label htmlFor="profile-instagramUrl" className="mb-1 block text-sm font-medium text-slate-700">
-              Instagram
-              <OptionalTag />
-            </label>
-            <input
-              id="profile-instagramUrl"
-              maxLength={300}
-              value={instagramUrl}
-              onChange={(e) => setInstagramUrl(e.target.value)}
-              placeholder="https://instagram.com/yourbusiness"
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("instagramUrl")}`}
-            />
-            <FieldError name="instagramUrl" />
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Socials</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="profile-facebookUrl" className="mb-1 block text-sm font-medium text-slate-700">
+                Facebook
+                <OptionalTag />
+              </label>
+              <input
+                id="profile-facebookUrl"
+                maxLength={300}
+                value={facebookUrl}
+                onChange={(e) => setFacebookUrl(e.target.value)}
+                placeholder="https://facebook.com/yourbusiness"
+                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("facebookUrl")}`}
+              />
+              <FieldError name="facebookUrl" />
+            </div>
+            <div>
+              <label htmlFor="profile-instagramUrl" className="mb-1 block text-sm font-medium text-slate-700">
+                Instagram
+                <OptionalTag />
+              </label>
+              <input
+                id="profile-instagramUrl"
+                maxLength={300}
+                value={instagramUrl}
+                onChange={(e) => setInstagramUrl(e.target.value)}
+                placeholder="https://instagram.com/yourbusiness"
+                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("instagramUrl")}`}
+              />
+              <FieldError name="instagramUrl" />
+            </div>
           </div>
         </div>
 
