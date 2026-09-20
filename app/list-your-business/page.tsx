@@ -520,7 +520,20 @@ export default async function MerchantsPage() {
                 ) : (
                   <h3 className={`${fredoka.className} mt-4 text-xl text-slate-900`}>{t.label}</h3>
                 )}
-                <p className="mt-2 text-base leading-[1.65] text-slate-600">{t.description}</p>
+                <p className="mt-2 text-base leading-[1.65] text-slate-600">
+                  {t.description}
+                  {t.label === "Food & Drink" && (
+                    <>
+                      {" "}
+                      <Link
+                        href="/advertise/restaurants"
+                        className="font-semibold text-brand-600 underline decoration-brand-300 underline-offset-2 hover:text-brand-700"
+                      >
+                        See how restaurants are using MegaDeal →
+                      </Link>
+                    </>
+                  )}
+                </p>
               </div>
             ))}
           </div>
