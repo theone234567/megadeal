@@ -56,6 +56,16 @@ function formatSavedAt(iso?: string): string {
 export default function PortalPage() {
   const { member, isLoggedIn, logout } = useWix();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
+  // Separate from `merchant` on purpose: `merchant === null` means "we
+  // asked Wix and confirmed there's no business on this account," which
+  // is what puts someone on the restart-signup screen. A failed request
+  // (a dropped connection, a transient 500, a brief hiccup right after
+  // the heavy writes a deal-create does) is not that, and was being
+  // silently folded into the same `null` — telling a merchant with a
+  // complete, paid-up business to redo their signup because one fetch
+  // hiccuped. This flag keeps that failure a retry, not a false "you
+  // have nothing on file".
+  const [merchantLoadError, setMerchantLoadError] = useState(false);
   const [deals, setDeals] = useState<DealRecord[]>([]);
   const [photosError, setPhotosError] = useState<string | null>(null);
   // Mirrors the same check /admin does in reverse — being signed into
@@ -99,35 +109,48 @@ export default function PortalPage() {
       .catch(() => setDeals([]));
   }, []);
 
-  useEffect(() => {
-    if (member === undefined) return; // still resolving auth state
-    if (!isLoggedIn) {
-      setMerchant(null);
-      return;
-    }
-
+  const loadMerchant = useCallback(() => {
     let cancelled = false;
     setMerchant(undefined);
+    setMerchantLoadError(false);
 
     // Goes through a server route rather than querying the Merchants
     // collection directly: a business can apply before ever signing in
     // (see /list-your-business), so their record may have no owner yet — this route
     // claims it for the signed-in member on first access by matching email.
+    //
+    // A non-2xx here (or the fetch itself throwing) is a failed request,
+    // not evidence the merchant has no record — thrown explicitly so the
+    // catch below can tell the two apart instead of both landing on
+    // `{ item: null }`.
     fetch("/api/merchants/me")
-      .then((res) => (res.ok ? res.json() : { item: null }))
+      .then((res) => {
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        return res.json();
+      })
       .then(({ item: record }) => {
         if (cancelled) return;
         setMerchant(record ?? null);
         loadDeals();
       })
       .catch(() => {
-        if (!cancelled) setMerchant(null);
+        if (!cancelled) setMerchantLoadError(true);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [member, isLoggedIn, loadDeals]);
+  }, [loadDeals]);
+
+  useEffect(() => {
+    if (member === undefined) return; // still resolving auth state
+    if (!isLoggedIn) {
+      setMerchant(null);
+      setMerchantLoadError(false);
+      return;
+    }
+    return loadMerchant();
+  }, [member, isLoggedIn, loadMerchant]);
 
   async function handleChangeDealStatus(deal: DealRecord, target: DealStatus) {
     // Goes through a server route rather than a direct client write: the
@@ -196,10 +219,28 @@ export default function PortalPage() {
     }
   }
 
-  if (member === undefined || merchant === undefined) {
+  if (member === undefined || (merchant === undefined && !merchantLoadError)) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-16 text-center">
         <p className="text-slate-400">Loading…</p>
+      </main>
+    );
+  }
+
+  if (merchantLoadError) {
+    return (
+      <main className="mx-auto max-w-2xl px-4 py-16 text-center">
+        <p className="text-lg font-bold text-slate-900">Couldn&apos;t load your account</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
+          Your business and deals are fine — this page just couldn&apos;t reach them. Please try
+          again.
+        </p>
+        <button
+          onClick={loadMerchant}
+          className="mt-5 rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-700"
+        >
+          Try again
+        </button>
       </main>
     );
   }
@@ -411,8 +452,6 @@ export default function PortalPage() {
             )}
           </div>
 
-          <ReferralCard referralCode={merchant.referralCode} />
-
           {/* Only once, and only here when it isn't already leading the
               page above — two live copies of the same form would fight
               over the same record, and whichever was saved last would
@@ -527,6 +566,8 @@ export default function PortalPage() {
               </ul>
             )}
           </div>
+
+          <ReferralCard referralCode={merchant.referralCode} />
         </>
       )}
     </main>
