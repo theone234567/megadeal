@@ -86,8 +86,15 @@ export async function POST(req: NextRequest) {
   const priceRange = cleanText(body.priceRange, 4);
   if (!ALLOWED_PRICE_RANGES.includes(priceRange)) fieldErrors.priceRange = "Invalid price range.";
 
+  // No longer collected by the profile form — a business chooses category
+  // per deal instead (app/portal/new-deal/NewDealForm.tsx), not once for
+  // the whole listing. Kept optional-but-validated, same as the apply
+  // route, so older records that still carry one aren't rejected or
+  // silently cleared by a save that doesn't mention it.
   const category = cleanText(body.category, MAX_TEXT_LENGTH);
-  if (!isBusinessCategory(category)) fieldErrors.category = "Please select a business category.";
+  if (category && !isBusinessCategory(category)) {
+    fieldErrors.category = "Please select a business category.";
+  }
 
   const bookingEmail = cleanText(body.bookingEmail, MAX_TEXT_LENGTH);
   if (bookingEmail && !EMAIL_RE.test(bookingEmail)) fieldErrors.bookingEmail = "Enter a valid booking email.";
@@ -148,7 +155,9 @@ export async function POST(req: NextRequest) {
     phone,
     address,
     city,
-    category,
+    // The form no longer sends this, so an empty client value must not
+    // clobber whatever a merchant had from before it was removed.
+    category: category || merchant.category || "",
     postcode: cleanText(body.postcode, 20),
     bio,
     businessHours: cleanText(body.businessHours, MAX_BUSINESS_HOURS_LENGTH),

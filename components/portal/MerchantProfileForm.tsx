@@ -7,7 +7,6 @@ import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
-import { BUSINESS_CATEGORIES } from "@/lib/categories";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 const MIN_BIO_LENGTH = 50;
@@ -33,7 +32,6 @@ interface MerchantRecord {
   website?: string;
   address?: string;
   city?: string;
-  category?: string;
   postcode?: string;
   lat?: number | null;
   lng?: number | null;
@@ -106,7 +104,6 @@ export default function MerchantProfileForm({
   const [phone, setPhone] = useState(merchant.phone || "");
   const [address, setAddress] = useState(merchant.address || "");
   const [city, setCity] = useState(merchant.city || "");
-  const [category, setCategory] = useState(merchant.category || "");
   const [postcode, setPostcode] = useState(merchant.postcode || "");
   const [lat, setLat] = useState<number | null>(merchant.lat ?? null);
   const [lon, setLon] = useState<number | null>(merchant.lng ?? null);
@@ -144,7 +141,6 @@ export default function MerchantProfileForm({
           phone,
           address,
           city,
-          category,
           postcode,
           lat,
           lng: lon,
@@ -238,10 +234,6 @@ export default function MerchantProfileForm({
             <dd className="font-medium text-slate-800">
               {[merchant.address, merchant.city, merchant.postcode].filter(Boolean).join(", ") || "—"}
             </dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Category</dt>
-            <dd className="font-medium text-slate-800">{merchant.category || "—"}</dd>
           </div>
           <div>
             <dt className="text-slate-500">Opening hours</dt>
@@ -582,32 +574,6 @@ export default function MerchantProfileForm({
               onChange={(e) => setPostcode(e.target.value)}
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="profile-category" className="mb-1 block text-sm font-medium text-slate-700">
-              Business category
-              <RequiredTag />
-            </label>
-            <select
-              id="profile-category"
-              required
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${errorBorderClass("category")}`}
-            >
-              <option value="" disabled>
-                Select a category
-              </option>
-              {BUSINESS_CATEGORIES.map((c) => (
-                <option key={c.name} value={c.name}>
-                  {c.emoji} {c.name}
-                </option>
-              ))}
-            </select>
-            <FieldError name="category" />
           </div>
         </div>
 

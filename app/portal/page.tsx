@@ -254,17 +254,19 @@ export default function PortalPage() {
     );
   }
 
-  // Address and category are what make a listing findable — a deal with
-  // neither can't be shown on a map or in a category page, so they are the
-  // bar for "set up" rather than a nice-to-have. Same test the header
-  // badge uses. It also decides whether the listing form is still on
-  // screen: once these are saved the application is in, and the form is
-  // replaced by its status rather than left sitting there inviting a
-  // resubmit. At least one photo is required for the same reason a listing
-  // with no address can't be found — a listing with no photo isn't one a
-  // customer would trust enough to click.
+  // Address is what makes a listing findable — a deal with none can't be
+  // shown on a map, so it's the bar for "set up" rather than a
+  // nice-to-have. Same test the header badge uses. It also decides
+  // whether the listing form is still on screen: once it's saved the
+  // application is in, and the form is replaced by its status rather than
+  // left sitting there inviting a resubmit. At least one photo is
+  // required for the same reason — a listing with no photo isn't one a
+  // customer would trust enough to click. Category isn't part of this:
+  // it's chosen per deal (see app/portal/new-deal/NewDealForm.tsx), not
+  // once for the whole business, so the profile form no longer collects
+  // it at all.
   const profileComplete = Boolean(
-    merchant?.address && merchant?.category && parseBusinessPhotos(merchant?.photos).length > 0
+    merchant?.address && parseBusinessPhotos(merchant?.photos).length > 0
   );
 
   // A draft has never been reviewed, never been public and never cost a

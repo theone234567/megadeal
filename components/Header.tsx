@@ -62,7 +62,7 @@ export default function Header() {
     fetch("/api/merchants/me")
       .then((res) => (res.ok ? res.json() : { item: null }))
       .then(({ item }) => {
-        if (!cancelled) setProfileComplete(Boolean(!item || (item.address && item.category)));
+        if (!cancelled) setProfileComplete(Boolean(!item || item.address));
       })
       .catch(() => {});
     return () => {
