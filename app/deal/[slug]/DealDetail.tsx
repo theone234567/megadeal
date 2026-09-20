@@ -16,6 +16,7 @@ import { parseBusinessHours, formatBusinessHoursLines, isOpenNow } from "@/lib/b
 import StarRating from "@/components/StarRating";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { wixImageUrl } from "@/lib/wixImageUrl";
+import { splitTermsForDisplay } from "@/lib/dealTerms";
 
 // The deal (and its related deals) are fetched server-side (see page.tsx)
 // so the description, price, and business info are present in the raw
@@ -401,7 +402,20 @@ export default function DealDetail({
                 <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   Good to know
                 </p>
-                <p className="mt-1 text-sm text-slate-600">{deal.terms}</p>
+                {/* Was one dense paragraph — deal.terms is usually several
+                    distinct conditions run together ("Bookings essential.
+                    Valid Monday to Thursday only. Ask for the MegaDeal
+                    rate."), which reads as a wall of text when a customer
+                    is scanning for the one line that actually affects
+                    them. Each condition already has its own sentence
+                    boundary (see lib/dealTerms.ts), so splitting on that
+                    to give each one its own bullet costs nothing and
+                    scans in a fraction of the time. */}
+                <ul className="mt-1.5 list-disc space-y-1 pl-4 text-sm text-slate-600">
+                  {splitTermsForDisplay(deal.terms).map((line, i) => (
+                    <li key={i}>{line}</li>
+                  ))}
+                </ul>
               </div>
             )}
 

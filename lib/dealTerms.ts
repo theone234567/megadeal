@@ -84,6 +84,22 @@ export function parseTerms(rendered: string): { selectedIds: string[]; custom: s
   return { selectedIds: [], custom: rendered.trim() };
 }
 
+/**
+ * Splits a rendered terms string back into its individual conditions, in
+ * their original order — for showing each one as its own bullet on the
+ * public deal page instead of one dense paragraph a customer has to
+ * parse themselves. Unlike parseTerms, this never needs to work out which
+ * pieces were the standard checkboxes: it's redisplaying text, not
+ * recovering form state to edit, so there's no reordering risk to guard
+ * against — every piece stays exactly where it was written.
+ */
+export function splitTermsForDisplay(rendered: string): string[] {
+  return rendered
+    .split(". ")
+    .map((piece) => piece.replace(/\.$/, "").trim())
+    .filter(Boolean);
+}
+
 function splitTerms(rendered: string): { selectedIds: string[]; custom: string } {
   const idByLabel = new Map(STANDARD_TERMS.map((t) => [t.label.toLowerCase(), t.id]));
   const selectedIds: string[] = [];

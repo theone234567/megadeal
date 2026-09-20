@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { STANDARD_TERMS, renderTerms, parseTerms } from "./dealTerms";
+import { STANDARD_TERMS, renderTerms, parseTerms, splitTermsForDisplay } from "./dealTerms";
 
 describe("renderTerms", () => {
   it("joins the ticked conditions into one sentence", () => {
@@ -77,5 +77,32 @@ describe("parseTerms", () => {
 
   it("treats an empty string as nothing rather than a condition", () => {
     expect(parseTerms("")).toEqual({ selectedIds: [], custom: "" });
+  });
+});
+
+describe("splitTermsForDisplay", () => {
+  it("splits standard and custom conditions into separate bullets", () => {
+    const rendered = renderTerms(["bookings", "mon-thu"], "Maximum 6 people per booking.");
+    expect(splitTermsForDisplay(rendered)).toEqual([
+      "Bookings essential",
+      "Valid Monday to Thursday only",
+      "Maximum 6 people per booking",
+    ]);
+  });
+
+  it("keeps a merchant's own wording in its original position, not reordered", () => {
+    const written = "Ask at reception for the MegaDeal rate. Bookings essential.";
+    expect(splitTermsForDisplay(written)).toEqual([
+      "Ask at reception for the MegaDeal rate",
+      "Bookings essential",
+    ]);
+  });
+
+  it("returns a single bullet for a plain one-sentence legacy value", () => {
+    expect(splitTermsForDisplay("Valid weekdays only")).toEqual(["Valid weekdays only"]);
+  });
+
+  it("is empty for an empty string", () => {
+    expect(splitTermsForDisplay("")).toEqual([]);
   });
 });
