@@ -104,8 +104,8 @@ export default function RootLayout({
               logo: {
                 "@type": "ImageObject",
                 url: `${SITE_URL}/megadeal/megadeal-logo.webp`,
-                width: 2172,
-                height: 724,
+                width: 2000,
+                height: 667,
               },
               // Ties the brand's social profiles to this entity for Google —
               // one of the standard signals behind a Knowledge Panel.

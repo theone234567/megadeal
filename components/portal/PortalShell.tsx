@@ -40,7 +40,7 @@ export default function PortalShell({ children }: { children: React.ReactNode })
         <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href="/portal" aria-label="MegaDeal business portal" className="flex shrink-0 items-center gap-2">
             {art.logo ? (
-              <Image src={art.logo} alt="MegaDeal" width={2172} height={724} priority className="h-8 w-auto object-contain" />
+              <Image src={art.logo} alt="MegaDeal" width={2000} height={667} priority className="h-8 w-auto object-contain" />
             ) : (
               <span className="text-lg font-extrabold text-brand-700">MegaDeal</span>
             )}
