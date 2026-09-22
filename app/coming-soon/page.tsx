@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
@@ -296,26 +297,32 @@ export default async function ComingSoonPage() {
           <div className="relative order-3 -mx-5 pb-0 sm:mx-auto sm:w-full sm:max-w-[720px] sm:pb-8 sm:pr-7 lg:order-2 lg:pt-2">
             {hasComposedCard ? (
               /* The card as delivered: a plain box at the artwork's own
-                 native ratio (4/3, exactly — it fills that canvas corner to
-                 corner with no transparent margin to speak of), no rotate,
-                 no added border, no clip-path. The tilt, border and shadow
-                 a viewer sees are the image's own pixels, not CSS built
+                 native ratio (1800/619, a wide banner composition — the
+                 elephant sits near the left edge and the skyline/Sky Tower
+                 near the right, so a taller box would cover cropping one or
+                 the other; matching the native ratio exactly means
+                 object-cover never actually crops anything), no rotate, no
+                 added border, no clip-path. The tilt, border and shadow a
+                 viewer sees are the image's own pixels, not CSS built
                  around them, so there is nothing left to double up.
-                 The mascot is composited into this photo itself (standing
-                 on the beach, Rangitoto in the background), so there is no
-                 separate MascotFigure overlay here any more — the earlier
-                 versions (a plain skyline photo, or the vector fallback)
-                 needed the elephant added in CSS on top; this one doesn't.
-                 aspect-[16/10] on mobile only, back to the photo's own
-                 native aspect-[4/3] from sm: up — a shorter crop asked
-                 for specifically on mobile, where it was costing more
-                 scroll than its own visual payoff justified; the desktop
-                 presentation was already working and stays as is. */
-              <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl sm:aspect-[4/3]">
-                <img
+                 The mascot is composited into this photo itself (waving,
+                 Auckland skyline behind), so there is no separate
+                 MascotFigure overlay here any more — the earlier versions
+                 (a plain skyline photo, or the vector fallback) needed the
+                 elephant added in CSS on top; this one doesn't. Same ratio
+                 at every breakpoint on purpose: unlike the previous photo,
+                 this artwork has almost no blank margin to give up, so
+                 there's no room for a shorter mobile-specific crop without
+                 cutting into the elephant or the skyline. */
+              <div className="relative aspect-[1800/619] w-full overflow-hidden rounded-2xl">
+                <Image
                   src={art.aucklandCard as string}
-                  alt="The MegaDeal elephant mascot with a magnifying glass, standing on an Auckland beach with Rangitoto Island in the background"
-                  className="h-full w-full object-cover"
+                  alt="MegaDeal elephant with the Auckland skyline"
+                  fill
+                  sizes="(min-width: 1024px) 55vw, 100vw"
+                  className="object-cover"
+                  style={{ objectPosition: "center center" }}
+                  loading="eager"
                   fetchPriority="high"
                 />
               </div>
