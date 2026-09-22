@@ -499,7 +499,7 @@ export default function BeautySpaAdvertisingPage() {
                   </p>
                   {s.offerIdeas && (
                     <div className="mt-4 rounded-xl border border-dashed p-3.5" style={{ borderColor: "#E8E1EF" }}>
-                      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                      <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#706178" }}>
                         Example offer ideas
                       </p>
                       <ul className="mt-1.5 space-y-1 text-sm" style={{ color: "#241138" }}>
@@ -575,7 +575,7 @@ export default function BeautySpaAdvertisingPage() {
                     {d.title}
                   </p>
                   <div className="mt-4 rounded-xl border border-dashed px-3 py-2.5" style={{ borderColor: "#E8E1EF" }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Example offer</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#706178" }}>Example offer</p>
                     <p className="mt-0.5 text-sm font-bold" style={{ color: "#241138" }}>
                       {d.offer}
                     </p>

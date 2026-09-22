@@ -355,7 +355,7 @@ export default function RestaurantAdvertisingPage() {
               </h3>
 
               <div className="mt-6 rounded-2xl bg-white p-6 shadow-card">
-                <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-400">
+                <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide" style={{ color: "#706178" }}>
                   <ReceiptIcon className="h-4 w-4" /> The MegaDeal way
                 </p>
                 <dl className="mt-4 space-y-3 text-sm">
@@ -418,7 +418,7 @@ export default function RestaurantAdvertisingPage() {
                     {o.body}
                   </p>
                   <div className="mt-4 rounded-xl border border-dashed px-3 py-2.5" style={{ borderColor: "#E8E1EF" }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Example idea</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#706178" }}>Example idea</p>
                     <p className="mt-0.5 text-sm font-bold" style={{ color: "#241138" }}>{o.idea}</p>
                     <p className="text-xs" style={{ color: "#706178" }}>{o.note}</p>
                   </div>
