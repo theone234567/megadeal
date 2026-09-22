@@ -61,7 +61,15 @@ export function middleware(request: NextRequest) {
   }
 
   if (!SITE_LAUNCHED && request.nextUrl.pathname === "/") {
-    return NextResponse.redirect(new URL("/coming-soon", request.url));
+    // 308, not the 307 default: a temporary redirect tells search engines
+    // "don't replace the indexed page, the real content is still here" —
+    // but "/" itself has no content at all (middleware answers before any
+    // HTML renders), so a temporary redirect leaves Google with nothing to
+    // build a title/description from and it falls back to showing just the
+    // bare site name in search results. 308 tells it to index /coming-soon
+    // (which has the real title, description and content) in place of "/"
+    // instead. Matches the canonical-host redirect immediately above.
+    return NextResponse.redirect(new URL("/coming-soon", request.url), 308);
   }
 }
 
