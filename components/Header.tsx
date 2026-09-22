@@ -5,11 +5,17 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
-import { useMegadealArt } from "@/context/MegadealArtProvider";
-import Logo from "@/components/Logo";
 import { SearchIcon, UserIcon } from "@/components/icons";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
+
+// Real intrinsic size of public/branding/megadeal-logo.webp — a separate
+// file from the megadeal-logo.webp the asset-manifest system's art.logo
+// resolves to (used by PortalShell, emails, and the OG-image generators),
+// so swapping the header's logo here can't silently change any of those.
+const HEADER_LOGO_SRC = "/branding/megadeal-logo.webp";
+const HEADER_LOGO_WIDTH = 600;
+const HEADER_LOGO_HEIGHT = 200;
 
 // Business-recruitment landing pages each get the compact header below
 // instead of the consumer search/city header — see the isRestaurantLanding
@@ -23,7 +29,6 @@ const BUSINESS_LANDING_PAGES: Record<string, { ctaLabel: string }> = {
 
 export default function Header() {
   const { member, isLoggedIn } = useWix();
-  const art = useMegadealArt();
   const [city, setCity] = useState("");
   const [query, setQuery] = useState("");
   const router = useRouter();
@@ -46,29 +51,23 @@ export default function Header() {
   // legible, but blown up that far a character-based logo reads as a
   // kids'-app icon rather than a business wordmark, no matter how the
   // character itself is drawn.
-  const LOGO_SIZE = {
-    imageHeight: "h-9 sm:h-11 lg:h-12",
-    svgTextSize: "text-[19px] sm:text-[23px] lg:text-[25px]",
-  };
+  const LOGO_HEIGHT = "h-9 sm:h-11 lg:h-12";
 
-  // The supplied lockup (elephant peeking over the "MegaDeal" wordmark,
-  // "Deal" styled as a price tag) is the real logo. Falls back to the
-  // plain SVG mark only if the file hasn't been supplied yet — which
-  // needs its own font-size-based sizing (it scales itself in em units)
-  // rather than the image's height classes, hence LOGO_SIZE carries both.
-  const brand = () =>
-    art.logo ? (
-      <Image
-        src={art.logo}
-        alt="MegaDeal"
-        width={2172}
-        height={724}
-        priority
-        className={`w-auto select-none object-contain ${LOGO_SIZE.imageHeight}`}
-      />
-    ) : (
-      <Logo className={LOGO_SIZE.svgTextSize} />
-    );
+  // The supplied lockup (elephant + the "MegaDeal" wordmark) is the header's
+  // logo. width/height are the file's real intrinsic size — needed for
+  // Next/Image's aspect-ratio math — but LOGO_HEIGHT is what actually
+  // controls the rendered box; w-auto lets width follow from that so the
+  // mark can't stretch.
+  const brand = () => (
+    <Image
+      src={HEADER_LOGO_SRC}
+      alt="MegaDeal"
+      width={HEADER_LOGO_WIDTH}
+      height={HEADER_LOGO_HEIGHT}
+      priority
+      className={`w-auto select-none object-contain ${LOGO_HEIGHT}`}
+    />
+  );
 
   const [profileComplete, setProfileComplete] = useState(true);
   useEffect(() => {
