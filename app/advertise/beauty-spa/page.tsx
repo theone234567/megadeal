@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
@@ -94,8 +95,9 @@ const INTRO_CARDS = [
 const SUBCATEGORIES = [
   {
     id: "nail-salons",
-    icon: HeartIcon,
     heading: "Nail Salons",
+    image: "/images/beauty-spa/beauty-nails.webp",
+    imageAlt: "Pink manicure at a beauty salon",
     copy: "Promote manicures, pedicures, gel nails, acrylics, nail art and other treatments to people looking for their next nail appointment. A MegaDeal offer could be particularly useful for attracting first-time customers or adding bookings during quieter weekday periods.",
     offerIdeas: [
       "Gel manicure introductory offer",
@@ -106,8 +108,9 @@ const SUBCATEGORIES = [
   },
   {
     id: "day-spas",
-    icon: FlowerIcon,
     heading: "Day Spas",
+    image: "/images/beauty-spa/beauty-spa.webp",
+    imageAlt: "Spa towels, candles and flowers in a relaxing treatment room",
     copy: "A beautiful treatment room sitting empty doesn't generate revenue. Use selected spa experiences to introduce more local customers to your business without needing to discount every treatment you offer. Potential promotions could include massages, facials, spa packages or selected weekday experiences.",
     offerIdeas: [
       "Weekday spa package",
@@ -118,8 +121,9 @@ const SUBCATEGORIES = [
   },
   {
     id: "hair-salons",
-    icon: ZapIcon,
     heading: "Hair Salons & Barbers",
+    image: "/images/beauty-spa/beauty-hair.webp",
+    imageAlt: "Styled hair in a modern beauty salon",
     copy: "Turn quieter appointment periods into an opportunity to bring someone new through the door. Promote selected cuts, styling, blow waves, treatments or selected colour services while protecting the times and services that are already busy.",
     offerIdeas: [
       "Midweek cut and style",
@@ -130,8 +134,9 @@ const SUBCATEGORIES = [
   },
   {
     id: "facials-beauty",
-    icon: LeafIcon,
     heading: "Facials, Skin & Beauty Therapy",
+    image: "/images/beauty-spa/beauty-facial.webp",
+    imageAlt: "Facial beauty treatment in a spa",
     copy: "Give new clients a reason to discover your treatment menu. Beauty therapists and non-medical skin businesses can promote selected facials, beauty treatments and introductory packages while keeping control over the offer.",
     offerIdeas: [
       "New-client facial",
@@ -142,8 +147,9 @@ const SUBCATEGORIES = [
   },
   {
     id: "lashes-brows",
-    icon: EyeIcon,
     heading: "Lashes & Brows",
+    image: "/images/beauty-spa/beauty-lashes.webp",
+    imageAlt: "Professional lash and brow beauty treatment",
     copy: "Lashes and brows are highly visual services, and a strong introductory offer can give someone a reason to try a new local business. Use MegaDeal to promote selected treatments when you have capacity.",
     offerIdeas: [
       "Lash lift introductory offer",
@@ -154,15 +160,17 @@ const SUBCATEGORIES = [
   },
   {
     id: "massage",
-    icon: ClockIcon,
     heading: "Massage",
+    image: "/images/beauty-spa/beauty-massage.webp",
+    imageAlt: "Relaxing massage treatment in a spa",
     copy: "Massage businesses can use quieter appointment periods to introduce their treatments to more local customers. Create an offer around a selected massage, duration, day or package rather than discounting your entire service menu.",
     offerIdeas: ["Weekday massage", "First-visit massage offer", "60-minute treatment special", "Massage package"],
   },
   {
     id: "waxing-tanning",
-    icon: FlameIcon,
     heading: "Waxing, Tanning & Other Beauty Services",
+    image: "/images/beauty-spa/beauty-waxing.webp",
+    imageAlt: "Professional beauty waxing treatment",
     copy: "MegaDeal isn't limited to large salons. If you provide a professional local beauty service, there may be an opportunity to showcase it to more Auckland customers. Your promotion can focus on the service you most want people to discover.",
     offerIdeas: null,
   },
@@ -192,12 +200,12 @@ const SMARTER_CARDS = [
 ] as const;
 
 const EXAMPLE_DEALS = [
-  { eyebrow: "NEW CLIENT", title: "First beauty treatment", offer: "20% off for new customers" },
-  { eyebrow: "MIDWEEK", title: "Tuesday–Thursday", offer: "Selected facial special" },
-  { eyebrow: "NAILS", title: "Gel manicure", offer: "Introductory new-client offer" },
-  { eyebrow: "SPA", title: "Massage + facial", offer: "Weekday package" },
-  { eyebrow: "LASHES & BROWS", title: "Lash lift or brow treatment", offer: "First-visit offer" },
-  { eyebrow: "HAIR", title: "Cut, treatment or blow wave", offer: "Selected weekday promotion" },
+  { eyebrow: "NEW CLIENT", title: "First beauty treatment", offer: "20% off for new customers", image: "/images/beauty-spa/beauty-facial.webp" },
+  { eyebrow: "MIDWEEK", title: "Tuesday–Thursday", offer: "Selected facial special", image: "/images/beauty-spa/beauty-spa.webp" },
+  { eyebrow: "NAILS", title: "Gel manicure", offer: "Introductory new-client offer", image: "/images/beauty-spa/beauty-nails.webp" },
+  { eyebrow: "SPA", title: "Massage + facial", offer: "Weekday package", image: "/images/beauty-spa/beauty-massage.webp" },
+  { eyebrow: "LASHES & BROWS", title: "Lash lift or brow treatment", offer: "First-visit offer", image: "/images/beauty-spa/beauty-lashes.webp" },
+  { eyebrow: "HAIR", title: "Cut, treatment or blow wave", offer: "Selected weekday promotion", image: "/images/beauty-spa/beauty-hair.webp" },
 ] as const;
 
 const WHY_MEGADEAL = [
@@ -365,20 +373,17 @@ export default function BeautySpaAdvertisingPage() {
 
             <div className="relative mx-auto w-full max-w-[420px] lg:mx-0">
               <div
-                className="relative flex h-[280px] items-center justify-center overflow-hidden rounded-[28px] shadow-[0_24px_48px_rgba(20,3,50,.4)] sm:h-[340px] lg:h-[427px]"
-                style={{
-                  transform: "rotate(2deg)",
-                  background: "linear-gradient(160deg, #F5EFFC 0%, #ffffff 60%, #FCE9F4 100%)",
-                }}
+                className="relative h-[280px] overflow-hidden rounded-[28px] shadow-[0_24px_48px_rgba(20,3,50,.4)] sm:h-[340px] lg:h-[427px]"
+                style={{ transform: "rotate(2deg)" }}
               >
-                <MascotFigure
-                  src={art.mascotBigDeals}
-                  fallbackSrc="/brand/deal-hunter-elephant.svg"
-                  alt="The MegaDeal mascot elephant, ready to help promote local beauty and spa offers"
-                  width={360}
-                  height={280}
+                <Image
+                  src="/images/beauty-spa/beauty-hero.webp"
+                  alt="The MegaDeal mascot elephant beside a phone showing beauty and spa photos, in a candlelit spa setting"
+                  fill
+                  sizes="(min-width: 1024px) 420px, 90vw"
+                  className="object-cover"
+                  style={{ objectPosition: "78% center" }}
                   priority
-                  className="h-auto w-[65%] max-w-[260px] object-contain"
                 />
               </div>
 
@@ -482,36 +487,41 @@ export default function BeautySpaAdvertisingPage() {
                 <div
                   key={s.id}
                   id={s.id}
-                  className="scroll-mt-[100px] rounded-[24px] border bg-white p-7 shadow-card"
+                  className="scroll-mt-[100px] overflow-hidden rounded-[24px] border bg-white shadow-card"
                   style={{ borderColor: "#E8E1EF" }}
                 >
-                  <span
-                    className="flex h-11 w-11 items-center justify-center rounded-full"
-                    style={{ backgroundColor: "#F5EFFC", color: "#6519C7" }}
-                  >
-                    <s.icon className="h-5 w-5" />
-                  </span>
-                  <h3 className={`${fredoka.className} mt-4 text-xl font-semibold`} style={{ color: "#241138" }}>
-                    {s.heading}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "#706178" }}>
-                    {s.copy}
-                  </p>
-                  {s.offerIdeas && (
-                    <div className="mt-4 rounded-xl border border-dashed p-3.5" style={{ borderColor: "#E8E1EF" }}>
-                      <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#706178" }}>
-                        Example offer ideas
-                      </p>
-                      <ul className="mt-1.5 space-y-1 text-sm" style={{ color: "#241138" }}>
-                        {s.offerIdeas.map((idea) => (
-                          <li key={idea} className="flex items-start gap-1.5">
-                            <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full" style={{ backgroundColor: "#6519C7" }} />
-                            {idea}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  <div className="relative aspect-[4/3] w-full">
+                    <Image
+                      src={s.image}
+                      alt={s.imageAlt}
+                      fill
+                      sizes="(min-width: 1024px) 50vw, 100vw"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-7">
+                    <h3 className={`${fredoka.className} text-xl font-semibold`} style={{ color: "#241138" }}>
+                      {s.heading}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed" style={{ color: "#706178" }}>
+                      {s.copy}
+                    </p>
+                    {s.offerIdeas && (
+                      <div className="mt-4 rounded-xl border border-dashed p-3.5" style={{ borderColor: "#E8E1EF" }}>
+                        <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#706178" }}>
+                          Example offer ideas
+                        </p>
+                        <ul className="mt-1.5 space-y-1 text-sm" style={{ color: "#241138" }}>
+                          {s.offerIdeas.map((idea) => (
+                            <li key={idea} className="flex items-start gap-1.5">
+                              <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full" style={{ backgroundColor: "#6519C7" }} />
+                              {idea}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -567,18 +577,29 @@ export default function BeautySpaAdvertisingPage() {
 
             <div className="mt-10 grid grid-cols-1 gap-6 text-left sm:grid-cols-2 lg:grid-cols-3">
               {EXAMPLE_DEALS.map((d) => (
-                <div key={d.eyebrow + d.title} className="rounded-[24px] border bg-white p-6 shadow-card" style={{ borderColor: "#E8E1EF" }}>
-                  <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#6519C7" }}>
-                    {d.eyebrow}
-                  </p>
-                  <p className={`${fredoka.className} mt-1 text-lg font-semibold`} style={{ color: "#241138" }}>
-                    {d.title}
-                  </p>
-                  <div className="mt-4 rounded-xl border border-dashed px-3 py-2.5" style={{ borderColor: "#E8E1EF" }}>
-                    <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#706178" }}>Example offer</p>
-                    <p className="mt-0.5 text-sm font-bold" style={{ color: "#241138" }}>
-                      {d.offer}
+                <div key={d.eyebrow + d.title} className="overflow-hidden rounded-[24px] border bg-white shadow-card" style={{ borderColor: "#E8E1EF" }}>
+                  <div className="relative aspect-[16/10] w-full">
+                    <Image
+                      src={d.image}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#6519C7" }}>
+                      {d.eyebrow}
                     </p>
+                    <p className={`${fredoka.className} mt-1 text-lg font-semibold`} style={{ color: "#241138" }}>
+                      {d.title}
+                    </p>
+                    <div className="mt-4 rounded-xl border border-dashed px-3 py-2.5" style={{ borderColor: "#E8E1EF" }}>
+                      <p className="text-[10px] font-bold uppercase tracking-wide" style={{ color: "#706178" }}>Example offer</p>
+                      <p className="mt-0.5 text-sm font-bold" style={{ color: "#241138" }}>
+                        {d.offer}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}
