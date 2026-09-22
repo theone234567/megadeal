@@ -34,7 +34,7 @@ const PAGE_LIVE_FOR_SEARCH = true;
 
 const TITLE = "Beauty & Spa Advertising Auckland | 6 Months Free";
 const DESCRIPTION =
-  "Grow your Auckland beauty business with MegaDeal. Reach local customers with offers for nails, hair, spa, massage, facials, lashes and more. Join free for 6 months.";
+  "Grow your Auckland beauty business with MegaDeal. Reach local customers with offers for nails, hair, spa, massage and more. Join free for 6 months.";
 
 export const metadata: Metadata = {
   title: TITLE,
