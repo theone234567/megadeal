@@ -141,6 +141,8 @@ const BUSINESS_TYPES = [
   {
     icon: UtensilsIcon,
     label: "Food & Drink",
+    href: "/advertise/restaurants",
+    ctaLabel: "See how restaurants are using MegaDeal →",
     color: { bg: "bg-orange-100", icon: "text-orange-600" },
     description:
       "Give diners a reason to visit during your quieter services. From midweek set menus to lunch specials and café combos, create an offer that works for your kitchen and your customers.",
@@ -148,6 +150,8 @@ const BUSINESS_TYPES = [
   {
     icon: FlowerIcon,
     label: "Beauty & Spa",
+    href: "/advertise/beauty-spa",
+    ctaLabel: "See how beauty & spa businesses are using MegaDeal →",
     color: { bg: "bg-teal-100", icon: "text-teal-600" },
     description:
       "Make more of the gaps in your appointment book. Introduce new clients to your salon or spa with selected treatments, packages or a little extra with their booking.",
@@ -509,9 +513,9 @@ export default async function MerchantsPage() {
                 >
                   <t.icon className={`h-6 w-6 ${t.color.icon}`} />
                 </span>
-                {t.label === "Food & Drink" ? (
+                {t.href ? (
                   <Link
-                    href="/advertise/restaurants"
+                    href={t.href}
                     className={`${fredoka.className} mt-4 inline-flex w-fit items-center gap-1 rounded-sm text-xl text-slate-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2`}
                   >
                     {t.label}
@@ -524,14 +528,14 @@ export default async function MerchantsPage() {
                 )}
                 <p className="mt-2 text-base leading-[1.65] text-slate-600">
                   {t.description}
-                  {t.label === "Food & Drink" && (
+                  {t.href && (
                     <>
                       {" "}
                       <Link
-                        href="/advertise/restaurants"
+                        href={t.href}
                         className="font-semibold text-brand-600 underline decoration-brand-300 underline-offset-2 hover:text-brand-700"
                       >
-                        See how restaurants are using MegaDeal →
+                        {t.ctaLabel}
                       </Link>
                     </>
                   )}
