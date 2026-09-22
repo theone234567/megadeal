@@ -199,13 +199,53 @@ const SMARTER_CARDS = [
   },
 ] as const;
 
+// imageAlt is deliberately distinct from each image's own SUBCATEGORIES
+// imageAlt above (even though several reuse the same file) — it describes
+// the promo-card context here (an example offer), not the category section,
+// and gives Google Images a specific, non-duplicate string per card.
 const EXAMPLE_DEALS = [
-  { eyebrow: "NEW CLIENT", title: "First beauty treatment", offer: "20% off for new customers", image: "/images/beauty-spa/beauty-facial.webp" },
-  { eyebrow: "MIDWEEK", title: "Tuesday–Thursday", offer: "Selected facial special", image: "/images/beauty-spa/beauty-spa.webp" },
-  { eyebrow: "NAILS", title: "Gel manicure", offer: "Introductory new-client offer", image: "/images/beauty-spa/beauty-nails.webp" },
-  { eyebrow: "SPA", title: "Massage + facial", offer: "Weekday package", image: "/images/beauty-spa/beauty-massage.webp" },
-  { eyebrow: "LASHES & BROWS", title: "Lash lift or brow treatment", offer: "First-visit offer", image: "/images/beauty-spa/beauty-lashes.webp" },
-  { eyebrow: "HAIR", title: "Cut, treatment or blow wave", offer: "Selected weekday promotion", image: "/images/beauty-spa/beauty-hair.webp" },
+  {
+    eyebrow: "NEW CLIENT",
+    title: "First beauty treatment",
+    offer: "20% off for new customers",
+    image: "/images/beauty-spa/beauty-facial.webp",
+    imageAlt: "New-client facial offer at an Auckland beauty spa",
+  },
+  {
+    eyebrow: "MIDWEEK",
+    title: "Tuesday–Thursday",
+    offer: "Selected facial special",
+    image: "/images/beauty-spa/beauty-spa.webp",
+    imageAlt: "Midweek spa treatment room offer in Auckland",
+  },
+  {
+    eyebrow: "NAILS",
+    title: "Gel manicure",
+    offer: "Introductory new-client offer",
+    image: "/images/beauty-spa/beauty-nails.webp",
+    imageAlt: "Gel manicure offer at an Auckland nail salon",
+  },
+  {
+    eyebrow: "SPA",
+    title: "Massage + facial",
+    offer: "Weekday package",
+    image: "/images/beauty-spa/beauty-massage.webp",
+    imageAlt: "Massage and facial package offer at an Auckland day spa",
+  },
+  {
+    eyebrow: "LASHES & BROWS",
+    title: "Lash lift or brow treatment",
+    offer: "First-visit offer",
+    image: "/images/beauty-spa/beauty-lashes.webp",
+    imageAlt: "Lash and brow treatment offer at an Auckland beauty salon",
+  },
+  {
+    eyebrow: "HAIR",
+    title: "Cut, treatment or blow wave",
+    offer: "Selected weekday promotion",
+    image: "/images/beauty-spa/beauty-hair.webp",
+    imageAlt: "Hair salon promotion offer in Auckland",
+  },
 ] as const;
 
 const WHY_MEGADEAL = [
@@ -581,7 +621,7 @@ export default function BeautySpaAdvertisingPage() {
                   <div className="relative aspect-[16/10] w-full">
                     <Image
                       src={d.image}
-                      alt=""
+                      alt={d.imageAlt}
                       fill
                       sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                       className="object-cover"
