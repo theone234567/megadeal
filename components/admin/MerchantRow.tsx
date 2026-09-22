@@ -73,12 +73,12 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
             {/* Same reason as the detail page: an empty field rendered
                 bare is indistinguishable from one nobody displayed. */}
             {merchant.email ? (
-              <p className="text-xs text-slate-400">{merchant.email}</p>
+              <p className="text-xs text-slate-500">{merchant.email}</p>
             ) : (
               <p className="text-xs font-semibold text-amber-600">No email on file</p>
             )}
             {merchant.legalBusinessName && (
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Legal name: <span className="font-medium text-slate-600">{merchant.legalBusinessName}</span>
               </p>
             )}

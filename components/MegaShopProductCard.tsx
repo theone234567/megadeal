@@ -68,7 +68,7 @@ export default function MegaShopProductCard({ product }: { product: Deal }) {
               {formatMoney(product.now, product.currency, product.formattedNow)}
             </span>
             {product.was > product.now && (
-              <span className="text-sm text-slate-400 line-through">
+              <span className="text-sm text-slate-500 line-through">
                 {formatMoney(product.was, product.currency, product.formattedWas)}
               </span>
             )}

@@ -66,7 +66,7 @@ export default function PhotoUploadField({
 
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</p>
 
       <div className="mt-2 flex items-center gap-3">
         <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
@@ -85,7 +85,7 @@ export default function PhotoUploadField({
         </div>
 
         {disabled ? (
-          <p className="text-sm text-slate-400">{disabledText}</p>
+          <p className="text-sm text-slate-500">{disabledText}</p>
         ) : (
           <button
             type="button"

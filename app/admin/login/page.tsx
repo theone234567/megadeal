@@ -93,7 +93,7 @@ export default function AdminLoginPage() {
           </button>
         </form>
       )}
-      <p className="mt-6 text-xs text-slate-400">
+      <p className="mt-6 text-xs text-slate-500">
         Forgot it? There&apos;s no email reset — this password lives in the
         Cloudflare Worker&apos;s{" "}
         <code className="rounded bg-slate-100 px-1 py-0.5">ADMIN_PASSWORD</code>{" "}

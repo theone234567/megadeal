@@ -182,7 +182,7 @@ export default function Header() {
 
         <form onSubmit={handleSearch} className="flex w-full items-center gap-2">
           <label className="flex flex-1 cursor-text items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 focus-within:border-brand-400">
-            <SearchIcon className="h-4 w-4 shrink-0 text-slate-400" />
+            <SearchIcon className="h-4 w-4 shrink-0 text-slate-500" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}

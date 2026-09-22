@@ -100,7 +100,7 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
               {deal.isFlash && <span className="mr-1 text-brand-600">⚡</span>}
               {deal.dealName || "Untitled"} {hasDetails && (detailsOpen ? "▲" : "▼")}
             </p>
-            <p className="text-xs text-slate-400">{deal.productId ? `${deal.productId.slice(0, 8)}…` : "no linked product"}</p>
+            <p className="text-xs text-slate-500">{deal.productId ? `${deal.productId.slice(0, 8)}…` : "no linked product"}</p>
           </div>
         </button>
       </td>
@@ -163,12 +163,12 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
             <p className="font-semibold text-slate-800">
               ${deal.priceNow}
               {deal.priceWas && deal.priceWas > deal.priceNow ? (
-                <span className="ml-1 text-xs font-normal text-slate-400 line-through">
+                <span className="ml-1 text-xs font-normal text-slate-500 line-through">
                   ${deal.priceWas}
                 </span>
               ) : null}
               {deal.quantityAvailable ? (
-                <span className="ml-2 text-xs font-normal text-slate-400">
+                <span className="ml-2 text-xs font-normal text-slate-500">
                   · {deal.quantityAvailable} available
                 </span>
               ) : null}

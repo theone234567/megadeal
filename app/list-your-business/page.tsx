@@ -438,7 +438,7 @@ export default async function MerchantsPage() {
               List your Auckland business ahead of MegaDeal&apos;s launch
               and get up to six months of free advertising.*
             </p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500">
               *
               <Link href="/terms" className="underline hover:text-slate-600">
                 T&amp;Cs apply.

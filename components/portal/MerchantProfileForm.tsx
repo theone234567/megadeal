@@ -629,7 +629,7 @@ export default function MerchantProfileForm({
           </div>
 
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Socials</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Socials</p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="profile-facebookUrl" className="mb-1 block text-sm font-medium text-slate-700">
@@ -690,7 +690,7 @@ export default function MerchantProfileForm({
               className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bio")}`}
             />
             <FieldError name="bio" />
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500">
               {bio.length < MIN_BIO_LENGTH
                 ? `At least ${MIN_BIO_LENGTH} characters (${MIN_BIO_LENGTH - bio.length} to go)`
                 : `${bio.length}/${MAX_BIO_LENGTH} characters`}

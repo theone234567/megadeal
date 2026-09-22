@@ -37,7 +37,7 @@ export default function SubscriberRow({ subscriber }: { subscriber: AdminSubscri
           </span>
         )}
       </td>
-      <td className="py-2 text-xs text-slate-400">{formatDate(subscriber._createdDate)}</td>
+      <td className="py-2 text-xs text-slate-500">{formatDate(subscriber._createdDate)}</td>
     </tr>
   );
 }

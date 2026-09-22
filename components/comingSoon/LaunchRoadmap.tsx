@@ -21,7 +21,7 @@ export default function LaunchRoadmap() {
                 <span className={`text-xs font-semibold ${active ? "text-ember-600" : "text-slate-500"}`}>
                   {city}
                 </span>
-                <span className="text-xs text-slate-400">· {status}</span>
+                <span className="text-xs text-slate-500">· {status}</span>
               </div>
             ))}
           </div>

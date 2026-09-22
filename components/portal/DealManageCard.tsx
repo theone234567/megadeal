@@ -68,7 +68,7 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
             {deal.expiresAt ? `Ends ${new Date(deal.expiresAt).toLocaleDateString()}` : "—"}
             {endingSoon && " ⏰"}
           </span>
-          <span className="text-slate-400">{open ? "▲" : "▼"}</span>
+          <span className="text-slate-500">{open ? "▲" : "▼"}</span>
         </span>
       </button>
 
@@ -80,7 +80,7 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
                 <p className="font-semibold text-slate-800">
                   ${deal.priceNow}
                   {deal.priceWas && deal.priceWas > deal.priceNow ? (
-                    <span className="ml-1 text-xs font-normal text-slate-400 line-through">
+                    <span className="ml-1 text-xs font-normal text-slate-500 line-through">
                       ${deal.priceWas}
                     </span>
                   ) : null}
@@ -95,7 +95,7 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
                       Only {deal.quantityAvailable} left
                     </span>
                   ) : deal.quantityAvailable ? (
-                    <span className="ml-2 text-xs font-normal text-slate-400">
+                    <span className="ml-2 text-xs font-normal text-slate-500">
                       · {deal.quantityAvailable} available
                     </span>
                   ) : null}
@@ -142,7 +142,7 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
           />
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Status</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>
             {actions.length === 0 ? (
               <p className="mt-1 text-sm text-slate-500">
                 {isCancelled

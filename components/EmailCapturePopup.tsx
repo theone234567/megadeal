@@ -110,7 +110,7 @@ export default function EmailCapturePopup() {
       <button
         onClick={dismiss}
         aria-label="Dismiss"
-        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-600"
       >
         ✕
       </button>

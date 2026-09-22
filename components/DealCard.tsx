@@ -115,7 +115,7 @@ export default function DealCard({
           <StarRating rating={deal.businessRating} reviewCount={deal.businessReviewCount} className="-mt-1" />
         )}
         {distanceKm !== null && (
-          <p className="-mt-1 text-xs font-medium text-slate-400">
+          <p className="-mt-1 text-xs font-medium text-slate-500">
             📍 {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)}km`} away
           </p>
         )}
@@ -126,7 +126,7 @@ export default function DealCard({
               {formatMoney(deal.now, deal.currency, deal.formattedNow)}
             </span>
             {deal.was > deal.now && (
-              <span className="text-sm text-slate-400 line-through">
+              <span className="text-sm text-slate-500 line-through">
                 {formatMoney(deal.was, deal.currency, deal.formattedWas)}
               </span>
             )}

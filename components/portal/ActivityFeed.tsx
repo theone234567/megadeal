@@ -38,7 +38,7 @@ export default function ActivityFeed() {
 
   return (
     <div className="mt-5 border-t border-slate-100 pt-5">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         Recent activity
       </h3>
       <ul className="mt-2 divide-y divide-slate-100">
@@ -49,7 +49,7 @@ export default function ActivityFeed() {
               <div>
                 <p className="text-slate-700">{item.description}</p>
                 {item._createdDate && (
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     {new Date(item._createdDate).toLocaleDateString()}
                   </p>
                 )}

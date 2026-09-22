@@ -100,7 +100,7 @@ export default function PhotoGalleryField({ photos, warningText, onConfirm, labe
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-slate-300 text-slate-400 transition hover:border-brand-300 hover:text-brand-600 disabled:opacity-60"
+            className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-slate-300 text-slate-500 transition hover:border-brand-300 hover:text-brand-600 disabled:opacity-60"
           >
             <span className="text-xl leading-none">{uploading ? "…" : "+"}</span>
             <span className="text-[11px] font-semibold">{uploading ? "Uploading" : "Add photo"}</span>

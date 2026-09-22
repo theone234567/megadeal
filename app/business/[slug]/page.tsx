@@ -234,7 +234,7 @@ export default async function BusinessProfilePage(
           <div className="mt-6 grid grid-cols-1 gap-4 border-t border-slate-100 pt-5 sm:grid-cols-2">
             {hasContactInfo && (
               <div className="space-y-1.5 text-sm">
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                   How to book
                 </p>
                 {business.bookingUrl && (
@@ -356,7 +356,7 @@ export default async function BusinessProfilePage(
         )}
       </div>
 
-      <p className="mt-4 text-xs text-slate-400">
+      <p className="mt-4 text-xs text-slate-500">
         {business.businessName} is a business advertising on MegaDeal —
         MegaDeal doesn&apos;t process any payment or booking and isn&apos;t
         a party to your booking with them. See our{" "}

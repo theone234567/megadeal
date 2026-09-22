@@ -15,7 +15,7 @@ import ViewToggle, { type DealsView } from "@/components/ViewToggle";
 const DealsMap = dynamic(() => import("@/components/DealsMap"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[420px] items-center justify-center rounded-2xl border border-slate-100 text-sm text-slate-400">
+    <div className="flex h-[420px] items-center justify-center rounded-2xl border border-slate-100 text-sm text-slate-500">
       Loading map…
     </div>
   ),

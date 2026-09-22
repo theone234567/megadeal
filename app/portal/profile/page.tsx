@@ -79,7 +79,7 @@ export default function PortalProfilePage() {
   if (member === undefined || (merchant === undefined && !loadError)) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <p className="text-slate-400">Loading…</p>
+        <p className="text-slate-500">Loading…</p>
       </main>
     );
   }

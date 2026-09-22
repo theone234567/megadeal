@@ -362,7 +362,7 @@ export default function DealDetail({
               </span>
               {deal.was > deal.now && (
                 <>
-                  <span className="text-lg text-slate-400 line-through">
+                  <span className="text-lg text-slate-500 line-through">
                     {formatMoney(deal.was, deal.currency, deal.formattedWas)}
                   </span>
                   <span className="rounded-full bg-ember-50 px-2 py-0.5 text-sm font-bold text-ember-600">
@@ -379,7 +379,7 @@ export default function DealDetail({
                   </span>
                 )}
             </div>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500">
               Price paid directly to {deal.businessName || "the business"} — MegaDeal
               doesn&apos;t process any payment. Offered directly by the
               business, subject to availability and while supplies last —

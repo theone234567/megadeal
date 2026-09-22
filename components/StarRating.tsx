@@ -16,7 +16,7 @@ export default function StarRating({
       </span>
       <span className="font-semibold text-slate-700">{rating.toFixed(1)}</span>
       {reviewCount ? (
-        <span className="text-slate-400">
+        <span className="text-slate-500">
           ({reviewCount} review{reviewCount === 1 ? "" : "s"})
         </span>
       ) : null}

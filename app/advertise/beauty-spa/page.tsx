@@ -814,7 +814,7 @@ export default function BeautySpaAdvertisingPage() {
                   <summary className="cursor-pointer list-none font-bold marker:content-none" style={{ color: "#241138" }}>
                     <span className="flex items-center justify-between gap-4">
                       {f.q}
-                      <span className="shrink-0 text-slate-400 transition group-open:rotate-45">+</span>
+                      <span className="shrink-0 text-slate-500 transition group-open:rotate-45">+</span>
                     </span>
                   </summary>
                   <p className="mt-3 text-sm leading-relaxed" style={{ color: "#706178" }}>

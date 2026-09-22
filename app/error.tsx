@@ -38,7 +38,7 @@ export default function ErrorPage({
           Back to all deals
         </Link>
       </div>
-      <p className="mt-6 text-xs text-slate-400">
+      <p className="mt-6 text-xs text-slate-500">
         Keeps happening?{" "}
         <Link href="/contact" className="underline hover:text-slate-500">
           Let us know

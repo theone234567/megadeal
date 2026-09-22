@@ -44,7 +44,7 @@ export default function PortalShell({ children }: { children: React.ReactNode })
             ) : (
               <span className="text-lg font-extrabold text-brand-700">MegaDeal</span>
             )}
-            <span className="hidden text-sm text-slate-400 sm:inline">for business</span>
+            <span className="hidden text-sm text-slate-500 sm:inline">for business</span>
           </Link>
           {isLoggedIn && (
             <div className="flex min-w-0 items-center gap-3">

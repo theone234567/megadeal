@@ -210,7 +210,7 @@ export default function AdminDashboardPage() {
       {tab === "merchants" && (
         <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
           {merchants === null ? (
-            error ? null : <p className="text-sm text-slate-400">Loading…</p>
+            error ? null : <p className="text-sm text-slate-500">Loading…</p>
           ) : merchants.length === 0 ? (
             <p className="text-sm text-slate-500">No business applications yet.</p>
           ) : (
@@ -227,7 +227,7 @@ export default function AdminDashboardPage() {
               ) : (
                 <table className="w-full min-w-[720px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
+                    <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
                       <th className="pb-2 pr-4">Business</th>
                       <th className="pb-2 pr-4">Address</th>
                       <th className="pb-2 pr-4">Coupon</th>
@@ -251,7 +251,7 @@ export default function AdminDashboardPage() {
       {tab === "deals" && (
         <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
           {deals === null ? (
-            error ? null : <p className="text-sm text-slate-400">Loading…</p>
+            error ? null : <p className="text-sm text-slate-500">Loading…</p>
           ) : deals.length === 0 ? (
             <p className="text-sm text-slate-500">No deals yet.</p>
           ) : (
@@ -281,7 +281,7 @@ export default function AdminDashboardPage() {
               ) : (
                 <table className="w-full min-w-[720px] text-left text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
+                    <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
                       <th className="pb-2 pr-4">Deal</th>
                       <th className="pb-2 pr-4">Business email</th>
                       <th className="pb-2 pr-4">Expires</th>
@@ -323,7 +323,7 @@ export default function AdminDashboardPage() {
 
           <div className="mt-4 overflow-x-auto">
             {subscribers === null ? (
-              error ? null : <p className="text-sm text-slate-400">Loading…</p>
+              error ? null : <p className="text-sm text-slate-500">Loading…</p>
             ) : (
               (() => {
                 const filtered = verifiedOnly
@@ -334,7 +334,7 @@ export default function AdminDashboardPage() {
                 ) : (
                   <table className="w-full min-w-[640px] text-left text-sm">
                     <thead>
-                      <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
+                      <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
                         <th className="pb-2 pr-4">Email</th>
                         <th className="pb-2 pr-4">Audience</th>
                         <th className="pb-2 pr-4">Source</th>

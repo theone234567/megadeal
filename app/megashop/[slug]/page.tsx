@@ -127,7 +127,7 @@ export default async function MegaShopProductPage(props: { params: Promise<{ slu
               </span>
               {product.was > product.now && (
                 <>
-                  <span className="text-lg text-slate-400 line-through">
+                  <span className="text-lg text-slate-500 line-through">
                     {formatMoney(product.was, product.currency, product.formattedWas)}
                   </span>
                   <span className="rounded-full bg-ember-50 px-2 py-0.5 text-sm font-bold text-ember-600">
@@ -150,7 +150,7 @@ export default async function MegaShopProductPage(props: { params: Promise<{ slu
               >
                 Checkout coming soon
               </button>
-              <p className="mt-2 text-center text-xs text-slate-400">
+              <p className="mt-2 text-center text-xs text-slate-500">
                 MegaShop isn&apos;t open for purchases yet — check back soon.
               </p>
             </div>

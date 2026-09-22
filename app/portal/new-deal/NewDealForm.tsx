@@ -344,7 +344,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   if (member === undefined || merchant === undefined) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <p className="text-slate-400">Loading…</p>
+        <p className="text-slate-500">Loading…</p>
       </main>
     );
   }
@@ -650,7 +650,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">
-              Original price ($) <span className="font-normal text-slate-400">(optional)</span>
+              Original price ($) <span className="font-normal text-slate-500">(optional)</span>
             </label>
             <input
               type="number"
@@ -713,7 +713,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">
-              Quantity available <span className="font-normal text-slate-400">(optional)</span>
+              Quantity available <span className="font-normal text-slate-500">(optional)</span>
             </label>
             <input
               type="number"
