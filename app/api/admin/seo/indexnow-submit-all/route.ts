@@ -19,13 +19,25 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Matches app/sitemap.ts's own unconditional (pre-launch-safe) bucket —
+    // /flash-deals used to be here instead, but it's robots:{index:false}
+    // until SITE_LAUNCHED, so pushing it via IndexNow just asked Bing to
+    // recrawl a page it would then correctly skip indexing anyway.
     const staticUrls = [
       `${SITE_URL}/`,
+      `${SITE_URL}/coming-soon`,
       `${SITE_URL}/list-your-business`,
+      `${SITE_URL}/advertise/restaurants`,
+      `${SITE_URL}/advertise/beauty-spa`,
       `${SITE_URL}/how-it-works`,
+      `${SITE_URL}/redeem`,
+      `${SITE_URL}/help`,
       `${SITE_URL}/about`,
       `${SITE_URL}/contact`,
-      `${SITE_URL}/flash-deals`,
+      `${SITE_URL}/careers`,
+      `${SITE_URL}/terms`,
+      `${SITE_URL}/privacy`,
+      `${SITE_URL}/refund-policy`,
     ];
     const categoryUrls = CATEGORIES.map((c) => `${SITE_URL}/category/${encodeURIComponent(c.name)}`);
     const deals = await fetchAllLiveDealSlugsForSitemap();
