@@ -27,6 +27,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // SITE_LAUNCHED — it targets restaurant owners considering signup,
     // not consumers, so it's fine (and intended) to be findable pre-launch.
     { url: `${SITE_URL}/advertise/restaurants`, changeFrequency: "weekly", priority: 0.5 },
+    // Same reasoning, same bucket — targets beauty/spa business owners.
+    { url: `${SITE_URL}/advertise/beauty-spa`, changeFrequency: "weekly", priority: 0.5 },
     { url: `${SITE_URL}/how-it-works`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/redeem`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/help`, changeFrequency: "monthly", priority: 0.3 },

@@ -563,6 +563,10 @@ export default function RestaurantAdvertisingPage() {
               company. Subject to approval and fair use.{" "}
               <Link href="/terms" className="underline hover:no-underline" style={{ color: "#6519C7" }}>
                 View offer terms.
+              </Link>{" "}
+              Run a beauty or spa business instead?{" "}
+              <Link href="/advertise/beauty-spa" className="underline hover:no-underline" style={{ color: "#6519C7" }}>
+                See beauty &amp; spa advertising.
               </Link>
             </p>
           </div>

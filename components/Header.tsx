@@ -11,6 +11,16 @@ import { SearchIcon, UserIcon } from "@/components/icons";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
+// Business-recruitment landing pages each get the compact header below
+// instead of the consumer search/city header — see the isRestaurantLanding
+// comment further down for why. Keyed by pathname rather than a prefix
+// check since each one has its own CTA label ("List my restaurant" reads
+// wrong on a page about salons).
+const BUSINESS_LANDING_PAGES: Record<string, { ctaLabel: string }> = {
+  "/advertise/restaurants": { ctaLabel: "List my restaurant" },
+  "/advertise/beauty-spa": { ctaLabel: "List my business" },
+};
+
 export default function Header() {
   const { member, isLoggedIn } = useWix();
   const art = useMegadealArt();
@@ -19,7 +29,7 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
-  const isRestaurantLanding = pathname === "/advertise/restaurants";
+  const businessLanding = pathname ? BUSINESS_LANDING_PAGES[pathname] : undefined;
   // The portal has its own dedicated top bar (components/portal/PortalShell.tsx)
   // with its own account/sign-out access — the consumer search bar and city
   // selector this header carries have nothing to do with a merchant managing
@@ -84,19 +94,19 @@ export default function Header() {
     router.push(qs ? `/?${qs}` : "/");
   }
 
-  // Compact, purpose-built header for the restaurant advertising landing
-  // page — the standard header's search bar and city selector have nothing
-  // to do with a page whose only job is getting a restaurant owner into
-  // signup, and would compete with that page's own CTA. Sticky (unlike the
-  // coming-soon header) so "List my restaurant" stays reachable on a page
-  // long enough to need it.
+  // Compact, purpose-built header shared by every business-recruitment
+  // landing page (BUSINESS_LANDING_PAGES above) — the standard header's
+  // search bar and city selector have nothing to do with a page whose only
+  // job is getting a business owner into signup, and would compete with
+  // that page's own CTA. Sticky (unlike the coming-soon header) so the CTA
+  // stays reachable on a page long enough to need it.
   if (isPortal) return null;
 
-  if (isRestaurantLanding) {
+  if (businessLanding) {
     return (
       <header className="sticky top-0 z-30 border-b border-slate-100 bg-white">
         <div className="mx-auto flex h-[87px] w-full max-w-[1184px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/advertise/restaurants" aria-label="MegaDeal home" className="flex min-w-0 shrink items-center gap-3">
+          <Link href={pathname!} aria-label="MegaDeal home" className="flex min-w-0 shrink items-center gap-3">
             {brand()}
             <span className="hidden h-5 w-px shrink-0 bg-slate-200 sm:block" aria-hidden />
             <span className="hidden shrink-0 text-sm text-slate-500 sm:inline-block">
@@ -121,7 +131,7 @@ export default function Header() {
             data-cta-section="header"
             className="shrink-0 rounded-full bg-[#C81287] px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#DC168F] sm:px-5 sm:text-sm"
           >
-            List my restaurant
+            {businessLanding.ctaLabel}
           </a>
         </div>
       </header>

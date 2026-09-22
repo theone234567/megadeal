@@ -34,7 +34,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
   const isComingSoon = pathname === "/coming-soon";
   const hideOwnABusinessCta =
     pathname?.startsWith("/list-your-business") ||
-    pathname?.startsWith("/advertise/restaurants") ||
+    pathname?.startsWith("/advertise/") ||
     isComingSoon;
 
   // The portal has its own dedicated layout (PortalShell) — the large
