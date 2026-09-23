@@ -8,10 +8,8 @@ import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import SampleDealCard from "@/components/SampleDealCard";
 import { getSignupStats } from "@/lib/publicStats";
-import AucklandSkylineArt from "@/components/comingSoon/AucklandSkylineArt";
 import MascotFigure from "@/components/megadeal/MascotFigure";
 import { getMegadealArt } from "@/lib/megadealAssets";
-import { HERO_PHOTO } from "@/lib/megadealAssetManifest.generated";
 import {
   CheckIcon,
   DumbbellIcon,
@@ -54,22 +52,6 @@ export const metadata: Metadata = {
 };
 
 /**
- * Real photography beats the illustration whenever it exists.
- *
- * Drop a file at public/images/auckland-hero.(jpg|jpeg|webp|avif|png) and
- * the hero uses it instead of AucklandSkylineArt — no code change needed,
- * just a rebuild. Resolved at build time by
- * scripts/generate-megadeal-manifest.mjs into HERO_PHOTO, not checked live
- * here: this page awaits getSignupStats() below, which makes it a
- * dynamic/revalidating route, and its top-level code genuinely re-runs
- * inside the live Cloudflare Workers runtime on every render — where a
- * direct fs.existsSync check silently fails every time (see the long
- * comment in lib/megadealAssets.ts, which had the identical bug for the
- * supplied mascot art).
- */
-const heroPhoto = HERO_PHOTO;
-
-/**
  * Supplied mascot / skyline artwork, resolved once at build time. Each
  * entry is null until the PNG is added to public/megadeal, and every use
  * below falls back to the vector already shipping — so the page is whole
@@ -77,25 +59,11 @@ const heroPhoto = HERO_PHOTO;
  */
 const art = getMegadealArt();
 
-/** The supplied skyline card wins over a photo drop, which in turn wins
- *  over the illustration. All three are the same slot in the layout. */
-const heroCardImage = art.aucklandCard ?? heroPhoto;
-
-/**
- * The supplied card (art.aucklandCard) is a finished illustration — its
- * own white border, drop shadow and few-degree tilt are already baked
- * into the pixels, filling its canvas edge to edge. The photo/SVG
- * fallbacks below it are raw, unframed content instead: a plain skyline
- * photo, or a flat vector fill.
- *
- * Those two need different treatment, not the same box. A raw photo needs
- * the CSS to build the "tilted photo card" look around it (the rotate,
- * the white border, the angled clip-path). Wrapping the *already-composed*
- * card in that same CSS card doubles every one of those effects: a second
- * white border, at a slightly different angle to the one already drawn in
- * the image, showed through beside it — most visibly at the top-right
- * corner, which is what actually looked "off" about the Auckland card.
- */
+/** Guards the hero's photo layer (both the lg+ full-bleed background and
+ *  the <lg standalone panel) — true today (public/megadeal/hero-auckland-
+ *  card.webp is committed), but the hero still degrades to its flat
+ *  brand-gradient background with no photo, rather than a broken image,
+ *  on the off chance that file is ever removed. */
 const hasComposedCard = Boolean(art.aucklandCard);
 
 /** One shared page shell width, so every band lines up at every breakpoint. */
@@ -217,26 +185,83 @@ export default async function ComingSoonPage() {
       />
 
       {/* ---------------------------------------------------------------- Hero */}
-      {/* Gradient rather than the flat fill it replaced: brand-500 into
-          brand-800 gives the hero depth behind the white skyline card and
-          the mascot, without introducing any colour outside the palette. */}
+      {/* One integrated visual instead of "purple text column beside a
+          separate rounded photo card": the Auckland artwork is now a
+          full-bleed background layer behind everything, with a
+          left-to-right brand-purple gradient over it so the text side
+          reads as solid purple and the right side reads as the photo,
+          blending into each other rather than meeting at a hard edge.
+          bg-gradient-to-br here is the base fill for <lg (where the photo
+          layer below is hidden entirely) and shows for a fraction of a
+          second on lg+ before the photo/gradient layer paints over it —
+          same brand-500→800 colours either way, so there's nothing to see
+          in that gap. */}
       <section
         id="cs-hero"
-        className="relative overflow-hidden bg-[#650fc7] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 text-white"
+        className="relative isolate overflow-hidden bg-[#650fc7] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 text-white"
       >
+        {/* Photo + gradient layer: lg (1024px) and up only. Below that the
+            artwork moves into its own panel underneath the content instead
+            (see the bottom of this section) — this treatment needs real
+            width to work: tried it down to md (768px) first, and at that
+            width there wasn't enough room left of the text column for the
+            elephant to read as anything but a purple smear, and the
+            headline started colliding with "Dine Explore Relax" behind it.
+            A tablet screen gets the same clean stacked panel mobile does,
+            just at a larger size (see the sizing on that panel below). */}
+        {hasComposedCard && (
+          <div className="absolute inset-0 hidden lg:block">
+            {/* object-position-x: the artwork is a very wide banner
+                (1800×619) with the elephant left-of-centre and the skyline/
+                Sky Tower on the right — cover-fit at this section's height
+                only shows part of that width, not the whole thing. 62%
+                keeps the elephant's head, ear and trunk clear of the
+                gradient wash (readable, not just a purple silhouette)
+                while still keeping the full skyline and Sky Tower in
+                frame; tuned against real screenshots, not calculated blind. */}
+            <Image
+              src={art.aucklandCard as string}
+              alt="The MegaDeal elephant mascot in front of the Auckland skyline and Sky Tower"
+              fill
+              sizes="100vw"
+              className="object-cover"
+              style={{ objectPosition: "62% center" }}
+              loading="eager"
+              fetchPriority="high"
+            />
+            {/* Brand-purple wash, solid behind the text and fading out over
+                the photo — rgba(101,15,199,*) is brand-700 (#650fc7), the
+                same literal purple the rest of this hero already uses, not
+                a new colour. With the elephant landing around the 25-30%
+                mark of the section (see object-position above), the solid
+                zone has to stay tight to that, not the full text column —
+                copy this close to the blend edge sits on close to 90%+
+                purple, still comfortably readable, while the elephant is
+                mostly clear of the wash by the time it's on screen. */}
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                backgroundImage:
+                  "linear-gradient(90deg, rgba(101,15,199,0.97) 0%, rgba(101,15,199,0.9) 16%, rgba(101,15,199,0.48) 24%, rgba(101,15,199,0.14) 30%, rgba(101,15,199,0.02) 36%, rgba(101,15,199,0) 42%)",
+              }}
+            />
+          </div>
+        )}
+
         <div
-          className={`${shell} grid items-center gap-6 pb-0 pt-7 sm:gap-10 sm:py-12 lg:min-h-[590px] lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:py-14`}
+          className={`${shell} relative pb-8 pt-7 sm:pb-10 sm:pt-10 lg:min-h-[clamp(600px,48vw,720px)] lg:py-14 lg:flex lg:flex-col lg:justify-center`}
         >
-          <div className="order-1 lg:max-w-[640px]">
+          <div className="lg:max-w-[500px]">
             <div className="inline-flex rounded-full bg-[#c7128a] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white shadow-sm sm:px-5 sm:text-sm">
               Launching first in Auckland
             </div>
             <h1
-              className={`${fredoka.className} mt-4 text-4xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-5xl lg:text-6xl lg:mt-5`}
+              className={`${fredoka.className} mt-4 text-4xl font-bold leading-[0.98] tracking-[-0.02em] sm:text-5xl lg:mt-5 lg:text-[64px]`}
             >
               Big local deals are on the way, Auckland.
             </h1>
-            <p className="mt-4 max-w-[610px] text-[15px] leading-6 text-white/95 lg:mt-6 lg:text-[18px] lg:leading-8 2xl:text-[20px]">
+            <p className="mt-4 max-w-[480px] text-[15px] leading-6 text-white/95 lg:mt-6 lg:text-[18px] lg:leading-8">
               MegaDeal is getting ready to launch in Auckland — helping local businesses fill quiet
               times and helping deal hunters discover standout local offers.
             </p>
@@ -264,129 +289,15 @@ export default async function ComingSoonPage() {
                 )}
               </div>
             )}
-
-            {/*
-              No button row here on purpose. This used to carry its own
-              "Claim free advertising" / "Get launch updates" pair — the
-              exact same fork, to the exact same two destinations, as the
-              two-card section immediately below it. A visitor hit the same
-              decision twice in one screen before scrolling past the fold.
-              Cards, not buttons, are the singular fork now: same two
-              destinations, but with real explanatory copy per audience
-              instead of a bare three-word pill, and already designed to
-              sit hero-adjacent (see the negative margin pulling that
-              section up into this one on desktop, right below).
-            */}
           </div>
 
           {/*
-            On phones this is a full-bleed band; from sm up it becomes the
-            tilted, bordered "photo card" the desktop layout is built
-            around.
-
-            The card treatment does not survive a narrow screen. The
-            rotation, the angled clip-path and the mascot deliberately
-            overhanging the frame all assume space around the box — at
-            390px the frame filled the column, so the mascot's "BIG DEALS"
-            tag was sliced off by the section's overflow and the tilt just
-            read as a crooked box. Mobile therefore drops the rotation,
-            the clip-path and the border, bleeds the art edge to edge, and
-            keeps the mascot inside the picture at a size that doesn't
-            bury the skyline.
-          */}
-          <div className="relative order-3 -mx-5 pb-0 sm:mx-auto sm:w-full sm:max-w-[720px] sm:pb-8 sm:pr-7 lg:order-2 lg:pt-2">
-            {hasComposedCard ? (
-              /* The card as delivered: a plain box at the artwork's own
-                 native ratio (1800/619, a wide banner composition — the
-                 elephant sits near the left edge and the skyline/Sky Tower
-                 near the right, so a taller box would cover cropping one or
-                 the other; matching the native ratio exactly means
-                 object-cover never actually crops anything), no rotate, no
-                 added border, no clip-path. The tilt, border and shadow a
-                 viewer sees are the image's own pixels, not CSS built
-                 around them, so there is nothing left to double up.
-                 The mascot is composited into this photo itself (waving,
-                 Auckland skyline behind), so there is no separate
-                 MascotFigure overlay here any more — the earlier versions
-                 (a plain skyline photo, or the vector fallback) needed the
-                 elephant added in CSS on top; this one doesn't. Same ratio
-                 at every breakpoint on purpose: unlike the previous photo,
-                 this artwork has almost no blank margin to give up, so
-                 there's no room for a shorter mobile-specific crop without
-                 cutting into the elephant or the skyline. */
-              <div className="relative aspect-[1800/619] w-full overflow-hidden rounded-2xl">
-                <Image
-                  src={art.aucklandCard as string}
-                  alt="MegaDeal elephant with the Auckland skyline"
-                  fill
-                  sizes="(min-width: 1024px) 55vw, 100vw"
-                  className="object-cover"
-                  style={{ objectPosition: "center center" }}
-                  loading="eager"
-                  fetchPriority="high"
-                />
-              </div>
-            ) : (
-              /* No supplied card yet: build the "tilted photo card" look
-                 around whatever raw content is available (a photo drop, or
-                 failing that the flat vector fill) — same treatment as
-                 before art.aucklandCard existed. */
-              <div className="relative sm:rotate-[1.5deg]">
-                <div className="relative aspect-[2/1] overflow-hidden border-y border-white/20 bg-white/10 sm:aspect-[1.28/1] sm:rounded-[28px] sm:border-[4px] sm:border-white/80 sm:shadow-2xl sm:[clip-path:polygon(7%_0,100%_0,94%_100%,0_100%)] lg:border-[5px] lg:shadow-[0_30px_80px_rgba(27,5,72,.34)]">
-                  {heroCardImage ? (
-                    <img
-                      src={heroCardImage}
-                      alt="Auckland city and harbour"
-                      className="h-full w-full object-cover sm:-rotate-[1.5deg] sm:scale-[1.08]"
-                      fetchPriority="high"
-                    />
-                  ) : (
-                    <AucklandSkylineArt
-                      shape="fill"
-                      className="h-full w-full object-cover sm:-rotate-[1.5deg] sm:scale-[1.08]"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#241044]/16 via-transparent to-transparent" />
-
-                  {/* Mobile: inside the picture, clear of both edges so the
-                      mascot's tag can't be clipped. */}
-                  <MascotFigure
-                    src={art.mascotBigDeals}
-                    fallbackSrc="/brand/deal-hunter-elephant.svg"
-                    alt=""
-                    width={360}
-                    height={280}
-                    className="absolute bottom-0 right-2 h-auto w-[112px] drop-shadow-xl sm:hidden"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* The overhanging desktop MascotFigure that used to sit here
-                is gone: it existed to put the elephant on top of a plain
-                skyline photo, and this photo already has him in it (see
-                the comment above hasComposedCard's <img>). Bringing it
-                back would double him up. The fallback branch above still
-                keeps its own in-picture mascot, since it has no elephant
-                of its own to fall back on. */}
-          </div>
-
-          {/*
-            Two audience cards — the page's "which are you?" fork, and now
-            a grid item in the hero itself rather than a separate section
-            after it.
-
-            Order, not just position, is what changed. This used to follow
-            the hero unconditionally in DOM order — meaning on a phone,
-            where everything stacks in one column, it followed the entire
-            photo card too: on an iPhone SE it sat fully below the fold, on
-            an iPhone 13 only its top sliver was visible. The photo is
-            atmospheric; this is the actual decision a visitor came here to
-            make, and it was consistently losing the race to be seen first.
-            order-2 (mobile) puts it right after the pitch and before the
-            photo; lg:order-3 with lg:col-span-2 restores exactly the
-            previous desktop arrangement — text and photo side by side,
-            this spanning both beneath them, same overlap as before.
+            Two audience cards — the page's "which are you?" fork. Sits in
+            normal document flow now (no more grid-order juggling to pull
+            it ahead of the photo on mobile): the photo moved to the very
+            end of this section for <md screens, so simple DOM order alone
+            already puts pitch → proof points → these cards → photo,
+            exactly the sequence a visitor should hit them in.
 
             Each card is a single link rather than a card containing a
             button, so the whole tile is one large tap target and the
@@ -394,25 +305,20 @@ export default async function ComingSoonPage() {
             row (icon, question, one-line action) for the same reason as
             the reorder: get to a choice fast.
           */}
-          <div className="order-2 -mx-5 px-5 pt-4 sm:mx-0 sm:px-0 sm:pt-6 lg:order-3 lg:col-span-2 lg:-mt-7 lg:pt-0">
-            <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:gap-5">
+          <div className="mt-5 sm:mt-6 lg:mt-8 lg:max-w-[620px]">
+            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:gap-5">
               <a
                 href="#launch-updates"
-                className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#e81ea3]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[150px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
+                className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#e81ea3]/40 sm:items-center sm:gap-4 sm:rounded-[20px] sm:p-4"
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ffe1f2] text-[#c7128a] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
-                  <TicketIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#ffe1f2] text-[#c7128a] sm:h-12 sm:w-12">
+                  <TicketIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <h2
-                    className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-2xl md:text-3xl`}
-                  >
+                  <h2 className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-xl`}>
                     Love a great deal?
                   </h2>
-                  <span className="mt-1.5 hidden max-w-[500px] text-[15px] leading-6 text-slate-600 sm:block lg:mt-2">
-                    Join free to get early access to local offers when MegaDeal launches in Auckland.
-                  </span>
-                  <span className="mt-0.5 block text-[13px] font-extrabold text-[#c7128a] underline-offset-4 group-hover:underline sm:mt-2.5 sm:text-sm">
+                  <span className="mt-0.5 block text-[13px] font-extrabold text-[#c7128a] underline-offset-4 group-hover:underline sm:text-sm">
                     Get launch updates →
                   </span>
                 </span>
@@ -420,22 +326,16 @@ export default async function ComingSoonPage() {
 
               <Link
                 href="/list-your-business"
-                className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#650fc7]/40 sm:items-center sm:gap-5 sm:rounded-[22px] sm:p-5 lg:min-h-[150px] lg:rounded-[24px] lg:p-7 lg:shadow-[0_18px_42px_rgba(40,7,88,.14)]"
+                className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#650fc7]/40 sm:items-center sm:gap-4 sm:rounded-[20px] sm:p-4"
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#650fc7] sm:h-12 sm:w-12 lg:h-16 lg:w-16">
-                  <StoreIcon className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" />
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#650fc7] sm:h-12 sm:w-12">
+                  <StoreIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <h2
-                    className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-2xl md:text-3xl`}
-                  >
+                  <h2 className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-xl`}>
                     Run a local business?
                   </h2>
-                  <span className="mt-1.5 hidden max-w-[540px] text-[15px] leading-6 text-slate-600 sm:block lg:mt-2">
-                    Join before launch and reach new customers, fill quieter periods and get up to 6
-                    months advertising free with 0% commission.*
-                  </span>
-                  <span className="mt-0.5 block text-[13px] font-extrabold text-[#650fc7] underline-offset-4 group-hover:underline sm:mt-2.5 sm:text-sm">
+                  <span className="mt-0.5 block text-[13px] font-extrabold text-[#650fc7] underline-offset-4 group-hover:underline sm:text-sm">
                     <span className="sm:hidden">Up to 6 months free →</span>
                     <span className="hidden sm:inline">Claim my free advertising →</span>
                   </span>
@@ -443,6 +343,24 @@ export default async function ComingSoonPage() {
               </Link>
             </div>
           </div>
+
+          {/* Mobile/tablet-only photo panel — same artwork, its own block
+              instead of a background layer, full composition visible
+              (nothing cropped off to the sides the way the md+ background
+              layer needs to). Same aspect ratio as the artwork's own
+              native size, so object-cover never actually has to crop. */}
+          {hasComposedCard && (
+            <div className="relative mt-6 aspect-[1800/619] w-full overflow-hidden rounded-2xl lg:hidden">
+              <Image
+                src={art.aucklandCard as string}
+                alt="The MegaDeal mascot elephant with the Auckland skyline"
+                fill
+                sizes="100vw"
+                className="object-cover"
+                loading="eager"
+              />
+            </div>
+          )}
         </div>
       </section>
 
