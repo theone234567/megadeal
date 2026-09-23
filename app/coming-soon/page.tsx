@@ -69,6 +69,24 @@ const hasComposedCard = Boolean(art.aucklandCard);
 /** One shared page shell width, so every band lines up at every breakpoint. */
 const shell = "mx-auto w-full max-w-[1320px] px-5 sm:px-6 xl:px-10";
 
+/**
+ * Applied (lg and up only, via the lg: prefix baked into each usage) to
+ * every piece of hero text that sits above the lg+ background photo — the
+ * headline, the paragraph and the proof points. Real photography has its
+ * own light and dark spots (an eye's white sclera, a specular highlight
+ * inside an ear) that land under this fixed-position text at whatever
+ * exact pixel the current viewport width happens to put them — confirmed
+ * by directly sampling rendered pixels, not assumed: at 1770px the comma
+ * in "way," sat on the elephant's eye-white at ~1:1 contrast with no
+ * shadow, and separately the paragraph's last line sat right against an
+ * ear highlight. No amount of retuning the crop/gradient rules out the
+ * next coincidence at some other width; a shadow makes every character
+ * readable regardless of what's directly behind it. Below lg the
+ * background is flat purple and this is never applied, so it never adds
+ * pointless visual noise there.
+ */
+const HERO_TEXT_SHADOW = "lg:[text-shadow:0_2px_10px_rgba(36,4,74,0.55),0_1px_3px_rgba(36,4,74,0.5)]";
+
 const categories = [
   {
     name: "Food & Drink",
@@ -316,18 +334,18 @@ export default async function ComingSoonPage() {
               Launching first in Auckland
             </div>
             <h1
-              className={`${fredoka.className} mt-4 text-4xl font-bold leading-[0.98] tracking-[-0.02em] sm:text-5xl lg:mt-5 lg:text-[64px]`}
+              className={`${fredoka.className} mt-4 text-4xl font-bold leading-[0.98] tracking-[-0.02em] sm:text-5xl lg:mt-5 lg:text-[64px] ${HERO_TEXT_SHADOW}`}
             >
               Big local deals are on the way, Auckland.
             </h1>
-            <p className="mt-4 max-w-[480px] text-[15px] leading-6 text-white/95 lg:mt-6 lg:text-[18px] lg:leading-8">
+            <p className={`mt-4 max-w-[480px] text-[15px] leading-6 text-white/95 lg:mt-6 lg:text-[18px] lg:leading-8 ${HERO_TEXT_SHADOW}`}>
               MegaDeal is getting ready to launch in Auckland — helping local businesses fill quiet
               times and helping deal hunters discover standout local offers.
             </p>
             {/* Stacked rather than inline-with-a-separator: the hero column
                 is narrow enough at most widths that a "a • b" row wraps and
                 leaves the bullet dangling at the end of the first line. */}
-            <div className="mt-4 flex flex-col gap-1 text-sm font-extrabold leading-6 lg:mt-5 lg:text-[17px] lg:leading-7">
+            <div className={`mt-4 flex flex-col gap-1 text-sm font-extrabold leading-6 lg:mt-5 lg:text-[17px] lg:leading-7 ${HERO_TEXT_SHADOW}`}>
               <span>0% commission for businesses</span>
               <span>Up to 6 months advertising free*</span>
             </div>
