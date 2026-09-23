@@ -72,7 +72,11 @@ const shell = "mx-auto w-full max-w-[1320px] px-5 sm:px-6 xl:px-10";
 /**
  * Applied (lg and up only, via the lg: prefix baked into each usage) to
  * every piece of hero text that sits above the lg+ background photo — the
- * headline, the paragraph and the proof points. Real photography has its
+ * headline, the paragraph, the proof points, and the stats bar (that last
+ * one is only a bg-white/12 panel, not fully opaque, so it's exposed to
+ * the same risk even though it's rarely visible in local dev — it only
+ * renders once there are enough real signups, which needs live Wix data
+ * this environment doesn't have). Real photography has its
  * own light and dark spots (an eye's white sclera, a specular highlight
  * inside an ear) that land under this fixed-position text at whatever
  * exact pixel the current viewport width happens to put them — confirmed
@@ -351,7 +355,7 @@ export default async function ComingSoonPage() {
             </div>
 
             {stats && (stats.merchantCount > 0 || stats.waitlistCount > 0) && (
-              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-2xl bg-white/12 px-4 py-3 text-[13px] font-semibold text-white/95 ring-1 ring-inset ring-white/20 sm:text-sm">
+              <div className={`mt-5 flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-2xl bg-white/12 px-4 py-3 text-[13px] font-semibold text-white/95 ring-1 ring-inset ring-white/20 sm:text-sm ${HERO_TEXT_SHADOW}`}>
                 {stats.merchantCount > 0 && (
                   <span>
                     <span className="font-extrabold">{stats.merchantCount.toLocaleString()}</span>{" "}
