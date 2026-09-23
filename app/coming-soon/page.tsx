@@ -154,6 +154,47 @@ function Tick({ children, color = "#650fc7" }: { children: ReactNode; color?: st
   );
 }
 
+/**
+ * Brand-purple wash over the hero's background photo, solid behind the
+ * text column and fading out over the photo — rgba(101,15,199,*) is
+ * brand-700 (#650fc7), the same literal purple the rest of this hero
+ * already uses, not a new colour.
+ *
+ * Fixed pixel width, not a percentage of the section: the text column is
+ * a fixed max-width (500px + the shell's own padding), but the photo
+ * underneath is a single object-cover layer whose visible crop shifts
+ * continuously as the viewport gets wider. A percentage-based gradient
+ * drifts out of alignment with that fixed-width text column between
+ * tested breakpoints — it looked fine at 1440px and 1920px but let the
+ * elephant's face land squarely behind the headline somewhere in
+ * between, which is exactly the bug this was rebuilt to fix. Anchoring
+ * the wash to a fixed px width instead means it always ends in the same
+ * place relative to the text column, at every viewport width, not just
+ * the ones actually screenshotted.
+ *
+ * `width` and the fade shape differ between the two photo crops below —
+ * each crop lands the elephant at a different absolute pixel position
+ * (they're deliberately different zoom levels, see the comments on each
+ * <Image>), so each needs its own wash tuned to still cover the text
+ * column without also smothering that crop's elephant. Not extracted to
+ * one shared shape.
+ */
+function HeroGradientWash({
+  width,
+  stops,
+}: {
+  width: number;
+  stops: string;
+}) {
+  return (
+    <div
+      aria-hidden
+      className="absolute inset-y-0 left-0"
+      style={{ width, backgroundImage: `linear-gradient(90deg, ${stops})` }}
+    />
+  );
+}
+
 export default async function ComingSoonPage() {
   // Real figures from Wix, never invented. Null (and so hidden) when the
   // credentials are unavailable or the numbers are still too small.
@@ -211,40 +252,58 @@ export default async function ComingSoonPage() {
             just at a larger size (see the sizing on that panel below). */}
         {hasComposedCard && (
           <div className="absolute inset-0 hidden lg:block">
-            {/* object-position-x: the artwork is a very wide banner
-                (1800×619) with the elephant left-of-centre and the skyline/
-                Sky Tower on the right — cover-fit at this section's height
-                only shows part of that width, not the whole thing. 62%
-                keeps the elephant's head, ear and trunk clear of the
-                gradient wash (readable, not just a purple silhouette)
-                while still keeping the full skyline and Sky Tower in
-                frame; tuned against real screenshots, not calculated blind. */}
-            <Image
-              src={art.aucklandCard as string}
-              alt="The MegaDeal elephant mascot in front of the Auckland skyline and Sky Tower"
-              fill
-              sizes="100vw"
-              className="object-cover"
-              style={{ objectPosition: "62% center" }}
-              loading="eager"
-              fetchPriority="high"
-            />
-            {/* Brand-purple wash, solid behind the text and fading out over
-                the photo — rgba(101,15,199,*) is brand-700 (#650fc7), the
-                same literal purple the rest of this hero already uses, not
-                a new colour. With the elephant landing around the 25-30%
-                mark of the section (see object-position above), the solid
-                zone has to stay tight to that, not the full text column —
-                copy this close to the blend edge sits on close to 90%+
-                purple, still comfortably readable, while the elephant is
-                mostly clear of the wash by the time it's on screen. */}
-            <div
-              aria-hidden
-              className="absolute inset-0"
-              style={{
-                backgroundImage:
-                  "linear-gradient(90deg, rgba(101,15,199,0.97) 0%, rgba(101,15,199,0.9) 16%, rgba(101,15,199,0.48) 24%, rgba(101,15,199,0.14) 30%, rgba(101,15,199,0.02) 36%, rgba(101,15,199,0) 42%)",
-              }}
+            {/* Right-anchored, capped at 1440px wide — not a plain inset-0
+                image. object-fit: cover ties the crop's zoom level to its
+                own container's size, and a container that's simply "the
+                viewport" keeps growing forever on a wider screen: past
+                about 1024px, the crop that kept the elephant clear of the
+                text column at one width put him squarely behind the
+                headline at another, because he was a different size and
+                in a different spot every time the container changed.
+                Capping the image's own container means the crop — the
+                elephant's size and position within it — stops changing
+                once the viewport passes 1440px; everything past that just
+                shows more flat purple to the left of a fixed-size photo,
+                a perfectly normal way for a hero to use extra width on an
+                ultrawide monitor. Below 1440px this still tracks the
+                viewport exactly like a plain full-bleed image would. The
+                gradient wash below is a sibling, not nested inside this
+                capped box — it needs to stay anchored to the section's
+                true left edge (where the text column is) regardless of
+                where the image's own box starts. */}
+            <div className="absolute inset-y-0 right-0 w-full max-w-[1440px]">
+              <Image
+                src={art.aucklandCard as string}
+                alt="The MegaDeal elephant mascot in front of the Auckland skyline and Sky Tower"
+                fill
+                sizes="100vw"
+                className="object-cover"
+                style={{ objectPosition: "40% center" }}
+                loading="eager"
+                fetchPriority="high"
+              />
+              {/* This box's own left edge is a hard cut between the photo
+                  and the flat purple behind it once the viewport is wide
+                  enough that the box no longer reaches the section's true
+                  left edge (>1440px) — without this, that showed up as
+                  exactly the visible vertical seam the whole point of this
+                  rebuild was to get rid of. A short fade right at this
+                  box's own edge (not anchored to the viewport, so it moves
+                  with the box) blends it back into the background at any
+                  width. Invisible below 1440px, since the text-column wash
+                  already covers this same span there. */}
+              <div
+                aria-hidden
+                className="absolute inset-y-0 left-0 w-24"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(90deg, rgba(101,15,199,1) 0%, rgba(101,15,199,0) 100%)",
+                }}
+              />
+            </div>
+            <HeroGradientWash
+              width={620}
+              stops="rgba(101,15,199,0.97) 0px, rgba(101,15,199,0.94) 460px, rgba(101,15,199,0.72) 520px, rgba(101,15,199,0.32) 565px, rgba(101,15,199,0.08) 600px, rgba(101,15,199,0) 620px"
             />
           </div>
         )}
