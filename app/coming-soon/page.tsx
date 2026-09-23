@@ -273,7 +273,7 @@ export default async function ComingSoonPage() {
             A tablet screen gets the same clean stacked panel mobile does,
             just at a larger size (see the sizing on that panel below). */}
         {hasComposedCard && (
-          <div className="absolute inset-0 hidden lg:block">
+          <div className="absolute inset-0 hidden lg:flex lg:items-center lg:justify-end">
             {/* Right-anchored, capped at 1440px wide — not a plain inset-0
                 image. object-fit: cover ties the crop's zoom level to its
                 own container's size, and a container that's simply "the
@@ -288,19 +288,34 @@ export default async function ComingSoonPage() {
                 shows more flat purple to the left of a fixed-size photo,
                 a perfectly normal way for a hero to use extra width on an
                 ultrawide monitor. Below 1440px this still tracks the
-                viewport exactly like a plain full-bleed image would. The
-                gradient wash below is a sibling, not nested inside this
-                capped box — it needs to stay anchored to the section's
-                true left edge (where the text column is) regardless of
-                where the image's own box starts. */}
-            <div className="absolute inset-y-0 right-0 w-full max-w-[1440px]">
+                viewport exactly like a plain full-bleed image would.
+
+                h-[72%], not the full section height: the section's own
+                height is driven by the text content (badge, headline,
+                paragraph, proof points, CTA cards) stacked on the left,
+                which needs more room than a comfortably-sized photo does.
+                Letting the photo stretch to match that full height made
+                the elephant read as oversized — object-fit: cover scales
+                the whole photo to fill whatever height it's given, so a
+                taller box directly means a bigger elephant. Giving the
+                photo its own shorter height and centering it vertically
+                decouples the two: the elephant reads as sitting within
+                the scene rather than dominating it, independent of how
+                tall the text column happens to make the section.
+
+                The gradient wash below is a sibling, not nested inside
+                this capped box — it needs to stay anchored to the
+                section's true left edge (where the text column is) and
+                its own full height, regardless of where the image's own
+                (shorter, centered) box starts and ends. */}
+            <div className="relative h-[72%] w-full max-w-[1440px] overflow-hidden">
               <Image
                 src={art.aucklandCard as string}
                 alt="The MegaDeal elephant mascot in front of the Auckland skyline and Sky Tower"
                 fill
                 sizes="100vw"
                 className="object-cover"
-                style={{ objectPosition: "40% center" }}
+                style={{ objectPosition: "46% center" }}
                 loading="eager"
                 fetchPriority="high"
               />
@@ -322,6 +337,31 @@ export default async function ComingSoonPage() {
                     "linear-gradient(90deg, rgba(101,15,199,1) 0%, rgba(101,15,199,0) 100%)",
                 }}
               />
+              {/* Now that this box is shorter than the section (h-[72%],
+                  centered), its top and bottom edges sit inside the purple
+                  field rather than at the section's own top/bottom edges —
+                  a hard rectangle there would be exactly the "photo in a
+                  separate box" look this hero was rebuilt to get away
+                  from. These two fades blend the box's own top and bottom
+                  into the surrounding purple the same way the left fade
+                  blends its side. No rounded corners, no border, no
+                  shadow — nothing that would read as a card frame. */}
+              <div
+                aria-hidden
+                className="absolute inset-x-0 top-0 h-16"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(180deg, rgba(101,15,199,0.9) 0%, rgba(101,15,199,0) 100%)",
+                }}
+              />
+              <div
+                aria-hidden
+                className="absolute inset-x-0 bottom-0 h-16"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(0deg, rgba(101,15,199,0.9) 0%, rgba(101,15,199,0) 100%)",
+                }}
+              />
             </div>
             <HeroGradientWash
               width={620}
@@ -331,7 +371,7 @@ export default async function ComingSoonPage() {
         )}
 
         <div
-          className={`${shell} relative pb-8 pt-7 sm:pb-10 sm:pt-10 lg:min-h-[clamp(600px,48vw,720px)] lg:py-14 lg:flex lg:flex-col lg:justify-center`}
+          className={`${shell} relative pb-8 pt-7 sm:pb-10 sm:pt-10 lg:min-h-[clamp(480px,38vw,580px)] lg:py-10 lg:flex lg:flex-col lg:justify-center`}
         >
           <div className="lg:max-w-[500px]">
             <div className="inline-flex rounded-full bg-[#c7128a] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white shadow-sm sm:px-5 sm:text-sm">
