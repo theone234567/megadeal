@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { fetchMegaShopProductBySlugForServer } from "@/lib/fetchMegaShopServer";
 import { SITE_URL, SITE_NAME, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, truncateForMeta } from "@/lib/format";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { wixImageUrl } from "@/lib/wixImageUrl";
 
@@ -28,7 +28,7 @@ export async function generateMetadata(
   // MegaShop.co.nz sub-brand name.
   const title = `${product.name} — ${price}`;
   const socialTitle = `${title} | MegaShop.co.nz`;
-  const description = product.description.slice(0, 155) || `${product.name} for ${price} on MegaShop.co.nz.`;
+  const description = truncateForMeta(product.description) || `${product.name} for ${price} on MegaShop.co.nz.`;
   const url = `${SITE_URL}/megashop/${product.slug}`;
 
   return {

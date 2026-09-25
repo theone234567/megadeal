@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import DealDetail from "./DealDetail";
 import { fetchDealForSEO, fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, truncateForMeta } from "@/lib/format";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
 // See app/page.tsx for why this is a short revalidate window rather than
@@ -36,7 +36,7 @@ export async function generateMetadata(
   // keep the brand-inclusive version.
   const title = `${deal.name}${businessSuffix} — ${deal.discountPercent > 0 ? `${deal.discountPercent}% off, ` : ""}${price}`;
   const socialTitle = `${title} | ${SITE_NAME}`;
-  const description = stripHtml(deal.description).slice(0, 155) ||
+  const description = truncateForMeta(stripHtml(deal.description)) ||
     `${deal.name}${businessSuffix} for ${price}. Grab this deal on ${SITE_NAME} before it's gone.`;
   const url = `${SITE_URL}/deal/${deal.slug}`;
 

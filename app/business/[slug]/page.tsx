@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { fetchBusinessProfileBySlug } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
+import { truncateForMeta } from "@/lib/format";
 import DealGrid from "@/components/DealGrid";
 import HowToUseStrip from "@/components/HowToUseStrip";
 import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
@@ -35,12 +36,13 @@ export async function generateMetadata(
 
   const { business, deals } = result;
   const title = `${business.businessName} — Deals & Contact Info`;
-  // business.bio is merchant-written free text (up to 600 chars) — sliced
-  // the same way deal descriptions are on /deal/[slug], so a long bio gets
-  // a clean SERP snippet instead of Google truncating it somewhere
-  // arbitrary past its usual ~155-160 character display limit.
+  // business.bio is merchant-written free text (up to 600 chars) —
+  // truncated at a word boundary, same as deal descriptions on
+  // /deal/[slug], so a long bio gets a clean SERP snippet instead of
+  // Google truncating it somewhere arbitrary past its usual ~155-160
+  // character display limit.
   const description =
-    (business.bio ? business.bio.slice(0, 155) : "") ||
+    (business.bio ? truncateForMeta(business.bio) : "") ||
     `${business.businessName}${business.city ? ` in ${business.city}` : ""} on ${SITE_NAME} — ${deals.length} live deal${deals.length === 1 ? "" : "s"}, contact details and opening hours.`;
   const url = `${SITE_URL}/business/${business.slug}`;
 
