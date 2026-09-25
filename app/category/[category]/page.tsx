@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import CategoryNav from "@/components/CategoryNav";
 import HowToUseStrip from "@/components/HowToUseStrip";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { CATEGORIES } from "@/lib/categories";
+import { categoryBySlug, categoryPath } from "@/lib/categories";
 import CategoryDeals from "./CategoryDeals";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
@@ -33,7 +33,9 @@ export async function generateMetadata(
   }
 ): Promise<Metadata> {
   const params = await props.params;
-  const category = decodeURIComponent(params.category);
+  const def = categoryBySlug(params.category);
+  if (!def) return { title: "Category not found" };
+  const category = def.name;
   // No "| SITE_NAME" suffix here — the root layout's title.template
   // already appends "| MegaDeal", so including it here doubled it up.
   // openGraph/twitter titles aren't run through that template, so those
@@ -41,7 +43,7 @@ export async function generateMetadata(
   const title = `${category} Deals — Up to 50% Off`;
   const socialTitle = `${title} | ${SITE_NAME}`;
   const description = `Browse today's best ${category} deals in New Zealand. Save up to 50% at real local businesses — new deals added daily.`;
-  const url = `${SITE_URL}/category/${encodeURIComponent(category)}`;
+  const url = `${SITE_URL}${categoryPath(category)}`;
 
   return {
     title,
@@ -64,12 +66,15 @@ export default async function CategoryPage(
   }
 ) {
   const params = await props.params;
-  const category = decodeURIComponent(params.category);
-  // The route matches any string, but only these 5 categories are real —
-  // anything else (a typo'd link, a scraped/guessed URL) previously
-  // rendered a 200-status page with an empty deal grid, a classic
-  // soft-404 that wastes crawl budget and can end up indexed as junk.
-  if (!CATEGORIES.some((c) => c.name === category)) notFound();
+  // The route matches any string, but only the slugs in lib/categories.ts
+  // are real — anything else (a typo'd link, a scraped/guessed URL)
+  // previously rendered a 200-status page with an empty deal grid, a
+  // classic soft-404 that wastes crawl budget and can end up indexed as
+  // junk. Old percent-encoded-name URLs never reach here: middleware.ts
+  // 308-redirects them to the slug form first.
+  const def = categoryBySlug(params.category);
+  if (!def) notFound();
+  const category = def.name;
 
   const deals = await fetchAllLiveDealsServer();
 

@@ -5,7 +5,7 @@ import {
   fetchAllBusinessSlugsForSitemap,
 } from "@/lib/fetchDealServer";
 import { fetchMegaShopProductsForServer } from "@/lib/fetchMegaShopServer";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, categoryPath } from "@/lib/categories";
 
 // Deals are created/edited by merchants continuously, so a build-time-only
 // static sitemap would go stale between deploys. Regenerate hourly instead.
@@ -67,7 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const categoryPages: MetadataRoute.Sitemap = CATEGORIES.map((c) => ({
-    url: `${SITE_URL}/category/${encodeURIComponent(c.name)}`,
+    url: `${SITE_URL}${categoryPath(c.name)}`,
     changeFrequency: "daily",
     priority: 0.7,
   }));

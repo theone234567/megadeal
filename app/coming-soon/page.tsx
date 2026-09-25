@@ -5,6 +5,7 @@ import Image from "next/image";
 import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { categoryPath } from "@/lib/categories";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import SampleDealCard from "@/components/SampleDealCard";
 import { getSignupStats } from "@/lib/publicStats";
@@ -654,7 +655,7 @@ export default async function ComingSoonPage() {
             return (
             <Link
               key={name}
-              href={live ? `/category/${encodeURIComponent(name)}` : "#launch-updates"}
+              href={live ? categoryPath(name) : "#launch-updates"}
               aria-label={live ? `${name} deals` : `${name} — get notified when MegaDeal launches`}
               className="group overflow-hidden rounded-[18px] border border-[#e9e6f0] bg-white shadow-[0_8px_22px_rgba(28,18,54,.08)] transition hover:-translate-y-1 hover:shadow-[0_14px_28px_rgba(28,18,54,.12)]"
             >

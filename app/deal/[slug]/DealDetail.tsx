@@ -17,6 +17,7 @@ import StarRating from "@/components/StarRating";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { wixImageUrl } from "@/lib/wixImageUrl";
 import { splitTermsForDisplay } from "@/lib/dealTerms";
+import { categoryPath } from "@/lib/categories";
 
 // The deal (and its related deals) are fetched server-side (see page.tsx)
 // so the description, price, and business info are present in the raw
@@ -101,7 +102,7 @@ export default function DealDetail({
       <Breadcrumbs
         items={[
           ...(category
-            ? [{ name: category, href: `/category/${encodeURIComponent(category)}` }]
+            ? [{ name: category, href: categoryPath(category) }]
             : []),
           { name: deal.name },
         ]}

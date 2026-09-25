@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, categoryPath } from "@/lib/categories";
 import SocialLinks from "./SocialLinks";
 import EmailSignupForm from "./EmailSignupForm";
 
@@ -16,7 +16,7 @@ function footerCategories(siteLaunched: boolean) {
   return CATEGORIES.map((category) => ({
     name: category.name,
     href: siteLaunched
-      ? `/category/${encodeURIComponent(category.name)}`
+      ? categoryPath(category.name)
       : "/coming-soon#categories",
   }));
 }

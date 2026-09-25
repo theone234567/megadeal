@@ -1,23 +1,54 @@
 /**
- * Single source of truth for the site's 5 fixed storefront categories —
+ * Single source of truth for the site's fixed storefront categories —
  * previously duplicated (name/emoji in CategoryNav, id/name maps in
  * fetchDeals.ts and fetchDealServer.ts), which risked the copies drifting
  * apart. IDs are the real Wix Stores category ids for this site.
+ *
+ * `slug` is the category's URL segment (/category/food-drink). Category
+ * URLs used to be the display name percent-encoded
+ * (/category/Food%20%26%20Drink); middleware.ts 308-redirects those old
+ * URLs to the slug form. Treat a slug as permanent once the site has
+ * launched — changing one means another redirect and lost search ranking.
  */
 export interface CategoryDef {
   id: string;
   name: string;
+  slug: string;
   emoji: string;
 }
 
 export const CATEGORIES: CategoryDef[] = [
-  { id: "e0def6d9-af2f-4ea9-91f6-15ce3bd20ac7", name: "Food & Drink", emoji: "🍽️" },
-  { id: "333efe51-7bfe-4357-a79a-5e63952d5791", name: "Beauty & Spa", emoji: "💆" },
-  { id: "606adf09-ff58-490b-97f6-960587bf9cb1", name: "Things To Do", emoji: "🎟️" },
-  { id: "870d3932-8296-4120-8dde-71159aa2bdf1", name: "Travel & Getaways", emoji: "✈️" },
-  { id: "909fc5df-6473-4a39-99e9-c23e665e9288", name: "Health & Fitness", emoji: "🏋️" },
-  { id: "9f5ab7d9-624c-4cc2-b923-7c3a2e97aa6d", name: "Home & Car", emoji: "🔧" },
+  { id: "e0def6d9-af2f-4ea9-91f6-15ce3bd20ac7", name: "Food & Drink", slug: "food-drink", emoji: "🍽️" },
+  { id: "333efe51-7bfe-4357-a79a-5e63952d5791", name: "Beauty & Spa", slug: "beauty-spa", emoji: "💆" },
+  { id: "606adf09-ff58-490b-97f6-960587bf9cb1", name: "Things To Do", slug: "things-to-do", emoji: "🎟️" },
+  { id: "870d3932-8296-4120-8dde-71159aa2bdf1", name: "Travel & Getaways", slug: "travel-getaways", emoji: "✈️" },
+  { id: "909fc5df-6473-4a39-99e9-c23e665e9288", name: "Health & Fitness", slug: "health-fitness", emoji: "🏋️" },
+  { id: "9f5ab7d9-624c-4cc2-b923-7c3a2e97aa6d", name: "Home & Car", slug: "home-car", emoji: "🔧" },
 ];
+
+export function categoryBySlug(slug: string): CategoryDef | undefined {
+  return CATEGORIES.find((c) => c.slug === slug);
+}
+
+/** Site-relative URL of a category's page, from its display name. */
+export function categoryPath(name: string): string {
+  const category = CATEGORIES.find((c) => c.name === name);
+  return `/category/${category ? category.slug : encodeURIComponent(name)}`;
+}
+
+/**
+ * Resolves an old-style category URL segment (the percent-encoded display
+ * name) to its category, for redirecting to the slug URL.
+ */
+export function categoryByLegacySegment(segment: string): CategoryDef | undefined {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(segment);
+  } catch {
+    return undefined;
+  }
+  return CATEGORIES.find((c) => c.name === decoded);
+}
 
 export const CATEGORY_NAME_BY_ID: Record<string, string> = Object.fromEntries(
   CATEGORIES.map((c) => [c.id, c.name])

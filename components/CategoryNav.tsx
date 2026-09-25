@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, categoryPath } from "@/lib/categories";
 
 export default function CategoryNav({ active }: { active?: string }) {
   return (
@@ -18,7 +18,7 @@ export default function CategoryNav({ active }: { active?: string }) {
         {CATEGORIES.map((c) => (
           <Link
             key={c.name}
-            href={`/category/${encodeURIComponent(c.name)}`}
+            href={categoryPath(c.name)}
             className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${
               active === c.name
                 ? "bg-brand-600 text-white"

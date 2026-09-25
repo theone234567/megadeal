@@ -1,5 +1,5 @@
 import { SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, categoryPath } from "@/lib/categories";
 
 // Same reasoning as sitemap.ts and robots.ts: this used to be a static
 // public/llms.txt, hand-written for the launched state (deal pages,
@@ -19,7 +19,7 @@ export const revalidate = 3600;
 const categoryNames = CATEGORIES.map((c) => c.name);
 const categoryPhrase = `${categoryNames.slice(0, -1).join(", ")} and ${categoryNames.at(-1)}`.toLowerCase();
 const categoryLinks = CATEGORIES.map(
-  (c) => `  - ${c.name}: /category/${encodeURIComponent(c.name)}`
+  (c) => `  - ${c.name}: ${categoryPath(c.name)}`
 ).join("\n");
 
 const INTRO = `> MegaDeal is New Zealand's daily deals advertising platform — not a marketplace. It lists time-limited discounts (up to 50% off) from real local businesses across ${categoryPhrase}. MegaDeal never processes payment: customers contact the business directly (call, book, or visit) to redeem a deal, and pay the business, not MegaDeal. Businesses list their own deals through a business portal, paying MegaDeal in advertising credits, never a commission on sales.`;

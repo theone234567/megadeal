@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
+import { categoryByLegacySegment, categoryBySlug } from "@/lib/categories";
 
 const CANONICAL_HOST = new URL(SITE_URL).hostname;
 
@@ -58,6 +59,22 @@ export function middleware(request: NextRequest) {
       new URL(request.nextUrl.pathname + request.nextUrl.search, SITE_URL),
       308
     );
+  }
+
+  // Category URLs moved from the percent-encoded display name
+  // (/category/Food%20%26%20Drink) to a slug (/category/food-drink). Done
+  // here rather than in the page with permanentRedirect(): that page
+  // streams, and a redirect thrown mid-stream can degrade to a client-side
+  // meta refresh, which search engines don't treat as a permanent move.
+  // Query strings (e.g. ?city=) carry over.
+  const categoryMatch = request.nextUrl.pathname.match(/^\/category\/([^/]+)\/?$/);
+  if (categoryMatch && !categoryBySlug(categoryMatch[1])) {
+    const category = categoryByLegacySegment(categoryMatch[1]);
+    if (category) {
+      const target = request.nextUrl.clone();
+      target.pathname = `/category/${category.slug}`;
+      return NextResponse.redirect(target, 308);
+    }
   }
 
   if (!SITE_LAUNCHED && request.nextUrl.pathname === "/") {

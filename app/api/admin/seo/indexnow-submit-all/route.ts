@@ -6,7 +6,7 @@ import {
   fetchAllLiveDealSlugsForSitemap,
   fetchAllBusinessSlugsForSitemap,
 } from "@/lib/fetchDealServer";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, categoryPath } from "@/lib/categories";
 
 // One-off bulk push of every currently-live URL to IndexNow — for kicking
 // off indexing of pages that were already up before IndexNow submission
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       `${SITE_URL}/privacy`,
       `${SITE_URL}/refund-policy`,
     ];
-    const categoryUrls = CATEGORIES.map((c) => `${SITE_URL}/category/${encodeURIComponent(c.name)}`);
+    const categoryUrls = CATEGORIES.map((c) => `${SITE_URL}${categoryPath(c.name)}`);
     const deals = await fetchAllLiveDealSlugsForSitemap();
     const dealUrls = deals.map((d) => `${SITE_URL}/deal/${d.slug}`);
     const businessSlugs = await fetchAllBusinessSlugsForSitemap();
