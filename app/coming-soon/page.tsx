@@ -293,7 +293,7 @@ export default async function ComingSoonPage() {
                 (not the section's own height, which is driven by the text
                 column and was the earlier "elephant too big" bug), width
                 follows automatically from the aspect ratio. */}
-            <div className="relative h-[clamp(190px,20vw,320px)] aspect-[1800/619]">
+            <div className="relative h-[clamp(240px,26vw,420px)] aspect-[1800/619]">
               <Image
                 src={art.aucklandCard as string}
                 alt="The MegaDeal elephant mascot in front of the Auckland skyline and Sky Tower"
@@ -303,24 +303,55 @@ export default async function ComingSoonPage() {
                 loading="eager"
                 fetchPriority="high"
               />
-              {/* This box's own left edge sits inside the purple field
-                  (there's always purple to its left, between it and the
-                  text column) — a hard rectangle there reads as exactly
-                  the "photo in a separate box" look this hero was
-                  rebuilt to get away from. Blends the box's own left edge
-                  into the surrounding purple; no rounded corners, no
-                  border, no shadow — nothing that would read as a card
-                  frame. No fade needed on the other three edges: the photo
-                  is flush against the section's own right edge (this
-                  wrapper is justify-end), and vertically centered with the
-                  same purple visible above and below by design, not
-                  cropped off — nothing there to blend either. */}
+              {/* Fades on three sides — left, top, bottom — blend this
+                  box's own edges into the surrounding purple instead of
+                  showing a hard rectangle (a plain sky-blue-meets-purple
+                  line reads as "a photo stuck in a box", exactly the look
+                  this hero was rebuilt to avoid). No rounded corners, no
+                  border, no drop shadow — nothing that would read as a
+                  card frame, just the photo itself dissolving into the
+                  background. No fade on the right: the photo is flush
+                  against the section's own right edge (this wrapper is
+                  justify-end), so there's no purple beyond it on that
+                  side to blend into — it just continues off-screen.
+
+                  Sized in %, not px: this box is object-contain (never
+                  cropped), so — unlike the old cover-cropped version,
+                  where anything near an edge was already hidden by the
+                  crop — the character's real silhouette can sit close to
+                  the artwork's own edges, and a fixed-px fade doesn't
+                  scale with the box's responsive size. Measured against
+                  the actual source file (edge-detected against its
+                  background gradient): the raised paw's nearest pixel
+                  sits at 11.6% of width, the head-tuft's at 5.2% of
+                  height — these percentages stay clear of both with a
+                  margin, at every box size. Bottom has no clear margin at
+                  all (the hoodie hem runs to the artwork's true bottom
+                  edge) but the overlap there is purple fabric fading into
+                  the same purple wash, so it reads as continuation, not
+                  concealment. */}
               <div
                 aria-hidden
-                className="absolute inset-y-0 left-0 w-16"
+                className="absolute inset-y-0 left-0 w-[8%]"
                 style={{
                   backgroundImage:
-                    "linear-gradient(90deg, rgba(101,15,199,0.9) 0%, rgba(101,15,199,0) 100%)",
+                    "linear-gradient(90deg, rgba(101,15,199,0.95) 0%, rgba(101,15,199,0) 100%)",
+                }}
+              />
+              <div
+                aria-hidden
+                className="absolute inset-x-0 top-0 h-[3.5%]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(180deg, rgba(101,15,199,0.85) 0%, rgba(101,15,199,0) 100%)",
+                }}
+              />
+              <div
+                aria-hidden
+                className="absolute inset-x-0 bottom-0 h-[5%]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(0deg, rgba(101,15,199,0.85) 0%, rgba(101,15,199,0) 100%)",
                 }}
               />
             </div>
