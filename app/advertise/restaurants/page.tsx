@@ -16,7 +16,7 @@ import {
   UsersIcon,
   UtensilsIcon,
 } from "@/components/icons";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
@@ -30,7 +30,7 @@ import { getMegadealArt } from "@/lib/megadealAssets";
 // than the consumer-facing pages still gated behind SITE_LAUNCHED).
 const PAGE_LIVE_FOR_SEARCH = true;
 
-const TITLE = "Restaurant Advertising Auckland";
+const TITLE = "Restaurant Advertising Auckland | 6 Months Free";
 const DESCRIPTION =
   "Promote your Auckland restaurant or café with MegaDeal. Apply before launch for up to six months of free advertising and 0% commission. T&Cs apply.";
 
@@ -156,6 +156,52 @@ const OFFER_IDEAS = [
   },
 ] as const;
 
+// Each entry is a real heading with its own copy, same principle as the
+// SUBCATEGORIES list on /advertise/beauty-spa — this page's description
+// and share image promise "restaurants & cafés", but the body never named
+// cafés, bars, bakeries or takeaways, so an owner searching for their own
+// kind of business had nothing on the page to match. Bar ideas are
+// deliberately food- and experience-led: the Sale and Supply of Alcohol
+// Act restricts advertising discounted alcohol, so none are suggested.
+const FOOD_BUSINESS_TYPES = [
+  {
+    id: "cafes",
+    heading: "Cafés & Brunch Spots",
+    copy: "Coffee, brunch and lunch trade can swing a lot across the week. A brunch combo or a coffee-and-cabinet pairing can bring new locals through the door at the times you have room.",
+    offerIdeas: ["Weekday brunch for two", "Coffee + pastry pairing", "Lunch combo with a drink"],
+  },
+  {
+    id: "restaurants",
+    heading: "Restaurants & Dining",
+    copy: "Fill midweek tables and early sittings with a set menu, a shared-plates package or a complimentary course, without discounting your whole menu.",
+    offerIdeas: ["Midweek set menu for two", "Early-sitting complimentary starter", "Shared-plates package"],
+  },
+  {
+    id: "bars-pubs",
+    heading: "Bars, Pubs & Wine Bars",
+    copy: "Promote the food side of your venue on the nights that need a lift. A sharing platter, a kitchen special or a quiz-night table can give a new crowd a reason to try you.",
+    offerIdeas: ["Weeknight sharing platter", "Early-evening kitchen special", "Quiz-night table booking"],
+  },
+  {
+    id: "bakeries-desserts",
+    heading: "Bakeries, Desserts & Sweet Treats",
+    copy: "Introduce locals to your cabinet with a treat box or a dessert pairing during the slower part of the afternoon.",
+    offerIdeas: ["Afternoon treat box", "Dessert + coffee pairing", "Weekend pastry selection"],
+  },
+  {
+    id: "takeaways",
+    heading: "Takeaways & Quick Eats",
+    copy: "Whether diners pick up or eat in, a simple combo at one clear price can win over people who live or work nearby.",
+    offerIdeas: ["Weekday lunch combo", "Family meal deal", "Early-dinner pickup special"],
+  },
+  {
+    id: "group-dining",
+    heading: "Group Dining & Functions",
+    copy: "Private dining rooms and function spaces can promote group menus for work lunches, birthdays and celebrations on the days that aren't already booked.",
+    offerIdeas: ["Group set menu", "Midweek work-lunch package", "Birthday dinner package"],
+  },
+] as const;
+
 const STEPS = [
   {
     number: "01",
@@ -186,6 +232,41 @@ export default function RestaurantAdvertisingPage() {
     <main className={plusJakartaSans.className}>
       <ConversionTracker />
       <ViewContentTracker contentName="advertise_restaurants" />
+      {/* Service entity for this specific offering — /list-your-business
+          describes MegaDeal's advertising generally; this is what lets a
+          search or AI answer engine connect "restaurant advertising in
+          Auckland" to MegaDeal specifically. */}
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            serviceType: "Restaurant advertising",
+            name: `${SITE_NAME} restaurant & café advertising`,
+            description:
+              "Zero-commission advertising for Auckland restaurants, cafés, bars and other food businesses. Diners book and pay the business directly; MegaDeal never takes a cut of sales.",
+            provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+            areaServed: { "@type": "City", name: "Auckland" },
+            audience: {
+              "@type": "BusinessAudience",
+              audienceType: "Restaurants, cafés, bars, bakeries, takeaways and other food businesses",
+            },
+            url: `${SITE_URL}/advertise/restaurants`,
+            makesOffer: {
+              "@type": "Offer",
+              name: "Up to 6 months free advertising",
+              description:
+                "Up to 6 months of free advertising credits for qualifying businesses that join MegaDeal before its Auckland launch, using code WELCOME6. Conditions apply.",
+              price: "0",
+              priceCurrency: "NZD",
+              availability: "https://schema.org/LimitedAvailability",
+              url: `${SITE_URL}/advertise/restaurants`,
+            },
+          }),
+        }}
+      />
 
       {/* Skip link — this page has no site-wide equivalent to inherit, so
           it's scoped here rather than added to the global layout. */}
@@ -429,6 +510,53 @@ export default function RestaurantAdvertisingPage() {
               Ideas for inspiration, not live offers. Choose pricing and terms
               that work for your business.
             </p>
+          </div>
+        </section>
+
+        {/* Food business types — shares the offer ideas section's
+            background band (no top padding, divided by a hairline) so the
+            page's alternating section colours stay intact. */}
+        <section id="food-businesses" className="scroll-mt-[100px] px-4 pb-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
+          <div className="mx-auto max-w-[1184px] border-t pt-[94px] text-center" style={{ borderColor: "#E8E1EF" }}>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6519C7" }}>
+              Cafés, restaurants, bars and more
+            </p>
+            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#241138" }}>
+              Made for Auckland&rsquo;s food businesses.
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-base" style={{ color: "#706178" }}>
+              Whatever you serve, promote the offer that suits your menu and
+              your quieter times.
+            </p>
+
+            <div className="mt-10 grid grid-cols-1 gap-6 text-left sm:grid-cols-2 lg:grid-cols-3">
+              {FOOD_BUSINESS_TYPES.map((t) => (
+                <div
+                  key={t.id}
+                  id={t.id}
+                  className="scroll-mt-[100px] rounded-[24px] border bg-white p-6 shadow-card"
+                  style={{ borderColor: "#E8E1EF" }}
+                >
+                  <h3 className={`${fredoka.className} text-lg font-semibold`} style={{ color: "#241138" }}>
+                    {t.heading}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed" style={{ color: "#706178" }}>
+                    {t.copy}
+                  </p>
+                  <p className="mt-4 text-[10px] font-bold uppercase tracking-wide" style={{ color: "#706178" }}>
+                    Offer ideas
+                  </p>
+                  <ul className="mt-1.5 space-y-1">
+                    {t.offerIdeas.map((idea) => (
+                      <li key={idea} className="flex items-start gap-2 text-sm font-semibold" style={{ color: "#241138" }}>
+                        <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#6519C7]" />
+                        {idea}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

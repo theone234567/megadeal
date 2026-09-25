@@ -22,7 +22,7 @@ import {
   UsersIcon,
   ZapIcon,
 } from "@/components/icons";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
@@ -335,6 +335,39 @@ export default function BeautySpaAdvertisingPage() {
     <main className={plusJakartaSans.className}>
       <ConversionTracker />
       <ViewContentTracker contentName="advertise_beauty_spa" />
+      {/* Service entity for this specific offering — see the matching
+          block on /advertise/restaurants. */}
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            serviceType: "Beauty and spa advertising",
+            name: `${SITE_NAME} beauty & spa advertising`,
+            description:
+              "Zero-commission advertising for Auckland nail salons, day spas, hair salons, barbers, beauty therapists, lash and brow studios and massage businesses. Customers book and pay the business directly; MegaDeal never takes a cut of sales.",
+            provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+            areaServed: { "@type": "City", name: "Auckland" },
+            audience: {
+              "@type": "BusinessAudience",
+              audienceType: "Nail salons, day spas, hair salons, barbers, beauty therapists, lash and brow studios, massage businesses",
+            },
+            url: `${SITE_URL}/advertise/beauty-spa`,
+            makesOffer: {
+              "@type": "Offer",
+              name: "Up to 6 months free advertising",
+              description:
+                "Up to 6 months of free advertising credits for qualifying businesses that join MegaDeal before its Auckland launch, using code WELCOME6. Conditions apply.",
+              price: "0",
+              priceCurrency: "NZD",
+              availability: "https://schema.org/LimitedAvailability",
+              url: `${SITE_URL}/advertise/beauty-spa`,
+            },
+          }),
+        }}
+      />
 
       {/* Skip link — no site-wide equivalent to inherit, same precedent as
           /advertise/restaurants. */}
