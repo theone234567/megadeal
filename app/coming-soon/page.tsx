@@ -274,92 +274,53 @@ export default async function ComingSoonPage() {
             just at a larger size (see the sizing on that panel below). */}
         {hasComposedCard && (
           <div className="absolute inset-0 hidden lg:flex lg:items-center lg:justify-end">
-            {/* Right-anchored, capped at 1440px wide — not a plain inset-0
-                image. object-fit: cover ties the crop's zoom level to its
-                own container's size, and a container that's simply "the
-                viewport" keeps growing forever on a wider screen: past
-                about 1024px, the crop that kept the elephant clear of the
-                text column at one width put him squarely behind the
-                headline at another, because he was a different size and
-                in a different spot every time the container changed.
-                Capping the image's own container means the crop — the
-                elephant's size and position within it — stops changing
-                once the viewport passes 1440px; everything past that just
-                shows more flat purple to the left of a fixed-size photo,
-                a perfectly normal way for a hero to use extra width on an
-                ultrawide monitor. Below 1440px this still tracks the
-                viewport exactly like a plain full-bleed image would.
+            {/* No cropping, at all — this is the important change from the
+                previous version. object-fit: cover (used before) fills its
+                box completely by magnifying and cropping whatever doesn't
+                fit; that's what "zoomed" actually meant — it wasn't a bad
+                crop position, it was cover itself, doing exactly what
+                cover always does. No amount of resizing or repositioning
+                that box was ever going to stop it looking zoomed, because
+                the box's aspect ratio never matched the photo's own.
 
-                h-[72%], not the full section height: the section's own
-                height is driven by the text content (badge, headline,
-                paragraph, proof points, CTA cards) stacked on the left,
-                which needs more room than a comfortably-sized photo does.
-                Letting the photo stretch to match that full height made
-                the elephant read as oversized — object-fit: cover scales
-                the whole photo to fill whatever height it's given, so a
-                taller box directly means a bigger elephant. Giving the
-                photo its own shorter height and centering it vertically
-                decouples the two: the elephant reads as sitting within
-                the scene rather than dominating it, independent of how
-                tall the text column happens to make the section.
-
-                The gradient wash below is a sibling, not nested inside
-                this capped box — it needs to stay anchored to the
-                section's true left edge (where the text column is) and
-                its own full height, regardless of where the image's own
-                (shorter, centered) box starts and ends. */}
-            <div className="relative h-[72%] w-full max-w-[1440px] overflow-hidden">
+                Fixed here by making the box's aspect ratio match the
+                artwork's native ratio exactly (aspect-[1800/619], its real
+                pixel dimensions) instead of stretching to fill the
+                section's height or a fixed max-width. With the ratios
+                identical, object-contain and object-cover produce the
+                same result — the whole photo, undistorted, at whatever
+                size the box happens to be. Sized by height via a clamp
+                (not the section's own height, which is driven by the text
+                column and was the earlier "elephant too big" bug), width
+                follows automatically from the aspect ratio. */}
+            <div className="relative h-[clamp(190px,20vw,320px)] aspect-[1800/619]">
               <Image
                 src={art.aucklandCard as string}
                 alt="The MegaDeal elephant mascot in front of the Auckland skyline and Sky Tower"
                 fill
-                sizes="100vw"
-                className="object-cover"
-                style={{ objectPosition: "46% center" }}
+                sizes="50vw"
+                className="object-contain"
                 loading="eager"
                 fetchPriority="high"
               />
-              {/* This box's own left edge is a hard cut between the photo
-                  and the flat purple behind it once the viewport is wide
-                  enough that the box no longer reaches the section's true
-                  left edge (>1440px) — without this, that showed up as
-                  exactly the visible vertical seam the whole point of this
-                  rebuild was to get rid of. A short fade right at this
-                  box's own edge (not anchored to the viewport, so it moves
-                  with the box) blends it back into the background at any
-                  width. Invisible below 1440px, since the text-column wash
-                  already covers this same span there. */}
+              {/* This box's own left edge sits inside the purple field
+                  (there's always purple to its left, between it and the
+                  text column) — a hard rectangle there reads as exactly
+                  the "photo in a separate box" look this hero was
+                  rebuilt to get away from. Blends the box's own left edge
+                  into the surrounding purple; no rounded corners, no
+                  border, no shadow — nothing that would read as a card
+                  frame. No fade needed on the other three edges: the photo
+                  is flush against the section's own right edge (this
+                  wrapper is justify-end), and vertically centered with the
+                  same purple visible above and below by design, not
+                  cropped off — nothing there to blend either. */}
               <div
                 aria-hidden
-                className="absolute inset-y-0 left-0 w-24"
+                className="absolute inset-y-0 left-0 w-16"
                 style={{
                   backgroundImage:
-                    "linear-gradient(90deg, rgba(101,15,199,1) 0%, rgba(101,15,199,0) 100%)",
-                }}
-              />
-              {/* Now that this box is shorter than the section (h-[72%],
-                  centered), its top and bottom edges sit inside the purple
-                  field rather than at the section's own top/bottom edges —
-                  a hard rectangle there would be exactly the "photo in a
-                  separate box" look this hero was rebuilt to get away
-                  from. These two fades blend the box's own top and bottom
-                  into the surrounding purple the same way the left fade
-                  blends its side. No rounded corners, no border, no
-                  shadow — nothing that would read as a card frame. */}
-              <div
-                aria-hidden
-                className="absolute inset-x-0 top-0 h-16"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(180deg, rgba(101,15,199,0.9) 0%, rgba(101,15,199,0) 100%)",
-                }}
-              />
-              <div
-                aria-hidden
-                className="absolute inset-x-0 bottom-0 h-16"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(0deg, rgba(101,15,199,0.9) 0%, rgba(101,15,199,0) 100%)",
+                    "linear-gradient(90deg, rgba(101,15,199,0.9) 0%, rgba(101,15,199,0) 100%)",
                 }}
               />
             </div>
