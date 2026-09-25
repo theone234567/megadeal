@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { safeJsonLd } from "@/lib/safeJsonLd";
 
 export const metadata: Metadata = {
   title: "How to Redeem a Deal",
@@ -14,10 +15,17 @@ export const metadata: Metadata = {
 interface Step {
   number: string;
   text: ReactNode;
+  // Plain-string version for JSON-LD (HowTo steps need a text value, not
+  // JSX) — only needed where `text` isn't already a plain string.
+  schemaText?: string;
 }
 
 const STEPS: Step[] = [
-  { number: "1", text: <>Open the deal page and tap &quot;Get this deal&quot;</> },
+  {
+    number: "1",
+    text: <>Open the deal page and tap &quot;Get this deal&quot;</>,
+    schemaText: 'Open the deal page and tap "Get this deal"',
+  },
   {
     number: "2",
     text: "Call, message, or visit the business using the contact details shown — some deals need a booking ahead of time, others are walk-in, so check the deal's fine print",
@@ -32,13 +40,42 @@ const STEPS: Step[] = [
         you can quote so the business knows straight away
       </>
     ),
+    schemaText:
+      "Mention the MegaDeal offer when you get in touch or arrive — most deal pages show a short code (like MEGA-7K4XQ) you can quote so the business knows straight away",
   },
   { number: "4", text: "Pay the business directly at the discounted price and enjoy" },
 ];
 
+function stepSchemaText(step: Step): string {
+  return step.schemaText ?? (typeof step.text === "string" ? step.text : "");
+}
+
 export default function RedeemPage() {
   return (
     <main className={plusJakartaSans.className}>
+      {/* Structured how-to data — this page is the dedicated, detailed
+          answer to "how do I redeem a MegaDeal deal", so it's the direct
+          target for that question from an AI answer engine or Google's
+          "how to" rich result, not just the shorter 3-step summary on
+          /how-it-works. */}
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd({
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            name: `How to redeem a deal on ${SITE_NAME}`,
+            description:
+              "How to redeem a MegaDeal deal — no voucher or order confirmation, just contact the business directly and quote your code.",
+            step: STEPS.map((s) => ({
+              "@type": "HowToStep",
+              position: Number(s.number),
+              text: stepSchemaText(s),
+            })),
+          }),
+        }}
+      />
       {/* Hero */}
       <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
