@@ -12,9 +12,12 @@ const TIME_TRIGGER_MS = 18_000;
 // Pages where an email-capture popup would just get in the way of the
 // actual point of the page — each of these already has its own prominent,
 // on-page signup/application form, so a popup on top is redundant at best
-// and actively counterproductive on /list-your-business (interrupting a
-// business application with a customer-deals prompt).
-const SUPPRESSED_PREFIXES = ["/list-your-business", "/coming-soon", "/portal", "/admin"];
+// and actively counterproductive: it pitches "get local deals" (a
+// customer-facing ask) to someone who's there to apply to advertise their
+// business, interrupting that with the wrong audience's pitch. Covers both
+// /advertise/restaurants and /advertise/beauty-spa (and any future
+// industry landing page added under the same prefix).
+const SUPPRESSED_PREFIXES = ["/list-your-business", "/advertise", "/coming-soon", "/portal", "/admin"];
 
 /**
  * Small, dismissible bottom-corner email-capture prompt — deliberately NOT
