@@ -19,7 +19,7 @@ const FAQ_JSONLD = [
   { q: "Do I pay MegaDeal for a deal?", a: "No — MegaDeal never charges customers anything, and there's no voucher to buy. Deals are redeemed and paid for directly with the business, at the discounted price shown on the deal page." },
   { q: "Do I need an account to use MegaDeal?", a: "No — browsing and redeeming deals needs no signup or account at all. Only businesses need to create an account, to list and manage their own deals." },
   { q: "Is my payment information safe?", a: "There's nothing to keep safe — MegaDeal never asks for or stores your card details. You pay the business directly, however they normally take payment, the same as any other in-person or phone purchase." },
-  { q: "How do I redeem a deal?", a: "Open the deal page and tap \"Get this deal\" to reveal the business's contact details and a short code. Get in touch or visit the business directly, quote that code, and pay them at the discounted price." },
+  { q: "How do I redeem a deal?", a: "Open the deal page and tap \"Get deal code\" to reveal the business's contact details and a short code. Get in touch or visit the business directly, quote that code, and pay them at the discounted price." },
   { q: "How long do I have to use a deal?", a: "Every deal shows its own validity window on the deal page. Once it expires, the business is under no obligation to honour the discounted price." },
   { q: "Can I redeem the same deal more than once?", a: "Deals are for genuine personal use — unless a listing says otherwise, that's one redemption per person. A business can decline to honour a deal it reasonably believes is being reused or resold." },
   { q: "How do I know a business is legitimate?", a: "Every business is reviewed by our team before their first deal goes live — we don't publish listings automatically." },
@@ -49,7 +49,7 @@ const FAQS: Faq[] = [
     q: "How do I redeem a deal?",
     a: (
       <>
-        Open the deal page and tap &quot;Get this deal&quot; to reveal
+        Open the deal page and tap &quot;Get deal code&quot; to reveal
         the business&apos;s contact details and a short code (like{" "}
         <span className="font-mono font-semibold">MEGA-7K4XQ</span>).
         Get in touch or visit the business directly, quote that code

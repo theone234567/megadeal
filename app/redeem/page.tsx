@@ -23,8 +23,8 @@ interface Step {
 const STEPS: Step[] = [
   {
     number: "1",
-    text: <>Open the deal page and tap &quot;Get this deal&quot;</>,
-    schemaText: 'Open the deal page and tap "Get this deal"',
+    text: <>Open the deal page and tap &quot;Get deal code&quot;</>,
+    schemaText: 'Open the deal page and tap "Get deal code"',
   },
   {
     number: "2",
