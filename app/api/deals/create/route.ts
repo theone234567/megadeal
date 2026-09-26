@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { bookingConflict, hasUsableBookingRoute, isBookingChoice } from "@/lib/booking";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
@@ -64,6 +65,17 @@ export async function POST(req: NextRequest) {
   if (!dealName || !description || !terms) {
     return NextResponse.json({ error: "Deal name, description and terms are required." }, { status: 400 });
   }
+  // Explicit on every new submission (lib/booking.ts): the public page
+  // never guesses "no booking needed" from a missing link or an unticked
+  // box, so the merchant has to say.
+  const bookingRequirement = body.bookingRequirement;
+  if (!isBookingChoice(bookingRequirement)) {
+    return NextResponse.json({ error: "Choose whether customers need to book." }, { status: 400 });
+  }
+  const conflict = bookingConflict(bookingRequirement, terms);
+  if (conflict) {
+    return NextResponse.json({ error: conflict }, { status: 400 });
+  }
   if (!categoryId) {
     return NextResponse.json({ error: "Choose a category." }, { status: 400 });
   }
@@ -104,6 +116,23 @@ export async function POST(req: NextRequest) {
   }
   if (merchant.status === "Suspended") {
     return NextResponse.json({ error: "Your account is suspended. Contact us for help." }, { status: 403 });
+  }
+  // A deal that requires booking must give customers a way to book.
+  if (
+    bookingRequirement === "required" &&
+    !hasUsableBookingRoute({
+      bookingUrl: merchant.bookingUrl || null,
+      phone: merchant.phone || null,
+      bookingEmail: merchant.bookingEmail || null,
+    })
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "This deal needs a booking, but your profile has no booking link, phone number or booking email. Add one in your profile first.",
+      },
+      { status: 400 }
+    );
   }
   const credits = Number(merchant.creditsBalance) || 0;
   if (credits < 1) {
@@ -222,6 +251,7 @@ export async function POST(req: NextRequest) {
     status: "Pending Approval",
     productId,
     isFlash,
+    bookingRequirement,
     dealCode: generateDealCode(),
     // The editing copies have served their purpose. Leaving draftData
     // behind would mean a submitted deal carrying a stale second version

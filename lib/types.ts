@@ -1,3 +1,5 @@
+import type { BookingRequirement } from "./booking";
+
 /**
  * "Draft" is a deal the merchant is still writing: saved server-side, but
  * with no Wix Stores product behind it and no credit spent. That absence
@@ -53,4 +55,7 @@ export interface Deal {
   businessRating: number | null;
   businessReviewCount: number | null;
   dealCode: string | null;
+  /** Whether the customer must book to use this deal — see lib/booking.ts.
+   *  "unknown" for deals written before the field existed. */
+  bookingRequirement: BookingRequirement;
 }

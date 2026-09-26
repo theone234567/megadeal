@@ -1,0 +1,300 @@
+import { splitTermsForDisplay, STANDARD_TERMS } from "./dealTerms";
+import { safeWebHref } from "./socialLinks";
+
+/**
+ * Whether a customer has to book to use a particular deal, and which
+ * booking/contact actions the deal page offers as a result.
+ *
+ * Stored per deal on the Deals row as `bookingRequirement`. Deals written
+ * before the field existed read as "unknown": nothing is inferred from a
+ * missing booking link or an unticked box, because the absence of
+ * "Bookings essential" is not evidence that no booking is needed. The one
+ * inference allowed is the affirmative one — a legacy deal whose terms
+ * say "Bookings essential" is treated as booking required.
+ */
+export type BookingRequirement = "required" | "recommended" | "not_required" | "unknown";
+
+/** The choices a merchant makes on the deal form. "unknown" is only ever
+ *  read from old data, never offered. */
+export const BOOKING_CHOICES: {
+  value: Exclude<BookingRequirement, "unknown">;
+  label: string;
+  hint: string;
+}[] = [
+  {
+    value: "required",
+    label: "Booking required",
+    hint: "Customers must book before they visit",
+  },
+  {
+    value: "recommended",
+    label: "Booking recommended",
+    hint: "Booking is advised but not a condition",
+  },
+  {
+    value: "not_required",
+    label: "No booking needed",
+    hint: "Customers can just turn up and show their code",
+  },
+];
+
+export function parseBookingRequirement(value: unknown): BookingRequirement {
+  return value === "required" || value === "recommended" || value === "not_required" ? value : "unknown";
+}
+
+/** A choice the deal form and create route accept (i.e. not "unknown"). */
+export function isBookingChoice(value: unknown): value is Exclude<BookingRequirement, "unknown"> {
+  return parseBookingRequirement(value) !== "unknown";
+}
+
+const BOOKINGS_ESSENTIAL = STANDARD_TERMS.find((t) => t.id === "bookings")!.label.toLowerCase();
+
+/** True when the rendered terms contain the standard "Bookings essential"
+ *  condition (exact label, as written by the deal form). */
+export function termsSayBookingsEssential(terms: string | null | undefined): boolean {
+  if (!terms) return false;
+  return splitTermsForDisplay(terms).some((piece) => piece.toLowerCase() === BOOKINGS_ESSENTIAL);
+}
+
+/** The requirement the public page acts on: the stored choice if there is
+ *  one, otherwise "required" only when the terms affirmatively say so. */
+export function effectiveBookingRequirement(
+  stored: BookingRequirement,
+  terms: string | null | undefined,
+): BookingRequirement {
+  if (stored !== "unknown") return stored;
+  return termsSayBookingsEssential(terms) ? "required" : "unknown";
+}
+
+/**
+ * The form/create-route conflict check: "No booking needed" alongside the
+ * ticked "Bookings essential" condition contradicts itself. Returns the
+ * message to show, or null. A merchant's own free-text conditions can't
+ * be checked this way and are left for them to keep consistent.
+ */
+export function bookingConflict(requirement: unknown, terms: string | null | undefined): string | null {
+  if (requirement === "not_required" && termsSayBookingsEssential(terms)) {
+    return "You've chosen “No booking needed” but also ticked “Bookings essential”. Change one of them so they agree.";
+  }
+  return null;
+}
+
+export interface BookingContactInput {
+  bookingUrl: string | null;
+  phone: string | null;
+  bookingEmail: string | null;
+}
+
+export interface Phone {
+  display: string;
+  href: string;
+}
+
+/** A tappable phone link, or null when there aren't enough digits for a
+ *  real number (a live call button needs a callable number). */
+export function phoneLink(phone: string | null | undefined): Phone | null {
+  const display = (phone ?? "").trim();
+  if (!display) return null;
+  const digits = display.replace(/[^0-9+]/g, "");
+  if (digits.replace(/\D/g, "").length < 7) return null;
+  return { display, href: `tel:${digits}` };
+}
+
+const EMAIL_RE = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[^\s@<>()[\]\\,;:"]+$/;
+
+/** A mailto link that opens a draft (never sends anything), or null when
+ *  the address isn't a plausible email. */
+export function emailLink(email: string | null | undefined, subject: string, body?: string): string | null {
+  const address = (email ?? "").trim();
+  if (!EMAIL_RE.test(address)) return null;
+  const params = [`subject=${encodeURIComponent(subject)}`];
+  if (body) params.push(`body=${encodeURIComponent(body)}`);
+  return `mailto:${address}?${params.join("&")}`;
+}
+
+/** True when a booking-required deal has at least one usable route. */
+export function hasUsableBookingRoute(contacts: BookingContactInput): boolean {
+  return Boolean(
+    safeWebHref(contacts.bookingUrl) || phoneLink(contacts.phone) || emailLink(contacts.bookingEmail, "x"),
+  );
+}
+
+export type BookingActionKind = "book_online" | "call" | "email";
+
+export interface BookingAction {
+  kind: BookingActionKind;
+  label: string;
+  href: string;
+  external: boolean;
+}
+
+export interface BookingPlan {
+  requirement: BookingRequirement;
+  /** "Before you book" for booking offers, "Before you go" otherwise. */
+  conditionsHeading: string;
+  /** Heading and sentence shown with the revealed code. */
+  nextStepHeading: string;
+  instruction: string;
+  /** Deal-specific next actions, most direct first. */
+  actions: BookingAction[];
+  phone: Phone | null;
+  /** The "a code isn't a reservation" note, when booking applies. */
+  reservationNote: string | null;
+  /** The middle step of the 1-2-3 list. */
+  howToStep: string;
+  /** "Bookings & contact" or "Contact & visit" in About the business. */
+  contactHeading: string;
+  /** Neutrally labelled general business contacts for About. */
+  aboutActions: BookingAction[];
+}
+
+export function bookingPlan(
+  requirement: BookingRequirement,
+  contacts: BookingContactInput,
+  businessName: string | null,
+  dealName: string,
+  /** False for a deal with no code: the wording then asks customers to
+   *  mention MegaDeal instead of quoting a code that doesn't exist. */
+  hasCode = true,
+): BookingPlan {
+  const business = businessName || "the business";
+  const quote = hasCode ? "Quote this deal code" : "Mention this MegaDeal offer";
+  const quoteStep = hasCode ? "quote the code" : "mention MegaDeal";
+  const bookingHref = safeWebHref(contacts.bookingUrl);
+  const phone = phoneLink(contacts.phone);
+  const emailHref = emailLink(contacts.bookingEmail, `MegaDeal: ${dealName}`);
+  const booking = requirement === "required" || requirement === "recommended";
+
+  const bookOnline: BookingAction | null = bookingHref
+    ? {
+        kind: "book_online",
+        label: "Book online",
+        href: bookingHref,
+        external: true,
+      }
+    : null;
+
+  let actions: BookingAction[] = [];
+  let nextStepHeading: string;
+  let instruction: string;
+  let howToStep: string;
+
+  if (booking) {
+    const call: BookingAction | null = phone
+      ? {
+          kind: "call",
+          label: "Call to book",
+          href: phone.href,
+          external: false,
+        }
+      : null;
+    const email: BookingAction | null = emailHref
+      ? {
+          kind: "email",
+          label: "Email to book",
+          href: emailHref,
+          external: false,
+        }
+      : null;
+    actions = [bookOnline, call, email].filter((a): a is BookingAction => a !== null);
+    const primary = actions[0]?.kind;
+    const verb =
+      primary === "book_online"
+        ? "book online"
+        : primary === "call"
+          ? "call to book"
+          : primary === "email"
+            ? "email to book"
+            : "contact the business";
+    nextStepHeading = requirement === "recommended" ? "Booking recommended" : `Your next step: ${verb}`;
+    instruction =
+      primary === "book_online"
+        ? `${quote} when you book with ${business}.`
+        : primary === "call"
+          ? `${quote} when you call ${business}.`
+          : primary === "email"
+            ? `${quote} when you email ${business}.`
+            : `${quote} when you contact ${business}. Check the conditions for how to book.`;
+    if (requirement === "recommended") {
+      instruction = `Booking ahead is advised. ${instruction}`;
+    }
+    howToStep =
+      primary === "book_online"
+        ? `Book online and ${quoteStep}`
+        : primary === "call"
+          ? `Call ${business} and ${quoteStep}`
+          : primary === "email"
+            ? `Email ${business} and ${quoteStep}`
+            : `Contact ${business} and ${quoteStep}`;
+  } else if (requirement === "not_required") {
+    // Deliberately no "Book online", even when the business has a booking
+    // link: that link is for their other services, and offering it here
+    // would contradict "no booking needed".
+    nextStepHeading = "No booking needed";
+    instruction = hasCode
+      ? `Show your code when you visit ${business}.`
+      : `Mention this MegaDeal offer when you visit ${business}.`;
+    howToStep = `Visit ${business} and ${hasCode ? "show the code" : "mention MegaDeal"}`;
+  } else {
+    // Unknown (legacy): neutral contact routes, no promise either way.
+    const call: BookingAction | null = phone
+      ? {
+          kind: "call",
+          label: "Call the business",
+          href: phone.href,
+          external: false,
+        }
+      : null;
+    const email: BookingAction | null = emailHref
+      ? {
+          kind: "email",
+          label: "Email the business",
+          href: emailHref,
+          external: false,
+        }
+      : null;
+    actions = [call, email].filter((a): a is BookingAction => a !== null);
+    nextStepHeading = "Contact the business";
+    instruction = `${quote} when you contact ${business}. Check the conditions for when and how to use it.`;
+    howToStep = `Contact ${business} and ${quoteStep}`;
+  }
+
+  // About the business repeats the booking actions for booking offers;
+  // otherwise it lists general contacts under neutral labels.
+  const aboutActions: BookingAction[] = booking
+    ? actions
+    : (
+        [
+          bookOnline ? { ...bookOnline, label: "Online booking" } : null,
+          phone
+            ? {
+                kind: "call" as const,
+                label: "Call the business",
+                href: phone.href,
+                external: false,
+              }
+            : null,
+          emailHref
+            ? {
+                kind: "email" as const,
+                label: "Email the business",
+                href: emailHref,
+                external: false,
+              }
+            : null,
+        ] as (BookingAction | null)[]
+      ).filter((a): a is BookingAction => a !== null);
+
+  return {
+    requirement,
+    conditionsHeading: booking ? "Before you book" : "Before you go",
+    nextStepHeading,
+    instruction,
+    actions,
+    phone,
+    reservationNote: booking ? `A code doesn’t reserve a booking — ${business} confirms it directly.` : null,
+    howToStep,
+    contactHeading: booking ? "Bookings & contact" : "Contact & visit",
+    aboutActions,
+  };
+}

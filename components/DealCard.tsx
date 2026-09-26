@@ -8,7 +8,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { wixImageUrl } from "@/lib/wixImageUrl";
 import CountdownBadge from "./CountdownBadge";
 import DealCardAction from "./DealCardAction";
-import { MapPinIcon, ZapIcon } from "./icons";
+import { MapPinIcon } from "./icons";
 
 /**
  * One card for standard and Flash Deals: same structure and type scale,
@@ -86,16 +86,15 @@ export default function DealCard({
           <>
             {/* One badge only. A standard deal gets its saving (derived from
                 the two prices below, so they can't disagree); a Flash Deal
-                gets its Flash label instead — the struck-through price
-                already shows the saving, and a second pink badge would
-                compete with the deadline. */}
+                gets its Flash label instead, with the saving as a small chip
+                beside the price. */}
             {deal.isFlash ? (
-              <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-brand-700 px-2.5 py-1 text-xs font-extrabold text-white shadow">
-                <ZapIcon className="h-3.5 w-3.5" /> Flash Deal
+              <span className="absolute left-3 top-3 rounded-full bg-brand-600 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-white shadow">
+                Flash Deal
               </span>
             ) : (
               savingPct !== null && (
-                <span className="absolute left-3 top-3 rounded-full bg-ember-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+                <span className="absolute left-3 top-3 rounded-full bg-ember-600 px-2.5 py-1 text-xs font-extrabold uppercase tracking-wide text-white shadow">
                   {savingPct}% off
                 </span>
               )
@@ -109,50 +108,56 @@ export default function DealCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-[18px]">
+      <div className="flex flex-1 flex-col p-5">
         {category && (
-          <span className="text-[0.6875rem] font-bold uppercase tracking-wider text-brand-600">{category}</span>
+          <span className="text-[0.6875rem] font-bold uppercase tracking-[0.12em] text-brand-600">{category}</span>
         )}
-        <h3 className="mt-1.5 line-clamp-2 text-[1.0625rem] font-extrabold leading-snug text-slate-900 group-hover:text-brand-700">
+        {/* No min-height: a one-line title must not reserve a blank second
+            line above the business name. Cards still line up because the
+            action is pushed to the bottom with mt-auto. */}
+        <h3 className="mt-1.5 line-clamp-2 text-[1.1875rem] font-extrabold leading-[1.32] tracking-[-0.02em] text-slate-900 group-hover:text-brand-700">
           {deal.name}
         </h3>
         {deal.businessName && (
-          <p className="mt-1.5 line-clamp-2 text-[0.8125rem] font-semibold leading-snug text-slate-600">
-            {deal.businessName}
-          </p>
+          <p className="mt-1 text-[0.8125rem] font-medium leading-snug text-slate-600">{deal.businessName}</p>
         )}
         {locality && (
-          <p className="mt-0.5 flex items-center gap-1 text-[0.8125rem] text-slate-500">
+          <p className="mt-[3px] flex items-center gap-1 text-[0.8125rem] text-slate-500">
             <MapPinIcon className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{locality}</span>
+            <span>{locality}</span>
           </p>
         )}
+
+        <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <span className="text-[1.9375rem] font-extrabold leading-none tracking-[-0.035em] text-brand-700">
+            {formatMoney(deal.now, deal.currency, deal.formattedNow)}
+          </span>
+          {deal.was > deal.now && (
+            <span className="text-sm font-medium text-slate-500 line-through">
+              <span className="sr-only">Usual price </span>
+              {formatMoney(deal.was, deal.currency, deal.formattedWas)}
+            </span>
+          )}
+          {deal.isFlash && savingPct !== null && (
+            <span className="self-center rounded-lg bg-brand-50 px-2 py-1 text-xs font-bold text-brand-700">
+              {savingPct}% off
+            </span>
+          )}
+        </div>
+        {/* Always "Offer ends", never "Valid until" or "Available until":
+            this is the deadline to get the deal, not the dates it can be
+            used on — those are in the conditions. Flash Deals include the
+            time, since they end the same day. */}
+        {deal.expiresAt && (
+          <p className="mt-2 text-xs text-slate-500">Offer ends {formatOfferEndDate(deal.expiresAt, deal.isFlash)}</p>
+        )}
         {restrictions.length > 0 && (
-          <p className="mt-2 text-xs font-medium leading-relaxed text-slate-500">{restrictions.join(" · ")}</p>
+          <p className="mt-4 border-t border-slate-200/80 pt-3 text-xs leading-relaxed text-slate-500">
+            {restrictions.join(" · ")}
+          </p>
         )}
 
         <div className="mt-auto pt-4">
-          <div className="flex flex-wrap items-baseline gap-x-2">
-            <span className="text-[1.75rem] font-extrabold leading-none tracking-tight text-brand-700">
-              {formatMoney(deal.now, deal.currency, deal.formattedNow)}
-            </span>
-            {deal.was > deal.now && (
-              <span className="text-sm font-medium text-slate-500 line-through">
-                <span className="sr-only">Usual price </span>
-                {formatMoney(deal.was, deal.currency, deal.formattedWas)}
-              </span>
-            )}
-          </div>
-          {/* Always "Offer ends", never "Valid until" or "Available until":
-              this is the deadline to get the deal, not the dates it can be
-              used on — those are in the conditions. Flash Deals include
-              the time, since they end the same day. Present on every card
-              with a deadline so prices line up across a row. */}
-          {deal.expiresAt && (
-            <p className="mt-1.5 text-xs text-slate-500">
-              Offer ends {formatOfferEndDate(deal.expiresAt, deal.isFlash)}
-            </p>
-          )}
           <DealCardAction expiresAt={deal.expiresAt} isFlash={deal.isFlash} soldOut={soldOut} />
         </div>
       </div>

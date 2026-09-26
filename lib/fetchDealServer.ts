@@ -5,6 +5,7 @@ import { businessSlug } from "./slug";
 import { CATEGORY_NAME_BY_ID, isMegaShopProduct } from "./categories";
 import { mapMerchantToBusiness, applyBusinessToDeal, type PublicBusiness } from "./business";
 import { isDealLive } from "./dealVisibility";
+import { parseBookingRequirement } from "./booking";
 import { queryAllItems } from "./queryAll";
 import { searchAllProducts } from "./searchAllProducts";
 import type { Deal, DealStatus } from "./types";
@@ -43,6 +44,7 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
           typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
         terms: record.terms || null,
         dealCode: record.dealCode || null,
+        bookingRequirement: parseBookingRequirement(record.bookingRequirement),
       };
     }
 
@@ -139,6 +141,10 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
           quantityAvailable:
             typeof meta.quantityAvailable === "number" ? meta.quantityAvailable : null,
           dealCode: meta.dealCode || null,
+          // Cards show a short restriction summary drawn from the terms, so
+          // listings need them too — they were only mapped on deal pages.
+          terms: meta.terms || null,
+          bookingRequirement: parseBookingRequirement(meta.bookingRequirement),
         };
       })
       .filter((deal: Deal | null): deal is Deal => deal !== null && isDealLive(deal))
@@ -221,6 +227,7 @@ export async function fetchBusinessProfileBySlug(
             typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
           terms: record.terms || null,
           dealCode: record.dealCode || null,
+          bookingRequirement: parseBookingRequirement(record.bookingRequirement),
         };
         deals.push(applyBusinessToDeal(dealBase, business));
       } catch {

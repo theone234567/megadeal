@@ -9,6 +9,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { parseDraft, MAX_DRAFT_TEXT } from "@/lib/dealDraft";
 import { STANDARD_TERMS, renderTerms, parseTerms } from "@/lib/dealTerms";
 import { buildPreviewDeal } from "@/lib/previewDeal";
+import { BOOKING_CHOICES, bookingConflict, hasUsableBookingRoute, isBookingChoice } from "@/lib/booking";
 import DealCard from "@/components/DealCard";
 import DealDetail from "@/app/deal/[slug]/DealDetail";
 import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
@@ -62,6 +63,10 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const [isFlash, setIsFlash] = useState(false);
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [quantityAvailable, setQuantityAvailable] = useState("");
+  /** "required" | "recommended" | "not_required", or "" until chosen —
+   *  never defaulted, so "no booking needed" is always the merchant's
+   *  own answer (see lib/booking.ts). */
+  const [bookingRequirement, setBookingRequirement] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -86,6 +91,13 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
    *  when one was saved. `photo` holds a newly picked File that hasn't been
    *  sent anywhere yet; this holds the Wix Media URL once it has. */
   const [uploaded, setUploaded] = useState<{ url: string; id: string } | null>(null);
+
+  const merchantCanTakeBookings = hasUsableBookingRoute({
+    bookingUrl: merchant?.bookingUrl || null,
+    phone: merchant?.phone || null,
+    bookingEmail: merchant?.bookingEmail || null,
+  });
+  const bookingTermsConflict = bookingConflict(bookingRequirement, terms);
 
   useEffect(() => {
     if (member === undefined) return;
@@ -129,6 +141,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             : ""
         );
         setIsFlash(Boolean(original.isFlash));
+        setBookingRequirement(isBookingChoice(original.bookingRequirement) ? original.bookingRequirement : "");
         setQuantityAvailable(
           original.quantityAvailable !== undefined && original.quantityAvailable !== null
             ? String(original.quantityAvailable)
@@ -178,6 +191,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         setIsFlash(draft.isFlash);
         setDurationMinutes(draft.durationMinutes);
         setQuantityAvailable(draft.quantityAvailable);
+        setBookingRequirement(draft.bookingRequirement);
         // The photo comes back too, which the old local drafts could never
         // do — a File can't be serialised, so restoring one always meant
         // hunting for the image again.
@@ -233,6 +247,17 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
       return;
     }
+    const bookingProblem = !isBookingChoice(bookingRequirement)
+      ? "Choose whether customers need to book."
+      : bookingConflict(bookingRequirement, terms) ||
+        (bookingRequirement === "required" && !merchantCanTakeBookings
+          ? "This deal needs a booking, but your profile has no booking link, phone number or booking email. Add one in your profile first."
+          : null);
+    if (bookingProblem) {
+      setError(bookingProblem);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      return;
+    }
     setError(null);
     setStep("preview");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -275,6 +300,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             isFlash,
             durationMinutes,
             quantityAvailable,
+            bookingRequirement,
             selectedTerms,
             customTerms,
             photoUrl: media?.url || "",
@@ -325,6 +351,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           isFlash,
           ...(isFlash ? { durationMinutes } : { durationDays }),
           quantityAvailable: quantityAvailable ? Number(quantityAvailable) : undefined,
+          bookingRequirement,
           photoUrl: media?.url || "",
           photoMediaId: media?.id || "",
         }),
@@ -427,6 +454,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         priceWas,
         quantityAvailable,
         isFlash,
+        bookingRequirement,
         durationDays,
         durationMinutes,
         imageUrl: photoPreview,
@@ -765,6 +793,54 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           </div>
         </div>
 
+        {/* Asked outright rather than inferred: the public deal page shows
+            different next steps for each answer (lib/booking.ts), and a
+            missing booking link must never read as "no booking needed". */}
+        <fieldset>
+          <legend id="booking-requirement-label" className="mb-1 block font-display text-base font-bold text-slate-900">
+            Do customers need to book?
+            <span className="ml-1 font-sans text-sm font-normal text-ember-600">Required</span>
+          </legend>
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby="booking-requirement-label">
+            {BOOKING_CHOICES.map((choice) => {
+              const on = bookingRequirement === choice.value;
+              return (
+                <button
+                  key={choice.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  title={choice.hint}
+                  onClick={() => setBookingRequirement(choice.value)}
+                  className={`rounded-full border-2 px-3.5 py-2 text-sm font-bold transition active:scale-95 ${
+                    on
+                      ? "border-brand-600 bg-brand-600 text-white shadow-card"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700"
+                  }`}
+                >
+                  {on ? "✓ " : ""}
+                  {choice.label}
+                </button>
+              );
+            })}
+          </div>
+          {bookingRequirement && (
+            <p className="mt-2 text-xs text-slate-500">
+              {BOOKING_CHOICES.find((c) => c.value === bookingRequirement)?.hint}.
+            </p>
+          )}
+          {bookingRequirement === "required" && merchant && !merchantCanTakeBookings && (
+            <p className="mt-2 text-sm text-red-600">
+              Your profile has no booking link, phone number or booking email yet, so customers
+              couldn&apos;t book.{" "}
+              <Link href="/portal/profile" className="font-semibold underline">
+                Add one in your profile
+              </Link>
+              .
+            </p>
+          )}
+        </fieldset>
+
         <div>
           <label className="mb-1 block font-display text-base font-bold text-slate-900">
             The fine print
@@ -812,6 +888,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             placeholder="Anything else specific to your deal — e.g. maximum 6 people per booking"
             className="mt-3 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
+          {bookingTermsConflict && <p className="mt-3 text-sm text-red-600">{bookingTermsConflict}</p>}
           {terms && (
             <p className="mt-3 rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-900">
               <span className="font-display font-bold">Customers will see: </span>

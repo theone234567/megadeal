@@ -38,3 +38,18 @@ export function isSafeOptionalUrl(url: string): boolean {
     return false;
   }
 }
+
+/** The href to render for a stored business link, or null when it isn't a
+ * plain http(s) URL — same "assume https if no scheme was typed" rule as
+ * isSafeOptionalUrl, so what validates is exactly what renders. */
+export function safeWebHref(url: string | null | undefined): string | null {
+  const value = (url ?? "").trim();
+  if (!value) return null;
+  const candidate = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  try {
+    const parsed = new URL(candidate);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : null;
+  } catch {
+    return null;
+  }
+}

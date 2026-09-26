@@ -47,7 +47,7 @@ export default function DealCardAction({
   return (
     <span
       aria-hidden
-      className={`mt-4 flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-bold transition ${
+      className={`flex min-h-[46px] items-center justify-center rounded-full px-5 text-sm font-extrabold transition ${
         inactive ? "bg-slate-100 text-slate-600" : "bg-brand-600 text-white group-hover:bg-brand-700"
       }`}
     >

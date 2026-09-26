@@ -83,5 +83,6 @@ export function mapProductToDeal(product: any, categoryNamesById?: Record<string
     // itself has no concept of the merchant's fine print.
     terms: null,
     dealCode: null,
+    bookingRequirement: "unknown",
   };
 }

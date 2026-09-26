@@ -1,5 +1,6 @@
 import type { Deal } from "./types";
 import { businessSlug } from "./slug";
+import { parseBookingRequirement } from "./booking";
 
 /**
  * Builds a Deal from the new-deal form so the merchant can be shown the
@@ -27,6 +28,8 @@ export interface PreviewInput {
   priceWas: string;
   quantityAvailable: string;
   isFlash: boolean;
+  /** The merchant's booking choice on the form ("" until they pick one). */
+  bookingRequirement: string;
   durationDays: number;
   durationMinutes: number;
   /** Blob URL for a newly picked file, or the media URL of one already
@@ -114,5 +117,6 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     businessReviewCount:
       typeof merchant?.reviewCount === "number" ? merchant.reviewCount : null,
     dealCode: null,
+    bookingRequirement: parseBookingRequirement(input.bookingRequirement),
   };
 }

@@ -119,6 +119,6 @@ export const config = {
   // function's critical path entirely, which matters even more now that
   // this function is meant to be the fast, boring case for everyone else.
   matcher: [
-    "/((?!(?:.*/)?(?:favicon\\.ico|sitemap\\.xml|robots\\.txt|manifest\\.webmanifest|opengraph-image|icon|security\\.txt)(?:/.*)?$)(?!_next/static|_next/image|.well-known|api/).*)",
+    "/((?!(?:.*/)?(?:favicon\\.ico|sitemap\\.xml|robots\\.txt|manifest\\.webmanifest|opengraph-image|(?:apple-)?icon(?:\\.png)?|security\\.txt)(?:/.*)?$)(?!_next/static|_next/image|.well-known|api/).*)",
   ],
 };

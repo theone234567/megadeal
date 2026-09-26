@@ -1,4 +1,5 @@
 import { parseTerms } from "./dealTerms";
+import { isBookingChoice } from "./booking";
 
 /**
  * A deal the merchant hasn't submitted yet.
@@ -39,6 +40,8 @@ export interface DealDraftData {
   isFlash: boolean;
   durationMinutes: number;
   quantityAvailable: string;
+  /** "required" | "recommended" | "not_required", or "" until chosen. */
+  bookingRequirement: string;
   /** Wix Media URL, not a data URL — the photo is uploaded when the draft
    *  is saved, so unlike the old local drafts it survives a restore. */
   photoUrl: string;
@@ -58,6 +61,7 @@ export const EMPTY_DRAFT: DealDraftData = {
   isFlash: false,
   durationMinutes: 60,
   quantityAvailable: "",
+  bookingRequirement: "",
   photoUrl: "",
   photoMediaId: "",
 };
@@ -100,6 +104,7 @@ export function sanitizeDraft(input: any): DealDraftData {
     isFlash: Boolean(input?.isFlash),
     durationMinutes: positiveInt(input?.durationMinutes, 60),
     quantityAvailable: text(input?.quantityAvailable, 20),
+    bookingRequirement: isBookingChoice(input?.bookingRequirement) ? input.bookingRequirement : "",
     photoUrl: text(input?.photoUrl, 500),
     photoMediaId: text(input?.photoMediaId, 200),
   };
@@ -173,6 +178,7 @@ export function draftToRow(draft: DealDraftData, merchantEmail: string) {
     priceWas: textToNum(draft.priceWas),
     quantityAvailable: textToNum(draft.quantityAvailable),
     isFlash: draft.isFlash,
+    bookingRequirement: draft.bookingRequirement || null,
     merchantEmail,
     status: "Draft",
     // Written in the hope the field exists; harmless if it doesn't,
@@ -217,6 +223,7 @@ export function parseDraft(row: any): DealDraftData {
     priceNow: stored.priceNow || numToText(row?.priceNow),
     priceWas: stored.priceWas || numToText(row?.priceWas),
     quantityAvailable: stored.quantityAvailable || numToText(row?.quantityAvailable),
+    bookingRequirement: stored.bookingRequirement || row?.bookingRequirement || "",
     photoUrl: stored.photoUrl || row?.photoUrl || "",
     photoMediaId: stored.photoMediaId || extra.pm || "",
   });

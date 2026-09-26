@@ -17,6 +17,7 @@ export default function CountdownBadge({
   target,
   durationMs,
   variant = "badge",
+  className = "",
 }: {
   /** Absolute deadline — for real deals with a known expiry. */
   target?: Date;
@@ -30,7 +31,10 @@ export default function CountdownBadge({
    *  booking or usage deadline), no colour escalation or pulsing, and an
    *  explicit "Offer ended" once it reaches zero. "badge" is the original
    *  dark pill still used by SampleDealCard. */
-  variant?: "badge" | "offer";
+  variant?: "badge" | "offer" | "text";
+  /** Classes for the "text" variant, which renders only the time left
+   *  ("1h 58m", then "Ended") for a caller that supplies its own label. */
+  className?: string;
 }) {
   // Deliberately null on the server and on the first client render.
   //
@@ -79,6 +83,14 @@ export default function CountdownBadge({
       : "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold text-white transition-colors";
   const prefix = variant === "offer" ? "Offer ends in" : "Ends in";
 
+  if (variant === "text" && !parts) {
+    return (
+      <span className={`${className} opacity-0`} aria-hidden="true">
+        00h 00m
+      </span>
+    );
+  }
+
   // Pre-mount placeholder: same box, same text metrics, invisible — so the
   // real badge swaps in without shifting anything around it, and screen
   // readers never announce a placeholder time.
@@ -104,6 +116,10 @@ export default function CountdownBadge({
       : parts.minutes > 0
       ? `${parts.minutes}m`
       : "<1m";
+
+  if (variant === "text") {
+    return <span className={className}>{parts.ended ? "Ended" : label}</span>;
+  }
 
   // Urgency escalates the badge color as the deal gets closer to expiring —
   // neutral with days left, amber under a day, pulsing red under an hour.
