@@ -8,7 +8,6 @@ import DealManageCard, { type DealRecord } from "@/components/portal/DealManageC
 import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
 import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
 import ReferralCard from "@/components/portal/ReferralCard";
-import BadgeCard from "@/components/portal/BadgeCard";
 import ActivityFeed from "@/components/portal/ActivityFeed";
 import ExportDealsButton from "@/components/portal/ExportDealsButton";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
@@ -614,10 +613,6 @@ export default function PortalPage() {
             </div>
 
             <ReferralCard referralCode={merchant.referralCode} />
-
-            {merchant.status === "Approved" && merchant.businessName && (
-              <BadgeCard merchantId={merchant._id} businessName={merchant.businessName} />
-            )}
           </section>
         </>
       )}
