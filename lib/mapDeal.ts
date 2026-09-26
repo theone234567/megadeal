@@ -5,6 +5,23 @@ import type { Deal } from "./types";
 // which `fields` were requested, and media items added via an external
 // `url` (rather than a Wix Media Manager id) don't get their `image`
 // sub-object populated — the raw `url` is what comes back instead.
+/** Wix returns plainDescription as HTML ("<p>…</p>") even when it was
+ *  created from plain text. Pages render descriptions as text, so turn
+ *  paragraphs and line breaks back into newlines and drop the tags. */
+export function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&")
+    .trim();
+}
+
 export function mapProductToDeal(product: any, categoryNamesById?: Record<string, string>): Deal {
   const variant = product?.variantsInfo?.variants?.[0];
   // Get Product (by id/slug) returns per-variant pricing under
@@ -44,7 +61,7 @@ export function mapProductToDeal(product: any, categoryNamesById?: Record<string
     id: product?.id ?? product?._id,
     slug: product?.slug ?? product?.id ?? product?._id,
     name: product?.name ?? "",
-    description: product?.plainDescription ?? "",
+    description: htmlToPlainText(product?.plainDescription ?? ""),
     image,
     now,
     was,

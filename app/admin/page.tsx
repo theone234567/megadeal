@@ -80,6 +80,7 @@ export default function AdminDashboardPage() {
 
   const pendingMerchants = merchants?.filter((m) => (m.status || "Pending") === "Pending").length ?? 0;
   const pendingDeals = deals?.filter((d) => (d.status || "Live") === "Pending Approval").length ?? 0;
+  const pendingPhotos = deals?.filter((d) => d.pendingPhotoUrl && d.status !== "Cancelled").length ?? 0;
 
   const merchantQuery = merchantSearch.toLowerCase().trim();
   const filteredMerchants = merchants?.filter((m) => {
@@ -225,6 +226,7 @@ export default function AdminDashboardPage() {
           }`}
         >
           Deals{pendingDeals > 0 && ` (${pendingDeals} pending)`}
+          {pendingPhotos > 0 && ` (${pendingPhotos} new photo${pendingPhotos === 1 ? "" : "s"})`}
         </button>
         <button
           onClick={() => setTab("subscribers")}

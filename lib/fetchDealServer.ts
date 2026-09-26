@@ -40,6 +40,13 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
         status: record.status ?? null,
         image: record.photoUrl || deal.image,
         isFlash: Boolean(record.isFlash),
+        // The Deals row keeps the business's own text. The product only
+        // returns its HTML copy when PLAIN_DESCRIPTION is requested, which
+        // this read doesn't, so the page's "What's included" came out blank.
+        description: record.description || deal.description,
+        // MegaDeal never takes payment: the business charges in NZ dollars,
+        // whatever currency the Wix store happens to be set to.
+        currency: "NZD",
         quantityAvailable:
           typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
         terms: record.terms || null,
@@ -138,6 +145,8 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
           status: meta.status ?? null,
           image: meta.photoUrl || deal.image,
           isFlash: Boolean(meta.isFlash),
+          description: meta.description || deal.description,
+          currency: "NZD",
           quantityAvailable:
             typeof meta.quantityAvailable === "number" ? meta.quantityAvailable : null,
           dealCode: meta.dealCode || null,
@@ -223,6 +232,10 @@ export async function fetchBusinessProfileBySlug(
           status: record.status ?? null,
           image: record.photoUrl || undefined,
           isFlash: Boolean(record.isFlash),
+          description: record.description || "",
+          // MegaDeal never takes payment: the business charges in NZ
+          // dollars whatever currency the Wix store is set to.
+          currency: "NZD",
           quantityAvailable:
             typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
           terms: record.terms || null,

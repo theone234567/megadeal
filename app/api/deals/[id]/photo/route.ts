@@ -3,6 +3,7 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
+import { logMerchantActivity } from "@/lib/merchantActivity";
 
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -33,12 +34,8 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     if (deal.status === "Cancelled") {
       return NextResponse.json({ error: "This deal is cancelled." }, { status: 400 });
     }
-    // A draft must not be reachable here. This route moves a deal to
-    // "Pending Approval" as a side effect of changing its photo, which for
-    // a draft would push it into review with no Wix product behind it and
-    // no credit spent — a free listing slot and a deal that can be
-    // approved but can never appear. Drafts change their photo in the deal
-    // form, through /api/deals/draft.
+    // Drafts change their photo in the deal form, through
+    // /api/deals/draft — this route is only for submitted deals.
     if (deal.status === "Draft") {
       return NextResponse.json(
         { error: "This deal is still a draft — open it to make changes." },
@@ -46,11 +43,30 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       );
     }
 
-    const nextStatus = "Pending Approval";
+    // Not yet public: nobody has seen the old photo, and the whole deal is
+    // reviewed at approval anyway, so the new one simply replaces it.
+    if (deal.status === "Pending Approval") {
+      const updated = await adminClient.items.update("Deals", {
+        ...deal,
+        photoUrl,
+        pendingPhotoUrl: null,
+      });
+      return NextResponse.json({ item: updated });
+    }
+
+    // Live or paused: the new photo waits for an admin to approve it and
+    // the current one stays up meanwhile. This used to send the whole deal
+    // back to "Pending Approval", taking a live offer off the site until
+    // someone reviewed a picture.
     const updated = await adminClient.items.update("Deals", {
       ...deal,
-      photoUrl,
-      status: nextStatus,
+      pendingPhotoUrl: photoUrl,
+      pendingPhotoAt: new Date().toISOString(),
+    });
+    await logMerchantActivity(adminClient, {
+      merchantEmail: deal.merchantEmail,
+      type: "deal",
+      description: `New photo for "${deal.dealName || "your deal"}" sent for approval`,
     });
     return NextResponse.json({ item: updated });
   } catch (err) {

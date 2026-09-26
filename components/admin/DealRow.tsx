@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { DealStatus } from "@/lib/types";
+import DealContentEditor from "./DealContentEditor";
 
 export interface AdminDeal {
   _id: string;
@@ -28,7 +29,8 @@ function toDateInputValue(iso?: string) {
   return d.toISOString().slice(0, 10);
 }
 
-export default function DealRow({ deal }: { deal: AdminDeal }) {
+export default function DealRow({ deal: initialDeal }: { deal: AdminDeal }) {
+  const [deal, setDeal] = useState(initialDeal);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [status, setStatus] = useState<string>(deal.status || "Live");
   const [expiresAt, setExpiresAt] = useState(toDateInputValue(deal.expiresAt));
@@ -75,7 +77,6 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
     }
   }
 
-  const hasDetails = deal.description || deal.terms || deal.priceNow !== undefined;
 
   return (
     <>
@@ -85,7 +86,6 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
           type="button"
           onClick={() => setDetailsOpen((v) => !v)}
           className="flex items-center gap-2 text-left"
-          disabled={!hasDetails}
         >
           {deal.photoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -98,8 +98,11 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
           <div>
             <p className="font-semibold text-slate-800">
               {deal.isFlash && <span className="mr-1 text-brand-600">⚡</span>}
-              {deal.dealName || "Untitled"} {hasDetails && (detailsOpen ? "▲" : "▼")}
+              {deal.dealName || "Untitled"} {detailsOpen ? "▲" : "▼"}
             </p>
+            {deal.pendingPhotoUrl && (
+              <p className="text-xs font-bold text-amber-700">New photo to approve</p>
+            )}
             <p className="text-xs text-slate-500">{deal.productId ? `${deal.productId.slice(0, 8)}…` : "no linked product"}</p>
           </div>
         </button>
@@ -156,7 +159,7 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
         {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
       </td>
     </tr>
-    {detailsOpen && hasDetails && (
+    {detailsOpen && (
       <tr className="border-b border-slate-100 bg-slate-50">
         <td colSpan={5} className="px-4 py-3 text-sm text-slate-600">
           {deal.priceNow !== undefined && (
@@ -193,6 +196,7 @@ export default function DealRow({ deal }: { deal: AdminDeal }) {
               missing here, check the Wix dashboard or have the business resubmit.
             </p>
           )}
+          <DealContentEditor deal={deal} onSaved={(item) => setDeal(item)} />
         </td>
       </tr>
     )}

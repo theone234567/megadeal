@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { DealStatus } from "@/lib/types";
-import { DEAL_STATUS_STYLES, allowedDealActions } from "@/lib/dealStatus";
+import { DEAL_STATUS_STYLES, allowedDealActions, withdrawalRefundsCredit } from "@/lib/dealStatus";
 import PhotoUploadField from "./PhotoUploadField";
 
 export interface DealRecord {
@@ -39,6 +39,12 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
   const endingSoon = status === "Live" && daysUntilExpiry !== null && daysUntilExpiry >= 0 && daysUntilExpiry <= 3;
 
   async function handleStatusClick(target: DealStatus) {
+    if (target === "Cancelled") {
+      const question = withdrawalRefundsCredit(deal)
+        ? `Withdraw "${deal.dealName || "this deal"}"? Your credit will be returned. This can't be undone.`
+        : `Cancel "${deal.dealName || "this deal"}"? It comes off MegaDeal straight away and can't be restarted — you can duplicate it later as a new deal.`;
+      if (!window.confirm(question)) return;
+    }
     setActionError(null);
     setBusyTarget(target);
     try {
@@ -137,9 +143,41 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
             currentUrl={deal.photoUrl || null}
             disabled={isCancelled}
             disabledText="This deal is cancelled, so its photo can't be changed."
-            warningText="Changing the photo sends this deal back for approval — it won't show as live on the site until we've reviewed it. Continue?"
+            warningText={
+              status === "Pending Approval"
+                ? "This replaces the photo we'll review with your deal. Continue?"
+                : "Your new photo goes to MegaDeal for a quick check. Your current photo stays up until it's approved. Continue?"
+            }
             onConfirm={(dataUrl) => onChangePhoto(deal, dataUrl)}
           />
+          {deal.pendingPhotoUrl && !isCancelled && (
+            <div className="flex items-center gap-3 rounded-xl border border-brand-100 bg-brand-50 p-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={deal.pendingPhotoUrl} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+              <p className="text-sm text-brand-800">
+                New photo waiting for approval. Your current photo stays up until then.
+              </p>
+            </div>
+          )}
+
+          {/* Everything else about a submitted deal is fixed: customers may
+              already have a code for it, and the offer they saw has to be
+              the offer they get. */}
+          {!isCancelled && (
+            <p className="text-sm text-slate-600">
+              The offer itself can&apos;t be edited once submitted, so customers always get what they saw.
+              Spotted a mistake?{" "}
+              <Link
+                href={`/contact?change=${encodeURIComponent(deal._id)}`}
+                className="font-semibold text-brand-700 underline underline-offset-2"
+              >
+                Request a change
+              </Link>
+              {status === "Pending Approval"
+                ? ", or withdraw it (your credit comes back) and submit a corrected one."
+                : ", or cancel it and duplicate it as a new deal."}
+            </p>
+          )}
 
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>

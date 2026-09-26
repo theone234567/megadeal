@@ -15,11 +15,12 @@ export interface DealStatusAction {
 }
 
 /**
- * What a merchant is allowed to do from each status, enforced here in the
- * UI. Wix's SITE_MEMBER_AUTHOR permission guarantees a merchant can only
- * ever write to deals they themselves own — but it doesn't understand our
- * approval workflow, so going live from "Pending Approval" always stays a
- * site-owner action taken in the Wix dashboard, never a button shown here.
+ * What a business can do to a submitted deal from each status: pause,
+ * resume, cancel or withdraw — never change its content, which only an
+ * admin can do (customers may already hold a code for the offer as it
+ * stands). Enforced server-side by /api/deals/[id]/status; the Deals
+ * collection itself is admin-only in Wix. Approval ("Pending Approval" to
+ * "Live") is always an admin action, never offered here.
  */
 export function allowedDealActions(status: DealStatus | null): DealStatusAction[] {
   switch (status) {
@@ -62,4 +63,20 @@ export function allowedDealActions(status: DealStatus | null): DealStatusAction[
  */
 export function hasDealExpired(expiresAt: string | null | undefined, now: number = Date.now()): boolean {
   return Boolean(expiresAt) && new Date(expiresAt as string).getTime() <= now;
+}
+
+/**
+ * True when cancelling this deal should return the credit spent on it:
+ * it is still awaiting approval, was never live (an admin can move a live
+ * deal back to "Pending Approval"), and hasn't been refunded already.
+ * Views or code reveals mean customers saw it, whatever its status says.
+ */
+export function withdrawalRefundsCredit(deal: Record<string, any>): boolean {
+  return (
+    deal.status === "Pending Approval" &&
+    !deal.everLive &&
+    !deal.creditRefunded &&
+    !(Number(deal.viewCount) > 0) &&
+    !(Number(deal.clickCount) > 0)
+  );
 }

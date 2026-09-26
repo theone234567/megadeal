@@ -16,6 +16,12 @@ import { useSearchParams } from "next/navigation";
  * The person still reads and edits the whole thing before sending.
  */
 function reportPrefill(params: URLSearchParams): string {
+  // A business asking MegaDeal to change one of its submitted deals, from
+  // the portal. Same rule as the report below: only an id survives.
+  const changeId = (params.get("change") || "").replace(/[^a-zA-Z0-9-]/g, "").slice(0, 64);
+  if (changeId) {
+    return `I'd like to request a change to one of my deals.\n\nDeal ID: ${changeId}\n\nWhat should change:\n`;
+  }
   const slug = (params.get("deal") || "").replace(/[^a-zA-Z0-9-]/g, "").slice(0, 120);
   if (!slug) return "";
   return `I'd like to report a problem with a MegaDeal offer.\n\nDeal: ${slug}\n\nWhat happened:\n`;

@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
-import { allowedDealActions, hasDealExpired } from "@/lib/dealStatus";
+import { allowedDealActions, hasDealExpired, withdrawalRefundsCredit } from "@/lib/dealStatus";
+import { getOrClaimMerchant } from "@/lib/merchant";
+import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
+import { logMerchantActivity } from "@/lib/merchantActivity";
 import type { DealStatus } from "@/lib/types";
 
 /**
- * Merchant-facing status changes (pause/resume/cancel) go through here
+ * Merchant-facing status changes (pause/resume/cancel/withdraw) go through here
  * instead of a direct client write, so the allowed state-machine
  * transitions are enforced server-side — a merchant can never self-approve
  * a deal out of "Pending Approval" into "Live" no matter what request they
@@ -60,8 +63,32 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       );
     }
 
-    const updated = await adminClient.items.update("Deals", { ...deal, status: target });
-    return NextResponse.json({ item: updated });
+    const refund = target === "Cancelled" && withdrawalRefundsCredit(deal);
+    const updated = await adminClient.items.update("Deals", {
+      ...deal,
+      status: target,
+      ...(refund ? { creditRefunded: true } : {}),
+    });
+
+    // Withdrawing a deal that was never public gives its credit back —
+    // deals can't be edited once submitted, so withdrawing and resubmitting
+    // is how a business fixes a mistake, and it shouldn't cost them. The
+    // flag above is written first, so a retry can never refund twice.
+    if (refund) {
+      const merchant = await getOrClaimMerchant(adminClient, member);
+      const refunded = merchant ? await incrementCreditsAtomically(adminClient, merchant._id, 1) : false;
+      if (refunded) {
+        await logMerchantActivity(adminClient, {
+          merchantEmail: deal.merchantEmail,
+          type: "credit",
+          amount: 1,
+          description: `Credit returned: "${deal.dealName || "Your deal"}" was withdrawn before going live`,
+        });
+      } else {
+        console.error(`[deals/[id]/status] CREDIT NOT REFUNDED for withdrawn deal ${deal._id}`);
+      }
+    }
+    return NextResponse.json({ item: updated, creditRefunded: refund });
   } catch (err) {
     console.error("[deals/[id]/status] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

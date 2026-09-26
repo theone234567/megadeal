@@ -168,8 +168,11 @@ export default function PortalPage() {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.error || "Couldn't update this deal.");
     }
-    const { item: updated } = await res.json();
+    const { item: updated, creditRefunded } = await res.json();
     setDeals((prev) => prev.map((d) => (d._id === deal._id ? updated : d)));
+    if (creditRefunded) {
+      setMerchant((m) => (m ? { ...m, creditsBalance: (m.creditsBalance ?? 0) + 1 } : m));
+    }
   }
 
   async function handleChangeDealPhoto(deal: DealRecord, dataUrl: string) {
