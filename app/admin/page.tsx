@@ -20,6 +20,7 @@ export default function AdminDashboardPage() {
   const [merchantSearch, setMerchantSearch] = useState("");
   const [dealSearch, setDealSearch] = useState("");
   const [bulkApproving, setBulkApproving] = useState(false);
+  const [aiChecking, setAiChecking] = useState<{ done: number; total: number; error: string | null } | null>(null);
   const [dealsRefreshKey, setDealsRefreshKey] = useState(0);
   const [indexNowStatus, setIndexNowStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
 
@@ -129,6 +130,35 @@ export default function AdminDashboardPage() {
     } finally {
       setBulkApproving(false);
     }
+  }
+
+  // Advice only: records the AI's verdict on each pending deal (a few at a
+  // time, to stay well inside rate limits) without approving or rejecting
+  // anything. Useful for deals submitted before the automatic check existed.
+  async function handleAiCheckPending() {
+    if (!deals) return;
+    const pending = deals.filter((d) => (d.status || "Live") === "Pending Approval");
+    if (pending.length === 0) return;
+    setAiChecking({ done: 0, total: pending.length, error: null });
+    let firstError: string | null = null;
+    for (let i = 0; i < pending.length; i += 3) {
+      const batch = pending.slice(i, i + 3);
+      const results = await Promise.all(
+        batch.map((d) => fetch(`/api/admin/deals/${d._id}/ai-review`, { method: "POST" }))
+      );
+      for (const r of results) {
+        if (!r.ok && !firstError) firstError = (await r.json().catch(() => ({}))).error || "AI check failed.";
+      }
+      setAiChecking({ done: Math.min(i + 3, pending.length), total: pending.length, error: firstError });
+      if (firstError && results.every((r) => !r.ok)) break;
+    }
+    const res = await fetch("/api/admin/deals");
+    if (res.ok) {
+      const data = await res.json();
+      setDeals(data.items ?? []);
+      setDealsRefreshKey((k) => k + 1);
+    }
+    setAiChecking((prev) => (prev && !prev.error ? null : prev));
   }
 
   return (
@@ -308,6 +338,18 @@ export default function AdminDashboardPage() {
                       : `Approve all pending (${pendingDeals})`}
                   </button>
                 )}
+                {pendingDeals > 0 && (
+                  <button
+                    onClick={handleAiCheckPending}
+                    disabled={aiChecking !== null && !aiChecking.error}
+                    className="shrink-0 rounded-full border border-brand-200 px-4 py-2 text-sm font-bold text-brand-700 transition hover:bg-brand-50 disabled:opacity-60"
+                  >
+                    {aiChecking && !aiChecking.error
+                      ? `AI checking… ${aiChecking.done}/${aiChecking.total}`
+                      : `AI check pending (${pendingDeals})`}
+                  </button>
+                )}
+                {aiChecking?.error && <p className="text-sm text-red-600">{aiChecking.error}</p>}
               </div>
               {filteredDeals && filteredDeals.length === 0 ? (
                 <p className="text-sm text-slate-500">No deals match &quot;{dealSearch}&quot;.</p>

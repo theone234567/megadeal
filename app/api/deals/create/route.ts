@@ -9,6 +9,7 @@ import { getOrClaimMerchant } from "@/lib/merchant";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { generateDealCode } from "@/lib/dealCode";
+import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
 
 const MAX_DURATION_DAYS = 365;
 const MAX_DURATION_MINUTES = 24 * 60;
@@ -330,7 +331,23 @@ export async function POST(req: NextRequest) {
     console.error("[deals/create] activity log failed", err);
   }
 
-  return NextResponse.json({ item: deal });
+  // First-pass review. A clean deal from an approved business goes live
+  // now; clearly offensive content is turned down with the reason (and the
+  // credit back); everything else waits for a person, as before. Bounded
+  // by a timeout and never throws — at worst the deal just stays pending.
+  // A credit that failed to debit above mustn't be "refunded" here.
+  const review = await reviewSubmittedDeal(
+    adminClient,
+    debited ? deal : { ...deal, creditRefunded: true },
+    merchant,
+    { category, apply: true }
+  );
+
+  return NextResponse.json({
+    item: review.item,
+    outcome: review.outcome === "publish" ? "live" : review.outcome === "reject" ? "rejected" : "pending",
+    message: review.outcome === "reject" ? review.item.statusNote ?? null : null,
+  });
   } catch (err) {
     console.error("[deals/create] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

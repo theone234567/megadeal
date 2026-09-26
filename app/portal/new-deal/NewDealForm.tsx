@@ -73,6 +73,12 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const [step, setStep] = useState<"form" | "preview">("form");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  /** What happened on submit: published straight away, turned down by the
+   *  automatic check (with the reason), or waiting for a person. */
+  const [submitResult, setSubmitResult] = useState<{
+    outcome: "live" | "rejected" | "pending";
+    message: string | null;
+  }>({ outcome: "pending", message: null });
   const [error, setError] = useState<string | null>(null);
 
   const [draftRestored, setDraftRestored] = useState(false);
@@ -356,10 +362,14 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           photoMediaId: media?.id || "",
         }),
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Something went wrong submitting your deal.");
       }
+      setSubmitResult({
+        outcome: data.outcome === "live" || data.outcome === "rejected" ? data.outcome : "pending",
+        message: typeof data.message === "string" ? data.message : null,
+      });
       setSubmitted(true);
     } catch (err: any) {
       setError(err?.message || "Something went wrong submitting your deal.");
@@ -405,13 +415,39 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   if (submitted) {
     return (
       <main className="mx-auto max-w-lg px-4 py-16 text-center">
-        <span className="text-4xl">🎉</span>
-        <h1 className="mt-3 text-xl font-bold text-slate-900">Deal submitted!</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Your deal is now <strong>Pending Approval</strong>. We&apos;ll review
-          it and create your live listing shortly — you can track its status
-          anytime in your portal.
-        </p>
+        {submitResult.outcome === "live" ? (
+          <>
+            <span className="text-4xl">🎉</span>
+            <h1 className="mt-3 text-xl font-bold text-slate-900">Your deal is live!</h1>
+            <p className="mt-2 text-sm text-slate-600">
+              It&apos;s been approved and customers can see it now. You can track views and
+              code reveals in your portal.
+            </p>
+          </>
+        ) : submitResult.outcome === "rejected" ? (
+          <>
+            <span className="text-4xl">✏️</span>
+            <h1 className="mt-3 text-xl font-bold text-slate-900">This deal needs a change</h1>
+            <p className="mt-2 text-sm text-slate-600">
+              {submitResult.message ||
+                "It couldn't be approved as written. Please check the wording and photo and submit it again."}
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Your credit has been returned. Use <strong>Duplicate this deal</strong> in your portal to
+              fix it and submit again.
+            </p>
+          </>
+        ) : (
+          <>
+            <span className="text-4xl">🎉</span>
+            <h1 className="mt-3 text-xl font-bold text-slate-900">Deal submitted!</h1>
+            <p className="mt-2 text-sm text-slate-600">
+              Your deal is now <strong>Pending Approval</strong>. We&apos;ll review
+              it and create your live listing shortly — you can track its status
+              anytime in your portal.
+            </p>
+          </>
+        )}
         <Link
           href="/portal"
           className="mt-6 inline-block rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white shadow-card hover:bg-brand-700"

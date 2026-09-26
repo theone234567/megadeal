@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BOOKING_CHOICES } from "@/lib/booking";
+import type { AiReview } from "@/lib/aiReview";
 import type { AdminDeal } from "./DealRow";
 
 const FIELD_LABELS: Record<string, string> = {
@@ -86,6 +87,8 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
         Deal ID: <span className="select-all font-mono">{deal._id}</span>
       </p>
 
+      <AiReviewPanel deal={deal} busy={busy} setBusy={setBusy} onSaved={onSaved} />
+
       {deal.pendingPhotoUrl && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
           <p className="text-sm font-semibold text-amber-900">New photo waiting for approval</p>
@@ -98,6 +101,11 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={deal.pendingPhotoUrl} alt="New photo" className="h-20 w-20 rounded-lg object-cover" />
           </div>
+          {deal.pendingPhotoReview && (
+            <p className="mt-2 text-xs text-amber-900">
+              AI: {deal.pendingPhotoReview.reasons?.join(" · ") || deal.pendingPhotoReview.verdict}
+            </p>
+          )}
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -216,6 +224,81 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
           </ul>
         </details>
       )}
+    </div>
+  );
+}
+
+const VERDICT_STYLE: Record<string, string> = {
+  approve: "border-emerald-200 bg-emerald-50 text-emerald-900",
+  review: "border-amber-200 bg-amber-50 text-amber-900",
+  reject: "border-red-200 bg-red-50 text-red-900",
+};
+const VERDICT_LABEL: Record<string, string> = {
+  approve: "AI check: looks fine",
+  review: "AI check: needs a look",
+  reject: "AI check: should be rejected",
+};
+
+/** The automatic review's verdict for this deal, with a button to run it
+ *  (again). Running it only records advice — it never changes the status. */
+function AiReviewPanel({
+  deal,
+  busy,
+  setBusy,
+  onSaved,
+}: {
+  deal: AdminDeal;
+  busy: string | null;
+  setBusy: (v: string | null) => void;
+  onSaved: (item: AdminDeal) => void;
+}) {
+  const [error, setError] = useState<string | null>(null);
+  const review: AiReview | undefined = deal.aiReview;
+
+  async function run() {
+    setBusy("ai");
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/deals/${deal._id}/ai-review`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "AI check failed.");
+      onSaved(data.item);
+    } catch (err: any) {
+      setError(err?.message || "AI check failed.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className={`rounded-xl border p-3 text-sm ${review ? VERDICT_STYLE[review.verdict] : "border-slate-200 bg-white text-slate-600"}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="font-semibold">{review ? VERDICT_LABEL[review.verdict] : "Not checked by AI yet"}</p>
+        <button
+          type="button"
+          disabled={busy !== null}
+          onClick={run}
+          className="rounded-full border border-current px-3 py-1 text-xs font-bold disabled:opacity-40"
+        >
+          {busy === "ai" ? "Checking…" : review ? "Check again" : "Run AI check"}
+        </button>
+      </div>
+      {review && review.reasons.length > 0 && (
+        <ul className="mt-1 list-disc pl-5 text-xs">
+          {review.reasons.map((r, i) => (
+            <li key={i}>{r}</li>
+          ))}
+        </ul>
+      )}
+      {review?.messageToBusiness && (
+        <p className="mt-1 text-xs">
+          <span className="font-semibold">Suggested note to the business:</span> {review.messageToBusiness}
+        </p>
+      )}
+      {review && (
+        <p className="mt-1 text-[0.6875rem] opacity-70">Checked {new Date(review.at).toLocaleString("en-NZ")}</p>
+      )}
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
 }

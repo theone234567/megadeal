@@ -185,8 +185,11 @@ export default function PortalPage() {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.error || "Couldn't save that photo.");
     }
-    const { item: updated } = await res.json();
+    const { item: updated, photoOutcome, photoMessage } = await res.json();
     setDeals((prev) => prev.map((d) => (d._id === deal._id ? updated : d)));
+    if (photoOutcome === "reject") {
+      throw new Error(`That photo can't be used: ${photoMessage || "please choose one that shows your offer."}`);
+    }
   }
 
   async function handleDeleteDraft(draft: DealRecord) {

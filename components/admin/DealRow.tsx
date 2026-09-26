@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { DealStatus } from "@/lib/types";
 import DealContentEditor from "./DealContentEditor";
+import { aiSummary } from "@/lib/aiReview";
 
 export interface AdminDeal {
   _id: string;
@@ -102,6 +103,19 @@ export default function DealRow({ deal: initialDeal }: { deal: AdminDeal }) {
             </p>
             {deal.pendingPhotoUrl && (
               <p className="text-xs font-bold text-amber-700">New photo to approve</p>
+            )}
+            {aiSummary(deal.aiReview) && (
+              <p
+                className={`text-xs font-semibold ${
+                  deal.aiReview.verdict === "approve"
+                    ? "text-emerald-700"
+                    : deal.aiReview.verdict === "reject"
+                    ? "text-red-600"
+                    : "text-amber-700"
+                }`}
+              >
+                {aiSummary(deal.aiReview)}
+              </p>
             )}
             <p className="text-xs text-slate-500">{deal.productId ? `${deal.productId.slice(0, 8)}…` : "no linked product"}</p>
           </div>

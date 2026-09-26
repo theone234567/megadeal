@@ -1,0 +1,136 @@
+import { decideAiOutcome, reviewWithAi, type AiOutcome, type AiReview } from "./aiReview";
+import { incrementCreditsAtomically } from "./creditsAtomic";
+import { withdrawalRefundsCredit } from "./dealStatus";
+import { withHistory } from "./dealAdminEdit";
+import { logMerchantActivity } from "./merchantActivity";
+
+const FALLBACK_REJECTION =
+  "This deal couldn't be approved as written. Please check the wording and photo are suitable for a family-friendly site and submit it again.";
+
+/**
+ * Reviews a submitted deal and acts on the result: publishes it, rejects
+ * it (with the credit returned and the reason shown to the business), or
+ * leaves it in "Pending Approval" with the AI's notes for an admin.
+ *
+ * `apply: false` only records the review — used for the admin's "AI
+ * check" button, which never changes a deal's status by itself.
+ *
+ * Never throws; a failed review leaves the deal exactly as it was.
+ */
+export async function reviewSubmittedDeal(
+  adminClient: any,
+  deal: Record<string, any>,
+  merchant: Record<string, any> | null,
+  opts: { category?: string; apply: boolean }
+): Promise<{ outcome: AiOutcome; review: AiReview | null; item: Record<string, any> }> {
+  try {
+    const review = await reviewWithAi({
+      kind: "deal",
+      dealName: deal.dealName,
+      description: deal.description,
+      terms: deal.terms,
+      priceNow: Number(deal.priceNow),
+      priceWas: deal.priceWas != null ? Number(deal.priceWas) : null,
+      category: opts.category,
+      bookingRequirement: deal.bookingRequirement,
+      businessName: merchant?.businessName ?? null,
+      photoUrl: deal.photoUrl || null,
+    });
+    if (!review) return { outcome: "hold", review: null, item: deal };
+
+    const outcome = opts.apply ? decideAiOutcome(review, merchant?.status === "Approved") : "hold";
+    // Only act on a deal that is still waiting — an admin may have
+    // decided it while the review ran (or, for the manual check, earlier).
+    const waiting = deal.status === "Pending Approval";
+
+    if (outcome === "publish" && waiting) {
+      const item = await adminClient.items.update("Deals", { ...deal, aiReview: review, status: "Live", everLive: true });
+      await logMerchantActivity(adminClient, {
+        merchantEmail: deal.merchantEmail,
+        type: "deal",
+        description: `"${deal.dealName}" is now live`,
+      });
+      return { outcome, review, item };
+    }
+
+    if (outcome === "reject" && waiting) {
+      const refund = withdrawalRefundsCredit(deal);
+      const item = await adminClient.items.update("Deals", {
+        ...deal,
+        aiReview: review,
+        status: "Cancelled",
+        statusNote: review.messageToBusiness || FALLBACK_REJECTION,
+        ...(refund ? { creditRefunded: true } : {}),
+      });
+      const refunded = refund && merchant?._id ? await incrementCreditsAtomically(adminClient, merchant._id, 1) : false;
+      await logMerchantActivity(adminClient, {
+        merchantEmail: deal.merchantEmail,
+        type: refunded ? "credit" : "deal",
+        ...(refunded ? { amount: 1 } : {}),
+        description: `"${deal.dealName}" wasn't approved${refunded ? " (credit returned)" : ""}: ${
+          review.messageToBusiness || FALLBACK_REJECTION
+        }`,
+      });
+      return { outcome, review, item };
+    }
+
+    const item = await adminClient.items.update("Deals", { ...deal, aiReview: review });
+    return { outcome: "hold", review, item };
+  } catch (err) {
+    console.error("[aiReviewApply] deal review failed", err);
+    return { outcome: "hold", review: null, item: deal };
+  }
+}
+
+/**
+ * Reviews a business's replacement photo for a live deal: swaps it in,
+ * turns it down (telling the business why), or leaves it for an admin.
+ */
+export async function reviewPendingPhoto(
+  adminClient: any,
+  deal: Record<string, any>,
+  merchant: Record<string, any> | null
+): Promise<{ outcome: AiOutcome; item: Record<string, any>; message?: string }> {
+  try {
+    if (!deal.pendingPhotoUrl) return { outcome: "hold", item: deal };
+    const review = await reviewWithAi({
+      kind: "photo",
+      dealName: deal.dealName,
+      description: deal.description,
+      photoUrl: deal.pendingPhotoUrl,
+    });
+    if (!review) return { outcome: "hold", item: deal };
+    const outcome = decideAiOutcome(review, merchant?.status === "Approved");
+
+    if (outcome === "publish") {
+      const item = await adminClient.items.update("Deals", {
+        ...deal,
+        photoUrl: deal.pendingPhotoUrl,
+        pendingPhotoUrl: null,
+        pendingPhotoReview: null,
+        contentHistory: withHistory(deal, ["photoUrl"]),
+      });
+      await logMerchantActivity(adminClient, {
+        merchantEmail: deal.merchantEmail,
+        type: "deal",
+        description: `New photo for "${deal.dealName}" approved and now showing`,
+      });
+      return { outcome, item };
+    }
+    if (outcome === "reject") {
+      const item = await adminClient.items.update("Deals", { ...deal, pendingPhotoUrl: null, pendingPhotoReview: null });
+      const message = review.messageToBusiness || "Please choose a photo that shows your offer.";
+      await logMerchantActivity(adminClient, {
+        merchantEmail: deal.merchantEmail,
+        type: "deal",
+        description: `New photo for "${deal.dealName}" wasn't approved: ${message}`,
+      });
+      return { outcome, item, message };
+    }
+    const item = await adminClient.items.update("Deals", { ...deal, pendingPhotoReview: review });
+    return { outcome: "hold", item };
+  } catch (err) {
+    console.error("[aiReviewApply] photo review failed", err);
+    return { outcome: "hold", item: deal };
+  }
+}

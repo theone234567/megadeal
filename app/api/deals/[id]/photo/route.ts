@@ -4,6 +4,8 @@ import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { logMerchantActivity } from "@/lib/merchantActivity";
+import { getOrClaimMerchant } from "@/lib/merchant";
+import { reviewPendingPhoto } from "@/lib/aiReviewApply";
 
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -63,12 +65,19 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       pendingPhotoUrl: photoUrl,
       pendingPhotoAt: new Date().toISOString(),
     });
-    await logMerchantActivity(adminClient, {
-      merchantEmail: deal.merchantEmail,
-      type: "deal",
-      description: `New photo for "${deal.dealName || "your deal"}" sent for approval`,
-    });
-    return NextResponse.json({ item: updated });
+    // Checked straight away: a suitable photo from an approved business
+    // swaps in now, an unsuitable one is turned down with the reason, and
+    // anything unclear waits for an admin with the current photo still up.
+    const merchant = await getOrClaimMerchant(adminClient, member);
+    const { outcome, item, message } = await reviewPendingPhoto(adminClient, updated, merchant);
+    if (outcome === "hold") {
+      await logMerchantActivity(adminClient, {
+        merchantEmail: deal.merchantEmail,
+        type: "deal",
+        description: `New photo for "${deal.dealName || "your deal"}" sent for approval`,
+      });
+    }
+    return NextResponse.json({ item, photoOutcome: outcome, photoMessage: message ?? null });
   } catch (err) {
     console.error("[deals/[id]/photo] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
