@@ -344,7 +344,8 @@ export default function RestaurantAdvertisingPage() {
                   fill
                   sizes="(min-width: 1024px) 420px, 90vw"
                   className="object-cover"
-                  priority
+                  loading="eager"
+                  fetchPriority="high"
                 />
               </div>
 

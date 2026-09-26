@@ -36,7 +36,7 @@ export default function SampleDealCard() {
         </span>
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
           <Image
-            src="https://cdn.pixabay.com/photo/2015/01/14/18/42/massage-599476_1280.jpg"
+            src="/images/beauty-spa/beauty-massage.webp"
             alt=""
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"

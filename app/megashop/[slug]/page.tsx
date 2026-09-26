@@ -98,7 +98,8 @@ export default async function MegaShopProductPage(props: { params: Promise<{ slu
                 fill
                 sizes="(min-width: 1024px) 60vw, 100vw"
                 className="object-cover"
-                priority
+                loading="eager"
+                fetchPriority="high"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-6xl text-slate-300">

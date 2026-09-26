@@ -456,7 +456,8 @@ export default function BeautySpaAdvertisingPage() {
                   sizes="(min-width: 1024px) 420px, 90vw"
                   className="object-cover"
                   style={{ objectPosition: "78% center" }}
-                  priority
+                  loading="eager"
+                  fetchPriority="high"
                 />
               </div>
 

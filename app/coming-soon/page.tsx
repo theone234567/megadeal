@@ -6,6 +6,7 @@ import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { categoryPath } from "@/lib/categories";
+import CategoryPhoto from "@/components/CategoryPhoto";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import SampleDealCard from "@/components/SampleDealCard";
 import { getSignupStats } from "@/lib/publicStats";
@@ -666,10 +667,16 @@ export default async function ComingSoonPage() {
                 >
                   <Icon className="h-9 w-9" />
                 </span>
-                <span
-                  aria-hidden
-                  className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-[1.04]"
-                  style={{ backgroundImage: `url("${image}")` }}
+                {/* An <img> rather than a CSS background: browsers fetch
+                    background images as soon as styles apply, so all six
+                    photos competed with the hero for bandwidth on first
+                    load even though they sit below the fold. As lazy
+                    images they load only as the section scrolls near. The
+                    icon behind stays as the fallback if a photo fails. */}
+                <CategoryPhoto
+                  src={image}
+                  sizes="(min-width: 1024px) 200px, (min-width: 640px) 33vw, 50vw"
+                  className="object-cover transition duration-500 group-hover:scale-[1.04]"
                 />
               </div>
               <div className="flex min-h-[60px] items-center gap-2.5 px-3 py-3 lg:min-h-[64px]">
