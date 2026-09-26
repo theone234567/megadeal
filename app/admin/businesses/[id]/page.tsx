@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { RUDENESS_OVERRIDES, parseRudenessOverride, type RudenessOverride } from "@/lib/rudenessSetting";
 import type { AdminMerchant } from "@/components/admin/MerchantRow";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
@@ -71,6 +72,7 @@ export default function AdminBusinessDetailPage() {
   const [credits, setCredits] = useState(0);
   const [rating, setRating] = useState<number | "">("");
   const [reviewCount, setReviewCount] = useState<number | "">("");
+  const [rudenessCheck, setRudenessCheck] = useState<RudenessOverride>("default");
 
   // Editable profile fields — fixing a typo, a wrong number, etc.
   const [businessName, setBusinessName] = useState("");
@@ -109,6 +111,7 @@ export default function AdminBusinessDetailPage() {
     setCredits(item.creditsBalance ?? 0);
     setRating(item.rating ?? "");
     setReviewCount(item.reviewCount ?? "");
+    setRudenessCheck(parseRudenessOverride(item.rudenessCheck));
     setBusinessName(item.businessName || "");
     setLegalBusinessName(item.legalBusinessName || "");
     setNzbn(item.nzbn || "");
@@ -175,6 +178,7 @@ export default function AdminBusinessDetailPage() {
       credits !== (merchant.creditsBalance ?? 0) ||
       rating !== (merchant.rating ?? "") ||
       reviewCount !== (merchant.reviewCount ?? "") ||
+      rudenessCheck !== parseRudenessOverride(merchant.rudenessCheck) ||
       businessName !== (merchant.businessName || "") ||
       legalBusinessName !== (merchant.legalBusinessName || "") ||
       nzbn !== (merchant.nzbn || "") ||
@@ -244,6 +248,7 @@ export default function AdminBusinessDetailPage() {
           creditsBalance: credits,
           rating: rating === "" ? null : rating,
           reviewCount: reviewCount === "" ? null : reviewCount,
+          rudenessCheck,
           businessName,
           legalBusinessName,
           nzbn,
@@ -628,6 +633,24 @@ export default function AdminBusinessDetailPage() {
                 placeholder="#"
                 className="w-full rounded-lg border border-slate-200 px-2 py-2 text-sm"
               />
+            </label>
+            <label className="col-span-2 text-sm">
+              <span className="mb-1 block text-slate-500">Rudeness check on their deals</span>
+              <select
+                value={rudenessCheck}
+                onChange={(e) => setRudenessCheck(parseRudenessOverride(e.target.value))}
+                className="w-full rounded-lg border border-slate-200 px-2 py-2 text-sm"
+              >
+                {RUDENESS_OVERRIDES.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block text-xs text-slate-500">
+                &quot;Don&apos;t check&quot; lets their deals use swearing and cheeky humour. Hate, sexual and
+                illegal content are always checked.
+              </span>
             </label>
           </div>
 

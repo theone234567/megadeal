@@ -20,6 +20,9 @@ export default function AdminDashboardPage() {
   const [merchantSearch, setMerchantSearch] = useState("");
   const [dealSearch, setDealSearch] = useState("");
   const [bulkApproving, setBulkApproving] = useState(false);
+  // null until loaded; the switch is hidden rather than shown in a guessed state.
+  const [rudenessCheck, setRudenessCheck] = useState<boolean | null>(null);
+  const [rudenessError, setRudenessError] = useState<string | null>(null);
   const [aiChecking, setAiChecking] = useState<{ done: number; total: number; error: string | null } | null>(null);
   const [dealsRefreshKey, setDealsRefreshKey] = useState(0);
   const [indexNowStatus, setIndexNowStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
@@ -54,10 +57,32 @@ export default function AdminDashboardPage() {
     }
 
     load();
+    fetch("/api/admin/settings")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && d && typeof d.rudenessCheck === "boolean") setRudenessCheck(d.rudenessCheck);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
   }, [router]);
+
+  async function toggleRudenessCheck() {
+    if (rudenessCheck === null) return;
+    const next = !rudenessCheck;
+    setRudenessError(null);
+    setRudenessCheck(next);
+    const res = await fetch("/api/admin/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rudenessCheck: next }),
+    }).catch(() => null);
+    if (!res?.ok) {
+      setRudenessCheck(!next);
+      setRudenessError("Couldn't save that. Please try again.");
+    }
+  }
 
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -351,6 +376,32 @@ export default function AdminDashboardPage() {
                 )}
                 {aiChecking?.error && <p className="text-sm text-red-600">{aiChecking.error}</p>}
               </div>
+              {rudenessCheck !== null && (
+                <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={rudenessCheck}
+                    aria-labelledby="rudeness-label"
+                    onClick={toggleRudenessCheck}
+                    className={`relative h-6 w-11 shrink-0 rounded-full transition ${rudenessCheck ? "bg-brand-600" : "bg-slate-300"}`}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${rudenessCheck ? "left-[1.375rem]" : "left-0.5"}`}
+                    />
+                  </button>
+                  <div className="text-sm">
+                    <p id="rudeness-label" className="font-semibold text-slate-800">
+                      Rudeness check {rudenessCheck ? "on" : "off"} for all businesses
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Holds back swearing, crude humour and rude gestures. Hate, sexual and illegal content are
+                      always checked. Override it for one business on its page.
+                    </p>
+                  </div>
+                  {rudenessError && <p className="text-sm text-red-600">{rudenessError}</p>}
+                </div>
+              )}
               {filteredDeals && filteredDeals.length === 0 ? (
                 <p className="text-sm text-slate-500">No deals match &quot;{dealSearch}&quot;.</p>
               ) : (

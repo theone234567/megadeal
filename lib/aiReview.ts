@@ -18,7 +18,10 @@ const TIMEOUT_MS = 12_000;
 export type AiVerdict = "approve" | "review" | "reject";
 
 export interface AiFlags {
-  /** Swearing, slurs, crude or sexual jokes, rude gestures, offensive text in the photo. */
+  /** Swearing (including disguised forms), crude humour, rude gestures or
+   *  rude words in the photo. The only check an admin can switch off. */
+  rude: boolean;
+  /** Slurs, hate, harassment or insults aimed at people or groups. */
   offensive: boolean;
   /** Nudity, sexual content, adult services. */
   sexual: boolean;
@@ -60,9 +63,12 @@ export interface AiReviewInput {
   bookingRequirement?: string;
   businessName?: string | null;
   photoUrl?: string | null;
+  /** The rudeness check is switched off for this business. */
+  allowRudeLanguage?: boolean;
 }
 
 const FLAG_KEYS: (keyof AiFlags)[] = [
+  "rude",
   "offensive",
   "sexual",
   "unsafe",
@@ -79,9 +85,10 @@ const SYSTEM_PROMPT = `You review deal listings before they appear on MegaDeal, 
 Check the listing and its photo, then call submit_review.
 
 Reject (verdict "reject") when there is clearly:
-- swearing or profanity, including disguised forms (f***, sh1t, "effing"), slurs, insults, crude or sexual jokes
-- a rude or offensive photo: rude gestures, offensive words or signs visible in the image, nudity or sexual content, gore or violence
-- adult or sexual services, weapons, drugs, or anything illegal in New Zealand
+- swearing or profanity, including disguised forms (f***, sh1t, "effing"), crude jokes, or a rude gesture or rude words in the photo — set rude to true
+- slurs, hate, harassment, or insults aimed at people or groups — set offensive to true
+- nudity, sexual content or sexual jokes, or adult or sexual services — set sexual to true
+- gore or violence, weapons, drugs, or anything illegal in New Zealand — set unsafe to true
 - spam or nonsense that isn't a real offer
 
 Send to a person (verdict "review") when:
@@ -140,7 +147,10 @@ function listingText(input: AiReviewInput): string {
           `Booking: ${input.bookingRequirement || "(not given)"}`,
           input.photoUrl ? "The deal photo is attached." : "No photo was supplied.",
         ];
-  return `<listing>\n${lines.filter(Boolean).join("\n")}\n</listing>`;
+  const listing = `<listing>\n${lines.filter(Boolean).join("\n")}\n</listing>`;
+  return input.allowRudeLanguage
+    ? `${listing}\n\nMegaDeal allows this business casual swearing, cheeky or crude humour and rude gestures. Don't reject or hold the listing for those alone, but still set rude to true if they're present. Everything else above still applies — slurs, hate, sexual content, violence and illegal offers are still rejected.`
+    : listing;
 }
 
 /** The Messages API request body. Exported for tests. */
@@ -218,16 +228,27 @@ export type AiOutcome = "publish" | "reject" | "hold";
  * What the site does with a review. Publishing needs the model to approve
  * with every flag clear AND a business an admin has already approved —
  * a brand-new business's deals always get a human look. Rejection needs a
- * reject verdict backed by a content flag (offensive, sexual, unsafe or
- * manipulation), so an unexplained "reject" is held for a person instead.
+ * reject verdict backed by a content flag (rude, offensive, sexual, unsafe
+ * or manipulation), so an unexplained "reject" is held for a person.
+ *
+ * With the rudeness check off for this business, the `rude` flag is
+ * ignored entirely: it neither rejects a deal nor holds it back.
  */
-export function decideAiOutcome(review: AiReview | null, businessApproved: boolean): AiOutcome {
+export function decideAiOutcome(
+  review: AiReview | null,
+  businessApproved: boolean,
+  rudenessCheck: boolean = true
+): AiOutcome {
   if (!review) return "hold";
   const f = review.flags;
-  const contentProblem = f.offensive || f.sexual || f.unsafe || f.manipulation;
+  const counts = (k: keyof AiFlags) => f[k] && (k !== "rude" || rudenessCheck);
+  const contentProblem = (["rude", "offensive", "sexual", "unsafe", "manipulation"] as const).some(counts);
   if (review.verdict === "reject" && contentProblem) return "reject";
-  const anyFlag = FLAG_KEYS.some((k) => f[k]);
-  if (review.verdict === "approve" && !anyFlag && businessApproved) return "publish";
+  const anyFlag = FLAG_KEYS.some(counts);
+  // A model that rejected or held a deal only for language the business
+  // is allowed to use has nothing left to object to.
+  const onlyAllowedRudeness = !rudenessCheck && f.rude && !anyFlag;
+  if ((review.verdict === "approve" || onlyAllowedRudeness) && !anyFlag && businessApproved) return "publish";
   return "hold";
 }
 

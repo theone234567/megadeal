@@ -11,6 +11,7 @@ import {
 } from "./aiReview";
 
 const clear: AiFlags = {
+  rude: false,
   offensive: false,
   sexual: false,
   unsafe: false,
@@ -100,6 +101,7 @@ describe("decideAiOutcome", () => {
 
   it("rejects only with a content flag behind it", () => {
     expect(decideAiOutcome(review("reject", { offensive: true }), false)).toBe("reject");
+    expect(decideAiOutcome(review("reject", { rude: true }), true)).toBe("reject");
     expect(decideAiOutcome(review("reject", { manipulation: true }), true)).toBe("reject");
     expect(decideAiOutcome(review("reject", { suspiciousPrice: true }), true)).toBe("hold");
     expect(decideAiOutcome(review("reject"), true)).toBe("hold");
@@ -108,6 +110,34 @@ describe("decideAiOutcome", () => {
   it("holds when there is no review or it asks for a person", () => {
     expect(decideAiOutcome(null, true)).toBe("hold");
     expect(decideAiOutcome(review("review"), true)).toBe("hold");
+  });
+});
+
+describe("decideAiOutcome with the rudeness check off", () => {
+  it("lets swearing through for that business", () => {
+    expect(decideAiOutcome(review("reject", { rude: true }), true, false)).toBe("publish");
+    expect(decideAiOutcome(review("approve", { rude: true }), true, false)).toBe("publish");
+    // still needs an approved business to go live without a person
+    expect(decideAiOutcome(review("reject", { rude: true }), false, false)).toBe("hold");
+  });
+
+  it("still rejects hate, sexual and unsafe content", () => {
+    expect(decideAiOutcome(review("reject", { rude: true, offensive: true }), true, false)).toBe("reject");
+    expect(decideAiOutcome(review("reject", { sexual: true }), true, false)).toBe("reject");
+    expect(decideAiOutcome(review("reject", { unsafe: true }), true, false)).toBe("reject");
+  });
+
+  it("still holds other concerns", () => {
+    expect(decideAiOutcome(review("review", { rude: true, suspiciousPrice: true }), true, false)).toBe("hold");
+  });
+});
+
+describe("rudeness prompt", () => {
+  it("tells the reviewer when rude language is allowed", () => {
+    const off: any = buildReviewRequest({ kind: "deal", dealName: "x", allowRudeLanguage: true });
+    const on: any = buildReviewRequest({ kind: "deal", dealName: "x" });
+    expect(off.messages[0].content.at(-1).text).toMatch(/allows this business casual swearing/);
+    expect(on.messages[0].content.at(-1).text).not.toMatch(/allows this business/);
   });
 });
 

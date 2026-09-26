@@ -162,6 +162,12 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       patch.reviewCount = reviewCount;
     }
   }
+  if (body.rudenessCheck !== undefined) {
+    if (!["default", "on", "off"].includes(body.rudenessCheck)) {
+      return NextResponse.json({ error: "Invalid rudeness setting." }, { status: 400 });
+    }
+    patch.rudenessCheck = body.rudenessCheck;
+  }
   // Profile-detail corrections — admin fixing a typo or filling in something
   // a business got wrong, not the merchant's own self-edit (which sends the
   // listing back to "Pending" for re-review). An admin edit is trusted, so

@@ -3,6 +3,12 @@ import { incrementCreditsAtomically } from "./creditsAtomic";
 import { withdrawalRefundsCredit } from "./dealStatus";
 import { withHistory } from "./dealAdminEdit";
 import { logMerchantActivity } from "./merchantActivity";
+import { getSiteRudenessCheck, rudenessCheckApplies } from "./rudenessSetting";
+
+/** Whether swearing/crude humour is held back for this business. */
+async function rudenessCheckFor(adminClient: any, merchant: Record<string, any> | null): Promise<boolean> {
+  return rudenessCheckApplies(await getSiteRudenessCheck(adminClient), merchant?.rudenessCheck);
+}
 
 const FALLBACK_REJECTION =
   "This deal couldn't be approved as written. Please check the wording and photo are suitable for a family-friendly site and submit it again.";
@@ -24,7 +30,9 @@ export async function reviewSubmittedDeal(
   opts: { category?: string; apply: boolean }
 ): Promise<{ outcome: AiOutcome; review: AiReview | null; item: Record<string, any> }> {
   try {
+    const rudenessCheck = await rudenessCheckFor(adminClient, merchant);
     const review = await reviewWithAi({
+      allowRudeLanguage: !rudenessCheck,
       kind: "deal",
       dealName: deal.dealName,
       description: deal.description,
@@ -38,7 +46,7 @@ export async function reviewSubmittedDeal(
     });
     if (!review) return { outcome: "hold", review: null, item: deal };
 
-    const outcome = opts.apply ? decideAiOutcome(review, merchant?.status === "Approved") : "hold";
+    const outcome = opts.apply ? decideAiOutcome(review, merchant?.status === "Approved", rudenessCheck) : "hold";
     // Only act on a deal that is still waiting — an admin may have
     // decided it while the review ran (or, for the manual check, earlier).
     const waiting = deal.status === "Pending Approval";
@@ -93,14 +101,16 @@ export async function reviewPendingPhoto(
 ): Promise<{ outcome: AiOutcome; item: Record<string, any>; message?: string }> {
   try {
     if (!deal.pendingPhotoUrl) return { outcome: "hold", item: deal };
+    const rudenessCheck = await rudenessCheckFor(adminClient, merchant);
     const review = await reviewWithAi({
+      allowRudeLanguage: !rudenessCheck,
       kind: "photo",
       dealName: deal.dealName,
       description: deal.description,
       photoUrl: deal.pendingPhotoUrl,
     });
     if (!review) return { outcome: "hold", item: deal };
-    const outcome = decideAiOutcome(review, merchant?.status === "Approved");
+    const outcome = decideAiOutcome(review, merchant?.status === "Approved", rudenessCheck);
 
     if (outcome === "publish") {
       const item = await adminClient.items.update("Deals", {
