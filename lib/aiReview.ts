@@ -92,12 +92,14 @@ Reject (verdict "reject") when there is clearly:
 - spam or nonsense that isn't a real offer
 
 Send to a person (verdict "review") when:
-- the usual ("was") price looks inflated or the saving isn't believable for the offer
+- the usual ("was") price is clearly unrealistic — several times what New Zealand businesses would normally charge for it. Prices vary a lot between businesses, regions and service levels, and you don't know local rates exactly, so give the business the benefit of the doubt: a saving of up to about 60% is normal for a promotion, and a usual price that is merely on the high side is fine
 - the conditions contradict the description or the booking choice
 - the text contains phone numbers, emails, web addresses or social handles
 - the photo doesn't show the offer, or is a screenshot, watermarked stock image, very blurry, or mostly text
 - the offer centres on alcohol, gambling, vaping, or makes medical or health claims
 - you are unsure about anything
+
+Use "reject" only for the content problems in the first list. Price, conditions, contact-detail, photo and category concerns are always "review", never "reject", however clear they are.
 
 Otherwise approve. Ordinary spelling mistakes, casual wording, and NZ slang ("sweet as", "chur") are fine and are not reasons to hold a deal back. A photo of food, a venue, a treatment or a product that fits the offer is fine.
 
@@ -252,10 +254,22 @@ export function decideAiOutcome(
   return "hold";
 }
 
+type ReviewLike = Pick<AiReview, "verdict" | "reasons"> & { flags?: Partial<AiFlags> };
+
+/** The verdict as the site treats it: a "reject" with no content flag
+ *  behind it is held for a person (see decideAiOutcome), so it counts as
+ *  "review" everywhere the admin sees it. */
+export function effectiveVerdict(review: ReviewLike): AiVerdict {
+  if (review.verdict !== "reject") return review.verdict;
+  const f = review.flags ?? {};
+  return f.rude || f.offensive || f.sexual || f.unsafe || f.manipulation ? "reject" : "review";
+}
+
 /** A short line for the admin list, e.g. "AI: looks fine". */
-export function aiSummary(review: Pick<AiReview, "verdict" | "reasons"> | null | undefined): string | null {
+export function aiSummary(review: ReviewLike | null | undefined): string | null {
   if (!review) return null;
-  if (review.verdict === "approve") return "AI: looks fine";
+  const verdict = effectiveVerdict(review);
+  if (verdict === "approve") return "AI: looks fine";
   const why = review.reasons[0] ? ` — ${review.reasons[0]}` : "";
-  return review.verdict === "reject" ? `AI: reject${why}` : `AI: check${why}`;
+  return verdict === "reject" ? `AI: reject${why}` : `AI: check${why}`;
 }

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { DealStatus } from "@/lib/types";
 import DealContentEditor from "./DealContentEditor";
-import { aiSummary } from "@/lib/aiReview";
+import { aiSummary, effectiveVerdict } from "@/lib/aiReview";
 
 export interface AdminDeal {
   _id: string;
@@ -107,9 +107,9 @@ export default function DealRow({ deal: initialDeal }: { deal: AdminDeal }) {
             {aiSummary(deal.aiReview) && (
               <p
                 className={`text-xs font-semibold ${
-                  deal.aiReview.verdict === "approve"
+                  effectiveVerdict(deal.aiReview) === "approve"
                     ? "text-emerald-700"
-                    : deal.aiReview.verdict === "reject"
+                    : effectiveVerdict(deal.aiReview) === "reject"
                     ? "text-red-600"
                     : "text-amber-700"
                 }`}

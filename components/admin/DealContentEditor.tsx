@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { BOOKING_CHOICES } from "@/lib/booking";
-import type { AiReview } from "@/lib/aiReview";
+import { effectiveVerdict, type AiReview } from "@/lib/aiReview";
 import type { AdminDeal } from "./DealRow";
 
 const FIELD_LABELS: Record<string, string> = {
@@ -271,9 +271,9 @@ function AiReviewPanel({
   }
 
   return (
-    <div className={`rounded-xl border p-3 text-sm ${review ? VERDICT_STYLE[review.verdict] : "border-slate-200 bg-white text-slate-600"}`}>
+    <div className={`rounded-xl border p-3 text-sm ${review ? VERDICT_STYLE[effectiveVerdict(review)] : "border-slate-200 bg-white text-slate-600"}`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-semibold">{review ? VERDICT_LABEL[review.verdict] : "Not checked by AI yet"}</p>
+        <p className="font-semibold">{review ? VERDICT_LABEL[effectiveVerdict(review)] : "Not checked by AI yet"}</p>
         <button
           type="button"
           disabled={busy !== null}

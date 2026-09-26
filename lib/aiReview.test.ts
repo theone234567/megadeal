@@ -153,7 +153,9 @@ describe("reviewWithAi", () => {
 describe("aiSummary", () => {
   it("summarises for the admin list", () => {
     expect(aiSummary(review("approve"))).toBe("AI: looks fine");
-    expect(aiSummary(review("reject"))).toBe("AI: reject — reason");
+    expect(aiSummary(review("reject", { offensive: true }))).toBe("AI: reject — reason");
+    // a reject for a photo mismatch is held for a person, so it reads as "check"
+    expect(aiSummary(review("reject", { photoProblem: true }))).toBe("AI: check — reason");
     expect(aiSummary(undefined)).toBeNull();
   });
 });
