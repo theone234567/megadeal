@@ -154,6 +154,32 @@ const businessBenefits = [
 
 const launchCities = ["Wellington", "Christchurch", "Queenstown", "Hamilton"];
 
+// Plain-text answers: the single source for both the visible list and the
+// FAQPage JSON-LD, so the two can never disagree. Every answer restates
+// something the site already says elsewhere — no new promises.
+const FAQS: { q: string; a: string }[] = [
+  {
+    q: "What is MegaDeal?",
+    a: "MegaDeal is a New Zealand-owned website for local deals — up to 50% off at restaurants, spas, activities, getaways and other local businesses. It's an advertising platform, not a shop: you never buy anything from MegaDeal.",
+  },
+  {
+    q: "When does MegaDeal launch?",
+    a: `MegaDeal is launching in Auckland first, then ${launchCities.slice(0, -1).join(", ")} and ${launchCities.at(-1)}. Join the launch list to hear the day deals go live.`,
+  },
+  {
+    q: "Do I pay MegaDeal for a deal?",
+    a: "No. There are no vouchers to buy. Getting a deal code is free — you contact or visit the business and pay them directly at the deal price.",
+  },
+  {
+    q: "How do I use a deal?",
+    a: "Open the deal, tap \"Get deal code\", then contact or visit the business and quote your code. Some deals need a booking, so check the deal's conditions first.",
+  },
+  {
+    q: "I run a local business. What does it cost?",
+    a: "Businesses approved before launch can get up to 6 months of free advertising with code WELCOME6 (conditions apply). MegaDeal takes 0% commission on your sales, and no credit card is needed to apply. After the free period, advertising is paid for with credits.",
+  },
+];
+
 /**
  * Same bar /list-your-business uses. Real counts are far better social
  * proof than none, but "3 businesses signed up" reads worse than staying
@@ -820,6 +846,48 @@ export default async function ComingSoonPage() {
           </Link>{" "}
           apply.
         </p>
+      </section>
+
+      {/* ------------------------------------------------------- FAQ
+          The direct answers to what people ask an AI assistant or search
+          engine about MegaDeal. Native <details>: collapsed on screen to
+          keep the page short, but every answer is in the server HTML for
+          crawlers that don't run JavaScript. */}
+      <section id="faq" className={`${shell} pb-12 lg:pb-16`}>
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: safeJsonLd({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: FAQS.map(({ q, a }) => ({
+                "@type": "Question",
+                name: q,
+                acceptedAnswer: { "@type": "Answer", text: a },
+              })),
+            }),
+          }}
+        />
+        <h2 className={`${fredoka.className} text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}>
+          Questions about MegaDeal
+        </h2>
+        <div className="mt-5 divide-y divide-[#ece7f2] rounded-[20px] bg-white ring-1 ring-[#ece7f2]">
+          {FAQS.map(({ q, a }) => (
+            <details key={q} className="group px-5 py-4 sm:px-6">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-bold text-[#18122d] marker:hidden [&::-webkit-details-marker]:hidden">
+                {q}
+                <span
+                  aria-hidden
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f2ecff] text-lg leading-none text-[#650fc7] transition group-open:rotate-45"
+                >
+                  +
+                </span>
+              </summary>
+              <p className="mt-2 max-w-[70ch] text-[15px] leading-6 text-slate-600">{a}</p>
+            </details>
+          ))}
+        </div>
       </section>
     </main>
   );
