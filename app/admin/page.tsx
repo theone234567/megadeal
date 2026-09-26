@@ -158,6 +158,37 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {/* Before launch, these pages are visible only to a signed-in admin
+          (middleware.ts); everyone else is sent to /coming-soon. "/?preview"
+          rather than "/": a browser that visited before this existed may
+          have cached the old permanent "/" → /coming-soon redirect, and a
+          different URL sidesteps that cache. */}
+      <div className="mt-4 rounded-2xl border border-brand-100 bg-brand-50 p-4">
+        <p className="text-sm font-bold text-brand-900">Preview the customer site</p>
+        <p className="mt-1 text-sm text-brand-800">
+          Until launch, only you can see these pages while signed in here — everyone else sees
+          Coming Soon. Use them to check test deals exactly as customers will see them.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[
+            { href: "/?preview", label: "Homepage" },
+            { href: "/category/food-drink", label: "Food & Drink" },
+            { href: "/category/beauty-spa", label: "Beauty & Spa" },
+            { href: "/flash-deals", label: "Flash Deals" },
+          ].map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              target="_blank"
+              rel="noopener"
+              className="rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-brand-700 shadow-sm ring-1 ring-brand-100 hover:ring-brand-300"
+            >
+              {l.label} ↗
+            </a>
+          ))}
+        </div>
+      </div>
+
       {businessAlsoActive && (
         <div className="mt-4 rounded-2xl border-2 border-amber-200 bg-amber-50 p-4">
           <p className="text-sm font-bold text-amber-900">

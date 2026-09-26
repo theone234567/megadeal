@@ -2,7 +2,9 @@ import { createHmac, timingSafeEqual } from "crypto";
 import type { NextRequest } from "next/server";
 import { getRateLimitKv } from "./rateLimit";
 
-export const ADMIN_COOKIE_NAME = "admin_session";
+import { ADMIN_COOKIE_NAME } from "./adminCookie";
+
+export { ADMIN_COOKIE_NAME };
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 // Slightly longer than the session TTL: once this key expires, every token
 // that could have been affected by it has already expired on its own too,

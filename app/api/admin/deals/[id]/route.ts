@@ -3,7 +3,7 @@ import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { submitUrlsToIndexNow } from "@/lib/indexNow";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
 
@@ -58,7 +58,10 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
 
     const dealName = existing.dealName || "Your deal";
     const statusChanged = patch.status !== undefined && patch.status !== existing.status;
-    if (statusChanged && patch.status === "Live") {
+    // Only once launched: before that, deal pages are admin-only previews
+    // (see middleware.ts), and pinging Bing would just send it to crawl a
+    // test deal that redirects to /coming-soon.
+    if (statusChanged && patch.status === "Live" && SITE_LAUNCHED) {
       // Fire-and-forget: nudge Bing/Yandex to crawl this deal right away
       // instead of waiting on their own discovery schedule. Never blocks
       // the response — a failed push just falls back to normal sitemap

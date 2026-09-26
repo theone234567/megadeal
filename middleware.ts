@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
 import { categoryByLegacySegment, categoryBySlug } from "@/lib/categories";
+import { ADMIN_COOKIE_NAME, hasValidAdminSignature } from "@/lib/adminCookie";
 
 const CANONICAL_HOST = new URL(SITE_URL).hostname;
 
@@ -53,7 +54,7 @@ function isCanonicalHost(host: string) {
  * exactly where ChatGPT's original review of this codebase suggested
  * deferring it to.
  */
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   if (!isCanonicalHost(request.nextUrl.hostname)) {
     return NextResponse.redirect(
       new URL(request.nextUrl.pathname + request.nextUrl.search, SITE_URL),
@@ -77,18 +78,39 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  if (!SITE_LAUNCHED && request.nextUrl.pathname === "/") {
-    // 308, not the 307 default: a temporary redirect tells search engines
-    // "don't replace the indexed page, the real content is still here" —
-    // but "/" itself has no content at all (middleware answers before any
-    // HTML renders), so a temporary redirect leaves Google with nothing to
-    // build a title/description from and it falls back to showing just the
-    // bare site name in search results. 308 tells it to index /coming-soon
-    // (which has the real title, description and content) in place of "/"
-    // instead. Matches the canonical-host redirect immediately above.
-    return NextResponse.redirect(new URL("/coming-soon", request.url), 308);
+  const path = request.nextUrl.pathname;
+  if (!SITE_LAUNCHED && (path === "/" || PRELAUNCH_PRIVATE.test(path))) {
+    // Admin preview: before launch the customer side is visible only to
+    // someone signed into /admin, so test deals from a real business
+    // account can be checked end to end exactly as they'll look at launch.
+    if (await hasValidAdminSignature(request.cookies.get(ADMIN_COOKIE_NAME)?.value)) {
+      const res = NextResponse.next();
+      // Belt and braces on top of each page's own pre-launch noindex, and
+      // never cached anywhere a non-admin could be served it.
+      res.headers.set("X-Robots-Tag", "noindex, nofollow");
+      res.headers.set("Cache-Control", "private, no-store");
+      return res;
+    }
+
+    // "/" keeps its 308, not the 307 default: a temporary redirect tells
+    // search engines "don't replace the indexed page, the real content is
+    // still here" — but "/" itself has no content at all pre-launch, so a
+    // temporary redirect left Google with nothing to build a
+    // title/description from and it showed just the bare site name. 308
+    // tells it to index /coming-soon in place of "/" instead. The other
+    // routes get a 307: they're real pages from launch day.
+    //
+    // no-store on both: browsers otherwise remember a permanent redirect
+    // indefinitely, so everyone who visited before launch would keep being
+    // sent to /coming-soon after it — and the admin couldn't preview "/".
+    const res = NextResponse.redirect(new URL("/coming-soon", request.url), path === "/" ? 308 : 307);
+    res.headers.set("Cache-Control", "no-store");
+    return res;
   }
 }
+
+/** The customer-facing routes that stay admin-only until launch. */
+const PRELAUNCH_PRIVATE = /^\/(?:category|deal|flash-deals|business)(?:\/|$)/;
 
 export const config = {
   // Unchanged: static/generated utility routes and every API route never

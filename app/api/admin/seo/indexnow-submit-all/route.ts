@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { submitUrlsToIndexNow } from "@/lib/indexNow";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
 import {
   fetchAllLiveDealSlugsForSitemap,
   fetchAllBusinessSlugsForSitemap,
@@ -39,13 +39,18 @@ export async function POST(req: NextRequest) {
       `${SITE_URL}/privacy`,
       `${SITE_URL}/refund-policy`,
     ];
-    const categoryUrls = CATEGORIES.map((c) => `${SITE_URL}${categoryPath(c.name)}`);
-    const deals = await fetchAllLiveDealSlugsForSitemap();
-    const dealUrls = deals.map((d) => `${SITE_URL}/deal/${d.slug}`);
-    const businessSlugs = await fetchAllBusinessSlugsForSitemap();
-    const businessUrls = businessSlugs.map((slug) => `${SITE_URL}/business/${slug}`);
-
-    const urls = [...staticUrls, ...categoryUrls, ...dealUrls, ...businessUrls];
+    // Before launch, category, deal and business pages are admin-only
+    // previews that redirect everyone else to /coming-soon (middleware.ts)
+    // — same split as app/sitemap.ts, so only the public pages go out.
+    let urls = staticUrls;
+    if (SITE_LAUNCHED) {
+      const categoryUrls = CATEGORIES.map((c) => `${SITE_URL}${categoryPath(c.name)}`);
+      const deals = await fetchAllLiveDealSlugsForSitemap();
+      const dealUrls = deals.map((d) => `${SITE_URL}/deal/${d.slug}`);
+      const businessSlugs = await fetchAllBusinessSlugsForSitemap();
+      const businessUrls = businessSlugs.map((slug) => `${SITE_URL}/business/${slug}`);
+      urls = [...staticUrls, ...categoryUrls, ...dealUrls, ...businessUrls];
+    }
     await submitUrlsToIndexNow(urls);
 
     return NextResponse.json({ submitted: urls.length });

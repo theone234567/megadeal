@@ -16,15 +16,25 @@ export const SITE_URL =
 export const SITE_NAME = "MegaDeal";
 
 /**
- * Pre-launch gate: while false, middleware.ts redirects "/" to
- * /coming-soon so real visitors never see an empty (or demo-data-filled)
- * deal grid before there's a credible number of real live deals. Business
- * sign-up, the merchant portal, and admin all stay reachable regardless,
- * so merchant recruitment can happen in the background. Flip this by
- * setting the SITE_LAUNCHED runtime variable to "true" in the Cloudflare
- * Worker's settings (same place as ADMIN_PASSWORD) — no redeploy needed.
+ * THE LAUNCH SWITCH. Change to `true` to launch MegaDeal.
+ *
+ * While false, the customer side of the site — the homepage deal grid,
+ * /category/*, /deal/*, /flash-deals and /business/* — is visible only to
+ * someone signed into /admin (see middleware.ts); everyone else is sent
+ * to /coming-soon, so real businesses' test deals can be created and
+ * checked end to end without the public seeing them. Business sign-up,
+ * the merchant portal and admin stay reachable regardless.
+ *
+ * Lives in code so launching is a one-line change and a deploy. The
+ * SITE_LAUNCHED runtime variable in the Cloudflare Worker's settings
+ * still launches the site too (no redeploy needed) — either one being
+ * true counts as launched.
+ *
+ * Before flipping it: cancel test deals and the test business in /admin.
  */
-export const SITE_LAUNCHED = process.env.SITE_LAUNCHED === "true";
+const LAUNCHED = false;
+
+export const SITE_LAUNCHED = LAUNCHED || process.env.SITE_LAUNCHED === "true";
 
 /**
  * Same gate as SITE_LAUNCHED, but for MegaShop specifically: while false,

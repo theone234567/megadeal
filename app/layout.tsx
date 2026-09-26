@@ -10,6 +10,7 @@ import ScrollDepthTracker from "@/components/ScrollDepthTracker";
 import AttributionCapture from "@/components/AttributionCapture";
 import StaleBuildRecovery from "@/components/StaleBuildRecovery";
 import EmailCapturePopup from "@/components/EmailCapturePopup";
+import PreviewBanner from "@/components/PreviewBanner";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
 import { SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
@@ -156,6 +157,7 @@ export default function RootLayout({
           </WixProvider>
         </MegadealArtProvider>
         <EmailCapturePopup />
+        <PreviewBanner siteLaunched={SITE_LAUNCHED} />
       </body>
     </html>
   );
