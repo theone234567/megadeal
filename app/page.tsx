@@ -6,8 +6,40 @@ import SocialCTA from "@/components/SocialCTA";
 import HowToUseStrip from "@/components/HowToUseStrip";
 import HomeDeals from "./HomeDeals";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
+import type { Metadata } from "next";
 import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+
+const HOME_TITLE = `${SITE_NAME} — Local Deals Up to 50% Off in Auckland & NZ`;
+const HOME_DESCRIPTION =
+  "Local deals up to 50% off at Auckland restaurants, spas, activities and getaways. No vouchers to buy — contact the business directly and pay them, not us.";
+
+// Only reachable once SITE_LAUNCHED is on (middleware.ts redirects "/" to
+// /coming-soon before that). Used to inherit the root layout's generic
+// defaults; this is the page most people will land on from search, so it
+// gets its own. Search results (/?q=…) are noindex: an indexed internal
+// search page is thin, near-duplicate content in Google's eyes, and the
+// canonical already points every variant back to "/".
+export async function generateMetadata(props: {
+  searchParams: Promise<{ q?: string }>;
+}): Promise<Metadata> {
+  const { q } = await props.searchParams;
+  return {
+    title: { absolute: HOME_TITLE },
+    description: HOME_DESCRIPTION,
+    alternates: { canonical: SITE_URL },
+    robots: q?.trim() ? { index: false, follow: true } : undefined,
+    openGraph: {
+      title: HOME_TITLE,
+      description: HOME_DESCRIPTION,
+      url: SITE_URL,
+      siteName: SITE_NAME,
+      type: "website",
+      locale: "en_NZ",
+    },
+    twitter: { card: "summary_large_image", title: HOME_TITLE, description: HOME_DESCRIPTION },
+  };
+}
 
 // Was force-dynamic (a live Wix API round-trip on every single page view,
 // with no caching at all — the biggest single latency cost on the site).
