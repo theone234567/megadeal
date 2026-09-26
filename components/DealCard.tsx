@@ -63,7 +63,9 @@ export default function DealCard({
         {deal.image ? (
           <Image
             src={wixImageUrl(deal.image, 800, 600)}
-            alt={deal.name}
+            // Empty: the title is already the link's text, so repeating it
+            // as the photo's alt made screen readers announce it twice.
+            alt=""
             fill
             sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
             className={`object-cover transition duration-300 group-hover:scale-[1.03] ${soldOut ? "grayscale" : ""}`}

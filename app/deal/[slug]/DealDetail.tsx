@@ -42,8 +42,7 @@ function externalHref(url: string): string {
 // The old layout nested the photo, description and whole business section
 // in one column ahead of the price panel, which put the price and the only
 // action on the page several screens down on a phone. On desktop the same
-// items are placed into two columns, with the action panel sticky beside
-// them.
+// items are placed into two columns, with the action panel beside them.
 //
 // Not shown, though the Deal type carries them: businessRating (typed in
 // by an admin, not aggregated customer reviews) and quantityAvailable (set
@@ -217,7 +216,12 @@ export default function DealDetail({
         {/* 3. Price, key conditions and the action */}
         <aside
           aria-label="Price and deal code"
-          className="lg:sticky lg:top-24 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start"
+          // Deliberately not sticky: the site header is sticky and ~120px
+          // tall, and this panel is ~680px (taller once the code is
+          // revealed), so a sticky panel either tucked its price under the
+          // header or, offset below it, cut its own bottom — the report
+          // link included — off on a laptop-height screen.
+          className="lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start"
         >
           <div className="rounded-[18px] border border-slate-200/80 bg-white p-5 shadow-card sm:p-6">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
