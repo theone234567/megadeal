@@ -2,19 +2,21 @@
 
 import { useEffect, useState } from "react";
 
-type Parts = { days: number; hours: number; minutes: number };
+type Parts = { days: number; hours: number; minutes: number; ended: boolean };
 
 function getParts(target: Date): Parts {
-  const diff = Math.max(0, target.getTime() - Date.now());
+  const raw = target.getTime() - Date.now();
+  const diff = Math.max(0, raw);
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
   const minutes = Math.floor((diff / (1000 * 60)) % 60);
-  return { days, hours, minutes };
+  return { days, hours, minutes, ended: raw <= 0 };
 }
 
 export default function CountdownBadge({
   target,
   durationMs,
+  variant = "badge",
 }: {
   /** Absolute deadline — for real deals with a known expiry. */
   target?: Date;
@@ -23,6 +25,12 @@ export default function CountdownBadge({
    *  statically prerendered page that instant is the build time, so the
    *  fake deal visibly "expires" as the deployment ages. */
   durationMs?: number;
+  /** "offer": the deal-card/deal-page treatment — an opaque white pill
+   *  reading "Offer ends in …" (the deadline to get the offer, not a
+   *  booking or usage deadline), no colour escalation or pulsing, and an
+   *  explicit "Offer ended" once it reaches zero. "badge" is the original
+   *  dark pill still used by SampleDealCard. */
+  variant?: "badge" | "offer";
 }) {
   // Deliberately null on the server and on the first client render.
   //
@@ -66,17 +74,26 @@ export default function CountdownBadge({
   }, [targetTime, durationMs]);
 
   const baseClass =
-    "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold text-white transition-colors";
+    variant === "offer"
+      ? "inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-brand-800 shadow-sm"
+      : "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold text-white transition-colors";
+  const prefix = variant === "offer" ? "Offer ends in" : "Ends in";
 
   // Pre-mount placeholder: same box, same text metrics, invisible — so the
   // real badge swaps in without shifting anything around it, and screen
   // readers never announce a placeholder time.
   if (!parts) {
     return (
-      <span className={`${baseClass} bg-slate-900/80 opacity-0`} aria-hidden="true">
-        ⏱ Ends in 00d 00h
+      <span className={`${baseClass} ${variant === "offer" ? "" : "bg-slate-900/80"} opacity-0`} aria-hidden="true">
+        ⏱ {prefix} 00h 00m
       </span>
     );
+  }
+
+  if (variant === "offer") {
+    if (parts.ended) {
+      return <span className={`${baseClass} !bg-slate-100 !text-slate-600`}>Offer ended</span>;
+    }
   }
 
   const label =
@@ -84,7 +101,9 @@ export default function CountdownBadge({
       ? `${parts.days}d ${parts.hours}h`
       : parts.hours > 0
       ? `${parts.hours}h ${parts.minutes}m`
-      : `${parts.minutes}m`;
+      : parts.minutes > 0
+      ? `${parts.minutes}m`
+      : "<1m";
 
   // Urgency escalates the badge color as the deal gets closer to expiring —
   // neutral with days left, amber under a day, pulsing red under an hour.
@@ -95,5 +114,8 @@ export default function CountdownBadge({
       ? "bg-amber-600/90"
       : "animate-pulse bg-red-600/90";
 
-  return <span className={`${baseClass} ${urgencyClass}`}>⏱ Ends in {label}</span>;
+  if (variant === "offer") {
+    return <span className={baseClass}>⏱ {prefix} {label}</span>;
+  }
+  return <span className={`${baseClass} ${urgencyClass}`}>⏱ {prefix} {label}</span>;
 }

@@ -1,12 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Deal } from "@/lib/types";
-import { formatMoney } from "@/lib/format";
-import { dealSaving } from "@/lib/dealSaving";
+import { formatMoney, formatOfferEndDate } from "@/lib/format";
+import { dealSavingPercent } from "@/lib/dealSaving";
+import { keyRestrictions } from "@/lib/dealTerms";
+import { CATEGORIES } from "@/lib/categories";
 import { wixImageUrl } from "@/lib/wixImageUrl";
 import CountdownBadge from "./CountdownBadge";
-import StarRating from "./StarRating";
+import DealCardAction from "./DealCardAction";
+import { MapPinIcon, ZapIcon } from "./icons";
 
+/**
+ * One card for standard and Flash Deals: same structure and type scale,
+ * with Flash adding a label and a live "Offer ends in" deadline.
+ *
+ * Deliberately not shown here, though the Deal type carries them:
+ * - businessRating: typed in by an admin, not aggregated from customer
+ *   reviews, so presenting it as a star rating would claim more than it is.
+ * - quantityAvailable: set once when the deal is created and never
+ *   decremented (nothing is bought through MegaDeal), so "Only 3 left"
+ *   would be a fixed number dressed up as live scarcity.
+ */
 export default function DealCard({
   deal,
   distanceKm = null,
@@ -18,18 +32,22 @@ export default function DealCard({
   preview = false,
 }: {
   deal: Deal;
-  /** Distance from the viewer, in km — shown as a badge when known. */
+  /** Distance from the viewer, in km — shown beside the locality when known. */
   distanceKm?: number | null;
   preview?: boolean;
 }) {
   const soldOut = !deal.inStock;
-  const lowStock =
-    !soldOut &&
-    deal.quantityAvailable !== null &&
-    deal.quantityAvailable > 0 &&
-    deal.quantityAvailable <= 5;
-
-  const saving = dealSaving(deal.was, deal.now);
+  const savingPct = dealSavingPercent(deal.was, deal.now);
+  const restrictions = keyRestrictions(deal.terms).slice(0, 3);
+  const category = deal.categories[0];
+  const categoryEmoji = CATEGORIES.find((c) => c.name === category)?.emoji ?? "🏷️";
+  const distance =
+    distanceKm === null
+      ? null
+      : distanceKm < 1
+      ? `${Math.round(distanceKm * 1000)}m away`
+      : `${distanceKm.toFixed(1)}km away`;
+  const locality = [deal.businessCity, distance].filter(Boolean).join(" · ");
 
   const Wrapper = preview ? "div" : Link;
   const wrapperProps = preview ? {} : { href: `/deal/${deal.slug}` };
@@ -37,111 +55,103 @@ export default function DealCard({
   return (
     <Wrapper
       {...(wrapperProps as any)}
-      className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-card transition ${
+      className={`group flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-200/80 bg-white shadow-card transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 ${
         preview ? "" : "hover:-translate-y-0.5 hover:shadow-card-hover"
-      } ${soldOut ? "opacity-75" : ""}`}
+      }`}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
+      <div className="relative aspect-[3/2] w-full overflow-hidden bg-brand-50 sm:aspect-[4/3]">
         {deal.image ? (
           <Image
             src={wixImageUrl(deal.image, 800, 600)}
             alt={deal.name}
             fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"
-            className={`object-cover transition duration-300 group-hover:scale-105 ${soldOut ? "grayscale" : ""}`}
+            sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
+            className={`object-cover transition duration-300 group-hover:scale-[1.03] ${soldOut ? "grayscale" : ""}`}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-300">
-            <span className="text-4xl">🏷️</span>
+          <div aria-hidden className="flex h-full w-full items-center justify-center text-5xl opacity-40">
+            {categoryEmoji}
           </div>
         )}
 
-        {soldOut && (
+        {soldOut ? (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-900/40">
-            <span className="-rotate-6 rounded-lg bg-slate-900 px-3 py-1 text-sm font-extrabold uppercase tracking-wide text-white shadow">
+            <span className="rounded-full bg-white px-3 py-1 text-sm font-extrabold text-slate-900 shadow">
               Sold out
             </span>
           </div>
-        )}
-
-        {!soldOut && deal.discountPercent > 0 && (
-          <div className="absolute left-2 top-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-ember-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
-              {deal.isFlash && <span className="animate-flash-zap">⚡</span>}
-              {deal.discountPercent}% OFF
-            </span>
-          </div>
-        )}
-        {!soldOut && (
-          <div className="absolute bottom-2 left-2 right-2">
-            {/* At most one urgency badge at a time — scarcity is the
-                stronger, more specific signal once stock is genuinely low,
-                so it takes priority over the countdown rather than both
-                stacking. Full countdown is still on the deal page. */}
-            {lowStock ? (
-              <span className="rounded-full bg-red-600/90 px-2.5 py-1 text-xs font-semibold text-white">
-                Only {deal.quantityAvailable} left
+        ) : (
+          <>
+            {/* One badge only. A standard deal gets its saving (derived from
+                the two prices below, so they can't disagree); a Flash Deal
+                gets its Flash label instead — the struck-through price
+                already shows the saving, and a second pink badge would
+                compete with the deadline. */}
+            {deal.isFlash ? (
+              <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-brand-700 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+                <ZapIcon className="h-3.5 w-3.5" /> Flash Deal
               </span>
             ) : (
-              deal.expiresAt && <CountdownBadge target={new Date(deal.expiresAt)} />
+              savingPct !== null && (
+                <span className="absolute left-3 top-3 rounded-full bg-ember-600 px-2.5 py-1 text-xs font-extrabold text-white shadow">
+                  {savingPct}% off
+                </span>
+              )
             )}
-          </div>
+            {deal.isFlash && deal.expiresAt && (
+              <div className="absolute bottom-3 left-3">
+                <CountdownBadge target={new Date(deal.expiresAt)} variant="offer" />
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        {deal.categories[0] && (
-          <span className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-            {deal.categories[0]}
-          </span>
+      <div className="flex flex-1 flex-col p-[18px]">
+        {category && (
+          <span className="text-[0.6875rem] font-bold uppercase tracking-wider text-brand-600">{category}</span>
         )}
-        <h3 className="font-display line-clamp-2 min-h-[2.875rem] text-[15px] font-bold leading-5 text-slate-900 group-hover:text-brand-700">
+        <h3 className="mt-1.5 line-clamp-2 text-[1.0625rem] font-extrabold leading-snug text-slate-900 group-hover:text-brand-700">
           {deal.name}
         </h3>
-        {/* City rides along on the business line instead of claiming a line
-            of its own. On a national grid, "which town is this in" is one
-            of the first things a person needs and the card never said it —
-            the distance badge below only appears for the minority who
-            grant location access, so for everyone else a Dunedin massage
-            and an Auckland one looked identical. */}
-        {(deal.businessName || deal.businessCity) && (
-          <p className="-mt-1 truncate text-xs font-medium text-slate-500">
-            {deal.businessName ? `by ${deal.businessName}` : ""}
-            {deal.businessName && deal.businessCity ? " · " : ""}
-            {deal.businessCity ?? ""}
+        {deal.businessName && (
+          <p className="mt-1.5 line-clamp-2 text-[0.8125rem] font-semibold leading-snug text-slate-600">
+            {deal.businessName}
           </p>
         )}
-        {deal.businessRating !== null && (
-          <StarRating rating={deal.businessRating} reviewCount={deal.businessReviewCount} className="-mt-1" />
-        )}
-        {distanceKm !== null && (
-          <p className="-mt-1 text-xs font-medium text-slate-500">
-            📍 {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)}km`} away
+        {locality && (
+          <p className="mt-0.5 flex items-center gap-1 text-[0.8125rem] text-slate-500">
+            <MapPinIcon className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{locality}</span>
           </p>
+        )}
+        {restrictions.length > 0 && (
+          <p className="mt-2 text-xs font-medium leading-relaxed text-slate-500">{restrictions.join(" · ")}</p>
         )}
 
-        <div className="mt-auto flex items-end justify-between pt-1">
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl font-extrabold text-slate-900">
+        <div className="mt-auto pt-4">
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            <span className="text-[1.75rem] font-extrabold leading-none tracking-tight text-brand-700">
               {formatMoney(deal.now, deal.currency, deal.formattedNow)}
             </span>
             {deal.was > deal.now && (
-              <span className="text-sm text-slate-500 line-through">
+              <span className="text-sm font-medium text-slate-500 line-through">
+                <span className="sr-only">Usual price </span>
                 {formatMoney(deal.was, deal.currency, deal.formattedWas)}
               </span>
             )}
           </div>
-          {/* This row has always been justify-between with a single child —
-              a gap the layout reserved and never filled. The cash saving
-              belongs in it: it sits right beside the two prices it is the
-              difference between, which is where someone comparing them is
-              already looking. Brand-50 rather than a new green, so it
-              reads as a chip without competing with the ember % badge. */}
-          {saving !== null && (
-            <span className="shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-extrabold text-brand-700">
-              Save {formatMoney(saving, deal.currency)}
-            </span>
+          {/* Always "Offer ends", never "Valid until" or "Available until":
+              this is the deadline to get the deal, not the dates it can be
+              used on — those are in the conditions. Flash Deals include
+              the time, since they end the same day. Present on every card
+              with a deadline so prices line up across a row. */}
+          {deal.expiresAt && (
+            <p className="mt-1.5 text-xs text-slate-500">
+              Offer ends {formatOfferEndDate(deal.expiresAt, deal.isFlash)}
+            </p>
           )}
+          <DealCardAction expiresAt={deal.expiresAt} isFlash={deal.isFlash} soldOut={soldOut} />
         </div>
       </div>
     </Wrapper>

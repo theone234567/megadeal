@@ -21,3 +21,16 @@ export function dealSaving(was: number, now: number): number | null {
   const saving = Math.round((was - now) * 100) / 100;
   return saving > 0 ? saving : null;
 }
+
+/**
+ * The same saving as a whole percentage of the comparison price — derived
+ * from the identical price pair the card displays, rather than the
+ * separately stored discountPercent, so a badge can never disagree with
+ * the two prices printed beside it.
+ */
+export function dealSavingPercent(was: number, now: number): number | null {
+  const saving = dealSaving(was, now);
+  if (saving === null || was <= 0) return null;
+  const pct = Math.round((saving / was) * 100);
+  return pct > 0 ? pct : null;
+}

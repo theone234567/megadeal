@@ -100,6 +100,35 @@ export function splitTermsForDisplay(rendered: string): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Short forms of the standard conditions that most change whether a deal
+ * suits someone, in the order a customer needs them — for the one-line
+ * restriction summary on a deal card and the "Before you book" panel.
+ *
+ * Only exact standard labels are recognised. A merchant's own free-text
+ * condition is never shortened or paraphrased here: it can say anything,
+ * and a summary that misstates it is worse than no summary. Those always
+ * appear in full in the deal page's complete conditions list.
+ */
+const KEY_RESTRICTIONS: { id: string; short: string }[] = [
+  { id: "mon-thu", short: "Mon–Thu only" },
+  { id: "dine-in", short: "Dine-in only" },
+  { id: "bookings", short: "Bookings essential" },
+  { id: "public-holidays", short: "Not on public holidays" },
+  { id: "one-per-customer", short: "One per customer" },
+];
+
+export function keyRestrictions(rendered: string | null): string[] {
+  if (!rendered) return [];
+  const present = new Set(
+    splitTermsForDisplay(rendered).map((piece) => piece.toLowerCase())
+  );
+  return KEY_RESTRICTIONS.filter(({ id }) => {
+    const label = LABEL_BY_ID.get(id);
+    return label !== undefined && present.has(label.toLowerCase());
+  }).map(({ short }) => short);
+}
+
 function splitTerms(rendered: string): { selectedIds: string[]; custom: string } {
   const idByLabel = new Map(STANDARD_TERMS.map((t) => [t.label.toLowerCase(), t.id]));
   const selectedIds: string[] = [];

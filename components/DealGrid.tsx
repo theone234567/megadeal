@@ -22,7 +22,11 @@ export default function DealGrid({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
+    // One column on phones, two on tablets, three on desktop. Two-up on a
+    // 390px phone left each card ~170px wide, too narrow for a readable
+    // title, business line and price; four-up on desktop drops cards
+    // below ~290px for the same reason.
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
       {deals.map((deal) => (
         <DealCard key={deal.id} deal={deal} distanceKm={dealDistanceKm(deal, userLocation)} />
       ))}
