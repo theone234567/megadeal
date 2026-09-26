@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { dealSaving } from "./dealSaving";
+import { dealSaving, dealSavingPercent } from "./dealSaving";
 
 describe("dealSaving", () => {
   it("returns the difference", () => {
@@ -24,5 +24,24 @@ describe("dealSaving", () => {
     expect(dealSaving(NaN, 10)).toBeNull();
     expect(dealSaving(10, NaN)).toBeNull();
     expect(dealSaving(Infinity, 10)).toBeNull();
+  });
+});
+
+describe("dealSavingPercent", () => {
+  it("is the saving as a whole percentage of the comparison price", () => {
+    expect(dealSavingPercent(70, 49)).toBe(30);
+    expect(dealSavingPercent(118, 59)).toBe(50);
+    expect(dealSavingPercent(640, 389)).toBe(39);
+  });
+
+  it("is null whenever there's no genuine saving", () => {
+    expect(dealSavingPercent(65, 65)).toBeNull();
+    expect(dealSavingPercent(50, 60)).toBeNull();
+    expect(dealSavingPercent(0, 0)).toBeNull();
+    expect(dealSavingPercent(NaN, 10)).toBeNull();
+  });
+
+  it("never rounds a real but tiny saving up into a claim of 0%", () => {
+    expect(dealSavingPercent(1000, 999)).toBeNull();
   });
 });

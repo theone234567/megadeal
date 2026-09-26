@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { STANDARD_TERMS, renderTerms, parseTerms, splitTermsForDisplay } from "./dealTerms";
+import { STANDARD_TERMS, renderTerms, parseTerms, splitTermsForDisplay, keyRestrictions } from "./dealTerms";
 
 describe("renderTerms", () => {
   it("joins the ticked conditions into one sentence", () => {
@@ -104,5 +104,23 @@ describe("splitTermsForDisplay", () => {
 
   it("is empty for an empty string", () => {
     expect(splitTermsForDisplay("")).toEqual([]);
+  });
+});
+
+describe("keyRestrictions", () => {
+  it("shortens the standard conditions that decide whether a deal suits someone, in priority order", () => {
+    const terms = renderTerms(["mention", "bookings", "mon-thu", "dine-in"], "");
+    expect(keyRestrictions(terms)).toEqual(["Mon–Thu only", "Dine-in only", "Bookings essential"]);
+  });
+
+  it("never summarises the merchant's own wording", () => {
+    const terms = renderTerms(["bookings"], "Valid Mondays only for groups of 4 or more.");
+    expect(keyRestrictions(terms)).toEqual(["Bookings essential"]);
+  });
+
+  it("is empty for no terms, or terms with no standard restrictions", () => {
+    expect(keyRestrictions(null)).toEqual([]);
+    expect(keyRestrictions("")).toEqual([]);
+    expect(keyRestrictions(renderTerms(["mention", "availability"], ""))).toEqual([]);
   });
 });
