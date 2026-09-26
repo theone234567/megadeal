@@ -259,7 +259,7 @@ export default function DealDetail({
                   {formatOfferEndDate(deal.expiresAt, true)}
                 </p>
                 {live && (
-                  <p className="mt-0.5 text-xs text-slate-500">
+                  <p className="mt-0.5 text-xs text-slate-600">
                     The deadline to get the deal, not the days you can use it.
                   </p>
                 )}
