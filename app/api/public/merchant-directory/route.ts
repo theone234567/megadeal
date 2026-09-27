@@ -41,7 +41,8 @@ export async function GET() {
 
     const businessByEmail: Record<string, PublicBusiness> = {};
     for (const m of merchantsResult) {
-      if (m.email && m.businessName && m._id) {
+      // A suspended business's details aren't published anywhere.
+      if (m.email && m.businessName && m._id && m.status !== "Suspended") {
         businessByEmail[String(m.email).toLowerCase()] = mapMerchantToBusiness(m);
       }
     }

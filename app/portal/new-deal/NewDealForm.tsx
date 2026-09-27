@@ -671,10 +671,12 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
       <form onSubmit={handleContinueToPreview} className="mt-6 space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Deal name</label>
+          <label htmlFor="deal-name" className="mb-1 block text-sm font-medium text-slate-700">Deal name</label>
           <input
+            id="deal-name"
             required
             value={dealName}
+            maxLength={80}
             onChange={(e) => setDealName(e.target.value)}
             placeholder="e.g. 60-Minute Massage + Facial"
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -682,8 +684,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Category</label>
+          <label htmlFor="deal-category" className="mb-1 block text-sm font-medium text-slate-700">Category</label>
           <select
+            id="deal-category"
             required
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -701,8 +704,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Description</label>
+          <label htmlFor="deal-description" className="mb-1 block text-sm font-medium text-slate-700">Description</label>
           <textarea
+            id="deal-description"
             required
             rows={4}
             maxLength={MAX_DRAFT_TEXT}
@@ -722,8 +726,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Deal price ($)</label>
+            <label htmlFor="deal-price" className="mb-1 block text-sm font-medium text-slate-700">Deal price ($)</label>
             <input
+              id="deal-price"
               required
               type="number"
               min={0}
@@ -734,10 +739,11 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="deal-price-was" className="mb-1 block text-sm font-medium text-slate-700">
               Original price ($) <span className="font-normal text-slate-500">(optional)</span>
             </label>
             <input
+              id="deal-price-was"
               type="number"
               min={0}
               step="0.01"
@@ -759,7 +765,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             />
             <span>
               <span className="block text-sm font-bold text-slate-900">⚡ Make this a Flash Deal</span>
-              <span className="block text-xs text-slate-500">
+              <span className="block text-xs text-slate-600">
                 Short-burst offer (minutes to hours) — great for filling quiet
                 spots, e.g. &quot;2-for-1 tonight only&quot;. Shows an animated FLASH badge.
               </span>
@@ -769,9 +775,10 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Duration</label>
+            <label htmlFor="deal-duration" className="mb-1 block text-sm font-medium text-slate-700">Duration</label>
             {isFlash ? (
               <select
+                id="deal-duration"
                 value={durationMinutes}
                 onChange={(e) => setDurationMinutes(Number(e.target.value))}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -784,6 +791,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               </select>
             ) : (
               <select
+                id="deal-duration"
                 value={durationDays}
                 onChange={(e) => setDurationDays(Number(e.target.value))}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
@@ -797,10 +805,11 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             )}
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="deal-quantity" className="mb-1 block text-sm font-medium text-slate-700">
               Quantity available <span className="font-normal text-slate-500">(optional)</span>
             </label>
             <input
+              id="deal-quantity"
               type="number"
               min={1}
               value={quantityAvailable}

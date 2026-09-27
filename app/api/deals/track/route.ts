@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { incrementFieldAtomically } from "@/lib/creditsAtomic";
 
 export const dynamic = "force-dynamic";
 
@@ -48,11 +49,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
+    // Incremented in place. This used to re-save the whole row read a
+    // moment earlier, so a page view landing just as an admin paused,
+    // edited or approved the deal could write the old version back over
+    // the change.
     const field = event === "view" ? "viewCount" : "clickCount";
-    await adminClient.items.update("Deals", {
-      ...record,
-      [field]: (Number(record[field]) || 0) + 1,
-    });
+    await incrementFieldAtomically(adminClient, "Deals", record._id, field, 1);
   } catch (err) {
     console.error("[deals/track] failed", err);
   }

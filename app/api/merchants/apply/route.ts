@@ -1,9 +1,10 @@
 import { randomUUID } from "crypto";
+import { phoneLink } from "@/lib/booking";
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
-import { getOrClaimMerchant } from "@/lib/merchant";
+import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { insertEmailSignup } from "@/lib/emailSignups";
 import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
@@ -103,6 +104,9 @@ export async function POST(req: NextRequest) {
   if (!legalBusinessName) fieldErrors.legalBusinessName = "Legal business name is required.";
   const phone = cleanText(body.phone, MAX_TEXT_LENGTH);
   if (!phone) fieldErrors.phone = "Phone is required.";
+  // It's shown to customers as a tap-to-call booking number, so it has to
+  // be a real one — "12" used to be accepted and then silently hidden.
+  else if (!phoneLink(phone)) fieldErrors.phone = "Enter a full phone number, including the area code.";
 
   // Address and city are deferred to the portal's "complete your profile"
   // step (same pattern as bio/hours/website/social below) — the initial
@@ -217,8 +221,9 @@ export async function POST(req: NextRequest) {
         // back to incomplete.
         category: category || existing.category || "",
         // Same convention as /api/merchants/profile: resubmitting details
-        // sends it back for review, same as any other edit would.
-        status: "Pending",
+        // sends it back for review, same as any other edit would — but a
+        // suspension stays in place.
+        status: statusAfterMerchantEdit(existing),
       });
     } else {
       item = await adminClient.items.insert("Merchants", {

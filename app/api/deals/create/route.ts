@@ -64,6 +64,14 @@ export async function POST(req: NextRequest) {
   const category = String(body.category || "");
   const categoryId = CATEGORY_ID_BY_NAME[category];
 
+  // Wix Stores caps product names at 80 characters; past that the product
+  // create failed and the business saw only "Couldn't create your deal".
+  if (dealName.length > 80) {
+    return NextResponse.json({ error: "Keep the deal name to 80 characters or fewer." }, { status: 400 });
+  }
+  if (description.length > 5000 || terms.length > 2000) {
+    return NextResponse.json({ error: "The description or conditions are too long." }, { status: 400 });
+  }
   if (!dealName || !description || !terms) {
     return NextResponse.json({ error: "Deal name, description and terms are required." }, { status: 400 });
   }
@@ -94,7 +102,7 @@ export async function POST(req: NextRequest) {
   } else if (!Number.isFinite(durationDays) || durationDays < 1 || durationDays > MAX_DURATION_DAYS) {
     return NextResponse.json({ error: "Choose a valid duration." }, { status: 400 });
   }
-  if (quantityAvailable !== undefined && (!Number.isFinite(quantityAvailable) || quantityAvailable < 1)) {
+  if (quantityAvailable !== undefined && (!Number.isInteger(quantityAvailable) || quantityAvailable < 1)) {
     return NextResponse.json({ error: "Quantity available must be a positive number." }, { status: 400 });
   }
   // A deal without a photo is close to unsellable on a grid of deals that

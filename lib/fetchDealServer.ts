@@ -71,6 +71,7 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
         .eq("email", merchantEmail)
         .find();
       const merchant = merchantResult.items?.[0];
+      if (merchant?.status === "Suspended") return null;
       if (merchant?.businessName && merchant._id) {
         deal = applyBusinessToDeal(deal, mapMerchantToBusiness(merchant));
       }
@@ -119,7 +120,11 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
     }
 
     const businessByEmail: Record<string, PublicBusiness> = {};
+    // Suspending a business takes its deals off the site too, not just its
+    // profile page — they used to stay listed, still carrying its name.
+    const suspendedEmails = new Set<string>();
     for (const m of merchantsResult) {
+      if (m.status === "Suspended" && m.email) suspendedEmails.add(String(m.email).toLowerCase());
       if (m.email && m.businessName && m._id) {
         businessByEmail[String(m.email).toLowerCase()] = mapMerchantToBusiness(m);
       }
@@ -143,6 +148,7 @@ export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
         // The Deals collection is what defines a deal here; Stores is only
         // the catalogue behind it. No row, nothing to show.
         if (!meta) return null;
+        if (meta.merchantEmail && suspendedEmails.has(String(meta.merchantEmail).toLowerCase())) return null;
         return {
           ...deal,
           expiresAt: meta.expiresAt ?? null,
@@ -203,7 +209,9 @@ export async function fetchBusinessProfileBySlug(
     const merchant = merchants.find(
       (m: any) => typeof m._id === "string" && m._id.startsWith(idPrefix)
     );
-    if (!merchant || !merchant.businessName || merchant.status === "Suspended") {
+    // Public only once an admin has approved the business: a signup that
+    // hasn't been reviewed (or one that's been suspended) has no page.
+    if (!merchant || !merchant.businessName || merchant.status !== "Approved") {
       return null;
     }
 
@@ -258,7 +266,7 @@ export async function fetchBusinessProfileBySlug(
   }
 }
 
-/** All non-suspended business profile slugs, for sitemap generation. */
+/** All approved business profile slugs, for sitemap generation. */
 export async function fetchAllBusinessSlugsForSitemap(): Promise<string[]> {
   try {
     const adminClient = createWixAdminClient();
@@ -269,7 +277,7 @@ export async function fetchAllBusinessSlugsForSitemap(): Promise<string[]> {
       "Merchants (sitemap)"
     );
     return merchants
-      .filter((m: any) => m.businessName && m._id && m.status !== "Suspended")
+      .filter((m: any) => m.businessName && m._id && m.status === "Approved")
       .map((m: any) => businessSlug(m.businessName, m._id));
   } catch {
     return [];

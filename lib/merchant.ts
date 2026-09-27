@@ -96,3 +96,13 @@ export async function getOrClaimMerchant(adminClient: any, member: VerifiedMembe
     emailVerified: member.loginEmailVerified,
   });
 }
+
+/**
+ * A business's status after it edits its own details. Edits go back to
+ * "Pending" for review — except a suspended business stays suspended:
+ * without this, re-saving the profile quietly lifted an admin's
+ * suspension (and brought its public page back).
+ */
+export function statusAfterMerchantEdit(existing: { status?: string | null } | null | undefined): string {
+  return existing?.status === "Suspended" ? "Suspended" : "Pending";
+}

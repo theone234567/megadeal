@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { phoneLink } from "@/lib/booking";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
-import { getOrClaimMerchant } from "@/lib/merchant";
+import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { isBusinessCategory } from "@/lib/categories";
@@ -66,6 +67,9 @@ export async function POST(req: NextRequest) {
   // have all three when it was first approved.
   const phone = cleanText(body.phone, MAX_TEXT_LENGTH);
   if (!phone) fieldErrors.phone = "Booking phone number is required.";
+  // It's shown to customers as a tap-to-call booking number, so it has to
+  // be a real one — "12" used to be accepted and then silently hidden.
+  else if (!phoneLink(phone)) fieldErrors.phone = "Enter a full phone number, including the area code.";
   const address = cleanText(body.address, MAX_TEXT_LENGTH);
   if (!address) fieldErrors.address = "Address is required.";
   const city = cleanText(body.city, MAX_TEXT_LENGTH);
@@ -169,7 +173,7 @@ export async function POST(req: NextRequest) {
     amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
     lat: lat ?? (addressChanged ? null : merchant.lat ?? null),
     lng: lng ?? (addressChanged ? null : merchant.lng ?? null),
-    status: "Pending",
+    status: statusAfterMerchantEdit(merchant),
     // Keep this in sync with Wix's real verified-email flag rather than
     // letting it go stale between visits.
     emailVerified: member.loginEmailVerified,

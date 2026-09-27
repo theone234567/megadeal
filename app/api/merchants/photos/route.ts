@@ -3,7 +3,7 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
-import { getOrClaimMerchant } from "@/lib/merchant";
+import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
 import { MAX_BUSINESS_PHOTOS, serializeBusinessPhotos } from "@/lib/businessPhotos";
 
 /** Replaces app/api/merchants/logo/route.ts now that a listing carries up
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       // row, JSON-LD) reads this field and is unaffected by the move to
       // a gallery.
       logoUrl: photos[0],
-      status: "Pending",
+      status: statusAfterMerchantEdit(merchant),
     });
     return NextResponse.json({ item: updated });
   } catch (err) {
