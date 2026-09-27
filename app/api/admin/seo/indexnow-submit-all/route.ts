@@ -44,12 +44,15 @@ export async function POST(req: NextRequest) {
     // — same split as app/sitemap.ts, so only the public pages go out.
     let urls = staticUrls;
     if (SITE_LAUNCHED) {
-      const categoryUrls = CATEGORIES.map((c) => `${SITE_URL}${categoryPath(c.name)}`);
       const deals = await fetchAllLiveDealSlugsForSitemap();
       const dealUrls = deals.map((d) => `${SITE_URL}/deal/${d.slug}`);
-      const businessSlugs = await fetchAllBusinessSlugsForSitemap();
-      const businessUrls = businessSlugs.map((slug) => `${SITE_URL}/business/${slug}`);
-      urls = [...staticUrls, ...categoryUrls, ...dealUrls, ...businessUrls];
+      // Same as the sitemap: only categories that have a live deal.
+      const categoryUrls = CATEGORIES.filter((c) => deals.some((d) => d.categories.includes(c.name))).map(
+        (c) => `${SITE_URL}${categoryPath(c.name)}`
+      );
+      const businesses = await fetchAllBusinessSlugsForSitemap();
+      const businessUrls = businesses.map((b) => `${SITE_URL}/business/${b.slug}`);
+      urls = [...staticUrls, `${SITE_URL}/flash-deals`, ...categoryUrls, ...dealUrls, ...businessUrls];
     }
     await submitUrlsToIndexNow(urls);
 

@@ -3,7 +3,6 @@ import { SITE_URL, SITE_LAUNCHED, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import {
   fetchAllLiveDealSlugsForSitemap,
   fetchAllBusinessSlugsForSitemap,
-  fetchAllLiveDealsServer,
 } from "@/lib/fetchDealServer";
 import { fetchMegaShopProductsForServer } from "@/lib/fetchMegaShopServer";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
@@ -67,18 +66,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [...staticPages, ...megaShopPages];
   }
 
-  // Only categories with a live deal — an empty one is noindexed on its
-  // own page (app/category/[category]/page.tsx), so listing it here
-  // would hand Google a URL it's told not to index.
-  const liveDeals = await fetchAllLiveDealsServer();
-  const categoryPages: MetadataRoute.Sitemap = CATEGORIES.filter((c) =>
-    liveDeals.some((d) => d.categories.includes(c.name))
-  ).map((c) => ({
-    url: `${SITE_URL}${categoryPath(c.name)}`,
-    changeFrequency: "daily",
-    priority: 0.7,
-  }));
-
   const deals = await fetchAllLiveDealSlugsForSitemap();
   const dealPages: MetadataRoute.Sitemap = deals.map((d) => ({
     url: `${SITE_URL}/deal/${d.slug}`,
@@ -87,9 +74,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const businessSlugs = await fetchAllBusinessSlugsForSitemap();
-  const businessPages: MetadataRoute.Sitemap = businessSlugs.map((slug) => ({
-    url: `${SITE_URL}/business/${slug}`,
+  // A listing page changes when one of its deals does, so it's dated by
+  // its newest deal. Bing leans on these dates to decide what to recrawl;
+  // leaving them off (or stamping every page with "now") teaches it to
+  // ignore them.
+  const newest = (dates: (string | null)[]) =>
+    dates.filter((d): d is string => Boolean(d)).sort().at(-1) ?? undefined;
+
+  // Only categories with a live deal — an empty one is noindexed on its
+  // own page (app/category/[category]/page.tsx), so listing it here
+  // would hand Google a URL it's told not to index.
+  const categoryPages: MetadataRoute.Sitemap = CATEGORIES.flatMap((c) => {
+    const inCategory = deals.filter((d) => d.categories.includes(c.name));
+    if (inCategory.length === 0) return [];
+    return [
+      {
+        url: `${SITE_URL}${categoryPath(c.name)}`,
+        lastModified: newest(inCategory.map((d) => d.updatedAt)),
+        changeFrequency: "daily" as const,
+        priority: 0.7,
+      },
+    ];
+  });
+
+  const businesses = await fetchAllBusinessSlugsForSitemap();
+  const businessPages: MetadataRoute.Sitemap = businesses.map((b) => ({
+    url: `${SITE_URL}/business/${b.slug}`,
+    lastModified: newest([b.updatedAt, ...deals.filter((d) => d.merchantEmail === b.email).map((d) => d.updatedAt)]),
     changeFrequency: "weekly",
     priority: 0.5,
   }));

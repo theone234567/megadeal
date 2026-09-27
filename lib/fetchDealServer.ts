@@ -272,8 +272,24 @@ export async function fetchBusinessProfileBySlug(
   }
 }
 
-/** All approved business profile slugs, for sitemap generation. */
-export async function fetchAllBusinessSlugsForSitemap(): Promise<string[]> {
+/** Latest of several Wix timestamps (Date objects or ISO strings), as ISO. */
+function latestIso(...values: unknown[]): string | null {
+  let best = 0;
+  for (const v of values) {
+    const t = v ? new Date(v as string | Date).getTime() : NaN;
+    if (Number.isFinite(t) && t > best) best = t;
+  }
+  return best ? new Date(best).toISOString() : null;
+}
+
+/**
+ * All approved business profiles, for the sitemap and IndexNow, with when
+ * each profile last changed. `email` lets the sitemap also date a
+ * business page by its newest deal.
+ */
+export async function fetchAllBusinessSlugsForSitemap(): Promise<
+  { slug: string; email: string; updatedAt: string | null }[]
+> {
   try {
     const adminClient = createWixAdminClient();
     // Paged: an unpaged read capped the sitemap at 50 businesses, so
@@ -284,49 +300,69 @@ export async function fetchAllBusinessSlugsForSitemap(): Promise<string[]> {
     );
     return merchants
       .filter((m: any) => m.businessName && m._id && m.status === "Approved")
-      .map((m: any) => businessSlug(m.businessName, m._id));
+      .map((m: any) => ({
+        slug: businessSlug(m.businessName, m._id),
+        email: String(m.email || "").toLowerCase(),
+        updatedAt: latestIso(m._updatedDate),
+      }));
   } catch {
     return [];
   }
 }
 
-/** All publicly live deal slugs, for sitemap generation. */
+/**
+ * All publicly live deals, for the sitemap and IndexNow: slug, when it
+ * last changed, its categories and whose it is.
+ *
+ * `updatedAt` is the later of the Stores product's and the Deals row's
+ * update times — a changed description, conditions or photo only touches
+ * the row. Bing in particular leans on these dates to decide what to
+ * recrawl, so they need to move when the page does.
+ */
 export async function fetchAllLiveDealSlugsForSitemap(): Promise<
-  { slug: string; updatedAt: string | null }[]
+  { slug: string; updatedAt: string | null; categories: string[]; merchantEmail: string }[]
 > {
   try {
     const adminClient = createWixAdminClient();
-    const allProducts = await searchAllProducts(adminClient, ["ALL_CATEGORIES_INFO"], "sitemap");
+    const [allProducts, dealsResult, merchants] = await Promise.all([
+      searchAllProducts(adminClient, ["ALL_CATEGORIES_INFO"], "sitemap"),
+      // Same reasoning as above: filter to rows the productId join can use.
+      adminClient.items.query("Deals").isNotEmpty("productId").limit(500).find(),
+      queryAllItems(() => adminClient.items.query("Merchants"), "Merchants (sitemap deals)"),
+    ]);
     const products = allProducts.filter((p: any) => !isMegaShopProduct(p));
 
-    // Same reasoning as above: filter to rows the productId join can use.
-    const dealsResult = await adminClient.items
-      .query("Deals")
-      .isNotEmpty("productId")
-      .limit(500)
-      .find();
-    const metaByProductId: Record<string, { status: DealStatus | null; expiresAt: string | null }> = {};
+    // A suspended business's deals 404 (see fetchDealForSEO), so they
+    // mustn't be advertised here either.
+    const suspended = new Set(
+      merchants
+        .filter((m: any) => m.status === "Suspended" && m.email)
+        .map((m: any) => String(m.email).toLowerCase())
+    );
+
+    const rowByProductId: Record<string, any> = {};
     for (const item of dealsResult.items ?? []) {
-      if (item.productId) {
-        metaByProductId[item.productId] = {
-          status: (item.status as DealStatus) ?? null,
-          expiresAt: item.expiresAt ?? null,
-        };
-      }
+      if (item.productId) rowByProductId[item.productId] = item;
     }
 
     return products
-      .filter((p: any) => {
-        const meta = metaByProductId[p.id ?? p._id];
-        // `!meta ||` used to pass products with no Deals row, which is the
+      .map((p: any) => ({ p, row: rowByProductId[p.id ?? p._id] }))
+      .filter(({ row }: { row: any }) => {
+        // `!row ||` used to pass products with no Deals row, which is the
         // opposite of what the listing and the detail page now do — so the
         // sitemap and IndexNow were handing Google URLs that 404. A product
         // with no row is not a deal here, and must not be advertised as one.
-        return Boolean(meta) && isDealLive(meta);
+        if (!row) return false;
+        if (!isDealLive({ status: (row.status as DealStatus) ?? null, expiresAt: row.expiresAt ?? null })) return false;
+        return !suspended.has(String(row.merchantEmail || "").toLowerCase());
       })
-      .map((p: any) => ({
+      .map(({ p, row }: { p: any; row: any }) => ({
         slug: p.slug ?? p.id ?? p._id,
-        updatedAt: p.updatedDate ?? null,
+        updatedAt: latestIso(p.updatedDate, row._updatedDate),
+        categories: (p.allCategoriesInfo?.categories ?? [])
+          .map((c: any) => CATEGORY_NAME_BY_ID[c?.id])
+          .filter(Boolean) as string[],
+        merchantEmail: String(row.merchantEmail || "").toLowerCase(),
       }))
       .filter((d: { slug: string | undefined }) => Boolean(d.slug));
   } catch {

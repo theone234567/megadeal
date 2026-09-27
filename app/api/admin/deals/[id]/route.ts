@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { logMerchantActivity } from "@/lib/merchantActivity";
-import { submitUrlsToIndexNow } from "@/lib/indexNow";
-import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
-import { unwrapProduct } from "@/lib/mapDeal";
+import { notifyDealChanged } from "@/lib/indexNowDeal";
+import { SITE_LAUNCHED } from "@/lib/siteConfig";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { PRODUCT_FIELDS, buildProductUpdate, parseAdminContentEdit, withHistory } from "@/lib/dealAdminEdit";
 
@@ -125,28 +124,15 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
 
     const dealName = existing.dealName || "Your deal";
     const statusChanged = patch.status !== undefined && patch.status !== existing.status;
-    // Only once launched: before that, deal pages are admin-only previews
-    // (see middleware.ts), and pinging Bing would just send it to crawl a
-    // test deal that redirects to /coming-soon.
-    if (statusChanged && patch.status === "Live" && SITE_LAUNCHED) {
-      // Fire-and-forget: nudge Bing/Yandex to crawl this deal right away
-      // instead of waiting on their own discovery schedule. Never blocks
-      // the response — a failed push just falls back to normal sitemap
-      // discovery, same as before IndexNow existed.
-      const urls = [`${SITE_URL}/`, `${SITE_URL}/list-your-business`];
-      if (existing.productId) {
-        adminClient.productsV3
-          .getProduct(existing.productId, {} as any)
-          .then((res: any) => {
-            const slug = unwrapProduct(res)?.slug;
-            if (slug) urls.push(`${SITE_URL}/deal/${slug}`);
-            return submitUrlsToIndexNow(urls);
-          })
-          .catch(() => submitUrlsToIndexNow(urls));
-      } else {
-        submitUrlsToIndexNow(urls);
-      }
-    }
+    // Tell Bing and the other IndexNow engines when a public deal
+    // appears, disappears or changes. Does nothing before launch, when
+    // deal pages are admin-only previews.
+    const wasLive = existing.status === "Live";
+    const isLive = updated.status === "Live";
+    const touchedPublicPage =
+      (statusChanged && (wasLive || isLive)) ||
+      (isLive && (changedFields.length > 0 || patch.expiresAt !== undefined));
+    if (touchedPublicPage) notifyDealChanged(adminClient, updated);
     if (statusChanged && existing.merchantEmail) {
       if (patch.status === "Live") {
         await logMerchantActivity(adminClient, {

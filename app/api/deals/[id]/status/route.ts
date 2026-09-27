@@ -6,6 +6,7 @@ import { allowedDealActions, hasDealExpired, withdrawalRefundsCredit } from "@/l
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
+import { notifyDealChanged } from "@/lib/indexNowDeal";
 import type { DealStatus } from "@/lib/types";
 
 /**
@@ -69,6 +70,9 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       status: target,
       ...(refund ? { creditRefunded: true } : {}),
     });
+    // Pausing, resuming or cancelling a public deal changes what search
+    // engines should show.
+    if (deal.status === "Live" || target === "Live") notifyDealChanged(adminClient, updated);
 
     // Withdrawing a deal that was never public gives its credit back —
     // deals can't be edited once submitted, so withdrawing and resubmitting

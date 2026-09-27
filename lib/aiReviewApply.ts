@@ -5,6 +5,7 @@ import { withHistory } from "./dealAdminEdit";
 import { logMerchantActivity } from "./merchantActivity";
 import { SITE_LAUNCHED } from "./siteConfig";
 import { getSiteRudenessCheck, rudenessCheckApplies } from "./rudenessSetting";
+import { notifyDealChanged } from "./indexNowDeal";
 
 /** Whether swearing/crude humour is held back for this business. */
 async function rudenessCheckFor(adminClient: any, merchant: Record<string, any> | null): Promise<boolean> {
@@ -57,6 +58,7 @@ export async function reviewSubmittedDeal(
 
     if (outcome === "publish" && waiting) {
       const item = await adminClient.items.update("Deals", { ...deal, aiReview: review, status: "Live", everLive: true });
+      notifyDealChanged(adminClient, item, merchant);
       await logMerchantActivity(adminClient, {
         merchantEmail: deal.merchantEmail,
         type: "deal",
@@ -126,6 +128,7 @@ export async function reviewPendingPhoto(
         pendingPhotoReview: null,
         contentHistory: withHistory(deal, ["photoUrl"]),
       });
+      if (deal.status === "Live") notifyDealChanged(adminClient, item, merchant);
       await logMerchantActivity(adminClient, {
         merchantEmail: deal.merchantEmail,
         type: "deal",

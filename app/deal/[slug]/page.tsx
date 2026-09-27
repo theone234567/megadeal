@@ -17,6 +17,27 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
+/**
+ * The snippet under the deal in search results. Leads with the deal's
+ * name, then what a searcher compares — business, town, price and
+ * saving — and fills the rest with the business's own description.
+ * Bing shows this nearly word for word (Google rewrites it more often),
+ * and a merchant's opening sentence rarely carries the price or place.
+ */
+function dealMetaDescription(
+  deal: { name: string; description: string; discountPercent: number; was: number; now: number; currency: string | null; formattedWas: string | null; businessName: string | null; businessCity: string | null },
+  price: string
+): string {
+  const where = [deal.businessName ? `at ${deal.businessName}` : "", deal.businessCity ? `in ${deal.businessCity}` : ""]
+    .filter(Boolean)
+    .join(" ");
+  const was = deal.discountPercent > 0 && deal.was > deal.now ? ` (was ${formatMoney(deal.was, deal.currency || "NZD", deal.formattedWas)})` : "";
+  const saving = deal.discountPercent > 0 ? `, ${deal.discountPercent}% off` : "";
+  const lead = `${deal.name}${where ? ` ${where}` : ""} — ${price}${was}${saving}. Free deal code, pay the business directly.`;
+  const rest = stripHtml(deal.description);
+  return truncateForMeta(rest ? `${lead} ${rest}` : lead);
+}
+
 export async function generateMetadata(
   props: {
     params: Promise<{ slug: string }>;
@@ -37,8 +58,7 @@ export async function generateMetadata(
   // keep the brand-inclusive version.
   const title = `${deal.name}${businessSuffix} — ${deal.discountPercent > 0 ? `${deal.discountPercent}% off, ` : ""}${price}`;
   const socialTitle = `${title} | ${SITE_NAME}`;
-  const description = truncateForMeta(stripHtml(deal.description)) ||
-    `${deal.name}${businessSuffix} for ${price}. Grab this deal on ${SITE_NAME} before it's gone.`;
+  const description = dealMetaDescription(deal, price);
   const url = `${SITE_URL}/deal/${deal.slug}`;
   // The 1200x630 shape Facebook, LinkedIn and WhatsApp previews expect,
   // resized by Wix's CDN — not the business's original upload, which is

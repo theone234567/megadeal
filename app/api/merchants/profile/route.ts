@@ -4,6 +4,7 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
+import { notifyBusinessChanged } from "@/lib/indexNowDeal";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { isBusinessCategory } from "@/lib/categories";
@@ -184,6 +185,8 @@ export async function POST(req: NextRequest) {
     // letting it go stale between visits.
     emailVerified: member.loginEmailVerified,
   });
+  // New hours, phone or address on the public business page.
+  notifyBusinessChanged(updated);
   return NextResponse.json({ item: updated });
   } catch (err) {
     console.error("[merchants/profile] failed", err);
