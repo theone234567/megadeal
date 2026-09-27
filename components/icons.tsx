@@ -301,3 +301,63 @@ export function HomeIcon({ className = "h-4 w-4" }: IconProps) {
     </svg>
   );
 }
+
+export function GridIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3" y="3" width="7" height="7" rx="1.3" />
+      <rect x="14" y="3" width="7" height="7" rx="1.3" />
+      <rect x="3" y="14" width="7" height="7" rx="1.3" />
+      <rect x="14" y="14" width="7" height="7" rx="1.3" />
+    </svg>
+  );
+}
+
+export function TagIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9Z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </svg>
+  );
+}
+
+export function MenuIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} strokeWidth={2} className={className}>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="18" x2="20" y2="18" />
+    </svg>
+  );
+}
+
+export function CloseIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} strokeWidth={2} className={className}>
+      <line x1="6" y1="6" x2="18" y2="18" />
+      <line x1="18" y1="6" x2="6" y2="18" />
+    </svg>
+  );
+}
+
+export function ChevronDownIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} strokeWidth={2} className={className}>
+      <polyline points="6,9 12,15 18,9" />
+    </svg>
+  );
+}
+
+export function SlidersIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="18" x2="20" y2="18" />
+      <circle cx="9" cy="6" r="2" fill="white" />
+      <circle cx="15" cy="12" r="2" fill="white" />
+      <circle cx="8" cy="18" r="2" fill="white" />
+    </svg>
+  );
+}

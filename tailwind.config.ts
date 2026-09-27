@@ -17,6 +17,20 @@ const config: Config = {
           800: "#530fa1",
           900: "#440e82",
         },
+        // Storefront palette for the homepage and deal cards. Named hp-* so
+        // it can't be picked up by the portal/admin pages by accident.
+        hp: {
+          page: "#FAFAFC",
+          ink: "#241B3A",
+          muted: "#625A70",
+          lavender: "#F4F0FA",
+          line: "#E7E2EE",
+          boundary: "#8D7AA8",
+          purple: "#6D28D9",
+          "purple-dark": "#5B21B6",
+          "clock-bg": "#FFF4DC",
+          clock: "#855000",
+        },
         ember: {
           50: "#fff0fa",
           100: "#ffdff4",

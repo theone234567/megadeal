@@ -15,18 +15,17 @@ export default function DealGrid({
 }) {
   if (deals.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 py-16 text-center text-slate-500">
+      <div className="rounded-2xl border border-dashed border-hp-line bg-white px-6 py-14 text-center text-hp-muted">
         {emptyMessage}
       </div>
     );
   }
 
   return (
-    // One column on phones, two on tablets, three on desktop. Two-up on a
-    // 390px phone left each card ~170px wide, too narrow for a readable
-    // title, business line and price; four-up on desktop drops cards
-    // below ~290px for the same reason.
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+    // Phones: as many ~9.5rem columns as fit — two on most phones, one on
+    // a very narrow screen or with enlarged text (rem grows with the text).
+    // Three on tablets, four on desktop.
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,9.5rem),1fr))] gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5">
       {deals.map((deal) => (
         <DealCard key={deal.id} deal={deal} distanceKm={dealDistanceKm(deal, userLocation)} />
       ))}

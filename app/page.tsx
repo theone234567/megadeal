@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import Hero from "@/components/Hero";
-import CategoryNav from "@/components/CategoryNav";
-import FlashDeals from "@/components/FlashDeals";
+import SearchAwareHero from "@/components/SearchAwareHero";
 import SocialCTA from "@/components/SocialCTA";
 import HowToUseStrip from "@/components/HowToUseStrip";
 import HomeDeals from "./HomeDeals";
@@ -51,18 +50,17 @@ export async function generateMetadata(props: {
 // last minute is up to 60s behind, not a correctness bug.
 export const revalidate = 60;
 
-export default async function HomePage(
-  props: {
-    searchParams: Promise<{ q?: string }>;
-  }
-) {
-  const searchParams = await props.searchParams;
-  const isSearching = Boolean(searchParams.q?.trim());
+export default async function HomePage(props: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  // Read so the page renders per request with its filters: the client
+  // components below read the same params with useSearchParams, and on a
+  // statically rendered page they would render nothing on the server —
+  // leaving crawlers and first paint without the deals.
+  await props.searchParams;
   const deals = await fetchAllLiveDealsServer();
   const listedDeals = deals.slice(0, 20);
 
   return (
-    <main>
+    <main className="bg-hp-page pb-2">
       {listedDeals.length > 0 && (
         <script
           type="application/ld+json"
@@ -82,20 +80,24 @@ export default async function HomePage(
           }}
         />
       )}
-      {/* Hero carries the page's only <h1> — while searching it's hidden
-          (see below), so this sr-only fallback keeps exactly one <h1>
-          present in that state too, rather than none at all. */}
-      {isSearching && <h1 className="sr-only">{SITE_NAME} — search results</h1>}
-      {!isSearching && <Hero />}
-      {!isSearching && <FlashDeals initialDeals={deals} />}
-      <CategoryNav />
-      <div className="pt-6">
-        <HowToUseStrip />
-      </div>
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* The hero carries the page's <h1>; while searching it's hidden and
+          the results supply one instead (app/HomeDeals.tsx). Filters live
+          in the URL and are applied in the browser from the deals fetched
+          here, so the Suspense boundary is only for useSearchParams — the
+          page reads search params already, so it still renders in full on
+          the server. */}
+      <Suspense fallback={<Hero />}>
+        <SearchAwareHero>
+          <Hero />
+        </SearchAwareHero>
+      </Suspense>
+      <div className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8">
         <Suspense fallback={null}>
           <HomeDeals initialDeals={deals} />
         </Suspense>
+      </div>
+      <div className="mt-10">
+        <HowToUseStrip />
       </div>
       <SocialCTA />
     </main>

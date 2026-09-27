@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ClockIcon } from "./icons";
 
 type Parts = { days: number; hours: number; minutes: number; ended: boolean };
 
@@ -30,8 +31,9 @@ export default function CountdownBadge({
    *  reading "Offer ends in …" (the deadline to get the offer, not a
    *  booking or usage deadline), no colour escalation or pulsing, and an
    *  explicit "Offer ended" once it reaches zero. "badge" is the original
-   *  dark pill still used by SampleDealCard. */
-  variant?: "badge" | "offer" | "text";
+   *  dark pill still used by SampleDealCard. "left": the storefront card's
+   *  amber "2h 14m left" pill, "Ended" at zero. */
+  variant?: "badge" | "offer" | "text" | "left";
   /** Classes for the "text" variant, which renders only the time left
    *  ("1h 58m", then "Ended") for a caller that supplies its own label. */
   className?: string;
@@ -82,6 +84,32 @@ export default function CountdownBadge({
       ? "inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-xs font-bold text-brand-800 shadow-sm"
       : "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold text-white transition-colors";
   const prefix = variant === "offer" ? "Offer ends in" : "Ends in";
+
+  if (variant === "left") {
+    const pill =
+      "inline-flex items-center gap-1.5 rounded-full bg-hp-clock-bg px-2.5 py-1 text-[0.8125rem] font-bold text-hp-clock shadow-sm";
+    if (!parts) {
+      return (
+        <span className={`${pill} opacity-0`} aria-hidden="true">
+          <ClockIcon className="h-3.5 w-3.5" /> 0h 00m left
+        </span>
+      );
+    }
+    const left =
+      parts.days > 0
+        ? `${parts.days}d ${parts.hours}h`
+        : parts.hours > 0
+        ? `${parts.hours}h ${parts.minutes}m`
+        : parts.minutes > 0
+        ? `${parts.minutes}m`
+        : "<1m";
+    return (
+      <span className={pill}>
+        <ClockIcon className="h-3.5 w-3.5" />
+        {parts.ended ? "Ended" : `${left} left`}
+      </span>
+    );
+  }
 
   if (variant === "text" && !parts) {
     return (

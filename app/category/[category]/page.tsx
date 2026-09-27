@@ -94,7 +94,9 @@ export default async function CategoryPage(
 
   return (
     <main>
-      <CategoryNav active={category} />
+      <div className="mx-auto max-w-[1320px] px-4 pt-4 sm:px-6 lg:px-8">
+        <CategoryNav mode="link" active={def.slug} />
+      </div>
       <div className="pt-6">
         <HowToUseStrip />
       </div>

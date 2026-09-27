@@ -50,7 +50,9 @@ export default async function FlashDealsPage() {
 
   return (
     <main>
-      <CategoryNav />
+      <div className="mx-auto max-w-[1320px] px-4 pt-4 sm:px-6 lg:px-8">
+        <CategoryNav mode="link" active="" />
+      </div>
       {flashDeals.length > 0 && (
         <script
           type="application/ld+json"
