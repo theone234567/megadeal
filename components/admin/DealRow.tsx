@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { DealStatus } from "@/lib/types";
+import Link from "next/link";
 import DealContentEditor from "./DealContentEditor";
 import { aiSummary, effectiveVerdict } from "@/lib/aiReview";
 
@@ -30,7 +31,14 @@ function toDateInputValue(iso?: string) {
   return d.toISOString().slice(0, 10);
 }
 
-export default function DealRow({ deal: initialDeal }: { deal: AdminDeal }) {
+export default function DealRow({
+  deal: initialDeal,
+  business = null,
+}: {
+  deal: AdminDeal;
+  /** The business this deal belongs to, when one matches its email. */
+  business?: { id: string; name: string } | null;
+}) {
   const [deal, setDeal] = useState(initialDeal);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [status, setStatus] = useState<string>(deal.status || "Live");
@@ -120,6 +128,23 @@ export default function DealRow({ deal: initialDeal }: { deal: AdminDeal }) {
             <p className="text-xs text-slate-500">{deal.productId ? `${deal.productId.slice(0, 8)}…` : "no linked product"}</p>
           </div>
         </button>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 pl-10 text-xs">
+          {business && (
+            <Link href={`/admin/businesses/${business.id}`} className="font-semibold text-slate-700 hover:text-brand-700 hover:underline">
+              {business.name}
+            </Link>
+          )}
+          {!business && <span className="text-slate-500">No matching business</span>}
+          {deal.productId && (
+            <Link
+              href={`/admin/deals/${deal._id}`}
+              target="_blank"
+              className="font-semibold text-brand-700 hover:underline"
+            >
+              View deal ↗
+            </Link>
+          )}
+        </div>
       </td>
       <td className="py-3 pr-4">
         <input

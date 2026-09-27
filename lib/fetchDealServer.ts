@@ -10,6 +10,30 @@ import { queryAllItems } from "./queryAll";
 import { searchAllProducts } from "./searchAllProducts";
 import type { Deal, DealStatus } from "./types";
 
+/** Overlays a deal's Deals row (status, dates, photo, terms, code…) on
+ *  the fields mapped from its Stores product. */
+function mergeDealRecord(deal: Deal, record: Record<string, any>): Deal {
+  return {
+    ...deal,
+    expiresAt: record.expiresAt ?? null,
+    status: record.status ?? null,
+    image: record.photoUrl || deal.image,
+    isFlash: Boolean(record.isFlash),
+    // The Deals row keeps the business's own text. The product only
+    // returns its HTML copy when PLAIN_DESCRIPTION is requested, which
+    // this read doesn't, so the page's "What's included" came out blank.
+    description: record.description || deal.description,
+    // MegaDeal never takes payment: the business charges in NZ dollars,
+    // whatever currency the Wix store happens to be set to.
+    currency: "NZD",
+    quantityAvailable:
+      typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
+    terms: record.terms || null,
+    dealCode: record.dealCode || null,
+    bookingRequirement: parseBookingRequirement(record.bookingRequirement),
+  };
+}
+
 /**
  * Server-only deal lookup for generateMetadata/JSON-LD, deliberately
  * separate from lib/fetchDeals.ts (the client-side visitor-token path).
@@ -33,27 +57,7 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
       .find();
     const record = dealsResult.items?.[0];
     const merchantEmail: string | null = record?.merchantEmail || null;
-    if (record) {
-      deal = {
-        ...deal,
-        expiresAt: record.expiresAt ?? null,
-        status: record.status ?? null,
-        image: record.photoUrl || deal.image,
-        isFlash: Boolean(record.isFlash),
-        // The Deals row keeps the business's own text. The product only
-        // returns its HTML copy when PLAIN_DESCRIPTION is requested, which
-        // this read doesn't, so the page's "What's included" came out blank.
-        description: record.description || deal.description,
-        // MegaDeal never takes payment: the business charges in NZ dollars,
-        // whatever currency the Wix store happens to be set to.
-        currency: "NZD",
-        quantityAvailable:
-          typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
-        terms: record.terms || null,
-        dealCode: record.dealCode || null,
-        bookingRequirement: parseBookingRequirement(record.bookingRequirement),
-      };
-    }
+    if (record) deal = mergeDealRecord(deal, record);
 
     // Same rule as the listing: no Deals row, no deal. Without this an
     // orphaned Stores product had its own public page, complete with
@@ -313,5 +317,38 @@ export async function fetchAllLiveDealSlugsForSitemap(): Promise<
       .filter((d: { slug: string | undefined }) => Boolean(d.slug));
   } catch {
     return [];
+  }
+}
+
+/**
+ * A deal for the admin's preview, whatever its status — pending, paused,
+ * cancelled or expired — built exactly as the public page builds it, so
+ * the preview shows what customers will see. Admin-only: callers must
+ * check the admin session first.
+ */
+export async function fetchDealForAdminPreview(
+  dealId: string
+): Promise<{ deal: Deal; record: Record<string, any> } | null> {
+  try {
+    const adminClient = createWixAdminClient();
+    const record = await adminClient.items.get("Deals", dealId);
+    if (!record?.productId) return null;
+    const res = await adminClient.productsV3.getProduct(record.productId, {
+      fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
+    } as any);
+    const product = (res as any).product;
+    if (!product) return null;
+    let deal = mergeDealRecord(mapProductToDeal(product, CATEGORY_NAME_BY_ID), record);
+    if (record.merchantEmail) {
+      const merchantResult = await adminClient.items.query("Merchants").eq("email", record.merchantEmail).find();
+      const merchant = merchantResult.items?.[0];
+      if (merchant?.businessName && merchant._id) {
+        deal = applyBusinessToDeal(deal, mapMerchantToBusiness(merchant));
+      }
+    }
+    return { deal, record };
+  } catch (err) {
+    console.error("[fetchDealForAdminPreview] failed", err);
+    return null;
   }
 }

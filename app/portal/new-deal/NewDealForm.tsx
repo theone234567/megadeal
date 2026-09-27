@@ -459,6 +459,11 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   }
 
   const credits = merchant.creditsBalance ?? 0;
+  // Only a business an admin has approved can submit deals (enforced in
+  // /api/deals/create too); until then the form saves drafts, exactly as
+  // it does before launch.
+  const businessApproved = merchant.status === "Approved";
+  const canSubmit = siteLaunched && businessApproved;
 
   if (credits < 1) {
     return (
@@ -567,13 +572,21 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
         {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
-        {!siteLaunched && (
+        {!siteLaunched ? (
           <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
             🚧 MegaDeal hasn&apos;t officially launched yet, so we&apos;re not
             able to accept deals for review. Save it for now — it&apos;s kept
             with your account, not just this browser, and you can submit it
             for approval the moment we go live.
           </p>
+        ) : (
+          !businessApproved && (
+            <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              ⏳ We&apos;re still reviewing your business, so deals can&apos;t be
+              submitted yet. Save this one as a draft — you can submit it as
+              soon as you&apos;re approved, and we&apos;ll email you when that happens.
+            </p>
+          )
         )}
 
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
@@ -584,7 +597,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           >
             ← Back to edit
           </button>
-          {siteLaunched ? (
+          {canSubmit ? (
             <button
               type="button"
               onClick={handleSubmit}
@@ -627,13 +640,21 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         This will use 1 of your {credits} deal credit{credits === 1 ? "" : "s"}.
         Your deal goes live once we&apos;ve reviewed it.
       </p>
-      {!siteLaunched && (
+      {!siteLaunched ? (
         <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
           🚧 MegaDeal hasn&apos;t officially launched yet, so we&apos;re not
           accepting deals for review. Build your deal below and
           save it as a draft — you can submit it for approval the moment
           we go live, and we&apos;ll email you when that happens.
         </p>
+      ) : (
+        !businessApproved && (
+          <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            ⏳ We&apos;re still reviewing your business. Build your deal below and
+            save it as a draft — you can submit it as soon as you&apos;re approved
+            (usually within 12 hours), and we&apos;ll email you when that happens.
+          </p>
+        )
       )}
       {duplicatedFrom && (
         <p className="mt-3 rounded-xl border border-brand-100 bg-brand-50 p-3 text-sm text-brand-700">

@@ -118,6 +118,14 @@ export async function POST(req: NextRequest) {
   if (merchant.status === "Suspended") {
     return NextResponse.json({ error: "Your account is suspended. Contact us for help." }, { status: 403 });
   }
+  // Only a business an admin has approved can submit deals. A new signup
+  // can build and save drafts, and submit them once approved.
+  if (merchant.status !== "Approved") {
+    return NextResponse.json(
+      { error: "We're still reviewing your business. Save this deal as a draft and submit it once you're approved." },
+      { status: 403 }
+    );
+  }
   // A deal that requires booking must give customers a way to book.
   if (
     bookingRequirement === "required" &&

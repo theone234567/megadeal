@@ -118,11 +118,20 @@ export default function AdminDashboardPage() {
   });
 
   const dealQuery = dealSearch.toLowerCase().trim();
+  // Which business each deal belongs to, by the email on the deal.
+  const businessByEmail = new Map(
+    (merchants ?? [])
+      .filter((m) => m.email)
+      .map((m) => [String(m.email).toLowerCase(), { id: m._id, name: m.businessName || m.email || "" }])
+  );
+  const businessFor = (d: AdminDeal) => businessByEmail.get(String(d.merchantEmail || "").toLowerCase()) ?? null;
+
   const filteredDeals = deals?.filter((d) => {
     if (!dealQuery) return true;
     return (
       (d.dealName || "").toLowerCase().includes(dealQuery) ||
-      (d.merchantEmail || "").toLowerCase().includes(dealQuery)
+      (d.merchantEmail || "").toLowerCase().includes(dealQuery) ||
+      (businessFor(d)?.name || "").toLowerCase().includes(dealQuery)
     );
   });
 
@@ -349,7 +358,7 @@ export default function AdminDashboardPage() {
                   type="search"
                   value={dealSearch}
                   onChange={(e) => setDealSearch(e.target.value)}
-                  placeholder="Search by deal name or business email…"
+                  placeholder="Search by deal, business name or email…"
                   className="w-full max-w-sm rounded-full border border-slate-200 px-4 py-2 text-sm outline-none focus:border-brand-400"
                 />
                 {pendingDeals > 0 && (
@@ -411,13 +420,13 @@ export default function AdminDashboardPage() {
                       <th className="pb-2 pr-4">Deal</th>
                       <th className="pb-2 pr-4">Business email</th>
                       <th className="pb-2 pr-4">Expires</th>
-                      <th className="pb-2 pr-4">Status</th>
+                      <th className="pb-2 pr-4">Deal status</th>
                       <th className="pb-2">Save</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredDeals?.map((d) => (
-                      <DealRow key={`${d._id}-${dealsRefreshKey}`} deal={d} />
+                      <DealRow key={`${d._id}-${dealsRefreshKey}`} deal={d} business={businessFor(d)} />
                     ))}
                   </tbody>
                 </table>
