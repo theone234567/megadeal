@@ -192,7 +192,7 @@ const MIN_APPROVED_BUSINESSES_TO_SHOW_STATS = 33;
  *  section's color, not the page's default. */
 function Tick({ children, color = "#650fc7" }: { children: ReactNode; color?: string }) {
   return (
-    <li className="flex items-start gap-2.5 text-[15px] font-semibold leading-6 text-[#18122d]">
+    <li className="flex items-start gap-2.5 text-[15px] font-semibold leading-6 text-slate-900">
       <span
         className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white"
         style={{ backgroundColor: color }}
@@ -253,7 +253,7 @@ export default async function ComingSoonPage() {
     rawStats && rawStats.merchantCount >= MIN_APPROVED_BUSINESSES_TO_SHOW_STATS ? rawStats : null;
 
   return (
-    <main className={`${plusJakartaSans.className} overflow-x-hidden bg-white text-[#171128]`}>
+    <main className={`${plusJakartaSans.className} overflow-x-hidden bg-white text-slate-900`}>
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -456,7 +456,7 @@ export default async function ComingSoonPage() {
                   <TicketIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <h2 className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-xl`}>
+                  <h2 className={`${fredoka.className} text-lg font-bold leading-tight text-slate-900 sm:text-xl`}>
                     Love a great deal?
                   </h2>
                   <span className="mt-0.5 block text-[13px] font-extrabold text-[#c7128a] underline-offset-4 group-hover:underline sm:text-sm">
@@ -469,14 +469,14 @@ export default async function ComingSoonPage() {
                 href="/list-your-business"
                 className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#650fc7]/40 sm:items-center sm:gap-4 sm:rounded-[20px] sm:p-4"
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-[#650fc7] sm:h-12 sm:w-12">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-brand-700 sm:h-12 sm:w-12">
                   <StoreIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <h2 className={`${fredoka.className} text-lg font-bold leading-tight text-[#191333] sm:text-xl`}>
+                  <h2 className={`${fredoka.className} text-lg font-bold leading-tight text-slate-900 sm:text-xl`}>
                     Run a local business?
                   </h2>
-                  <span className="mt-0.5 block text-[13px] font-extrabold text-[#650fc7] underline-offset-4 group-hover:underline sm:text-sm">
+                  <span className="mt-0.5 block text-[13px] font-extrabold text-brand-700 underline-offset-4 group-hover:underline sm:text-sm">
                     <span className="sm:hidden">Up to 6 months free →</span>
                     <span className="hidden sm:inline">Claim my free advertising →</span>
                   </span>
@@ -517,10 +517,10 @@ export default async function ComingSoonPage() {
                 index >= 2 ? "sm:border-t sm:border-[#e4e1eb] lg:border-t-0" : ""
               } ${index ? "lg:border-l lg:border-[#e4e1eb]" : ""}`}
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#650fc7] shadow-sm">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-brand-700 shadow-sm">
                 <Icon className="h-5 w-5" />
               </span>
-              <p className="text-sm font-bold leading-5 text-[#292243]">{text}</p>
+              <p className="text-sm font-bold leading-5 text-slate-900">{text}</p>
             </div>
           ))}
         </div>
@@ -547,7 +547,7 @@ export default async function ComingSoonPage() {
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#c7128a] text-sm font-extrabold">
                   {number}
                 </span>
-                <span className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-[#650fc7] sm:flex">
+                <span className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-brand-700 sm:flex">
                   <Icon className="h-7 w-7" />
                 </span>
                 <div>
@@ -593,7 +593,7 @@ export default async function ComingSoonPage() {
                 For local businesses
               </p>
               <h2
-                className={`${fredoka.className} mt-2 max-w-[620px] text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}
+                className={`${fredoka.className} mt-2 max-w-[620px] text-2xl font-bold leading-tight text-slate-900 sm:text-3xl`}
               >
                 Fill quiet times. Grow local customers.
               </h2>
@@ -603,7 +603,7 @@ export default async function ComingSoonPage() {
                   repeating the category grid below (which is written for
                   shoppers, not businesses) so the same list isn't
                   maintained in two places with two different framings. */}
-              <p className="mt-3 text-[15px] font-semibold leading-6 text-[#18122d]">
+              <p className="mt-3 text-[15px] font-semibold leading-6 text-slate-900">
                 From cafés and salons to gyms and tour operators — if you serve local customers, you belong here.
               </p>
               <p className="mt-2.5 max-w-[620px] text-[15px] leading-6 text-slate-600 lg:text-base">
@@ -614,7 +614,7 @@ export default async function ComingSoonPage() {
 
               <ul className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-x-8">
                 {businessBenefits.map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-[15px] font-semibold leading-6 text-[#18122d]">
+                  <li key={item} className="flex items-start gap-2.5 text-[15px] font-semibold leading-6 text-slate-900">
                     <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#c7128a] text-white">
                       <CheckIcon className="h-3 w-3" />
                     </span>
@@ -642,7 +642,7 @@ export default async function ComingSoonPage() {
             </div>
 
             <div className="rounded-[24px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px_34px_rgba(77,12,168,.10)] sm:p-7">
-              <p className={`${fredoka.className} text-xl font-bold text-[#18122d] sm:text-2xl`}>
+              <p className={`${fredoka.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
                 What it costs you
               </p>
               <dl className="mt-4 space-y-3 text-[15px]">
@@ -657,7 +657,7 @@ export default async function ComingSoonPage() {
                     className="flex items-baseline justify-between gap-4 border-b border-[#eee7f6] pb-3 last:border-0 last:pb-0"
                   >
                     <dt className="text-slate-500">{label}</dt>
-                    <dd className="shrink-0 font-extrabold text-[#18122d]">{value}</dd>
+                    <dd className="shrink-0 font-extrabold text-slate-900">{value}</dd>
                   </div>
                 ))}
               </dl>
@@ -670,7 +670,7 @@ export default async function ComingSoonPage() {
       <section id="categories" className={`${shell} pb-8 lg:pb-10`}>
         <div className="text-center">
           <h2
-            className={`${fredoka.className} text-2xl font-bold text-[#171128] sm:text-3xl`}
+            className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}
           >
             Explore deal categories
           </h2>
@@ -706,10 +706,10 @@ export default async function ComingSoonPage() {
                 />
               </div>
               <div className="flex min-h-[60px] items-center gap-2.5 px-3 py-3 lg:min-h-[64px]">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f2ecff] text-[#650fc7] transition group-hover:bg-[#650fc7] group-hover:text-white">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f2ecff] text-brand-700 transition group-hover:bg-[#650fc7] group-hover:text-white">
                   <Icon className="h-[18px] w-[18px]" />
                 </span>
-                <span className="text-[13px] font-extrabold leading-tight text-[#241a45] transition group-hover:text-[#650fc7] lg:text-sm">
+                <span className="text-[13px] font-extrabold leading-tight text-slate-900 transition group-hover:text-brand-700 lg:text-sm">
                   {name}
                 </span>
               </div>
@@ -727,7 +727,7 @@ export default async function ComingSoonPage() {
                 For deal hunters
               </p>
               <h2
-                className={`${fredoka.className} mt-2 max-w-[560px] text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}
+                className={`${fredoka.className} mt-2 max-w-[560px] text-2xl font-bold leading-tight text-slate-900 sm:text-3xl`}
               >
                 Be first in line for launch deals
               </h2>
@@ -780,7 +780,7 @@ export default async function ComingSoonPage() {
             <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#c7128a]">
               Where we&apos;re heading
             </p>
-            <h2 className={`${fredoka.className} mt-2 text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}>
+            <h2 className={`${fredoka.className} mt-2 text-2xl font-bold leading-tight text-slate-900 sm:text-3xl`}>
               Auckland first. Then nationwide.
             </h2>
             <p className="mt-2.5 text-[15px] leading-6 text-slate-600 lg:text-base">
@@ -809,11 +809,11 @@ export default async function ComingSoonPage() {
               </div>
 
               <div className="relative grid grid-cols-[42px_minmax(0,1fr)] gap-4 lg:block">
-                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xs font-extrabold text-[#650fc7] ring-2 ring-[#d8c8ed] lg:mx-auto">
+                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xs font-extrabold text-brand-700 ring-2 ring-[#d8c8ed] lg:mx-auto">
                   02
                 </div>
                 <div className="rounded-[20px] bg-white p-5 ring-1 ring-[#e9e4ef] lg:mt-5 lg:min-h-[190px] lg:p-6">
-                  <h3 className={`${fredoka.className} text-xl font-bold text-[#18122d]`}>Growing Across NZ</h3>
+                  <h3 className={`${fredoka.className} text-xl font-bold text-slate-900`}>Growing Across NZ</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     We&apos;ll expand into more cities and regions as the MegaDeal community grows.
                   </p>
@@ -824,11 +824,11 @@ export default async function ComingSoonPage() {
               </div>
 
               <div className="relative grid grid-cols-[42px_minmax(0,1fr)] gap-4 lg:block">
-                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xs font-extrabold text-[#650fc7] ring-2 ring-[#d8c8ed] lg:mx-auto">
+                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xs font-extrabold text-brand-700 ring-2 ring-[#d8c8ed] lg:mx-auto">
                   03
                 </div>
                 <div className="rounded-[20px] bg-white p-5 ring-1 ring-[#e9e4ef] lg:mt-5 lg:min-h-[190px] lg:p-6">
-                  <h3 className={`${fredoka.className} text-xl font-bold text-[#18122d]`}>Nationwide MegaDeals</h3>
+                  <h3 className={`${fredoka.className} text-xl font-bold text-slate-900`}>Nationwide MegaDeals</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     One place to discover great deals from local businesses throughout New Zealand.
                   </p>
@@ -841,7 +841,7 @@ export default async function ComingSoonPage() {
         <p className="mt-4 text-[11px] text-slate-500">
           *Up to 6 months free advertising is for eligible new business listings approved before
           launch.{" "}
-          <Link href="/terms" className="underline hover:text-[#650fc7]">
+          <Link href="/terms" className="underline hover:text-brand-700">
             Terms and Conditions
           </Link>{" "}
           apply.
@@ -869,17 +869,17 @@ export default async function ComingSoonPage() {
             }),
           }}
         />
-        <h2 className={`${fredoka.className} text-2xl font-bold leading-tight text-[#18122d] sm:text-3xl`}>
+        <h2 className={`${fredoka.className} text-2xl font-bold leading-tight text-slate-900 sm:text-3xl`}>
           Questions about MegaDeal
         </h2>
         <div className="mt-5 divide-y divide-[#ece7f2] rounded-[20px] bg-white ring-1 ring-[#ece7f2]">
           {FAQS.map(({ q, a }) => (
             <details key={q} className="group px-5 py-4 sm:px-6">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-bold text-[#18122d] marker:hidden [&::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-bold text-slate-900 marker:hidden [&::-webkit-details-marker]:hidden">
                 {q}
                 <span
                   aria-hidden
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f2ecff] text-lg leading-none text-[#650fc7] transition group-open:rotate-45"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f2ecff] text-lg leading-none text-brand-700 transition group-open:rotate-45"
                 >
                   +
                 </span>

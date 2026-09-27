@@ -113,14 +113,14 @@ export default function Header() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-7 text-sm font-semibold text-[#241138] lg:flex">
-            <a href="#why-megadeal" className="transition hover:text-[#6519C7]">
+          <nav className="hidden items-center gap-7 text-sm font-semibold text-slate-900 lg:flex">
+            <a href="#why-megadeal" className="transition hover:text-brand-700">
               Why MegaDeal
             </a>
-            <a href="#how-it-works" className="transition hover:text-[#6519C7]">
+            <a href="#how-it-works" className="transition hover:text-brand-700">
               How it works
             </a>
-            <a href="#questions" className="transition hover:text-[#6519C7]">
+            <a href="#questions" className="transition hover:text-brand-700">
               FAQs
             </a>
           </nav>
@@ -147,7 +147,7 @@ export default function Header() {
 
           <Link
             href="/portal"
-            className="shrink-0 rounded-full border border-[#b99aee] bg-white px-4 py-2.5 text-xs font-extrabold text-[#5f1cc8] transition hover:border-[#6d24dc] hover:bg-[#faf8ff] sm:px-5 sm:text-sm lg:px-6 lg:py-3"
+            className="shrink-0 rounded-full border border-[#b99aee] bg-white px-4 py-2.5 text-xs font-extrabold text-brand-700 transition hover:border-[#6d24dc] hover:bg-[#faf8ff] sm:px-5 sm:text-sm lg:px-6 lg:py-3"
           >
             <span className="sm:hidden">Sign in →</span>
             <span className="hidden sm:inline">Business sign in →</span>
