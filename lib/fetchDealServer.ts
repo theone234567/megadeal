@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createWixAdminClient } from "./wixAdmin";
 import { mapProductToDeal, unwrapProduct } from "./mapDeal";
 import { businessSlug } from "./slug";
@@ -92,8 +93,13 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
  * mirrors the shape lib/fetchDeals.ts's client-side fetchDeals() produces
  * exactly (same mapProductToDeal/applyBusinessToDeal/isDealLive calls) so
  * every consumer can keep working with the result identically either way.
+ *
+ * Wrapped in React's cache() so a page and its generateMetadata (the
+ * category page needs the count for its robots tag) share one read.
  */
-export async function fetchAllLiveDealsServer(): Promise<Deal[]> {
+export const fetchAllLiveDealsServer = cache(fetchAllLiveDeals);
+
+async function fetchAllLiveDeals(): Promise<Deal[]> {
   try {
     const adminClient = createWixAdminClient();
     const [productsRes, dealsResult, merchantsResult] = await Promise.all([

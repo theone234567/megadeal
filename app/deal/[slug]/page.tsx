@@ -5,6 +5,7 @@ import { fetchDealForSEO, fetchAllLiveDealsServer } from "@/lib/fetchDealServer"
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney, truncateForMeta } from "@/lib/format";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { wixImageUrl } from "@/lib/wixImageUrl";
 
 // See app/page.tsx for why this is a short revalidate window rather than
 // force-dynamic. Kept tighter than the browse pages since this is the
@@ -39,6 +40,10 @@ export async function generateMetadata(
   const description = truncateForMeta(stripHtml(deal.description)) ||
     `${deal.name}${businessSuffix} for ${price}. Grab this deal on ${SITE_NAME} before it's gone.`;
   const url = `${SITE_URL}/deal/${deal.slug}`;
+  // The 1200x630 shape Facebook, LinkedIn and WhatsApp previews expect,
+  // resized by Wix's CDN — not the business's original upload, which is
+  // often several MB and the wrong shape. Non-Wix photos pass through.
+  const shareImage = deal.image ? wixImageUrl(deal.image, 1200, 630, "jpg") : null;
 
   return {
     title,
@@ -55,14 +60,14 @@ export async function generateMetadata(
       description,
       url,
       siteName: SITE_NAME,
-      images: deal.image ? [{ url: deal.image, width: 1200, height: 900, alt: deal.name }] : undefined,
+      images: shareImage ? [{ url: shareImage, width: 1200, height: 630, alt: deal.name }] : undefined,
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
       title: socialTitle,
       description,
-      images: deal.image ? [deal.image] : undefined,
+      images: shareImage ? [shareImage] : undefined,
     },
   };
 }
@@ -91,6 +96,32 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
   const sameCategory = remainingOthers.filter((d) => d.categories.some((c) => deal.categories.includes(c)));
   const relatedDeals = (sameCategory.length > 0 ? sameCategory : remainingOthers).slice(0, 4);
 
+  // The business behind the deal, as a local business with a place —
+  // linked by @id to the full record on its /business page, so search
+  // engines can connect the offer to a real location for local searches.
+  const seller = deal.businessName
+    ? {
+        "@type": "LocalBusiness",
+        ...(deal.businessSlug
+          ? {
+              "@id": `${SITE_URL}/business/${deal.businessSlug}#business`,
+              url: `${SITE_URL}/business/${deal.businessSlug}`,
+            }
+          : {}),
+        name: deal.businessName,
+        telephone: deal.businessPhone || undefined,
+        address:
+          deal.businessAddress || deal.businessCity
+            ? {
+                "@type": "PostalAddress",
+                streetAddress: deal.businessAddress || undefined,
+                addressLocality: deal.businessCity || undefined,
+                addressCountry: "NZ",
+              }
+            : undefined,
+      }
+    : undefined;
+
   return (
     <>
       <script
@@ -104,9 +135,7 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
             description: stripHtml(deal.description) || deal.name,
             image: deal.image ? [deal.image] : undefined,
             category: deal.categories[0] || undefined,
-            brand: deal.businessName
-              ? { "@type": "Organization", name: deal.businessName }
-              : undefined,
+            brand: deal.businessName ? { "@type": "Brand", name: deal.businessName } : undefined,
             offers: {
               "@type": "Offer",
               url: `${SITE_URL}/deal/${deal.slug}`,
@@ -117,9 +146,7 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
                   ? "https://schema.org/InStock"
                   : "https://schema.org/SoldOut",
               priceValidUntil: deal.expiresAt ?? undefined,
-              seller: deal.businessName
-                ? { "@type": "Organization", name: deal.businessName }
-                : undefined,
+              seller,
             },
           }),
         }}

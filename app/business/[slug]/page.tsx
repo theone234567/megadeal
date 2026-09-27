@@ -35,7 +35,12 @@ export async function generateMetadata(
   if (!result) return { title: "Business not found" };
 
   const { business, deals } = result;
-  const title = `${business.businessName} — Deals & Contact Info`;
+  // The town in the title is the strongest local signal a page can send
+  // for "<business> <town>" and "<service> near me" searches — skipped
+  // when the business name already says it ("Auckland Rapid Plumbing").
+  const city = business.city?.trim();
+  const place = city && !business.businessName.toLowerCase().includes(city.toLowerCase()) ? `, ${city}` : "";
+  const title = `${business.businessName}${place} — Deals & Offers`;
   // business.bio is merchant-written free text (up to 600 chars) —
   // truncated at a word boundary, same as deal descriptions on
   // /deal/[slug], so a long bio gets a clean SERP snippet instead of
@@ -66,7 +71,12 @@ export async function generateMetadata(
       // best, and the rest cost nothing extra to list.
       images:
         business.photos.length > 0
-          ? business.photos.map((url) => ({ url, width: 512, height: 512, alt: business.businessName }))
+          ? business.photos.map((url) => ({
+              url: wixImageUrl(url, 1200, 630, "jpg"),
+              width: 1200,
+              height: 630,
+              alt: business.businessName,
+            }))
           : undefined,
       type: "website",
     },
@@ -103,6 +113,9 @@ export default async function BusinessProfilePage(
           __html: safeJsonLd({
             "@context": "https://schema.org",
             "@type": "LocalBusiness",
+            // Deal pages point their seller at this @id, tying each deal
+            // to this business, its address and its opening hours.
+            "@id": `${SITE_URL}/business/${business.slug}#business`,
             name: business.businessName,
             description: business.bio || undefined,
             // schema.org LocalBusiness.image accepts either one URL or an

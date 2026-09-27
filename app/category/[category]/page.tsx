@@ -9,6 +9,7 @@ import CategoryDeals from "./CategoryDeals";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { CATEGORY_COPY, SEO_REGION } from "@/lib/categoryCopy";
 
 // See app/page.tsx for why this is a short revalidate window rather than
 // force-dynamic.
@@ -36,14 +37,21 @@ export async function generateMetadata(
   const def = categoryBySlug(params.category);
   if (!def) return { title: "Category not found" };
   const category = def.name;
+  const copy = CATEGORY_COPY[def.slug];
   // No "| SITE_NAME" suffix here — the root layout's title.template
   // already appends "| MegaDeal", so including it here doubled it up.
   // openGraph/twitter titles aren't run through that template, so those
   // keep the brand-inclusive version.
-  const title = `${category} Deals — Up to 50% Off`;
+  const title = `${category} Deals in ${SEO_REGION} — Up to 50% Off`;
   const socialTitle = `${title} | ${SITE_NAME}`;
-  const description = `Browse today's best ${category} deals in New Zealand. Save up to 50% at real local businesses — new deals added daily.`;
+  const description =
+    copy?.description ??
+    `Browse today's best ${category} deals in ${SEO_REGION}. Save up to 50% at real local businesses — new deals added daily.`;
   const url = `${SITE_URL}${categoryPath(category)}`;
+  // A category with no live deals is an empty page — kept out of Google
+  // (and the sitemap) until it has something in it, so thin pages don't
+  // count against the rest of the site.
+  const hasDeals = (await fetchAllLiveDealsServer()).some((d) => d.categories.includes(category));
 
   return {
     title,
@@ -54,7 +62,7 @@ export async function generateMetadata(
     // — but this page is reachable directly regardless, so it needs the
     // same protection: no category page should get indexed while the
     // catalog might still hold pre-launch test data.
-    robots: SITE_LAUNCHED ? undefined : { index: false, follow: true },
+    robots: SITE_LAUNCHED && hasDeals ? undefined : { index: false, follow: true },
     openGraph: { title: socialTitle, description, url, siteName: SITE_NAME, type: "website" },
     twitter: { card: "summary", title: socialTitle, description },
   };
@@ -75,6 +83,7 @@ export default async function CategoryPage(
   const def = categoryBySlug(params.category);
   if (!def) notFound();
   const category = def.name;
+  const copy = CATEGORY_COPY[def.slug];
 
   const deals = await fetchAllLiveDealsServer();
 
@@ -110,10 +119,24 @@ export default async function CategoryPage(
           />
         )}
         <Breadcrumbs items={[{ name: category }]} />
-        <h1 className="font-display mb-5 text-2xl font-bold text-slate-900">{category}</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">
+          {copy ? copy.heading : category} deals in {SEO_REGION}
+        </h1>
+        {copy && <p className="mt-1.5 mb-5 max-w-2xl text-sm text-slate-600 sm:text-base">{copy.intro}</p>}
+        {!copy && <div className="mb-5" />}
         <Suspense fallback={null}>
           <CategoryDeals category={category} initialDeals={deals} />
         </Suspense>
+        {copy && (
+          <section className="mt-12 max-w-2xl border-t border-slate-100 pt-8">
+            <h2 className="font-display text-lg font-bold text-slate-900">{copy.more.heading}</h2>
+            {copy.more.paragraphs.map((p) => (
+              <p key={p.slice(0, 24)} className="mt-3 text-sm leading-relaxed text-slate-600">
+                {p}
+              </p>
+            ))}
+          </section>
+        )}
       </div>
     </main>
   );

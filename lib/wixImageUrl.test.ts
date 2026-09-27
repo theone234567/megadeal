@@ -14,6 +14,12 @@ describe("wixImageUrl", () => {
     );
   });
 
+  it("can ask for a JPEG, for social-share previews", () => {
+    expect(wixImageUrl("https://static.wixstatic.com/media/abc.jpg", 1200, 630, "jpg")).toBe(
+      "https://static.wixstatic.com/media/abc.jpg/v1/fill/w_1200,h_630/file.jpg"
+    );
+  });
+
   it("leaves non-Wix URLs unchanged", () => {
     const unsplash = "https://images.unsplash.com/photo-123";
     expect(wixImageUrl(unsplash, 800, 600)).toBe(unsplash);

@@ -3,6 +3,7 @@ import { SITE_URL, SITE_LAUNCHED, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import {
   fetchAllLiveDealSlugsForSitemap,
   fetchAllBusinessSlugsForSitemap,
+  fetchAllLiveDealsServer,
 } from "@/lib/fetchDealServer";
 import { fetchMegaShopProductsForServer } from "@/lib/fetchMegaShopServer";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
@@ -66,7 +67,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [...staticPages, ...megaShopPages];
   }
 
-  const categoryPages: MetadataRoute.Sitemap = CATEGORIES.map((c) => ({
+  // Only categories with a live deal — an empty one is noindexed on its
+  // own page (app/category/[category]/page.tsx), so listing it here
+  // would hand Google a URL it's told not to index.
+  const liveDeals = await fetchAllLiveDealsServer();
+  const categoryPages: MetadataRoute.Sitemap = CATEGORIES.filter((c) =>
+    liveDeals.some((d) => d.categories.includes(c.name))
+  ).map((c) => ({
     url: `${SITE_URL}${categoryPath(c.name)}`,
     changeFrequency: "daily",
     priority: 0.7,

@@ -16,8 +16,11 @@ import { isWixMediaUrl } from "./photoUrl";
  * Non-Wix URLs (sample/placeholder photos from Unsplash/Pixabay, or
  * anything malformed) pass through unchanged — this only ever narrows what
  * a real Wix media URL asks for, never rewrites a host it doesn't recognize.
+ *
+ * `format` is "jpg" for social-share images: WhatsApp and some other
+ * link previewers don't show WebP.
  */
-export function wixImageUrl(url: string, width: number, height: number): string {
+export function wixImageUrl(url: string, width: number, height: number, format: "webp" | "jpg" = "webp"): string {
   if (!isWixMediaUrl(url)) return url;
-  return `${url}/v1/fill/w_${Math.round(width)},h_${Math.round(height)}/file.webp`;
+  return `${url}/v1/fill/w_${Math.round(width)},h_${Math.round(height)}/file.${format}`;
 }
