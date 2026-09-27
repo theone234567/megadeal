@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useWix } from "@/context/WixProvider";
+import { fetchMerchantMe, SessionExpiredError } from "@/lib/fetchMerchantMe";
 import type { DealStatus } from "@/lib/types";
 import DealManageCard, { type DealRecord } from "@/components/portal/DealManageCard";
 import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
@@ -55,7 +56,7 @@ function formatSavedAt(iso?: string): string {
 }
 
 export default function PortalPage() {
-  const { member, isLoggedIn } = useWix();
+  const { member, isLoggedIn, logout } = useWix();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   // Assumed launched until the server says otherwise, so the pre-launch
   // notice never flashes up after launch.
@@ -70,6 +71,7 @@ export default function PortalPage() {
   // hiccuped. This flag keeps that failure a retry, not a false "you
   // have nothing on file".
   const [merchantLoadError, setMerchantLoadError] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [deals, setDeals] = useState<DealRecord[]>([]);
   const [photosError, setPhotosError] = useState<string | null>(null);
   // Mirrors the same check /admin does in reverse — being signed into
@@ -127,19 +129,17 @@ export default function PortalPage() {
     // not evidence the merchant has no record — thrown explicitly so the
     // catch below can tell the two apart instead of both landing on
     // `{ item: null }`.
-    fetch("/api/merchants/me")
-      .then((res) => {
-        if (!res.ok) throw new Error(`status ${res.status}`);
-        return res.json();
-      })
+    fetchMerchantMe()
       .then(({ item: record, siteLaunched: launched }) => {
         if (cancelled) return;
         setMerchant(record ?? null);
         setSiteLaunched(launched !== false);
         loadDeals();
       })
-      .catch(() => {
-        if (!cancelled) setMerchantLoadError(true);
+      .catch((err) => {
+        if (cancelled) return;
+        if (err instanceof SessionExpiredError) setSessionExpired(true);
+        else setMerchantLoadError(true);
       });
 
     return () => {
@@ -228,6 +228,24 @@ export default function PortalPage() {
       setPhotosError(err?.message || "Couldn't save your photos. Please try again.");
       throw err;
     }
+  }
+
+  if (sessionExpired) {
+    return (
+      <main className="mx-auto max-w-2xl px-4 py-16 text-center">
+        <p className="text-lg font-bold text-slate-900">Your sign-in has expired</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
+          For your security you&apos;re signed out after a while. Sign in again to carry on —
+          your business and deals are all still here.
+        </p>
+        <button
+          onClick={() => logout("/portal")}
+          className="mt-5 rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-700"
+        >
+          Sign in again
+        </button>
+      </main>
+    );
   }
 
   if (member === undefined || (merchant === undefined && !merchantLoadError)) {

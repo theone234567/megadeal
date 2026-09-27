@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useWix } from "@/context/WixProvider";
+import { fetchMerchantMe, SessionExpiredError } from "@/lib/fetchMerchantMe";
 import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
 import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
 import { ArrowRightIcon } from "@/components/icons";
@@ -18,9 +19,10 @@ interface MerchantRecord {
 // sharing state across routes, matching how this codebase already does it
 // everywhere else in the portal.
 export default function PortalProfilePage() {
-  const { member, isLoggedIn } = useWix();
+  const { member, isLoggedIn, logout } = useWix();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   const [loadError, setLoadError] = useState(false);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [photosError, setPhotosError] = useState<string | null>(null);
 
   const loadMerchant = useCallback(() => {
@@ -28,16 +30,14 @@ export default function PortalProfilePage() {
     setMerchant(undefined);
     setLoadError(false);
 
-    fetch("/api/merchants/me")
-      .then((res) => {
-        if (!res.ok) throw new Error(`status ${res.status}`);
-        return res.json();
-      })
+    fetchMerchantMe()
       .then(({ item: record }) => {
         if (!cancelled) setMerchant(record ?? null);
       })
-      .catch(() => {
-        if (!cancelled) setLoadError(true);
+      .catch((err) => {
+        if (cancelled) return;
+        if (err instanceof SessionExpiredError) setSessionExpired(true);
+        else setLoadError(true);
       });
 
     return () => {
@@ -74,6 +74,24 @@ export default function PortalProfilePage() {
       setPhotosError(err?.message || "Couldn't save your photos. Please try again.");
       throw err;
     }
+  }
+
+  if (sessionExpired) {
+    return (
+      <main className="mx-auto max-w-2xl px-4 py-16 text-center">
+        <p className="text-lg font-bold text-slate-900">Your sign-in has expired</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
+          For your security you&apos;re signed out after a while. Sign in again to carry on —
+          your business and deals are all still here.
+        </p>
+        <button
+          onClick={() => logout("/portal")}
+          className="mt-5 rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-700"
+        >
+          Sign in again
+        </button>
+      </main>
+    );
   }
 
   if (member === undefined || (merchant === undefined && !loadError)) {
