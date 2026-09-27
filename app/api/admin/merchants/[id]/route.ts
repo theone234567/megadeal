@@ -282,6 +282,25 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   }
 
   const becomingApproved = patch.status === "Approved" && existing.status !== "Approved";
+  // A business that edits its name, legal details, category or photos goes
+  // back to Pending (lib/merchant.ts), and a suspended one can be
+  // reinstated. Approving either again isn't a first approval: no second
+  // round of intro credits, and no "welcome" email. firstApprovedAt marks
+  // it from now on; before that field existed, having submitted a deal is
+  // the proof, since only an approved business can.
+  let firstApproval = false;
+  if (becomingApproved && !existing.firstApprovedAt) {
+    const submitted = existing.email
+      ? await adminClient.items
+          .query("Deals")
+          .eq("merchantEmail", existing.email)
+          .isNotEmpty("productId")
+          .limit(1)
+          .find()
+      : null;
+    firstApproval = (submitted?.items ?? []).length === 0;
+    patch.firstApprovedAt = new Date().toISOString();
+  }
   const adminSetCredits = patch.creditsBalance !== undefined;
   const existingCredits = Number(existing.creditsBalance) || 0;
 
@@ -321,7 +340,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   // waiting on a manual top-up. Only kicks in when the admin didn't also
   // set an explicit credits number in this same save (respecting a
   // deliberate manual entry) and the merchant currently has none.
-  if (becomingApproved && !adminSetCredits && existingCredits === 0) {
+  if (firstApproval && !adminSetCredits && existingCredits === 0) {
     introGranted = INTRO_CREDITS;
   }
 
@@ -501,7 +520,27 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     }
   }
 
-  if (becomingApproved && existing.email) {
+  if (becomingApproved && !firstApproval && existing.email) {
+    try {
+      const safeName = escapeHtml(existing.businessName || "there");
+      await sendTransactionalEmail({
+        to: existing.email,
+        subject: "You're back on MegaDeal",
+        html: brandedEmailHtml(`
+          <p style="margin:0 0 16px;">Hi ${safeName},</p>
+          <p style="margin:0 0 16px;">We've checked your business details and you're approved again${
+            SITE_LAUNCHED ? " — your live deals are showing to customers again" : ""
+          }.</p>
+          <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#7a17f0;font-weight:700;">Go to your portal</a></p>
+        `),
+      });
+    } catch (err) {
+      console.error("[admin/merchants] re-approval email failed", err);
+      warnings.push(`Merchant was approved again, but the notification email to ${existing.email} failed to send.`);
+    }
+  }
+
+  if (firstApproval && existing.email) {
     try {
       const totalGranted = creditsApplied ? introGranted + referralBonusGranted + promoGranted : 0;
       const safeName = escapeHtml(existing.businessName || "there");
