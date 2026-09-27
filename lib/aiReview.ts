@@ -65,6 +65,9 @@ export interface AiReviewInput {
   photoUrl?: string | null;
   /** The rudeness check is switched off for this business. */
   allowRudeLanguage?: boolean;
+  /** A code the business chose itself — reviewed like the rest of the
+   *  wording. Codes MegaDeal generates are random and left out. */
+  dealCode?: string | null;
 }
 
 const FLAG_KEYS: (keyof AiFlags)[] = [
@@ -142,6 +145,7 @@ function listingText(input: AiReviewInput): string {
           `Business: ${input.businessName || "(not given)"}`,
           `Category: ${input.category || "(not given)"}`,
           `Deal name: ${input.dealName}`,
+          input.dealCode && !input.dealCode.startsWith("MEGA-") ? `Deal code customers quote: ${input.dealCode}` : "",
           `What's included: ${input.description || ""}`,
           `Conditions: ${input.terms || ""}`,
           `Deal price: NZ$${input.priceNow ?? "?"}`,

@@ -93,6 +93,9 @@ describe("bookingPlan — which actions follow the revealed code", () => {
     expect(plan.actions[1].label).toBe("Call to book");
     expect(plan.conditionsHeading).toBe("Before you book");
     expect(plan.reservationNote).toMatch(/doesn’t reserve/);
+    // Many businesses reuse their own website promo code, so say where it goes.
+    expect(plan.instruction).toMatch(/enter this code in the promo or discount code box/);
+    expect(plan.howToStep).toBe("Book online and enter the code as your promo code");
   });
 
   it("required + phone only: Call to book with the number visible", () => {

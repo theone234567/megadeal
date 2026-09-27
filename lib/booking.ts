@@ -209,7 +209,10 @@ export function bookingPlan(
     nextStepHeading = requirement === "recommended" ? "Booking recommended" : `Your next step: ${verb}`;
     instruction =
       primary === "book_online"
-        ? `${quote} when you book with ${business}.`
+        ? hasCode
+          ? // Many businesses use their own promo code here, so say where it goes.
+            `When you book online with ${business}, enter this code in the promo or discount code box. Mention it if you book by phone instead.`
+          : `${quote} when you book with ${business}.`
         : primary === "call"
           ? `${quote} when you call ${business}.`
           : primary === "email"
@@ -220,7 +223,9 @@ export function bookingPlan(
     }
     howToStep =
       primary === "book_online"
-        ? `Book online and ${quoteStep}`
+        ? hasCode
+          ? "Book online and enter the code as your promo code"
+          : `Book online and ${quoteStep}`
         : primary === "call"
           ? `Call ${business} and ${quoteStep}`
           : primary === "email"

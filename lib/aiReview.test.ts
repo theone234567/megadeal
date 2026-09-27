@@ -159,3 +159,12 @@ describe("aiSummary", () => {
     expect(aiSummary(undefined)).toBeNull();
   });
 });
+
+describe("deal code in the AI review", () => {
+  it("includes a code the business chose, not one MegaDeal generated", () => {
+    const own: any = buildReviewRequest({ kind: "deal", dealName: "x", dealCode: "TACO-TUESDAY" });
+    const ours: any = buildReviewRequest({ kind: "deal", dealName: "x", dealCode: "MEGA-AB2CD" });
+    expect(own.messages[0].content.at(-1).text).toContain("Deal code customers quote: TACO-TUESDAY");
+    expect(ours.messages[0].content.at(-1).text).not.toContain("MEGA-AB2CD");
+  });
+});

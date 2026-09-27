@@ -9,6 +9,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { parseDraft, MAX_DRAFT_TEXT } from "@/lib/dealDraft";
 import { STANDARD_TERMS, renderTerms, parseTerms } from "@/lib/dealTerms";
 import { buildPreviewDeal } from "@/lib/previewDeal";
+import { DEAL_CODE_MAX, dealCodeError, normaliseDealCode } from "@/lib/dealCode";
 import { BOOKING_CHOICES, bookingConflict, hasUsableBookingRoute, isBookingChoice } from "@/lib/booking";
 import DealCard from "@/components/DealCard";
 import DealDetail from "@/app/deal/[slug]/DealDetail";
@@ -67,6 +68,8 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
    *  never defaulted, so "no booking needed" is always the merchant's
    *  own answer (see lib/booking.ts). */
   const [bookingRequirement, setBookingRequirement] = useState("");
+  /** The business's own deal code; blank means we generate one. */
+  const [dealCode, setDealCode] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -148,6 +151,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         );
         setIsFlash(Boolean(original.isFlash));
         setBookingRequirement(isBookingChoice(original.bookingRequirement) ? original.bookingRequirement : "");
+        setDealCode(
+          typeof original.dealCode === "string" && !original.dealCode.startsWith("MEGA-") ? original.dealCode : ""
+        );
         setQuantityAvailable(
           original.quantityAvailable !== undefined && original.quantityAvailable !== null
             ? String(original.quantityAvailable)
@@ -198,6 +204,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         setDurationMinutes(draft.durationMinutes);
         setQuantityAvailable(draft.quantityAvailable);
         setBookingRequirement(draft.bookingRequirement);
+        setDealCode(draft.dealCode);
         // The photo comes back too, which the old local drafts could never
         // do — a File can't be serialised, so restoring one always meant
         // hunting for the image again.
@@ -264,6 +271,12 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
       return;
     }
+    const codeProblem = dealCode ? dealCodeError(normaliseDealCode(dealCode)) : null;
+    if (codeProblem) {
+      setError(codeProblem);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      return;
+    }
     setError(null);
     setStep("preview");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -307,6 +320,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             durationMinutes,
             quantityAvailable,
             bookingRequirement,
+            dealCode,
             selectedTerms,
             customTerms,
             photoUrl: media?.url || "",
@@ -358,6 +372,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           ...(isFlash ? { durationMinutes } : { durationDays }),
           quantityAvailable: quantityAvailable ? Number(quantityAvailable) : undefined,
           bookingRequirement,
+          dealCode: normaliseDealCode(dealCode),
           photoUrl: media?.url || "",
           photoMediaId: media?.id || "",
         }),
@@ -499,6 +514,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         durationDays,
         durationMinutes,
         imageUrl: photoPreview,
+        dealCode: normaliseDealCode(dealCode),
       },
       merchant
     );
@@ -960,6 +976,41 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               <span className="font-display font-bold">Customers will see: </span>
               {terms}
             </p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="deal-code" className="mb-1 block text-base font-bold text-slate-900">
+            Your deal code <span className="font-sans text-sm font-normal text-slate-500">(optional)</span>
+          </label>
+          <p id="deal-code-help" className="mb-2 text-xs leading-relaxed text-slate-600">
+            <strong className="font-semibold text-slate-800">Use your own promo code.</strong> If your
+            website or booking system takes discount codes, set one up there and enter the same code
+            here — customers will be told to enter it when they book online, so the discount applies
+            automatically. They&apos;ll also quote it by phone or show it in person, so you can spot
+            MegaDeal customers.
+            <br />
+            No code of your own? Leave this blank and we&apos;ll create one. Letters, numbers and
+            hyphens, up to {DEAL_CODE_MAX} characters (e.g. SUMMER-20). It can&apos;t be changed once
+            your deal is submitted.
+          </p>
+          <input
+            id="deal-code"
+            value={dealCode}
+            maxLength={DEAL_CODE_MAX}
+            autoComplete="off"
+            spellCheck={false}
+            aria-describedby="deal-code-help"
+            // Shown the way it will be saved (capitals, hyphens for spaces).
+            onChange={(e) =>
+              setDealCode(e.target.value.normalize("NFKC").toUpperCase().replace(/\s/g, "-").slice(0, DEAL_CODE_MAX))
+            }
+            placeholder="e.g. SUMMER-20"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2 font-mono text-sm uppercase tracking-wider outline-none focus:border-brand-400 sm:max-w-xs"
+          />
+          {/* Not while they're mid-word ("SUMMER-") — only once it reads finished. */}
+          {dealCode && !dealCode.endsWith("-") && dealCodeError(normaliseDealCode(dealCode)) && (
+            <p className="mt-1 text-xs text-red-600">{dealCodeError(normaliseDealCode(dealCode))}</p>
           )}
         </div>
 

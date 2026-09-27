@@ -8,7 +8,7 @@ import { CATEGORY_ID_BY_NAME } from "@/lib/categories";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
-import { generateDealCode } from "@/lib/dealCode";
+import { dealCodeError, generateDealCode, normaliseDealCode } from "@/lib/dealCode";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
 
@@ -62,6 +62,8 @@ export async function POST(req: NextRequest) {
   const photoUrl = body.photoUrl ? String(body.photoUrl) : "";
   const photoMediaId = body.photoMediaId ? String(body.photoMediaId) : "";
   const category = String(body.category || "");
+  // Optional: a code the business chose. Blank means we generate one.
+  const customDealCode = normaliseDealCode(body.dealCode);
   const categoryId = CATEGORY_ID_BY_NAME[category];
 
   // Wix Stores caps product names at 80 characters; past that the product
@@ -71,6 +73,10 @@ export async function POST(req: NextRequest) {
   }
   if (description.length > 5000 || terms.length > 2000) {
     return NextResponse.json({ error: "The description or conditions are too long." }, { status: 400 });
+  }
+  if (customDealCode) {
+    const codeError = dealCodeError(customDealCode);
+    if (codeError) return NextResponse.json({ error: codeError }, { status: 400 });
   }
   if (!dealName || !description || !terms) {
     return NextResponse.json({ error: "Deal name, description and terms are required." }, { status: 400 });
@@ -278,7 +284,7 @@ export async function POST(req: NextRequest) {
     productId,
     isFlash,
     bookingRequirement,
-    dealCode: generateDealCode(),
+    dealCode: customDealCode || generateDealCode(),
     // The editing copies have served their purpose. Leaving draftData
     // behind would mean a submitted deal carrying a stale second version
     // of itself; leaving the statusNote supplement behind would put

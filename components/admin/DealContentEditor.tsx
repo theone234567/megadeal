@@ -14,6 +14,7 @@ const FIELD_LABELS: Record<string, string> = {
   priceWas: "Usual price",
   bookingRequirement: "Booking",
   quantityAvailable: "Quantity",
+  dealCode: "Deal code",
   photoUrl: "Photo",
 };
 
@@ -27,6 +28,7 @@ function formFromDeal(deal: AdminDeal) {
     priceWas: deal.priceWas != null && deal.priceWas !== deal.priceNow ? String(deal.priceWas) : "",
     bookingRequirement: deal.bookingRequirement ?? "",
     quantityAvailable: deal.quantityAvailable != null ? String(deal.quantityAvailable) : "",
+    dealCode: deal.dealCode ?? "",
   };
 }
 
@@ -194,6 +196,15 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
           <label className="text-xs font-semibold text-slate-600">
             Quantity (optional)
             <input className={input} type="number" min="0" step="1" value={form.quantityAvailable} onChange={(e) => setForm({ ...form, quantityAvailable: e.target.value })} />
+          </label>
+          <label className="text-xs font-semibold text-slate-600">
+            Deal code
+            <input
+              className={`${input} font-mono uppercase`}
+              maxLength={20}
+              value={form.dealCode}
+              onChange={(e) => setForm({ ...form, dealCode: e.target.value.toUpperCase() })}
+            />
           </label>
           <p className="text-xs text-slate-500 sm:col-span-2">
             Customers who already revealed a code saw the old version — if a change makes the deal worse for them,

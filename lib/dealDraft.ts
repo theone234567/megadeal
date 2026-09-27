@@ -1,4 +1,5 @@
 import { parseTerms } from "./dealTerms";
+import { DEAL_CODE_MAX, normaliseDealCode } from "./dealCode";
 import { isBookingChoice } from "./booking";
 
 /**
@@ -46,6 +47,8 @@ export interface DealDraftData {
    *  is saved, so unlike the old local drafts it survives a restore. */
   photoUrl: string;
   photoMediaId: string;
+  /** The business's own deal code, or "" for one generated on submit. */
+  dealCode: string;
 }
 
 export const EMPTY_DRAFT: DealDraftData = {
@@ -64,6 +67,7 @@ export const EMPTY_DRAFT: DealDraftData = {
   bookingRequirement: "",
   photoUrl: "",
   photoMediaId: "",
+  dealCode: "",
 };
 
 /** Matches the maxLength on the matching textareas, so the form stops
@@ -107,6 +111,9 @@ export function sanitizeDraft(input: any): DealDraftData {
     bookingRequirement: isBookingChoice(input?.bookingRequirement) ? input.bookingRequirement : "",
     photoUrl: text(input?.photoUrl, 500),
     photoMediaId: text(input?.photoMediaId, 200),
+    // Tidied but not rejected — a draft is unfinished work; the code is
+    // checked properly on submit.
+    dealCode: normaliseDealCode(input?.dealCode).slice(0, DEAL_CODE_MAX),
   };
 }
 
@@ -138,6 +145,7 @@ export function encodeSupplement(draft: DealDraftData): string {
       dd: draft.durationDays,
       dm: draft.durationMinutes,
       pm: draft.photoMediaId,
+      dc: draft.dealCode,
     })
   );
 }
@@ -226,5 +234,6 @@ export function parseDraft(row: any): DealDraftData {
     bookingRequirement: stored.bookingRequirement || row?.bookingRequirement || "",
     photoUrl: stored.photoUrl || row?.photoUrl || "",
     photoMediaId: stored.photoMediaId || extra.pm || "",
+    dealCode: stored.dealCode || extra.dc || "",
   });
 }

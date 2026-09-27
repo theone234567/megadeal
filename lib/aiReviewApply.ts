@@ -45,6 +45,7 @@ export async function reviewSubmittedDeal(
       bookingRequirement: deal.bookingRequirement,
       businessName: merchant?.businessName ?? null,
       photoUrl: deal.photoUrl || null,
+      dealCode: deal.dealCode || null,
     });
     if (!review) return { outcome: "hold", review: null, item: deal };
 

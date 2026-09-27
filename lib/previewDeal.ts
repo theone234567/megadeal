@@ -35,6 +35,8 @@ export interface PreviewInput {
   /** Blob URL for a newly picked file, or the media URL of one already
    *  uploaded — either renders identically. */
   imageUrl: string | null;
+  /** The code the business chose, or "" for one generated on submit. */
+  dealCode?: string;
 }
 
 /** Comma-separated in the profile form, a list everywhere it's shown. */
@@ -116,7 +118,9 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     businessRating: typeof merchant?.rating === "number" ? merchant.rating : null,
     businessReviewCount:
       typeof merchant?.reviewCount === "number" ? merchant.reviewCount : null,
-    dealCode: null,
+    // A real deal always has a code, so the preview shows one: theirs, or
+    // an example in the shape of the code we'll generate.
+    dealCode: input.dealCode || "MEGA-XXXXX",
     bookingRequirement: parseBookingRequirement(input.bookingRequirement),
   };
 }

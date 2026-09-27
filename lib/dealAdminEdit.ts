@@ -1,4 +1,5 @@
 import { bookingConflict, isBookingChoice } from "./booking";
+import { dealCodeError, normaliseDealCode } from "./dealCode";
 
 /**
  * Admin edits to a submitted deal's content. Businesses can't change a deal
@@ -16,6 +17,7 @@ export const EDITABLE_DEAL_FIELDS = [
   "priceWas",
   "bookingRequirement",
   "quantityAvailable",
+  "dealCode",
 ] as const;
 export type EditableDealField = (typeof EDITABLE_DEAL_FIELDS)[number];
 
@@ -87,6 +89,14 @@ export function parseAdminContentEdit(
       return { changes: {}, error: "Quantity must be a whole number (or empty for no limit)." };
     }
     next.quantityAvailable = v;
+  }
+
+  if (body.dealCode !== undefined) {
+    const code = normaliseDealCode(body.dealCode);
+    // Admins may set a MEGA- code (e.g. to restore a generated one).
+    const codeError = code ? dealCodeError(code, { allowReserved: true }) : "The deal code can't be empty.";
+    if (codeError) return { changes: {}, error: codeError };
+    next.dealCode = code;
   }
 
   // Nothing to check when the request isn't a content edit (a status or
