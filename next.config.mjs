@@ -199,7 +199,11 @@ const nextConfig = {
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
       {
         key: "Permissions-Policy",
-        value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+        // geolocation=(self), not (): "Nearest to me" and the distance
+        // filter ask for the visitor's location, and an empty list blocked
+        // the browser API outright — the request failed before any prompt.
+        // Still only this site may ask, and only when the visitor picks one.
+        value: "camera=(), microphone=(), geolocation=(self), interest-cohort=()",
       },
       ...(servedOverHttps
         ? [

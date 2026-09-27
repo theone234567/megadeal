@@ -3,12 +3,10 @@ import { parseBusinessPhotos } from "./businessPhotos";
 import type { Deal } from "./types";
 
 /**
- * The public-safe projection of a Merchants record — shared shape between
- * the merchant-directory API route, the client-side deal fetch path
- * (lib/fetchDeals.ts), and the server-only SEO/business-profile paths
- * (lib/fetchDealServer.ts). Deliberately excludes email, postcode,
- * coupon/referral code, credits balance, and status — none of those are
- * ever shown to customers.
+ * The public-safe projection of a Merchants record, used by the server-side
+ * deal, listing and business-profile reads (lib/fetchDealServer.ts).
+ * Deliberately excludes email, postcode, coupon/referral code, credits
+ * balance, and status — none of those are ever shown to customers.
  */
 export interface PublicBusiness {
   businessName: string;
