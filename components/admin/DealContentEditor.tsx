@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { BOOKING_CHOICES } from "@/lib/booking";
 import { effectiveVerdict, type AiReview } from "@/lib/aiReview";
+import PhotoUploadField from "@/components/portal/PhotoUploadField";
 import type { AdminDeal } from "./DealRow";
 
 const FIELD_LABELS: Record<string, string> = {
@@ -134,6 +135,17 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
           </div>
         </div>
       )}
+
+      <PhotoUploadField
+        label="Deal photo"
+        filenameLabel={deal.dealName}
+        currentUrl={deal.photoUrl || null}
+        warningText="This replaces the photo customers see straight away. Continue?"
+        onConfirm={async (url) => {
+          const ok = await patch({ photoUrl: url }, "photo");
+          if (!ok) throw new Error("Couldn't save the new photo. Please try again.");
+        }}
+      />
 
       {!editing ? (
         <button

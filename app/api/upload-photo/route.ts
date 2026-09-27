@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { isAdminRequest } from "@/lib/adminSession";
 
 // Generous cap on the decoded image — the client already resizes/compresses
 // before sending, this just guards against an oversized/malicious payload.
@@ -51,7 +52,9 @@ function slugify(input: string): string {
  */
 export async function POST(req: NextRequest) {
   const member = await getVerifiedMember(req);
-  if (!member) {
+  // Admins upload too — replacing a deal's photo from the admin editor.
+  const admin = !member && (await isAdminRequest(req));
+  if (!member && !admin) {
     return NextResponse.json({ error: "Please sign in." }, { status: 401 });
   }
 
@@ -61,7 +64,7 @@ export async function POST(req: NextRequest) {
   // site's media storage in a loop at no cost to themselves. Keyed on the
   // member rather than the IP: the member id is the thing we've actually
   // verified, and it doesn't punish a whole office behind one address.
-  const { limited } = await checkRateLimit(`upload-photo:${member.id}`, 60, 60 * 60);
+  const { limited } = await checkRateLimit(`upload-photo:${member ? member.id : "admin"}`, 60, 60 * 60);
   if (limited) {
     return NextResponse.json(
       { error: "That's a lot of photos at once — please try again in a little while." },

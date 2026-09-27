@@ -5,6 +5,7 @@ import { logMerchantActivity } from "@/lib/merchantActivity";
 import { submitUrlsToIndexNow } from "@/lib/indexNow";
 import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { unwrapProduct } from "@/lib/mapDeal";
+import { isWixMediaUrl } from "@/lib/photoUrl";
 import { PRODUCT_FIELDS, buildProductUpdate, parseAdminContentEdit, withHistory } from "@/lib/dealAdminEdit";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
@@ -37,7 +38,11 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     patch.merchantEmail = String(body.merchantEmail);
   }
   if (body.photoUrl !== undefined) {
-    patch.photoUrl = String(body.photoUrl);
+    // Only a photo from our own uploader (Wix Media), never an arbitrary URL.
+    if (!isWixMediaUrl(body.photoUrl)) {
+      return NextResponse.json({ error: "Invalid photo." }, { status: 400 });
+    }
+    patch.photoUrl = body.photoUrl;
   }
   if (body.note !== undefined) {
     patch.statusNote = String(body.note).trim().slice(0, 500) || null;
@@ -62,6 +67,9 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     }
     const changedFields = Object.keys(changes);
     Object.assign(patch, changes);
+    if (patch.photoUrl !== undefined && patch.photoUrl !== existing.photoUrl) {
+      changedFields.push("photoUrl");
+    }
 
     // A business's replacement photo for a live deal waits here until an
     // admin approves it; the current photo stays up meanwhile.
