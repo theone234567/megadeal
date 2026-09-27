@@ -1,6 +1,7 @@
 import { parseTerms } from "./dealTerms";
 import { normaliseDealCode } from "./dealCode";
 import { isBookingChoice } from "./booking";
+import { clampEverydayDays, clampFlashMinutes } from "./dealDuration";
 
 /**
  * A deal the merchant hasn't submitted yet.
@@ -18,11 +19,11 @@ import { isBookingChoice } from "./booking";
  * read starts from a Wix Stores product and joins Deals by productId —
  * a draft has no product, so there is nothing to join to.
  *
- * Category and the duration choice have no column on Deals (category
- * belongs to the product, duration is only used to compute expiresAt at
- * submission), so the full editing state is kept as JSON in `draftData`
- * alongside the few real columns the portal needs to list a draft without
- * parsing it.
+ * Category and the duration choice have no column on a draft (category
+ * belongs to the product; the duration becomes requestedDurationMinutes
+ * on submission, and an end date only when the deal goes live), so the
+ * full editing state is kept as JSON in `draftData` alongside the few real
+ * columns the portal needs to list a draft without parsing it.
  */
 export interface DealDraftData {
   dealName: string;
@@ -104,9 +105,9 @@ export function sanitizeDraft(input: any): DealDraftData {
     customTerms: text(input?.customTerms),
     priceNow: text(input?.priceNow, 20),
     priceWas: text(input?.priceWas, 20),
-    durationDays: positiveInt(input?.durationDays, 30),
+    durationDays: clampEverydayDays(positiveInt(input?.durationDays, 30)),
     isFlash: Boolean(input?.isFlash),
-    durationMinutes: positiveInt(input?.durationMinutes, 60),
+    durationMinutes: clampFlashMinutes(positiveInt(input?.durationMinutes, 60)),
     quantityAvailable: text(input?.quantityAvailable, 20),
     bookingRequirement: isBookingChoice(input?.bookingRequirement) ? input.bookingRequirement : "",
     photoUrl: text(input?.photoUrl, 500),

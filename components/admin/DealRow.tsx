@@ -5,6 +5,7 @@ import type { DealStatus } from "@/lib/types";
 import Link from "next/link";
 import DealContentEditor from "./DealContentEditor";
 import { aiSummary, effectiveVerdict } from "@/lib/aiReview";
+import { describeMinutes } from "@/lib/dealDuration";
 
 export interface AdminDeal {
   _id: string;
@@ -67,7 +68,11 @@ export default function DealRow({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status,
-          expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
+          // Only when changed: re-sending the date-only value on every save
+          // used to move a Flash Deal's end time to midnight.
+          ...(expiresAt !== toDateInputValue(deal.expiresAt)
+            ? { expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null }
+            : {}),
           merchantEmail,
           note,
         }),
@@ -79,8 +84,12 @@ export default function DealRow({
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || `Save failed (error ${res.status}). Refresh the page and try again.`);
       }
+      // Approval can set the end date server-side (the run starts when a
+      // deal first goes live), so take it from the saved record.
+      const savedBody = await res.json().catch(() => ({}));
       deal.status = status;
-      deal.expiresAt = expiresAt ? new Date(expiresAt).toISOString() : undefined;
+      deal.expiresAt = savedBody?.item?.expiresAt ?? (expiresAt ? new Date(expiresAt).toISOString() : undefined);
+      setExpiresAt(toDateInputValue(deal.expiresAt));
       deal.merchantEmail = merchantEmail;
       deal.statusNote = note || null;
       setSaved(true);
@@ -166,8 +175,15 @@ export default function DealRow({
           type="date"
           value={expiresAt}
           onChange={(e) => setExpiresAt(e.target.value)}
+          aria-label="End date"
           className="rounded-lg border border-slate-200 px-2 py-1 text-sm"
         />
+        {/* Not live yet: the run starts when it's approved. */}
+        {!deal.expiresAt && Number(deal.requestedDurationMinutes) > 0 && (
+          <p className="mt-1 text-xs text-slate-500">
+            Runs {describeMinutes(Number(deal.requestedDurationMinutes))} once live
+          </p>
+        )}
       </td>
       <td className="py-3 pr-4">
         <select

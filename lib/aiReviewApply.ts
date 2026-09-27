@@ -6,6 +6,7 @@ import { logMerchantActivity } from "./merchantActivity";
 import { SITE_LAUNCHED } from "./siteConfig";
 import { getSiteRudenessCheck, rudenessCheckApplies } from "./rudenessSetting";
 import { notifyDealChanged } from "./indexNowDeal";
+import { firstPublicationFields } from "./dealDuration";
 
 /** Whether swearing/crude humour is held back for this business. */
 async function rudenessCheckFor(adminClient: any, merchant: Record<string, any> | null): Promise<boolean> {
@@ -56,8 +57,23 @@ export async function reviewSubmittedDeal(
     // decided it while the review ran (or, for the manual check, earlier).
     const waiting = deal.status === "Pending Approval";
 
-    if (outcome === "publish" && waiting) {
-      const item = await adminClient.items.update("Deals", { ...deal, aiReview: review, status: "Live", everLive: true });
+    // Starts the listing's clock (lib/dealDuration.ts). A legacy deal whose
+    // promised end date has already passed can't be published without a
+    // person setting a new one, so it's held instead.
+    const publication = outcome === "publish" && waiting ? firstPublicationFields(deal) : null;
+    if (publication?.error) {
+      console.warn(`[aiReviewApply] held deal ${deal._id}: ${publication.error}`);
+      outcome = "hold";
+    }
+
+    if (outcome === "publish" && waiting && publication?.fields) {
+      const item = await adminClient.items.update("Deals", {
+        ...deal,
+        ...publication.fields,
+        aiReview: review,
+        status: "Live",
+        everLive: true,
+      });
       notifyDealChanged(adminClient, item, merchant);
       await logMerchantActivity(adminClient, {
         merchantEmail: deal.merchantEmail,

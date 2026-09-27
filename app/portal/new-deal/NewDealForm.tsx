@@ -14,21 +14,19 @@ import { BOOKING_CHOICES, bookingConflict, hasUsableBookingRoute, isBookingChoic
 import DealCard from "@/components/DealCard";
 import DealDetail from "@/app/deal/[slug]/DealDetail";
 import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
+import {
+  DEFAULT_EVERYDAY_DAYS,
+  DEFAULT_FLASH_MINUTES,
+  EVERYDAY_DURATION_OPTIONS,
+  FLASH_DURATION_OPTIONS,
+  clampEverydayDays,
+  clampFlashMinutes,
+} from "@/lib/dealDuration";
 
-const DURATIONS = [
-  { label: "1 week", days: 7 },
-  { label: "2 weeks", days: 14 },
-  { label: "1 month", days: 30 },
-  { label: "2 months", days: 60 },
-  { label: "3 months", days: 90 },
-];
-
-const FLASH_DURATIONS = [
-  { label: "30 minutes", minutes: 30 },
-  { label: "1 hour", minutes: 60 },
-  { label: "2 hours", minutes: 120 },
-  { label: "4 hours", minutes: 240 },
-];
+// Flash up to 6 hours, Everyday up to 30 days — shared with the server
+// (lib/dealDuration.ts), which enforces the same limits.
+const DURATIONS = EVERYDAY_DURATION_OPTIONS;
+const FLASH_DURATIONS = FLASH_DURATION_OPTIONS;
 
 interface MerchantRecord {
   _id: string;
@@ -60,9 +58,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const terms = renderTerms(selectedTerms, customTerms);
   const [priceNow, setPriceNow] = useState("");
   const [priceWas, setPriceWas] = useState("");
-  const [durationDays, setDurationDays] = useState(30);
+  const [durationDays, setDurationDays] = useState<number>(DEFAULT_EVERYDAY_DAYS);
   const [isFlash, setIsFlash] = useState(false);
-  const [durationMinutes, setDurationMinutes] = useState(60);
+  const [durationMinutes, setDurationMinutes] = useState<number>(DEFAULT_FLASH_MINUTES);
   const [quantityAvailable, setQuantityAvailable] = useState("");
   /** "required" | "recommended" | "not_required", or "" until chosen —
    *  never defaulted, so "no booking needed" is always the merchant's
@@ -202,9 +200,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         setCustomTerms(draft.customTerms);
         setPriceNow(draft.priceNow);
         setPriceWas(draft.priceWas);
-        setDurationDays(draft.durationDays);
+        setDurationDays(clampEverydayDays(draft.durationDays));
         setIsFlash(draft.isFlash);
-        setDurationMinutes(draft.durationMinutes);
+        setDurationMinutes(clampFlashMinutes(draft.durationMinutes));
         setQuantityAvailable(draft.quantityAvailable);
         setBookingRequirement(draft.bookingRequirement);
         setDealCode(draft.dealCode);
@@ -588,7 +586,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             <dt className="text-slate-500">Runs for</dt>
             <dd className="font-semibold text-slate-800">
               {durationLabel}
-              {isFlash ? " (flash deal)" : ""}
+              {isFlash ? " (flash deal)" : ""}, from when it goes live
             </dd>
           </div>
           {quantityAvailable && (
@@ -804,7 +802,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="deal-duration" className="mb-1 block text-sm font-medium text-slate-700">Duration</label>
+            <label htmlFor="deal-duration" className="mb-1 block text-sm font-medium text-slate-700">
+              How long it runs
+            </label>
             {isFlash ? (
               <select
                 id="deal-duration"
@@ -832,6 +832,10 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
                 ))}
               </select>
             )}
+            <p className="mt-1 text-xs text-slate-500">
+              {isFlash ? "Flash Deals run for up to 6 hours." : "Deals run for up to 30 days."} The time starts
+              when your deal goes live, not while it&apos;s being reviewed.
+            </p>
           </div>
           <div>
             <label htmlFor="deal-quantity" className="mb-1 block text-sm font-medium text-slate-700">

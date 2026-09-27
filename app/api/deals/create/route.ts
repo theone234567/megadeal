@@ -11,9 +11,8 @@ import { logMerchantActivity } from "@/lib/merchantActivity";
 import { dealCodeError, generateDealCode, normaliseDealCode } from "@/lib/dealCode";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
+import { durationError, toRequestedMinutes } from "@/lib/dealDuration";
 
-const MAX_DURATION_DAYS = 365;
-const MAX_DURATION_MINUTES = 24 * 60;
 const WIX_STORES_APP_ID = "215238eb-22a5-4c36-9e7b-e7c08025e04e";
 
 /**
@@ -101,12 +100,10 @@ export async function POST(req: NextRequest) {
   if (priceWas !== undefined && (!Number.isFinite(priceWas) || priceWas < priceNow)) {
     return NextResponse.json({ error: "Original price must be at least the deal price." }, { status: 400 });
   }
-  if (isFlash) {
-    if (!Number.isFinite(durationMinutes) || durationMinutes < 1 || durationMinutes > MAX_DURATION_MINUTES) {
-      return NextResponse.json({ error: "Choose a valid flash deal duration." }, { status: 400 });
-    }
-  } else if (!Number.isFinite(durationDays) || durationDays < 1 || durationDays > MAX_DURATION_DAYS) {
-    return NextResponse.json({ error: "Choose a valid duration." }, { status: 400 });
+  // Flash up to 6 hours, Everyday up to 30 days (lib/dealDuration.ts).
+  const durationProblem = durationError(isFlash, isFlash ? durationMinutes : durationDays);
+  if (durationProblem) {
+    return NextResponse.json({ error: durationProblem }, { status: 400 });
   }
   if (quantityAvailable !== undefined && (!Number.isInteger(quantityAvailable) || quantityAvailable < 1)) {
     return NextResponse.json({ error: "Quantity available must be a positive number." }, { status: 400 });
@@ -266,9 +263,10 @@ export async function POST(req: NextRequest) {
     console.error("[deals/create] category assignment failed", err);
   }
 
-  const expiresAt = new Date(
-    Date.now() + (isFlash ? durationMinutes * 60_000 : durationDays * 86_400_000)
-  ).toISOString();
+  // The clock doesn't start until the deal first goes live — review time
+  // mustn't use up the listing. The requested run is stored and turned
+  // into an end date at publication (firstPublicationFields).
+  const requestedDurationMinutes = toRequestedMinutes(isFlash, isFlash ? durationMinutes : durationDays);
 
   const fields = {
     dealName,
@@ -278,7 +276,8 @@ export async function POST(req: NextRequest) {
     priceWas: priceWas ?? priceNow,
     quantityAvailable: quantityAvailable ?? null,
     photoUrl,
-    expiresAt,
+    expiresAt: null,
+    requestedDurationMinutes,
     merchantEmail: member.email,
     status: "Pending Approval",
     productId,

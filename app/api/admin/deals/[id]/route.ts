@@ -5,6 +5,7 @@ import { logMerchantActivity } from "@/lib/merchantActivity";
 import { notifyDealChanged } from "@/lib/indexNowDeal";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
 import { isWixMediaUrl } from "@/lib/photoUrl";
+import { firstPublicationFields, manualExpiryError } from "@/lib/dealDuration";
 import { PRODUCT_FIELDS, buildProductUpdate, parseAdminContentEdit, withHistory } from "@/lib/dealAdminEdit";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
@@ -27,11 +28,8 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     }
     patch.status = body.status;
   }
-  if (body.expiresAt !== undefined) {
-    if (body.expiresAt !== null && Number.isNaN(Date.parse(body.expiresAt))) {
-      return NextResponse.json({ error: "Invalid expiry date." }, { status: 400 });
-    }
-    patch.expiresAt = body.expiresAt;
+  if (body.expiresAt !== undefined && body.expiresAt !== null && Number.isNaN(Date.parse(body.expiresAt))) {
+    return NextResponse.json({ error: "Invalid expiry date." }, { status: 400 });
   }
   if (body.merchantEmail !== undefined) {
     patch.merchantEmail = String(body.merchantEmail);
@@ -56,6 +54,26 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     const existing = await adminClient.items.get("Deals", params.id);
     if (!existing) {
       return NextResponse.json({ error: "Deal not found." }, { status: 404 });
+    }
+
+    // End date typed in by an admin. Only a real change counts — the admin
+    // form sends its date field back on every save, and re-saving it used
+    // to reset a Flash Deal's end time to midnight. A change must stay in
+    // the future and within the listing's maximum run (lib/dealDuration.ts);
+    // an existing end date can't be removed.
+    if (body.expiresAt !== undefined) {
+      const current = existing.expiresAt ? new Date(existing.expiresAt).getTime() : null;
+      const requested = body.expiresAt === null ? null : new Date(body.expiresAt).getTime();
+      const unchanged =
+        requested === current || (requested !== null && current !== null && Math.abs(requested - current) < 60_000);
+      if (!unchanged) {
+        if (requested === null) {
+          return NextResponse.json({ error: "A deal needs an end date — it can't be removed." }, { status: 400 });
+        }
+        const expiryProblem = manualExpiryError(existing, new Date(requested).toISOString());
+        if (expiryProblem) return NextResponse.json({ error: expiryProblem }, { status: 400 });
+        patch.expiresAt = new Date(requested).toISOString();
+      }
     }
 
     // Content edits (name, description, price, conditions, booking,
@@ -103,6 +121,20 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     // A deal that has been live can never earn a withdrawal refund, even
     // if it's later moved back to "Pending Approval".
     if (patch.status === "Live") patch.everLive = true;
+
+    // Going live for the first time starts the listing's clock. An end
+    // date set in this same save wins; otherwise it comes from the run the
+    // business asked for. Idempotent — a deal that was live before keeps
+    // its end date, so re-approving never restarts the countdown.
+    if (patch.status === "Live" && existing.status !== "Live") {
+      if (patch.expiresAt) {
+        if (!existing.firstPublishedAt && !existing.everLive) patch.firstPublishedAt = new Date().toISOString();
+      } else {
+        const publication = firstPublicationFields(existing);
+        if (publication.error) return NextResponse.json({ error: publication.error }, { status: 409 });
+        Object.assign(patch, publication.fields);
+      }
+    }
 
     const updated = await adminClient.items.update("Deals", {
       ...existing,

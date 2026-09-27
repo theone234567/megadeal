@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { DealStatus } from "@/lib/types";
 import { DEAL_STATUS_STYLES, allowedDealActions, withdrawalRefundsCredit } from "@/lib/dealStatus";
+import { describeMinutes } from "@/lib/dealDuration";
 import PhotoUploadField from "./PhotoUploadField";
 
 export interface DealRecord {
@@ -11,6 +12,8 @@ export interface DealRecord {
   dealName?: string;
   productId?: string;
   expiresAt?: string;
+  /** The run the business asked for; the clock starts when it first goes live. */
+  requestedDurationMinutes?: number;
   status?: DealStatus | null;
   photoUrl?: string | null;
   merchantEmail?: string;
@@ -78,7 +81,11 @@ export default function DealManageCard({
             {status === "Live" && !siteLaunched ? "Approved — shows at launch" : status}
           </span>
           <span className={`text-sm ${endingSoon ? "font-semibold text-ember-600" : "text-slate-500"}`}>
-            {deal.expiresAt ? `Ends ${new Date(deal.expiresAt).toLocaleDateString()}` : "—"}
+            {deal.expiresAt
+              ? `Ends ${new Date(deal.expiresAt).toLocaleDateString()}`
+              : Number(deal.requestedDurationMinutes) > 0
+              ? `Runs ${describeMinutes(Number(deal.requestedDurationMinutes))} once approved`
+              : "—"}
             {endingSoon && " ⏰"}
           </span>
           <span className="text-slate-500">{open ? "▲" : "▼"}</span>
