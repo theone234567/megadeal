@@ -3,7 +3,7 @@ import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { queryAllByEmail } from "@/lib/queryAll";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { escapeHtml } from "@/lib/escapeHtml";
@@ -520,8 +520,11 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         subject: "You're approved! Welcome to MegaDeal",
         html: brandedEmailHtml(`
           <p style="margin:0 0 16px;">Hi ${safeName},</p>
-          <p style="margin:0 0 16px;">Good news — your business is approved on MegaDeal. Log in to your
-          business portal to submit your first deal:</p>
+          <p style="margin:0 0 16px;">Good news — your business is approved on MegaDeal. ${
+            SITE_LAUNCHED
+              ? "Log in to your business portal to submit your first deal:"
+              : "MegaDeal hasn&#39;t launched to customers yet, so for now you can set up your listing and build your deals as drafts in your business portal. We&#39;ll email you the moment we go live, and you can submit them straight away:"
+          }</p>
           <p style="margin:0 0 16px;"><a href="${SITE_URL}/portal" style="color:#7a17f0;font-weight:700;">Go to your portal</a></p>
           ${creditsNote ? `<p style="margin:0;">${creditsNote}</p>` : ""}
         `),

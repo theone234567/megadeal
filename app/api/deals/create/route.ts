@@ -10,6 +10,7 @@ import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { generateDealCode } from "@/lib/dealCode";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
+import { SITE_LAUNCHED } from "@/lib/siteConfig";
 
 const MAX_DURATION_DAYS = 365;
 const MAX_DURATION_MINUTES = 24 * 60;
@@ -117,6 +118,14 @@ export async function POST(req: NextRequest) {
   }
   if (merchant.status === "Suspended") {
     return NextResponse.json({ error: "Your account is suspended. Contact us for help." }, { status: 403 });
+  }
+  // Before launch deals are built and saved as drafts only (the form does
+  // the same); this stops a submission reaching review from anywhere else.
+  if (!SITE_LAUNCHED) {
+    return NextResponse.json(
+      { error: "MegaDeal hasn't launched yet. Save this deal as a draft and submit it once we go live." },
+      { status: 403 }
+    );
   }
   // Only a business an admin has approved can submit deals. A new signup
   // can build and save drafts, and submit them once approved.

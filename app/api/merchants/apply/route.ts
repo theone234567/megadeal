@@ -6,7 +6,7 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { insertEmailSignup } from "@/lib/emailSignups";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { generateReferralCode } from "@/lib/referral";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
@@ -39,7 +39,12 @@ function welcomeEmailHtml(businessName: string): string {
           <li style="margin-bottom:6px;">Our team will take a look at your application — usually within a couple of business days</li>
           <li style="margin-bottom:6px;">Once you're approved, you'll have deal credits waiting in your portal, ready to list your first deal straight away</li>
           <li>From there it's simple: you set the offer, we bring the customers, and you keep every dollar</li>
-        </ul>
+        </ul>${
+          SITE_LAUNCHED
+            ? ""
+            : `
+        <p style="margin:0 0 16px;">One thing to know: MegaDeal hasn't launched to customers yet. Until we do, your portal is a preview — you can set up your listing and build deals as drafts, and we'll email you the moment we go live.</p>`
+        }
         <p style="margin:0 0 16px;">You can check your application status, manage your profile, and keep an eye on your credits anytime from your <a href="${SITE_URL}/portal" style="color:#7a17f0;font-weight:700;">business portal</a>.</p>
         <p style="margin:0 0 16px;">If anything's unclear, or you just want to say hi, hit reply — a real person reads every message.</p>
         <p style="margin:0 0 16px;">Thanks for giving MegaDeal a go — welcome to the herd. 🐘</p>

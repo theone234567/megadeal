@@ -143,7 +143,9 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         await logMerchantActivity(adminClient, {
           merchantEmail: existing.merchantEmail,
           type: "deal",
-          description: `"${dealName}" is now live`,
+          description: SITE_LAUNCHED
+            ? `"${dealName}" is now live`
+            : `"${dealName}" is approved — customers will see it from launch day`,
         });
       } else if (patch.status === "Paused" || patch.status === "Cancelled") {
         const note = patch.statusNote ?? existing.statusNote;

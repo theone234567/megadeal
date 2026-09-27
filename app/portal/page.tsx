@@ -57,6 +57,9 @@ function formatSavedAt(iso?: string): string {
 export default function PortalPage() {
   const { member, isLoggedIn } = useWix();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
+  // Assumed launched until the server says otherwise, so the pre-launch
+  // notice never flashes up after launch.
+  const [siteLaunched, setSiteLaunched] = useState(true);
   // Separate from `merchant` on purpose: `merchant === null` means "we
   // asked Wix and confirmed there's no business on this account," which
   // is what puts someone on the restart-signup screen. A failed request
@@ -129,9 +132,10 @@ export default function PortalPage() {
         if (!res.ok) throw new Error(`status ${res.status}`);
         return res.json();
       })
-      .then(({ item: record }) => {
+      .then(({ item: record, siteLaunched: launched }) => {
         if (cancelled) return;
         setMerchant(record ?? null);
+        setSiteLaunched(launched !== false);
         loadDeals();
       })
       .catch(() => {
@@ -285,6 +289,16 @@ export default function PortalPage() {
 
   return (
     <div className="space-y-6">
+      {!siteLaunched && merchant && (
+        <div className="rounded-2xl border-2 border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-extrabold text-amber-900">🚧 Preview mode — MegaDeal hasn&apos;t launched yet</p>
+          <p className="mt-1 text-sm text-amber-800">
+            Customers can&apos;t see MegaDeal yet, so nothing here is public. Set up your profile and build
+            your deals as drafts now — you can submit them the moment we go live, and approved deals appear
+            to customers from launch day. We&apos;ll email you when we launch.
+          </p>
+        </div>
+      )}
       {adminAlsoActive && (
         <div className="rounded-2xl border-2 border-amber-200 bg-amber-50 p-4">
           <p className="text-sm font-bold text-amber-900">⚠️ You&apos;re also signed in as admin</p>
@@ -553,6 +567,7 @@ export default function PortalPage() {
                           deal={deal}
                           onChangeStatus={handleChangeDealStatus}
                           onChangePhoto={handleChangeDealPhoto}
+                          siteLaunched={siteLaunched}
                         />
                       ))}
                     </ul>

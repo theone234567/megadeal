@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getOrClaimMerchant } from "@/lib/merchant";
+import { SITE_LAUNCHED } from "@/lib/siteConfig";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,9 @@ export async function GET(req: NextRequest) {
   try {
     const adminClient = createWixAdminClient();
     const merchant = await getOrClaimMerchant(adminClient, member);
-    return NextResponse.json({ item: merchant });
+    // siteLaunched is a server-only setting; the portal needs it to tell
+    // businesses that, before launch, everything they see is a preview.
+    return NextResponse.json({ item: merchant, siteLaunched: SITE_LAUNCHED });
   } catch (err) {
     console.error("[merchants/me] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

@@ -3,6 +3,7 @@ import { incrementCreditsAtomically } from "./creditsAtomic";
 import { withdrawalRefundsCredit } from "./dealStatus";
 import { withHistory } from "./dealAdminEdit";
 import { logMerchantActivity } from "./merchantActivity";
+import { SITE_LAUNCHED } from "./siteConfig";
 import { getSiteRudenessCheck, rudenessCheckApplies } from "./rudenessSetting";
 
 /** Whether swearing/crude humour is held back for this business. */
@@ -56,7 +57,9 @@ export async function reviewSubmittedDeal(
       await logMerchantActivity(adminClient, {
         merchantEmail: deal.merchantEmail,
         type: "deal",
-        description: `"${deal.dealName}" is now live`,
+        description: SITE_LAUNCHED
+          ? `"${deal.dealName}" is now live`
+          : `"${deal.dealName}" is approved — customers will see it from launch day`,
       });
       return { outcome, review, item };
     }

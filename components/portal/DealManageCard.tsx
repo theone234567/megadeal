@@ -23,9 +23,16 @@ interface DealManageCardProps {
   deal: DealRecord;
   onChangeStatus: (deal: DealRecord, target: DealStatus) => Promise<void>;
   onChangePhoto: (deal: DealRecord, dataUrl: string) => Promise<void>;
+  /** Before launch an approved deal isn't visible to anyone yet. */
+  siteLaunched?: boolean;
 }
 
-export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: DealManageCardProps) {
+export default function DealManageCard({
+  deal,
+  onChangeStatus,
+  onChangePhoto,
+  siteLaunched = true,
+}: DealManageCardProps) {
   const [open, setOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [busyTarget, setBusyTarget] = useState<DealStatus | null>(null);
@@ -68,7 +75,7 @@ export default function DealManageCard({ deal, onChangeStatus, onChangePhoto }: 
           <span
             className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${DEAL_STATUS_STYLES[status]}`}
           >
-            {status}
+            {status === "Live" && !siteLaunched ? "Approved — shows at launch" : status}
           </span>
           <span className={`text-sm ${endingSoon ? "font-semibold text-ember-600" : "text-slate-500"}`}>
             {deal.expiresAt ? `Ends ${new Date(deal.expiresAt).toLocaleDateString()}` : "—"}
