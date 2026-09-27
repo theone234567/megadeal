@@ -7,6 +7,7 @@ import { getOrClaimMerchant } from "@/lib/merchant";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { notifyDealChanged } from "@/lib/indexNowDeal";
+import { firstPublicationFields } from "@/lib/dealDuration";
 import type { DealStatus } from "@/lib/types";
 
 /**
@@ -64,10 +65,21 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       );
     }
 
+    // "Make live" normally resumes a paused deal whose clock is already
+    // running (no change). If a deal was paused before it ever went live,
+    // this is its first publication and starts its run — without it, the
+    // deal would go live with no end date at all.
+    const publication = target === "Live" ? firstPublicationFields(deal) : { fields: {} };
+    if (publication.error) {
+      return NextResponse.json({ error: publication.error }, { status: 409 });
+    }
+
     const refund = target === "Cancelled" && withdrawalRefundsCredit(deal);
     const updated = await adminClient.items.update("Deals", {
       ...deal,
+      ...publication.fields,
       status: target,
+      ...(target === "Live" ? { everLive: true } : {}),
       ...(refund ? { creditRefunded: true } : {}),
     });
     // Pausing, resuming or cancelling a public deal changes what search

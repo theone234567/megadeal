@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { StoreIcon } from "@/components/icons";
 import HeaderSearch from "@/components/header/HeaderSearch";
@@ -133,19 +132,8 @@ export default function Header() {
   // entry. Deal hunters have no accounts, so there's no sign-in, saved
   // deals or profile here — "For businesses" is the merchant portal.
   //
-  // Search and location read the URL, which needs a Suspense boundary on
-  // statically rendered pages; the fallbacks are the same controls,
-  // empty, so nothing shifts when they hydrate.
-  const search = (
-    <Suspense fallback={<HeaderSearch withParams={false} />}>
-      <HeaderSearch withParams />
-    </Suspense>
-  );
-  const location = (
-    <Suspense fallback={<LocationSelect withParams={false} />}>
-      <LocationSelect withParams />
-    </Suspense>
-  );
+  const search = <HeaderSearch />;
+  const location = <LocationSelect />;
 
   return (
     <header className="z-30 border-b border-hp-line bg-white lg:sticky lg:top-0">

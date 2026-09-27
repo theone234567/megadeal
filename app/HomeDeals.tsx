@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import type { Deal } from "@/lib/types";
 import { useUserLocation, type LocationStatus } from "@/lib/geo";
+import { pushUrl, useUrlSearch } from "@/lib/useUrlSearch";
 import { SORT_OPTIONS, dealDistanceKm, type SortOption } from "@/lib/sortDeals";
 import { categoryBySlug } from "@/lib/categories";
 import {
@@ -42,10 +42,8 @@ const TYPE_OPTIONS: { value: DealType; label: string }[] = [
   { value: "flash", label: "Flash Deals" },
 ];
 
-/** Changes the URL without a server round trip; useSearchParams picks it up. */
-function navigate(href: string) {
-  window.history.pushState(null, "", href);
-}
+/** Changes the URL without a server round trip (lib/useUrlSearch.ts). */
+const navigate = pushUrl;
 
 /** A link that filters in place on a plain click, and still works as a
  *  normal link before JavaScript loads or when opened in a new tab. */
@@ -59,6 +57,9 @@ function FilterLink({
     <Link
       href={href}
       scroll={false}
+      // A click never navigates (it filters in place), so there's nothing
+      // worth fetching ahead of time.
+      prefetch={false}
       onClick={(e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
         e.preventDefault();
@@ -78,8 +79,17 @@ function FilterLink({
  * URL (lib/homeFilters.ts). Deals arrive server-rendered from app/page.tsx;
  * everything here filters that list in the browser.
  */
-export default function HomeDeals({ initialDeals, basePath = "/" }: { initialDeals: Deal[]; basePath?: string }) {
-  const searchParams = useSearchParams();
+export default function HomeDeals({
+  initialDeals,
+  initialSearch = "",
+  basePath = "/",
+}: {
+  initialDeals: Deal[];
+  /** The query string the server rendered with. */
+  initialSearch?: string;
+  basePath?: string;
+}) {
+  const searchParams = useUrlSearch(initialSearch);
   const filters = parseHomeFilters(searchParams);
   const [now, setNow] = useState(() => Date.now());
   const [view, setView] = useState<View>("grid");

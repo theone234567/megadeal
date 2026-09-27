@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { pushUrl, useUrlSearch } from "@/lib/useUrlSearch";
 import { SearchIcon } from "@/components/icons";
 
 /**
@@ -20,7 +21,7 @@ export function goHome(pathname: string | null, router: ReturnType<typeof useRou
   }
   const qs = params.toString();
   const href = qs ? `/?${qs}` : "/";
-  if (onHome) window.history.pushState(null, "", href);
+  if (onHome) pushUrl(href);
   else router.push(href);
 }
 
@@ -59,14 +60,10 @@ function SearchForm({ initial }: { initial: string }) {
   );
 }
 
-/** Reads the current search so the box shows it. */
-function SearchWithParams() {
-  const searchParams = useSearchParams();
-  const q = searchParams.get("q") ?? "";
+/** The search box, showing the current search. The server renders it
+ *  empty (the header is shared by every page); the browser fills it in. */
+export default function HeaderSearch() {
+  const q = useUrlSearch().get("q") ?? "";
   // Keyed on the query so going back/forward refills the box.
   return <SearchForm key={q} initial={q} />;
-}
-
-export default function HeaderSearch({ withParams }: { withParams: boolean }) {
-  return withParams ? <SearchWithParams /> : <SearchForm initial="" />;
 }

@@ -129,3 +129,15 @@ export function splitByType(matching: Deal[], type: DealType): { flash: Deal[]; 
 export function hasNarrowingFilters(f: HomeFilters): boolean {
   return Boolean(f.q || f.city || f.category || f.price || f.within);
 }
+
+/** A page's searchParams prop as a query string ("?a=1", or ""), for
+ *  useUrlSearch's server render. */
+export function toSearchString(params: Record<string, string | string[] | undefined>): string {
+  const out = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value === "string") out.set(key, value);
+    else if (Array.isArray(value) && value.length) out.set(key, value[0]);
+  }
+  const qs = out.toString();
+  return qs ? `?${qs}` : "";
+}

@@ -45,8 +45,13 @@ type Props =
  */
 export default function CategoryNav(props: Props) {
   const active = props.mode === "filter" ? props.filters.category : props.active;
-  const hrefFor = (slug: string) =>
-    props.mode === "filter" ? homeHref(props.filters, { category: slug }, props.basePath) : slug ? `/category/${slug}` : "/";
+  // The link itself always points at the category's own page — the
+  // indexable one, with its own title and text — so search engines and
+  // "open in new tab" get that. On the homepage a plain click filters the
+  // deals in place instead, keeping the other filters.
+  const pageHref = (slug: string) => (slug ? `/category/${slug}` : "/");
+  const filterHref = (slug: string) =>
+    props.mode === "filter" ? homeHref(props.filters, { category: slug }, props.basePath) : pageHref(slug);
 
   const items = [
     { slug: "", label: "All categories", Icon: GridIcon },
@@ -66,14 +71,17 @@ export default function CategoryNav(props: Props) {
       <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,6.5rem),1fr))] gap-2 sm:grid-cols-3 lg:flex lg:gap-0 lg:border-b lg:border-hp-line">
         {items.map(({ slug, label, Icon }) => {
           const selected = active === slug;
-          const href = hrefFor(slug);
+          const href = pageHref(slug);
           const isAll = slug === "";
           return (
             <li key={slug || "all"} className={`${isAll ? "col-span-full" : ""} lg:min-w-0 lg:flex-1`}>
               <Link
                 href={href}
                 scroll={false}
-                onClick={(e) => handleClick(e, href)}
+                // On the homepage a click filters in place, so fetching the
+                // category page ahead of time would be wasted work.
+                prefetch={props.mode === "filter" ? false : undefined}
+                onClick={(e) => handleClick(e, filterHref(slug))}
                 aria-current={selected ? "true" : undefined}
                 className={`group flex h-full items-center gap-1 rounded-[14px] border px-1.5 text-left min-[380px]:gap-1.5 min-[380px]:px-2 text-[0.8125rem] font-semibold leading-tight transition [text-wrap:balance] sm:gap-2.5 sm:px-3 sm:text-[0.875rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 lg:flex-col lg:justify-center lg:gap-2 lg:rounded-none lg:border-0 lg:border-b-[3px] lg:px-1 lg:pb-3 lg:pt-3 lg:text-center lg:text-[0.875rem] ${
                   isAll ? "min-h-[48px] justify-center" : "min-h-[60px]"

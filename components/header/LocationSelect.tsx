@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useUrlSearch } from "@/lib/useUrlSearch";
 import { ChevronDownIcon, MapPinIcon } from "@/components/icons";
 import { goHome } from "./HeaderSearch";
 
@@ -39,11 +40,6 @@ function Select({ city }: { city: string }) {
   );
 }
 
-function SelectWithParams() {
-  const searchParams = useSearchParams();
-  return <Select city={(searchParams.get("city") ?? "").trim()} />;
-}
-
-export default function LocationSelect({ withParams }: { withParams: boolean }) {
-  return withParams ? <SelectWithParams /> : <Select city="" />;
+export default function LocationSelect() {
+  return <Select city={(useUrlSearch().get("city") ?? "").trim()} />;
 }
