@@ -4,9 +4,11 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
 
 /**
- * Runs the automatic review on one deal and records the result — advice
- * only. It never publishes or rejects anything; the admin decides. Used to
- * check deals submitted before the review existed, or to re-check one.
+ * Runs the automatic review on one pending deal. A clean deal from an
+ * approved business goes live, the same as a new submission; anything the
+ * AI isn't happy with stays pending with its notes. It never rejects a
+ * deal — the admin decides those. Used for deals submitted before the
+ * review existed, or to re-check one.
  */
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -29,13 +31,13 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     const merchants = deal.merchantEmail
       ? await adminClient.items.query("Merchants").eq("email", deal.merchantEmail).limit(1).find()
       : null;
-    const { review, item } = await reviewSubmittedDeal(adminClient, deal, merchants?.items?.[0] ?? null, {
-      apply: false,
+    const { review, item, outcome } = await reviewSubmittedDeal(adminClient, deal, merchants?.items?.[0] ?? null, {
+      apply: "publishOnly",
     });
     if (!review) {
       return NextResponse.json({ error: "The AI check didn't respond. Try again in a moment." }, { status: 502 });
     }
-    return NextResponse.json({ item });
+    return NextResponse.json({ item, outcome });
   } catch (err) {
     console.error("[admin/deals/[id]/ai-review] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

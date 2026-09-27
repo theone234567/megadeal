@@ -166,9 +166,9 @@ export default function AdminDashboardPage() {
     }
   }
 
-  // Advice only: records the AI's verdict on each pending deal (a few at a
-  // time, to stay well inside rate limits) without approving or rejecting
-  // anything. Useful for deals submitted before the automatic check existed.
+  // Runs the AI check on each pending deal (a few at a time, to stay well
+  // inside rate limits): clean deals from approved businesses go live, the
+  // rest stay pending with the AI's notes. Nothing is rejected.
   async function handleAiCheckPending() {
     if (!deals) return;
     const pending = deals.filter((d) => (d.status || "Live") === "Pending Approval");
@@ -375,6 +375,7 @@ export default function AdminDashboardPage() {
                 {pendingDeals > 0 && (
                   <button
                     onClick={handleAiCheckPending}
+                    title="Clean deals from approved businesses go live; anything else stays pending with the AI's notes"
                     disabled={aiChecking !== null && !aiChecking.error}
                     className="shrink-0 rounded-full border border-brand-200 px-4 py-2 text-sm font-bold text-brand-700 transition hover:bg-brand-50 disabled:opacity-60"
                   >

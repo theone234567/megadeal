@@ -72,15 +72,21 @@ export default function DealRow({
           note,
         }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        // Say why, instead of a bare "Save failed" — most often the admin
+        // session has run out (they last 12 hours).
+        if (res.status === 401) throw new Error("Your admin session has expired — sign in again.");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Save failed.");
+      }
       deal.status = status;
       deal.expiresAt = expiresAt ? new Date(expiresAt).toISOString() : undefined;
       deal.merchantEmail = merchantEmail;
       deal.statusNote = note || null;
       setSaved(true);
       setTimeout(() => setSaved(false), 1500);
-    } catch {
-      setError("Save failed.");
+    } catch (err: any) {
+      setError(err?.message || "Save failed.");
     } finally {
       setSaving(false);
     }
@@ -195,7 +201,19 @@ export default function DealRow({
         >
           {saving ? "Saving…" : saved ? "Saved ✓" : "Save"}
         </button>
-        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+        {error && (
+          <p className="mt-1 max-w-[9rem] text-xs text-red-600">
+            {error}
+            {error.includes("sign in") && (
+              <>
+                {" "}
+                <Link href="/admin/login" className="font-semibold underline">
+                  Sign in
+                </Link>
+              </>
+            )}
+          </p>
+        )}
       </td>
     </tr>
     {detailsOpen && (
@@ -235,7 +253,14 @@ export default function DealRow({
               missing here, check the Wix dashboard or have the business resubmit.
             </p>
           )}
-          <DealContentEditor deal={deal} onSaved={(item) => setDeal(item)} />
+          <DealContentEditor
+            deal={deal}
+            onSaved={(item) => {
+              setDeal(item);
+              // An AI check can put the deal live; keep the status menu in step.
+              if (item.status) setStatus(item.status);
+            }}
+          />
         </td>
       </tr>
     )}

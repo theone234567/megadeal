@@ -52,6 +52,7 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
         body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 401) throw new Error("Your admin session has expired — sign in again at /admin/login.");
       if (!res.ok) throw new Error(data.error || "Save failed.");
       onSaved(data.item);
       return true;
@@ -240,7 +241,8 @@ const VERDICT_LABEL: Record<string, string> = {
 };
 
 /** The automatic review's verdict for this deal, with a button to run it
- *  (again). Running it only records advice — it never changes the status. */
+ *  (again). A clean pending deal from an approved business goes live;
+ *  otherwise it only records the notes. It never rejects a deal. */
 function AiReviewPanel({
   deal,
   busy,
@@ -261,6 +263,7 @@ function AiReviewPanel({
     try {
       const res = await fetch(`/api/admin/deals/${deal._id}/ai-review`, { method: "POST" });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 401) throw new Error("Your admin session has expired — sign in again at /admin/login.");
       if (!res.ok) throw new Error(data.error || "AI check failed.");
       onSaved(data.item);
     } catch (err: any) {

@@ -19,8 +19,9 @@ const FALLBACK_REJECTION =
  * it (with the credit returned and the reason shown to the business), or
  * leaves it in "Pending Approval" with the AI's notes for an admin.
  *
- * `apply: false` only records the review — used for the admin's "AI
- * check" button, which never changes a deal's status by itself.
+ * `apply: "publishOnly"` is the admin's "AI check" button: a clean deal
+ * from an approved business goes live, but nothing is turned down — the
+ * admin is right there to decide those. `apply: false` only records it.
  *
  * Never throws; a failed review leaves the deal exactly as it was.
  */
@@ -28,7 +29,7 @@ export async function reviewSubmittedDeal(
   adminClient: any,
   deal: Record<string, any>,
   merchant: Record<string, any> | null,
-  opts: { category?: string; apply: boolean }
+  opts: { category?: string; apply: boolean | "publishOnly" }
 ): Promise<{ outcome: AiOutcome; review: AiReview | null; item: Record<string, any> }> {
   try {
     const rudenessCheck = await rudenessCheckFor(adminClient, merchant);
@@ -47,7 +48,8 @@ export async function reviewSubmittedDeal(
     });
     if (!review) return { outcome: "hold", review: null, item: deal };
 
-    const outcome = opts.apply ? decideAiOutcome(review, merchant?.status === "Approved", rudenessCheck) : "hold";
+    let outcome = opts.apply ? decideAiOutcome(review, merchant?.status === "Approved", rudenessCheck) : "hold";
+    if (opts.apply === "publishOnly" && outcome === "reject") outcome = "hold";
     // Only act on a deal that is still waiting — an admin may have
     // decided it while the review ran (or, for the manual check, earlier).
     const waiting = deal.status === "Pending Approval";
