@@ -39,9 +39,11 @@ export const metadata: Metadata = {
   // Cloudflare's runtime variables — no redeploy needed to pick them up.
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
-    other: process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
-      ? { "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION }
-      : undefined,
+    // Bing Webmaster Tools. Not a secret — it's public in every page's
+    // <head> — so it lives here rather than depending on a variable.
+    other: {
+      "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || "24822C5FE35F005B111F65DB050D50F4",
+    },
   },
   openGraph: {
     title: `${SITE_NAME} — Local deals up to 50% off`,
