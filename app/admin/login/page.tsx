@@ -96,7 +96,7 @@ export default function AdminLoginPage() {
       <p className="mt-6 text-xs text-slate-500">
         Forgot it? There&apos;s no email reset — this password lives in the
         Cloudflare Worker&apos;s{" "}
-        <code className="rounded bg-slate-100 px-1 py-0.5">ADMIN_PASSWORD</code>{" "}
+        <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-800">ADMIN_PASSWORD</code>{" "}
         runtime variable (Cloudflare dashboard → Workers &amp; Pages → this
         Worker → Settings → Variables and Secrets). Update it there and
         redeploy to change it.

@@ -36,8 +36,7 @@ function mergeDealRecord(deal: Deal, record: Record<string, any>): Deal {
 }
 
 /**
- * Server-only deal lookup for generateMetadata/JSON-LD, deliberately
- * separate from lib/fetchDeals.ts (the client-side visitor-token path).
+ * Server-only lookup for a deal page (its metadata, JSON-LD and body).
  * Runs on the admin (API key) client, which has proven reliable in Node —
  * the visitor OAuth client's browser-only flakiness doesn't apply here.
  */
@@ -72,10 +71,17 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
         .eq("email", merchantEmail)
         .find();
       const merchant = merchantResult.items?.[0];
-      if (merchant?.status === "Suspended") return null;
-      if (merchant?.businessName && merchant._id) {
+      // Only an approved business's deals are public: a suspended one's,
+      // and one waiting on re-approval after changing its name, legal
+      // details, category or photos — otherwise the unreviewed name and
+      // photos would go straight onto its live deals.
+      if (merchant?.status !== "Approved") return null;
+      if (merchant.businessName && merchant._id) {
         deal = applyBusinessToDeal(deal, mapMerchantToBusiness(merchant));
       }
+    } else {
+      // A deal with no business behind it isn't one we can show.
+      return null;
     }
 
     return deal;
@@ -125,13 +131,13 @@ async function fetchAllLiveDeals(): Promise<Deal[]> {
       if (item.productId) metaByProductId[item.productId] = item;
     }
 
+    // Only approved businesses' deals are listed. Suspending a business
+    // takes its deals off the site; so does a change that sends it back
+    // for re-approval (name, legal details, category, photos), until an
+    // admin has looked at it — see fetchDealForSEO.
     const businessByEmail: Record<string, PublicBusiness> = {};
-    // Suspending a business takes its deals off the site too, not just its
-    // profile page — they used to stay listed, still carrying its name.
-    const suspendedEmails = new Set<string>();
     for (const m of merchantsResult) {
-      if (m.status === "Suspended" && m.email) suspendedEmails.add(String(m.email).toLowerCase());
-      if (m.email && m.businessName && m._id) {
+      if (m.status === "Approved" && m.email && m.businessName && m._id) {
         businessByEmail[String(m.email).toLowerCase()] = mapMerchantToBusiness(m);
       }
     }
@@ -154,7 +160,7 @@ async function fetchAllLiveDeals(): Promise<Deal[]> {
         // The Deals collection is what defines a deal here; Stores is only
         // the catalogue behind it. No row, nothing to show.
         if (!meta) return null;
-        if (meta.merchantEmail && suspendedEmails.has(String(meta.merchantEmail).toLowerCase())) return null;
+        if (!meta.merchantEmail || !businessByEmail[String(meta.merchantEmail).toLowerCase()]) return null;
         return {
           ...deal,
           expiresAt: meta.expiresAt ?? null,
@@ -332,11 +338,11 @@ export async function fetchAllLiveDealSlugsForSitemap(): Promise<
     ]);
     const products = allProducts.filter((p: any) => !isMegaShopProduct(p));
 
-    // A suspended business's deals 404 (see fetchDealForSEO), so they
-    // mustn't be advertised here either.
-    const suspended = new Set(
+    // Only approved businesses' deals have pages (see fetchDealForSEO),
+    // so only those are advertised here.
+    const approved = new Set(
       merchants
-        .filter((m: any) => m.status === "Suspended" && m.email)
+        .filter((m: any) => m.status === "Approved" && m.email)
         .map((m: any) => String(m.email).toLowerCase())
     );
 
@@ -354,7 +360,7 @@ export async function fetchAllLiveDealSlugsForSitemap(): Promise<
         // with no row is not a deal here, and must not be advertised as one.
         if (!row) return false;
         if (!isDealLive({ status: (row.status as DealStatus) ?? null, expiresAt: row.expiresAt ?? null })) return false;
-        return !suspended.has(String(row.merchantEmail || "").toLowerCase());
+        return approved.has(String(row.merchantEmail || "").toLowerCase());
       })
       .map(({ p, row }: { p: any; row: any }) => ({
         slug: p.slug ?? p.id ?? p._id,

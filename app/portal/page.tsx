@@ -304,6 +304,11 @@ export default function PortalPage() {
   // something a draft has none of.
   const drafts = deals.filter((d) => d.status === "Draft");
   const submittedDeals = deals.filter((d) => d.status !== "Draft");
+  // Has had a deal go live before, so a Pending status now means a change
+  // under review rather than a first application.
+  const inReReview = submittedDeals.some(
+    (d: any) => d.everLive || d.status === "Live" || d.status === "Paused"
+  );
 
   return (
     <div className="space-y-6">
@@ -418,7 +423,21 @@ export default function PortalPage() {
                 long to wait. The caveat is deliberately understated: it
                 has to be true — not every business is a fit — without
                 reading as a warning to someone who has just signed up. */}
-            {(merchant.status || "Pending") === "Pending" && (
+            {/* A business that has had deals live and is Pending again made a
+                change that needs another look (name, legal details, category
+                or photos) — its deals are off the site until then, so say so
+                rather than showing the new-applicant welcome. */}
+            {(merchant.status || "Pending") === "Pending" && inReReview && (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                <h2 className="text-base font-extrabold text-amber-900">We&apos;re checking your recent changes</h2>
+                <p className="mt-1.5 text-sm text-amber-800">
+                  You changed your business name, details, category or photos, so we&apos;re taking a
+                  quick look. Your deals are hidden from customers until then — usually well under a
+                  day. We&apos;ll email you when you&apos;re back on the site.
+                </p>
+              </div>
+            )}
+            {(merchant.status || "Pending") === "Pending" && !inReReview && (
               <div className="rounded-2xl border border-brand-100 bg-brand-50 p-5">
                 <h2 className="text-base font-extrabold text-brand-900">
                   Thanks — your application is in 🎉
@@ -475,6 +494,8 @@ export default function PortalPage() {
                 <p className="mt-1 text-sm text-slate-500">
                   {(merchant.status || "Pending") === "Approved"
                     ? "You're approved — you can list deals whenever you're ready."
+                    : inReReview
+                    ? "We're reviewing your recent changes — your deals are hidden until then."
                     : "We'll email you as soon as you're approved, usually within 12 hours."}
                 </p>
               </div>
