@@ -339,7 +339,7 @@ export default function RestaurantAdvertisingPage() {
                 style={{ transform: "rotate(2deg)" }}
               >
                 <Image
-                  src="/megadeal/restaurants/restaurant-hero.webp"
+                  src="/megadeal/restaurants/restaurant-hero-bright.webp"
                   alt="A wood-fired pizza and a burrata salad on a restaurant table"
                   fill
                   sizes="(min-width: 1024px) 420px, 90vw"
