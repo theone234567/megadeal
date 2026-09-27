@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { pageMetadata } from "@/lib/pageMetadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Help Centre",
   description:
     "Answers to the most common MegaDeal questions — how deals work, redeeming without a voucher, refunds, and listing a business.",
-  alternates: { canonical: `${SITE_URL}/help` },
-};
+  path: "/help",
+});
 
 // Plain-text mirror of the JSX answers below, for FAQPage structured data —
 // duplicated here rather than shared because the JSX versions include

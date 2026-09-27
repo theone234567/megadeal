@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import PageShell from "@/components/PageShell";
-import { SITE_URL, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN } from "@/lib/siteConfig";
+import { LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN } from "@/lib/siteConfig";
+import { pageMetadata } from "@/lib/pageMetadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Terms of Service",
   description:
     "MegaDeal's Terms of Service — the rules for using the site as a customer or business, including how deals, accounts and listings work.",
-  alternates: { canonical: `${SITE_URL}/terms` },
-};
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

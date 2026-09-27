@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import ContactForm from "@/components/ContactForm";
-import { SITE_URL } from "@/lib/siteConfig";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { pageMetadata } from "@/lib/pageMetadata";
 
-export const metadata: Metadata = {
-  title: "Contact us",
+export const metadata: Metadata = pageMetadata({
+  title: "Contact Us",
   description:
     "Get in touch with MegaDeal — questions about a deal, a business listing, or anything else. A real person reads every message.",
-  alternates: { canonical: `${SITE_URL}/contact` },
-};
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (

@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { SITE_NAME } from "@/lib/siteConfig";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { pageMetadata } from "@/lib/pageMetadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "How to Redeem a Deal",
   description:
     "How to redeem a MegaDeal deal — no voucher or order confirmation, just contact the business directly and quote your code.",
-  alternates: { canonical: `${SITE_URL}/redeem` },
-};
+  path: "/redeem",
+});
 
 interface Step {
   number: string;

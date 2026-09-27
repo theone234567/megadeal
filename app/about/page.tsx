@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SITE_URL } from "@/lib/siteConfig";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { PercentIcon, ClockIcon, EyeIcon, CheckIcon } from "@/components/icons";
+import { pageMetadata } from "@/lib/pageMetadata";
 
-export const metadata: Metadata = {
-  title: "About MegaDeal",
+export const metadata: Metadata = pageMetadata({
+  title: "About Us",
   description:
     "MegaDeal is a New Zealand-owned advertising platform connecting Kiwis with real local businesses across food, beauty, activities, travel and fitness.",
-  alternates: { canonical: `${SITE_URL}/about` },
-};
+  path: "/about",
+});
 
 const DIFFERENTIATORS = [
   {

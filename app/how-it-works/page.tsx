@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { SITE_NAME } from "@/lib/siteConfig";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { pageMetadata } from "@/lib/pageMetadata";
 
-export const metadata: Metadata = {
-  title: "How It Works",
+export const metadata: Metadata = pageMetadata({
+  title: "How MegaDeal Works",
   description:
     "How MegaDeal works: browse local deals for free and contact the business directly to redeem, or list your own deal and reach new customers.",
-  alternates: { canonical: `${SITE_URL}/how-it-works` },
-};
+  path: "/how-it-works",
+});
 
 interface Step {
   number: string;

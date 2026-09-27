@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SITE_URL } from "@/lib/siteConfig";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { pageMetadata } from "@/lib/pageMetadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Careers",
   description:
     "MegaDeal is a small team helping local NZ businesses reach new customers without a cut of sales. See what we look for and how to get in touch.",
-  alternates: { canonical: `${SITE_URL}/careers` },
-};
+  path: "/careers",
+});
 
 export default function CareersPage() {
   return (
