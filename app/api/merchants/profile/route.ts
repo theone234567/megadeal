@@ -24,9 +24,10 @@ function cleanText(value: unknown, maxLength: number): string {
 /**
  * Lets a signed-in merchant edit their own public profile fields — the
  * business name, contact details, hours, bio and social links shown on
- * their /business/[slug] page and deal pages. Like the logo route, any
- * change sends the profile back for review before it's shown publicly
- * again, since these are the same fields an approver already vetted once.
+ * their /business/[slug] page and deal pages. Changing the business's
+ * identity (name, legal name, NZBN, category) sends an approved profile
+ * back for review; contact details, hours, links and the description save
+ * straight away (see statusAfterMerchantEdit).
  */
 export async function POST(req: NextRequest) {
   const member = await getVerifiedMember(req);
@@ -173,7 +174,12 @@ export async function POST(req: NextRequest) {
     amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
     lat: lat ?? (addressChanged ? null : merchant.lat ?? null),
     lng: lng ?? (addressChanged ? null : merchant.lng ?? null),
-    status: statusAfterMerchantEdit(merchant),
+    status: statusAfterMerchantEdit(merchant, {
+      businessName,
+      legalBusinessName,
+      nzbn,
+      category: category || merchant.category || "",
+    }),
     // Keep this in sync with Wix's real verified-email flag rather than
     // letting it go stale between visits.
     emailVerified: member.loginEmailVerified,

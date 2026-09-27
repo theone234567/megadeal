@@ -220,10 +220,13 @@ export async function POST(req: NextRequest) {
         // would otherwise overwrite a good value and knock the listing
         // back to incomplete.
         category: category || existing.category || "",
-        // Same convention as /api/merchants/profile: resubmitting details
-        // sends it back for review, same as any other edit would — but a
-        // suspension stays in place.
-        status: statusAfterMerchantEdit(existing),
+        // Same rule as /api/merchants/profile: an approved business only goes
+        // back for review when its name, legal name, NZBN or category
+        // changes, and a suspension always stays in place.
+        status: statusAfterMerchantEdit(existing, {
+          ...fields,
+          category: category || existing.category || "",
+        }),
       });
     } else {
       item = await adminClient.items.insert("Merchants", {

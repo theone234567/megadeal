@@ -344,8 +344,9 @@ export default function MerchantProfileForm({
           showing publicly, so saving costs them no visibility. */}
       {merchant.status === "Approved" && (
         <p className="mt-1 text-xs text-amber-700">
-          ⚠️ Saving changes sends your listing back for review, so it comes off the site
-          until we&apos;ve had a look. That&apos;s usually well under a day.
+          ⚠️ Changing your business name, legal name, NZBN or category sends your listing back
+          for review, so it comes off the site until we&apos;ve had a look (usually well under a
+          day). Phone, address, hours, links and your description save straight away.
         </p>
       )}
 

@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       // row, JSON-LD) reads this field and is unaffected by the move to
       // a gallery.
       logoUrl: photos[0],
-      status: statusAfterMerchantEdit(merchant),
+      status: statusAfterMerchantEdit(merchant, { photos: serializeBusinessPhotos(photos) }),
     });
     return NextResponse.json({ item: updated });
   } catch (err) {

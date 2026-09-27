@@ -98,11 +98,32 @@ export async function getOrClaimMerchant(adminClient: any, member: VerifiedMembe
 }
 
 /**
- * A business's status after it edits its own details. Edits go back to
- * "Pending" for review — except a suspended business stays suspended:
- * without this, re-saving the profile quietly lifted an admin's
- * suspension (and brought its public page back).
+ * Fields whose change sends an approved business back for review: who the
+ * business is (names, NZBN), what it's listed as, and the photos customers
+ * see. Everything else — phone, address, hours, links, description, price
+ * range, features — saves straight away and the business stays approved.
  */
-export function statusAfterMerchantEdit(existing: { status?: string | null } | null | undefined): string {
-  return existing?.status === "Suspended" ? "Suspended" : "Pending";
+const REAPPROVAL_FIELDS = ["businessName", "legalBusinessName", "nzbn", "category", "photos"] as const;
+
+function normalised(value: unknown): string {
+  return typeof value === "string" ? value.trim().toLowerCase() : value == null ? "" : String(value);
+}
+
+/**
+ * A business's status after it edits its own details:
+ * - a suspended business stays suspended (re-saving used to lift it);
+ * - an approved business stays approved unless a re-approval field
+ *   changed, in which case it goes back to "Pending" for review;
+ * - anything else is (still) "Pending".
+ */
+export function statusAfterMerchantEdit(
+  existing: Record<string, any> | null | undefined,
+  next: Record<string, unknown> = {}
+): string {
+  if (existing?.status === "Suspended") return "Suspended";
+  if (existing?.status !== "Approved") return "Pending";
+  const bigChange = REAPPROVAL_FIELDS.some(
+    (f) => f in next && normalised(next[f]) !== normalised(existing[f])
+  );
+  return bigChange ? "Pending" : "Approved";
 }
