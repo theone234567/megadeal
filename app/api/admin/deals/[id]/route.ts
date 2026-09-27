@@ -4,6 +4,7 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { submitUrlsToIndexNow } from "@/lib/indexNow";
 import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { unwrapProduct } from "@/lib/mapDeal";
 import { PRODUCT_FIELDS, buildProductUpdate, parseAdminContentEdit, withHistory } from "@/lib/dealAdminEdit";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
@@ -129,7 +130,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         adminClient.productsV3
           .getProduct(existing.productId, {} as any)
           .then((res: any) => {
-            const slug = res?.product?.slug;
+            const slug = unwrapProduct(res)?.slug;
             if (slug) urls.push(`${SITE_URL}/deal/${slug}`);
             return submitUrlsToIndexNow(urls);
           })

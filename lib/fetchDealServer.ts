@@ -1,6 +1,6 @@
 import "server-only";
 import { createWixAdminClient } from "./wixAdmin";
-import { mapProductToDeal } from "./mapDeal";
+import { mapProductToDeal, unwrapProduct } from "./mapDeal";
 import { businessSlug } from "./slug";
 import { CATEGORY_NAME_BY_ID, isMegaShopProduct } from "./categories";
 import { mapMerchantToBusiness, applyBusinessToDeal, type PublicBusiness } from "./business";
@@ -228,7 +228,7 @@ export async function fetchBusinessProfileBySlug(
         const res = await adminClient.productsV3.getProduct(record.productId, {
           fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
         } as any);
-        const product = (res as any).product;
+        const product = unwrapProduct(res);
         if (!product) continue;
         const dealBase: Deal = {
           ...mapProductToDeal(product, CATEGORY_NAME_BY_ID),
@@ -336,7 +336,7 @@ export async function fetchDealForAdminPreview(
     const res = await adminClient.productsV3.getProduct(record.productId, {
       fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
     } as any);
-    const product = (res as any).product;
+    const product = unwrapProduct(res);
     if (!product) return null;
     let deal = mergeDealRecord(mapProductToDeal(product, CATEGORY_NAME_BY_ID), record);
     if (record.merchantEmail) {

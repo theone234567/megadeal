@@ -77,7 +77,7 @@ export default function DealRow({
         // session has run out (they last 12 hours).
         if (res.status === 401) throw new Error("Your admin session has expired — sign in again.");
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Save failed.");
+        throw new Error(data.error || `Save failed (error ${res.status}). Refresh the page and try again.`);
       }
       deal.status = status;
       deal.expiresAt = expiresAt ? new Date(expiresAt).toISOString() : undefined;
