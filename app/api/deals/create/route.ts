@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
   }
   if (customDealCode) {
     const codeError = dealCodeError(customDealCode);
-    if (codeError) return NextResponse.json({ error: codeError }, { status: 400 });
+    if (codeError) return NextResponse.json({ error: `Deal code: ${codeError}` }, { status: 400 });
   }
   if (!dealName || !description || !terms) {
     return NextResponse.json({ error: "Deal name, description and terms are required." }, { status: 400 });

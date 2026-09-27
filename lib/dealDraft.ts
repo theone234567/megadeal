@@ -1,5 +1,5 @@
 import { parseTerms } from "./dealTerms";
-import { DEAL_CODE_MAX, normaliseDealCode } from "./dealCode";
+import { normaliseDealCode } from "./dealCode";
 import { isBookingChoice } from "./booking";
 
 /**
@@ -113,7 +113,7 @@ export function sanitizeDraft(input: any): DealDraftData {
     photoMediaId: text(input?.photoMediaId, 200),
     // Tidied but not rejected — a draft is unfinished work; the code is
     // checked properly on submit.
-    dealCode: normaliseDealCode(input?.dealCode).slice(0, DEAL_CODE_MAX),
+    dealCode: normaliseDealCode(input?.dealCode),
   };
 }
 

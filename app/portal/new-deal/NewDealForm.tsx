@@ -70,6 +70,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const [bookingRequirement, setBookingRequirement] = useState("");
   /** The business's own deal code; blank means we generate one. */
   const [dealCode, setDealCode] = useState("");
+  /** Left the code box at least once — "too short" and a trailing hyphen
+   *  only show after that, so they don't nag mid-typing. */
+  const [dealCodeTouched, setDealCodeTouched] = useState(false);
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -273,7 +276,8 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
     }
     const codeProblem = dealCode ? dealCodeError(normaliseDealCode(dealCode)) : null;
     if (codeProblem) {
-      setError(codeProblem);
+      setDealCodeTouched(true);
+      setError(`Deal code: ${codeProblem}`);
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
       return;
     }
@@ -479,6 +483,15 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   // it does before launch.
   const businessApproved = merchant.status === "Approved";
   const canSubmit = siteLaunched && businessApproved;
+  // The exact problem with the code, if any. Too short and a hyphen at the
+  // end are what a half-typed code looks like, so those wait until the
+  // business leaves the box (or tries to continue).
+  const dealCodeProblem = dealCode ? dealCodeError(normaliseDealCode(dealCode)) : null;
+  const dealCodeMessage =
+    dealCodeProblem &&
+    (dealCodeTouched || !(dealCodeProblem.startsWith("Too short") || dealCode.endsWith("-")))
+      ? dealCodeProblem
+      : null;
 
   if (credits < 1) {
     return (
@@ -997,21 +1010,33 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           <input
             id="deal-code"
             value={dealCode}
-            maxLength={DEAL_CODE_MAX}
+            // Room to type past the limit, so "too long" can be shown
+            // rather than the box silently refusing keys.
+            maxLength={40}
             autoComplete="off"
             spellCheck={false}
-            aria-describedby="deal-code-help"
+            aria-describedby={dealCodeMessage ? "deal-code-help deal-code-error" : "deal-code-help"}
+            aria-invalid={Boolean(dealCodeMessage)}
             // Shown the way it will be saved (capitals, hyphens for spaces).
             onChange={(e) =>
-              setDealCode(e.target.value.normalize("NFKC").toUpperCase().replace(/\s/g, "-").slice(0, DEAL_CODE_MAX))
+              setDealCode(e.target.value.normalize("NFKC").toUpperCase().replace(/\s/g, "-").slice(0, 40))
             }
+            onBlur={() => setDealCodeTouched(true)}
             placeholder="e.g. SUMMER-20"
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 font-mono text-sm uppercase tracking-wider outline-none focus:border-brand-400 sm:max-w-xs"
+            className={`w-full rounded-xl border px-3 py-2 font-mono text-sm uppercase tracking-wider outline-none sm:max-w-xs ${
+              dealCodeMessage ? "border-red-400 focus:border-red-500" : "border-slate-200 focus:border-brand-400"
+            }`}
           />
-          {/* Not while they're mid-word ("SUMMER-") — only once it reads finished. */}
-          {dealCode && !dealCode.endsWith("-") && dealCodeError(normaliseDealCode(dealCode)) && (
-            <p className="mt-1 text-xs text-red-600">{dealCodeError(normaliseDealCode(dealCode))}</p>
-          )}
+          <div className="mt-1 flex items-start justify-between gap-3 text-xs sm:max-w-xs">
+            <p id="deal-code-error" role="status" className="text-red-600">
+              {dealCodeMessage}
+            </p>
+            {dealCode && (
+              <span className={`shrink-0 tabular-nums ${[...dealCode].length > DEAL_CODE_MAX ? "font-semibold text-red-600" : "text-slate-500"}`}>
+                {[...dealCode].length}/{DEAL_CODE_MAX}
+              </span>
+            )}
+          </div>
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}

@@ -23,10 +23,14 @@ describe("business-chosen deal codes", () => {
     }
   });
 
-  it("enforces length and at least one letter", () => {
-    expect(check("ABC")).toMatch(/4–20/);
-    expect(check("A".repeat(21))).toMatch(/4–20/);
-    expect(check("12345")).toMatch(/letter/);
+  it("says exactly what's wrong", () => {
+    expect(check("ABC")).toBe("Too short — your code has 3 characters; it needs at least 4.");
+    expect(check("A".repeat(23))).toBe("Too long — your code has 23 characters; the maximum is 20.");
+    expect(check("12345")).toMatch(/at least one letter/);
+    expect(check("PIZZA!@")).toBe("These characters can't be used: !  @. Use only letters A–Z, numbers 0–9 and hyphens.");
+    expect(check("CAFÉ-20")).toMatch(/can't be used: É/);
+    expect(check("-SUMMER")).toMatch(/start or end/);
+    expect(check("A--B20")).toMatch(/single hyphens/);
   });
 
   it("reserves MegaDeal's own prefix for businesses, not admins", () => {

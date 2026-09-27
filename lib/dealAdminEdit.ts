@@ -95,7 +95,7 @@ export function parseAdminContentEdit(
     const code = normaliseDealCode(body.dealCode);
     // Admins may set a MEGA- code (e.g. to restore a generated one).
     const codeError = code ? dealCodeError(code, { allowReserved: true }) : "The deal code can't be empty.";
-    if (codeError) return { changes: {}, error: codeError };
+    if (codeError) return { changes: {}, error: `Deal code: ${codeError}` };
     next.dealCode = code;
   }
 

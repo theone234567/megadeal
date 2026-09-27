@@ -41,20 +41,33 @@ export function normaliseDealCode(value: unknown): string {
 }
 
 /**
- * Why a business-chosen deal code isn't allowed, or null if it is.
+ * Why a business-chosen deal code isn't allowed, or null if it is — worded
+ * for the business, naming the exact problem (which characters, how many).
  * Plain ASCII letters and digits in single-hyphen-separated groups only —
  * no spaces, symbols, markup, emoji or look-alike Unicode — so the code
  * reads the same everywhere it's shown, spoken or typed.
  */
 export function dealCodeError(code: string, opts: { allowReserved?: boolean } = {}): string | null {
-  if (code.length < DEAL_CODE_MIN || code.length > DEAL_CODE_MAX) {
-    return `Your deal code must be ${DEAL_CODE_MIN}–${DEAL_CODE_MAX} characters.`;
+  const chars = [...code];
+  const invalid = [...new Set(chars.filter((c) => !/[A-Z0-9-]/.test(c)))];
+  if (invalid.length > 0) {
+    const shown = invalid.slice(0, 6).map((c) => (c.trim() ? c : "space")).join("  ");
+    return `These characters can't be used: ${shown}. Use only letters A–Z, numbers 0–9 and hyphens.`;
   }
-  if (!/^[A-Z0-9]+(-[A-Z0-9]+)*$/.test(code)) {
-    return "Use only letters, numbers and single hyphens in your deal code (e.g. SUMMER-20).";
+  if (code.startsWith("-") || code.endsWith("-")) {
+    return "A hyphen can't be at the start or end of your code.";
+  }
+  if (code.includes("--")) {
+    return "Use single hyphens only — not two in a row.";
+  }
+  if (chars.length > DEAL_CODE_MAX) {
+    return `Too long — your code has ${chars.length} characters; the maximum is ${DEAL_CODE_MAX}.`;
+  }
+  if (chars.length < DEAL_CODE_MIN) {
+    return `Too short — your code has ${chars.length} character${chars.length === 1 ? "" : "s"}; it needs at least ${DEAL_CODE_MIN}.`;
   }
   if (!/[A-Z]/.test(code)) {
-    return "Include at least one letter in your deal code.";
+    return "Include at least one letter — a code of only numbers is easy to mistake for a price or phone number.";
   }
   if (!opts.allowReserved && (code === "MEGA" || code.startsWith(RESERVED_PREFIX))) {
     return "Codes starting with MEGA- are reserved for MegaDeal — choose a different one.";
