@@ -56,13 +56,13 @@ export default function EmailSignupForm({
       }
       setState("done");
       trackMetaPixelEvent("Lead", { content_name: `email-signup-${audience}`, content_category: audience });
-      // Shared "don't ask again" flag other prompts (e.g. EmailCapturePopup)
-      // check before showing — a signup via any form on the site counts.
+      // Remembers the signup, so any future "join our list" prompt can skip
+      // people who already joined — a signup via any form on the site counts.
       try {
         localStorage.setItem("megadeal-email-subscribed", "1");
       } catch {
-        // Private browsing / blocked storage — fine, just means the popup
-        // (if any) might ask again later. Not worth failing the signup over.
+        // Private browsing / blocked storage — fine, just means a prompt
+        // might ask again later. Not worth failing the signup over.
       }
     } catch (err: any) {
       setErrorMessage(err?.message || "Something went wrong — please try again.");
