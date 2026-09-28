@@ -150,7 +150,7 @@ export default function DealCard({
 
         {/* mt-auto keeps prices level across a row of cards. */}
         <div className="mt-auto flex flex-wrap items-baseline gap-x-2 pt-1.5">
-          <span className="text-xl font-bold leading-none tracking-[-0.02em] text-hp-purple sm:text-[1.375rem]">
+          <span className="font-display text-xl font-semibold leading-none tracking-[-0.02em] text-hp-purple sm:text-[1.375rem]">
             {formatMoney(deal.now, deal.currency, deal.formattedNow)}
           </span>
           {savingPct !== null && (
