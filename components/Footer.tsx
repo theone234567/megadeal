@@ -32,7 +32,11 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
   const FOOTER_CATEGORIES = footerCategories(siteLaunched);
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
+  // The homepage has its own business invitation between the deal
+  // sections, so this banner would repeat it a scroll later.
   const hideOwnABusinessCta =
+    pathname === "/" ||
+    pathname === "/dev-home-preview" ||
     pathname?.startsWith("/list-your-business") ||
     pathname?.startsWith("/advertise/") ||
     isComingSoon;
@@ -46,10 +50,10 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
   return (
     <footer className="mt-16 border-t border-slate-100 bg-slate-50">
       {!hideOwnABusinessCta && (
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-brand-700 px-6 py-6 text-center sm:flex-row sm:text-left">
             <div>
-              <h2 className="font-display text-lg font-bold text-white">Own a local business?</h2>
+              <h2 className="text-lg font-bold text-white">Own a local business?</h2>
               <p className="text-sm text-brand-100">
                 List your deal on MegaDeal and get up to 6 months free advertising — use code <span className="font-bold">WELCOME6</span> at signup.{" "}
                 <Link href="/terms" className="text-brand-200 underline hover:text-white">
@@ -59,15 +63,15 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
             </div>
             <Link
               href="/list-your-business"
-              className="shrink-0 rounded-full bg-ember-600 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-ember-700"
+              className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-full bg-white px-5 text-[0.9375rem] font-semibold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
             >
-              List your deal →
+              Sign up &amp; list a deal
             </Link>
           </div>
         </div>
       )}
 
-      <div className="mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1200px] px-4 pb-12 pt-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
           <div>
             <h2 className="mb-3 text-sm font-bold text-slate-900">Categories</h2>
@@ -103,7 +107,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
             </ul>
           </div>
           <div>
-            <h2 className="mb-3 text-sm font-bold text-slate-900">Follow us</h2>
+            <h2 className="mb-3 text-sm font-bold text-slate-900">Follow MegaDeal</h2>
             <SocialLinks />
           </div>
           <div>

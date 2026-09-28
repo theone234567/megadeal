@@ -1,7 +1,5 @@
 import Hero from "@/components/Hero";
 import SearchAwareHero from "@/components/SearchAwareHero";
-import SocialCTA from "@/components/SocialCTA";
-import HowToUseStrip from "@/components/HowToUseStrip";
 import HomeDeals from "./HomeDeals";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import type { Metadata } from "next";
@@ -89,13 +87,9 @@ export default async function HomePage(props: { searchParams: Promise<Record<str
       <SearchAwareHero initialSearch={initialSearch}>
         <Hero />
       </SearchAwareHero>
-      <div className="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
         <HomeDeals initialDeals={deals} initialSearch={initialSearch} />
       </div>
-      <div className="mt-10">
-        <HowToUseStrip />
-      </div>
-      <SocialCTA />
     </main>
   );
 }

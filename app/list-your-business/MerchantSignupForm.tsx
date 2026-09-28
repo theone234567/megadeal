@@ -961,7 +961,7 @@ export default function MerchantSignupForm() {
           disabled={submitting}
           className="w-full rounded-full bg-brand-600 py-3.5 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
         >
-          {submitting ? "Submitting…" : "CLAIM MY FREE ADVERTISING →"}
+          {submitting ? "Submitting…" : "Claim my free advertising →"}
         </button>
         <p className="text-center text-sm text-slate-500">
           Takes about 60 seconds • No credit card required • No obligation

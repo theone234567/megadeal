@@ -128,16 +128,16 @@ export default function Header() {
     );
   }
 
-  // The deal-hunter header: brand, search, location and the business
-  // entry. Deal hunters have no accounts, so there's no sign-in, saved
-  // deals or profile here — "For businesses" is the merchant portal.
+  // The deal-hunter header: brand, search, location and the two business
+  // routes. Deal hunters have no accounts, so there's no customer sign-in,
+  // saved deals or profile here.
   //
   const search = <HeaderSearch />;
   const location = <LocationSelect />;
 
   return (
     <header className="z-30 border-b border-hp-line bg-white lg:sticky lg:top-0">
-      <div className="mx-auto flex max-w-[1320px] flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:gap-6 lg:px-8 lg:py-3.5">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:gap-5 lg:px-8 lg:py-3.5">
         <div className="flex items-center justify-between gap-2 lg:contents">
           <Link
             href="/"
@@ -161,14 +161,20 @@ export default function Header() {
 
         <div className="w-full lg:max-w-[40rem] lg:flex-1">{search}</div>
 
-        <div className="hidden shrink-0 items-center gap-3 lg:ml-auto lg:flex">
+        {/* Two business routes, named for who they're for: an existing
+            business signs in to the portal; a new one starts at the
+            signup page. Deal hunters have no account to sign in to. */}
+        <div className="hidden shrink-0 items-center gap-2 lg:ml-auto lg:flex">
           {location}
           <Link
             href="/portal"
-            className="flex h-11 items-center gap-2 rounded-full bg-hp-purple px-5 text-sm font-bold text-white transition hover:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
+            className="inline-flex h-11 items-center rounded-full px-3 text-sm font-semibold text-hp-ink transition hover:bg-hp-lavender hover:text-hp-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple"
           >
+            Business sign in
+          </Link>
+          <Link href="/list-your-business" className="btn-secondary h-11 min-h-0 px-4 text-sm">
             <StoreIcon className="h-[18px] w-[18px]" />
-            For businesses
+            List your business
           </Link>
         </div>
       </div>

@@ -11,7 +11,7 @@ import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { getSignupStats } from "@/lib/publicStats";
 import { fredoka, plusJakartaSans, caveat } from "@/lib/fonts";
-import { PercentIcon, ZapIcon, MapPinIcon, CheckIcon, UtensilsIcon, FlowerIcon, TicketIcon, SuitcaseIcon, DumbbellIcon, WrenchIcon } from "@/components/icons";
+import { PercentIcon, ZapIcon, MapPinIcon, CheckIcon, UtensilsIcon, FlowerIcon, TicketIcon, SuitcaseIcon, DumbbellIcon, WrenchIcon, TagIcon, StoreIcon, PhoneIcon, ReceiptIcon, MailIcon } from "@/components/icons";
 
 // Re-checked at most once a minute — the counts only need to be
 // approximately live, and this avoids hitting Wix on every single request.
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
 // The exact CTA used everywhere on this page — one wording, always
 // scrolling to the signup form, so a visitor never has to work out which
 // button is "the" button.
-const CTA_LABEL = "CLAIM MY FREE ADVERTISING →";
+const CTA_LABEL = "Claim my free advertising →";
 
 // Same circled-checkmark treatment as the coming-soon page's Tick
 // component — plain "✓ text" here was the only trust row on the site not
@@ -67,7 +67,7 @@ const HERO_TRUST_ITEMS = [
 
 const WHY_JOIN_NOW = [
   {
-    icon: "🎁",
+    icon: TagIcon,
     title: "Up to 6 months FREE",
     text: "Get started without paying an advertising fee during your introductory period.",
   },
@@ -90,32 +90,32 @@ const WHY_JOIN_NOW = [
 
 const WHAT_YOU_GET = [
   {
-    emoji: "📱",
+    icon: StoreIcon,
     title: "A dedicated business listing",
     text: "Show your business name, photos, description, location, hours and links.",
   },
   {
-    emoji: "🔥",
+    icon: TagIcon,
     title: "Deal listings",
     text: "Create genuine offers designed to give customers a reason to choose you.",
   },
   {
-    emoji: "📍",
+    icon: MapPinIcon,
     title: "Local discovery",
     text: "Customers can find deals near them using MegaDeal's location features.",
   },
   {
-    emoji: "⚡",
+    icon: ZapIcon,
     title: "Flash Deals",
     text: "Have spare capacity today? Create a short-term offer to help fill it.",
   },
   {
-    emoji: "🔗",
+    icon: PhoneIcon,
     title: "Direct customers",
     text: "Customers contact or book with your business directly.",
   },
   {
-    emoji: "💰",
+    icon: ReceiptIcon,
     title: "Keep your sales",
     text: "MegaDeal charges advertising fees/subscriptions — not a percentage of your sales.",
   },
@@ -272,7 +272,7 @@ function SectionCta({ section }: { section: string }) {
       <a
         href="#signup"
         data-cta-section={section}
-        className="rounded-full bg-brand-600 px-8 py-3.5 text-sm font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95"
+        className="btn-primary px-6"
       >
         {CTA_LABEL}
       </a>
@@ -330,8 +330,8 @@ export default async function MerchantsPage() {
       {/* Hero */}
       <section id="hero" className="relative overflow-hidden bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-3xl">
-          <span className="inline-flex items-center gap-2 rounded-full bg-ember-600 px-4 py-1.5 text-sm font-bold uppercase tracking-wide text-white shadow-card sm:text-base">
-            🚀 Coming soon to Auckland — up to 6 months free before launch
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm font-semibold text-white ring-1 ring-white/30 sm:text-base">
+            Coming soon to Auckland — up to 6 months free before launch
           </span>
 
           <h1 className={`${fredoka.className} mt-6 text-4xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-5xl lg:text-6xl text-white`}>
@@ -348,7 +348,7 @@ export default async function MerchantsPage() {
             <a
               href="#signup"
               data-cta-section="hero"
-              className="rounded-full bg-white px-8 py-3.5 text-sm font-bold text-brand-700 shadow-card transition active:scale-95 hover:bg-brand-50"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-white px-6 text-[0.9375rem] font-semibold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
             >
               {CTA_LABEL}
             </a>
@@ -383,7 +383,7 @@ export default async function MerchantsPage() {
             {WHY_JOIN_NOW.map((p) => (
               <div key={p.title} className="flex items-start gap-4">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xl text-brand-700">
-                  {typeof p.icon === "string" ? p.icon : <p.icon className="h-5 w-5" />}
+                  <p.icon className="h-5 w-5" />
                 </span>
                 <div>
                   <h3 className="font-display font-bold text-slate-900">{p.title}</h3>
@@ -566,8 +566,8 @@ export default async function MerchantsPage() {
           <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-8 text-left sm:grid-cols-2">
             {WHAT_YOU_GET.map((p) => (
               <div key={p.title} className="flex items-start gap-4">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-xl shadow-sm">
-                  {p.emoji}
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-brand-600 shadow-sm">
+                  <p.icon className="h-5 w-5" />
                 </span>
                 <div>
                   <h3 className="font-display font-bold text-slate-900">{p.title}</h3>
@@ -648,12 +648,14 @@ export default async function MerchantsPage() {
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 rounded-2xl border border-brand-100 bg-brand-50 px-6 py-5">
               {stats.merchantCount > 0 && (
                 <p className="text-base font-semibold text-brand-800">
-                  🏪 <span className="font-extrabold">{stats.merchantCount.toLocaleString()}</span> Auckland businesses already signed up
+                  <StoreIcon className="mr-1.5 inline h-5 w-5 align-[-3px]" />
+                  <span className="font-extrabold">{stats.merchantCount.toLocaleString()}</span> Auckland businesses already signed up
                 </p>
               )}
               {stats.waitlistCount > 0 && (
                 <p className="text-base font-semibold text-brand-800">
-                  📧 <span className="font-extrabold">{stats.waitlistCount.toLocaleString()}</span> locals waiting for launch day
+                  <MailIcon className="mr-1.5 inline h-5 w-5 align-[-3px]" />
+                  <span className="font-extrabold">{stats.waitlistCount.toLocaleString()}</span> locals waiting for launch day
                 </p>
               )}
             </div>
@@ -688,12 +690,12 @@ export default async function MerchantsPage() {
 
       {/* Pre-launch offer — real, time-based urgency (the offer ends at
           launch, not an invented headcount cap). */}
-      <section className="bg-ember-600 px-4 py-10 sm:px-6 lg:px-8">
+      <section className="bg-brand-700 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-lg font-extrabold text-white sm:text-xl">
             Pre-launch offer — up to 6 months free
           </p>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-ember-50">
+          <p className="mx-auto mt-2 max-w-xl text-sm text-brand-100">
             The up-to-6-months-free offer is only available to
             qualifying businesses that join before deals go live on
             MegaDeal — use code{" "}
@@ -706,7 +708,7 @@ export default async function MerchantsPage() {
             <a
               href="#signup"
               data-cta-section="founding_offer"
-              className="rounded-full bg-white px-8 py-3.5 text-sm font-bold text-ember-600 shadow-card transition active:scale-95 hover:bg-ember-50"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-white px-6 text-[0.9375rem] font-semibold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
             >
               {CTA_LABEL}
             </a>
@@ -797,7 +799,7 @@ export default async function MerchantsPage() {
             <a
               href="#signup"
               data-cta-section="final_cta"
-              className="rounded-full bg-white px-8 py-3.5 text-sm font-bold text-brand-700 shadow-card transition active:scale-95 hover:bg-brand-50"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-white px-6 text-[0.9375rem] font-semibold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
             >
               {CTA_LABEL}
             </a>

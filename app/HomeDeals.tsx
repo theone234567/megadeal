@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { Deal } from "@/lib/types";
@@ -434,6 +435,8 @@ function Collections({
 }) {
   const explicit = filters.type !== "all";
   const step = explicit ? 16 : 8;
+  // Only on the plain homepage view, not in the middle of a search.
+  const inviteBusinesses = !explicit && !hasNarrowingFilters(filters);
   const [everydayLimit, setEverydayLimit] = useState(step);
 
   const card = (d: Deal) => <DealCard deal={d} distanceKm={dealDistanceKm(d, coords)} />;
@@ -455,14 +458,14 @@ function Collections({
   return (
     // min-w-0 on each section: a flex item otherwise grows to fit the
     // Flash row's full width instead of letting the row scroll inside it.
-    <div className="mt-5 flex flex-col gap-6 lg:mt-6 [&>section]:min-w-0">
+    <div className="mt-5 flex flex-col gap-8 lg:mt-6 lg:gap-10 [&>section]:min-w-0">
       {/* The homepage leaves the Flash row out when there are none; the
           Flash view says so instead. */}
       {(filters.type === "flash" || (filters.type === "all" && flash.length > 0)) && (
-        <section aria-labelledby="flash-heading" className="rounded-[20px] bg-hp-lavender px-4 pb-4 pt-4 sm:px-5 lg:pb-5">
+        <section aria-labelledby="flash-heading">
           <CollectionHeader
             id="flash-heading"
-            icon={<ZapIcon className="h-6 w-6 lg:h-7 lg:w-7" />}
+            icon={<ZapIcon className="h-5 w-5 text-hp-flash lg:h-6 lg:w-6" />}
             title="Flash Deals"
             subtitle={FLASH_SUBTITLE_LONG}
             shortSubtitle="Live for up to 6 hours."
@@ -498,11 +501,14 @@ function Collections({
         </section>
       )}
 
+      {/* After the first deal section; last if there are no Flash Deals. */}
+      {inviteBusinesses && flash.length > 0 && <BusinessInvite />}
+
       {filters.type !== "flash" && (
-        <section aria-labelledby="everyday-heading" className="rounded-[20px] bg-hp-lavender px-4 pb-4 pt-4 sm:px-5 lg:pb-5">
+        <section aria-labelledby="everyday-heading">
           <CollectionHeader
             id="everyday-heading"
-            icon={<TagIcon className="h-6 w-6 lg:h-7 lg:w-7" />}
+            icon={<TagIcon className="h-5 w-5 lg:h-6 lg:w-6" />}
             title="Everyday Deals"
             subtitle={EVERYDAY_SUBTITLE_LONG}
             shortSubtitle="More time to discover."
@@ -542,7 +548,44 @@ function Collections({
           )}
         </section>
       )}
+
+      {inviteBusinesses && flash.length === 0 && <BusinessInvite />}
     </div>
+  );
+}
+
+/**
+ * The one business invitation on the homepage: a quiet panel between the
+ * deal sections, not a second hero. "Business sign in" stays in the
+ * header; it's repeated here as a text link for a business owner who
+ * scrolled straight to this panel.
+ */
+function BusinessInvite() {
+  return (
+    <aside
+      aria-labelledby="business-invite-heading"
+      className="flex flex-col gap-4 rounded-2xl border border-hp-line bg-hp-lavender px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7"
+    >
+      <div className="min-w-0">
+        <h2 id="business-invite-heading" className="text-lg font-bold text-hp-ink">
+          Own a local business?
+        </h2>
+        <p className="mt-1 text-[0.9375rem] text-hp-ink">
+          Put your next deal in front of Auckland customers. They contact and pay you directly.
+        </p>
+      </div>
+      <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
+        <Link href="/list-your-business" className="btn-primary">
+          Sign up &amp; list a deal
+        </Link>
+        <Link
+          href="/portal"
+          className="inline-flex min-h-[44px] items-center text-sm font-semibold text-hp-purple underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple"
+        >
+          Business sign in
+        </Link>
+      </div>
+    </aside>
   );
 }
 
@@ -562,14 +605,14 @@ function CollectionHeader({
   viewAll: { href: string; label: string } | null;
 }) {
   return (
-    <div className="mb-3 flex items-start justify-between gap-3 lg:mb-4 lg:items-center">
+    <div className="mb-3 flex items-start justify-between gap-3 lg:items-center">
       <div className="flex min-w-0 items-start gap-2 lg:items-center lg:gap-3">
         <span className="mt-0.5 shrink-0 text-hp-purple lg:mt-0">{icon}</span>
         <div className="min-w-0 lg:flex lg:items-baseline lg:gap-4">
-          <h2 id={id} className="font-display text-[1.5rem] font-bold leading-tight text-hp-ink lg:text-[1.75rem]">
+          <h2 id={id} className="font-display text-[1.375rem] font-semibold leading-tight text-hp-ink lg:text-[1.625rem]">
             {title}
           </h2>
-          <p className="text-sm text-hp-ink lg:text-[0.9375rem]">
+          <p className="text-sm text-hp-muted lg:text-[0.9375rem]">
             <span className="lg:hidden">{shortSubtitle}</span>
             <span className="hidden lg:inline">{subtitle}</span>
           </p>
@@ -601,8 +644,21 @@ function EmptyState({
   message: string;
   alternative?: { href: string; label: string };
 }) {
+  // The search elephant only while searching: the hero (and its elephant)
+  // is hidden then, so the page never shows two.
+  const searching = Boolean(filters.q);
   return (
     <div className="rounded-2xl border border-dashed border-hp-line bg-white px-6 py-10 text-center">
+      {searching && (
+        <Image
+          src="/megadeal/mascot/megadeal-mascot-search.webp"
+          alt=""
+          width={400}
+          height={331}
+          sizes="120px"
+          className="mx-auto mb-3 block h-auto w-[120px]"
+        />
+      )}
       <p className="text-hp-ink">{message}</p>
       <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-semibold">
         {alternative && (

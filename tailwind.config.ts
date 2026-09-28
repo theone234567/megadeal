@@ -12,22 +12,26 @@ const config: Config = {
           300: "#c194ff",
           400: "#a35cff",
           500: "#8b2cff",
-          600: "#7a17f0",
-          700: "#650fc7",
+          // 600/700 match the storefront purple (hp.purple), so the business
+          // pages and the homepage use one brand colour, not two.
+          600: "#6520B5",
+          700: "#501590",
           800: "#530fa1",
           900: "#440e82",
         },
         // Storefront palette for the homepage and deal cards. Named hp-* so
         // it can't be picked up by the portal/admin pages by accident.
         hp: {
-          page: "#FAFAFC",
-          ink: "#241B3A",
-          muted: "#625A70",
-          lavender: "#F4F0FA",
-          line: "#E7E2EE",
+          page: "#FBFAFD",
+          ink: "#211A35",
+          muted: "#625C70",
+          lavender: "#F5F0FC",
+          line: "#E7E0EF",
           boundary: "#8D7AA8",
-          purple: "#6D28D9",
-          "purple-dark": "#5B21B6",
+          purple: "#6520B5",
+          "purple-dark": "#501590",
+          // The one pink: a small Flash Deals cue, nothing else.
+          flash: "#D62780",
           "clock-bg": "#FFF4DC",
           clock: "#855000",
         },

@@ -77,15 +77,15 @@ export default function MobileMenu() {
               ))}
             </ul>
           </nav>
-          <div className="border-t border-hp-line p-5">
-            <Link
-              href="/portal"
-              onClick={close}
-              className="flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-hp-purple px-5 text-base font-bold text-white hover:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
-            >
+          <div className="space-y-2 border-t border-hp-line p-5">
+            <p className="pb-1 text-sm font-semibold text-hp-muted">For businesses</p>
+            <Link href="/list-your-business" onClick={close} className="btn-primary w-full min-h-[48px] text-base">
               <StoreIcon className="h-5 w-5" />
-              For businesses
+              List your business
               <ArrowRightIcon className="h-4 w-4" />
+            </Link>
+            <Link href="/portal" onClick={close} className="btn-secondary w-full min-h-[48px] text-base">
+              Business sign in
             </Link>
           </div>
         </div>

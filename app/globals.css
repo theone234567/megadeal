@@ -6,6 +6,22 @@ html {
   scroll-behavior: smooth;
 }
 
+/* The two storefront buttons: one filled, one outlined. Same height,
+   radius, padding and focus ring everywhere they're used, so a business
+   page and the homepage don't each invent their own. Sentence case. */
+@layer components {
+  .btn-primary,
+  .btn-secondary {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-5 text-[0.9375rem] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply bg-hp-purple text-white hover:bg-hp-purple-dark;
+  }
+  .btn-secondary {
+    @apply border-[1.5px] border-hp-purple bg-white text-hp-purple hover:bg-hp-lavender;
+  }
+}
+
 body {
   color: #0f172a;
 }

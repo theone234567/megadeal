@@ -32,7 +32,8 @@ export default function CountdownBadge({
    *  booking or usage deadline), no colour escalation or pulsing, and an
    *  explicit "Offer ended" once it reaches zero. "badge" is the original
    *  dark pill still used by SampleDealCard. "left": the storefront card's
-   *  amber "2h 14m left" pill, "Ended" at zero. */
+   *  white "2h 14m left" pill (the pink Flash label beside it is the one
+   *  accent), "Ended" at zero. */
   variant?: "badge" | "offer" | "text" | "left";
   /** Classes for the "text" variant, which renders only the time left
    *  ("1h 58m", then "Ended") for a caller that supplies its own label. */
@@ -87,7 +88,7 @@ export default function CountdownBadge({
 
   if (variant === "left") {
     const pill =
-      "inline-flex items-center gap-1.5 rounded-full bg-hp-clock-bg px-2.5 py-1 text-[0.8125rem] font-bold text-hp-clock shadow-sm";
+      "inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-xs font-bold text-hp-ink shadow-sm";
     if (!parts) {
       return (
         <span className={`${pill} opacity-0`} aria-hidden="true">
