@@ -260,7 +260,7 @@ export default function DealDetail({
 
             <div className="p-5">
               <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-                <span className="text-[2.875rem] font-extrabold leading-[1.07] tracking-[-0.03em] text-brand-700">
+                <span className="font-display text-[2.875rem] font-semibold leading-[1.07] text-brand-700">
                   {formatMoney(deal.now, deal.currency, deal.formattedNow)}
                 </span>
                 {deal.was > deal.now && (
