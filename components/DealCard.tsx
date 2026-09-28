@@ -138,7 +138,7 @@ export default function DealCard({
       <div className="flex flex-1 flex-col gap-1 px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5">
         {/* Two lines at most, and always two lines tall, so the rows of
             metadata and prices line up across a row of cards. */}
-        <h3 className="line-clamp-2 min-h-[2.7em] text-[0.9375rem] font-bold leading-[1.35] text-hp-ink group-hover:text-hp-purple sm:text-base">
+        <h3 className="line-clamp-2 min-h-[2.7em] font-display text-[0.9375rem] font-semibold leading-[1.35] text-hp-ink group-hover:text-hp-purple sm:text-base">
           {deal.name}
         </h3>
         {metaLine && (
