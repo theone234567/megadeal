@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useUrlSearch } from "@/lib/useUrlSearch";
 import { ChevronDownIcon, MapPinIcon } from "@/components/icons";
+import { PURPLE_HEADER } from "@/lib/brand";
 import { goHome } from "./HeaderSearch";
 
 export const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton"];
@@ -13,8 +14,12 @@ function Select({ city }: { city: string }) {
   const known = CITIES.find((c) => c.toLowerCase() === city.toLowerCase());
 
   return (
-    <label className="relative flex h-11 shrink-0 items-center gap-1.5 rounded-full px-2 text-sm font-semibold text-hp-ink hover:bg-hp-lavender focus-within:ring-2 focus-within:ring-hp-purple">
-      <MapPinIcon className="h-[18px] w-[18px] shrink-0 text-hp-ink" />
+    <label
+      className={`relative flex h-11 shrink-0 items-center gap-1.5 rounded-full px-2 text-sm font-semibold focus-within:ring-2 ${
+        PURPLE_HEADER ? "text-white hover:bg-white/10 focus-within:ring-white" : "text-hp-ink hover:bg-hp-lavender focus-within:ring-hp-purple"
+      }`}
+    >
+      <MapPinIcon className={`h-[18px] w-[18px] shrink-0 ${PURPLE_HEADER ? "text-white" : "text-hp-ink"}`} />
       <span className="sr-only">Location</span>
       {/* A native select: keyboard, screen-reader and phone pickers all
           work without any custom widget code. It sits on top of the
@@ -22,7 +27,7 @@ function Select({ city }: { city: string }) {
       <span aria-hidden className="max-w-[7.5rem] truncate">
         {known ?? (city || "All areas")}
       </span>
-      <ChevronDownIcon className="h-4 w-4 shrink-0 text-hp-muted" />
+      <ChevronDownIcon className={`h-4 w-4 shrink-0 ${PURPLE_HEADER ? "text-white/80" : "text-hp-muted"}`} />
       <select
         value={known ?? city}
         onChange={(e) => goHome(pathname, router, { city: e.target.value })}

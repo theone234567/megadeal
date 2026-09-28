@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { HomeIcon, ReceiptIcon, StoreIcon, CreditCardIcon } from "@/components/icons";
 import BrandLogo from "@/components/BrandLogo";
+import { PURPLE_HEADER } from "@/lib/brand";
 import IdlePortalSignOut from "./IdlePortalSignOut";
 
 // "My deals" and "Credits" are sections of the Overview page itself
@@ -22,6 +23,26 @@ const NAV_ITEMS = [
   { href: "/portal#credits", label: "Credits", icon: CreditCardIcon, match: (p: string) => p === "/portal" },
 ];
 
+// Top-bar colours: brand purple with the white logo while the minimal logo
+// is on (lib/brand.ts), white as before with the classic one.
+const P = PURPLE_HEADER
+  ? {
+      logo: "onDark" as const,
+      bar: "border-hp-purple-dark bg-hp-purple",
+      muted: "text-white/80",
+      member: "text-white/80",
+      support: "text-white/80 hover:text-white",
+      signOut: "border-white/40 text-white hover:bg-white/10",
+    }
+  : {
+      logo: "onLight" as const,
+      bar: "border-slate-200 bg-white",
+      muted: "text-slate-500",
+      member: "text-slate-600",
+      support: "text-slate-500 hover:text-brand-700",
+      signOut: "border-slate-200 text-slate-600 hover:bg-slate-50",
+    };
+
 export default function PortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { member, isLoggedIn, logout } = useWix();
@@ -34,26 +55,26 @@ export default function PortalShell({ children }: { children: React.ReactNode })
           Header — that carries a consumer search bar and city selector
           that mean nothing to a merchant managing their own business, and
           this needs account/sign-out controls Header doesn't have at all. */}
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+      <header className={`sticky top-0 z-30 border-b ${P.bar}`}>
         <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href="/portal" aria-label="MegaDeal business portal" className="flex shrink-0 items-center gap-2">
-            <BrandLogo placement="portal" />
-            <span className="hidden text-sm text-slate-500 sm:inline">for business</span>
+            <BrandLogo placement="portal" tone={P.logo} />
+            <span className={`hidden text-sm sm:inline ${P.muted}`}>for business</span>
           </Link>
           {isLoggedIn && (
             <div className="flex min-w-0 items-center gap-3">
-              <span className="hidden max-w-[200px] truncate text-sm text-slate-600 sm:inline">
+              <span className={`hidden max-w-[200px] truncate text-sm sm:inline ${P.member}`}>
                 {member?.nickname || member?.email}
               </span>
               <a
                 href="/contact"
-                className="hidden text-sm font-semibold text-slate-500 hover:text-brand-700 sm:inline"
+                className={`hidden text-sm font-semibold sm:inline ${P.support}`}
               >
                 Support
               </a>
               <button
                 onClick={() => logout()}
-                className="rounded-full border border-slate-200 px-3.5 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold ${P.signOut}`}
               >
                 Sign out
               </button>

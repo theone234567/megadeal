@@ -4,6 +4,7 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { pushUrl, useUrlSearch } from "@/lib/useUrlSearch";
 import { SearchIcon } from "@/components/icons";
+import { PURPLE_HEADER } from "@/lib/brand";
 
 /**
  * Navigates to the homepage with `patch` applied to its query string.
@@ -37,7 +38,13 @@ function SearchForm({ initial }: { initial: string }) {
         e.preventDefault();
         goHome(pathname, router, { q: query.trim() });
       }}
-      className="flex h-12 w-full items-center rounded-full border border-hp-line bg-hp-lavender/60 pl-4 pr-1 focus-within:border-hp-purple focus-within:ring-2 focus-within:ring-hp-purple/20"
+      className={`flex h-12 w-full items-center rounded-full border pl-4 pr-1 focus-within:ring-2 ${
+        // On the purple header: a plain white field. On the white one: the
+        // pale lavender field it had before.
+        PURPLE_HEADER
+          ? "border-transparent bg-white focus-within:ring-white/60"
+          : "border-hp-line bg-hp-lavender/60 focus-within:border-hp-purple focus-within:ring-hp-purple/20"
+      }`}
     >
       <SearchIcon className="h-5 w-5 shrink-0 text-hp-muted" />
       <input

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRef } from "react";
 import { ArrowRightIcon, CloseIcon, MenuIcon, StoreIcon } from "@/components/icons";
+import { PURPLE_HEADER } from "@/lib/brand";
 
 const LINKS = [
   { href: "/how-it-works", label: "How it works" },
@@ -34,7 +35,9 @@ export default function MobileMenu() {
         aria-label="Open menu"
         aria-haspopup="dialog"
         onClick={() => dialogRef.current?.showModal()}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-hp-ink hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple"
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 ${
+          PURPLE_HEADER ? "text-white hover:bg-white/10 focus-visible:ring-white" : "text-hp-ink hover:bg-hp-lavender focus-visible:ring-hp-purple"
+        }`}
       >
         <MenuIcon className="h-6 w-6" />
       </button>

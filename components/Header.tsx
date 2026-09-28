@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { StoreIcon } from "@/components/icons";
 import BrandLogo from "@/components/BrandLogo";
+import { PURPLE_HEADER } from "@/lib/brand";
 import HeaderSearch from "@/components/header/HeaderSearch";
 import LocationSelect from "@/components/header/LocationSelect";
 import MobileMenu from "@/components/header/MobileMenu";
@@ -17,6 +18,43 @@ const BUSINESS_LANDING_PAGES: Record<string, { ctaLabel: string }> = {
   "/advertise/restaurants": { ctaLabel: "List my restaurant" },
   "/advertise/beauty-spa": { ctaLabel: "List my business" },
 };
+
+// Colours for the three headers below: brand purple with the white logo
+// while the minimal logo is on, white as before with the classic one (both
+// set by LOGO_STYLE in lib/brand.ts). The classic values are the classes
+// these headers had before, unchanged.
+const T = PURPLE_HEADER
+  ? {
+      logo: "onDark" as const,
+      storefrontBar: "border-hp-purple-dark bg-hp-purple",
+      landingBar: "border-hp-purple-dark bg-hp-purple",
+      comingSoonBar: "border-hp-purple-dark bg-hp-purple",
+      ring: "focus-visible:ring-white",
+      divider: "bg-white/30",
+      muted: "text-white/80",
+      nav: "text-white",
+      navLink: "hover:text-white/80",
+      signIn: "text-white hover:bg-white/10 focus-visible:ring-white",
+      // White buttons on purple, purple text: the main action still stands out.
+      listBusiness: "border-white focus-visible:ring-white focus-visible:ring-offset-hp-purple",
+      landingCta: "bg-white text-brand-600 hover:bg-hp-lavender",
+      comingSoonSignIn: "border-white",
+    }
+  : {
+      logo: "onLight" as const,
+      storefrontBar: "border-hp-line bg-white",
+      landingBar: "border-slate-100 bg-white",
+      comingSoonBar: "border-[#eeeaf5] bg-white",
+      ring: "focus-visible:ring-hp-purple",
+      divider: "bg-slate-200",
+      muted: "text-slate-500",
+      nav: "text-slate-900",
+      navLink: "hover:text-brand-700",
+      signIn: "text-hp-ink hover:bg-hp-lavender hover:text-hp-purple focus-visible:ring-hp-purple",
+      listBusiness: "",
+      landingCta: "bg-brand-600 text-white hover:bg-brand-700",
+      comingSoonSignIn: "border-brand-600",
+    };
 
 export default function Header() {
   const pathname = usePathname();
@@ -38,24 +76,24 @@ export default function Header() {
 
   if (businessLanding) {
     return (
-      <header className="sticky top-0 z-30 border-b border-slate-100 bg-white">
+      <header className={`sticky top-0 z-30 border-b ${T.landingBar}`}>
         <div className="mx-auto flex h-[87px] w-full max-w-[1184px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href={pathname!} aria-label="MegaDeal home" className="flex min-w-0 shrink items-center gap-3">
-            <BrandLogo placement="landing" />
-            <span className="hidden h-5 w-px shrink-0 bg-slate-200 sm:block" aria-hidden />
-            <span className="hidden shrink-0 text-sm text-slate-500 sm:inline-block">
+            <BrandLogo placement="landing" tone={T.logo} />
+            <span className={`hidden h-5 w-px shrink-0 sm:block ${T.divider}`} aria-hidden />
+            <span className={`hidden shrink-0 text-sm sm:inline-block ${T.muted}`}>
               for business
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-7 text-sm font-semibold text-slate-900 lg:flex">
-            <a href="#why-megadeal" className="transition hover:text-brand-700">
+          <nav className={`hidden items-center gap-7 text-sm font-semibold lg:flex ${T.nav}`}>
+            <a href="#why-megadeal" className={`transition ${T.navLink}`}>
               Why MegaDeal
             </a>
-            <a href="#how-it-works" className="transition hover:text-brand-700">
+            <a href="#how-it-works" className={`transition ${T.navLink}`}>
               How it works
             </a>
-            <a href="#questions" className="transition hover:text-brand-700">
+            <a href="#questions" className={`transition ${T.navLink}`}>
               FAQs
             </a>
           </nav>
@@ -63,7 +101,7 @@ export default function Header() {
           <a
             href="#launch-offer"
             data-cta-section="header"
-            className="shrink-0 rounded-full bg-brand-600 px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-brand-700 sm:px-5 sm:text-sm"
+            className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-extrabold transition sm:px-5 sm:text-sm ${T.landingCta}`}
           >
             {businessLanding.ctaLabel}
           </a>
@@ -74,15 +112,15 @@ export default function Header() {
 
   if (isComingSoon) {
     return (
-      <header className="relative z-50 border-b border-[#eeeaf5] bg-white">
+      <header className={`relative z-50 border-b ${T.comingSoonBar}`}>
         <div className="mx-auto flex min-h-[60px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[68px] sm:gap-5 sm:px-8 lg:min-h-[72px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
-            <BrandLogo placement="landing" />
+            <BrandLogo placement="landing" tone={T.logo} />
           </Link>
 
           <Link
             href="/portal"
-            className="shrink-0 rounded-full border-[1.5px] border-brand-600 bg-white px-4 py-2.5 text-xs font-extrabold text-brand-600 transition hover:bg-hp-lavender sm:px-5 sm:text-sm lg:px-6 lg:py-3"
+            className={`shrink-0 rounded-full border-[1.5px] bg-white px-4 py-2.5 text-xs font-extrabold text-brand-600 transition hover:bg-hp-lavender sm:px-5 sm:text-sm lg:px-6 lg:py-3 ${T.comingSoonSignIn}`}
           >
             <span className="sm:hidden">Sign in →</span>
             <span className="hidden sm:inline">Business sign in →</span>
@@ -100,15 +138,15 @@ export default function Header() {
   const location = <LocationSelect />;
 
   return (
-    <header className="z-30 border-b border-hp-line bg-white lg:sticky lg:top-0">
+    <header className={`z-30 border-b lg:sticky lg:top-0 ${T.storefrontBar}`}>
       <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:gap-5 lg:px-8 lg:py-3.5">
         <div className="flex items-center justify-between gap-2 lg:contents">
           <Link
             href="/"
             aria-label="MegaDeal home"
-            className="min-w-0 shrink rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple"
+            className={`min-w-0 shrink rounded-lg focus-visible:outline-none focus-visible:ring-2 ${T.ring}`}
           >
-            <BrandLogo placement="site" />
+            <BrandLogo placement="site" tone={T.logo} />
           </Link>
           <div className="flex shrink-0 items-center gap-1 lg:hidden">
             {location}
@@ -125,11 +163,11 @@ export default function Header() {
           {location}
           <Link
             href="/portal"
-            className="inline-flex h-11 items-center rounded-full px-3 text-sm font-semibold text-hp-ink transition hover:bg-hp-lavender hover:text-hp-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple"
+            className={`inline-flex h-11 items-center rounded-full px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 ${T.signIn}`}
           >
             Business sign in
           </Link>
-          <Link href="/list-your-business" className="btn-secondary h-11 min-h-0 px-4 text-sm">
+          <Link href="/list-your-business" className={`btn-secondary h-11 min-h-0 px-4 text-sm ${T.listBusiness}`}>
             <StoreIcon className="h-[18px] w-[18px]" />
             List your business
           </Link>
