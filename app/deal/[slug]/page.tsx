@@ -46,7 +46,10 @@ export async function generateMetadata(
   }
 ): Promise<Metadata> {
   const params = await props.params;
-  const deal = await fetchDealForSEO(params.slug);
+  // A failed read is the page's to report (its error screen); the title
+  // just stays generic rather than failing twice.
+  const deal = await fetchDealForSEO(params.slug).catch(() => undefined);
+  if (deal === undefined) return { title: "Deal" };
   if (!deal) {
     return { title: "Deal not found" };
   }

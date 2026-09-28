@@ -72,7 +72,12 @@ export default function DealCard({
   const locality = [deal.businessCity, distance].filter(Boolean).join(" · ");
 
   const Wrapper = preview ? "div" : Link;
-  const wrapperProps = preview ? {} : { href: `/deal/${deal.slug}` };
+  // prefetch off: a deal page is built fresh from Wix on every request, so
+  // Next's automatic prefetch of each card in view ran a full Wix lookup
+  // per card — a dozen at once just from looking at the homepage, enough
+  // for Wix to start turning requests away and the clicked deal to fail.
+  // The deal page's loading screen still shows as soon as it's clicked.
+  const wrapperProps = preview ? {} : { href: `/deal/${deal.slug}`, prefetch: false };
 
   // Business and place on one line, one icon: the card's single metadata row.
   const metaLine = [deal.businessName, locality].filter(Boolean).join(" · ");

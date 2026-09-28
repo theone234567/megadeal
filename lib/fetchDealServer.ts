@@ -45,57 +45,88 @@ function mergeDealRecord(deal: Deal, record: Record<string, any>): Deal {
  * both ask for the deal, and each lookup is three Wix reads in a row
  * (product, Deals row, business). Unwrapped, every click on a deal made
  * all three twice.
+ *
+ * null means the deal isn't there to show (no such product, not live, no
+ * approved business) and the page answers "not found". A failed read is
+ * different: it used to be swallowed into null too, so a Wix hiccup — or
+ * Wix turning away a burst of requests — told the visitor a live deal
+ * didn't exist ("This page has wandered off"). Now a failed read is tried
+ * once more and, if it fails again, thrown, so the visitor gets the
+ * "Something went sideways / Try again" page instead.
  */
-export const fetchDealForSEO = cache(loadDealForSEO);
+export const fetchDealForSEO = cache((slug: string) => retryUnlessMissing("deal", slug, loadDealForSEO));
+
+/**
+ * Runs a page's read, and once more after a short pause if it fails. A
+ * Wix 404 means the thing doesn't exist, so it comes back as null (the
+ * page's "not found"); any other failure that repeats is thrown, for the
+ * page's error screen.
+ */
+async function retryUnlessMissing<T>(what: string, key: string, read: (key: string) => Promise<T | null>): Promise<T | null> {
+  try {
+    return await read(key);
+  } catch (err) {
+    if (isWixNotFound(err)) return null;
+    console.error(`[${what}] read failed, retrying once`, key, err);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    try {
+      return await read(key);
+    } catch (again) {
+      if (isWixNotFound(again)) return null;
+      throw again;
+    }
+  }
+}
+
+/** The Wix SDK puts the HTTP status on its errors; 404 is "no such thing". */
+function isWixNotFound(err: unknown): boolean {
+  return (err as { status?: number } | null)?.status === 404;
+}
 
 async function loadDealForSEO(slug: string): Promise<Deal | null> {
-  try {
-    const adminClient = createWixAdminClient();
-    const res = await adminClient.productsV3.getProductBySlug(slug, {
-      fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
-    } as any);
-    const product = (res as any).product;
-    if (!product || isMegaShopProduct(product)) return null;
+  const adminClient = createWixAdminClient();
+  const res = await adminClient.productsV3.getProductBySlug(slug, {
+    fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
+  } as any);
+  const product = (res as any).product;
+  if (!product || isMegaShopProduct(product)) return null;
 
-    let deal = mapProductToDeal(product, CATEGORY_NAME_BY_ID);
+  let deal = mapProductToDeal(product, CATEGORY_NAME_BY_ID);
 
-    const dealsResult = await adminClient.items
-      .query("Deals")
-      .eq("productId", deal.id)
+  const dealsResult = await adminClient.items
+    .query("Deals")
+    .eq("productId", deal.id)
+    .find();
+  const record = dealsResult.items?.[0];
+  const merchantEmail: string | null = record?.merchantEmail || null;
+  if (record) deal = mergeDealRecord(deal, record);
+
+  // Same rule as the listing: no Deals row, no deal. Without this an
+  // orphaned Stores product had its own public page, complete with
+  // schema.org markup telling Google it was a real offer.
+  if (!record) return null;
+  if (!isDealLive(deal)) return null;
+
+  if (merchantEmail) {
+    const merchantResult = await adminClient.items
+      .query("Merchants")
+      .eq("email", merchantEmail)
       .find();
-    const record = dealsResult.items?.[0];
-    const merchantEmail: string | null = record?.merchantEmail || null;
-    if (record) deal = mergeDealRecord(deal, record);
-
-    // Same rule as the listing: no Deals row, no deal. Without this an
-    // orphaned Stores product had its own public page, complete with
-    // schema.org markup telling Google it was a real offer.
-    if (!record) return null;
-    if (!isDealLive(deal)) return null;
-
-    if (merchantEmail) {
-      const merchantResult = await adminClient.items
-        .query("Merchants")
-        .eq("email", merchantEmail)
-        .find();
-      const merchant = merchantResult.items?.[0];
-      // Only an approved business's deals are public: a suspended one's,
-      // and one waiting on re-approval after changing its name, legal
-      // details, category or photos — otherwise the unreviewed name and
-      // photos would go straight onto its live deals.
-      if (merchant?.status !== "Approved") return null;
-      if (merchant.businessName && merchant._id) {
-        deal = applyBusinessToDeal(deal, mapMerchantToBusiness(merchant));
-      }
-    } else {
-      // A deal with no business behind it isn't one we can show.
-      return null;
+    const merchant = merchantResult.items?.[0];
+    // Only an approved business's deals are public: a suspended one's,
+    // and one waiting on re-approval after changing its name, legal
+    // details, category or photos — otherwise the unreviewed name and
+    // photos would go straight onto its live deals.
+    if (merchant?.status !== "Approved") return null;
+    if (merchant.businessName && merchant._id) {
+      deal = applyBusinessToDeal(deal, mapMerchantToBusiness(merchant));
     }
-
-    return deal;
-  } catch {
+  } else {
+    // A deal with no business behind it isn't one we can show.
     return null;
   }
+
+  return deal;
 }
 
 /**
@@ -238,80 +269,54 @@ export interface BusinessProfile extends PublicBusiness {
  * reliability reasons as fetchDealForSEO — this never touches the flaky
  * visitor OAuth client. Only public-safe fields are returned (no email,
  * no credits balance, no application status).
+ *
+ * Wrapped in React's cache() so the page and its generateMetadata share
+ * one read, as on the deal page.
  */
-export async function fetchBusinessProfileBySlug(
+export const fetchBusinessProfileBySlug = cache((slug: string) =>
+  retryUnlessMissing("business profile", slug, loadBusinessProfileBySlug)
+);
+
+async function loadBusinessProfileBySlug(
   slugParam: string
 ): Promise<{ business: BusinessProfile; deals: Deal[] } | null> {
-  try {
-    const idPrefix = slugParam.split("-").pop();
-    if (!idPrefix || !/^[0-9a-f]{8}$/.test(idPrefix)) return null;
+  const idPrefix = slugParam.split("-").pop();
+  if (!idPrefix || !/^[0-9a-f]{8}$/.test(idPrefix)) return null;
 
-    const adminClient = createWixAdminClient();
-    // Paged: this scans for one merchant by id prefix, and a single
-    // default page of 50 meant every business past the 50th got a 404 on
-    // their own public profile.
-    const merchants = await queryAllItems(
-      () => adminClient.items.query("Merchants"),
-      "Merchants (business profile)"
-    );
-    const merchant = merchants.find(
-      (m: any) => typeof m._id === "string" && m._id.startsWith(idPrefix)
-    );
-    // Public only once an admin has approved the business: a signup that
-    // hasn't been reviewed (or one that's been suspended) has no page.
-    if (!merchant || !merchant.businessName || merchant.status !== "Approved") {
-      return null;
-    }
-
-    const business: BusinessProfile = {
-      id: merchant._id,
-      ...mapMerchantToBusiness(merchant),
-    };
-
-    const dealsResult = await adminClient.items
-      .query("Deals")
-      .eq("merchantEmail", merchant.email)
-      .find();
-    const liveDealRecords = (dealsResult.items ?? []).filter(
-      (d: any) =>
-        d.productId &&
-        isDealLive({ status: d.status ?? null, expiresAt: d.expiresAt ?? null })
-    );
-
-    const deals: Deal[] = [];
-    for (const record of liveDealRecords) {
-      try {
-        const res = await adminClient.productsV3.getProduct(record.productId, {
-          fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
-        } as any);
-        const product = unwrapProduct(res);
-        if (!product) continue;
-        const dealBase: Deal = {
-          ...mapProductToDeal(product, CATEGORY_NAME_BY_ID),
-          expiresAt: record.expiresAt ?? null,
-          status: record.status ?? null,
-          image: record.photoUrl || undefined,
-          isFlash: Boolean(record.isFlash),
-          description: record.description || "",
-          // MegaDeal never takes payment: the business charges in NZ
-          // dollars whatever currency the Wix store is set to.
-          currency: "NZD",
-          quantityAvailable:
-            typeof record.quantityAvailable === "number" ? record.quantityAvailable : null,
-          terms: record.terms || null,
-          dealCode: record.dealCode || null,
-          bookingRequirement: parseBookingRequirement(record.bookingRequirement),
-        };
-        deals.push(applyBusinessToDeal(dealBase, business));
-      } catch {
-        // Skip products that fail to hydrate rather than failing the page.
-      }
-    }
-
-    return { business, deals };
-  } catch {
+  const adminClient = createWixAdminClient();
+  // Started now, alongside the business read below; it's the same
+  // cached listing the homepage uses, so it's often already in memory.
+  const liveDeals = fetchAllLiveDealsServer();
+  // Paged: this scans for one merchant by id prefix, and a single
+  // default page of 50 meant every business past the 50th got a 404 on
+  // their own public profile.
+  const merchants = await queryAllItems(
+    () => adminClient.items.query("Merchants"),
+    "Merchants (business profile)"
+  );
+  const merchant = merchants.find(
+    (m: any) => typeof m._id === "string" && m._id.startsWith(idPrefix)
+  );
+  // Public only once an admin has approved the business: a signup that
+  // hasn't been reviewed (or one that's been suspended) has no page.
+  if (!merchant || !merchant.businessName || merchant.status !== "Approved") {
     return null;
   }
+
+  const business: BusinessProfile = {
+    id: merchant._id,
+    ...mapMerchantToBusiness(merchant),
+  };
+
+  // Its deals, from the site-wide listing: the same live, approved-
+  // business deals the homepage shows, already built. This used to read
+  // the business's Deals rows and then fetch each deal's product one
+  // after another — sixteen deals was sixteen Wix reads in a row before
+  // the page could show anything. The page only shows them as cards,
+  // which is exactly what the listing holds.
+  const deals = (await liveDeals).filter((d) => d.businessSlug === business.slug);
+
+  return { business, deals };
 }
 
 /** Latest of several Wix timestamps (Date objects or ISO strings), as ISO. */

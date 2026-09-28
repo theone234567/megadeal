@@ -201,6 +201,9 @@ export default function DealDetail({
               (deal.businessSlug && !preview ? (
                 <Link
                   href={`/business/${deal.businessSlug}`}
+                  // Not prefetched: the business page is built fresh from Wix
+                  // (see DealCard).
+                  prefetch={false}
                   className="font-bold text-slate-900 underline-offset-2 hover:text-brand-700 hover:underline"
                 >
                   {deal.businessName}
@@ -587,6 +590,7 @@ export default function DealDetail({
             {deal.businessSlug && !preview && (
               <Link
                 href={`/business/${deal.businessSlug}`}
+                prefetch={false}
                 className="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline"
               >
                 View full business profile →

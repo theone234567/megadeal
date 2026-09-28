@@ -40,6 +40,7 @@ export default async function MoreDeals({ deal }: { deal: Deal }) {
             {deal.businessSlug && (
               <Link
                 href={`/business/${deal.businessSlug}`}
+                prefetch={false}
                 className="text-sm font-semibold text-brand-600 hover:text-brand-700"
               >
                 View all →

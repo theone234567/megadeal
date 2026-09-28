@@ -31,7 +31,9 @@ export async function generateMetadata(
   }
 ): Promise<Metadata> {
   const params = await props.params;
-  const result = await fetchBusinessProfileBySlug(params.slug);
+  // As on the deal page: a failed read is the page's to report.
+  const result = await fetchBusinessProfileBySlug(params.slug).catch(() => undefined);
+  if (result === undefined) return { title: "Business" };
   if (!result) return { title: "Business not found" };
 
   const { business, deals } = result;

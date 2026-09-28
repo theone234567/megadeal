@@ -94,7 +94,7 @@ export default function DealsMap({
         {pinned.map((deal) => (
           <Marker key={deal.id} position={[deal.businessLat, deal.businessLng]} icon={DEAL_ICON}>
             <Popup>
-              <Link href={`/deal/${deal.slug}`} className="font-semibold text-brand-700 hover:underline">
+              <Link href={`/deal/${deal.slug}`} prefetch={false} className="font-semibold text-brand-700 hover:underline">
                 {deal.name}
               </Link>
               {deal.businessName && (
