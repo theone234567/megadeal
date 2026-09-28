@@ -3,6 +3,17 @@ main = ".open-next/worker.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
+# Smart Placement: Cloudflare runs the site's server code near the services
+# it calls most, rather than near each visitor. A deal page makes several
+# Wix reads in a row (lib/fetchDealServer.ts), and from an Auckland data
+# centre each one crossed the Pacific; placed near Wix they're short hops,
+# and the finished page makes the one long trip back. Cloudflare only moves
+# the Worker when its own measurements say it's faster; static files are
+# still served from the data centre nearest the visitor either way.
+# Remove this block (or set mode = "off") to go back.
+[placement]
+mode = "smart"
+
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
