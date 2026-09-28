@@ -48,15 +48,10 @@ export async function generateMetadata(props: {
   };
 }
 
-// Was force-dynamic (a live Wix API round-trip on every single page view,
-// with no caching at all — the biggest single latency cost on the site).
-// Deals aren't truly real-time: they go live via admin approval, expire on
-// a schedule, and the site's own terms already say availability isn't
-// guaranteed and is first-come-first-served — so a short cache window is
-// a safe trade for a much faster response to most visitors. Worst case
-// with a stale cache hit: a just-sold-out deal or a deal approved in the
-// last minute is up to 60s behind, not a correctness bug.
-export const revalidate = 60;
+// This page reads searchParams, so it renders on every request whatever
+// `revalidate` says. The one-minute cache that keeps it fast lives on the
+// deal listing itself (fetchAllLiveDealsServer): a deal approved, paused
+// or sold out in the last minute can be up to 60s behind here.
 
 export default async function HomePage(props: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   // Passed down so the hero and deals render on the server with the

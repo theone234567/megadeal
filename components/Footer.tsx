@@ -88,7 +88,9 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
               <li><Link href="/about" className="inline-block py-1 hover:text-brand-700">About MegaDeal</Link></li>
               <li><Link href="/how-it-works" className="inline-block py-1 hover:text-brand-700">How it works</Link></li>
               <li><Link href="/careers" className="inline-block py-1 hover:text-brand-700">Careers</Link></li>
-              <li><Link href="/coming-soon" className="inline-block py-1 hover:text-brand-700">Coming soon</Link></li>
+              {!siteLaunched && (
+                <li><Link href="/coming-soon" className="inline-block py-1 hover:text-brand-700">Coming soon</Link></li>
+              )}
             </ul>
           </div>
           <div>

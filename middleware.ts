@@ -79,6 +79,20 @@ export async function middleware(request: NextRequest) {
   }
 
   const path = request.nextUrl.pathname;
+
+  // After launch the coming-soon page has nothing left to say, and it's
+  // the page search engines were told (by the 308 below) to index in
+  // place of "/". Sending it back to "/" permanently hands that standing
+  // to the real homepage instead of leaving a stale "launching soon" page
+  // competing with it. no-store for the same reason as below: if the site
+  // were ever taken back to pre-launch, a browser that remembered this
+  // redirect would bounce between the two.
+  if (SITE_LAUNCHED && path === "/coming-soon") {
+    const res = NextResponse.redirect(new URL("/", request.url), 308);
+    res.headers.set("Cache-Control", "no-store");
+    return res;
+  }
+
   if (!SITE_LAUNCHED && (path === "/" || PRELAUNCH_PRIVATE.test(path))) {
     // Admin preview: before launch the customer side is visible only to
     // someone signed into /admin, so test deals from a real business

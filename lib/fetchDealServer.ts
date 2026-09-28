@@ -9,6 +9,7 @@ import { isDealLive } from "./dealVisibility";
 import { parseBookingRequirement } from "./booking";
 import { queryAllItems } from "./queryAll";
 import { searchAllProducts } from "./searchAllProducts";
+import { toListingDeal } from "./listingDeal";
 import type { Deal, DealStatus } from "./types";
 
 /** Overlays a deal's Deals row (status, dates, photo, terms, code…) on
@@ -105,91 +106,119 @@ export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
  */
 export const fetchAllLiveDealsServer = cache(fetchAllLiveDeals);
 
+// The pages behind this read the query string, which makes them render on
+// every request — their `revalidate` never applied, and there's no
+// persistent cache configured on Cloudflare (open-next.config.ts). So
+// every homepage view was a fresh read of every product, deal and business
+// from Wix: slow for the visitor, and anyone reloading the page fast
+// enough could run the site into Wix's rate limit. Kept in memory for a
+// minute instead, per server instance. Only resolved plain data is kept —
+// never a promise, which a Worker can't share between requests.
+const LISTING_FRESH_MS = 60 * 1000;
+// If Wix fails, a recent copy is served rather than an empty page: an
+// empty listing would show "no deals" and mark every category page
+// noindex, and a crawler arriving then would take both at face value.
+const LISTING_STALE_MS = 15 * 60 * 1000;
+let lastListing: { at: number; deals: Deal[] } | null = null;
+
 async function fetchAllLiveDeals(): Promise<Deal[]> {
+  const now = Date.now();
+  // Re-checked on the way out: a deal can expire while it's held here.
+  const stillLive = (deals: Deal[]) => deals.filter((d) => isDealLive(d, now));
+  if (lastListing && now - lastListing.at < LISTING_FRESH_MS) return stillLive(lastListing.deals);
   try {
-    const adminClient = createWixAdminClient();
-    const [productsRes, dealsResult, merchantsResult] = await Promise.all([
-      searchAllProducts(
-        adminClient,
-        ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
-        "deal listing"
-      ),
-      // Drafts have no productId and every join below is by productId, so
-      // they could never match — but an unbounded find() returns a default
-      // page of rows, and drafts accumulating in that page would push real
-      // deals out of it. Filtering on the field the join actually needs is
-      // exact and can't drop a legitimate row: anything without a
-      // productId was already unusable here.
-      adminClient.items.query("Deals").isNotEmpty("productId").limit(500).find(),
-      queryAllItems(() => adminClient.items.query("Merchants"), "Merchants (deal listing)"),
-    ]);
-
-    const products = productsRes.filter((p: any) => !isMegaShopProduct(p));
-
-    const metaByProductId: Record<string, any> = {};
-    for (const item of dealsResult.items ?? []) {
-      if (item.productId) metaByProductId[item.productId] = item;
-    }
-
-    // Only approved businesses' deals are listed. Suspending a business
-    // takes its deals off the site; so does a change that sends it back
-    // for re-approval (name, legal details, category, photos), until an
-    // admin has looked at it — see fetchDealForSEO.
-    const businessByEmail: Record<string, PublicBusiness> = {};
-    for (const m of merchantsResult) {
-      if (m.status === "Approved" && m.email && m.businessName && m._id) {
-        businessByEmail[String(m.email).toLowerCase()] = mapMerchantToBusiness(m);
-      }
-    }
-
-    return products
-      .map((p: any) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
-      .map((deal: Deal) => {
-        const meta = metaByProductId[deal.id];
-        // A product with no Deals row is not a MegaDeal deal. It used to
-        // be returned as-is, and mapProductToDeal leaves status null,
-        // which isDealLive reads as live — so such a product went straight
-        // onto the site with no approval and no business attached to it.
-        //
-        // That is reachable: /api/deals/create makes the Wix Stores
-        // product first and writes the Deals row second, so a failure
-        // between the two leaves an orphan that publishes itself. It also
-        // meant deleting a Deals row in the Wix dashboard silently
-        // republished the product it belonged to.
-        //
-        // The Deals collection is what defines a deal here; Stores is only
-        // the catalogue behind it. No row, nothing to show.
-        if (!meta) return null;
-        if (!meta.merchantEmail || !businessByEmail[String(meta.merchantEmail).toLowerCase()]) return null;
-        return {
-          ...deal,
-          expiresAt: meta.expiresAt ?? null,
-          status: meta.status ?? null,
-          image: meta.photoUrl || deal.image,
-          isFlash: Boolean(meta.isFlash),
-          description: meta.description || deal.description,
-          currency: "NZD",
-          quantityAvailable:
-            typeof meta.quantityAvailable === "number" ? meta.quantityAvailable : null,
-          dealCode: meta.dealCode || null,
-          // Cards show a short restriction summary drawn from the terms, so
-          // listings need them too — they were only mapped on deal pages.
-          terms: meta.terms || null,
-          bookingRequirement: parseBookingRequirement(meta.bookingRequirement),
-        };
-      })
-      .filter((deal: Deal | null): deal is Deal => deal !== null && isDealLive(deal))
-      .map((deal: Deal) => {
-        const meta = metaByProductId[deal.id];
-        const business = meta?.merchantEmail
-          ? businessByEmail[String(meta.merchantEmail).toLowerCase()]
-          : undefined;
-        return business ? applyBusinessToDeal(deal, business) : deal;
-      });
+    const deals = (await loadAllLiveDeals()).map(toListingDeal);
+    lastListing = { at: Date.now(), deals };
+    return deals;
   } catch (err) {
     console.error("[fetchAllLiveDealsServer] failed", err);
+    if (lastListing && now - lastListing.at < LISTING_STALE_MS) return stillLive(lastListing.deals);
     return [];
   }
+}
+
+/** One full read of the listing from Wix. Throws on failure — the
+ *  caller decides what to serve instead. */
+async function loadAllLiveDeals(): Promise<Deal[]> {
+  const adminClient = createWixAdminClient();
+  const [productsRes, dealsResult, merchantsResult] = await Promise.all([
+    searchAllProducts(
+      adminClient,
+      ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
+      "deal listing"
+    ),
+    // Drafts have no productId and every join below is by productId, so
+    // they could never match — but an unbounded find() returns a default
+    // page of rows, and drafts accumulating in that page would push real
+    // deals out of it. Filtering on the field the join actually needs is
+    // exact and can't drop a legitimate row: anything without a
+    // productId was already unusable here.
+    adminClient.items.query("Deals").isNotEmpty("productId").limit(500).find(),
+    queryAllItems(() => adminClient.items.query("Merchants"), "Merchants (deal listing)"),
+  ]);
+
+  const products = productsRes.filter((p: any) => !isMegaShopProduct(p));
+
+  const metaByProductId: Record<string, any> = {};
+  for (const item of dealsResult.items ?? []) {
+    if (item.productId) metaByProductId[item.productId] = item;
+  }
+
+  // Only approved businesses' deals are listed. Suspending a business
+  // takes its deals off the site; so does a change that sends it back
+  // for re-approval (name, legal details, category, photos), until an
+  // admin has looked at it — see fetchDealForSEO.
+  const businessByEmail: Record<string, PublicBusiness> = {};
+  for (const m of merchantsResult) {
+    if (m.status === "Approved" && m.email && m.businessName && m._id) {
+      businessByEmail[String(m.email).toLowerCase()] = mapMerchantToBusiness(m);
+    }
+  }
+
+  return products
+    .map((p: any) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
+    .map((deal: Deal) => {
+      const meta = metaByProductId[deal.id];
+      // A product with no Deals row is not a MegaDeal deal. It used to
+      // be returned as-is, and mapProductToDeal leaves status null,
+      // which isDealLive reads as live — so such a product went straight
+      // onto the site with no approval and no business attached to it.
+      //
+      // That is reachable: /api/deals/create makes the Wix Stores
+      // product first and writes the Deals row second, so a failure
+      // between the two leaves an orphan that publishes itself. It also
+      // meant deleting a Deals row in the Wix dashboard silently
+      // republished the product it belonged to.
+      //
+      // The Deals collection is what defines a deal here; Stores is only
+      // the catalogue behind it. No row, nothing to show.
+      if (!meta) return null;
+      if (!meta.merchantEmail || !businessByEmail[String(meta.merchantEmail).toLowerCase()]) return null;
+      return {
+        ...deal,
+        expiresAt: meta.expiresAt ?? null,
+        status: meta.status ?? null,
+        image: meta.photoUrl || deal.image,
+        isFlash: Boolean(meta.isFlash),
+        description: meta.description || deal.description,
+        currency: "NZD",
+        quantityAvailable:
+          typeof meta.quantityAvailable === "number" ? meta.quantityAvailable : null,
+        dealCode: meta.dealCode || null,
+        // Cards show a short restriction summary drawn from the terms, so
+        // listings need them too — they were only mapped on deal pages.
+        terms: meta.terms || null,
+        bookingRequirement: parseBookingRequirement(meta.bookingRequirement),
+      };
+    })
+    .filter((deal: Deal | null): deal is Deal => deal !== null && isDealLive(deal))
+    .map((deal: Deal) => {
+      const meta = metaByProductId[deal.id];
+      const business = meta?.merchantEmail
+        ? businessByEmail[String(meta.merchantEmail).toLowerCase()]
+        : undefined;
+      return business ? applyBusinessToDeal(deal, business) : deal;
+    });
 }
 
 export interface BusinessProfile extends PublicBusiness {
