@@ -1,9 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import MascotFigure from "@/components/megadeal/MascotFigure";
-import { useMegadealArt } from "@/context/MegadealArtProvider";
 import MerchantLoginForm from "./MerchantLoginForm";
 
 /**
@@ -32,7 +31,6 @@ export default function PortalAuthScreen({
   intro: string;
   redirectTo?: string;
 }) {
-  const art = useMegadealArt();
 
   // Being signed into both at once is confusing (which account is this
   // page even acting as?) and not something a real visitor should ever
@@ -102,25 +100,17 @@ export default function PortalAuthScreen({
               to mush; shown at its own scale it reads the way it was
               actually drawn. "Waving" doubles as a plain-language greeting
               on a sign-in screen, which the old icon's static face didn't. */}
-          <div className="relative bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 px-6 pb-6 pt-[100px] text-center">
-            {/* Plain box-centering (-translate-x-1/2). A previous version
-                used -58% on the theory that the head/ears were visually
-                heavier on the right than the raised hand was on the left —
-                but a pixel-level alpha-centroid check of the source artwork
-                puts its visual weight at 50.3% of its own width, essentially
-                dead center (the two big round ears are symmetric, and the
-                raised hand on the left roughly balances the small paw on
-                the lower right). The -58% offset was an 8%-of-width
-                overcorrection in the wrong direction, which is what still
-                read as off-center. */}
-            <MascotFigure
-              src={art.mascotWave}
-              fallbackSrc="/brand/megadeal-elephant.svg"
+          <div className="relative bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 px-6 pb-6 pt-[112px] text-center">
+            {/* The new MegaDeal elephant (the waist-up one), the only
+                mascot on this screen. Transparent cutout, centred. */}
+            <Image
+              src="/megadeal/mascot/megadeal-mascot-search.webp"
               alt=""
-              width={320}
-              height={250}
+              width={400}
+              height={331}
               priority
-              className="absolute left-1/2 top-0 h-auto w-[128px] -translate-x-1/2 drop-shadow-[0_10px_18px_rgba(37,10,77,.35)]"
+              sizes="124px"
+              className="absolute left-1/2 top-1 h-auto w-[124px] -translate-x-1/2 drop-shadow-[0_10px_18px_rgba(37,10,77,.35)]"
             />
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-100">
               MegaDeal for business

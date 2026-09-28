@@ -257,7 +257,10 @@ function Controls({
                     : "border-hp-line bg-white text-hp-ink hover:border-hp-boundary"
                 }`}
               >
-                {t.label}
+                {/* Short labels on the narrowest phones, where three equal
+                    pills can't fit "Everyday Deals" on one line. */}
+                <span className="whitespace-nowrap min-[400px]:hidden">{t.label.replace(/ deals$/i, "")}</span>
+                <span className="hidden whitespace-nowrap min-[400px]:inline">{t.label}</span>
               </FilterLink>
             );
           })}

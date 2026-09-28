@@ -34,11 +34,11 @@ type Props =
     };
 
 /**
- * The one category control. A single labelled row on desktop; on phones a
- * fixed grid — "All categories" across the top, the six categories in
- * three columns under it. Columns are sized in rem, so enlarged text or a
- * very narrow screen gets two wider columns instead of squeezed labels.
- * Nothing scrolls sideways or moves on its own.
+ * The one category control. A single labelled row on desktop; below that,
+ * one row of chips the visitor swipes sideways by hand (it never moves on
+ * its own), with the next chip cut off at the edge and a soft fade there
+ * so it reads as "there's more". One row keeps the deals higher up the
+ * screen than the old three-row grid did.
  *
  * Every item is a real link, so it works before JavaScript loads and for
  * crawlers; on the homepage a click is intercepted to filter in place.
@@ -67,14 +67,13 @@ export default function CategoryNav(props: Props) {
   }
 
   return (
-    <nav aria-label="Categories">
-      <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,6.5rem),1fr))] gap-2 sm:grid-cols-3 lg:flex lg:gap-0 lg:border-b lg:border-hp-line">
+    <nav aria-label="Categories" className="relative">
+      <ul className="scrollbar-hide -mx-4 flex snap-x gap-2 overflow-x-auto scroll-px-4 px-4 py-1 sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:gap-0 lg:overflow-visible lg:border-b lg:border-hp-line lg:px-0 lg:py-0">
         {items.map(({ slug, label, Icon }) => {
           const selected = active === slug;
           const href = pageHref(slug);
-          const isAll = slug === "";
           return (
-            <li key={slug || "all"} className={`${isAll ? "col-span-full" : ""} lg:min-w-0 lg:flex-1`}>
+            <li key={slug || "all"} className="shrink-0 snap-start lg:min-w-0 lg:flex-1 lg:shrink">
               <Link
                 href={href}
                 scroll={false}
@@ -83,9 +82,7 @@ export default function CategoryNav(props: Props) {
                 prefetch={props.mode === "filter" ? false : undefined}
                 onClick={(e) => handleClick(e, filterHref(slug))}
                 aria-current={selected ? "true" : undefined}
-                className={`group flex h-full items-center gap-1 rounded-[14px] border px-1.5 text-left min-[380px]:gap-1.5 min-[380px]:px-2 text-[0.8125rem] font-semibold leading-tight transition [text-wrap:balance] sm:gap-2.5 sm:px-3 sm:text-[0.875rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 lg:flex-col lg:justify-center lg:gap-2 lg:rounded-none lg:border-0 lg:border-b-[3px] lg:px-1 lg:pb-3 lg:pt-3 lg:text-center lg:text-[0.875rem] ${
-                  isAll ? "min-h-[48px] justify-center" : "min-h-[60px]"
-                } ${
+                className={`group flex h-full min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-[0.875rem] font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 lg:flex-col lg:justify-center lg:gap-2 lg:whitespace-normal lg:rounded-none lg:border-0 lg:border-b-[3px] lg:px-1 lg:pb-3 lg:pt-3 lg:text-center ${
                   selected
                     ? "border-hp-purple bg-hp-purple text-white lg:border-hp-purple lg:bg-transparent lg:text-hp-ink"
                     : "border-hp-line bg-white text-hp-ink hover:border-hp-boundary lg:border-transparent lg:bg-transparent lg:hover:border-hp-line"
@@ -96,11 +93,9 @@ export default function CategoryNav(props: Props) {
                     selected ? "text-white lg:bg-hp-purple" : "text-hp-purple lg:bg-hp-lavender lg:group-hover:bg-[#ECE4FA]"
                   }`}
                 >
-                  <Icon className="h-5 w-5 sm:h-[22px] sm:w-[22px] lg:h-6 lg:w-6" />
+                  <Icon className="h-[18px] w-[18px] lg:h-6 lg:w-6" />
                 </span>
-                {/* min-w-0 + hyphens: with enlarged text a long word like
-                    "Getaways" wraps inside the tile instead of spilling out. */}
-                <span className={`min-w-0 hyphens-auto break-words ${selected ? "lg:font-bold" : ""}`}>
+                <span className={`min-w-0 ${selected ? "lg:font-bold" : ""}`}>
                   {label}
                 </span>
               </Link>
@@ -108,6 +103,12 @@ export default function CategoryNav(props: Props) {
           );
         })}
       </ul>
+      {/* The "more this way" hint on the swipe row; nothing to hint at on
+          desktop, where every category fits. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 -right-4 w-10 bg-gradient-to-l from-hp-page to-transparent sm:-right-6 lg:hidden"
+      />
     </nav>
   );
 }

@@ -99,7 +99,7 @@ export default function Header() {
           <a
             href="#launch-offer"
             data-cta-section="header"
-            className="shrink-0 rounded-full bg-[#C81287] px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#DC168F] sm:px-5 sm:text-sm"
+            className="shrink-0 rounded-full bg-brand-600 px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-brand-700 sm:px-5 sm:text-sm"
           >
             {businessLanding.ctaLabel}
           </a>

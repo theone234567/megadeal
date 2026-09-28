@@ -411,8 +411,7 @@ export default function BeautySpaAdvertisingPage() {
                 <a
                   href="#launch-offer"
                   data-cta-section="hero"
-                  className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(200,18,135,.35)] transition hover:bg-[#DC168F] active:scale-95 sm:text-base"
-                  style={{ backgroundColor: "#C81287" }}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-extrabold text-brand-700 shadow-[0_10px_24px_rgba(20,6,50,.25)] transition hover:bg-brand-50 active:scale-95 sm:text-base"
                 >
                   Get 6 months free →
                 </a>
@@ -849,8 +848,7 @@ export default function BeautySpaAdvertisingPage() {
 
                 <div className="rounded-[24px] bg-white/10 p-6 text-center backdrop-blur-sm sm:p-8">
                   <p
-                    className="mx-auto inline-block rounded-full px-4 py-1.5 text-xs font-extrabold uppercase tracking-wide text-white"
-                    style={{ backgroundColor: "#C81287" }}
+                    className="mx-auto inline-block rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold text-white ring-1 ring-white/30"
                   >
                     Up to 6 months free advertising
                   </p>
@@ -1001,8 +999,7 @@ export default function BeautySpaAdvertisingPage() {
           <a
             href="#launch-offer"
             data-cta-section="mobile_sticky"
-            className="rounded-full px-5 py-2.5 text-sm font-extrabold text-white"
-            style={{ backgroundColor: "#C81287" }}
+            className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-brand-700"
           >
             List my business
           </a>

@@ -165,7 +165,11 @@ export default function DealCard({
             push it out of view. "Offer ends", never "Valid until": the
             deadline to get the deal, not the dates it can be used on. A
             Flash Deal's time left is on the photo instead. */}
-        {footLine && <p className="truncate text-xs text-hp-muted">{footLine}</p>}
+        {/* Always rendered, empty or not, so every card in a row keeps
+            this line's height and the prices above it stay level. */}
+        <p className="truncate text-xs text-hp-muted" aria-hidden={footLine ? undefined : true}>
+          {footLine || " "}
+        </p>
       </div>
     </Wrapper>
   );
