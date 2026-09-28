@@ -10,6 +10,7 @@ import { parseBookingRequirement } from "./booking";
 import { queryAllItems } from "./queryAll";
 import { searchAllProducts } from "./searchAllProducts";
 import { toListingDeal } from "./listingDeal";
+import { readEdgeCache, writeEdgeCache } from "./edgeCache";
 import type { Deal, DealStatus } from "./types";
 
 /** Overlays a deal's Deals row (status, dates, photo, terms, code…) on
@@ -53,8 +54,14 @@ function mergeDealRecord(deal: Deal, record: Record<string, any>): Deal {
  * didn't exist ("This page has wandered off"). Now a failed read is tried
  * once more and, if it fails again, thrown, so the visitor gets the
  * "Something went sideways / Try again" page instead.
+ *
+ * Tried first: the deal from a listing read in the last minute (see
+ * liveDealFromListing), which needs no Wix reads. Opening a deal from the
+ * homepage used to wait for three Wix reads in a row every time.
  */
-export const fetchDealForSEO = cache((slug: string) => retryUnlessMissing("deal", slug, loadDealForSEO));
+export const fetchDealForSEO = cache(
+  async (slug: string) => (await liveDealFromListing(slug)) ?? retryUnlessMissing("deal", slug, loadDealForSEO)
+);
 
 /**
  * Runs a page's read, and once more after a short pause if it fails. A
@@ -149,30 +156,75 @@ export const fetchAllLiveDealsServer = cache(fetchAllLiveDeals);
 // persistent cache configured on Cloudflare (open-next.config.ts). So
 // every homepage view was a fresh read of every product, deal and business
 // from Wix: slow for the visitor, and anyone reloading the page fast
-// enough could run the site into Wix's rate limit. Kept in memory for a
-// minute instead, per server instance. Only resolved plain data is kept —
-// never a promise, which a Worker can't share between requests.
+// enough could run the site into Wix's rate limit. Kept for a minute
+// instead: in this server instance's memory, and in the data centre's
+// shared cache (lib/edgeCache.ts) so the site's other instances there can
+// use it too. Only resolved plain data is kept — never a promise, which a
+// Worker can't share between requests.
 const LISTING_FRESH_MS = 60 * 1000;
 // If Wix fails, a recent copy is served rather than an empty page: an
 // empty listing would show "no deals" and mark every category page
 // noindex, and a crawler arriving then would take both at face value.
 const LISTING_STALE_MS = 15 * 60 * 1000;
-let lastListing: { at: number; deals: Deal[] } | null = null;
+// Bump when the shape of a stored Deal changes, so a deploy never reads a
+// copy stored by the previous version.
+const LISTING_CACHE_KEY = "live-deals-v1";
 
-async function fetchAllLiveDeals(): Promise<Deal[]> {
+// The deals are kept whole — contact details, deal code and all — so the
+// deal page can use them (fetchDealForSEO). Listings get them trimmed by
+// toListingDeal on the way out.
+type Listing = { at: number; deals: Deal[] };
+let lastListing: Listing | null = null;
+
+/** A copy of the listing no older than a minute, without reading Wix. */
+async function freshListing(now: number): Promise<Listing | null> {
+  if (lastListing && now - lastListing.at < LISTING_FRESH_MS) return lastListing;
+  const shared = await readEdgeCache<Deal[]>(LISTING_CACHE_KEY);
+  if (shared && now - shared.at < LISTING_FRESH_MS) {
+    lastListing = { at: shared.at, deals: shared.value };
+    return lastListing;
+  }
+  return null;
+}
+
+async function currentListing(): Promise<Listing | null> {
   const now = Date.now();
-  // Re-checked on the way out: a deal can expire while it's held here.
-  const stillLive = (deals: Deal[]) => deals.filter((d) => isDealLive(d, now));
-  if (lastListing && now - lastListing.at < LISTING_FRESH_MS) return stillLive(lastListing.deals);
+  const fresh = await freshListing(now);
+  if (fresh) return fresh;
   try {
-    const deals = (await loadAllLiveDeals()).map(toListingDeal);
-    lastListing = { at: Date.now(), deals };
-    return deals;
+    const at = Date.now();
+    const deals = await loadAllLiveDeals();
+    lastListing = { at, deals };
+    await writeEdgeCache(LISTING_CACHE_KEY, deals, at, LISTING_STALE_MS / 1000);
+    return lastListing;
   } catch (err) {
     console.error("[fetchAllLiveDealsServer] failed", err);
-    if (lastListing && now - lastListing.at < LISTING_STALE_MS) return stillLive(lastListing.deals);
-    return [];
+    if (lastListing && now - lastListing.at < LISTING_STALE_MS) return lastListing;
+    return null;
   }
+}
+
+async function fetchAllLiveDeals(): Promise<Deal[]> {
+  const listing = await currentListing();
+  if (!listing) return [];
+  // Re-checked on the way out: a deal can expire while it's held here.
+  const now = Date.now();
+  return listing.deals.filter((d) => isDealLive(d, now)).map(toListingDeal);
+}
+
+/**
+ * A deal straight from a listing read in the last minute, if it's in it:
+ * the listing already holds every live deal whole (product, Deals row and
+ * approved business, built the same way as loadDealForSEO), so opening a
+ * deal from the homepage needs no Wix reads at all. null when there's no
+ * fresh listing or the deal isn't in it (new in the last minute, or not
+ * live), and the caller reads Wix as before.
+ */
+async function liveDealFromListing(slug: string): Promise<Deal | null> {
+  const now = Date.now();
+  const listing = await freshListing(now);
+  const deal = listing?.deals.find((d) => d.slug === slug);
+  return deal && isDealLive(deal, now) ? deal : null;
 }
 
 /** One full read of the listing from Wix. Throws on failure — the
