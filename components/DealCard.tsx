@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { ComponentType } from "react";
 import type { Deal } from "@/lib/types";
@@ -6,7 +5,7 @@ import { formatMoney, formatOfferEndDate } from "@/lib/format";
 import { dealSavingPercent } from "@/lib/dealSaving";
 import { keyRestrictions } from "@/lib/dealTerms";
 import { CATEGORIES } from "@/lib/categories";
-import { wixImageUrl } from "@/lib/wixImageUrl";
+import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 import CountdownBadge from "./CountdownBadge";
 import {
   CompassIcon,
@@ -100,14 +99,20 @@ export default function DealCard({
     >
       <div className="relative aspect-[3/2] w-full overflow-hidden bg-hp-lavender">
         {deal.image ? (
-          <Image
+          // A plain <img>: next/image makes no srcset while images are
+          // unoptimized, and this lets a phone take a smaller copy
+          // (wixImageSrcSet).
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={wixImageUrl(deal.image, 750, 500)}
+            srcSet={wixImageSrcSet(deal.image, [360, 540, 750], 3 / 2)}
+            sizes="(min-width: 1024px) 280px, (min-width: 768px) 33vw, 50vw"
             // Empty: the title is already the link's text, so repeating it
             // as the photo's alt made screen readers announce it twice.
             alt=""
-            fill
-            sizes="(min-width: 1024px) 280px, (min-width: 768px) 33vw, 50vw"
-            className={`object-cover transition duration-300 group-hover:scale-[1.02] ${soldOut ? "grayscale" : ""}`}
+            loading="lazy"
+            decoding="async"
+            className={`absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-[1.02] ${soldOut ? "grayscale" : ""}`}
           />
         ) : (
           <div aria-hidden className="flex h-full w-full items-center justify-center text-hp-purple/40">

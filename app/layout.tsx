@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import "./globals.css";
-import { WixProvider } from "@/context/WixProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MetaPixel from "@/components/MetaPixel";
@@ -161,11 +160,13 @@ export default function RootLayout({
           <AttributionCapture />
         </Suspense>
         <MegadealArtProvider art={megadealArt}>
-          <WixProvider>
-            <Header />
-            {children}
-            <Footer siteLaunched={SITE_LAUNCHED} />
-          </WixProvider>
+          {/* No WixProvider here: only the portal, admin and signup pages
+              use Wix sign-in, and they have it in their own layouts.
+              Here it put the Wix sign-in code (about 100KB) and a
+              session check (/api/auth/me) on every page, public or not. */}
+          <Header />
+          {children}
+          <Footer siteLaunched={SITE_LAUNCHED} />
         </MegadealArtProvider>
         <PreviewBanner siteLaunched={SITE_LAUNCHED} />
       </body>

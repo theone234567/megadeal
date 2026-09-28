@@ -33,4 +33,9 @@ export const caveat = Caveat({
   weight: ["600", "700"],
   display: "swap",
   variable: "--font-caveat",
+  // Not preloaded: it's the largest of the three fonts (about 74KB) and
+  // is only used for the handwritten signature on /list-your-business.
+  // Preloaded, every page downloaded it up front; now only that page does,
+  // when it's actually drawn.
+  preload: false,
 });

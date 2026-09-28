@@ -24,3 +24,18 @@ export function wixImageUrl(url: string, width: number, height: number, format: 
   if (!isWixMediaUrl(url)) return url;
   return `${url}/v1/fill/w_${Math.round(width)},h_${Math.round(height)}/file.${format}`;
 }
+
+/**
+ * The same Wix photo at several widths, one shape (width ÷ height =
+ * `ratio`), as an <img srcSet>, so a phone downloads a size that fits it
+ * rather than the desktop one. undefined for photos that aren't Wix media,
+ * which can't be resized this way.
+ *
+ * Needed because next/image makes no srcset while images are unoptimized
+ * (next.config.mjs), so every card fetched its 750px photo even on a
+ * phone, where the card is under 200px wide.
+ */
+export function wixImageSrcSet(url: string, widths: number[], ratio: number): string | undefined {
+  if (!isWixMediaUrl(url)) return undefined;
+  return widths.map((w) => `${wixImageUrl(url, w, w / ratio)} ${w}w`).join(", ");
+}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import type { Deal } from "@/lib/types";
 import { formatMoney, formatOfferEndDate } from "@/lib/format";
@@ -14,7 +13,7 @@ import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon, Ch
 import { trackDealEvent } from "@/lib/trackDeal";
 import { parseBusinessHours, formatBusinessHoursLines, isOpenNow } from "@/lib/businessHours";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { wixImageUrl } from "@/lib/wixImageUrl";
+import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 import { keyRestrictions, splitTermsForDisplay } from "@/lib/dealTerms";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { bookingPlan, effectiveBookingRequirement, type BookingAction } from "@/lib/booking";
@@ -221,14 +220,18 @@ export default function DealDetail({
         <div className="lg:col-start-1 lg:row-start-1">
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[18px] bg-brand-50">
             {deal.image ? (
-              <Image
+              // A plain <img>: next/image makes no srcset while images are
+              // unoptimized, and this lets a phone take a smaller copy.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={wixImageUrl(deal.image, 1200, 900)}
-                alt={deal.name}
-                fill
+                srcSet={wixImageSrcSet(deal.image, [640, 900, 1200], 4 / 3)}
                 sizes="(min-width: 1024px) 700px, 100vw"
-                className="object-cover"
+                alt={deal.name}
+                className="absolute inset-0 h-full w-full object-cover"
                 loading="eager"
                 fetchPriority="high"
+                decoding="async"
               />
             ) : (
               <div aria-hidden className="flex h-full w-full items-center justify-center text-7xl opacity-40">
