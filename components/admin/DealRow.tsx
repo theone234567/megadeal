@@ -6,6 +6,7 @@ import Link from "next/link";
 import DealContentEditor from "./DealContentEditor";
 import { aiSummary, effectiveVerdict } from "@/lib/aiReview";
 import { describeMinutes } from "@/lib/dealDuration";
+import { dealDisplayStatus } from "@/lib/dealStatus";
 
 export interface AdminDeal {
   _id: string;
@@ -178,6 +179,9 @@ export default function DealRow({
           aria-label="End date"
           className="rounded-lg border border-slate-200 px-2 py-1 text-sm"
         />
+        {dealDisplayStatus(deal) === "Ended" && (
+          <p className="mt-1 text-xs font-semibold text-slate-600">Ended — its run is over</p>
+        )}
         {/* Not live yet: the run starts when it's approved. */}
         {!deal.expiresAt && Number(deal.requestedDurationMinutes) > 0 && (
           <p className="mt-1 text-xs text-slate-500">

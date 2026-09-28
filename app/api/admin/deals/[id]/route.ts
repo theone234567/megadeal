@@ -6,6 +6,7 @@ import { notifyDealChanged } from "@/lib/indexNowDeal";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { firstPublicationFields, manualExpiryError } from "@/lib/dealDuration";
+import { hasDealExpired } from "@/lib/dealStatus";
 import { PRODUCT_FIELDS, buildProductUpdate, parseAdminContentEdit, withHistory } from "@/lib/dealAdminEdit";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
@@ -134,6 +135,20 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         if (publication.error) return NextResponse.json({ error: publication.error }, { status: 409 });
         Object.assign(patch, publication.fields);
       }
+    }
+
+    // A deal whose run is over (paused past its end, say) can't be switched
+    // back to Live on its old dates: it would read "Live" here and in the
+    // business's portal while staying off the site. A new end date in the
+    // same save is checked above (future, within the maximum run).
+    if (patch.status === "Live" && existing.status !== "Live" && hasDealExpired(patch.expiresAt ?? existing.expiresAt)) {
+      return NextResponse.json(
+        {
+          error:
+            "This deal's run has ended. Set a new end date in the future in the same save, or ask the business to run it again as a new deal.",
+        },
+        { status: 409 }
+      );
     }
 
     const updated = await adminClient.items.update("Deals", {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { DealStatus } from "@/lib/types";
-import { DEAL_STATUS_STYLES, allowedDealActions, withdrawalRefundsCredit } from "@/lib/dealStatus";
+import { DEAL_STATUS_STYLES, allowedDealActions, dealDisplayStatus, withdrawalRefundsCredit } from "@/lib/dealStatus";
 import { describeMinutes } from "@/lib/dealDuration";
 import PhotoUploadField from "./PhotoUploadField";
 
@@ -40,9 +40,12 @@ export default function DealManageCard({
   const [actionError, setActionError] = useState<string | null>(null);
   const [busyTarget, setBusyTarget] = useState<DealStatus | null>(null);
 
-  const status: DealStatus | null = deal.status ?? "Live";
+  // "Ended" once the run is over, whatever the stored status says.
+  const status = dealDisplayStatus(deal);
   const actions = allowedDealActions(status);
   const isCancelled = status === "Cancelled";
+  const isEnded = status === "Ended";
+  const isPast = isCancelled || isEnded;
   const daysUntilExpiry = deal.expiresAt
     ? (new Date(deal.expiresAt).getTime() - Date.now()) / 86_400_000
     : null;
@@ -82,7 +85,7 @@ export default function DealManageCard({
           </span>
           <span className={`text-sm ${endingSoon ? "font-semibold text-ember-600" : "text-slate-500"}`}>
             {deal.expiresAt
-              ? `Ends ${new Date(deal.expiresAt).toLocaleDateString()}`
+              ? `${isEnded ? "Ended" : "Ends"} ${new Date(deal.expiresAt).toLocaleDateString()}`
               : Number(deal.requestedDurationMinutes) > 0
               ? `Runs ${describeMinutes(Number(deal.requestedDurationMinutes))} once approved`
               : "—"}
@@ -155,8 +158,8 @@ export default function DealManageCard({
             label="Deal photo"
             filenameLabel={deal.dealName}
             currentUrl={deal.photoUrl || null}
-            disabled={isCancelled}
-            disabledText="This deal is cancelled, so its photo can't be changed."
+            disabled={isPast}
+            disabledText={`This deal has ${isEnded ? "ended" : "been cancelled"}, so its photo can't be changed.`}
             warningText={
               status === "Pending Approval"
                 ? "This replaces the photo we'll review with your deal. Continue?"
@@ -164,7 +167,7 @@ export default function DealManageCard({
             }
             onConfirm={(dataUrl) => onChangePhoto(deal, dataUrl)}
           />
-          {deal.pendingPhotoUrl && !isCancelled && (
+          {deal.pendingPhotoUrl && !isPast && (
             <div className="flex items-center gap-3 rounded-xl border border-brand-100 bg-brand-50 p-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={deal.pendingPhotoUrl} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
@@ -177,7 +180,7 @@ export default function DealManageCard({
           {/* Everything else about a submitted deal is fixed: customers may
               already have a code for it, and the offer they saw has to be
               the offer they get. */}
-          {!isCancelled && (
+          {!isPast && (
             <p className="text-sm text-slate-600">
               The offer itself can&apos;t be edited once submitted, so customers always get what they saw.
               Spotted a mistake?{" "}
@@ -197,8 +200,10 @@ export default function DealManageCard({
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>
             {actions.length === 0 ? (
               <p className="mt-1 text-sm text-slate-500">
-                {isCancelled
-                  ? "This deal is cancelled — duplicate it below if you'd like to relist it."
+                {isEnded
+                  ? "This deal has ended. To offer it again, run it again as a new deal — you'll choose a new run length, and it starts when we approve it."
+                  : isCancelled
+                  ? "This deal is cancelled. To offer it again, run it again as a new deal."
                   : "Waiting for site owner approval — you'll be notified once it's reviewed."}
               </p>
             ) : (
@@ -223,11 +228,17 @@ export default function DealManageCard({
             {actionError && <p className="mt-2 text-sm text-red-600">{actionError}</p>}
           </div>
 
+          {/* Finished deals get it as the main action: it's the one thing
+              left to do with them. Copies the offer, never the old dates. */}
           <Link
             href={`/portal/new-deal?duplicate=${deal._id}`}
-            className="inline-block text-xs font-semibold text-brand-600 hover:underline"
+            className={
+              isPast
+                ? "inline-flex rounded-full bg-brand-600 px-4 py-2 text-xs font-bold text-white hover:bg-brand-700"
+                : "inline-block text-xs font-semibold text-brand-600 hover:underline"
+            }
           >
-            Duplicate this deal →
+            {isPast ? "Run this deal again →" : "Duplicate this deal →"}
           </Link>
         </div>
       )}

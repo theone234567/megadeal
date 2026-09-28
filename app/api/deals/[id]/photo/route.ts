@@ -6,6 +6,7 @@ import { isWixMediaUrl } from "@/lib/photoUrl";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { reviewPendingPhoto } from "@/lib/aiReviewApply";
+import { dealDisplayStatus } from "@/lib/dealStatus";
 
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -35,6 +36,9 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     }
     if (deal.status === "Cancelled") {
       return NextResponse.json({ error: "This deal is cancelled." }, { status: 400 });
+    }
+    if (dealDisplayStatus({ status: deal.status, expiresAt: deal.expiresAt }) === "Ended") {
+      return NextResponse.json({ error: "This deal has ended, so its photo can't be changed." }, { status: 400 });
     }
     // Drafts change their photo in the deal form, through
     // /api/deals/draft — this route is only for submitted deals.

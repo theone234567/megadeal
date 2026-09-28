@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
-import { allowedDealActions, hasDealExpired, withdrawalRefundsCredit } from "@/lib/dealStatus";
+import { allowedDealActions, dealDisplayStatus, withdrawalRefundsCredit } from "@/lib/dealStatus";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
@@ -44,25 +44,22 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       return NextResponse.json({ error: "This isn't your deal." }, { status: 403 });
     }
 
-    const allowed = allowedDealActions(deal.status ?? "Live").some((a) => a.target === target);
-    if (!allowed) {
-      return NextResponse.json({ error: "That status change isn't allowed." }, { status: 400 });
-    }
-
-    // Pausing never stops this deal's clock — expiresAt is an absolute
-    // deadline set once at submission, and nothing here extends it. That's
-    // fine while there's time left, but resuming a deal whose deadline has
-    // already passed would flip it back to "Live" while isDealLive keeps
-    // it off the storefront anyway — a merchant clicking "Make live" and
-    // getting nothing, with no explanation. Caught here instead.
-    if (target === "Live" && hasDealExpired(deal.expiresAt)) {
+    // Checked before anything else, so every attempt on an ended deal gets
+    // the same answer: its run is over, and the way to run it again is a
+    // new deal with a new run length.
+    if (dealDisplayStatus({ status: deal.status, expiresAt: deal.expiresAt }) === "Ended") {
       return NextResponse.json(
         {
           error:
-            "This deal's run already ended, so it can't be made live again. Duplicate it from the portal to relist with a fresh run.",
+            "This deal has ended, so it can't be paused, restarted or cancelled. Use \"Run this deal again\" in your portal to relist it with a new run length.",
         },
         { status: 409 }
       );
+    }
+
+    const allowed = allowedDealActions(deal.status ?? "Live").some((a) => a.target === target);
+    if (!allowed) {
+      return NextResponse.json({ error: "That status change isn't allowed." }, { status: 400 });
     }
 
     // "Make live" normally resumes a paused deal whose clock is already

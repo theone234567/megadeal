@@ -685,8 +685,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       )}
       {duplicatedFrom && (
         <p className="mt-3 rounded-xl border border-brand-100 bg-brand-50 p-3 text-sm text-brand-700">
-          Prefilled from your previous deal — just re-pick the category and
-          photo below, then everything else is ready to go.
+          Prefilled from your previous deal — re-pick the category and photo,
+          and choose how long this new run lasts. Nothing carries over from the
+          old deal&apos;s dates: the new run starts when we approve it.
         </p>
       )}
       {draftRestored && (

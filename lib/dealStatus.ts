@@ -1,12 +1,39 @@
 import type { DealStatus } from "./types";
 
-export const DEAL_STATUS_STYLES: Record<DealStatus, string> = {
+/**
+ * What a business sees a deal as. "Ended" isn't stored: a Live or Paused
+ * deal whose run is over keeps its status in Wix, and is shown (and
+ * treated) as ended from the moment its end time passes.
+ */
+export type DealDisplayStatus = DealStatus | "Ended";
+
+export const DEAL_STATUS_STYLES: Record<DealDisplayStatus, string> = {
   Draft: "bg-brand-50 text-brand-700 border-brand-200",
   "Pending Approval": "bg-amber-50 text-amber-700 border-amber-200",
   Live: "bg-emerald-50 text-emerald-700 border-emerald-200",
   Paused: "bg-slate-100 text-slate-600 border-slate-200",
   Cancelled: "bg-red-50 text-red-600 border-red-200",
+  Ended: "bg-slate-100 text-slate-700 border-slate-300",
 };
+
+/** A deal's status as the business sees it — "Ended" once a Live or
+ *  Paused deal's run is over. (A deal with no status predates the field
+ *  and counts as Live.) */
+export function dealDisplayStatus(
+  deal: { status?: DealStatus | string | null; expiresAt?: string | null },
+  now: number = Date.now()
+): DealDisplayStatus {
+  const status = (deal.status || "Live") as DealStatus;
+  if ((status === "Live" || status === "Paused") && hasDealExpired(deal.expiresAt, now)) return "Ended";
+  return status;
+}
+
+/** Ended or cancelled: finished for good, kept as history. Either can be
+ *  run again only as a new deal (duplicate), with a new run length. */
+export function isPastDeal(deal: { status?: DealStatus | string | null; expiresAt?: string | null }, now?: number): boolean {
+  const s = dealDisplayStatus(deal, now);
+  return s === "Ended" || s === "Cancelled";
+}
 
 export interface DealStatusAction {
   label: string;
@@ -22,8 +49,11 @@ export interface DealStatusAction {
  * collection itself is admin-only in Wix. Approval ("Pending Approval" to
  * "Live") is always an admin action, never offered here.
  */
-export function allowedDealActions(status: DealStatus | null): DealStatusAction[] {
+export function allowedDealActions(status: DealDisplayStatus | null): DealStatusAction[] {
   switch (status) {
+    // Over for good — nothing to pause, resume or cancel.
+    case "Ended":
+      return [];
     case "Live":
       return [
         { label: "Pause", target: "Paused" },

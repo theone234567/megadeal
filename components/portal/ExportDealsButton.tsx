@@ -1,10 +1,11 @@
 "use client";
 
 import type { DealRecord } from "./DealManageCard";
+import { dealDisplayStatus } from "@/lib/dealStatus";
 
 const COLUMNS: { header: string; get: (d: DealRecord) => string | number }[] = [
   { header: "Deal name", get: (d) => d.dealName || "" },
-  { header: "Status", get: (d) => d.status || "Live" },
+  { header: "Status", get: (d) => dealDisplayStatus(d) },
   { header: "Price now", get: (d) => (d.priceNow ?? "") as string | number },
   { header: "Price was", get: (d) => (d.priceWas ?? "") as string | number },
   { header: "Quantity available", get: (d) => (d.quantityAvailable ?? "") as string | number },

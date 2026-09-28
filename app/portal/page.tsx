@@ -12,6 +12,7 @@ import ReferralCard from "@/components/portal/ReferralCard";
 import ActivityFeed from "@/components/portal/ActivityFeed";
 import ExportDealsButton from "@/components/portal/ExportDealsButton";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
+import { dealDisplayStatus, isPastDeal } from "@/lib/dealStatus";
 import { StoreIcon, MapPinIcon, MailIcon, ReceiptIcon, CreditCardIcon } from "@/components/icons";
 
 interface MerchantRecord {
@@ -53,6 +54,14 @@ function formatSavedAt(iso?: string): string {
   if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
   const days = Math.floor(hours / 24);
   return `${days} day${days === 1 ? "" : "s"} ago`;
+}
+
+/** When a past deal finished: its end time if its run ran out, otherwise
+ *  (cancelled) when it was last changed. */
+function finishedAt(deal: DealRecord): number {
+  const iso = dealDisplayStatus(deal) === "Ended" ? deal.expiresAt : deal._updatedDate;
+  const t = iso ? new Date(iso).getTime() : NaN;
+  return Number.isFinite(t) ? t : 0;
 }
 
 export default function PortalPage() {
@@ -304,6 +313,12 @@ export default function PortalPage() {
   // something a draft has none of.
   const drafts = deals.filter((d) => d.status === "Draft");
   const submittedDeals = deals.filter((d) => d.status !== "Draft");
+  // Ended (run over) and cancelled deals are history: listed apart, most
+  // recently finished first, so what's running now isn't buried.
+  const currentDeals = submittedDeals.filter((d) => !isPastDeal(d));
+  const pastDeals = submittedDeals
+    .filter((d) => isPastDeal(d))
+    .sort((a, b) => finishedAt(b) - finishedAt(a));
   // Has had a deal go live before, so a Pending status now means a change
   // under review rather than a first application.
   const inReReview = submittedDeals.some(
@@ -594,13 +609,15 @@ export default function PortalPage() {
                     <h2 className="text-lg font-bold text-slate-900">My deals</h2>
                     <ExportDealsButton deals={submittedDeals} />
                   </div>
-                  {submittedDeals.length === 0 ? (
+                  {currentDeals.length === 0 ? (
                     <p className="mt-2 text-sm text-slate-500">
-                      No deals yet — create your first one above.
+                      {pastDeals.length > 0
+                        ? "Nothing running right now. Run a past deal again below, or create a new one."
+                        : "No deals yet — create your first one above."}
                     </p>
                   ) : (
                     <ul className="mt-4 space-y-3">
-                      {submittedDeals.map((deal) => (
+                      {currentDeals.map((deal) => (
                         <DealManageCard
                           key={deal._id}
                           deal={deal}
@@ -610,6 +627,28 @@ export default function PortalPage() {
                         />
                       ))}
                     </ul>
+                  )}
+                  {pastDeals.length > 0 && (
+                    <div className="mt-6 border-t border-slate-100 pt-5">
+                      <h3 className="text-base font-bold text-slate-900">
+                        Past deals <span className="font-normal text-slate-500">({pastDeals.length})</span>
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Ended and cancelled deals. Open one and choose &ldquo;Run this deal again&rdquo; to relist it
+                        with a new run length.
+                      </p>
+                      <ul className="mt-3 space-y-3">
+                        {pastDeals.map((deal) => (
+                          <DealManageCard
+                            key={deal._id}
+                            deal={deal}
+                            onChangeStatus={handleChangeDealStatus}
+                            onChangePhoto={handleChangeDealPhoto}
+                            siteLaunched={siteLaunched}
+                          />
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </div>
               )}
