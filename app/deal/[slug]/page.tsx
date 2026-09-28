@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import DealDetail from "./DealDetail";
+import MoreDeals from "./MoreDeals";
 import { fetchDealForSEO, fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney, truncateForMeta } from "@/lib/format";
@@ -94,27 +96,12 @@ export async function generateMetadata(
 
 export default async function DealPage(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
+  // Start reading the site's other deals now, alongside this one, rather
+  // than after it: MoreDeals below picks up this same read (it's wrapped
+  // in cache()). It never throws — a failure comes back as no deals.
+  void fetchAllLiveDealsServer();
   const deal = await fetchDealForSEO(params.slug);
   if (!deal) notFound();
-
-  const allDeals = await fetchAllLiveDealsServer();
-  const others = allDeals.filter((d) => d.id !== deal.id);
-
-  // Same business first: someone who liked this deal is often more
-  // interested in this specific business's other offers than in a
-  // same-category deal from a stranger. Capped higher than "you might
-  // also like" below since it's the more relevant list.
-  const otherBusinessDeals = deal.businessSlug
-    ? others.filter((d) => d.businessSlug === deal.businessSlug).slice(0, 8)
-    : [];
-  const otherBusinessDealIds = new Set(otherBusinessDeals.map((d) => d.id));
-
-  // "You might also like" fills in with same-category deals from OTHER
-  // businesses — excluding anything already shown above so the same deal
-  // never appears twice on the page.
-  const remainingOthers = others.filter((d) => !otherBusinessDealIds.has(d.id));
-  const sameCategory = remainingOthers.filter((d) => d.categories.some((c) => deal.categories.includes(c)));
-  const relatedDeals = (sameCategory.length > 0 ? sameCategory : remainingOthers).slice(0, 4);
 
   // The business behind the deal, as a local business with a place —
   // linked by @id to the full record on its /business page, so search
@@ -171,7 +158,16 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
           }),
         }}
       />
-      <DealDetail deal={deal} relatedDeals={relatedDeals} otherBusinessDeals={otherBusinessDeals} />
+      <DealDetail
+        deal={deal}
+        moreDeals={
+          // Its own boundary: the deal shows as soon as it's read, and the
+          // lists of other deals follow when they're ready.
+          <Suspense fallback={null}>
+            <MoreDeals deal={deal} />
+          </Suspense>
+        }
+      />
     </>
   );
 }

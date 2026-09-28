@@ -571,7 +571,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         </div>
 
         <div className="mt-8 border-t border-slate-200 pt-2">
-          <DealDetail deal={previewDeal} relatedDeals={[]} preview />
+          <DealDetail deal={previewDeal} preview />
         </div>
 
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">

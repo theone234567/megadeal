@@ -71,7 +71,7 @@ export default async function AdminDealPreviewPage(props: { params: Promise<{ id
         </div>
         <p className="mt-8 text-xs font-bold uppercase tracking-wide text-slate-500">The deal page</p>
       </div>
-      <DealDetail deal={deal} relatedDeals={[]} preview />
+      <DealDetail deal={deal} preview />
     </div>
   );
 }

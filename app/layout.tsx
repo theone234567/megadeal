@@ -74,7 +74,17 @@ export default function RootLayout({
   const megadealArt = getMegadealArt();
 
   return (
-    <html lang="en-NZ" className={`${plusJakartaSans.variable} ${fredoka.variable} ${caveat.variable}`}>
+    // data-scroll-behavior="smooth": globals.css scrolls smoothly for
+    // in-page links (e.g. "Browse deals"). Since Next 16 that also
+    // animated every page change unless this attribute is set: clicking a
+    // deal card glided down the page for half a second and, on desktop,
+    // stopped with the top of the deal under the sticky header. With it,
+    // Next jumps straight to the top of the new page.
+    <html
+      lang="en-NZ"
+      data-scroll-behavior="smooth"
+      className={`${plusJakartaSans.variable} ${fredoka.variable} ${caveat.variable}`}
+    >
       <body className="min-h-screen bg-white font-sans text-slate-900 antialiased">
         {/* First thing in the tree: a tab stranded by a deploy should
             repair itself before the visitor hits a dead form. */}

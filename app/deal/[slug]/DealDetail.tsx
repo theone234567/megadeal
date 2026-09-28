@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Deal } from "@/lib/types";
@@ -9,7 +9,6 @@ import { dealSaving, dealSavingPercent } from "@/lib/dealSaving";
 import { isDealLive } from "@/lib/dealVisibility";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
 import CountdownBadge from "@/components/CountdownBadge";
-import DealGrid from "@/components/DealGrid";
 import ShareButtons from "@/components/ShareButtons";
 import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon, CheckIcon } from "@/components/icons";
 import { trackDealEvent } from "@/lib/trackDeal";
@@ -52,7 +51,7 @@ function ActionLink({ action, primary, small = false }: { action: BookingAction;
   );
 }
 
-// The deal (and its related deals) are fetched server-side (see page.tsx)
+// The deal is fetched server-side (see page.tsx)
 // so the description, price, and business info are present in the raw
 // HTML on first load — this component only adds client-side interactivity
 // (view tracking, the code reveal) on top of real data.
@@ -76,13 +75,11 @@ function ActionLink({ action, primary, small = false }: { action: BookingAction;
 // fixed number presented as live scarcity).
 export default function DealDetail({
   deal,
-  relatedDeals,
-  /** Other live deals from this same business, nearest-relevance first —
-   *  see app/deal/[slug]/page.tsx for how this is kept mutually exclusive
-   *  with relatedDeals so nothing shows twice on the page. Optional and
-   *  defaults to empty for the merchant-portal preview, which has no
-   *  other-deals data (and no business page to link to yet). */
-  otherBusinessDeals = [],
+  /** "More deals from this business" and "You might also like", built on
+   *  the server (see MoreDeals.tsx) and streamed in after the deal itself,
+   *  so reading every other deal never holds up this one. Left out in the
+   *  admin and merchant previews, which have no other deals to show. */
+  moreDeals = null,
   /** Rendered inside the merchant's own preview rather than on the public
    *  page. No view or reveal is recorded: the deal has no real id yet, and
    *  counting the author looking at their own draft would put fictional
@@ -90,8 +87,7 @@ export default function DealDetail({
   preview = false,
 }: {
   deal: Deal;
-  relatedDeals: Deal[];
-  otherBusinessDeals?: Deal[];
+  moreDeals?: ReactNode;
   preview?: boolean;
 }) {
   const [showCode, setShowCode] = useState(false);
@@ -600,29 +596,7 @@ export default function DealDetail({
         )}
       </div>
 
-      {otherBusinessDeals.length > 0 && (
-        <div className="mt-12 border-t border-slate-100 pt-8">
-          <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="font-display text-xl font-bold text-slate-900">More deals from {deal.businessName}</h2>
-            {deal.businessSlug && (
-              <Link
-                href={`/business/${deal.businessSlug}`}
-                className="text-sm font-semibold text-brand-600 hover:text-brand-700"
-              >
-                View all →
-              </Link>
-            )}
-          </div>
-          <DealGrid deals={otherBusinessDeals} />
-        </div>
-      )}
-
-      {relatedDeals.length > 0 && (
-        <div className="mt-12 border-t border-slate-100 pt-8">
-          <h2 className="font-display mb-5 text-xl font-bold text-slate-900">You might also like</h2>
-          <DealGrid deals={relatedDeals} />
-        </div>
-      )}
+      {moreDeals}
     </main>
   );
 }

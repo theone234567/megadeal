@@ -40,8 +40,15 @@ function mergeDealRecord(deal: Deal, record: Record<string, any>): Deal {
  * Server-only lookup for a deal page (its metadata, JSON-LD and body).
  * Runs on the admin (API key) client, which has proven reliable in Node —
  * the visitor OAuth client's browser-only flakiness doesn't apply here.
+ *
+ * Wrapped in React's cache(): the page's generateMetadata and its body
+ * both ask for the deal, and each lookup is three Wix reads in a row
+ * (product, Deals row, business). Unwrapped, every click on a deal made
+ * all three twice.
  */
-export async function fetchDealForSEO(slug: string): Promise<Deal | null> {
+export const fetchDealForSEO = cache(loadDealForSEO);
+
+async function loadDealForSEO(slug: string): Promise<Deal | null> {
   try {
     const adminClient = createWixAdminClient();
     const res = await adminClient.productsV3.getProductBySlug(slug, {
