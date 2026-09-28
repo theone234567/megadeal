@@ -152,7 +152,7 @@ export default function PortalAuthScreen({
             <p className="text-sm font-semibold text-slate-700">New to MegaDeal?</p>
             <Link
               href="/list-your-business#signup"
-              className="mt-3 inline-block rounded-full border-2 border-brand-600 px-5 py-2.5 text-sm font-extrabold text-brand-700 transition hover:bg-brand-600 hover:text-white active:scale-95"
+              className="mt-3 inline-block rounded-full border-2 border-brand-600 px-5 py-2.5 text-sm font-extrabold text-brand-600 transition hover:bg-brand-600 hover:text-white active:scale-95"
             >
               Sign up your business →
             </Link>

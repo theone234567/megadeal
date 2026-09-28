@@ -373,7 +373,7 @@ export default function BeautySpaAdvertisingPage() {
           /advertise/restaurants. */}
       <a
         href="#beauty-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#650FC7] focus:shadow-card"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#6520B5] focus:shadow-card"
       >
         Skip to main content
       </a>
@@ -411,14 +411,14 @@ export default function BeautySpaAdvertisingPage() {
                 <a
                   href="#launch-offer"
                   data-cta-section="hero"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-extrabold text-brand-700 shadow-[0_10px_24px_rgba(20,6,50,.25)] transition hover:bg-brand-50 active:scale-95 sm:text-base"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-extrabold text-brand-600 shadow-[0_10px_24px_rgba(20,6,50,.25)] transition hover:bg-brand-50 active:scale-95 sm:text-base"
                 >
                   Get 6 months free →
                 </a>
                 <a
                   href="#how-it-works"
                   data-cta-section="hero_secondary"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white px-6 py-3.5 text-sm font-extrabold text-[#650FC7] transition hover:border-white hover:bg-white/90 sm:text-base"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white px-6 py-3.5 text-sm font-extrabold text-[#6520B5] transition hover:border-white hover:bg-white/90 sm:text-base"
                 >
                   See how it works
                 </a>
@@ -492,10 +492,10 @@ export default function BeautySpaAdvertisingPage() {
                 <li key={c.href}>
                   <a
                     href={c.href}
-                    className="flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition hover:border-[#650FC7]/40 hover:bg-[#F5EFFC]"
+                    className="flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition hover:border-[#6520B5]/40 hover:bg-[#F5EFFC]"
                     style={{ borderColor: "#E8E1EF", color: "#0F172A" }}
                   >
-                    <c.icon className="h-4 w-4 text-[#650FC7]" />
+                    <c.icon className="h-4 w-4 text-[#6520B5]" />
                     {c.label}
                   </a>
                 </li>
@@ -522,7 +522,7 @@ export default function BeautySpaAdvertisingPage() {
                 <div key={c.title} className="rounded-[24px] border bg-white p-6 shadow-card" style={{ borderColor: "#E8E1EF" }}>
                   <span
                     className="flex h-11 w-11 items-center justify-center rounded-full"
-                    style={{ backgroundColor: "#F5EFFC", color: "#650FC7" }}
+                    style={{ backgroundColor: "#F5EFFC", color: "#6520B5" }}
                   >
                     <c.icon className="h-5 w-5" />
                   </span>
@@ -543,7 +543,7 @@ export default function BeautySpaAdvertisingPage() {
         <section className="px-4 py-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
           <div className="mx-auto max-w-[1184px]">
             <div className="mx-auto max-w-2xl text-center">
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
                 Every kind of beauty business
               </p>
               <h2 className={`${fredoka.className} mt-2 text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
@@ -587,7 +587,7 @@ export default function BeautySpaAdvertisingPage() {
                         <ul className="mt-1.5 space-y-1 text-sm" style={{ color: "#0F172A" }}>
                           {s.offerIdeas.map((idea) => (
                             <li key={idea} className="flex items-start gap-1.5">
-                              <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full" style={{ backgroundColor: "#650FC7" }} />
+                              <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full" style={{ backgroundColor: "#6520B5" }} />
                               {idea}
                             </li>
                           ))}
@@ -604,7 +604,7 @@ export default function BeautySpaAdvertisingPage() {
         {/* Section 3 — promote smarter, not just cheaper */}
         <section className="bg-white px-4 py-[94px] sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[1184px] text-center">
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               A smarter kind of promotion
             </p>
             <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
@@ -620,7 +620,7 @@ export default function BeautySpaAdvertisingPage() {
                 <div key={c.title} className="flex items-start gap-4 rounded-[24px] border p-6 shadow-card" style={{ borderColor: "#E8E1EF" }}>
                   <span
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
-                    style={{ backgroundColor: "#F5EFFC", color: "#650FC7" }}
+                    style={{ backgroundColor: "#F5EFFC", color: "#6520B5" }}
                   >
                     <c.icon className="h-5 w-5" />
                   </span>
@@ -641,7 +641,7 @@ export default function BeautySpaAdvertisingPage() {
         {/* Section 4 — example offer ideas */}
         <section className="px-4 py-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
           <div className="mx-auto max-w-[1184px] text-center">
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               Need inspiration?
             </p>
             <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
@@ -661,7 +661,7 @@ export default function BeautySpaAdvertisingPage() {
                     />
                   </div>
                   <div className="p-6">
-                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#650FC7" }}>
+                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#6520B5" }}>
                       {d.eyebrow}
                     </p>
                     <p className={`${fredoka.className} mt-1 text-lg font-semibold`} style={{ color: "#0F172A" }}>
@@ -706,7 +706,7 @@ export default function BeautySpaAdvertisingPage() {
         {/* Section 6 — Why MegaDeal (nav target: #why-megadeal) */}
         <section id="why-megadeal" className="scroll-mt-[100px] px-4 py-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
           <div className="mx-auto max-w-[1184px] text-center">
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               More opportunity. Less commission.
             </p>
             <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
@@ -718,7 +718,7 @@ export default function BeautySpaAdvertisingPage() {
                 <div key={w.title} className="rounded-[24px] border bg-white p-6 shadow-card" style={{ borderColor: "#E8E1EF" }}>
                   <span
                     className="flex h-11 w-11 items-center justify-center rounded-full"
-                    style={{ backgroundColor: "#F5EFFC", color: "#650FC7" }}
+                    style={{ backgroundColor: "#F5EFFC", color: "#6520B5" }}
                   >
                     <w.icon className="h-5 w-5" />
                   </span>
@@ -737,7 +737,7 @@ export default function BeautySpaAdvertisingPage() {
         {/* Section 7 — How it works (nav target: #how-it-works) */}
         <section id="how-it-works" className="scroll-mt-[100px] bg-white px-4 py-[94px] sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[1184px] text-center">
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               Simple. Direct. Local.
             </p>
             <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
@@ -749,7 +749,7 @@ export default function BeautySpaAdvertisingPage() {
                 <div key={s.number}>
                   <span
                     className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-extrabold text-white"
-                    style={{ backgroundColor: "#650FC7" }}
+                    style={{ backgroundColor: "#6520B5" }}
                   >
                     {s.number}
                   </span>
@@ -767,7 +767,7 @@ export default function BeautySpaAdvertisingPage() {
               href="#launch-offer"
               data-cta-section="process"
               className="mt-10 inline-flex items-center gap-1.5 text-sm font-bold hover:underline"
-              style={{ color: "#650FC7" }}
+              style={{ color: "#6520B5" }}
             >
               Get 6 months free →
             </a>
@@ -856,7 +856,7 @@ export default function BeautySpaAdvertisingPage() {
                     href={SIGNUP_HREF}
                     data-cta-section="launch_offer"
                     className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-extrabold shadow-card transition hover:bg-white/90 active:scale-95 sm:text-base"
-                    style={{ color: "#650FC7" }}
+                    style={{ color: "#6520B5" }}
                   >
                     Join MegaDeal — 6 months free →
                   </a>
@@ -874,11 +874,11 @@ export default function BeautySpaAdvertisingPage() {
               For eligible Auckland businesses applying before launch. Current eligibility
               requires a New Zealand registered limited company. Subject to approval and fair
               use.{" "}
-              <Link href="/terms" className="underline hover:no-underline" style={{ color: "#650FC7" }}>
+              <Link href="/terms" className="underline hover:no-underline" style={{ color: "#6520B5" }}>
                 View offer terms.
               </Link>{" "}
               Run a restaurant or café instead?{" "}
-              <Link href="/advertise/restaurants" className="underline hover:no-underline" style={{ color: "#650FC7" }}>
+              <Link href="/advertise/restaurants" className="underline hover:no-underline" style={{ color: "#6520B5" }}>
                 See restaurant advertising.
               </Link>
             </p>
@@ -888,7 +888,7 @@ export default function BeautySpaAdvertisingPage() {
         {/* FAQ (nav target: #questions) */}
         <section id="questions" className="scroll-mt-[100px] bg-white px-4 py-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
           <div className="mx-auto max-w-3xl">
-            <p className="text-center text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+            <p className="text-center text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               Let&rsquo;s make it clear
             </p>
             <h2 className={`${fredoka.className} mt-2 text-center text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
@@ -919,7 +919,7 @@ export default function BeautySpaAdvertisingPage() {
 
             <p className="mt-8 text-center text-sm" style={{ color: "#475569" }}>
               Have a question about your beauty business?{" "}
-              <Link href="/contact" className="font-bold hover:underline" style={{ color: "#650FC7" }}>
+              <Link href="/contact" className="font-bold hover:underline" style={{ color: "#6520B5" }}>
                 Talk to the MegaDeal team
               </Link>
             </p>
@@ -963,7 +963,7 @@ export default function BeautySpaAdvertisingPage() {
                 href={SIGNUP_HREF}
                 data-cta-section="final_cta"
                 className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-extrabold shadow-card transition hover:bg-white/90 active:scale-95 sm:text-base"
-                style={{ color: "#650FC7" }}
+                style={{ color: "#6520B5" }}
               >
                 Get started free →
               </a>
@@ -994,7 +994,7 @@ export default function BeautySpaAdvertisingPage() {
           style={{ borderColor: "#E8E1EF", paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
         >
           <p className="text-sm font-bold" style={{ color: "#0F172A" }}>
-            Up to <span style={{ color: "#650FC7" }}>6 months free</span>
+            Up to <span style={{ color: "#6520B5" }}>6 months free</span>
           </p>
           <a
             href="#launch-offer"

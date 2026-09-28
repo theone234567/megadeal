@@ -348,7 +348,7 @@ export default async function MerchantsPage() {
             <a
               href="#signup"
               data-cta-section="hero"
-              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-white px-6 text-[0.9375rem] font-semibold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-white px-6 text-[0.9375rem] font-semibold text-brand-600 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
             >
               {CTA_LABEL}
             </a>
@@ -708,7 +708,7 @@ export default async function MerchantsPage() {
             <a
               href="#signup"
               data-cta-section="founding_offer"
-              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-white px-6 text-[0.9375rem] font-semibold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-white px-6 text-[0.9375rem] font-semibold text-brand-600 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
             >
               {CTA_LABEL}
             </a>
@@ -799,7 +799,7 @@ export default async function MerchantsPage() {
             <a
               href="#signup"
               data-cta-section="final_cta"
-              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-white px-6 text-[0.9375rem] font-semibold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-white px-6 text-[0.9375rem] font-semibold text-brand-600 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
             >
               {CTA_LABEL}
             </a>

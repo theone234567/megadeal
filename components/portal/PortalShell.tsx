@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
-import { useMegadealArt } from "@/context/MegadealArtProvider";
 import { HomeIcon, ReceiptIcon, StoreIcon, CreditCardIcon } from "@/components/icons";
+import BrandLogo from "@/components/BrandLogo";
 import IdlePortalSignOut from "./IdlePortalSignOut";
 
 // "My deals" and "Credits" are sections of the Overview page itself
@@ -26,7 +25,6 @@ const NAV_ITEMS = [
 export default function PortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { member, isLoggedIn, logout } = useWix();
-  const art = useMegadealArt();
 
   return (
     <div className="min-h-screen bg-brand-50">
@@ -39,11 +37,7 @@ export default function PortalShell({ children }: { children: React.ReactNode })
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
         <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href="/portal" aria-label="MegaDeal business portal" className="flex shrink-0 items-center gap-2">
-            {art.logo ? (
-              <Image src={art.logo} alt="MegaDeal" width={2000} height={667} priority className="h-8 w-auto object-contain" />
-            ) : (
-              <span className="text-lg font-extrabold text-brand-700">MegaDeal</span>
-            )}
+            <BrandLogo placement="portal" />
             <span className="hidden text-sm text-slate-500 sm:inline">for business</span>
           </Link>
           {isLoggedIn && (

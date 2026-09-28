@@ -23,7 +23,7 @@ const CATEGORIES = [
   { icon: DumbbellIcon, label: "Gyms & Fitness", from: "#7ad9ff", to: "#7a17f0" },
   { icon: CompassIcon, label: "Things to Do", from: "#a3ffcf", to: "#2fb8a0" },
   { icon: SuitcaseIcon, label: "Getaways & Stays", from: "#ffd98a", to: "#e81ea3" },
-  { icon: WrenchIcon, label: "Home & Auto", from: "#c3c8ff", to: "#650fc7" },
+  { icon: WrenchIcon, label: "Home & Auto", from: "#c3c8ff", to: "#6520B5" },
 ];
 
 export default function DealCategories() {

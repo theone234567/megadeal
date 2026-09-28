@@ -99,7 +99,7 @@ const FAQS: { q: string; a: string; render?: React.ReactNode }[] = [
         signup. The offer is for qualifying businesses, is subject to
         approval and fair use, and provides up to six months of free
         advertising credits. See the full offer terms for details.{" "}
-        <Link href="/terms" className="text-[#650FC7] underline hover:no-underline">
+        <Link href="/terms" className="text-[#6520B5] underline hover:no-underline">
           Read the terms.
         </Link>
       </>
@@ -272,7 +272,7 @@ export default function RestaurantAdvertisingPage() {
           it's scoped here rather than added to the global layout. */}
       <a
         href="#restaurant-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#650FC7] focus:shadow-card"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#6520B5] focus:shadow-card"
       >
         Skip to main content
       </a>
@@ -310,7 +310,7 @@ export default function RestaurantAdvertisingPage() {
                 <a
                   href="#launch-offer"
                   data-cta-section="hero"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-extrabold text-brand-700 shadow-[0_10px_24px_rgba(20,6,50,.25)] transition hover:bg-brand-50 active:scale-95 sm:text-base"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-extrabold text-brand-600 shadow-[0_10px_24px_rgba(20,6,50,.25)] transition hover:bg-brand-50 active:scale-95 sm:text-base"
                 >
                   Claim my free advertising →
                 </a>
@@ -377,13 +377,13 @@ export default function RestaurantAdvertisingPage() {
         <section className="border-b" style={{ backgroundColor: "#F5EFFC", borderColor: "#E8E1EF" }}>
           <div className="mx-auto flex max-w-[1184px] flex-col items-center gap-4 px-4 py-6 text-sm font-semibold sm:flex-row sm:justify-center sm:gap-10 sm:px-6 lg:px-8" style={{ color: "#0F172A" }}>
             <span className="flex items-center gap-2">
-              <MapPinIcon className="h-4 w-4 text-[#650FC7]" /> New Zealand owned &amp; operated
+              <MapPinIcon className="h-4 w-4 text-[#6520B5]" /> New Zealand owned &amp; operated
             </span>
             <span className="flex items-center gap-2">
-              <CreditCardIcon className="h-4 w-4 text-[#650FC7]" /> Customers pay you directly
+              <CreditCardIcon className="h-4 w-4 text-[#6520B5]" /> Customers pay you directly
             </span>
             <span className="flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4 text-[#650FC7]" /> Your offers. Your terms.
+              <CalendarIcon className="h-4 w-4 text-[#6520B5]" /> Your offers. Your terms.
             </span>
           </div>
         </section>
@@ -392,7 +392,7 @@ export default function RestaurantAdvertisingPage() {
         <section id="why-megadeal" className="scroll-mt-[100px] bg-white px-4 py-[94px] sm:px-6 lg:px-8">
           <div className="mx-auto grid max-w-[1184px] grid-cols-1 items-start gap-14 lg:grid-cols-2 lg:gap-20">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
                 More opportunity. Less commission.
               </p>
               <h2 className={`${fredoka.className} mt-2 text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
@@ -409,7 +409,7 @@ export default function RestaurantAdvertisingPage() {
                   <div key={b.title} className="flex items-start gap-4">
                     <span
                       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
-                      style={{ backgroundColor: "#F5EFFC", color: "#650FC7" }}
+                      style={{ backgroundColor: "#F5EFFC", color: "#6520B5" }}
                     >
                       <b.icon className="h-5 w-5" />
                     </span>
@@ -428,7 +428,7 @@ export default function RestaurantAdvertisingPage() {
 
             {/* Commission receipt illustration */}
             <div className="rounded-[28px] border p-8" style={{ backgroundColor: "#F5EFFC", borderColor: "#E8E1EF" }}>
-              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
                 A simple difference
               </p>
               <h3 className={`${fredoka.className} mt-2 text-2xl font-semibold`} style={{ color: "#0F172A" }}>
@@ -446,14 +446,14 @@ export default function RestaurantAdvertisingPage() {
                   </div>
                   <div className="flex items-center justify-between border-b border-dashed pb-3" style={{ borderColor: "#E8E1EF" }}>
                     <dt style={{ color: "#475569" }}>MegaDeal commission</dt>
-                    <dd className="font-bold" style={{ color: "#650FC7" }}>$0</dd>
+                    <dd className="font-bold" style={{ color: "#6520B5" }}>$0</dd>
                   </div>
                   <div className="flex items-center justify-between pt-1">
                     <dt className="font-bold" style={{ color: "#0F172A" }}>Paid directly to your restaurant</dt>
                     <dd className="text-lg font-extrabold" style={{ color: "#0F172A" }}>$100</dd>
                   </div>
                 </dl>
-                <p className="mt-4 rounded-xl px-3 py-2 text-center text-xs font-bold" style={{ backgroundColor: "#F5EFFC", color: "#650FC7" }}>
+                <p className="mt-4 rounded-xl px-3 py-2 text-center text-xs font-bold" style={{ backgroundColor: "#F5EFFC", color: "#6520B5" }}>
                   No percentage taken from your sales
                 </p>
               </div>
@@ -469,7 +469,7 @@ export default function RestaurantAdvertisingPage() {
         {/* Offer ideas */}
         <section className="px-4 py-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
           <div className="mx-auto max-w-[1184px] text-center">
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               Your restaurant. Your kind of deal.
             </p>
             <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
@@ -485,11 +485,11 @@ export default function RestaurantAdvertisingPage() {
                 <div key={o.eyebrow} className="rounded-[24px] border bg-white p-6 shadow-card" style={{ borderColor: "#E8E1EF" }}>
                   <span
                     className="flex h-10 w-10 items-center justify-center rounded-full"
-                    style={{ backgroundColor: "#F5EFFC", color: "#650FC7" }}
+                    style={{ backgroundColor: "#F5EFFC", color: "#6520B5" }}
                   >
                     <o.icon className="h-5 w-5" />
                   </span>
-                  <p className="mt-4 text-xs font-bold uppercase tracking-wide" style={{ color: "#650FC7" }}>
+                  <p className="mt-4 text-xs font-bold uppercase tracking-wide" style={{ color: "#6520B5" }}>
                     {o.eyebrow}
                   </p>
                   <p className={`${fredoka.className} mt-1 text-lg font-semibold`} style={{ color: "#0F172A" }}>
@@ -518,7 +518,7 @@ export default function RestaurantAdvertisingPage() {
             page's alternating section colours stay intact. */}
         <section id="food-businesses" className="scroll-mt-[100px] px-4 pb-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
           <div className="mx-auto max-w-[1184px] border-t pt-[94px] text-center" style={{ borderColor: "#E8E1EF" }}>
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               Cafés, restaurants, bars and more
             </p>
             <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
@@ -549,7 +549,7 @@ export default function RestaurantAdvertisingPage() {
                   <ul className="mt-1.5 space-y-1">
                     {t.offerIdeas.map((idea) => (
                       <li key={idea} className="flex items-start gap-2 text-sm font-semibold" style={{ color: "#0F172A" }}>
-                        <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#650FC7]" />
+                        <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#6520B5]" />
                         {idea}
                       </li>
                     ))}
@@ -563,7 +563,7 @@ export default function RestaurantAdvertisingPage() {
         {/* How it works */}
         <section id="how-it-works" className="scroll-mt-[100px] bg-white px-4 py-[94px] sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[1184px] text-center">
-            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               Simple. Direct. Local.
             </p>
             <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
@@ -578,7 +578,7 @@ export default function RestaurantAdvertisingPage() {
                 <div key={s.number}>
                   <span
                     className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-extrabold text-white"
-                    style={{ backgroundColor: "#650FC7" }}
+                    style={{ backgroundColor: "#6520B5" }}
                   >
                     {s.number}
                   </span>
@@ -596,7 +596,7 @@ export default function RestaurantAdvertisingPage() {
               href="#launch-offer"
               data-cta-section="process"
               className="mt-10 inline-flex items-center gap-1.5 text-sm font-bold hover:underline"
-              style={{ color: "#650FC7" }}
+              style={{ color: "#6520B5" }}
             >
               Get my restaurant ready for launch →
             </a>
@@ -670,7 +670,7 @@ export default function RestaurantAdvertisingPage() {
                     href={SIGNUP_HREF}
                     data-cta-section="launch_offer"
                     className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-extrabold shadow-card transition hover:bg-white/90 active:scale-95 sm:text-base"
-                    style={{ color: "#650FC7" }}
+                    style={{ color: "#6520B5" }}
                   >
                     Claim my free advertising →
                   </a>
@@ -688,11 +688,11 @@ export default function RestaurantAdvertisingPage() {
               For qualifying Auckland businesses applying before launch.
               Current eligibility requires a New Zealand registered limited
               company. Subject to approval and fair use.{" "}
-              <Link href="/terms" className="underline hover:no-underline" style={{ color: "#650FC7" }}>
+              <Link href="/terms" className="underline hover:no-underline" style={{ color: "#6520B5" }}>
                 View offer terms.
               </Link>{" "}
               Run a beauty or spa business instead?{" "}
-              <Link href="/advertise/beauty-spa" className="underline hover:no-underline" style={{ color: "#650FC7" }}>
+              <Link href="/advertise/beauty-spa" className="underline hover:no-underline" style={{ color: "#6520B5" }}>
                 See beauty &amp; spa advertising.
               </Link>
             </p>
@@ -702,7 +702,7 @@ export default function RestaurantAdvertisingPage() {
         {/* FAQ */}
         <section id="questions" className="scroll-mt-[100px] bg-white px-4 py-[94px] sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl">
-            <p className="text-center text-xs font-bold uppercase tracking-wider" style={{ color: "#650FC7" }}>
+            <p className="text-center text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               Let&rsquo;s make it clear
             </p>
             <h2 className={`${fredoka.className} mt-2 text-center text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
@@ -733,7 +733,7 @@ export default function RestaurantAdvertisingPage() {
 
             <p className="mt-8 text-center text-sm" style={{ color: "#475569" }}>
               Have a question about your restaurant?{" "}
-              <Link href="/contact" className="font-bold hover:underline" style={{ color: "#650FC7" }}>
+              <Link href="/contact" className="font-bold hover:underline" style={{ color: "#6520B5" }}>
                 Talk to the MegaDeal team
               </Link>
             </p>
@@ -774,7 +774,7 @@ export default function RestaurantAdvertisingPage() {
           style={{ borderColor: "#E8E1EF", paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
         >
           <p className="text-sm font-bold" style={{ color: "#0F172A" }}>
-            Up to <span style={{ color: "#650FC7" }}>6 months free</span>
+            Up to <span style={{ color: "#6520B5" }}>6 months free</span>
           </p>
           <a
             href="#launch-offer"
