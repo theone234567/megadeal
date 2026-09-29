@@ -361,3 +361,37 @@ export function SlidersIcon({ className = "h-4 w-4" }: IconProps) {
     </svg>
   );
 }
+
+// Home & Car business page (/advertise/home-car): cleaning, car and tyre
+// services had no icon in the set.
+
+export function SparklesIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M10 3.5 11.6 8.4 16.5 10l-4.9 1.6L10 16.5l-1.6-4.9L3.5 10l4.9-1.6Z" />
+      <path d="M18 14l.8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8Z" />
+    </svg>
+  );
+}
+
+export function CarIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M5 16H4a1 1 0 0 1-1-1v-3.2a1 1 0 0 1 .3-.7L5 9.4l1.6-3.2A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.8 1.2L19 9.4l1.7 1.7a1 1 0 0 1 .3.7V15a1 1 0 0 1-1 1h-1" />
+      <path d="M5 9.5h14" />
+      <path d="M9.5 16h5" />
+      <circle cx="7.5" cy="16.5" r="2" />
+      <circle cx="16.5" cy="16.5" r="2" />
+    </svg>
+  );
+}
+
+export function WheelIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="3.5" />
+      <path d="M12 3v5.5M12 15.5V21M3.4 9.2l5.3 1.7M15.3 13.1l5.3 1.7M5.6 18.9l3.3-4.4M15.1 9.5l3.3-4.4" />
+    </svg>
+  );
+}

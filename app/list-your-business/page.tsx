@@ -180,6 +180,8 @@ const BUSINESS_TYPES = [
   {
     icon: WrenchIcon,
     label: "Home & Car",
+    href: "/advertise/home-car",
+    ctaLabel: "See offer ideas for home & car businesses →",
     color: { bg: "bg-amber-100", icon: "text-amber-600" },
     description:
       "Turn available time in your schedule into opportunities for new bookings. Promote selected services or packages that help local customers discover what your business offers.",

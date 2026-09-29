@@ -1,0 +1,74 @@
+[
+  {
+    "file": "assets/car-detailing.png",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB",
+    "bytes": 2528654,
+    "sha256": "b3b3e24c7a28b31de05df2e31dfe8f54d2c791dfe4cd2d8cedd58f8c47bf57b5"
+  },
+  {
+    "file": "assets/car-servicing.png",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB",
+    "bytes": 2226369,
+    "sha256": "1efce09b993be58a5b439796421558e830029115b535d8f912ae17c40159faa7"
+  },
+  {
+    "file": "assets/cleaning.png",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB",
+    "bytes": 2240985,
+    "sha256": "5bdb0fd8e0d73cd1f4ff4dd2f116e38566e846877c52e2e8d1a151596a98c0fc"
+  },
+  {
+    "file": "assets/gardening.png",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB",
+    "bytes": 2890155,
+    "sha256": "084f25dd2876361111a820f953e2e0cb9c10aee5babeca0f50919dcd1229e873"
+  },
+  {
+    "file": "assets/hero-home-car-background.png",
+    "width": 1774,
+    "height": 887,
+    "mode": "RGBA",
+    "bytes": 891926,
+    "sha256": "cd8fbac57b1b055024b1a92ee11146d45615e3ee8ab7106810ff4d99ab4d03a7",
+    "alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "file": "assets/home-maintenance.png",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB",
+    "bytes": 2432970,
+    "sha256": "7c1e196a96c207ca9472a82336e7ed57c79e7b9539d42b590d14b446fe8a0b30"
+  },
+  {
+    "file": "assets/mascot-welcome-current.png",
+    "width": 1234,
+    "height": 1275,
+    "mode": "RGBA",
+    "bytes": 1193140,
+    "sha256": "dc9a0df601e002be77ea13bf269fb3fe4ab8ee798aba9fd9ec4a6f9dc54a33c7",
+    "alpha_extrema": [
+      0,
+      255
+    ]
+  },
+  {
+    "file": "assets/tyres-wheels.png",
+    "width": 1536,
+    "height": 1024,
+    "mode": "RGB",
+    "bytes": 2174601,
+    "sha256": "22dc6c5ad83d125daa41e1a7ae7bd409c86a70e82d34fb71bf218eb72fb2fe31"
+  }
+]

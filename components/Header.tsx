@@ -17,6 +17,7 @@ import MobileMenu from "@/components/header/MobileMenu";
 const BUSINESS_LANDING_PAGES: Record<string, { ctaLabel: string }> = {
   "/advertise/restaurants": { ctaLabel: "List my restaurant" },
   "/advertise/beauty-spa": { ctaLabel: "List my business" },
+  "/advertise/home-car": { ctaLabel: "List my business" },
 };
 
 // Colours for the three headers below: brand purple with the white logo

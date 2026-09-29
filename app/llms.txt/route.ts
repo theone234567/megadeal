@@ -69,6 +69,7 @@ MegaDeal has not launched to the public yet. There are no live deals to browse, 
 - List your business / advertise your deal: /list-your-business
 - Restaurant advertising: /advertise/restaurants
 - Beauty & spa advertising: /advertise/beauty-spa
+- Home & car business advertising (cleaning, gardening, home maintenance, car wash, servicing, tyres): /advertise/home-car
 - How it works: /how-it-works
 - How to redeem a deal (once launched): /redeem
 - About: /about
