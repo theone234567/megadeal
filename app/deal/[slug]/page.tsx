@@ -3,7 +3,8 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import DealDetail from "./DealDetail";
 import MoreDeals from "./MoreDeals";
-import { fetchDealForSEO, fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
+import EndedDeal from "./EndedDeal";
+import { fetchDealForSEO, fetchEndedDeal, fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney, truncateForMeta } from "@/lib/format";
 import { placeLabel } from "@/lib/location";
@@ -53,6 +54,19 @@ export async function generateMetadata(
   const deal = await fetchDealForSEO(params.slug).catch(() => undefined);
   if (deal === undefined) return { title: "Deal" };
   if (!deal) {
+    // A deal that has ended keeps its page (see EndedDeal), but not in
+    // search results: noindex drops it, and "follow" still lets crawlers
+    // reach the business and the live deals it links to.
+    const ended = await fetchEndedDeal(params.slug).catch(() => null);
+    if (ended) {
+      return {
+        title: `${ended.name}${ended.businessName ? ` at ${ended.businessName}` : ""} — deal ended`,
+        description: truncateForMeta(
+          `This deal has ended.${ended.businessName ? ` See ${ended.businessName}'s current deals` : " See current deals"} on ${SITE_NAME}.`
+        ),
+        robots: { index: false, follow: true },
+      };
+    }
     return { title: "Deal not found" };
   }
 
@@ -114,7 +128,23 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
   // in cache()). It never throws — a failure comes back as no deals.
   void fetchAllLiveDealsServer();
   const deal = await fetchDealForSEO(params.slug);
-  if (!deal) notFound();
+  if (!deal) {
+    // Over (expired, sold out, paused or taken down) but once published:
+    // an old link still leads somewhere useful. Never published, or
+    // unknown: not found, as before.
+    const ended = await fetchEndedDeal(params.slug);
+    if (!ended) notFound();
+    return (
+      <EndedDeal
+        deal={ended}
+        moreDeals={
+          <Suspense fallback={null}>
+            <MoreDeals deal={ended} />
+          </Suspense>
+        }
+      />
+    );
+  }
 
   // The business behind the deal, as a local business with a place —
   // linked by @id to the full record on its /business page, so search

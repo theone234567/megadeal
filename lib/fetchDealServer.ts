@@ -59,9 +59,28 @@ function mergeDealRecord(deal: Deal, record: Record<string, any>): Deal {
  * liveDealFromListing), which needs no Wix reads. Opening a deal from the
  * homepage used to wait for three Wix reads in a row every time.
  */
-export const fetchDealForSEO = cache(
-  async (slug: string) => (await liveDealFromListing(slug)) ?? retryUnlessMissing("deal", slug, loadDealForSEO)
-);
+export const fetchDealForSEO = cache(async (slug: string): Promise<Deal | null> => {
+  const fromListing = await liveDealFromListing(slug);
+  if (fromListing) return fromListing;
+  const read = await readDealCached(slug);
+  return read?.live ? read.deal : null;
+});
+
+/**
+ * A deal that was on the site and has since ended — expired, paused or
+ * withdrawn — for the "This deal has ended" page, so an old shared link
+ * lands on the business's other deals rather than a dead end. Only a deal
+ * that was actually published (firstPublishedAt / everLive) from a
+ * business that's still approved: drafts, deals that were never approved,
+ * and a suspended business's deals stay "not found".
+ */
+export const fetchEndedDeal = cache(async (slug: string): Promise<Deal | null> => {
+  const read = await readDealCached(slug);
+  return read && !read.live && read.wasPublished ? read.deal : null;
+});
+
+/** One set of Wix reads per request, shared by the two lookups above. */
+const readDealCached = cache((slug: string) => retryUnlessMissing("deal", slug, readDeal));
 
 /**
  * Runs a page's read, and once more after a short pause if it fails. A
@@ -90,7 +109,17 @@ function isWixNotFound(err: unknown): boolean {
   return (err as { status?: number } | null)?.status === 404;
 }
 
-async function loadDealForSEO(slug: string): Promise<Deal | null> {
+interface DealRead {
+  deal: Deal;
+  /** Showing on the site now. */
+  live: boolean;
+  /** Was ever published, so an ended page for it may be shown. */
+  wasPublished: boolean;
+}
+
+/** The deal behind a slug, with its business applied, live or not; null when
+ *  it isn't a real deal from an approved business. */
+async function readDeal(slug: string): Promise<DealRead | null> {
   const adminClient = createWixAdminClient();
   const res = await adminClient.productsV3.getProductBySlug(slug, {
     fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
@@ -106,34 +135,34 @@ async function loadDealForSEO(slug: string): Promise<Deal | null> {
     .find();
   const record = dealsResult.items?.[0];
   const merchantEmail: string | null = record?.merchantEmail || null;
-  if (record) deal = mergeDealRecord(deal, record);
 
   // Same rule as the listing: no Deals row, no deal. Without this an
   // orphaned Stores product had its own public page, complete with
   // schema.org markup telling Google it was a real offer.
   if (!record) return null;
-  if (!isDealLive(deal)) return null;
+  deal = mergeDealRecord(deal, record);
+  const live = isDealLive(deal);
+  const wasPublished = Boolean(record.firstPublishedAt || record.everLive);
+  // Neither live nor ever published: nothing public to show.
+  if (!live && !wasPublished) return null;
 
-  if (merchantEmail) {
-    const merchantResult = await adminClient.items
-      .query("Merchants")
-      .eq("email", merchantEmail)
-      .find();
-    const merchant = merchantResult.items?.[0];
-    // Only an approved business's deals are public: a suspended one's,
-    // and one waiting on re-approval after changing its name, legal
-    // details, category or photos — otherwise the unreviewed name and
-    // photos would go straight onto its live deals.
-    if (merchant?.status !== "Approved") return null;
-    if (merchant.businessName && merchant._id) {
-      deal = applyBusinessToDeal(deal, mapMerchantToBusiness(merchant));
-    }
-  } else {
-    // A deal with no business behind it isn't one we can show.
-    return null;
+  // A deal with no business behind it isn't one we can show.
+  if (!merchantEmail) return null;
+  const merchantResult = await adminClient.items
+    .query("Merchants")
+    .eq("email", merchantEmail)
+    .find();
+  const merchant = merchantResult.items?.[0];
+  // Only an approved business's deals are public: a suspended one's,
+  // and one waiting on re-approval after changing its name, legal
+  // details, category or photos — otherwise the unreviewed name and
+  // photos would go straight onto its live deals.
+  if (merchant?.status !== "Approved") return null;
+  if (merchant.businessName && merchant._id) {
+    deal = applyBusinessToDeal(deal, mapMerchantToBusiness(merchant));
   }
 
-  return deal;
+  return { deal, live, wasPublished };
 }
 
 /**
@@ -215,7 +244,7 @@ async function fetchAllLiveDeals(): Promise<Deal[]> {
 /**
  * A deal straight from a listing read in the last minute, if it's in it:
  * the listing already holds every live deal whole (product, Deals row and
- * approved business, built the same way as loadDealForSEO), so opening a
+ * approved business, built the same way as readDeal), so opening a
  * deal from the homepage needs no Wix reads at all. null when there's no
  * fresh listing or the deal isn't in it (new in the last minute, or not
  * live), and the caller reads Wix as before.
