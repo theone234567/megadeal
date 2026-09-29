@@ -15,6 +15,10 @@ export const SITE_URL =
 
 export const SITE_NAME = "MegaDeal";
 
+/** The @id of the site-wide Organization in app/layout.tsx's JSON-LD, so a
+ *  page can point at MegaDeal rather than describe a second one. */
+export const ORGANIZATION_ID = `${SITE_URL}/#organization`;
+
 /**
  * THE LAUNCH SWITCH. Change to `true` to launch MegaDeal.
  *

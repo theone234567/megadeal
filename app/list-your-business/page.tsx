@@ -307,7 +307,7 @@ export default async function MerchantsPage() {
             areaServed: { "@type": "Country", name: "New Zealand" },
             audience: {
               "@type": "BusinessAudience",
-              audienceType: "Local businesses (restaurants, spas, activities, tours, getaways)",
+              audienceType: "Local businesses (restaurants, spas, activities, tours, getaways, home services and car care)",
             },
             url: `${SITE_URL}/list-your-business`,
             // Structured "Offer" for the pre-launch promo — the same thing

@@ -10,7 +10,7 @@ import AttributionCapture from "@/components/AttributionCapture";
 import StaleBuildRecovery from "@/components/StaleBuildRecovery";
 import PreviewBanner from "@/components/PreviewBanner";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
-import { SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { ORGANIZATION_ID, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
@@ -104,6 +104,7 @@ export default function RootLayout({
             __html: safeJsonLd({
               "@context": "https://schema.org",
               "@type": "Organization",
+              "@id": ORGANIZATION_ID,
               name: SITE_NAME,
               url: SITE_URL,
               description: SITE_DESCRIPTION,

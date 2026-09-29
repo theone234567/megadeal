@@ -14,7 +14,7 @@ import {
   UnlockIcon,
   UsersIcon,
 } from "@/components/icons";
-import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { ORGANIZATION_ID, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { PRELAUNCH_PROMO } from "@/lib/promo";
@@ -240,9 +240,13 @@ export default function HomeCarAdvertisingPage() {
     <main className={plusJakartaSans.className}>
       <ConversionTracker />
       <ViewContentTracker contentName="advertise_home_car" />
-      {/* What this page is and who publishes it. Deliberately no
-          Product/Offer or FAQ markup: the offer ideas are examples, not
-          offers anyone can buy, and FAQ rich results are gone. */}
+      {/* What this page is and who publishes it, plus the advertising
+          service it describes, as on /advertise/beauty-spa and
+          /advertise/restaurants. The publisher is the site's one
+          Organization (app/layout.tsx), by @id. Deliberately no markup for
+          the 24 offer ideas (examples, not offers anyone can buy) or the
+          FAQ (FAQ rich results are gone; the answers are plain text on the
+          page, which is what search and AI answers read). */}
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -254,10 +258,39 @@ export default function HomeCarAdvertisingPage() {
             description: DESCRIPTION,
             url: PAGE_URL,
             inLanguage: "en-NZ",
-            publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
-            about: {
-              "@type": "Thing",
-              name: "Advertising for home-service and automotive businesses in Auckland",
+            publisher: { "@id": ORGANIZATION_ID },
+            about: { "@id": `${PAGE_URL}#service` },
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "@id": `${PAGE_URL}#service`,
+            serviceType: "Home services and automotive business advertising",
+            name: `${SITE_NAME} home & car business advertising`,
+            description:
+              "Zero-commission advertising for Auckland cleaning, gardening, home-maintenance, car wash and detailing, car servicing, and tyre and wheel businesses. Customers book and pay the business directly; MegaDeal never takes a cut of sales.",
+            provider: { "@id": ORGANIZATION_ID, "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+            areaServed: { "@type": "City", name: "Auckland" },
+            audience: {
+              "@type": "BusinessAudience",
+              audienceType:
+                "Cleaners, gardeners and landscapers, home-maintenance trades, car wash and detailing, car servicing and mechanics, tyre and wheel businesses",
+            },
+            url: PAGE_URL,
+            makesOffer: {
+              "@type": "Offer",
+              name: `Up to ${PROMO_MONTHS} free advertising`,
+              description: `Up to ${PROMO_MONTHS} of free advertising credits for qualifying businesses that join MegaDeal before its Auckland launch, using code ${PROMO.code}. Conditions apply.`,
+              price: "0",
+              priceCurrency: "NZD",
+              availability: "https://schema.org/LimitedAvailability",
+              url: `${PAGE_URL}#launch-offer`,
             },
           }),
         }}
@@ -274,15 +307,24 @@ export default function HomeCarAdvertisingPage() {
         {/* Hero: text and art in separate columns, so the mascot can
             never cover the copy. */}
         <section className="relative overflow-hidden text-white" style={{ background: HERO_GRADIENT }}>
-          <div className="mx-auto grid max-w-[1184px] grid-cols-1 items-center gap-8 px-4 pb-12 pt-10 sm:px-6 sm:pt-14 lg:grid-cols-[1.05fr_1fr] lg:gap-12 lg:px-8 lg:pb-[72px] lg:pt-[64px]">
+          <div className="mx-auto grid max-w-[1184px] grid-cols-1 items-center gap-5 px-4 pb-10 pt-10 sm:px-6 sm:pt-14 lg:grid-cols-[48fr_52fr] lg:gap-12 lg:px-8 lg:pb-[72px] lg:pt-[64px]">
             <div>
-              <Eyebrow light>Home &amp; car advertising in Auckland</Eyebrow>
-              <h1
-                className={`${fredoka.className} mt-3 text-[34px] font-semibold leading-[1.1] min-[390px]:text-[38px] sm:text-[50px] lg:text-[58px]`}
-              >
-                More local jobs.{" "}
-                <span className="block" style={{ color: "#ADDFFF" }}>
-                  More reasons to choose you.
+              {/* The small label is part of the heading, looking exactly as
+                  it did beside it: "More local jobs." alone says nothing
+                  about what the page is, and the page's one heading is
+                  what search engines and AI answers lean on most after
+                  the title. */}
+              <h1>
+                <span className="block text-xs font-bold uppercase tracking-wider text-white/80">
+                  Home &amp; car advertising in Auckland
+                </span>{" "}
+                <span
+                  className={`${fredoka.className} mt-3 block text-[34px] font-semibold leading-[1.1] min-[390px]:text-[38px] sm:text-[50px] lg:text-[58px]`}
+                >
+                  More local jobs.{" "}
+                  <span className="block" style={{ color: "#ADDFFF" }}>
+                    More reasons to choose you.
+                  </span>
                 </span>
               </h1>
               <p className="mt-5 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
@@ -714,26 +756,62 @@ export default function HomeCarAdvertisingPage() {
 }
 
 /**
- * The hero art: the pack's house-and-car backdrop, with MegaDeal's current
- * hoodie elephant on its own layer in front, unchanged (never redrawn or
- * flattened into the backdrop). Decorative: the headline carries the
- * meaning, so only the mascot has a description.
+ * The hero art, straight on the hero's purple: MegaDeal's current hoodie
+ * elephant (unchanged, never redrawn) in front, with the pack's house and
+ * car as smaller supporting pieces behind it — house on the left, car on the
+ * right, standing on the same ground line as the elephant's feet.
+ *
+ * The pack drew the house and car as one wide transparent image, far apart
+ * and on different ground lines; hero-house-* and hero-car-* are the two
+ * halves of it, cut apart unchanged so each can be placed here. The
+ * original backdrop files are still in the folder.
+ *
+ * Everything is positioned in percentages of one box with a fixed aspect
+ * ratio, so the whole scene scales together and nothing is cropped. The only
+ * effects: one faint, wide glow so the purple hoodie doesn't sink into the
+ * purple background, and small soft shadows under the feet, house and
+ * wheels. Decorative apart from the mascot's description.
  */
 function HeroArt() {
   return (
-    <div
-      className="relative mx-auto aspect-[3/2] w-full max-w-[430px] overflow-hidden rounded-[28px] sm:max-w-[520px] lg:aspect-[5/4] lg:max-w-none"
-      style={{ background: "radial-gradient(ellipse at 45% 40%, #f6efff, #d8bbfa)" }}
-    >
+    <div className="relative mx-auto aspect-[4/3] w-full max-w-[420px] sm:max-w-[500px] lg:aspect-[6/5] lg:max-w-[600px]">
+      {/* The glow: fades to nothing well inside a box larger than the art,
+          so it has no edge anywhere. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -inset-[20%]"
+        style={{
+          background:
+            "radial-gradient(closest-side, rgba(226, 204, 255, 0.30), rgba(226, 204, 255, 0.12) 50%, rgba(226, 204, 255, 0) 100%)",
+        }}
+      />
+
+      {/* Ground shadows, local to what stands on the ground. */}
+      <span aria-hidden className={`${SHADOW} bottom-[1%] left-[1%] h-[7%] w-[33%]`} style={SHADOW_STYLE} />
+      <span aria-hidden className={`${SHADOW} bottom-[1%] right-[0%] h-[6%] w-[31%]`} style={SHADOW_STYLE} />
+      <span aria-hidden className={`${SHADOW} bottom-[-1.5%] left-1/2 h-[7%] w-[40%] -translate-x-1/2 lg:w-[52%]`} style={SHADOW_STYLE} />
+
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/images/home-car-business/hero-home-car-background-1400.webp"
-        srcSet="/images/home-car-business/hero-home-car-background-900.webp 900w, /images/home-car-business/hero-home-car-background-1400.webp 1400w"
-        sizes="(min-width: 1024px) 540px, 92vw"
+        src="/images/home-car-business/hero-house-640.webp"
+        srcSet="/images/home-car-business/hero-house-360.webp 360w, /images/home-car-business/hero-house-640.webp 640w"
+        sizes="(min-width: 1024px) 220px, 36vw"
         alt=""
-        width={1400}
-        height={700}
-        className="absolute inset-x-0 bottom-[6%] w-full select-none"
+        width={640}
+        height={324}
+        className="absolute bottom-[1.5%] left-0 h-auto w-[35%] select-none object-contain lg:w-[36%]"
+        loading="eager"
+        decoding="async"
+      />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/images/home-car-business/hero-car-640.webp"
+        srcSet="/images/home-car-business/hero-car-360.webp 360w, /images/home-car-business/hero-car-640.webp 640w"
+        sizes="(min-width: 1024px) 200px, 32vw"
+        alt=""
+        width={640}
+        height={353}
+        className="absolute bottom-[0.5%] right-0 h-auto w-[31%] select-none object-contain lg:w-[32%]"
         loading="eager"
         decoding="async"
       />
@@ -741,11 +819,11 @@ function HeroArt() {
       <img
         src="/images/home-car-business/mascot-welcome-current-820.webp"
         srcSet="/images/home-car-business/mascot-welcome-current-480.webp 480w, /images/home-car-business/mascot-welcome-current-820.webp 820w"
-        sizes="(min-width: 1024px) 330px, 50vw"
+        sizes="(min-width: 1024px) 480px, 60vw"
         alt="MegaDeal's welcoming lavender elephant wearing a purple M hoodie"
         width={820}
         height={847}
-        className="absolute bottom-[3%] left-1/2 h-[92%] w-auto -translate-x-1/2 select-none object-contain"
+        className="absolute bottom-0 left-1/2 h-[97%] w-auto max-w-none -translate-x-1/2 select-none object-contain"
         loading="eager"
         fetchPriority="high"
         decoding="async"
@@ -753,3 +831,8 @@ function HeroArt() {
     </div>
   );
 }
+
+const SHADOW = "pointer-events-none absolute rounded-[50%]";
+const SHADOW_STYLE = {
+  background: "radial-gradient(closest-side, rgba(30, 6, 72, 0.38), rgba(30, 6, 72, 0))",
+};
