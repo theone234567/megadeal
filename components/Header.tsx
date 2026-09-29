@@ -145,7 +145,11 @@ export default function Header() {
           <Link
             href="/"
             aria-label="MegaDeal home"
-            className={`min-w-0 shrink rounded-lg focus-visible:outline-none focus-visible:ring-2 ${T.ring}`}
+            // lg:shrink-0: on desktop the link sits in the same row as the
+            // search box, which grows; allowed to shrink, the link was
+            // squeezed narrower than the logo inside it, so the logo spilled
+            // out towards the search box.
+            className={`min-w-0 shrink rounded-lg focus-visible:outline-none focus-visible:ring-2 lg:shrink-0 ${T.ring}`}
           >
             <BrandLogo placement="site" tone={T.logo} />
           </Link>

@@ -1,13 +1,6 @@
 import Image from "next/image";
 import { LOGO_STYLE } from "@/lib/brand";
-import {
-  LOGO_VIEWBOX,
-  MARK_HEAD,
-  MARK_TRANSFORM,
-  MARK_TRUNK,
-  WORDMARK,
-  WORDMARK_TRANSFORM,
-} from "./brand/logoPaths";
+import { LOGO_VIEWBOX, MARK, WORDMARK, WORDMARK_TRANSFORM } from "./brand/logoPaths";
 
 /** Where the logo sits. Each place keeps its own size, as before. */
 export type LogoPlacement = "site" | "landing" | "portal";
@@ -46,19 +39,16 @@ export default function BrandLogo({
       } ${className}`}
     >
       <g fill="currentColor">
-        <g transform={MARK_TRANSFORM}>
-          <path fillRule="evenodd" d={MARK_HEAD} />
-          <path d={MARK_TRUNK} />
-        </g>
+        <path fillRule="evenodd" d={MARK} />
         <path transform={WORDMARK_TRANSFORM} d={WORDMARK} />
       </g>
     </svg>
   );
 }
 
-// The flat lockup is about 4.5:1 and has no empty space around it, so it
+// The flat lockup is about 4.8:1 and has no empty space around it, so it
 // needs less height than the classic image for the same presence: about
-// 140px wide on phones and 180px on desktop.
+// 150px wide on phones and 190px on desktop.
 const MINIMAL_HEIGHT: Record<LogoPlacement, string> = {
   // 24px under 360px wide, where "All areas" and the menu share its row.
   site: "h-6 min-[360px]:h-8 lg:h-10",

@@ -105,6 +105,10 @@ export default function EmailSignupForm({
           <input
             type="email"
             required
+            // The placeholder disappears once typing starts and isn't a
+            // name screen readers can rely on, so the box carries its own.
+            aria-label="Email address"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={placeholder}
