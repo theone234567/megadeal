@@ -7,7 +7,7 @@ import StickyApplyBar from "@/components/StickyApplyBar";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "./MerchantSignupForm";
-import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { getSignupStats } from "@/lib/publicStats";
 import { fredoka, plusJakartaSans, caveat } from "@/lib/fonts";
@@ -453,7 +453,7 @@ export default async function MerchantsPage() {
           </div>
           <div className="mt-8">
             <Suspense fallback={null}>
-              <MerchantSignupForm />
+              <MerchantSignupForm launched={SITE_LAUNCHED} />
             </Suspense>
           </div>
         </div>

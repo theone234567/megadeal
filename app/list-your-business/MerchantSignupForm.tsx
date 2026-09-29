@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
+import { currentPromo, promoForCode } from "@/lib/promo";
 import { loginMember, registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import PasswordField from "@/components/PasswordField";
 import { trackMetaPixelEvent, trackMetaCustomEvent } from "@/lib/metaPixel";
@@ -139,7 +140,15 @@ async function submitApplication(values: ApplicationValues): Promise<string | un
   return typeof data.metaEventId === "string" ? data.metaEventId : undefined;
 }
 
-export default function MerchantSignupForm() {
+export default function MerchantSignupForm({
+  /** SITE_LAUNCHED, from the server page: picks the current offer (WELCOME6
+   *  before launch, WELCOME3 after — lib/promo.ts). The runtime flag isn't
+   *  visible in the browser, so it's passed in. */
+  launched = false,
+}: {
+  launched?: boolean;
+}) {
+  const promo = currentPromo(launched);
   const { client, member, isLoggedIn, logout } = useWix();
   const searchParams = useSearchParams();
   const referralPrefill = searchParams.get("ref") || "";
@@ -212,18 +221,19 @@ export default function MerchantSignupForm() {
    * then on this session uses it.
    */
   const [needsVisibleCaptcha, setNeedsVisibleCaptcha] = useState(false);
-  // Pre-filled with WELCOME6 (or a real ?ref= referral code, if that's how
-  // the visitor arrived) — same default as before, just visible and
-  // editable now instead of a hidden field, so someone who wants to swap
-  // in a different referral code they were given can actually do that.
-  const [couponCode, setCouponCode] = useState(referralPrefill || "WELCOME6");
+  // Pre-filled with the current offer's code (or a real ?ref= referral code,
+  // if that's how the visitor arrived) — visible and editable, so someone
+  // who wants to swap in a different referral code they were given can.
+  const [couponCode, setCouponCode] = useState(referralPrefill || promo.code);
 
   // Which of the three things the promo field currently holds, so the help
   // text under it can say what will actually happen rather than always
-  // promising the WELCOME6 offer.
+  // promising the free-advertising offer. After launch, WELCOME6 still counts
+  // (as the launch offer), the same rule approval uses.
   const trimmedCoupon = couponCode.trim().toUpperCase();
   const promoState: "welcome" | "referral" | "empty" =
-    trimmedCoupon === "WELCOME6" ? "welcome" : trimmedCoupon === "" ? "empty" : "referral";
+    promoForCode(trimmedCoupon, launched) ? "welcome" : trimmedCoupon === "" ? "empty" : "referral";
+  const beforeLaunch = launched ? "" : " if you're approved before launch";
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -883,22 +893,24 @@ export default function MerchantSignupForm() {
           */}
           {promoState === "welcome" && (
             <p className="mt-1 text-sm text-slate-500">
-              🎁 WELCOME6 gets you up to 6 months free advertising if you&apos;re approved before launch.
+              {/* The code as typed: after launch WELCOME6 still counts, for the
+                  launch offer's months. */}
+              🎁 {trimmedCoupon} gets you up to {promo.months} months free advertising{beforeLaunch}.
             </p>
           )}
           {promoState === "referral" && (
             <p className="mt-1 text-sm text-slate-600">
               You&apos;re using referral code{" "}
               <span className="font-semibold">{couponCode.trim()}</span>. A referral code and the
-              WELCOME6 launch offer can&apos;t be combined — only one applies.{" "}
+              {promo.code} launch offer can&apos;t be combined — only one applies.{" "}
               <button
                 type="button"
-                onClick={() => setCouponCode("WELCOME6")}
+                onClick={() => setCouponCode(promo.code)}
                 className="font-semibold text-brand-600 underline hover:no-underline"
               >
-                Use WELCOME6 instead
+                Use {promo.code} instead
               </button>{" "}
-              for up to 6 months free advertising.
+              for up to {promo.months} months free advertising.
             </p>
           )}
           {promoState === "empty" && (
@@ -906,12 +918,12 @@ export default function MerchantSignupForm() {
               No promo code applied.{" "}
               <button
                 type="button"
-                onClick={() => setCouponCode("WELCOME6")}
+                onClick={() => setCouponCode(promo.code)}
                 className="font-semibold text-brand-600 underline hover:no-underline"
               >
-                Add WELCOME6
+                Add {promo.code}
               </button>{" "}
-              for up to 6 months free advertising if you&apos;re approved before launch.
+              for up to {promo.months} months free advertising{beforeLaunch}.
             </p>
           )}
         </div>

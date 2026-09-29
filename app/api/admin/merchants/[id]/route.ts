@@ -4,6 +4,7 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 import { queryAllByEmail } from "@/lib/queryAll";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { promoForCode } from "@/lib/promo";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { escapeHtml } from "@/lib/escapeHtml";
@@ -26,13 +27,12 @@ function cleanText(value: unknown, maxLength: number): string {
 
 const INTRO_CREDITS = 2;
 const REFERRAL_BONUS_CREDITS: number = 2;
-// The "up to 6 months free advertising" offer advertised on /list-your-business —
-// a business enters this in the same "Referral code" field used for peer
-// referrals. It isn't anyone's real referralCode, so it can never collide
-// with an actual referral match; the two are handled as separate branches
-// below purely for clarity, not because a collision is actually possible.
-const PROMO_CODE = "WELCOME6";
-const PROMO_CODE_CREDITS = 24;
+// The free-advertising offer advertised on /list-your-business: WELCOME6
+// (up to 6 months, 24 credits) before launch, WELCOME3 (3 months, 12
+// credits) from launch — see lib/promo.ts, which decides by SITE_LAUNCHED
+// at the moment of approval. A business enters it in the same field used
+// for peer referrals; it isn't anyone's real referralCode, so it can never
+// collide with an actual referral match.
 
 /**
  * Atomically flips referralRewarded from not-true to true, server-side,
@@ -346,12 +346,14 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
 
   const enteredCode = String(existing.couponCode || "").trim().toUpperCase();
 
-  // WELCOME6 promo: the "up to 6 months free advertising" offer. Checked
-  // first since it's a fixed code, not anyone's real referralCode — if it
-  // matches, this signup isn't a peer referral at all.
-  if (becomingApproved && enteredCode === PROMO_CODE) {
+  // The free-advertising promo. Checked first since it's a fixed code, not
+  // anyone's real referralCode — if it matches, this signup isn't a peer
+  // referral at all. After launch, WELCOME6 typed before launch still
+  // counts, as the launch offer (lib/promo.ts).
+  const promo = promoForCode(enteredCode, SITE_LAUNCHED);
+  if (becomingApproved && promo) {
     if (await claimPromoAtomically(adminClient, existing._id)) {
-      promoGranted = PROMO_CODE_CREDITS;
+      promoGranted = promo.credits;
       patch.promoRewarded = true;
     }
   } else if (becomingApproved && enteredCode) {
@@ -471,7 +473,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       merchantEmail: existing.email,
       type: "credit",
       amount: promoGranted,
-      description: `Promo code ${PROMO_CODE} redeemed — free advertising offer`,
+      description: `Promo code ${promo?.code ?? enteredCode} redeemed — free advertising offer`,
     });
   }
 
@@ -548,7 +550,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         totalGranted > 0
           ? `We've added ${totalGranted} free deal credit${totalGranted === 1 ? "" : "s"} to your account${
               promoGranted > 0
-                ? " (including your WELCOME6 free advertising offer)"
+                ? ` (including your ${promo?.code ?? enteredCode} free advertising offer)`
                 : referralBonusGranted > 0
                 ? " (including a referral bonus)"
                 : ""
