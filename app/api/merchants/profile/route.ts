@@ -164,6 +164,7 @@ export async function POST(req: NextRequest) {
     // The form no longer sends this, so an empty client value must not
     // clobber whatever a merchant had from before it was removed.
     category: category || merchant.category || "",
+    suburb: cleanText(body.suburb, 40),
     postcode: cleanText(body.postcode, 20),
     bio,
     businessHours: cleanText(body.businessHours, MAX_BUSINESS_HOURS_LENGTH),

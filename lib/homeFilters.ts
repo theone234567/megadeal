@@ -98,6 +98,8 @@ export function matchDeals(deals: Deal[], f: HomeFilters, now: number, coords: C
         d.name.toLowerCase().includes(q) ||
         d.description.toLowerCase().includes(q) ||
         (d.businessName ?? "").toLowerCase().includes(q) ||
+        // Searching a suburb ("Takapuna") finds the deals there.
+        (d.businessSuburb ?? "").toLowerCase().includes(q) ||
         d.categories.some((c) => c.toLowerCase().includes(q))
       )
     ) {

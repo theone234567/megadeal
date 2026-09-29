@@ -23,6 +23,7 @@ interface MerchantRecord {
   website?: string;
   address?: string;
   city?: string;
+  suburb?: string;
   postcode?: string;
   bio?: string;
   businessHours?: string;

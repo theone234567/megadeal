@@ -8,7 +8,7 @@ const full: Deal = {
   ribbon: "Hot", categories: ["Food & Drink"], variantId: "v1", inStock: true, quantityAvailable: 10,
   expiresAt: "2030-01-01T00:00:00Z", status: "Live", isFlash: true, terms: "Dine-in only.",
   businessName: "Harbour & Hearth", businessLogoUrl: "/logo.webp", businessWebsite: "example.com",
-  businessPhone: "09 123 4567", businessAddress: "12 Example St", businessCity: "Takapuna",
+  businessPhone: "09 123 4567", businessAddress: "12 Example St", businessCity: "Auckland", businessSuburb: "Takapuna",
   businessSlug: "harbour-hearth-abc", businessBio: "Bio", businessHours: "9-5",
   businessFacebookUrl: "facebook.com/x", businessInstagramUrl: "instagram.com/x", businessPriceRange: "$$",
   businessAmenities: ["Wifi"], businessBookingUrl: "https://example.com/book",
@@ -21,7 +21,7 @@ describe("toListingDeal", () => {
     const d = toListingDeal(full);
     for (const key of [
       "id", "slug", "name", "description", "image", "now", "was", "currency", "categories", "inStock",
-      "quantityAvailable", "expiresAt", "status", "isFlash", "terms", "businessName", "businessCity",
+      "quantityAvailable", "expiresAt", "status", "isFlash", "terms", "businessName", "businessCity", "businessSuburb",
       "businessSlug", "businessLat", "businessLng",
     ] as const) {
       expect(d[key]).toEqual(full[key]);

@@ -190,6 +190,7 @@ export async function POST(req: NextRequest) {
       address,
       city,
       category,
+      suburb: cleanText(body.suburb, 40),
       postcode: cleanText(body.postcode, 20),
       website,
       bio: cleanText(body.bio, MAX_BIO_LENGTH),

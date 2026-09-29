@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { fetchBusinessProfileBySlug } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
+import { placeLabel } from "@/lib/location";
 import { truncateForMeta } from "@/lib/format";
 import DealGrid from "@/components/DealGrid";
 import HowToUseStrip from "@/components/HowToUseStrip";
@@ -40,8 +41,12 @@ export async function generateMetadata(
   // The town in the title is the strongest local signal a page can send
   // for "<business> <town>" and "<service> near me" searches — skipped
   // when the business name already says it ("Auckland Rapid Plumbing").
-  const city = business.city?.trim();
-  const place = city && !business.businessName.toLowerCase().includes(city.toLowerCase()) ? `, ${city}` : "";
+  // Suburb and city ("Takapuna, Auckland"), each left out when the business
+  // name already says it ("Auckland Rapid Plumbing, Takapuna").
+  const name = business.businessName.toLowerCase();
+  const notInName = (v: string | null | undefined) => (v && !name.includes(v.trim().toLowerCase()) ? v.trim() : null);
+  const placeText = placeLabel(notInName(business.suburb), notInName(business.city));
+  const place = placeText ? `, ${placeText}` : "";
   const title = `${business.businessName}${place} — Deals & Offers`;
   // business.bio is merchant-written free text (up to 600 chars) —
   // truncated at a word boundary, same as deal descriptions on
@@ -50,7 +55,7 @@ export async function generateMetadata(
   // character display limit.
   const description =
     (business.bio ? truncateForMeta(business.bio) : "") ||
-    `${business.businessName}${business.city ? ` in ${business.city}` : ""} on ${SITE_NAME} — ${deals.length} live deal${deals.length === 1 ? "" : "s"}, contact details and opening hours.`;
+    `${business.businessName}${placeLabel(business.suburb, business.city) ? ` in ${placeLabel(business.suburb, business.city)}` : ""} on ${SITE_NAME} — ${deals.length} live deal${deals.length === 1 ? "" : "s"}, contact details and opening hours.`;
   const url = `${SITE_URL}/business/${business.slug}`;
 
   return {
@@ -100,8 +105,14 @@ export default async function BusinessProfilePage(
     business.website || business.phone || business.address || business.bookingUrl || business.bookingEmail
   );
   const hasSocial = Boolean(business.facebookUrl || business.instagramUrl);
-  const mapUrl = getMapUrl(business);
-  const directionsUrl = getDirectionsUrl(business);
+  // The saved address plus the suburb and city it doesn't already include,
+  // for the address line and the map search.
+  const addressText = (business.address ?? "").toLowerCase();
+  const missing = (v: string | null) => (v && !addressText.includes(v.toLowerCase()) ? v : null);
+  const fullAddress = [business.address, missing(business.suburb), missing(business.city)].filter(Boolean).join(", ");
+  const mapTarget = { ...business, address: [business.address, missing(business.suburb)].filter(Boolean).join(", ") || null };
+  const mapUrl = getMapUrl(mapTarget);
+  const directionsUrl = getDirectionsUrl(mapTarget);
   const parsedHours = parseBusinessHours(business.businessHours);
   const hoursLines = parsedHours ? formatBusinessHoursLines(parsedHours) : null;
   const openNow = parsedHours ? isOpenNow(parsedHours) : null;
@@ -131,7 +142,10 @@ export default async function BusinessProfilePage(
               ? {
                   "@type": "PostalAddress",
                   streetAddress: business.address,
-                  addressLocality: business.city || undefined,
+                  // Suburb as the locality, city as the region, when both
+                  // are known.
+                  addressLocality: business.suburb || business.city || undefined,
+                  addressRegion: business.suburb ? business.city || undefined : undefined,
                   addressCountry: "NZ",
                 }
               : undefined,
@@ -186,9 +200,9 @@ export default async function BusinessProfilePage(
               <StarRating rating={business.rating} reviewCount={business.reviewCount} className="mt-1" />
             )}
             <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-              {business.city && (
+              {placeLabel(business.suburb, business.city) && (
                 <span className="flex items-center gap-1">
-                  <MapPinIcon className="h-3.5 w-3.5" /> {business.city}
+                  <MapPinIcon className="h-3.5 w-3.5" /> {placeLabel(business.suburb, business.city)}
                 </span>
               )}
               {business.priceRange && (
@@ -293,8 +307,7 @@ export default async function BusinessProfilePage(
                 {business.address && (
                   <div>
                     <p className="flex items-center gap-2 text-slate-600">
-                      <MapPinIcon className="h-4 w-4 shrink-0" /> {business.address}
-                      {business.city ? `, ${business.city}` : ""}
+                      <MapPinIcon className="h-4 w-4 shrink-0" /> {fullAddress}
                     </p>
                     {(mapUrl || directionsUrl) && (
                       <p className="mt-1 flex items-center gap-3 pl-6 text-xs font-semibold text-brand-700">

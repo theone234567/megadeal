@@ -1,5 +1,6 @@
 import { businessSlug } from "./slug";
 import { parseBusinessPhotos } from "./businessPhotos";
+import { businessSuburb } from "./location";
 import type { Deal } from "./types";
 
 /**
@@ -16,6 +17,8 @@ export interface PublicBusiness {
   phone: string | null;
   address: string | null;
   city: string | null;
+  /** Saved with the address, or read out of it (lib/location.ts). */
+  suburb: string | null;
   slug: string;
   bio: string | null;
   businessHours: string | null;
@@ -42,6 +45,7 @@ export function mapMerchantToBusiness(merchant: any): PublicBusiness {
     phone: merchant.phone || null,
     address: merchant.address || null,
     city: merchant.city || null,
+    suburb: businessSuburb(merchant.suburb, merchant.address, merchant.city),
     slug: businessSlug(merchant.businessName, merchant._id),
     bio: merchant.bio || null,
     businessHours: merchant.businessHours || null,
@@ -71,6 +75,7 @@ export function applyBusinessToDeal<T extends Deal>(deal: T, business: PublicBus
     businessPhone: business.phone,
     businessAddress: business.address,
     businessCity: business.city,
+    businessSuburb: business.suburb,
     businessSlug: business.slug,
     businessBio: business.bio,
     businessHours: business.businessHours,

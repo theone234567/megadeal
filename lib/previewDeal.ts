@@ -1,3 +1,4 @@
+import { businessSuburb } from "./location";
 import type { Deal } from "./types";
 import { businessSlug } from "./slug";
 import { parseBookingRequirement } from "./booking";
@@ -95,6 +96,7 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     businessPhone: merchant?.phone ?? null,
     businessAddress: merchant?.address ?? null,
     businessCity: merchant?.city ?? null,
+    businessSuburb: businessSuburb(merchant?.suburb, merchant?.address, merchant?.city),
     // Derived the same way the live page does, so the "more from this
     // business" link points where it really will rather than vanishing
     // from the preview.

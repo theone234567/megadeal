@@ -93,6 +93,7 @@ export function mapProductToDeal(product: any, categoryNamesById?: Record<string
     businessPhone: null,
     businessAddress: null,
     businessCity: null,
+    businessSuburb: null,
     businessSlug: null,
     businessBio: null,
     businessHours: null,

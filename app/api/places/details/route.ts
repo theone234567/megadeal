@@ -68,6 +68,8 @@ export async function GET(req: NextRequest) {
         label: fullAddress,
         street: street || fullAddress || "",
         city: find("locality") || null,
+        // The suburb ("Takapuna"): Google's sublocality for NZ addresses.
+        suburb: find("sublocality_level_1") || find("sublocality") || find("neighborhood") || null,
         postcode: find("postal_code") || null,
         lat: typeof data.location?.latitude === "number" ? data.location.latitude : null,
         lon: typeof data.location?.longitude === "number" ? data.location.longitude : null,

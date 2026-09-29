@@ -4,6 +4,8 @@ export interface AddressSuggestion {
   label: string;
   street: string;
   city?: string | null;
+  /** The suburb ("Takapuna"), when the geocoder gives one. */
+  suburb?: string | null;
   postcode?: string | null;
   lat?: number | null;
   lon?: number | null;

@@ -105,6 +105,12 @@ describe("matchDeals + splitByType", () => {
     expect(matchDeals(catalogue, { ...base, q: "pizza", city: "Wellington" }, NOW)).toEqual([]);
   });
 
+  it("finds deals by suburb, while the city filter still means the city", () => {
+    const list = [...catalogue, deal({ id: "tapas", name: "Tapas for two", businessSuburb: "Takapuna" })];
+    expect(ids(matchDeals(list, { ...base, q: "takapuna" }, NOW))).toEqual(["tapas"]);
+    expect(ids(matchDeals(list, { ...base, city: "auckland", q: "tapas" }, NOW))).toEqual(["tapas"]);
+  });
+
   it("drops a deal the moment it expires", () => {
     const later = NOW + HOUR + 1;
     expect(ids(matchDeals(catalogue, base, later))).not.toContain("facial");

@@ -14,6 +14,7 @@ import { trackDealEvent } from "@/lib/trackDeal";
 import { parseBusinessHours, formatBusinessHoursLines, isOpenNow } from "@/lib/businessHours";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
+import { placeLabel } from "@/lib/location";
 import { keyRestrictions, splitTermsForDisplay } from "@/lib/dealTerms";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { bookingPlan, effectiveBookingRequirement, type BookingAction } from "@/lib/booking";
@@ -141,7 +142,14 @@ export default function DealDetail({
   const location = {
     lat: deal.businessLat,
     lng: deal.businessLng,
-    address: deal.businessAddress,
+    // With the suburb when the saved address lacks it: "5A Camelot Place,
+    // Takapuna" finds the right street; the bare street may not.
+    address:
+      deal.businessAddress &&
+      deal.businessSuburb &&
+      !deal.businessAddress.toLowerCase().includes(deal.businessSuburb.toLowerCase())
+        ? `${deal.businessAddress}, ${deal.businessSuburb}`
+        : deal.businessAddress,
     city: deal.businessCity,
   };
   // A city alone isn't a place to navigate to — only link a map or
@@ -152,7 +160,18 @@ export default function DealDetail({
   const websiteHref = safeWebHref(deal.businessWebsite);
   const instagramHref = safeWebHref(deal.businessInstagramUrl);
   const facebookHref = safeWebHref(deal.businessFacebookUrl);
-  const locationLine = [deal.businessAddress, deal.businessCity].filter(Boolean).join(", ");
+  // "Takapuna, Auckland" under the deal's name; the full address in the
+  // business section, adding the suburb and city only when the saved
+  // address doesn't already include them.
+  const place = placeLabel(deal.businessSuburb, deal.businessCity);
+  const addressText = (deal.businessAddress ?? "").toLowerCase();
+  const locationLine = [
+    deal.businessAddress,
+    deal.businessSuburb && !addressText.includes(deal.businessSuburb.toLowerCase()) ? deal.businessSuburb : null,
+    deal.businessCity && !addressText.includes(deal.businessCity.toLowerCase()) ? deal.businessCity : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
   const hasAbout = Boolean(
     deal.businessBio ||
     deal.businessHours ||
@@ -192,7 +211,7 @@ export default function DealDetail({
         <h1 className="font-display mt-1.5 text-[1.75rem] font-semibold leading-tight text-slate-900 sm:text-[1.875rem] lg:text-[2.25rem]">
           {deal.name}
         </h1>
-        {(deal.businessName || deal.businessCity) && (
+        {(deal.businessName || place) && (
           <p className="mt-[7px] flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
             {deal.businessName &&
               // Only a link when there's a profile to go to — never a link
@@ -210,7 +229,7 @@ export default function DealDetail({
               ) : (
                 <span className="font-bold text-slate-900">{deal.businessName}</span>
               ))}
-            {deal.businessCity && <span className="text-slate-500">{deal.businessCity}</span>}
+            {place && <span className="text-slate-500">{place}</span>}
           </p>
         )}
       </header>
@@ -227,7 +246,7 @@ export default function DealDetail({
                 src={wixImageUrl(deal.image, 1200, 900)}
                 srcSet={wixImageSrcSet(deal.image, [640, 900, 1200], 4 / 3)}
                 sizes="(min-width: 1024px) 700px, 100vw"
-                alt={deal.name}
+                alt={`${deal.name}${deal.businessName ? ` at ${deal.businessName}` : ""}${place ? `, ${place}` : ""}`}
                 className="absolute inset-0 h-full w-full object-cover"
                 loading="eager"
                 fetchPriority="high"

@@ -6,6 +6,7 @@ import MoreDeals from "./MoreDeals";
 import { fetchDealForSEO, fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney, truncateForMeta } from "@/lib/format";
+import { placeLabel } from "@/lib/location";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { wixImageUrl } from "@/lib/wixImageUrl";
 
@@ -27,10 +28,11 @@ function stripHtml(html: string): string {
  * and a merchant's opening sentence rarely carries the price or place.
  */
 function dealMetaDescription(
-  deal: { name: string; description: string; discountPercent: number; was: number; now: number; currency: string | null; formattedWas: string | null; businessName: string | null; businessCity: string | null },
+  deal: { name: string; description: string; discountPercent: number; was: number; now: number; currency: string | null; formattedWas: string | null; businessName: string | null; businessCity: string | null; businessSuburb: string | null },
   price: string
 ): string {
-  const where = [deal.businessName ? `at ${deal.businessName}` : "", deal.businessCity ? `in ${deal.businessCity}` : ""]
+  const place = placeLabel(deal.businessSuburb, deal.businessCity);
+  const where = [deal.businessName ? `at ${deal.businessName}` : "", place ? `in ${place}` : ""]
     .filter(Boolean)
     .join(" ");
   const was = deal.discountPercent > 0 && deal.was > deal.now ? ` (was ${formatMoney(deal.was, deal.currency || "NZD", deal.formattedWas)})` : "";
@@ -55,7 +57,15 @@ export async function generateMetadata(
   }
 
   const price = formatMoney(deal.now, deal.currency, deal.formattedNow);
-  const businessSuffix = deal.businessName ? ` at ${deal.businessName}` : "";
+  // Where, as specifically as it's known ("at Harbour & Hearth, Takapuna,
+  // Auckland"): the title is what search results show and match most, and
+  // people search for things near a place ("pizza Takapuna").
+  const place = placeLabel(deal.businessSuburb, deal.businessCity);
+  const businessSuffix = deal.businessName
+    ? ` at ${deal.businessName}${place ? `, ${place}` : ""}`
+    : place
+      ? ` in ${place}`
+      : "";
   // The root layout's title.template ("%s | MegaDeal") already appends the
   // brand name to this — no "| SITE_NAME" suffix needed here, or the
   // rendered title doubles up. openGraph/twitter titles aren't run through
@@ -121,13 +131,21 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
         name: deal.businessName,
         telephone: deal.businessPhone || undefined,
         address:
-          deal.businessAddress || deal.businessCity
+          deal.businessAddress || deal.businessCity || deal.businessSuburb
             ? {
                 "@type": "PostalAddress",
                 streetAddress: deal.businessAddress || undefined,
-                addressLocality: deal.businessCity || undefined,
+                // The suburb as the locality, the city as the region, when
+                // both are known ("Takapuna", "Auckland").
+                addressLocality: deal.businessSuburb || deal.businessCity || undefined,
+                addressRegion: deal.businessSuburb ? deal.businessCity || undefined : undefined,
                 addressCountry: "NZ",
               }
+            : undefined,
+        // The pin the business set on its map, when it has one.
+        geo:
+          typeof deal.businessLat === "number" && typeof deal.businessLng === "number"
+            ? { "@type": "GeoCoordinates", latitude: deal.businessLat, longitude: deal.businessLng }
             : undefined,
       }
     : undefined;

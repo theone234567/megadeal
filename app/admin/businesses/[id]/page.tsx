@@ -83,6 +83,7 @@ export default function AdminBusinessDetailPage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
+  const [suburb, setSuburb] = useState("");
   const [postcode, setPostcode] = useState("");
   const [website, setWebsite] = useState("");
   const [bio, setBio] = useState("");
@@ -120,6 +121,7 @@ export default function AdminBusinessDetailPage() {
     setPhone(item.phone || "");
     setAddress(item.address || "");
     setCity(item.city || "");
+    setSuburb(item.suburb || "");
     setPostcode(item.postcode || "");
     setWebsite(item.website || "");
     setBio(item.bio || "");
@@ -187,6 +189,7 @@ export default function AdminBusinessDetailPage() {
       phone !== (merchant.phone || "") ||
       address !== (merchant.address || "") ||
       city !== (merchant.city || "") ||
+      suburb !== (merchant.suburb || "") ||
       postcode !== (merchant.postcode || "") ||
       website !== (merchant.website || "") ||
       bio !== (merchant.bio || "") ||
@@ -257,6 +260,7 @@ export default function AdminBusinessDetailPage() {
           phone,
           address,
           city,
+          suburb,
           postcode,
           website,
           bio,
@@ -442,6 +446,7 @@ export default function AdminBusinessDetailPage() {
                 ))}
               </select>
             </label>
+            <Field label="Suburb" value={suburb} onChange={setSuburb} placeholder="e.g. Takapuna" />
             <Field label="Postcode" value={postcode} onChange={setPostcode} />
             <Field label="Website" value={website} onChange={setWebsite} placeholder="https://yourbusiness.co.nz" />
           </div>

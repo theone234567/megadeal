@@ -37,7 +37,8 @@ async function fetchPhotonSuggestions(query: string): Promise<AddressSuggestion[
     const street = p.housenumber && p.name ? `${p.housenumber} ${p.name}` : p.name || p.street || "";
     const label = [street, p.city, p.state, p.postcode].filter(Boolean).join(", ");
     const [lon, lat] = f.geometry?.coordinates ?? [];
-    return { label, street, city: p.city, postcode: p.postcode, lat, lon };
+    // Photon (OpenStreetMap) names a suburb as the "district".
+    return { label, street, city: p.city, suburb: p.district || null, postcode: p.postcode, lat, lon };
   });
 }
 

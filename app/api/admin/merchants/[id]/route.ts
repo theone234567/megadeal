@@ -215,6 +215,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     if (!v) return NextResponse.json({ error: "City can't be empty." }, { status: 400 });
     patch.city = v;
   }
+  if (body.suburb !== undefined) patch.suburb = cleanText(body.suburb, 40);
   if (body.postcode !== undefined) patch.postcode = cleanText(body.postcode, 20);
   if (body.website !== undefined) {
     const v = cleanText(body.website, MAX_TEXT_LENGTH);

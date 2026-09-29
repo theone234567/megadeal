@@ -68,7 +68,9 @@ export default function DealCard({
       : distanceKm < 1
       ? `${Math.round(distanceKm * 1000)}m away`
       : `${distanceKm.toFixed(1)}km away`;
-  const locality = [deal.businessCity, distance].filter(Boolean).join(" · ");
+  // The suburb when it's known ("Takapuna"), otherwise the city: with every
+  // business in Auckland for now, the city alone tells a shopper little.
+  const locality = [deal.businessSuburb || deal.businessCity, distance].filter(Boolean).join(" · ");
 
   const Wrapper = preview ? "div" : Link;
   // prefetch off: a deal page is built fresh from Wix on every request, so

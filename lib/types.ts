@@ -40,7 +40,10 @@ export interface Deal {
   businessWebsite: string | null;
   businessPhone: string | null;
   businessAddress: string | null;
+  /** The city filter ("All areas") matches on this, so it stays the city. */
   businessCity: string | null;
+  /** Suburb, when known (lib/location.ts). */
+  businessSuburb: string | null;
   businessSlug: string | null;
   businessBio: string | null;
   businessHours: string | null;

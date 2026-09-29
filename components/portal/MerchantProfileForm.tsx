@@ -34,6 +34,7 @@ interface MerchantRecord {
   website?: string;
   address?: string;
   city?: string;
+  suburb?: string;
   postcode?: string;
   lat?: number | null;
   lng?: number | null;
@@ -106,6 +107,7 @@ export default function MerchantProfileForm({
   const [phone, setPhone] = useState(merchant.phone || "");
   const [address, setAddress] = useState(merchant.address || "");
   const [city, setCity] = useState(merchant.city || "");
+  const [suburb, setSuburb] = useState(merchant.suburb || "");
   const [postcode, setPostcode] = useState(merchant.postcode || "");
   const [lat, setLat] = useState<number | null>(merchant.lat ?? null);
   const [lon, setLon] = useState<number | null>(merchant.lng ?? null);
@@ -143,6 +145,7 @@ export default function MerchantProfileForm({
           phone,
           address,
           city,
+          suburb,
           postcode,
           lat,
           lng: lon,
@@ -438,6 +441,8 @@ export default function MerchantProfileForm({
             onSelect={(s: AddressSuggestion) => {
               setAddress(s.label || s.street);
               if (s.postcode) setPostcode(s.postcode);
+              // Replaced, not kept: a new address may be in another suburb.
+              setSuburb(s.suburb ?? "");
               if (s.city) {
                 const match = CITIES.find((c) => c.toLowerCase() === s.city!.toLowerCase());
                 setCity(match ?? "Other");
@@ -455,7 +460,24 @@ export default function MerchantProfileForm({
             errorText={fieldErrors.address}
           />
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+              <label htmlFor="profile-suburb" className="mb-1 block text-sm font-medium text-slate-700">
+                Suburb
+                <OptionalTag />
+              </label>
+              {/* Filled in from the address suggestion when there is one.
+                  Shown to customers ("Takapuna, Auckland") and used in your
+                  deal pages' titles, so people searching your area find you. */}
+              <input
+                id="profile-suburb"
+                maxLength={40}
+                value={suburb}
+                onChange={(e) => setSuburb(e.target.value)}
+                placeholder="e.g. Takapuna"
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              />
+            </div>
             <div>
               <label htmlFor="profile-city" className="mb-1 block text-sm font-medium text-slate-700">
                 City
