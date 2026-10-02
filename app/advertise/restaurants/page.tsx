@@ -765,28 +765,6 @@ export default function RestaurantAdvertisingPage() {
             Built to help great local businesses get discovered.
           </p>
         </section>
-
-        {/* Mobile fixed CTA — small screens only, matches the guide's
-            "compact fixed CTA on small screens" (desktop already has the
-            sticky header's own CTA, so this isn't needed above ~640px). */}
-        <div
-          className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t bg-white px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] sm:hidden"
-          style={{ borderColor: "#E8E1EF", paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
-        >
-          <p className="text-[13px] font-bold min-[360px]:text-sm" style={{ color: "#0F172A" }}>
-            Up to <span className="whitespace-nowrap" style={{ color: "#6520B5" }}>6 months free</span>
-          </p>
-          <a
-            href="#launch-offer"
-            data-cta-section="mobile_sticky"
-            // One line even at 320px wide, where it used to wrap to two.
-            className="shrink-0 whitespace-nowrap rounded-full bg-brand-600 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-brand-700 min-[360px]:px-5"
-          >
-            List my restaurant
-          </a>
-        </div>
-        {/* Reserve space so the fixed bar never covers the footer's own links. */}
-        <div className="h-16 sm:hidden" aria-hidden />
       </div>
     </main>
   );

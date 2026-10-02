@@ -113,7 +113,7 @@ export default function Header() {
 
   if (isComingSoon) {
     return (
-      <header className={`relative z-50 border-b ${T.comingSoonBar}`}>
+      <header className={`sticky top-0 z-50 border-b ${T.comingSoonBar}`}>
         <div className="mx-auto flex min-h-[60px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[68px] sm:gap-5 sm:px-8 lg:min-h-[72px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
             <BrandLogo placement="landing" tone={T.logo} />
@@ -139,7 +139,7 @@ export default function Header() {
   const location = <LocationSelect />;
 
   return (
-    <header className={`z-30 border-b lg:sticky lg:top-0 ${T.storefrontBar}`}>
+    <header className={`sticky top-0 z-30 border-b ${T.storefrontBar}`}>
       <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:gap-5 lg:px-8 lg:py-3.5">
         <div className="flex items-center justify-between gap-2 lg:contents">
           <Link

@@ -118,7 +118,7 @@ export default function HomeDeals({
   const set = (patch: Partial<HomeFilters>) => navigate(href(patch));
 
   return (
-    <div id="deals" className="scroll-mt-24">
+    <div id="deals" className="scroll-mt-[140px] lg:scroll-mt-24">
       {filters.q && <h1 className="sr-only">Search results for {filters.q}</h1>}
 
       <div className="mt-4 lg:mt-5">

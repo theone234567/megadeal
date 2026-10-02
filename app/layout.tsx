@@ -165,11 +165,11 @@ export default function RootLayout({
               use Wix sign-in, and they have it in their own layouts.
               Here it put the Wix sign-in code (about 100KB) and a
               session check (/api/auth/me) on every page, public or not. */}
+          <PreviewBanner siteLaunched={SITE_LAUNCHED} />
           <Header />
           {children}
           <Footer siteLaunched={SITE_LAUNCHED} />
         </MegadealArtProvider>
-        <PreviewBanner siteLaunched={SITE_LAUNCHED} />
       </body>
     </html>
   );

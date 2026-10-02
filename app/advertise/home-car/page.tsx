@@ -731,25 +731,6 @@ export default function HomeCarAdvertisingPage() {
             </div>
           </div>
         </section>
-
-        {/* Phones: the same fixed bar as the other business pages. */}
-        <div
-          className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t bg-white px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)] sm:hidden"
-          style={{ borderColor: LINE, paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
-        >
-          <p className="text-[13px] font-bold min-[360px]:text-sm" style={{ color: INK }}>
-            Up to <span className="whitespace-nowrap" style={{ color: PURPLE }}>{PROMO_MONTHS} free</span>
-          </p>
-          <a
-            href="#launch-offer"
-            data-cta-section="mobile_sticky"
-            className="shrink-0 whitespace-nowrap rounded-full bg-brand-600 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-brand-700 min-[360px]:px-5"
-          >
-            List my business
-          </a>
-        </div>
-        {/* Room at the bottom so the fixed bar never covers the footer. */}
-        <div className="h-16 sm:hidden" aria-hidden />
       </div>
     </main>
   );

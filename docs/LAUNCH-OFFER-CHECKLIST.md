@@ -55,7 +55,7 @@ pre-launch offer." (rest of the paragraph unchanged)
 Titles ("| 6 Months Free"), descriptions, hero buttons ("Get 6 months free →"), FAQs ("How do I
 get up to six months free?", "Use WELCOME6 at signup"), the "6 Months Free" card, JSON-LD
 Offer, launch panel ("Up to 6 months free advertising", "Join MegaDeal — 6 months free →",
-"Use WELCOME6 at signup."), phone bar ("Up to 6 months free"), share images.
+"Use WELCOME6 at signup."), share images.
 
 ### 4. /advertise/home-car
 

@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import SampleDealCard from "@/components/SampleDealCard";
 import EmailSignupForm from "@/components/EmailSignupForm";
-import StickyApplyBar from "@/components/StickyApplyBar";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "./MerchantSignupForm";
@@ -282,7 +281,6 @@ export default async function MerchantsPage() {
 
   return (
     <main className={plusJakartaSans.className}>
-      <StickyApplyBar />
       <ConversionTracker />
       <ViewContentTracker contentName="list_your_business" />
       <script
