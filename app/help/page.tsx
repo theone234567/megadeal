@@ -25,7 +25,7 @@ const FAQ_JSONLD = [
   { q: "How do I know a business is legitimate?", a: "Every business is reviewed by our team before their first deal goes live — we don't publish listings automatically." },
   { q: "Can I get a refund?", a: "Since MegaDeal never charges you, there's nothing for us to refund. Payment and any resulting dispute is between you and the business." },
   { q: "Is Groupon still in New Zealand?", a: "No. Groupon closed its New Zealand business in 2020, and MegaDeal isn't connected with it. MegaDeal is a New Zealand-owned local deals site, starting in Auckland. It works differently: there's no voucher to buy. You get a free deal code, contact the business, and pay them directly at the deal price." },
-  { q: "I'm a business — how do I list a deal?", a: "Head to our business page to find out how listing works — you advertise with credits or a subscription, and customers pay you directly when they redeem." },
+  { q: "I'm a business — how do I list a deal?", a: "Head to our business page to find out how listing works — you advertise with pay-as-you-go credits, and customers pay you directly when they redeem." },
 ];
 
 interface Faq {
@@ -114,8 +114,8 @@ const FAQS: Faq[] = [
         <Link href="/list-your-business" className="font-semibold text-brand-600 hover:underline">
           business page
         </Link>{" "}
-        to find out how listing works — you advertise with credits or
-        a subscription, and customers pay you directly when they
+        to find out how listing works — you advertise with
+        pay-as-you-go credits, and customers pay you directly when they
         redeem.
       </>
     ),
