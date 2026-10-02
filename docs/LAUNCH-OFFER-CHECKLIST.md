@@ -45,6 +45,10 @@ pre-launch offer." (rest of the paragraph unchanged)
   up-to-6-months-free offer is only available to qualifying businesses that join before deals
   go live… use code WELCOME6" → 3 months / WELCOME3, and drop "before launch" framing.
 - Share image `app/list-your-business/opengraph-image.tsx`: "Up to 6 months free advertising".
+- Founder's note ("Auckland businesses, get in early", signed Nick): "Before we open to
+  everyone, we're welcoming a limited number of local businesses to join early" and "Businesses
+  that join now get up to six months of free advertising" → drop the before-launch framing and
+  say up to 3 months; "get in early" and "from day one" may also need a new heading.
 
 ### 3. /advertise/restaurants and /advertise/beauty-spa
 

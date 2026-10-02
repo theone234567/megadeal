@@ -627,20 +627,49 @@ export default async function MerchantsPage() {
         </div>
       </section>
 
-      {/* Trust — honest about being new, framed as a reason to join now
-          rather than a weakness to hide. */}
+      {/* Founder's note — honest about being new, framed as a reason to
+          join now rather than a weakness to hide. Pre-launch wording: see
+          docs/LAUNCH-OFFER-CHECKLIST.md. */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
-            Be part of MegaDeal from day one.
+        {/* One left-aligned column, heading included, so it reads as a
+            single note rather than a centred intro above a letter. */}
+        <div className="mx-auto max-w-xl">
+          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 [text-wrap:balance] sm:text-3xl`}>
+            Auckland businesses, get in early
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-slate-600">
-            MegaDeal is launching in Auckland, and we&apos;re
-            deliberately starting with a small group of local
-            businesses so we can get it right before opening up further.
+          <p className="mt-2 text-lg font-semibold text-brand-700 [text-wrap:balance]">
+            Customers pay you directly. You keep every dollar.
           </p>
+          <div className="mt-5 space-y-4 text-slate-600">
+            <p>
+              MegaDeal is proudly Kiwi-owned, and we&apos;re launching first
+              in Auckland. Before we open to everyone, we&apos;re welcoming
+              a limited number of local businesses to join early, so each
+              one gets our full attention.
+            </p>
+            <p>
+              Our mission is simple: help Aucklanders discover brilliant
+              local deals, and help local businesses win new customers.
+            </p>
+            <p>
+              Unlike other deal sites, we don&apos;t take a cut of your
+              sales or handle your payments. We simply put your offers in
+              front of local customers, and they deal with you directly.
+            </p>
+            <p>
+              Businesses that join now get up to six months of free
+              advertising, and your feedback will help shape the features
+              we build from day one.
+            </p>
+            <p>Joining is free. No credit card, no lock-in, and 0% commission.</p>
+            <p>We&apos;d love to have you on board.</p>
+            <div className="pt-1">
+              <p className={`${caveat.className} text-3xl leading-none text-brand-700`}>Nick</p>
+              <p className="mt-1 text-sm text-slate-500">Founder, MegaDeal</p>
+            </div>
+          </div>
           {stats && (stats.merchantCount > 0 || stats.waitlistCount > 0) && (
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 rounded-2xl border border-brand-100 bg-brand-50 px-6 py-5">
+            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-2 rounded-2xl border border-brand-100 bg-brand-50 px-6 py-5">
               {stats.merchantCount > 0 && (
                 <p className="text-base font-semibold text-brand-800">
                   <StoreIcon className="mr-1.5 inline h-5 w-5 align-[-3px]" />
@@ -655,31 +684,6 @@ export default async function MerchantsPage() {
               )}
             </div>
           )}
-          <div className="mx-auto mt-6 max-w-xl space-y-4 text-left text-slate-600">
-            <p>
-              MegaDeal is New Zealand-owned and operated, and we&apos;re
-              launching first in Auckland with a small group of local
-              businesses. Our goal is simple: help people discover great
-              local offers and give businesses a new way to reach
-              customers.
-            </p>
-            <p>
-              As a local business ourselves, we know every marketing
-              dollar matters. Join before launch and get up to six
-              months of free advertising, plus the opportunity to help
-              shape the platform from the start.
-            </p>
-            <p>
-              There&apos;s nothing to lose — it&apos;s completely free
-              to join, with no credit card required, no commitment and
-              0% commission.
-            </p>
-            <p>We&apos;d love you to be part of our launch.</p>
-            <div className="pt-1">
-              <p className={`${caveat.className} text-3xl leading-none text-brand-700`}>Nick</p>
-              <p className="mt-1 text-sm text-slate-500">Founder, MegaDeal</p>
-            </div>
-          </div>
         </div>
       </section>
 
