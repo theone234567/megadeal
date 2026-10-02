@@ -16,22 +16,16 @@ function getParts(target: Date): Parts {
 
 export default function CountdownBadge({
   target,
-  durationMs,
   variant = "badge",
   className = "",
 }: {
-  /** Absolute deadline — for real deals with a known expiry. */
-  target?: Date;
-  /** Deadline measured from when the badge mounts, for the sample/mockup
-   *  card. A mockup must not anchor to an absolute instant: on a
-   *  statically prerendered page that instant is the build time, so the
-   *  fake deal visibly "expires" as the deployment ages. */
-  durationMs?: number;
+  /** The deal's deadline. */
+  target: Date;
   /** "offer": the deal-card/deal-page treatment — an opaque white pill
    *  reading "Offer ends in …" (the deadline to get the offer, not a
    *  booking or usage deadline), no colour escalation or pulsing, and an
-   *  explicit "Offer ended" once it reaches zero. "badge" is the original
-   *  dark pill still used by SampleDealCard. "left": the storefront card's
+   *  explicit "Offer ended" once it reaches zero. "badge": the original
+   *  dark pill. "left": the storefront card's
    *  white "2h 14m left" pill (the pink Flash label beside it is the one
    *  accent), "Ended" at zero. */
   variant?: "badge" | "offer" | "text" | "left";
@@ -55,11 +49,10 @@ export default function CountdownBadge({
   // Keyed on the timestamp rather than the Date object: every caller
   // builds `new Date(...)` inline during render, so depending on object
   // identity would re-run this effect on every single render.
-  const targetTime = target ? target.getTime() : null;
+  const targetTime = target.getTime();
 
   useEffect(() => {
-    const deadline =
-      targetTime !== null ? new Date(targetTime) : new Date(Date.now() + (durationMs ?? 0));
+    const deadline = new Date(targetTime);
 
     // A self-rescheduling timeout rather than setInterval, so the cadence
     // actually reacts as time passes rather than being fixed forever at
@@ -78,7 +71,7 @@ export default function CountdownBadge({
     }
     tick();
     return () => clearTimeout(timeoutId);
-  }, [targetTime, durationMs]);
+  }, [targetTime]);
 
   const baseClass =
     variant === "offer"

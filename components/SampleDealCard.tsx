@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { formatMoney } from "@/lib/format";
-import CountdownBadge from "@/components/CountdownBadge";
 
 /**
  * Static, non-interactive mockup of what a real deal listing looks like —
@@ -16,13 +15,6 @@ import CountdownBadge from "@/components/CountdownBadge";
  * showing them something other than what they'd get. Any change to
  * DealCard's body needs mirroring here until the two are merged.
  */
-/** Mockup deadline, measured from when the badge mounts in the browser.
- *  Must NOT be an absolute date computed here: this is a Server Component
- *  on statically prerendered pages, so an absolute date would be frozen at
- *  build time and the sample deal would count down towards expiry as the
- *  deployment aged (and mismatch on hydration). */
-const SAMPLE_DURATION_MS = 21 * 24 * 60 * 60 * 1000;
-
 export default function SampleDealCard() {
 
   return (
@@ -48,7 +40,15 @@ export default function SampleDealCard() {
             </span>
           </div>
           <div className="absolute bottom-2 left-2">
-            <CountdownBadge durationMs={SAMPLE_DURATION_MS} />
+            {/* A fixed label, not a live countdown: the countdown's
+                placeholder, "Ends in 00h 00m", was in the page's text until
+                the browser filled it in, and read like an expired deal or a
+                bug to anything that read the page before then (reader view,
+                link previews, search and AI crawlers). A sample needs no
+                real deadline. Styled like the real badge with days left. */}
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 px-2.5 py-1 text-xs font-semibold text-white">
+              ⏱ Ends in 3 days
+            </span>
           </div>
         </div>
 
