@@ -117,7 +117,7 @@ const WHAT_YOU_GET = [
   {
     icon: ReceiptIcon,
     title: "Keep your sales",
-    text: "MegaDeal charges advertising fees/subscriptions — not a percentage of your sales.",
+    text: "MegaDeal charges for advertising — not a percentage of your sales.",
   },
 ];
 
@@ -211,7 +211,7 @@ const FAQS = [
   },
   {
     q: "How much will advertising cost after the free period?",
-    a: "After your free period, MegaDeal is paid in simple advertising credits or a monthly subscription — never a percentage of your sales. Exact pricing is confirmed in your business portal before you're asked to pay anything, and you can cancel or pause at any time.",
+    a: "After your free period, you keep advertising with simple pay-as-you-go credits — never a percentage of your sales. Exact pricing is confirmed in your business portal before you're asked to pay anything, and you can cancel or pause at any time.",
   },
   {
     q: "Do customers pay MegaDeal?",
@@ -294,7 +294,7 @@ export default async function MerchantsPage() {
             serviceType: "Local business advertising",
             name: `${SITE_NAME} business advertising`,
             description:
-              "Zero-commission advertising for local New Zealand businesses — customers pay the business directly, and MegaDeal is paid in advertising credits or a subscription, never a cut of sales.",
+              "Zero-commission advertising for local New Zealand businesses — customers pay the business directly, and MegaDeal is paid in advertising credits, never a cut of sales.",
             provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
             areaServed: { "@type": "Country", name: "New Zealand" },
             audience: {
