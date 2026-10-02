@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
 
 interface EmailSignupFormProps {
@@ -17,11 +17,10 @@ interface EmailSignupFormProps {
    *  form sits in a left-aligned card/column, where centering just this
    *  one row would look wrong instead of right. */
   center?: boolean;
-  /** "row" (default) puts the input and button side by side — fine in a
-   *  wide card, but in a narrow container (the corner popup) it squeezes
-   *  the input down to where a real email address scrolls out of view
-   *  while typing. "stacked" gives the input the full row to itself.
-   *  "responsive": stacked on phones, side by side from 640px. */
+  /** "responsive" (default): the button under the email box on phones,
+   *  beside it from 640px, so on a phone the box gets the full width (side
+   *  by side it was squeezed to where a real address scrolled out of view
+   *  while typing). "stacked": always under. "row": always beside. */
   layout?: "row" | "stacked" | "responsive";
 }
 
@@ -33,16 +32,27 @@ export default function EmailSignupForm({
   accent = "brand",
   surface = "onColor",
   center = false,
-  layout = "row",
+  layout = "responsive",
 }: EmailSignupFormProps) {
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
+  // Set when someone presses the button without ticking the consent box.
+  // The button used to stay disabled (and faded) until the box was ticked,
+  // which looked broken and never said why.
+  const [consentMissing, setConsentMissing] = useState(false);
+  const consentRef = useRef<HTMLInputElement>(null);
+  const consentErrorId = useId();
   const [state, setState] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !consent) return;
+    if (!email) return;
+    if (!consent) {
+      setConsentMissing(true);
+      consentRef.current?.focus();
+      return;
+    }
     setState("saving");
     setErrorMessage(null);
     try {
@@ -101,7 +111,7 @@ export default function EmailSignupForm({
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="w-full max-w-md">
+      <form onSubmit={handleSubmit} className="w-full max-w-lg">
         <div
           className={
             layout === "stacked"
@@ -126,7 +136,7 @@ export default function EmailSignupForm({
           />
           <button
             type="submit"
-            disabled={state === "saving" || !consent}
+            disabled={state === "saving"}
             className={`rounded-full px-5 py-3 text-sm font-bold text-white shadow-card transition active:scale-95 disabled:opacity-60 ${
               layout === "stacked" ? "w-full" : layout === "responsive" ? "w-full sm:w-auto sm:shrink-0" : "shrink-0"
             } ${buttonClass}`}
@@ -140,10 +150,15 @@ export default function EmailSignupForm({
           } ${mutedTextClass}`}
         >
           <input
+            ref={consentRef}
             type="checkbox"
-            required
             checked={consent}
-            onChange={(e) => setConsent(e.target.checked)}
+            onChange={(e) => {
+              setConsent(e.target.checked);
+              if (e.target.checked) setConsentMissing(false);
+            }}
+            aria-invalid={consentMissing || undefined}
+            aria-describedby={consentMissing ? consentErrorId : undefined}
             /* 20px, up from 14px, which was genuinely hard to hit on a
                phone. It is the wrapping <label> rather than the box itself
                that satisfies the 24px minimum target size (WCAG 2.2 SC
@@ -163,6 +178,15 @@ export default function EmailSignupForm({
             . I can unsubscribe anytime.
           </span>
         </label>
+        {consentMissing && (
+          <p
+            id={consentErrorId}
+            role="alert"
+            className={`mt-2 text-xs font-semibold ${surface === "plain" ? "text-red-600" : "text-red-100"}`}
+          >
+            Please tick the box to agree to emails first.
+          </p>
+        )}
       </form>
       {state === "error" && (
         <p className={`mt-2 text-xs ${surface === "plain" ? "text-red-600" : "text-red-100"}`}>

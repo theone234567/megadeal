@@ -90,13 +90,12 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
                 : "We'll email you when MegaDeal launches, then send the best new local deals."}
             </p>
           </div>
-          <div className="w-full lg:max-w-[460px]">
+          <div className="w-full lg:max-w-[520px]">
             <EmailSignupForm
               audience="customer"
               source="footer"
               buttonLabel={siteLaunched ? "Sign me up" : "Notify me"}
               surface="plain"
-              layout="responsive"
             />
           </div>
         </section>
