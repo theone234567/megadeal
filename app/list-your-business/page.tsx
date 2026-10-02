@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import SampleDealCard from "@/components/SampleDealCard";
+import FounderNote from "@/components/FounderNote";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
@@ -9,7 +10,7 @@ import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { getSignupStats, shownStats } from "@/lib/publicStats";
-import { fredoka, plusJakartaSans, caveat } from "@/lib/fonts";
+import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { PercentIcon, ZapIcon, MapPinIcon, CheckIcon, UtensilsIcon, FlowerIcon, TicketIcon, SuitcaseIcon, DumbbellIcon, WrenchIcon, TagIcon, StoreIcon, PhoneIcon, ReceiptIcon, MailIcon } from "@/components/icons";
 
 // Re-checked at most once a minute — the counts only need to be
@@ -625,47 +626,14 @@ export default async function MerchantsPage() {
         </div>
       </section>
 
-      {/* Founder's note — honest about being new, framed as a reason to
-          join now rather than a weakness to hide. Pre-launch wording: see
-          docs/LAUNCH-OFFER-CHECKLIST.md. */}
+      {/* Founder's note (components/FounderNote.tsx, shared with
+          /coming-soon) — honest about being new, framed as a reason to join
+          now rather than a weakness to hide. */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         {/* One left-aligned column, heading included, so it reads as a
             single note rather than a centred intro above a letter. */}
         <div className="mx-auto max-w-xl">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 [text-wrap:balance] sm:text-3xl`}>
-            Auckland businesses, get in early
-          </h2>
-          <p className="mt-2 text-lg font-semibold text-brand-700 [text-wrap:balance]">
-            Customers pay you directly. You keep every dollar.
-          </p>
-          <div className="mt-5 space-y-4 text-slate-600">
-            <p>
-              MegaDeal is proudly Kiwi-owned, and we&apos;re launching first
-              in Auckland. Before we open to everyone, we&apos;re welcoming
-              a limited number of local businesses to join early, so each
-              one gets our full attention.
-            </p>
-            <p>
-              Our mission is simple: help Aucklanders discover brilliant
-              local deals, and help local businesses win new customers.
-            </p>
-            <p>
-              Unlike other deal sites, we don&apos;t take a cut of your
-              sales or handle your payments. We simply put your offers in
-              front of local customers, and they deal with you directly.
-            </p>
-            <p>
-              Businesses that join now get up to six months of free
-              advertising, and your feedback will help shape the features
-              we build from day one.
-            </p>
-            <p>Joining is free. No credit card, no lock-in, and 0% commission.</p>
-            <p>We&apos;d love to have you on board.</p>
-            <div className="pt-1">
-              <p className={`${caveat.className} text-3xl leading-none text-brand-700`}>Nick</p>
-              <p className="mt-1 text-sm text-slate-500">Founder, MegaDeal</p>
-            </div>
-          </div>
+          <FounderNote />
           {stats && (stats.merchantCount > 0 || stats.waitlistCount > 0) && (
             <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-2 rounded-2xl border border-brand-100 bg-brand-50 px-6 py-5">
               {stats.merchantCount > 0 && (

@@ -119,12 +119,14 @@ export default function Header() {
             <BrandLogo placement="landing" tone={T.logo} />
           </Link>
 
+          {/* Business sign-in only: deal hunters have no account. On phones
+              this used to read just "Sign in", which looked like a
+              customer sign-in. */}
           <Link
             href="/portal"
-            className={`shrink-0 rounded-full border-[1.5px] bg-white px-4 py-2.5 text-xs font-extrabold text-brand-600 transition hover:bg-hp-lavender sm:px-5 sm:text-sm lg:px-6 lg:py-3 ${T.comingSoonSignIn}`}
+            className={`shrink-0 whitespace-nowrap rounded-full border-[1.5px] bg-white px-3 py-2.5 text-xs font-extrabold text-brand-600 transition hover:bg-hp-lavender sm:px-5 sm:text-sm lg:px-6 lg:py-3 ${T.comingSoonSignIn}`}
           >
-            <span className="sm:hidden">Sign in →</span>
-            <span className="hidden sm:inline">Business sign in →</span>
+            Business sign in<span className="hidden sm:inline"> →</span>
           </Link>
         </div>
       </header>

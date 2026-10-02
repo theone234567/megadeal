@@ -9,6 +9,7 @@ import { categoryPath } from "@/lib/categories";
 import CategoryPhoto from "@/components/CategoryPhoto";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import SampleDealCard from "@/components/SampleDealCard";
+import FounderNote from "@/components/FounderNote";
 import { getSignupStats, shownStats } from "@/lib/publicStats";
 import MascotFigure from "@/components/megadeal/MascotFigure";
 import { getMegadealArt } from "@/lib/megadealAssets";
@@ -157,7 +158,7 @@ const launchCities = ["Wellington", "Christchurch", "Queenstown", "Hamilton"];
 // Plain-text answers: the single source for both the visible list and the
 // FAQPage JSON-LD, so the two can never disagree. Every answer restates
 // something the site already says elsewhere — no new promises.
-const FAQS: { q: string; a: string }[] = [
+const FAQS: { q: string; a: string; aNode?: ReactNode }[] = [
   {
     q: "What is MegaDeal?",
     a: "MegaDeal is a New Zealand-owned website for local deals — up to 50% off at restaurants, spas, activities, getaways and other local businesses. It's an advertising platform, not a shop: you never buy anything from MegaDeal.",
@@ -177,6 +178,19 @@ const FAQS: { q: string; a: string }[] = [
   {
     q: "I run a local business. What does it cost?",
     a: "Businesses approved before launch can get up to 6 months of free advertising with code WELCOME6 (conditions apply). MegaDeal takes 0% commission on your sales, and no credit card is needed to apply. After the free period, advertising is paid for with credits.",
+  },
+  {
+    q: "What if a business doesn't honour my deal?",
+    a: "Let us know through our contact page and we'll follow it up with the business.",
+    aNode: (
+      <>
+        Let us know through our{" "}
+        <Link href="/contact" className="font-semibold text-brand-700 underline underline-offset-2 hover:no-underline">
+          contact page
+        </Link>{" "}
+        and we&apos;ll follow it up with the business.
+      </>
+    ),
   },
 ];
 
@@ -386,8 +400,13 @@ export default async function ComingSoonPage() {
           className={`${shell} relative pb-8 pt-7 sm:pb-10 sm:pt-10 lg:min-h-[clamp(480px,38vw,580px)] lg:py-10 lg:flex lg:flex-col lg:justify-center`}
         >
           <div className="lg:max-w-[500px]">
-            <div className="inline-flex rounded-full bg-[#c7128a] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white shadow-sm sm:px-5 sm:text-sm">
-              Launching first in Auckland
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex rounded-full bg-[#c7128a] px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white shadow-sm sm:px-5 sm:text-sm">
+                Launching first in Auckland
+              </div>
+              <div className="inline-flex rounded-full bg-white/15 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white ring-1 ring-inset ring-white/30 sm:px-5 sm:text-sm">
+                Proudly Kiwi-owned
+              </div>
             </div>
             <h1
               className={`${fredoka.className} mt-4 text-4xl font-bold leading-[0.98] tracking-[-0.02em] sm:text-5xl lg:mt-5 lg:text-[64px] ${HERO_TEXT_SHADOW}`}
@@ -598,12 +617,8 @@ export default async function ComingSoonPage() {
               <p className="mt-3 text-[15px] font-semibold leading-6 text-slate-900">
                 From cafés and salons to gyms and tour operators — if you serve local customers, you belong here.
               </p>
-              <p className="mt-2.5 max-w-[620px] text-[15px] leading-6 text-slate-600 lg:text-base">
-                Get in before we launch and your first months of advertising are on us. Once deals
-                go live the offer closes, so the businesses that join now are the ones customers
-                see on day one.
-              </p>
-
+              {/* The "join before launch" paragraph that was here is now
+                  said by the founder's note below, so it isn't said twice. */}
               <ul className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-x-8">
                 {businessBenefits.map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-[15px] font-semibold leading-6 text-slate-900">
@@ -614,6 +629,16 @@ export default async function ComingSoonPage() {
                   </li>
                 ))}
               </ul>
+
+              {/* Says only what exists today (credits). Subscriptions or
+                  set-period packages may come later — the Terms already
+                  allow for "credits or a subscription" — so nothing here
+                  rules them out. TODO: link pricing (there's no pricing
+                  page yet), and mention any subscription or set-period
+                  option here once it's real and priced. */}
+              <p className="mt-5 text-sm font-semibold leading-6 text-slate-700">
+                After your free period: simple pay-as-you-go credits, and still 0% commission.
+              </p>
 
               <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
                 <Link
@@ -631,6 +656,14 @@ export default async function ComingSoonPage() {
                   {stats.merchantCount.toLocaleString()} Auckland businesses have already signed up.
                 </p>
               )}
+              {/* TODO: enable once sign-up count is meaningful. Replace [X]
+                  with the real figure. (The automatic line just above
+                  already appears by itself once 60 businesses are approved;
+                  use one or the other, not both.)
+              <p className="mt-4 text-sm font-semibold text-ember-600">
+                Join [X]+ Auckland businesses already on board
+              </p>
+              */}
             </div>
 
             <div className="rounded-[24px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px_34px_rgba(77,12,168,.10)] sm:p-7">
@@ -643,6 +676,7 @@ export default async function ComingSoonPage() {
                   ["Advertising before launch", "Free*"],
                   ["Customer payments", "Direct to you"],
                   ["Lock-in contract", "None"],
+                  ["After free period", "Pay-as-you-go credits"],
                 ].map(([label, value]) => (
                   <div
                     key={label}
@@ -654,6 +688,12 @@ export default async function ComingSoonPage() {
                 ))}
               </dl>
             </div>
+          </div>
+
+          {/* Founder's note (components/FounderNote.tsx, the same note as
+              on /list-your-business), as a card under the offer. */}
+          <div className="mt-8 max-w-[720px] rounded-[24px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px_34px_rgba(77,12,168,.10)] sm:p-8 lg:mt-10">
+            <FounderNote headingLevel="h3" compact />
           </div>
         </div>
       </section>
@@ -696,6 +736,13 @@ export default async function ComingSoonPage() {
                   sizes="(min-width: 1024px) 200px, (min-width: 640px) 33vw, 50vw"
                   className="object-cover transition duration-500 group-hover:scale-[1.04]"
                 />
+                {/* Before launch each tile leads to the email sign-up, not
+                    to deals; this says so before anyone taps. */}
+                {!live && (
+                  <span className="absolute left-2 top-2 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.12em] text-brand-700 shadow-sm">
+                    Coming soon
+                  </span>
+                )}
               </div>
               <div className="flex min-h-[60px] items-center gap-2.5 px-3 py-3 lg:min-h-[64px]">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f2ecff] text-brand-700 transition group-hover:bg-[#6520B5] group-hover:text-white">
@@ -731,6 +778,7 @@ export default async function ComingSoonPage() {
               <ul className="mt-5 grid gap-2.5 sm:grid-cols-2 sm:gap-x-8">
                 <Tick color="#0369a1">Free to join, unsubscribe anytime</Tick>
                 <Tick color="#0369a1">Early access before deals go public</Tick>
+                <Tick color="#0369a1">Every business is approved by our team</Tick>
               </ul>
 
               <div className="mt-6 max-w-[520px]">
@@ -765,69 +813,18 @@ export default async function ComingSoonPage() {
         </div>
       </section>
 
-      {/* --------------------------------------------------- Launch plan */}
-      <section className={`${shell} py-10 lg:py-14`}>
-        <div className="overflow-hidden rounded-[24px] bg-[#f8f6fc] px-5 py-7 ring-1 ring-[#ece7f2] sm:px-8 sm:py-9 lg:rounded-[28px] lg:px-10 lg:py-10">
-          <div className="max-w-[700px]">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#c7128a]">
-              Where we&apos;re heading
-            </p>
-            <h2 className={`${fredoka.className} mt-2 text-2xl font-bold leading-tight text-slate-900 sm:text-3xl`}>
-              Auckland first. Then nationwide.
-            </h2>
-            <p className="mt-2.5 text-[15px] leading-6 text-slate-600 lg:text-base">
-              We&apos;re starting local, learning what works, then taking MegaDeal to more New Zealand communities.
-            </p>
-          </div>
-
-          <div className="relative mt-7 lg:mt-9">
-            <div className="absolute bottom-6 left-5 top-6 w-px bg-[#d8c8ed] lg:hidden" aria-hidden />
-            <div className="absolute left-[16.7%] right-[16.7%] top-5 hidden h-px bg-[#d8c8ed] lg:block" aria-hidden />
-
-            <div className="relative grid gap-5 lg:grid-cols-3 lg:gap-6">
-              <div className="relative grid grid-cols-[42px_minmax(0,1fr)] gap-4 lg:block">
-                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[#c7128a] text-xs font-extrabold text-white shadow-[0_6px_18px_rgba(232,30,163,.24)] lg:mx-auto">
-                  01
-                </div>
-                <div className="rounded-[20px] bg-[#6520B5] p-5 text-white shadow-[0_14px_34px_rgba(77,12,168,.18)] lg:mt-5 lg:min-h-[190px] lg:p-6">
-                  <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-white ring-1 ring-inset ring-white/20">
-                    Launching first
-                  </span>
-                  <h3 className={`${fredoka.className} mt-3 text-xl font-bold`}>Auckland Launch</h3>
-                  <p className="mt-2 text-sm leading-6 text-white/82">
-                    Discover launch deals from businesses across Auckland.
-                  </p>
-                </div>
-              </div>
-
-              <div className="relative grid grid-cols-[42px_minmax(0,1fr)] gap-4 lg:block">
-                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xs font-extrabold text-brand-700 ring-2 ring-[#d8c8ed] lg:mx-auto">
-                  02
-                </div>
-                <div className="rounded-[20px] bg-white p-5 ring-1 ring-[#e9e4ef] lg:mt-5 lg:min-h-[190px] lg:p-6">
-                  <h3 className={`${fredoka.className} text-xl font-bold text-slate-900`}>Growing Across NZ</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    We&apos;ll expand into more cities and regions as the MegaDeal community grows.
-                  </p>
-                  <p className="mt-3 text-xs font-bold leading-5 text-[#501590]">
-                    {launchCities.join(" • ")}
-                  </p>
-                </div>
-              </div>
-
-              <div className="relative grid grid-cols-[42px_minmax(0,1fr)] gap-4 lg:block">
-                <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xs font-extrabold text-brand-700 ring-2 ring-[#d8c8ed] lg:mx-auto">
-                  03
-                </div>
-                <div className="rounded-[20px] bg-white p-5 ring-1 ring-[#e9e4ef] lg:mt-5 lg:min-h-[190px] lg:p-6">
-                  <h3 className={`${fredoka.className} text-xl font-bold text-slate-900`}>Nationwide MegaDeals</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    One place to discover great deals from local businesses throughout New Zealand.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* --------------------------------------------------- Launch plan
+          One line: the hero's trust strip already names the next cities,
+          so the three-card roadmap that used to be here repeated it. */}
+      <section className={`${shell} py-8 lg:py-10`}>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[18px] bg-[#f8f6fc] px-5 py-4 ring-1 ring-[#ece7f2] sm:px-6">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-brand-700 shadow-sm">
+            <MapPinIcon className="h-4 w-4" />
+          </span>
+          <p className="text-[15px] text-slate-700">
+            <span className="font-extrabold text-slate-900">Auckland first. Then nationwide.</span>{" "}
+            We&apos;re starting local, then taking MegaDeal to more of New Zealand.
+          </p>
         </div>
 
         <p className="mt-4 text-[11px] text-slate-500">
@@ -865,7 +862,7 @@ export default async function ComingSoonPage() {
           Questions about MegaDeal
         </h2>
         <div className="mt-5 divide-y divide-[#ece7f2] rounded-[20px] bg-white ring-1 ring-[#ece7f2]">
-          {FAQS.map(({ q, a }) => (
+          {FAQS.map(({ q, a, aNode }) => (
             <details key={q} className="group px-5 py-4 sm:px-6">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-bold text-slate-900 marker:hidden [&::-webkit-details-marker]:hidden">
                 {q}
@@ -876,7 +873,7 @@ export default async function ComingSoonPage() {
                   +
                 </span>
               </summary>
-              <p className="mt-2 max-w-[70ch] text-[15px] leading-6 text-slate-600">{a}</p>
+              <p className="mt-2 max-w-[70ch] text-[15px] leading-6 text-slate-600">{aNode ?? a}</p>
             </details>
           ))}
         </div>
