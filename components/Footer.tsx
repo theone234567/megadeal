@@ -72,7 +72,36 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
       )}
 
       <div className="mx-auto max-w-[1200px] px-4 pb-12 pt-10 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
+        {/* Email sign-up: a full-width strip, so the email box has room
+            (in a fifth-width column it was ~150px, half the screen on a
+            phone). The wording follows launch: before it there are no
+            deal emails yet, only the launch announcement. */}
+        <section
+          aria-labelledby="footer-signup-heading"
+          className="mb-10 flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10"
+        >
+          <div className="lg:max-w-md">
+            <h2 id="footer-signup-heading" className="font-display text-xl font-semibold text-slate-900 [text-wrap:balance]">
+              {siteLaunched ? "Never miss a local deal" : "Be first to hear about Auckland deals"}
+            </h2>
+            <p className="mt-1.5 text-sm text-slate-600">
+              {siteLaunched
+                ? "The best new Auckland deals, straight to your inbox."
+                : "We'll email you when MegaDeal launches, then send the best new local deals."}
+            </p>
+          </div>
+          <div className="w-full lg:max-w-[460px]">
+            <EmailSignupForm
+              audience="customer"
+              source="footer"
+              buttonLabel={siteLaunched ? "Sign me up" : "Notify me"}
+              surface="plain"
+              layout="responsive"
+            />
+          </div>
+        </section>
+
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <div>
             <h2 className="mb-3 text-sm font-bold text-slate-900">Categories</h2>
             <ul className="space-y-1 text-sm text-slate-600">
@@ -109,11 +138,6 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
           <div>
             <h2 className="mb-3 text-sm font-bold text-slate-900">Follow MegaDeal</h2>
             <SocialLinks />
-          </div>
-          <div>
-            <h2 className="mb-3 text-sm font-bold text-slate-900">Stay in the loop</h2>
-            <p className="mb-3 text-sm text-slate-600">Get the best local deals in your inbox every week.</p>
-            <EmailSignupForm audience="customer" source="footer" buttonLabel="Join" surface="plain" />
           </div>
         </div>
 
