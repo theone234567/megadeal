@@ -9,7 +9,7 @@ import { categoryPath } from "@/lib/categories";
 import CategoryPhoto from "@/components/CategoryPhoto";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import SampleDealCard from "@/components/SampleDealCard";
-import { getSignupStats } from "@/lib/publicStats";
+import { getSignupStats, shownStats } from "@/lib/publicStats";
 import MascotFigure from "@/components/megadeal/MascotFigure";
 import { getMegadealArt } from "@/lib/megadealAssets";
 import {
@@ -180,13 +180,6 @@ const FAQS: { q: string; a: string }[] = [
   },
 ];
 
-/**
- * Same bar /list-your-business uses. Real counts are far better social
- * proof than none, but "3 businesses signed up" reads worse than staying
- * quiet — so nothing is shown until there is a number worth showing.
- */
-const MIN_APPROVED_BUSINESSES_TO_SHOW_STATS = 33;
-
 /** Defaults to the brand purple; the deal-hunters section below passes
  *  its own sky-blue accent instead so its checkmarks match that
  *  section's color, not the page's default. */
@@ -248,9 +241,8 @@ function HeroGradientWash({
 export default async function ComingSoonPage() {
   // Real figures from Wix, never invented. Null (and so hidden) when the
   // credentials are unavailable or the numbers are still too small.
-  const rawStats = await getSignupStats();
-  const stats =
-    rawStats && rawStats.merchantCount >= MIN_APPROVED_BUSINESSES_TO_SHOW_STATS ? rawStats : null;
+  // Each counter only once it reaches 60 (shownStats in lib/publicStats.ts).
+  const stats = shownStats(await getSignupStats());
 
   return (
     <main className={`${plusJakartaSans.className} overflow-x-hidden bg-white text-slate-900`}>

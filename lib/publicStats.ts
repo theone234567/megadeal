@@ -7,6 +7,28 @@ export interface SignupStats {
 }
 
 /**
+ * The smallest number either counter is shown at. Below it, that counter
+ * is hidden: "12 Auckland businesses signed up" makes MegaDeal look small,
+ * which undercuts the trust the counter is there to build. Each counter
+ * switches on by itself once its real count reaches this; no code change.
+ */
+export const MIN_COUNT_TO_SHOW = 60;
+
+/**
+ * The counts as visitors may see them: each one kept only once it reaches
+ * MIN_COUNT_TO_SHOW (0 otherwise, which the pages treat as hidden), and
+ * null when neither has.
+ */
+export function shownStats(stats: SignupStats | null): SignupStats | null {
+  if (!stats) return null;
+  const shown = {
+    merchantCount: stats.merchantCount >= MIN_COUNT_TO_SHOW ? stats.merchantCount : 0,
+    waitlistCount: stats.waitlistCount >= MIN_COUNT_TO_SHOW ? stats.waitlistCount : 0,
+  };
+  return shown.merchantCount > 0 || shown.waitlistCount > 0 ? shown : null;
+}
+
+/**
  * Real counts for /list-your-business' cold-start trust signal — how many
  * businesses have actually been approved, and how many customers are
  * already on the launch waitlist. Both collections are admin-only in Wix

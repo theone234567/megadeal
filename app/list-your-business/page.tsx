@@ -9,7 +9,7 @@ import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "./MerchantSignupForm";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { getSignupStats } from "@/lib/publicStats";
+import { getSignupStats, shownStats } from "@/lib/publicStats";
 import { fredoka, plusJakartaSans, caveat } from "@/lib/fonts";
 import { PercentIcon, ZapIcon, MapPinIcon, CheckIcon, UtensilsIcon, FlowerIcon, TicketIcon, SuitcaseIcon, DumbbellIcon, WrenchIcon, TagIcon, StoreIcon, PhoneIcon, ReceiptIcon, MailIcon } from "@/components/icons";
 
@@ -245,13 +245,6 @@ const STEPS = [
   },
 ];
 
-// The live signup counter only starts appearing once there's a credible
-// number of approved businesses — a count of 1 undercuts the trust it's
-// meant to build more than showing nothing at all. This is a threshold,
-// not a manual switch: it flips itself on automatically as real approvals
-// cross it, no code change needed.
-const MIN_APPROVED_BUSINESSES_TO_SHOW_STATS = 33;
-
 // FAQS.a stays a plain string (it also feeds the FAQPage JSON-LD below,
 // which needs plain text) — this only affects the visible rendering,
 // turning a trailing "Conditions apply." into a link to /terms.
@@ -283,9 +276,9 @@ function SectionCta({ section }: { section: string }) {
 }
 
 export default async function MerchantsPage() {
-  const rawStats = await getSignupStats();
-  const stats =
-    rawStats && rawStats.merchantCount >= MIN_APPROVED_BUSINESSES_TO_SHOW_STATS ? rawStats : null;
+  // The live counters, each only once it reaches 60 (shownStats in
+  // lib/publicStats.ts): a small number undercuts the trust they're for.
+  const stats = shownStats(await getSignupStats());
 
   return (
     <main className={plusJakartaSans.className}>
