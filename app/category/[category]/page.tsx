@@ -42,7 +42,9 @@ export async function generateMetadata(
   // already appends "| MegaDeal", so including it here doubled it up.
   // openGraph/twitter titles aren't run through that template, so those
   // keep the brand-inclusive version.
-  const title = `${category} Deals in ${SEO_REGION} — Up to 50% Off`;
+  // In the words people search ("restaurant deals Auckland"), from
+  // lib/categoryCopy.ts; the category's own name only as a fallback.
+  const title = copy?.title ?? `${category} Deals in ${SEO_REGION} — Up to 50% Off`;
   const socialTitle = `${title} | ${SITE_NAME}`;
   const description =
     copy?.description ??
@@ -122,7 +124,7 @@ export default async function CategoryPage(
         )}
         <Breadcrumbs items={[{ name: category }]} />
         <h1 className="font-display text-2xl font-bold text-slate-900">
-          {copy ? copy.heading : category} deals in {SEO_REGION}
+          {copy ? copy.h1 : `${category} deals in ${SEO_REGION}`}
         </h1>
         {copy && <p className="mt-1.5 mb-5 max-w-2xl text-sm text-slate-600 sm:text-base">{copy.intro}</p>}
         {!copy && <div className="mb-5" />}

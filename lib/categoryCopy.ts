@@ -14,7 +14,14 @@
 export const SEO_REGION = "Auckland";
 
 export interface CategoryCopy {
-  /** Goes in "<heading> deals in Auckland". */
+  /** The browser-tab and search-result title, in the words people search
+   *  ("restaurant deals Auckland"), not the category's own name. The
+   *  layout adds " | MegaDeal"; keep the whole thing under ~65 characters
+   *  so Google doesn't cut it off. */
+  title: string;
+  /** The page's H1, in the same searched-for words. */
+  h1: string;
+  /** Short name, used where a heading isn't needed. */
   heading: string;
   /** Meta description, under ~155 characters. */
   description: string;
@@ -29,6 +36,8 @@ const HOW_IT_WORKS =
 
 export const CATEGORY_COPY: Record<string, CategoryCopy> = {
   "food-drink": {
+    title: `Restaurant & Food Deals in ${SEO_REGION} — Up to 50% Off`,
+    h1: `Restaurant & food deals in ${SEO_REGION}`,
     heading: "Food & drink",
     description: `Restaurant, café and bar deals in ${SEO_REGION} — set menus, lunch specials and meals for two from local eateries. Free to use, no vouchers.`,
     intro: `Restaurant, café and bar deals from local ${SEO_REGION} eateries — set menus, lunch combos, brunch specials and dinners for two.`,
@@ -41,6 +50,8 @@ export const CATEGORY_COPY: Record<string, CategoryCopy> = {
     },
   },
   "beauty-spa": {
+    title: `Spa, Massage & Beauty Deals in ${SEO_REGION} — Up to 50% Off`,
+    h1: `Spa, massage & beauty deals in ${SEO_REGION}`,
     heading: "Beauty & spa",
     description: `Beauty and spa deals in ${SEO_REGION} — nails, hair, massage, facials, lashes and day spas from local salons. Free to use, no vouchers.`,
     intro: `Salon and spa deals across ${SEO_REGION} — nails, hair, massage, facials, lashes, brows and day-spa packages.`,
@@ -53,6 +64,8 @@ export const CATEGORY_COPY: Record<string, CategoryCopy> = {
     },
   },
   "things-to-do": {
+    title: `Things to Do in ${SEO_REGION} — Activity Deals & Discounts`,
+    h1: `Things to do in ${SEO_REGION}: activity deals`,
     heading: "Things to do",
     description: `Things to do in ${SEO_REGION} for less — activities, experiences, classes and family days out from local operators. Free to use, no vouchers.`,
     intro: `Activities and experiences around ${SEO_REGION} — days out, classes, games and adventures at a lower price.`,
@@ -65,6 +78,9 @@ export const CATEGORY_COPY: Record<string, CategoryCopy> = {
     },
   },
   "travel-getaways": {
+    // Getaways are New Zealand-wide, not only in Auckland.
+    title: "Getaway & Accommodation Deals in NZ — Weekend Escapes",
+    h1: "Getaway & accommodation deals in NZ",
     heading: "Travel & getaways",
     description: `Getaway and accommodation deals from New Zealand hosts — weekend escapes, stays and short breaks. Free to use, no vouchers.`,
     intro: `Weekend escapes and short breaks from New Zealand accommodation providers and tour operators.`,
@@ -77,6 +93,8 @@ export const CATEGORY_COPY: Record<string, CategoryCopy> = {
     },
   },
   "health-fitness": {
+    title: `Gym & Fitness Deals in ${SEO_REGION} — Up to 50% Off`,
+    h1: `Gym, fitness & wellness deals in ${SEO_REGION}`,
     heading: "Health & fitness",
     description: `Health and fitness deals in ${SEO_REGION} — gyms, classes, personal training and wellness from local providers. Free to use, no vouchers.`,
     intro: `Gym, class and wellness deals from ${SEO_REGION} providers — try a new studio or trainer for less.`,
@@ -89,6 +107,8 @@ export const CATEGORY_COPY: Record<string, CategoryCopy> = {
     },
   },
   "home-car": {
+    title: `Car Service, Cleaning & Home Deals in ${SEO_REGION}`,
+    h1: `Car service, cleaning & home deals in ${SEO_REGION}`,
     heading: "Home & car",
     description: `Home and car service deals in ${SEO_REGION} — cleaning, gardening, servicing, detailing and repairs from local businesses. Free to use, no vouchers.`,
     intro: `Deals on home and car services around ${SEO_REGION} — cleaning, gardening, servicing, detailing, tyres and repairs.`,

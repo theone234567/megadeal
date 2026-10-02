@@ -24,6 +24,7 @@ const FAQ_JSONLD = [
   { q: "Can I redeem the same deal more than once?", a: "Deals are for genuine personal use — unless a listing says otherwise, that's one redemption per person. A business can decline to honour a deal it reasonably believes is being reused or resold." },
   { q: "How do I know a business is legitimate?", a: "Every business is reviewed by our team before their first deal goes live — we don't publish listings automatically." },
   { q: "Can I get a refund?", a: "Since MegaDeal never charges you, there's nothing for us to refund. Payment and any resulting dispute is between you and the business." },
+  { q: "Is Groupon still in New Zealand?", a: "No. Groupon closed its New Zealand business in 2020, and MegaDeal isn't connected with it. MegaDeal is a New Zealand-owned local deals site, starting in Auckland. It works differently: there's no voucher to buy. You get a free deal code, contact the business, and pay them directly at the deal price." },
   { q: "I'm a business — how do I list a deal?", a: "Head to our business page to find out how listing works — you advertise with credits or a subscription, and customers pay you directly when they redeem." },
 ];
 
@@ -97,6 +98,13 @@ const FAQS: Faq[] = [
         for how pricing and disputes work instead.
       </>
     ),
+  },
+  {
+    // Groupon left New Zealand in 2020 and people still search for it;
+    // a plain answer is useful to them and to search. Facts only: no
+    // claim of any link with Groupon.
+    q: "Is Groupon still in New Zealand?",
+    a: "No. Groupon closed its New Zealand business in 2020, and MegaDeal isn't connected with it. MegaDeal is a New Zealand-owned local deals site, starting in Auckland. It works differently: there's no voucher to buy. You get a free deal code, contact the business, and pay them directly at the deal price.",
   },
   {
     q: "I'm a business — how do I list a deal?",
