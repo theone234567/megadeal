@@ -1,19 +1,21 @@
 # Coming-soon V2 design: switch, rollback, sources and checks
 
-From the "Coming Soon" Claude pack (3 Oct 2026). The existing page is untouched and still the
-default; V2 only shows when switched on, or to a signed-in admin as a preview.
+From the "Coming Soon" Claude pack (3 Oct 2026). **V2 is live** (switched on 3 Oct 2026). The
+previous page is kept untouched behind the same switch for rollback.
 
 ## Switching
 
 | What | How |
 | --- | --- |
 | Preview (admin only) | Sign in at `/admin`, then open `/coming-soon?design=v2`. Never cached, `noindex`. Everyone else keeps the current page. |
-| Show V2 to everyone | Add `COMING_SOON_DESIGN: v2` to the **Build** step's `env` in `.github/workflows/deploy.yml`, commit, push. |
-| Roll back the design | Remove that line (or set it to `legacy`), commit, push. |
+| Show V2 to everyone (current) | `COMING_SOON_LIVE = "v2"` in `lib/siteConfig.ts`, push. |
+| Roll back the design | Set `COMING_SOON_LIVE = "legacy"`, commit, push. Without a commit: set `COMING_SOON_DESIGN=legacy` under the Worker's Settings → Build → Variables in Cloudflare and retry the latest build. |
 | Roll back the code | `git revert <V2 commit>`, newest first if several. No `reset --hard`, no force-push. |
 
 `/coming-soon` is prerendered, so the switch is read at **build** time: Cloudflare's runtime
-variables are too late and every change needs a deploy. Only the exact value `v2` turns it on;
+variables are too late and every change needs a deploy. The site is built and deployed by
+Cloudflare Workers Builds on each push (the "Workers Builds: megadeal" check on each commit),
+which doesn't see the GitHub workflow's env, so the live value is in code. Only the exact value `v2` turns it on;
 anything else keeps the current page (`comingSoonDesign` in `lib/siteConfig.ts`, tested).
 The launch redirect in `middleware.ts` runs before either design. Newsletter sign-ups are
 untouched by switching or rolling back.

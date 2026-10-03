@@ -72,14 +72,16 @@ export const LEGAL_ENTITY_NZBN = "9429035341451";
  * of 3 Oct 2026) only when the value is exactly "v2"; anything else,
  * including unset, keeps the existing page. Fails closed.
  *
- * Read at BUILD time: /coming-soon is prerendered. To switch, set
- * COMING_SOON_DESIGN: v2 in the "Build" step's env in
- * .github/workflows/deploy.yml and redeploy; to roll back, remove it (or set
- * it to "legacy") and redeploy. The Cloudflare dashboard's runtime
- * variables are too late for a prerendered page. A signed-in admin can
- * preview V2 at any time at /coming-soon?design=v2 (middleware.ts).
+ * Read at BUILD time: /coming-soon is prerendered. The live choice is
+ * COMING_SOON_LIVE below, in code, because the site is built by
+ * Cloudflare's own Workers Builds on each push, which never sees the
+ * GitHub workflow's env. To roll back, set it to "legacy" and push (or,
+ * without a commit, set COMING_SOON_DESIGN=legacy under the Worker's
+ * Settings -> Build -> Variables and retry the build). A signed-in admin
+ * can preview V2 at any time at /coming-soon?design=v2 (middleware.ts).
  */
 export function comingSoonDesign(value: string | undefined): "v2" | "legacy" {
   return value === "v2" ? "v2" : "legacy";
 }
-export const COMING_SOON_DESIGN = comingSoonDesign(process.env.COMING_SOON_DESIGN);
+const COMING_SOON_LIVE = "v2";
+export const COMING_SOON_DESIGN = comingSoonDesign(process.env.COMING_SOON_DESIGN ?? COMING_SOON_LIVE);
