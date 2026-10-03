@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import MerchantRow, { type AdminMerchant } from "@/components/admin/MerchantRow";
 import DealRow, { type AdminDeal } from "@/components/admin/DealRow";
 import SubscriberRow, { type AdminSubscriber } from "@/components/admin/SubscriberRow";
+import PlatformSettingsPanel from "@/components/admin/PlatformSettingsPanel";
 import { useWix } from "@/context/WixProvider";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { isLoggedIn: businessAlsoActive, member: businessMember, logout: logoutBusiness } = useWix();
   const [signingOutBusiness, setSigningOutBusiness] = useState(false);
-  const [tab, setTab] = useState<"merchants" | "deals" | "subscribers">("merchants");
+  const [tab, setTab] = useState<"merchants" | "deals" | "subscribers" | "settings">("merchants");
   const [merchants, setMerchants] = useState<AdminMerchant[] | null>(null);
   const [deals, setDeals] = useState<AdminDeal[] | null>(null);
   const [subscribers, setSubscribers] = useState<AdminSubscriber[] | null>(null);
@@ -274,7 +275,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      <div className="mt-6 flex gap-2">
+      <div className="mt-6 flex flex-wrap gap-2">
         <button
           onClick={() => setTab("merchants")}
           className={`rounded-full px-4 py-2 text-sm font-bold ${
@@ -299,6 +300,14 @@ export default function AdminDashboardPage() {
           }`}
         >
           Subscribers
+        </button>
+        <button
+          onClick={() => setTab("settings")}
+          className={`rounded-full px-4 py-2 text-sm font-bold ${
+            tab === "settings" ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"
+          }`}
+        >
+          Platform settings
         </button>
       </div>
 
@@ -490,6 +499,8 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
+
+      {tab === "settings" && <PlatformSettingsPanel />}
     </main>
   );
 }

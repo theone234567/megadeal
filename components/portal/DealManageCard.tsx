@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { DealStatus } from "@/lib/types";
 import { DEAL_STATUS_STYLES, allowedDealActions, dealDisplayStatus, withdrawalRefundsCredit } from "@/lib/dealStatus";
 import { describeMinutes } from "@/lib/dealDuration";
+import { creditsLabel, creditsToRefund } from "@/lib/platformSettingsRules";
 import PhotoUploadField from "./PhotoUploadField";
 
 export interface DealRecord {
@@ -51,10 +52,16 @@ export default function DealManageCard({
     : null;
   const endingSoon = status === "Live" && daysUntilExpiry !== null && daysUntilExpiry >= 0 && daysUntilExpiry <= 3;
 
+  // What withdrawing this deal gives back: what it was charged.
+  const refundAmount = creditsToRefund(deal);
+  const refundText = `the ${creditsLabel(refundAmount)} it used`;
+
   async function handleStatusClick(target: DealStatus) {
     if (target === "Cancelled") {
       const question = withdrawalRefundsCredit(deal)
-        ? `Withdraw "${deal.dealName || "this deal"}"? Your credit will be returned. This can't be undone.`
+        ? `Withdraw "${deal.dealName || "this deal"}"?${
+            refundAmount > 0 ? ` You'll get back ${refundText}.` : ""
+          } This can't be undone.`
         : `Cancel "${deal.dealName || "this deal"}"? It comes off MegaDeal straight away and can't be restarted — you can duplicate it later as a new deal.`;
       if (!window.confirm(question)) return;
     }
@@ -191,7 +198,9 @@ export default function DealManageCard({
                 Request a change
               </Link>
               {status === "Pending Approval"
-                ? ", or withdraw it (your credit comes back) and submit a corrected one."
+                ? `, or withdraw it${
+                    withdrawalRefundsCredit(deal) && refundAmount > 0 ? ` (you get back ${refundText})` : ""
+                  } and submit a corrected one.`
                 : ", or cancel it and duplicate it as a new deal."}
             </p>
           )}

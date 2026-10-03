@@ -4,6 +4,7 @@ import {
   aiSummary,
   buildReviewRequest,
   decideAiOutcome,
+  limitAiOutcome,
   parseReviewResponse,
   reviewWithAi,
   type AiFlags,
@@ -166,5 +167,25 @@ describe("deal code in the AI review", () => {
     const ours: any = buildReviewRequest({ kind: "deal", dealName: "x", dealCode: "MEGA-AB2CD" });
     expect(own.messages[0].content.at(-1).text).toContain("Deal code customers quote: TACO-TUESDAY");
     expect(ours.messages[0].content.at(-1).text).not.toContain("MEGA-AB2CD");
+  });
+});
+
+describe("limitAiOutcome", () => {
+  it("lets the review do everything when fully applied", () => {
+    expect(limitAiOutcome("publish", true)).toBe("publish");
+    expect(limitAiOutcome("reject", true)).toBe("reject");
+    expect(limitAiOutcome("hold", true)).toBe("hold");
+  });
+  it("never publishes when every deal waits for admin approval", () => {
+    expect(limitAiOutcome("publish", "noPublish")).toBe("hold");
+    expect(limitAiOutcome("reject", "noPublish")).toBe("reject");
+  });
+  it("never rejects on a publish-only re-check", () => {
+    expect(limitAiOutcome("reject", "publishOnly")).toBe("hold");
+    expect(limitAiOutcome("publish", "publishOnly")).toBe("publish");
+  });
+  it("does nothing when not applied", () => {
+    expect(limitAiOutcome("publish", false)).toBe("hold");
+    expect(limitAiOutcome("reject", false)).toBe("hold");
   });
 });

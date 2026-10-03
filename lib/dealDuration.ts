@@ -46,13 +46,25 @@ export const DEFAULT_EVERYDAY_DAYS = 30;
 /** Why a requested duration isn't allowed, or null if it is. Whole
  *  minutes (Flash) or whole days (Everyday) only — a fraction or a
  *  non-number is rejected rather than rounded. */
-export function durationError(isFlash: boolean, value: unknown): string | null {
+export function durationError(
+  isFlash: boolean,
+  value: unknown,
+  /** A shorter limit set in the platform settings (minutes for Flash,
+   *  days for Everyday); never longer than the product maximum. */
+  max?: number,
+): string | null {
   const n = typeof value === "string" && value.trim() !== "" ? Number(value) : value;
   if (typeof n !== "number" || !Number.isInteger(n) || n < 1) {
     return isFlash ? "Choose how long the Flash Deal runs." : "Choose how long the deal runs.";
   }
-  if (isFlash && n > FLASH_MAX_MINUTES) return "Flash Deals can run for up to 6 hours.";
-  if (!isFlash && n > EVERYDAY_MAX_DAYS) return "Deals can run for up to 30 days.";
+  const limit = Math.min(max ?? Infinity, isFlash ? FLASH_MAX_MINUTES : EVERYDAY_MAX_DAYS);
+  if (isFlash && n > limit) {
+    const h = limit / 60;
+    return Number.isInteger(h)
+      ? `Flash Deals can run for up to ${h} hour${h === 1 ? "" : "s"}.`
+      : `Flash Deals can run for up to ${limit} minutes.`;
+  }
+  if (!isFlash && n > limit) return `Deals can run for up to ${limit} day${limit === 1 ? "" : "s"}.`;
   return null;
 }
 
@@ -150,4 +162,24 @@ export function manualExpiryError(deal: Record<string, any>, expiresAt: string, 
       : "A deal can run for up to 30 days from when it first went live.";
   }
   return null;
+}
+
+/** The run lengths a business can pick, up to a maximum set in the
+ *  platform settings (minutes for Flash, days for Everyday). The maximum
+ *  itself is always offered, so a limit of 10 days can be chosen. */
+export function flashOptionsUpTo(maxMinutes: number): { label: string; minutes: number }[] {
+  const max = Math.min(maxMinutes, FLASH_MAX_MINUTES);
+  const list: { label: string; minutes: number }[] = FLASH_DURATION_OPTIONS.filter((o) => o.minutes <= max);
+  if (!list.some((o) => o.minutes === max)) {
+    const h = max / 60;
+    list.push({ label: Number.isInteger(h) ? `${h} hour${h === 1 ? "" : "s"}` : `${max} minutes`, minutes: max });
+  }
+  return list;
+}
+
+export function everydayOptionsUpTo(maxDays: number): { label: string; days: number }[] {
+  const max = Math.min(maxDays, EVERYDAY_MAX_DAYS);
+  const list: { label: string; days: number }[] = EVERYDAY_DURATION_OPTIONS.filter((o) => o.days <= max);
+  if (!list.some((o) => o.days === max)) list.push({ label: `${max} day${max === 1 ? "" : "s"}`, days: max });
+  return list;
 }

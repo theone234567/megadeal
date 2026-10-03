@@ -17,16 +17,21 @@ import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
 import {
   DEFAULT_EVERYDAY_DAYS,
   DEFAULT_FLASH_MINUTES,
-  EVERYDAY_DURATION_OPTIONS,
-  FLASH_DURATION_OPTIONS,
+  EVERYDAY_MAX_DAYS,
+  FLASH_MAX_MINUTES,
   clampEverydayDays,
   clampFlashMinutes,
+  everydayOptionsUpTo,
+  flashOptionsUpTo,
 } from "@/lib/dealDuration";
-
-// Flash up to 6 hours, Everyday up to 30 days — shared with the server
-// (lib/dealDuration.ts), which enforces the same limits.
-const DURATIONS = EVERYDAY_DURATION_OPTIONS;
-const FLASH_DURATIONS = FLASH_DURATION_OPTIONS;
+import { usePlatformSettings } from "@/lib/usePlatformSettings";
+import {
+  creditsLabel,
+  dealCostsLine,
+  dealCreditCost,
+  dealTypeBlocked,
+  dealTypeName,
+} from "@/lib/platformSettingsRules";
 
 interface MerchantRecord {
   _id: string;
@@ -61,6 +66,21 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const [durationDays, setDurationDays] = useState<number>(DEFAULT_EVERYDAY_DAYS);
   const [isFlash, setIsFlash] = useState(false);
   const [durationMinutes, setDurationMinutes] = useState<number>(DEFAULT_FLASH_MINUTES);
+  // Costs, open deal types and longest runs (admin → Platform settings).
+  // Display only: the server checks them again on submission.
+  const platformSettings = usePlatformSettings();
+  // Flash up to 6 hours, Everyday up to 30 days (lib/dealDuration.ts), or
+  // less if an admin has set a shorter maximum.
+  const maxDays = platformSettings?.everydayMaxDays ?? EVERYDAY_MAX_DAYS;
+  const maxFlashMinutes = (platformSettings?.flashMaxHours ?? FLASH_MAX_MINUTES / 60) * 60;
+  const DURATIONS = everydayOptionsUpTo(maxDays);
+  const FLASH_DURATIONS = flashOptionsUpTo(maxFlashMinutes);
+  // A restored draft or a duplicated deal may ask for more than the
+  // current maximum: bring it down to the longest run allowed.
+  useEffect(() => {
+    if (durationDays > maxDays) setDurationDays(maxDays);
+    if (durationMinutes > maxFlashMinutes) setDurationMinutes(maxFlashMinutes);
+  }, [durationDays, durationMinutes, maxDays, maxFlashMinutes]);
   const [quantityAvailable, setQuantityAvailable] = useState("");
   /** "required" | "recommended" | "not_required", or "" until chosen —
    *  never defaulted, so "no booking needed" is always the merchant's
@@ -82,7 +102,8 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const [submitResult, setSubmitResult] = useState<{
     outcome: "live" | "rejected" | "pending";
     message: string | null;
-  }>({ outcome: "pending", message: null });
+    creditsReturned: number;
+  }>({ outcome: "pending", message: null, creditsReturned: 0 });
   const [error, setError] = useState<string | null>(null);
 
   const [draftRestored, setDraftRestored] = useState(false);
@@ -386,6 +407,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       setSubmitResult({
         outcome: data.outcome === "live" || data.outcome === "rejected" ? data.outcome : "pending",
         message: typeof data.message === "string" ? data.message : null,
+        creditsReturned: typeof data.creditsReturned === "number" ? data.creditsReturned : 0,
       });
       setSubmitted(true);
     } catch (err: any) {
@@ -450,8 +472,10 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
                 "It couldn't be approved as written. Please check the wording and photo and submit it again."}
             </p>
             <p className="mt-2 text-sm text-slate-600">
-              Your credit has been returned. Use <strong>Duplicate this deal</strong> in your portal to
-              fix it and submit again.
+              {submitResult.creditsReturned > 0 && (
+                <>The {creditsLabel(submitResult.creditsReturned)} it used {submitResult.creditsReturned === 1 ? "has" : "have"} been returned. </>
+              )}
+              Use <strong>Duplicate this deal</strong> in your portal to fix it and submit again.
             </p>
           </>
         ) : (
@@ -476,6 +500,18 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   }
 
   const credits = merchant.creditsBalance ?? 0;
+  const creditsText = `${credits} credit${credits === 1 ? "" : "s"}`;
+  // What this deal would cost and whether its type is open, once the
+  // settings have loaded (null until then: no cost is shown rather than a
+  // guessed one).
+  const cost = platformSettings ? dealCreditCost(isFlash, platformSettings) : null;
+  const typePaused = platformSettings ? dealTypeBlocked(isFlash, platformSettings) : null;
+  // The cheapest deal there is: below that, no deal can be submitted.
+  const cheapest = !platformSettings
+    ? 1
+    : platformSettings.chargeCredits
+      ? Math.min(platformSettings.everydayCredits, platformSettings.flashCredits)
+      : 0;
   // Only a business an admin has approved can submit deals (enforced in
   // /api/deals/create too); until then the form saves drafts, exactly as
   // it does before launch.
@@ -491,13 +527,16 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       ? dealCodeProblem
       : null;
 
-  if (credits < 1) {
+  if (credits < cheapest) {
     return (
       <main className="mx-auto max-w-md px-4 py-16 text-center">
         <span className="text-4xl">💳</span>
-        <h1 className="mt-3 text-xl font-bold text-slate-900">No deal credits left</h1>
+        <h1 className="mt-3 text-xl font-bold text-slate-900">
+          {credits === 0 ? "No deal credits left" : "Not enough credits for a deal"}
+        </h1>
         <p className="mt-2 text-sm text-slate-600">
-          Creating a deal uses 1 credit. Contact us to top up your account.
+          {platformSettings ? dealCostsLine(platformSettings) : "Creating a deal uses credits."} You have{" "}
+          {creditsText}. Contact us to top up your account.
         </p>
         <Link
           href="/portal"
@@ -664,7 +703,12 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
       <h1 className="mt-3 text-2xl font-extrabold text-slate-900">Create a deal</h1>
       <p className="mt-1 text-sm text-slate-500">
-        This will use 1 of your {credits} deal credit{credits === 1 ? "" : "s"}.
+        {/* Not enough for this type: the note by the Flash choice says so. */}
+        {cost === null || credits < cost
+          ? `You have ${creditsText}. `
+          : cost === 0
+            ? "Submitting a deal is free at the moment. "
+            : `This ${dealTypeName(isFlash)} will use ${creditsLabel(cost)} of your ${creditsText}. `}
         Your deal goes live once we&apos;ve reviewed it.
       </p>
       {!siteLaunched ? (
@@ -796,9 +840,31 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               <span className="block text-xs text-slate-600">
                 Short-burst offer (minutes to hours) — great for filling quiet
                 spots, e.g. &quot;2-for-1 tonight only&quot;. Shows an animated FLASH badge.
+                {platformSettings && cost !== null && cost > 0 && platformSettings.everydayCredits !== platformSettings.flashCredits && (
+                  <>
+                    {" "}Flash deals use {creditsLabel(platformSettings.flashCredits)}, Everyday deals{" "}
+                    {creditsLabel(platformSettings.everydayCredits)}.
+                  </>
+                )}
               </span>
             </span>
           </label>
+          {typePaused ? (
+            <p role="status" className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
+              {typePaused} You can still build it and save it as a draft.
+            </p>
+          ) : (
+            cost !== null &&
+            credits < cost && (
+              <p role="status" className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
+                {dealTypeName(isFlash)}s use {creditsLabel(cost)} and you have {creditsText}.{" "}
+                <Link href="/contact" className="underline">
+                  Contact us to top up
+                </Link>
+                , or save it as a draft.
+              </p>
+            )
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -834,7 +900,10 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               </select>
             )}
             <p className="mt-1 text-xs text-slate-500">
-              {isFlash ? "Flash Deals run for up to 6 hours." : "Deals run for up to 30 days."} The time starts
+              {isFlash
+                ? `Flash Deals run for up to ${FLASH_DURATIONS[FLASH_DURATIONS.length - 1].label}.`
+                : `Deals run for up to ${DURATIONS[DURATIONS.length - 1].label}.`}{" "}
+              The time starts
               when your deal goes live, not while it&apos;s being reviewed.
             </p>
           </div>
@@ -888,7 +957,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
                 // knows it has something new to send.
                 if (file) setUploaded(null);
               }}
-              className="block text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100"
+              className="block w-full min-w-0 text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100"
             />
           </div>
         </div>

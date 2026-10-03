@@ -12,6 +12,8 @@ import ReferralCard from "@/components/portal/ReferralCard";
 import ActivityFeed from "@/components/portal/ActivityFeed";
 import ExportDealsButton from "@/components/portal/ExportDealsButton";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
+import { usePlatformSettings } from "@/lib/usePlatformSettings";
+import { dealCostsLine } from "@/lib/platformSettingsRules";
 import { dealDisplayStatus, isPastDeal } from "@/lib/dealStatus";
 import { StoreIcon, MapPinIcon, MailIcon, ReceiptIcon, CreditCardIcon } from "@/components/icons";
 
@@ -71,6 +73,7 @@ export default function PortalPage() {
   // Assumed launched until the server says otherwise, so the pre-launch
   // notice never flashes up after launch.
   const [siteLaunched, setSiteLaunched] = useState(true);
+  const platformSettings = usePlatformSettings();
   // Separate from `merchant` on purpose: `merchant === null` means "we
   // asked Wix and confirmed there's no business on this account," which
   // is what puts someone on the restart-signup screen. A failed request
@@ -182,10 +185,11 @@ export default function PortalPage() {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.error || "Couldn't update this deal.");
     }
-    const { item: updated, creditRefunded } = await res.json();
+    const { item: updated, creditRefunded, creditsRefunded } = await res.json();
     setDeals((prev) => prev.map((d) => (d._id === deal._id ? updated : d)));
     if (creditRefunded) {
-      setMerchant((m) => (m ? { ...m, creditsBalance: (m.creditsBalance ?? 0) + 1 } : m));
+      const back = typeof creditsRefunded === "number" ? creditsRefunded : 1;
+      setMerchant((m) => (m ? { ...m, creditsBalance: (m.creditsBalance ?? 0) + back } : m));
     }
   }
 
@@ -480,7 +484,7 @@ export default function PortalPage() {
                   {merchant.creditsBalance ?? 0}
                 </p>
                 <p className="mt-1 text-sm text-slate-500">
-                  1 credit = 1 deal listing.{" "}
+                  {platformSettings && <>{dealCostsLine(platformSettings)} </>}
                   <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
                     Contact us to top up.
                   </Link>
@@ -704,7 +708,7 @@ export default function PortalPage() {
                 {merchant.creditsBalance ?? 0}
               </p>
               <p className="mt-1 text-sm text-slate-500">
-                1 credit = 1 deal listing.{" "}
+                {platformSettings && <>{dealCostsLine(platformSettings)} </>}
                 <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
                   Contact us to top up.
                 </Link>

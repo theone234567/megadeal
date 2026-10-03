@@ -7,6 +7,14 @@ import { isWixMediaUrl } from "@/lib/photoUrl";
 import { CATEGORY_ID_BY_NAME } from "@/lib/categories";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
+import { getPlatformSettings } from "@/lib/platformSettings";
+import {
+  creditsLabel,
+  dealCreditCost,
+  dealTypeBlocked,
+  dealTypeName,
+  maxRequestedDuration,
+} from "@/lib/platformSettingsRules";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { dealCodeError, generateDealCode, normaliseDealCode } from "@/lib/dealCode";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
@@ -44,6 +52,20 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
+
+  // The platform settings (admin dashboard → Platform settings): which deal
+  // types are open, how long they can run, what they cost. If they can't
+  // be read, nothing is submitted rather than guessing at them.
+  let settings;
+  try {
+    settings = (await getPlatformSettings()).settings;
+  } catch (err) {
+    console.error("[deals/create] platform settings unavailable", err);
+    return NextResponse.json(
+      { error: "We couldn't check the deal settings just now. Please try again in a moment." },
+      { status: 503 }
+    );
   }
 
   const dealName = String(body.dealName || "").trim();
@@ -100,8 +122,17 @@ export async function POST(req: NextRequest) {
   if (priceWas !== undefined && (!Number.isFinite(priceWas) || priceWas < priceNow)) {
     return NextResponse.json({ error: "Original price must be at least the deal price." }, { status: 400 });
   }
-  // Flash up to 6 hours, Everyday up to 30 days (lib/dealDuration.ts).
-  const durationProblem = durationError(isFlash, isFlash ? durationMinutes : durationDays);
+  const typeBlocked = dealTypeBlocked(isFlash, settings);
+  if (typeBlocked) {
+    return NextResponse.json({ error: `${typeBlocked} Save this deal as a draft for now.` }, { status: 403 });
+  }
+  // Flash up to 6 hours, Everyday up to 30 days (lib/dealDuration.ts), or
+  // less if an admin has set a shorter maximum.
+  const durationProblem = durationError(
+    isFlash,
+    isFlash ? durationMinutes : durationDays,
+    maxRequestedDuration(isFlash, settings)
+  );
   if (durationProblem) {
     return NextResponse.json({ error: durationProblem }, { status: 400 });
   }
@@ -146,6 +177,12 @@ export async function POST(req: NextRequest) {
       { status: 403 }
     );
   }
+  if (!settings.acceptSubmissions) {
+    return NextResponse.json(
+      { error: "New deal submissions are paused at the moment. Save this deal as a draft and submit it later." },
+      { status: 403 }
+    );
+  }
   // A deal that requires booking must give customers a way to book.
   if (
     bookingRequirement === "required" &&
@@ -163,9 +200,18 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
+  // What this deal costs now (Everyday 4, Flash 1 by default; 0 when
+  // charging is off). Recorded on the deal, so a refund returns exactly
+  // what was taken even if the costs change later.
+  const cost = dealCreditCost(isFlash, settings);
   const credits = Number(merchant.creditsBalance) || 0;
-  if (credits < 1) {
-    return NextResponse.json({ error: "You don't have any deal credits left. Contact us to top up." }, { status: 403 });
+  if (credits < cost) {
+    return NextResponse.json(
+      {
+        error: `${dealTypeName(isFlash).replace(/^./, (c) => c.toUpperCase())}s cost ${creditsLabel(cost)} and you have ${credits} credit${credits === 1 ? "" : "s"}. Contact us to top up.`,
+      },
+      { status: 403 }
+    );
   }
 
   // Resolved before anything is created, so a bad draft id fails while
@@ -284,6 +330,7 @@ export async function POST(req: NextRequest) {
     isFlash,
     bookingRequirement,
     dealCode: customDealCode || generateDealCode(),
+    creditsCharged: cost,
     // The editing copies have served their purpose. Leaving draftData
     // behind would mean a submitted deal carrying a stale second version
     // of itself; leaving the statusNote supplement behind would put
@@ -334,28 +381,37 @@ export async function POST(req: NextRequest) {
   // returning false — so the try/catch that used to wrap this call caught
   // nothing and a refused debit passed for a successful one. The merchant
   // kept the credit and got the deal, silently.
-  let debited = false;
-  try {
-    debited = await incrementCreditsAtomically(adminClient, merchant._id, -1);
-  } catch (err) {
-    console.error("[deals/create] credit debit threw", err);
+  let debited = cost === 0;
+  if (cost > 0) {
+    try {
+      debited = await incrementCreditsAtomically(adminClient, merchant._id, -cost);
+    } catch (err) {
+      console.error("[deals/create] credit debit threw", err);
+    }
   }
   if (!debited) {
     console.error(
-      `[deals/create] CREDIT NOT DEDUCTED for merchant ${merchant._id} on deal ${deal?._id} — ` +
-        `the deal is live and in review but the balance is unchanged.`
+      `[deals/create] CREDITS NOT DEDUCTED (${cost}) for merchant ${merchant._id} on deal ${deal?._id} — ` +
+        `the deal is in review but the balance is unchanged.`
     );
+    // Recorded on the deal itself, so a later withdrawal can't "refund"
+    // credits that were never taken.
+    try {
+      deal = await adminClient.items.update("Deals", { ...deal, creditsCharged: 0, creditRefunded: true });
+    } catch (err) {
+      console.error("[deals/create] couldn't record the failed debit on the deal", err);
+    }
   }
 
   try {
     await logMerchantActivity(adminClient, {
       merchantEmail: member.email,
       type: "credit",
-      // Only claim the charge that actually happened. A -1 line against an
-      // unchanged balance is worse than no line: it sends the merchant
-      // looking for a credit that was never taken.
-      amount: debited ? -1 : 0,
-      description: `Deal created: "${dealName}"`,
+      // Only claim the charge that actually happened. A minus line against
+      // an unchanged balance is worse than no line: it sends the merchant
+      // looking for credits that were never taken.
+      amount: debited ? -cost : 0,
+      description: `${dealTypeName(isFlash)} submitted: "${dealName}"${cost === 0 ? " (no credits charged)" : ""}`,
     });
   } catch (err) {
     console.error("[deals/create] activity log failed", err);
@@ -365,18 +421,23 @@ export async function POST(req: NextRequest) {
   // now; clearly offensive content is turned down with the reason (and the
   // credit back); everything else waits for a person, as before. Bounded
   // by a timeout and never throws — at worst the deal just stays pending.
-  // A credit that failed to debit above mustn't be "refunded" here.
+  // Credits that failed to debit above mustn't be "refunded" here.
+  // With "every deal waits for admin approval" on, the AI review may still
+  // turn down a clearly unsuitable deal but never publishes one.
   const review = await reviewSubmittedDeal(
     adminClient,
     debited ? deal : { ...deal, creditRefunded: true },
     merchant,
-    { category, apply: true }
+    { category, apply: settings.requireApproval ? "noPublish" : true }
   );
 
   return NextResponse.json({
     item: review.item,
     outcome: review.outcome === "publish" ? "live" : review.outcome === "reject" ? "rejected" : "pending",
     message: review.outcome === "reject" ? review.item.statusNote ?? null : null,
+    // What a turned-down deal gave back (aiReviewApply returns what was
+    // charged, unless the charge itself failed).
+    creditsReturned: review.outcome === "reject" && debited ? cost : 0,
   });
   } catch (err) {
     console.error("[deals/create] failed", err);

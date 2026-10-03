@@ -277,3 +277,16 @@ export function aiSummary(review: ReviewLike | null | undefined): string | null 
   const why = review.reasons[0] ? ` — ${review.reasons[0]}` : "";
   return verdict === "reject" ? `AI: reject${why}` : `AI: check${why}`;
 }
+
+/** How much the automatic review may do with a submission: everything
+ *  (true), nothing (false: a person decides), publish but never reject
+ *  ("publishOnly", the manual re-check), or reject but never publish
+ *  ("noPublish", when every deal waits for admin approval). */
+export type AiApplyMode = boolean | "publishOnly" | "noPublish";
+
+export function limitAiOutcome(outcome: AiOutcome, mode: AiApplyMode): AiOutcome {
+  if (!mode) return "hold";
+  if (mode === "publishOnly" && outcome === "reject") return "hold";
+  if (mode === "noPublish" && outcome === "publish") return "hold";
+  return outcome;
+}

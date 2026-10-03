@@ -5,6 +5,7 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 import { allowedDealActions, dealDisplayStatus, withdrawalRefundsCredit } from "@/lib/dealStatus";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
+import { creditsToRefund } from "@/lib/platformSettingsRules";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { notifyDealChanged } from "@/lib/indexNowDeal";
 import { firstPublicationFields } from "@/lib/dealDuration";
@@ -71,7 +72,10 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       return NextResponse.json({ error: publication.error }, { status: 409 });
     }
 
-    const refund = target === "Cancelled" && withdrawalRefundsCredit(deal);
+    // What the deal was charged: 4 or 1 under the current costs, 0 if it
+    // was submitted while charging was off, 1 for older deals.
+    const refundAmount = creditsToRefund(deal);
+    const refund = target === "Cancelled" && withdrawalRefundsCredit(deal) && refundAmount > 0;
     const updated = await adminClient.items.update("Deals", {
       ...deal,
       ...publication.fields,
@@ -89,19 +93,19 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     // flag above is written first, so a retry can never refund twice.
     if (refund) {
       const merchant = await getOrClaimMerchant(adminClient, member);
-      const refunded = merchant ? await incrementCreditsAtomically(adminClient, merchant._id, 1) : false;
+      const refunded = merchant ? await incrementCreditsAtomically(adminClient, merchant._id, refundAmount) : false;
       if (refunded) {
         await logMerchantActivity(adminClient, {
           merchantEmail: deal.merchantEmail,
           type: "credit",
-          amount: 1,
-          description: `Credit returned: "${deal.dealName || "Your deal"}" was withdrawn before going live`,
+          amount: refundAmount,
+          description: `${refundAmount} credit${refundAmount === 1 ? "" : "s"} returned: "${deal.dealName || "Your deal"}" was withdrawn before going live`,
         });
       } else {
-        console.error(`[deals/[id]/status] CREDIT NOT REFUNDED for withdrawn deal ${deal._id}`);
+        console.error(`[deals/[id]/status] CREDITS NOT REFUNDED (${refundAmount}) for withdrawn deal ${deal._id}`);
       }
     }
-    return NextResponse.json({ item: updated, creditRefunded: refund });
+    return NextResponse.json({ item: updated, creditRefunded: refund, creditsRefunded: refund ? refundAmount : 0 });
   } catch (err) {
     console.error("[deals/[id]/status] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
