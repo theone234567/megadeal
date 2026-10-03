@@ -121,8 +121,20 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const [error, setError] = useState<string | null>(null);
 
   const [draftRestored, setDraftRestored] = useState(false);
-  const [draftSaved, setDraftSaved] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
+  // Autosave: the form's contents as last saved (or as loaded), so "saved"
+  // is only ever shown when it's true. null until the form has loaded.
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
+  const [autosaveError, setAutosaveError] = useState<string | null>(null);
+  const savingRef = useRef(false);
+  // Bumped in the same update that (re)fills the form from a saved draft
+  // or a duplicated deal: that state is the starting point, not an unsaved
+  // change. Doing it in the same render (not via a flag) means a repeated
+  // fill can't swallow the business's next edit.
+  const [baselineTick, setBaselineTick] = useState(0);
+  // An opened draft (?draft=) can't be saved over until its contents have
+  // loaded: saving the blank form first would wipe the real draft.
+  const [draftLoaded, setDraftLoaded] = useState(() => !searchParams.get("draft") || Boolean(searchParams.get("duplicate")));
   /** Set once a draft exists server-side, so every later save updates that
    *  row instead of leaving a trail of near-identical drafts behind. */
   const [draftId, setDraftId] = useState<string | null>(searchParams.get("draft"));
@@ -169,6 +181,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       .then((res) => (res.ok ? res.json() : { item: null }))
       .then(({ item: original }: any) => {
         if (!original) return;
+        setBaselineTick((t) => t + 1);
         setDealName(original.dealName || "");
         setDescription(original.description || "");
         // An existing deal stores terms as one rendered string with no
@@ -213,12 +226,22 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   // whichever landed second would win silently.
   useEffect(() => {
     if (!openedDraftId || duplicateId || restoredRef.current) return;
-    restoredRef.current = true;
     let cancelled = false;
     fetch(`/api/deals/${openedDraftId}`)
       .then((res) => (res.ok ? res.json() : { item: null }))
       .then(({ item }) => {
-        if (cancelled || !item) return;
+        if (cancelled) return;
+        // Marked only once the outcome is applied, so a run cut short (a
+        // remount, or React's double run in development) tries again
+        // instead of leaving the form blank.
+        restoredRef.current = true;
+        if (!item) {
+          // Gone (deleted, or not this business's): the next save makes a
+          // new draft rather than writing into an id that isn't there.
+          setDraftId(null);
+          setDraftLoaded(true);
+          return;
+        }
         // Only a draft. The route hands back any deal the caller owns, so
         // a submitted deal's id in ?draft= would otherwise load that deal
         // into the new-deal form — where saving is refused and the
@@ -230,9 +253,11 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           // save a form they are allowed to fill in. Blank id means the
           // save creates a new draft, which is the right outcome.
           setDraftId(null);
+          setDraftLoaded(true);
           return;
         }
         const draft = parseDraft(item);
+        setBaselineTick((t) => t + 1);
         setDealName(draft.dealName);
         setCategory(draft.category);
         setDescription(draft.description);
@@ -258,10 +283,11 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           setPhotoPreview(draft.photoUrl);
         }
         setDraftRestored(true);
+        setDraftLoaded(true);
       })
       .catch(() => {
-        // Nothing to restore — the form is simply blank, which is a fine
-        // place to start from.
+        // Couldn't reach the server: the form stays blank and saving stays
+        // off (draftLoaded), so the blank form can't replace the draft.
       });
     return () => {
       cancelled = true;
@@ -348,9 +374,54 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
    *  Deliberately does not require a complete form: a draft is unfinished
    *  by definition, and refusing to save one for a missing price would
    *  defeat the point of having drafts. */
-  async function saveDraft() {
+  // Everything a draft saves, as one comparable string. The photo counts
+  // by what's on screen, so uploading it on save doesn't read as a change.
+  const snapshot = JSON.stringify([
+    dealName, category, description, terms, priceNow, priceWas, durationDays, isFlash, durationMinutes,
+    quantityAvailable, bookingRequirement, dealCode, codeOnWebsite, codeWebsiteUrl, codeTested,
+    selectedTerms, customTerms, photoPreview ?? "",
+  ]);
+  const hasContent = Boolean(dealName.trim() || description.trim());
+  const unsaved = savedSnapshot !== null && snapshot !== savedSnapshot && hasContent;
+
+  const merchantLoaded = merchant !== undefined;
+  useEffect(() => {
+    if (merchantLoaded) setSavedSnapshot(snapshot);
+    // Only when the form is (re)filled or first ready, never on an edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baselineTick, merchantLoaded]);
+
+  // Saves a few seconds after the last change, on the form step only.
+  useEffect(() => {
+    if (!unsaved || !draftLoaded || step !== "form" || submitting || submitted) return;
+    const t = setTimeout(() => saveDraft(true), 3000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapshot, unsaved, draftLoaded, step, submitting, submitted]);
+
+  // Leaving with unsaved changes asks first (closing or reloading the tab).
+  useEffect(() => {
+    if (!unsaved || submitted) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [unsaved, submitted]);
+
+  async function saveDraft(auto = false) {
+    // One save at a time: two overlapping first saves would create two
+    // drafts. A change made meanwhile is picked up by the next autosave.
+    if (savingRef.current) return;
+    if (!draftLoaded) {
+      if (!auto) setError("Your saved draft hasn't loaded yet, so saving now could replace it. Reload the page and try again.");
+      return;
+    }
+    savingRef.current = true;
+    const saving = snapshot;
     setSavingDraft(true);
-    setError(null);
+    if (!auto) setError(null);
     try {
       // The photo has to become a real URL before the draft can hold it —
       // this is what makes a restored draft keep its image.
@@ -397,10 +468,14 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       // creating another one beside it.
       if (item?._id) setDraftId(item._id);
       if (typeof item?.dealCode === "string" && item.dealCode.startsWith("MEGA-")) setSavedCode(item.dealCode);
-      setDraftSaved(true);
+      setSavedSnapshot(saving);
+      setAutosaveError(null);
     } catch (err: any) {
-      setError(err?.message || "Couldn't save your draft. Please try again.");
+      const message = err?.message || "Couldn't save your draft. Please try again.";
+      if (auto) setAutosaveError(message);
+      else setError(message);
     } finally {
+      savingRef.current = false;
       setSavingDraft(false);
     }
   }
@@ -719,17 +794,19 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             <div className="flex flex-col items-end gap-2 sm:ml-auto">
               <button
                 type="button"
-                onClick={saveDraft}
+                onClick={() => saveDraft()}
                 disabled={savingDraft}
                 className="rounded-full bg-brand-600 px-8 py-3 text-center text-sm font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
               >
                 {savingDraft ? "Saving…" : draftId ? "💾 Save changes" : "💾 Save as draft"}
               </button>
-              {draftSaved && !savingDraft && (
-                <p className="text-xs font-semibold text-emerald-600">
-                  Saved to your portal ✓
-                </p>
-              )}
+              <SaveStatus
+                saving={savingDraft}
+                unsaved={unsaved}
+                saved={Boolean(draftId) && !unsaved}
+                error={autosaveError}
+                onRetry={() => saveDraft()}
+              />
             </div>
           )}
         </div>
@@ -740,7 +817,13 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
-      <Link href="/portal" className="text-sm text-slate-500 hover:text-brand-700">
+      <Link
+        href="/portal"
+        onClick={(e) => {
+          if (unsaved && !window.confirm("You have changes that haven't been saved yet. Leave anyway?")) e.preventDefault();
+        }}
+        className="text-sm text-slate-500 hover:text-brand-700"
+      >
         ← Back to portal
       </Link>
 
@@ -1302,17 +1385,56 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           </button>
           <button
             type="button"
-            onClick={saveDraft}
+            onClick={() => saveDraft()}
             disabled={savingDraft}
             className="w-full rounded-full border-2 border-brand-200 py-3 text-center text-sm font-extrabold text-brand-700 transition hover:border-brand-400 hover:bg-brand-50 active:scale-95 disabled:opacity-60 sm:w-auto sm:px-6"
           >
             {savingDraft ? "Saving…" : draftId ? "Save changes" : "Save as draft"}
           </button>
-          {draftSaved && !savingDraft && (
-            <span className="text-xs font-semibold text-emerald-600">Saved ✓</span>
-          )}
+          <SaveStatus
+            saving={savingDraft}
+            unsaved={unsaved}
+            saved={Boolean(draftId) && !unsaved}
+            error={autosaveError}
+            onRetry={() => saveDraft()}
+          />
         </div>
       </form>
     </main>
+  );
+}
+
+/** What's happened to the business's work: saving, saved, waiting to be
+ *  saved, or a save that failed (with a retry). Announced politely. */
+function SaveStatus({
+  saving,
+  unsaved,
+  saved,
+  error,
+  onRetry,
+}: {
+  saving: boolean;
+  unsaved: boolean;
+  saved: boolean;
+  error: string | null;
+  onRetry: () => void;
+}) {
+  let content: React.ReactNode = null;
+  if (saving) content = <span className="text-slate-500">Saving…</span>;
+  else if (error && unsaved)
+    content = (
+      <span className="text-red-600">
+        {error.startsWith("Couldn") ? error : `Not saved: ${error}`}{" "}
+        <button type="button" onClick={onRetry} className="font-bold underline">
+          Try again
+        </button>
+      </span>
+    );
+  else if (unsaved) content = <span className="text-slate-500">Not saved yet</span>;
+  else if (saved) content = <span className="text-emerald-600">All changes saved</span>;
+  return (
+    <p aria-live="polite" className="min-h-[1rem] text-xs font-semibold">
+      {content}
+    </p>
   );
 }
