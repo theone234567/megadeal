@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { bookingConflict, hasUsableBookingRoute, isBookingChoice } from "@/lib/booking";
+import { bookingConflict, hasUsableBookingRoute, isBookingChoice, websiteCodeError } from "@/lib/booking";
+import { safeWebHref } from "@/lib/socialLinks";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
@@ -99,6 +100,17 @@ export async function POST(req: NextRequest) {
     const codeError = dealCodeError(customDealCode);
     if (codeError) return NextResponse.json({ error: `Deal code: ${codeError}` }, { status: 400 });
   }
+  // "Customers enter this code on my website": only the business's own
+  // code, tested by them, with the link where it's used.
+  const codeOnWebsite = body.codeOnWebsite === true;
+  const codeWebsiteUrl = typeof body.codeWebsiteUrl === "string" ? body.codeWebsiteUrl.trim().slice(0, 500) : "";
+  const websiteProblem = websiteCodeError({
+    code: customDealCode,
+    onWebsite: codeOnWebsite,
+    url: codeWebsiteUrl,
+    tested: body.codeTested === true,
+  });
+  if (websiteProblem) return NextResponse.json({ error: websiteProblem }, { status: 400 });
   if (!dealName || !description || !terms) {
     return NextResponse.json({ error: "Deal name, description and terms are required." }, { status: 400 });
   }
@@ -389,6 +401,10 @@ export async function POST(req: NextRequest) {
     // saved (and shown in its preview); otherwise a new one.
     dealCode: customDealCode || (draftRow && /^MEGA-[A-Z0-9]{5}$/.test(String(draftRow.dealCode)) ? draftRow.dealCode : generateDealCode()),
     creditsCharged: cost,
+    // Always written, so every new deal says yes or no (older deals have
+    // neither and keep their old wording on the deal page).
+    codeOnWebsite,
+    codeWebsiteUrl: codeOnWebsite ? safeWebHref(codeWebsiteUrl) : null,
     // The editing copies have served their purpose. Leaving draftData
     // behind would mean a submitted deal carrying a stale second version
     // of itself; leaving the statusNote supplement behind would put

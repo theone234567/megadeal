@@ -121,3 +121,12 @@ describe("draftToRow / parseDraft", () => {
     expect(parseDraft({}).dealName).toBe("");
   });
 });
+
+describe("website code in drafts", () => {
+  it("keeps the setup through save and reopen, and never trusts non-boolean flags", () => {
+    const d = sanitizeDraft({ ...EMPTY_DRAFT, dealCode: "summer-20", codeOnWebsite: true, codeWebsiteUrl: " https://cafe.co.nz ", codeTested: true });
+    expect(d).toMatchObject({ dealCode: "SUMMER-20", codeOnWebsite: true, codeWebsiteUrl: "https://cafe.co.nz", codeTested: true });
+    expect(parseDraft(draftToRow(d, "t@example.com"))).toMatchObject({ codeOnWebsite: true, codeTested: true });
+    expect(sanitizeDraft({ codeOnWebsite: "true", codeTested: 1 })).toMatchObject({ codeOnWebsite: false, codeTested: false });
+  });
+});

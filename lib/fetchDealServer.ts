@@ -34,6 +34,8 @@ function mergeDealRecord(deal: Deal, record: Record<string, any>): Deal {
     terms: record.terms || null,
     dealCode: record.dealCode || null,
     bookingRequirement: parseBookingRequirement(record.bookingRequirement),
+    codeOnWebsite: typeof record.codeOnWebsite === "boolean" ? record.codeOnWebsite : null,
+    codeWebsiteUrl: typeof record.codeWebsiteUrl === "string" ? record.codeWebsiteUrl : null,
   };
 }
 
@@ -296,7 +298,7 @@ async function loadAllLiveDeals(): Promise<Deal[]> {
 
   return products
     .map((p: any) => mapProductToDeal(p, CATEGORY_NAME_BY_ID))
-    .map((deal: Deal) => {
+    .map((deal: Deal): Deal | null => {
       const meta = metaByProductId[deal.id];
       // A product with no Deals row is not a MegaDeal deal. It used to
       // be returned as-is, and mapProductToDeal leaves status null,
@@ -328,6 +330,8 @@ async function loadAllLiveDeals(): Promise<Deal[]> {
         // listings need them too — they were only mapped on deal pages.
         terms: meta.terms || null,
         bookingRequirement: parseBookingRequirement(meta.bookingRequirement),
+        codeOnWebsite: typeof meta.codeOnWebsite === "boolean" ? meta.codeOnWebsite : null,
+        codeWebsiteUrl: typeof meta.codeWebsiteUrl === "string" ? meta.codeWebsiteUrl : null,
       };
     })
     .filter((deal: Deal | null): deal is Deal => deal !== null && isDealLive(deal))

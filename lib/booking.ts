@@ -326,6 +326,40 @@ export function bookingPlan(
   };
 }
 
+/**
+ * "Customers enter this code on my website": the business's own code,
+ * confirmed tested, with the link where it's used. Checked by the form and
+ * again by /api/deals/create. A MEGA- code never qualifies: MegaDeal
+ * generates those and no business's website knows them.
+ */
+export function websiteCodeError(input: {
+  code: string;
+  onWebsite: boolean;
+  url: string;
+  tested: boolean;
+}): string | null {
+  if (!input.onWebsite) return null;
+  if (!input.code || isMegaDealCode(input.code)) {
+    return "Enter your own code first: customers can only use a code your website already accepts.";
+  }
+  if (!safeWebHref(input.url)) return "Add the web address where customers enter the code.";
+  if (!input.tested) return "Tick to confirm you've tried this exact code on your website.";
+  return null;
+}
+
+/** The deal's own "enter the code here" link, as the main action, when the
+ *  business has set one up; null otherwise. */
+export function websiteCodeAction(
+  deal: { dealCode?: string | null; codeOnWebsite?: boolean | null; codeWebsiteUrl?: string | null },
+  requirement: BookingRequirement,
+): BookingAction | null {
+  if (deal.codeOnWebsite !== true || !deal.dealCode || isMegaDealCode(deal.dealCode)) return null;
+  const href = safeWebHref(deal.codeWebsiteUrl);
+  if (!href) return null;
+  const booking = requirement === "required" || requirement === "recommended";
+  return { kind: "book_online", label: booking ? "Book online" : "Shop this offer", href, external: true };
+}
+
 /** MegaDeal-generated codes start with "MEGA-" (lib/dealCode.ts); a
  *  business can't choose one that does. Any other code is the business's
  *  own, which they were asked to set up in their own booking system. */
@@ -356,14 +390,26 @@ export function getThisDealCopy(
   requirement: BookingRequirement,
   primary: BookingActionKind | null,
   code: string | null,
-  /** From the deal's terms: walk-ins accepted, and limited stock. */
-  extras: { walkIns?: boolean; limitedStock?: boolean } = {},
+  /** From the deal's terms: walk-ins accepted, and limited stock.
+   *  websiteCode: the business confirmed the code works on its website
+   *  (undefined for older deals, which keep the old rule: their own code
+   *  was described to them as one customers enter online). */
+  extras: { walkIns?: boolean; limitedStock?: boolean; websiteCode?: boolean } = {},
 ): GetDealCopy {
   const quote = code ? "quote your code" : "mention this MegaDeal offer";
   const Quote = code ? "Quote your code" : "Mention this MegaDeal offer";
   const availability = `${extras.limitedStock ? "While stocks last. " : ""}Subject to availability. Your code does not confirm a booking.`;
 
+  const enterOnline = Boolean(code) && (extras.websiteCode ?? (code !== null && !isMegaDealCode(code)));
+
   if (requirement === "not_required") {
+    if (primary === "book_online" && enterOnline) {
+      return {
+        heading: "No booking needed",
+        instruction: "Enter this code at checkout on the business's website, and check the discount applies before paying.",
+        availability: extras.limitedStock ? "While stocks last. Copying a code does not reserve an item." : null,
+      };
+    }
     return {
       heading: "No booking needed",
       instruction: code
@@ -385,7 +431,7 @@ export function getThisDealCopy(
 
   const heading = requirement === "required" ? "Booking required" : "Booking recommended";
   let instruction: string;
-  if (primary === "book_online" && code && !isMegaDealCode(code)) {
+  if (primary === "book_online" && enterOnline) {
     instruction = "Book online and enter this code at checkout. Check the discount applies before paying.";
   } else if (primary === "book_online") {
     instruction = `Book online, then ${code ? "show this code" : "mention this MegaDeal offer"} when you visit. Confirm the offer with the business.`;

@@ -61,4 +61,9 @@ export interface Deal {
   /** Whether the customer must book to use this deal — see lib/booking.ts.
    *  "unknown" for deals written before the field existed. */
   bookingRequirement: BookingRequirement;
+  /** The business confirmed customers enter its own code on its website,
+   *  at `codeWebsiteUrl`. Undefined/null on deals from before this was
+   *  asked (lib/booking.ts keeps their old wording). */
+  codeOnWebsite?: boolean | null;
+  codeWebsiteUrl?: string | null;
 }

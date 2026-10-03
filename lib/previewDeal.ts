@@ -38,6 +38,9 @@ export interface PreviewInput {
   imageUrl: string | null;
   /** The code the business chose, or "" for one generated on submit. */
   dealCode?: string;
+  /** "Customers enter this code on my website" and where. */
+  codeOnWebsite?: boolean;
+  codeWebsiteUrl?: string;
 }
 
 /** Comma-separated in the profile form, a list everywhere it's shown. */
@@ -124,5 +127,7 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     // an example in the shape of the code we'll generate.
     dealCode: input.dealCode || "MEGA-XXXXX",
     bookingRequirement: parseBookingRequirement(input.bookingRequirement),
+    codeOnWebsite: input.codeOnWebsite ?? false,
+    codeWebsiteUrl: input.codeWebsiteUrl || null,
   };
 }

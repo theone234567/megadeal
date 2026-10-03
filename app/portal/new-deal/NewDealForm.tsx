@@ -10,7 +10,13 @@ import { parseDraft, MAX_DRAFT_TEXT } from "@/lib/dealDraft";
 import { STANDARD_TERMS, renderTerms, parseTerms } from "@/lib/dealTerms";
 import { buildPreviewDeal } from "@/lib/previewDeal";
 import { DEAL_CODE_MAX, dealCodeError, normaliseDealCode } from "@/lib/dealCode";
-import { BOOKING_CHOICES, bookingConflict, hasUsableBookingRoute, isBookingChoice } from "@/lib/booking";
+import {
+  BOOKING_CHOICES,
+  bookingConflict,
+  hasUsableBookingRoute,
+  isBookingChoice,
+  websiteCodeError,
+} from "@/lib/booking";
 import DealCard from "@/components/DealCard";
 import DealDetail from "@/app/deal/[slug]/DealDetail";
 import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
@@ -95,6 +101,10 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   // The MEGA- code a saved draft has been given (lib/dealCode.ts
   // codeForDraft), shown in the preview when there's no code of their own.
   const [savedCode, setSavedCode] = useState("");
+  // "Customers enter this code on my website" (only for their own code).
+  const [codeOnWebsite, setCodeOnWebsite] = useState(false);
+  const [codeWebsiteUrl, setCodeWebsiteUrl] = useState("");
+  const [codeTested, setCodeTested] = useState(false);
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -180,6 +190,11 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         setDealCode(
           typeof original.dealCode === "string" && !original.dealCode.startsWith("MEGA-") ? original.dealCode : ""
         );
+        // Carried over, but the code has to be confirmed again: it may
+        // have expired on their website since the last run.
+        setCodeOnWebsite(original.codeOnWebsite === true);
+        setCodeWebsiteUrl(typeof original.codeWebsiteUrl === "string" ? original.codeWebsiteUrl : "");
+        setCodeTested(false);
         setQuantityAvailable(
           original.quantityAvailable !== undefined && original.quantityAvailable !== null
             ? String(original.quantityAvailable)
@@ -231,6 +246,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         setQuantityAvailable(draft.quantityAvailable);
         setBookingRequirement(draft.bookingRequirement);
         setDealCode(draft.dealCode);
+        setCodeOnWebsite(draft.codeOnWebsite);
+        setCodeWebsiteUrl(draft.codeWebsiteUrl);
+        setCodeTested(draft.codeTested);
         if (typeof item.dealCode === "string" && item.dealCode.startsWith("MEGA-")) setSavedCode(item.dealCode);
         // The photo comes back too, which the old local drafts could never
         // do — a File can't be serialised, so restoring one always meant
@@ -305,6 +323,17 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
       return;
     }
+    const websiteProblem = websiteCodeError({
+      code: normaliseDealCode(dealCode),
+      onWebsite: codeOnWebsite && Boolean(dealCode),
+      url: codeWebsiteUrl,
+      tested: codeTested,
+    });
+    if (websiteProblem) {
+      setError(websiteProblem);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      return;
+    }
     setError(null);
     setStep("preview");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -349,6 +378,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             quantityAvailable,
             bookingRequirement,
             dealCode,
+            codeOnWebsite,
+            codeWebsiteUrl,
+            codeTested,
             selectedTerms,
             customTerms,
             photoUrl: media?.url || "",
@@ -402,6 +434,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           quantityAvailable: quantityAvailable ? Number(quantityAvailable) : undefined,
           bookingRequirement,
           dealCode: normaliseDealCode(dealCode),
+          codeOnWebsite: codeOnWebsite && Boolean(dealCode),
+          codeWebsiteUrl,
+          codeTested,
           photoUrl: media?.url || "",
           photoMediaId: media?.id || "",
         }),
@@ -571,6 +606,8 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         durationMinutes,
         imageUrl: photoPreview,
         dealCode: normaliseDealCode(dealCode) || savedCode,
+        codeOnWebsite: codeOnWebsite && Boolean(dealCode),
+        codeWebsiteUrl,
       },
       merchant
     );
@@ -1144,10 +1181,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           </label>
           <p id="deal-code-help" className="mb-2 text-xs leading-relaxed text-slate-600">
             <strong className="font-semibold text-slate-800">Use your own promo code.</strong> If your
-            website or booking system takes discount codes, set one up there and enter the same code
-            here — customers will be told to enter it when they book online, so the discount applies
-            automatically. They&apos;ll also quote it by phone or show it in person, so you can spot
-            MegaDeal customers.
+            website or booking system takes discount codes, set one up there, enter the same code here
+            and tick &ldquo;Customers enter this code on my website&rdquo;. Customers also quote it by
+            phone or show it in person, so you can spot MegaDeal customers.
             <br />
             No code of your own? Leave this blank and we&apos;ll create one
             {savedCode ? (
@@ -1192,6 +1228,63 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               </span>
             )}
           </div>
+          {/* Asked, never assumed: a code only goes on the deal page as one
+              to enter at checkout when the business says their website
+              takes it, says where, and has tried it. */}
+          {dealCode && !dealCodeProblem && (
+            <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3 sm:max-w-md">
+              <label className="flex cursor-pointer items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={codeOnWebsite}
+                  onChange={(e) => {
+                    setCodeOnWebsite(e.target.checked);
+                    if (e.target.checked && !codeWebsiteUrl) {
+                      setCodeWebsiteUrl(merchant?.bookingUrl || merchant?.website || "");
+                    }
+                  }}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+                />
+                <span>
+                  <span className="block text-sm font-bold text-slate-900">Customers enter this code on my website</span>
+                  <span className="block text-xs text-slate-600">
+                    The deal page will send them to your site and tell them to enter it at checkout.
+                  </span>
+                </span>
+              </label>
+              {codeOnWebsite && (
+                <div className="mt-3 space-y-3 pl-6">
+                  <div>
+                    <label htmlFor="deal-code-url" className="mb-1 block text-xs font-semibold text-slate-700">
+                      Link to the page where they use it
+                    </label>
+                    <input
+                      id="deal-code-url"
+                      type="url"
+                      inputMode="url"
+                      value={codeWebsiteUrl}
+                      onChange={(e) => setCodeWebsiteUrl(e.target.value)}
+                      placeholder="https://yourbusiness.co.nz/book"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                    />
+                  </div>
+                  <label className="flex cursor-pointer items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={codeTested}
+                      onChange={(e) => setCodeTested(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+                    />
+                    <span className="text-xs text-slate-700">
+                      I&apos;ve tried{" "}
+                      <span className="font-mono font-semibold">{normaliseDealCode(dealCode)}</span>, exactly as shown,
+                      on my website and it gives this deal&apos;s discount.
+                    </span>
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}

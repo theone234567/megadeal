@@ -8,6 +8,7 @@ import {
   getThisDealCopy,
   termsSayWalkInsWelcome,
   termsSayWhileStocksLast,
+  websiteCodeAction,
   type BookingAction,
   type BookingPlan,
 } from "@/lib/booking";
@@ -61,10 +62,15 @@ export default function GetDealPanel({
     kind === "call" ? "call" : kind === "email" ? "email" : "website";
 
   const booking = plan.requirement === "required" || plan.requirement === "recommended";
-  const primaryAction: BookingAction | null = plan.requirement === "not_required" ? null : plan.actions[0] ?? null;
+  // The deal's own "enter the code here" link comes first when the
+  // business has set one up; otherwise the plan's first booking action.
+  const websiteAction = websiteCodeAction(deal, plan.requirement);
+  const primaryAction: BookingAction | null =
+    websiteAction ?? (plan.requirement === "not_required" ? null : plan.actions[0] ?? null);
   const copy = getThisDealCopy(plan.requirement, primaryAction?.kind ?? null, code, {
     walkIns: termsSayWalkInsWelcome(deal.terms),
     limitedStock: termsSayWhileStocksLast(deal.terms),
+    websiteCode: typeof deal.codeOnWebsite === "boolean" ? deal.codeOnWebsite : undefined,
   });
 
   // An email enquiry carries the offer and its code, so the business knows

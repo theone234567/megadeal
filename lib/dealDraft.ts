@@ -50,6 +50,11 @@ export interface DealDraftData {
   photoMediaId: string;
   /** The business's own deal code, or "" for one generated on submit. */
   dealCode: string;
+  /** "Customers enter this code on my website", where, and whether the
+   *  business has confirmed they tried the code there. */
+  codeOnWebsite: boolean;
+  codeWebsiteUrl: string;
+  codeTested: boolean;
 }
 
 export const EMPTY_DRAFT: DealDraftData = {
@@ -69,6 +74,9 @@ export const EMPTY_DRAFT: DealDraftData = {
   photoUrl: "",
   photoMediaId: "",
   dealCode: "",
+  codeOnWebsite: false,
+  codeWebsiteUrl: "",
+  codeTested: false,
 };
 
 /** Matches the maxLength on the matching textareas, so the form stops
@@ -115,6 +123,9 @@ export function sanitizeDraft(input: any): DealDraftData {
     // Tidied but not rejected — a draft is unfinished work; the code is
     // checked properly on submit.
     dealCode: normaliseDealCode(input?.dealCode),
+    codeOnWebsite: input?.codeOnWebsite === true,
+    codeWebsiteUrl: text(input?.codeWebsiteUrl, 500),
+    codeTested: input?.codeTested === true,
   };
 }
 
