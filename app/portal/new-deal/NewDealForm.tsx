@@ -39,6 +39,7 @@ import {
   dealTypeBlocked,
   dealTypeName,
 } from "@/lib/platformSettingsRules";
+import { TEST_DEAL_PHOTOS, testDealDurationValue, type TestDeal } from "@/lib/testDeals";
 
 interface MerchantRecord {
   _id: string;
@@ -50,11 +51,29 @@ interface MerchantRecord {
   [key: string]: any;
 }
 
-export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean }) {
+/**
+ * The same form as an admin test deal (lib/testDeals.ts), so a test is
+ * made exactly as a business makes a real deal. Differences: the business
+ * name and suburb are typed in (a business's come from its profile), the
+ * photo is one of the site's sample photos (nothing is uploaded), there's
+ * no autosave, credit or launch gate, and saving stores the test deal
+ * instead of submitting anything.
+ */
+export interface TestDealFormMode {
+  /** The test deal being edited; null for a new one. */
+  id: string | null;
+  initial: TestDeal | null;
+}
+
+export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: boolean; testMode?: TestDealFormMode }) {
+  const isTest = Boolean(testMode);
   const { isLoggedIn, member } = useWix();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const duplicateId = searchParams.get("duplicate");
+  const duplicateId = isTest ? null : searchParams.get("duplicate");
+  // Test mode only: what a business profile would otherwise supply.
+  const [testBusiness, setTestBusiness] = useState("");
+  const [testSuburb, setTestSuburb] = useState("");
 
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   const [duplicatedFrom, setDuplicatedFrom] = useState(false);
@@ -75,7 +94,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const [durationMinutes, setDurationMinutes] = useState<number>(DEFAULT_FLASH_MINUTES);
   // Costs, open deal types and longest runs (admin → Platform settings).
   // Display only: the server checks them again on submission.
-  const platformSettings = usePlatformSettings();
+  // Test deals ignore them: anything a business could be allowed can be tried.
+  const liveSettings = usePlatformSettings();
+  const platformSettings = isTest ? null : liveSettings;
   // Flash up to 6 hours, Everyday up to 30 days (lib/dealDuration.ts), or
   // less if an admin has set a shorter maximum.
   const maxDays = platformSettings?.everydayMaxDays ?? EVERYDAY_MAX_DAYS;
@@ -135,22 +156,24 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const [baselineTick, setBaselineTick] = useState(0);
   // An opened draft (?draft=) can't be saved over until its contents have
   // loaded: saving the blank form first would wipe the real draft.
-  const [draftLoaded, setDraftLoaded] = useState(() => !searchParams.get("draft") || Boolean(searchParams.get("duplicate")));
+  const [draftLoaded, setDraftLoaded] = useState(() => isTest || !searchParams.get("draft") || Boolean(searchParams.get("duplicate")));
   /** Set once a draft exists server-side, so every later save updates that
    *  row instead of leaving a trail of near-identical drafts behind. */
-  const [draftId, setDraftId] = useState<string | null>(searchParams.get("draft"));
+  const [draftId, setDraftId] = useState<string | null>(isTest ? null : searchParams.get("draft"));
   /** The draft id we arrived with, captured once. Restoring must not key
    *  off `draftId`, because saving sets that — the effect would refire the
    *  moment a new draft was created and overwrite the form with the row it
    *  had just written, losing anything typed during the round-trip. */
-  const [openedDraftId] = useState<string | null>(() => searchParams.get("draft"));
+  const [openedDraftId] = useState<string | null>(() => (isTest ? null : searchParams.get("draft")));
   const restoredRef = useRef(false);
   /** A photo already uploaded — either restored from a draft or uploaded
    *  when one was saved. `photo` holds a newly picked File that hasn't been
    *  sent anywhere yet; this holds the Wix Media URL once it has. */
   const [uploaded, setUploaded] = useState<{ url: string; id: string } | null>(null);
 
-  const merchantCanTakeBookings = hasUsableBookingRoute({
+  // A test deal has no business to book with; the preview shows how the
+  // page handles that.
+  const merchantCanTakeBookings = isTest || hasUsableBookingRoute({
     bookingUrl: merchant?.bookingUrl || null,
     phone: merchant?.phone || null,
     bookingEmail: merchant?.bookingEmail || null,
@@ -158,6 +181,10 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const bookingTermsConflict = bookingConflict(bookingRequirement, terms);
 
   useEffect(() => {
+    if (isTest) {
+      setMerchant({ _id: "test", status: "Approved" });
+      return;
+    }
     if (member === undefined) return;
     if (!isLoggedIn) {
       setMerchant(null);
@@ -176,6 +203,34 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       })
       .catch(() => setMerchant(null));
   }, [member, isLoggedIn]);
+
+  // Editing a test deal: fill the form from it, as a reopened draft would.
+  useEffect(() => {
+    const t = testMode?.initial;
+    if (!t) return;
+    setBaselineTick((n) => n + 1);
+    setTestBusiness(t.businessName);
+    setTestSuburb(t.suburb);
+    setDealName(t.dealName);
+    setCategory(t.category);
+    setDescription(t.description);
+    const recovered = parseTerms(t.terms);
+    setSelectedTerms(recovered.selectedIds);
+    setCustomTerms(recovered.custom);
+    setPriceNow(String(t.priceNow));
+    setPriceWas(t.priceWas === null ? "" : String(t.priceWas));
+    setIsFlash(t.isFlash);
+    if (t.isFlash) setDurationMinutes(clampFlashMinutes(t.durationMinutes));
+    else setDurationDays(clampEverydayDays(testDealDurationValue(t)));
+    setQuantityAvailable(t.quantityAvailable === null ? "" : String(t.quantityAvailable));
+    setBookingRequirement(t.bookingRequirement);
+    setDealCode(t.dealCode);
+    setCodeOnWebsite(t.codeOnWebsite);
+    setCodeWebsiteUrl(t.codeWebsiteUrl);
+    setCodeTested(t.codeTested);
+    if (t.photo) setUploaded({ url: t.photo, id: "" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Prefill from an existing deal when arriving via "Duplicate this deal".
   // Only the fields stored directly on the Deals record carry over — category
@@ -388,7 +443,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   const snapshot = JSON.stringify([
     dealName, category, description, terms, priceNow, priceWas, durationDays, isFlash, durationMinutes,
     quantityAvailable, bookingRequirement, dealCode, codeOnWebsite, codeWebsiteUrl, codeTested,
-    selectedTerms, customTerms, photoPreview ?? "",
+    selectedTerms, customTerms, photoPreview ?? "", testBusiness, testSuburb,
   ]);
   const hasContent = Boolean(dealName.trim() || description.trim());
   const unsaved = savedSnapshot !== null && snapshot !== savedSnapshot && hasContent;
@@ -402,7 +457,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
   // Saves a few seconds after the last change, on the form step only.
   useEffect(() => {
-    if (!unsaved || !draftLoaded || step !== "form" || submitting || submitted) return;
+    if (isTest || !unsaved || !draftLoaded || step !== "form" || submitting || submitted) return;
     const t = setTimeout(() => saveDraft(true), 3000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -489,6 +544,48 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
     }
   }
 
+  /** Test mode: stores the test deal (checked on the server by the same
+   *  rules as a business's submission) and goes back to the list. */
+  async function handleSaveTest() {
+    if (!testMode) return;
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch(testMode.id ? `/api/admin/test-deals/${testMode.id}` : "/api/admin/test-deals", {
+        method: testMode.id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deal: {
+            businessName: testBusiness,
+            suburb: testSuburb,
+            dealName,
+            category,
+            description,
+            terms,
+            priceNow: Number(priceNow),
+            priceWas: priceWas ? Number(priceWas) : undefined,
+            isFlash,
+            ...(isFlash ? { durationMinutes } : { durationDays }),
+            quantityAvailable: quantityAvailable ? Number(quantityAvailable) : undefined,
+            bookingRequirement,
+            dealCode: normaliseDealCode(dealCode),
+            codeOnWebsite: codeOnWebsite && Boolean(dealCode),
+            codeWebsiteUrl,
+            codeTested,
+            photoUrl: uploaded?.url || "",
+          },
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Couldn't save the test deal.");
+      setSavedSnapshot(snapshot);
+      router.push(`/admin?tab=tests&saved=${testMode.id ? "edit" : "new"}`);
+    } catch (err: any) {
+      setError(err?.message || "Couldn't save the test deal.");
+      setSubmitting(false);
+    }
+  }
+
   async function handleSubmit() {
     setError(null);
     setSubmitting(true);
@@ -542,7 +639,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
     }
   }
 
-  if (member === undefined || merchant === undefined) {
+  if (merchant === undefined || (!isTest && member === undefined)) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-16 text-center">
         <p className="text-slate-500">Loading…</p>
@@ -550,7 +647,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
     );
   }
 
-  if (!isLoggedIn) {
+  if (!isTest && !isLoggedIn) {
     return (
       <PortalAuthScreen
         title="Create a deal"
@@ -652,7 +749,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       ? dealCodeProblem
       : null;
 
-  if (credits < cheapest) {
+  if (!isTest && credits < cheapest) {
     return (
       <main className="mx-auto max-w-md px-4 py-16 text-center">
         <span className="text-4xl">💳</span>
@@ -693,7 +790,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         codeOnWebsite: codeOnWebsite && Boolean(dealCode),
         codeWebsiteUrl,
       },
-      merchant
+      isTest ? { businessName: testBusiness || null, suburb: testSuburb || null, city: "Auckland" } : merchant
     );
     const durationLabel = isFlash
       ? FLASH_DURATIONS.find((d) => d.minutes === durationMinutes)?.label
@@ -765,7 +862,12 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
 
         {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
-        {!siteLaunched ? (
+        {isTest ? (
+          <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            Test deal: only admins can see it, on the private previews. Nothing is charged or sent to Wix.{" "}
+            {testMode?.id ? "Saving keeps its timer running from when it last started." : "Its timer starts when you save it."}
+          </p>
+        ) : !siteLaunched ? (
           <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
             🚧 MegaDeal hasn&apos;t officially launched yet, so we&apos;re not
             able to accept deals for review. Save it for now — it&apos;s kept
@@ -790,7 +892,16 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           >
             ← Back to edit
           </button>
-          {canSubmit ? (
+          {isTest ? (
+            <button
+              type="button"
+              onClick={handleSaveTest}
+              disabled={submitting}
+              className="rounded-full bg-brand-600 px-8 py-3 text-center text-sm font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60 sm:ml-auto"
+            >
+              {submitting ? "Saving…" : testMode?.id ? "Save test deal" : "Add test deal"}
+            </button>
+          ) : canSubmit ? (
             <button
               type="button"
               onClick={handleSubmit}
@@ -827,15 +938,25 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   return (
     <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
       <Link
-        href="/portal"
+        href={isTest ? "/admin?tab=tests" : "/portal"}
         onClick={(e) => {
           if (unsaved && !window.confirm("You have changes that haven't been saved yet. Leave anyway?")) e.preventDefault();
         }}
         className="text-sm text-slate-500 hover:text-brand-700"
       >
-        ← Back to portal
+        {isTest ? "← Back to test deals" : "← Back to portal"}
       </Link>
 
+      {isTest ? (
+        <>
+          <h1 className="mt-3 text-2xl font-extrabold text-slate-900">{testMode?.id ? "Edit test deal" : "Create a test deal"}</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            The same form businesses use, checked by the same rules. Only admins can see test deals, and nothing is
+            charged or sent to Wix.
+          </p>
+        </>
+      ) : (
+      <>
       <h1 className="mt-3 text-2xl font-extrabold text-slate-900">Create a deal</h1>
       <p className="mt-1 text-sm text-slate-500">
         {/* Not enough for this type: the note by the Flash choice says so. */}
@@ -875,8 +996,44 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           left off.
         </p>
       )}
+      </>
+      )}
 
       <form onSubmit={handleContinueToPreview} className="mt-6 space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+        {isTest && (
+          <fieldset className="rounded-xl border border-amber-200 bg-amber-50 p-3.5">
+            <legend className="px-1 text-sm font-bold text-amber-900">Test deal only</legend>
+            <p className="mb-3 text-xs text-amber-900">A real deal takes these from the business&apos;s profile.</p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label htmlFor="test-business" className="mb-1 block text-sm font-medium text-slate-700">Business name shown</label>
+                <input
+                  id="test-business"
+                  required
+                  value={testBusiness}
+                  maxLength={120}
+                  onChange={(e) => setTestBusiness(e.target.value)}
+                  placeholder="e.g. Test Day Spa"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
+              <div>
+                <label htmlFor="test-suburb" className="mb-1 block text-sm font-medium text-slate-700">
+                  Suburb <span className="font-normal text-slate-500">(optional)</span>
+                </label>
+                <input
+                  id="test-suburb"
+                  value={testSuburb}
+                  maxLength={80}
+                  onChange={(e) => setTestSuburb(e.target.value)}
+                  placeholder="e.g. Ponsonby"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                />
+              </div>
+            </div>
+          </fieldset>
+        )}
+
         {/* The deal type first: it sets the cost, how long the deal can run
             and how the offer should be written. */}
         <fieldset>
@@ -1097,7 +1254,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         </div>
 
         <div>
-          <label htmlFor="deal-photo" className="mb-1 block font-display text-base font-bold text-slate-900">
+          <label id="deal-photo-label" htmlFor="deal-photo" className="mb-1 block font-display text-base font-bold text-slate-900">
             Photo
             <span className="ml-1 font-sans text-sm font-normal text-ember-600">Required</span>
           </label>
@@ -1105,6 +1262,31 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             This is the whole card on the deals page — a real photo of the food, room
             or treatment does far more than a logo.
           </p>
+          {isTest ? (
+            // Test deals use the site's sample photos: nothing is uploaded.
+            <div role="radiogroup" aria-labelledby="deal-photo-label" className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {TEST_DEAL_PHOTOS.map((p) => {
+                const on = uploaded?.url === p.src;
+                return (
+                  <button
+                    key={p.src}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    aria-label={p.label}
+                    onClick={() => {
+                      setPhoto(null);
+                      setUploaded({ url: p.src, id: "" });
+                    }}
+                    className={`overflow-hidden rounded-xl border-2 transition ${on ? "border-brand-600 ring-2 ring-brand-200" : "border-transparent hover:border-brand-300"}`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.src} alt="" className="aspect-[3/2] w-full object-cover" />
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
           <div className="flex items-center gap-4">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-300">
               {photoPreview ? (
@@ -1133,6 +1315,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               className="block w-full min-w-0 text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100"
             />
           </div>
+          )}
         </div>
 
         {/* Asked outright rather than inferred: the public deal page shows
@@ -1396,6 +1579,8 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           >
             Preview deal →
           </button>
+          {!isTest && (
+            <>
           <button
             type="button"
             onClick={() => saveDraft()}
@@ -1411,6 +1596,8 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             error={autosaveError}
             onRetry={() => saveDraft()}
           />
+            </>
+          )}
         </div>
       </form>
     </main>

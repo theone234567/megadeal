@@ -23,7 +23,7 @@ const KEY = "admin-test-deals:v1";
 
 export type TestDealResult =
   | { ok: true; deal: TestDeal }
-  | { ok: false; status: 400 | 404 | 409 | 503; error: string; errors?: string[] };
+  | { ok: false; status: 400 | 404 | 409 | 503; error: string };
 
 async function store() {
   return getRateLimitKv();
@@ -55,8 +55,8 @@ const UNAVAILABLE = { ok: false as const, status: 503 as const, error: "Test dea
 
 export async function createTestDeal(input: unknown): Promise<TestDealResult> {
   if (!(await store())) return UNAVAILABLE;
-  const { fields, errors } = parseTestDealInput(input);
-  if (!fields) return { ok: false, status: 400, error: errors[0], errors };
+  const { fields, error } = parseTestDealInput(input);
+  if (!fields) return { ok: false, status: 400, error: error ?? "Check the deal's details." };
   const list = await listTestDeals();
   if (list.length >= TEST_DEAL_LIMIT) {
     return { ok: false, status: 409, error: `You can keep up to ${TEST_DEAL_LIMIT} test deals. Delete one to add another.` };
@@ -74,8 +74,8 @@ export async function updateTestDeal(id: string, input: unknown): Promise<TestDe
   const list = await listTestDeals();
   const current = list.find((t) => t.id === id);
   if (!current) return { ok: false, status: 404, error: "That test deal no longer exists." };
-  const { fields, errors } = parseTestDealInput(input);
-  if (!fields) return { ok: false, status: 400, error: errors[0], errors };
+  const { fields, error } = parseTestDealInput(input);
+  if (!fields) return { ok: false, status: 400, error: error ?? "Check the deal's details." };
   const deal: TestDeal = { ...current, ...fields, updatedAt: new Date().toISOString() };
   await write(list.map((t) => (t.id === id ? deal : t)));
   return { ok: true, deal };

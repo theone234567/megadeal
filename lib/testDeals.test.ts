@@ -11,20 +11,26 @@ import {
   type TestDeal,
 } from "./testDeals";
 
+// What NewDealForm sends in test mode: the business form's fields, plus
+// the business name and suburb.
 const input = {
-  isFlash: false,
-  duration: 7,
-  name: "Two-course lunch",
   businessName: "Test Kitchen",
   suburb: "Ponsonby",
+  dealName: "Two-course lunch",
   category: "Food & Drink",
-  priceNow: "39",
-  priceWas: "60",
-  photo: TEST_DEAL_PHOTOS[0].src,
-  bookingRequirement: "recommended",
-  dealCode: "",
-  description: "A starter and a main.",
+  description: "A starter and a main from the lunch menu.",
   terms: "Bookings essential.",
+  priceNow: 39,
+  priceWas: 60,
+  isFlash: false,
+  durationDays: 7,
+  quantityAvailable: 20,
+  bookingRequirement: "required",
+  dealCode: "",
+  codeOnWebsite: false,
+  codeWebsiteUrl: "",
+  codeTested: false,
+  photoUrl: TEST_DEAL_PHOTOS[0].src,
 };
 
 function make(overrides: Partial<TestDeal> = {}): TestDeal {
@@ -33,40 +39,33 @@ function make(overrides: Partial<TestDeal> = {}): TestDeal {
 }
 
 describe("parseTestDealInput", () => {
-  it("accepts a complete Everyday deal, storing days as minutes", () => {
-    const { fields, errors } = parseTestDealInput(input);
-    expect(errors).toEqual([]);
-    expect(fields).toMatchObject({ isFlash: false, durationMinutes: 7 * 24 * 60, priceNow: 39, priceWas: 60 });
+  it("accepts what the business form sends, storing days as minutes", () => {
+    const { fields, error } = parseTestDealInput(input);
+    expect(error).toBeUndefined();
+    expect(fields).toMatchObject({ dealName: "Two-course lunch", isFlash: false, durationMinutes: 7 * 24 * 60, priceNow: 39, priceWas: 60, quantityAvailable: 20, photo: TEST_DEAL_PHOTOS[0].src });
   });
 
-  it("takes Flash durations in minutes, up to 6 hours", () => {
-    expect(parseTestDealInput({ ...input, isFlash: true, duration: 90 }).fields?.durationMinutes).toBe(90);
-    expect(parseTestDealInput({ ...input, isFlash: true, duration: 361 }).errors).toContain("A Flash deal can run for up to 6 hours.");
-    expect(parseTestDealInput({ ...input, duration: 31 }).errors).toContain("An Everyday deal can run for up to 30 days.");
+  it("uses the business rules: same messages as a real submission", () => {
+    expect(parseTestDealInput({ ...input, description: "" }).error).toBe("Deal name, description and terms are required.");
+    expect(parseTestDealInput({ ...input, priceWas: 20 }).error).toBe("Original price must be at least the deal price.");
+    expect(parseTestDealInput({ ...input, bookingRequirement: "" }).error).toBe("Choose whether customers need to book.");
+    expect(parseTestDealInput({ ...input, quantityAvailable: 0 }).error).toBe("Quantity available must be a positive number.");
+    expect(parseTestDealInput({ ...input, photoUrl: "" }).error).toBe("Add a photo of your deal.");
   });
 
-  it("explains every missing or wrong field", () => {
-    const { fields, errors } = parseTestDealInput({ isFlash: "yes", priceNow: "50", priceWas: "40", photo: "https://evil.example/x.jpg" });
-    expect(fields).toBeUndefined();
-    expect(errors).toEqual(
-      expect.arrayContaining([
-        "Give the deal a name.",
-        "Add a business name to show on the deal.",
-        "Pick a category.",
-        "The usual price must be more than the deal price.",
-        "Choose how long the deal runs.",
-        "Pick a photo.",
-        "Say whether customers need to book.",
-      ])
-    );
+  it("allows the product maximums, whatever Platform settings say", () => {
+    expect(parseTestDealInput({ ...input, isFlash: true, durationMinutes: 360 }).fields?.durationMinutes).toBe(360);
+    expect(parseTestDealInput({ ...input, durationDays: 30 }).fields?.durationMinutes).toBe(30 * 24 * 60);
+    expect(parseTestDealInput({ ...input, isFlash: true, durationMinutes: 361 }).error).toBeTruthy();
   });
 
-  it("only takes photos from the site's own list", () => {
-    expect(parseTestDealInput({ ...input, photo: "/megadeal-coming-soon/../secret" }).errors).toContain("Pick a photo.");
+  it("needs a business name and one of the sample photos", () => {
+    expect(parseTestDealInput({ ...input, businessName: " " }).error).toBe("Add a business name to show on the deal.");
+    expect(parseTestDealInput({ ...input, photoUrl: "https://static.wixstatic.com/media/x.jpg" }).error).toBe("Pick one of the sample photos.");
   });
 
-  it("ignores unknown fields such as an id or isTest flag", () => {
-    const { fields } = parseTestDealInput({ ...input, id: "x", isTest: false, startedAt: "2000-01-01" });
+  it("ignores fields it doesn't own, such as an id or start time", () => {
+    const { fields } = parseTestDealInput({ ...input, id: "x", startedAt: "2000-01-01", isTest: false });
     expect(fields).not.toHaveProperty("id");
     expect(fields).not.toHaveProperty("startedAt");
   });
@@ -86,16 +85,21 @@ describe("timer", () => {
 describe("testDealToDeal", () => {
   it("is marked as a test, with no contact details to send anyone to", () => {
     const d = testDealToDeal(make());
-    expect(d).toMatchObject({ id: "abc", slug: "test-abc", isTest: true, status: "Live", discountPercent: 35, businessSuburb: "Ponsonby" });
+    expect(d).toMatchObject({ id: "abc", slug: "test-abc", isTest: true, status: "Live", discountPercent: 35, quantityAvailable: 20, businessSuburb: "Ponsonby" });
     expect([d.businessPhone, d.businessWebsite, d.businessBookingUrl, d.businessBookingEmail, d.businessSlug]).toEqual([null, null, null, null, null]);
     expect(d.expiresAt).toBe("2026-10-08T00:00:00.000Z");
+  });
+
+  it("with no original price shows no saving", () => {
+    const d = testDealToDeal(make({ priceWas: null }));
+    expect([d.was, d.discountPercent]).toEqual([39, 0]);
   });
 });
 
 describe("testDealToDraft", () => {
   it("copies the content only: no photo, no code, standard conditions re-ticked", () => {
     const draft = testDealToDraft(make({ dealCode: "SPRING15" }));
-    expect(draft).toMatchObject({ dealName: "Two-course lunch", category: "Food & Drink", priceNow: "39", priceWas: "60", durationDays: 7, isFlash: false, photoUrl: "", dealCode: "" });
+    expect(draft).toMatchObject({ dealName: "Two-course lunch", category: "Food & Drink", priceNow: "39", priceWas: "60", quantityAvailable: "20", durationDays: 7, isFlash: false, photoUrl: "", dealCode: "", codeOnWebsite: false });
     expect(draft.selectedTerms.length + (draft.customTerms ? 1 : 0)).toBeGreaterThan(0);
   });
 });
@@ -104,5 +108,12 @@ describe("readStoredTestDeals", () => {
   it("drops malformed entries", () => {
     expect(readStoredTestDeals("nope")).toEqual([]);
     expect(readStoredTestDeals([make(), { id: 1 }, null])).toHaveLength(1);
+  });
+
+  it("carries over test deals saved by the first, shorter form", () => {
+    const [t] = readStoredTestDeals([
+      { id: "old", name: "Old massage", startedAt: "2026-10-03T00:00:00.000Z", durationMinutes: 60, isFlash: true, priceNow: 49, priceWas: 99, photo: TEST_DEAL_PHOTOS[2].src, businessName: "Spa", suburb: "", category: "Beauty & Spa", bookingRequirement: "required", dealCode: "", description: "", terms: "" },
+    ]);
+    expect(t).toMatchObject({ dealName: "Old massage", priceWas: 99, quantityAvailable: null, codeOnWebsite: false });
   });
 });

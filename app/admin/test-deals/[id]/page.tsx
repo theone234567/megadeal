@@ -44,6 +44,9 @@ export default async function AdminTestDealPage(props: { params: Promise<{ id: s
           <span className="rounded-full border border-amber-300 bg-white px-2.5 py-0.5 text-xs font-bold text-amber-900">
             Test deal{ended ? " · timer ended" : ""}
           </span>
+          <Link href={`/admin/test-deals/${test.id}/edit`} className="font-semibold text-brand-700 hover:underline">
+            Edit
+          </Link>
           <span className="text-amber-900">Only admins can see this. It isn&apos;t a real offer and nothing here is counted.</span>
         </div>
       </div>

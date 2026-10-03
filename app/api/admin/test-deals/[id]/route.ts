@@ -22,7 +22,7 @@ export async function PUT(req: NextRequest, props: { params: Promise<{ id: strin
   const body = await req.json().catch(() => null);
   try {
     const result = await updateTestDeal(id, body?.deal);
-    if (!result.ok) return NextResponse.json({ error: result.error, errors: result.errors }, { status: result.status, headers: NO_STORE });
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status, headers: NO_STORE });
     return NextResponse.json({ item: result.deal }, { headers: NO_STORE });
   } catch (err) {
     console.error("[admin/test-deals] update failed", err);

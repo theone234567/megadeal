@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   try {
     const result = await createTestDeal(body?.deal);
     if (!result.ok) {
-      return NextResponse.json({ error: result.error, errors: result.errors }, { status: result.status, headers: NO_STORE });
+      return NextResponse.json({ error: result.error }, { status: result.status, headers: NO_STORE });
     }
     return NextResponse.json({ item: result.deal }, { headers: NO_STORE });
   } catch (err) {

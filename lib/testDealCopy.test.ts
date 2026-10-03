@@ -5,9 +5,9 @@ import { parseTestDealInput, TEST_DEAL_PHOTOS, type TestDeal } from "./testDeals
 // "Copy to real draft" (app/api/admin/test-deals/[id]/route.ts), against a
 // fake Wix: the only test-deal action that writes anything real.
 const { fields } = parseTestDealInput({
-  isFlash: true, duration: 120, name: "Express facial", businessName: "Test Spa", suburb: "", category: "Beauty & Spa",
-  priceNow: 45, priceWas: 90, photo: TEST_DEAL_PHOTOS[1].src, bookingRequirement: "required", dealCode: "GLOW20",
-  description: "", terms: "Bookings essential.",
+  businessName: "Test Spa", suburb: "", dealName: "Express facial", category: "Beauty & Spa",
+  description: "A 30-minute facial.", terms: "Bookings essential.", priceNow: 45, priceWas: 90, isFlash: true,
+  durationMinutes: 120, bookingRequirement: "required", dealCode: "GLOW20", photoUrl: TEST_DEAL_PHOTOS[1].src,
 });
 const test: TestDeal = { ...fields!, id: "t1", createdAt: "x", updatedAt: "x", startedAt: "2026-10-01T00:00:00.000Z" };
 

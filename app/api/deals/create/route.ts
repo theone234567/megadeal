@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { bookingConflict, hasUsableBookingRoute, isBookingChoice, websiteCodeError } from "@/lib/booking";
+import { hasUsableBookingRoute } from "@/lib/booking";
+import { checkDealFields } from "@/lib/dealSubmission";
 import { safeWebHref } from "@/lib/socialLinks";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
-import { CATEGORY_ID_BY_NAME } from "@/lib/categories";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { debitCreditsIfAvailable, incrementCreditsAtomically, setFieldsIf } from "@/lib/creditsAtomic";
 import { getPlatformSettings } from "@/lib/platformSettings";
@@ -17,10 +17,10 @@ import {
   maxRequestedDuration,
 } from "@/lib/platformSettingsRules";
 import { logMerchantActivity } from "@/lib/merchantActivity";
-import { dealCodeError, generateDealCode, normaliseDealCode } from "@/lib/dealCode";
+import { generateDealCode } from "@/lib/dealCode";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
-import { durationError, toRequestedMinutes } from "@/lib/dealDuration";
+import { toRequestedMinutes } from "@/lib/dealDuration";
 
 const WIX_STORES_APP_ID = "215238eb-22a5-4c36-9e7b-e7c08025e04e";
 
@@ -69,99 +69,33 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const dealName = String(body.dealName || "").trim();
-  const description = String(body.description || "").trim();
-  const terms = String(body.terms || "").trim();
-  const priceNow = Number(body.priceNow);
-  const priceWas = body.priceWas !== undefined && body.priceWas !== "" ? Number(body.priceWas) : undefined;
-  const isFlash = Boolean(body.isFlash);
-  const durationDays = Number(body.durationDays);
-  const durationMinutes = Number(body.durationMinutes);
-  const quantityAvailable =
-    body.quantityAvailable !== undefined && body.quantityAvailable !== ""
-      ? Number(body.quantityAvailable)
-      : undefined;
-  const photoUrl = body.photoUrl ? String(body.photoUrl) : "";
-  const photoMediaId = body.photoMediaId ? String(body.photoMediaId) : "";
-  const category = String(body.category || "");
-  // Optional: a code the business chose. Blank means we generate one.
-  const customDealCode = normaliseDealCode(body.dealCode);
-  const categoryId = CATEGORY_ID_BY_NAME[category];
-
-  // Wix Stores caps product names at 80 characters; past that the product
-  // create failed and the business saw only "Couldn't create your deal".
-  if (dealName.length > 80) {
-    return NextResponse.json({ error: "Keep the deal name to 80 characters or fewer." }, { status: 400 });
-  }
-  if (description.length > 5000 || terms.length > 2000) {
-    return NextResponse.json({ error: "The description or conditions are too long." }, { status: 400 });
-  }
-  if (customDealCode) {
-    const codeError = dealCodeError(customDealCode);
-    if (codeError) return NextResponse.json({ error: `Deal code: ${codeError}` }, { status: 400 });
-  }
-  // "Customers enter this code on my website": only the business's own
-  // code, tested by them, with the link where it's used.
-  const codeOnWebsite = body.codeOnWebsite === true;
-  const codeWebsiteUrl = typeof body.codeWebsiteUrl === "string" ? body.codeWebsiteUrl.trim().slice(0, 500) : "";
-  const websiteProblem = websiteCodeError({
-    code: customDealCode,
-    onWebsite: codeOnWebsite,
-    url: codeWebsiteUrl,
-    tested: body.codeTested === true,
+  // The deal's own fields, checked the same way for a test deal
+  // (lib/dealSubmission.ts).
+  const checked = checkDealFields(body, {
+    typeBlocked: (flash) => dealTypeBlocked(flash, settings),
+    maxDuration: (flash) => maxRequestedDuration(flash, settings),
+    photoError: (url) => (isWixMediaUrl(url) ? null : "Invalid photo."),
   });
-  if (websiteProblem) return NextResponse.json({ error: websiteProblem }, { status: 400 });
-  if (!dealName || !description || !terms) {
-    return NextResponse.json({ error: "Deal name, description and terms are required." }, { status: 400 });
-  }
-  // Explicit on every new submission (lib/booking.ts): the public page
-  // never guesses "no booking needed" from a missing link or an unticked
-  // box, so the merchant has to say.
-  const bookingRequirement = body.bookingRequirement;
-  if (!isBookingChoice(bookingRequirement)) {
-    return NextResponse.json({ error: "Choose whether customers need to book." }, { status: 400 });
-  }
-  const conflict = bookingConflict(bookingRequirement, terms);
-  if (conflict) {
-    return NextResponse.json({ error: conflict }, { status: 400 });
-  }
-  if (!categoryId) {
-    return NextResponse.json({ error: "Choose a category." }, { status: 400 });
-  }
-  if (!Number.isFinite(priceNow) || priceNow <= 0) {
-    return NextResponse.json({ error: "Enter a valid deal price." }, { status: 400 });
-  }
-  if (priceWas !== undefined && (!Number.isFinite(priceWas) || priceWas < priceNow)) {
-    return NextResponse.json({ error: "Original price must be at least the deal price." }, { status: 400 });
-  }
-  const typeBlocked = dealTypeBlocked(isFlash, settings);
-  if (typeBlocked) {
-    return NextResponse.json({ error: `${typeBlocked} Save this deal as a draft for now.` }, { status: 403 });
-  }
-  // Flash up to 6 hours, Everyday up to 30 days (lib/dealDuration.ts), or
-  // less if an admin has set a shorter maximum.
-  const durationProblem = durationError(
+  if (!checked.ok) return NextResponse.json({ error: checked.error }, { status: checked.status });
+  const {
+    dealName,
+    description,
+    terms,
+    priceNow,
+    priceWas,
     isFlash,
-    isFlash ? durationMinutes : durationDays,
-    maxRequestedDuration(isFlash, settings)
-  );
-  if (durationProblem) {
-    return NextResponse.json({ error: durationProblem }, { status: 400 });
-  }
-  if (quantityAvailable !== undefined && (!Number.isInteger(quantityAvailable) || quantityAvailable < 1)) {
-    return NextResponse.json({ error: "Quantity available must be a positive number." }, { status: 400 });
-  }
-  // A deal without a photo is close to unsellable on a grid of deals that
-  // all have one, and it drags down the cards either side of it. Enforced
-  // here rather than only in the form because this route is the boundary:
-  // the form's own check tells the merchant which field is missing, this
-  // one is what makes it true.
-  if (!photoUrl) {
-    return NextResponse.json({ error: "Add a photo of your deal." }, { status: 400 });
-  }
-  if (!isWixMediaUrl(photoUrl)) {
-    return NextResponse.json({ error: "Invalid photo." }, { status: 400 });
-  }
+    durationDays,
+    durationMinutes,
+    quantityAvailable,
+    photoUrl,
+    photoMediaId,
+    category,
+    categoryId,
+    customDealCode,
+    codeOnWebsite,
+    codeWebsiteUrl,
+    bookingRequirement,
+  } = checked.fields;
 
   // Set once credits are taken or a draft is claimed, cleared once the
   // deal exists: if anything throws in between, the catch below gives the
