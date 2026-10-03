@@ -71,6 +71,7 @@ export default function AdminBusinessDetailPage() {
   // Admin controls
   const [status, setStatus] = useState("Pending");
   const [credits, setCredits] = useState(0);
+  const [creditsReason, setCreditsReason] = useState("");
   const [rating, setRating] = useState<number | "">("");
   const [reviewCount, setReviewCount] = useState<number | "">("");
   const [rudenessCheck, setRudenessCheck] = useState<RudenessOverride>("default");
@@ -111,6 +112,7 @@ export default function AdminBusinessDetailPage() {
   function seedFrom(item: AdminMerchant) {
     setStatus(item.status || "Pending");
     setCredits(item.creditsBalance ?? 0);
+    setCreditsReason("");
     setRating(item.rating ?? "");
     setReviewCount(item.reviewCount ?? "");
     setRudenessCheck(parseRudenessOverride(item.rudenessCheck));
@@ -250,6 +252,7 @@ export default function AdminBusinessDetailPage() {
         body: JSON.stringify({
           status,
           creditsBalance: credits,
+          creditsReason,
           rating: rating === "" ? null : rating,
           reviewCount: reviewCount === "" ? null : reviewCount,
           rudenessCheck,
@@ -630,6 +633,17 @@ export default function AdminBusinessDetailPage() {
                 onChange={(e) => setCredits(Number(e.target.value))}
                 className="w-full rounded-lg border border-slate-200 px-2 py-2 text-sm"
               />
+              {credits !== (merchant.creditsBalance ?? 0) && (
+                <input
+                  type="text"
+                  value={creditsReason}
+                  maxLength={200}
+                  onChange={(e) => setCreditsReason(e.target.value)}
+                  placeholder="Reason (the business sees this)"
+                  aria-label="Reason for the credit change"
+                  className="mt-1 w-full rounded-lg border border-amber-300 px-2 py-2 text-sm"
+                />
+              )}
             </label>
             <label className="text-sm">
               <span className="mb-1 block text-slate-500">Rating</span>

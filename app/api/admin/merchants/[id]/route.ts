@@ -324,6 +324,15 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   // undone. That is what "set their balance to 5" actually means.
   const adminAdjustDelta = adminSetCredits ? Number(patch.creditsBalance) - existingCredits : 0;
   delete patch.creditsBalance;
+  // Every change an admin makes to a balance says why (handoff pack,
+  // FINAL-SPEC §10): the reason goes on the business's activity line.
+  const creditsReason = typeof body.creditsReason === "string" ? body.creditsReason.trim().slice(0, 200) : "";
+  if (adminAdjustDelta !== 0 && !creditsReason) {
+    return NextResponse.json(
+      { error: "Say why the credits are changing. The business sees the reason in its activity." },
+      { status: 400 }
+    );
+  }
 
   let introGranted = 0;
   let referralBonusGranted = 0;
@@ -452,7 +461,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       merchantEmail: existing.email,
       type: "credit",
       amount: adminAdjustDelta,
-      description: "Credits adjusted by admin",
+      description: `Credits adjusted by MegaDeal: ${creditsReason}`,
     });
   }
   if (creditsApplied && introGranted > 0 && existing.email) {
