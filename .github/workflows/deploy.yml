@@ -89,6 +89,10 @@ jobs:
         env:
           NEXT_PUBLIC_SITE_URL: https://megadeal.co.nz
           NEXT_PUBLIC_META_PIXEL_ID: "1478448350759686"
+          # Coming-soon design (lib/siteConfig.ts, docs/COMING-SOON-V2.md):
+          # "v2" shows the new page; remove this line to go back to the
+          # previous design. Read at build time, so it takes a deploy.
+          COMING_SOON_DESIGN: v2
 
       # Screenshots of / , /coming-soon, /list-your-business, /portal and
       # /megashop at four widths, uploaded as a build artifact for a human
