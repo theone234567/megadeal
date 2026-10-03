@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { COMING_SOON_DESIGN, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import ComingSoonV2 from "@/components/comingSoon/v2/ComingSoonV2";
+import { V2_DESCRIPTION, V2_TITLE } from "@/lib/comingSoonV2Content";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { categoryPath } from "@/lib/categories";
@@ -37,7 +39,7 @@ const SOCIAL_TITLE = "MegaDeal Auckland — Big Local Deals Are On The Way";
 const DESCRIPTION =
   "MegaDeal is launching in Auckland first. Join for launch updates, or claim up to 6 months free advertising for your business — 0% commission.";
 
-export const metadata: Metadata = {
+const LEGACY_METADATA: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/coming-soon` },
@@ -52,6 +54,18 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image", title: SOCIAL_TITLE, description: DESCRIPTION },
 };
+
+/** V2 changes only the title and description; the URL, canonical and
+ *  indexing stay as they were. */
+const V2_METADATA: Metadata = {
+  ...LEGACY_METADATA,
+  title: V2_TITLE,
+  description: V2_DESCRIPTION,
+  openGraph: { ...LEGACY_METADATA.openGraph, title: `${V2_TITLE} | ${SITE_NAME}`, description: V2_DESCRIPTION },
+  twitter: { card: "summary_large_image", title: `${V2_TITLE} | ${SITE_NAME}`, description: V2_DESCRIPTION },
+};
+
+export const metadata: Metadata = COMING_SOON_DESIGN === "v2" ? V2_METADATA : LEGACY_METADATA;
 
 /**
  * Supplied mascot / skyline artwork, resolved once at build time. Each
@@ -251,7 +265,16 @@ function HeroGradientWash({
   );
 }
 
+/** The design switch (lib/siteConfig.ts). The launch redirect in
+ *  middleware.ts runs before either design, so neither can show deals. */
 export default async function ComingSoonPage() {
+  if (COMING_SOON_DESIGN === "v2") return <ComingSoonV2 />;
+  return <LegacyComingSoonPage />;
+}
+
+/** The existing coming-soon page, unchanged; kept until the owner approves
+ *  removing it. */
+async function LegacyComingSoonPage() {
   // Real figures from Wix, never invented. Null (and so hidden) when the
   // credentials are unavailable or the numbers are still too small.
   // Each counter only once it reaches 60 (shownStats in lib/publicStats.ts).

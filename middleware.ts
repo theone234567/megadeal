@@ -93,6 +93,21 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
+  // Coming-soon V2 preview (lib/siteConfig.ts COMING_SOON_DESIGN): a
+  // signed-in admin sees the new design at /coming-soon?design=v2 while
+  // everyone else keeps the current one. The internal preview address is
+  // admin-only too. Never cached, never indexed.
+  if (path === "/coming-soon/v2-preview" || (path === "/coming-soon" && request.nextUrl.searchParams.get("design") === "v2")) {
+    const admin = await hasValidAdminSignature(request.cookies.get(ADMIN_COOKIE_NAME)?.value);
+    if (path === "/coming-soon" && !admin) return; // the normal page
+    const res = admin
+      ? NextResponse.rewrite(new URL("/coming-soon/v2-preview", request.url))
+      : NextResponse.redirect(new URL("/coming-soon", request.url), 307);
+    res.headers.set("Cache-Control", "private, no-store");
+    res.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return res;
+  }
+
   if (!SITE_LAUNCHED && (path === "/" || PRELAUNCH_PRIVATE.test(path))) {
     // Admin preview: before launch the customer side is visible only to
     // someone signed into /admin, so test deals from a real business

@@ -66,3 +66,20 @@ export const SITE_DESCRIPTION =
  */
 export const LEGAL_ENTITY_NAME = "Babo Investments Limited";
 export const LEGAL_ENTITY_NZBN = "9429035341451";
+
+/**
+ * Which coming-soon design /coming-soon shows: "v2" (the Coming Soon pack
+ * of 3 Oct 2026) only when the value is exactly "v2"; anything else,
+ * including unset, keeps the existing page. Fails closed.
+ *
+ * Read at BUILD time: /coming-soon is prerendered. To switch, set
+ * COMING_SOON_DESIGN: v2 in the "Build" step's env in
+ * .github/workflows/deploy.yml and redeploy; to roll back, remove it (or set
+ * it to "legacy") and redeploy. The Cloudflare dashboard's runtime
+ * variables are too late for a prerendered page. A signed-in admin can
+ * preview V2 at any time at /coming-soon?design=v2 (middleware.ts).
+ */
+export function comingSoonDesign(value: string | undefined): "v2" | "legacy" {
+  return value === "v2" ? "v2" : "legacy";
+}
+export const COMING_SOON_DESIGN = comingSoonDesign(process.env.COMING_SOON_DESIGN);

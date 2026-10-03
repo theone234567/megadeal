@@ -22,6 +22,9 @@ interface EmailSignupFormProps {
    *  by side it was squeezed to where a real address scrolled out of view
    *  while typing). "stacked": always under. "row": always beside. */
   layout?: "row" | "stacked" | "responsive";
+  /** "pill" (default) or "rounded": 8px corners and 48px-high controls,
+   *  for the coming-soon V2 design. Shape only; behaviour is identical. */
+  shape?: "pill" | "rounded";
 }
 
 export default function EmailSignupForm({
@@ -33,7 +36,9 @@ export default function EmailSignupForm({
   surface = "onColor",
   center = false,
   layout = "responsive",
+  shape = "pill",
 }: EmailSignupFormProps) {
+  const corners = shape === "rounded" ? "min-h-12 rounded-lg" : "rounded-full";
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   // Set when someone presses the button without ticking the consent box.
@@ -132,12 +137,12 @@ export default function EmailSignupForm({
             onChange={(e) => setEmail(e.target.value)}
             placeholder={placeholder}
             // 16px on phones: iOS zooms the page into any smaller input.
-            className={`w-full min-w-0 rounded-full px-4 py-3 text-base sm:text-sm ${inputClass}`}
+            className={`w-full min-w-0 ${corners} px-4 py-3 text-base sm:text-sm ${inputClass}`}
           />
           <button
             type="submit"
             disabled={state === "saving"}
-            className={`rounded-full px-5 py-3 text-sm font-bold text-white shadow-card transition active:scale-95 disabled:opacity-60 ${
+            className={`${corners} px-5 py-3 text-sm font-bold text-white shadow-card transition active:scale-95 disabled:opacity-60 ${
               layout === "stacked" ? "w-full" : layout === "responsive" ? "w-full sm:w-auto sm:shrink-0" : "shrink-0"
             } ${buttonClass}`}
           >
