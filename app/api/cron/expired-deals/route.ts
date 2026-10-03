@@ -6,7 +6,8 @@ import { SITE_LAUNCHED } from "@/lib/siteConfig";
 
 /**
  * Hourly (see .github/workflows/indexnow-expired.yml): tells Bing and the
- * other IndexNow engines about deals whose run has just ended, so an
+ * other IndexNow engines about deals whose run has just ended (and
+ * scheduled deals that have just started), so an
  * expired offer drops out of their results instead of lingering until
  * their next crawl. Every other change already notifies them as it
  * happens (lib/indexNowDeal.ts); running out of time is the one with no
@@ -52,8 +53,14 @@ export async function POST(req: NextRequest) {
       const end = d.expiresAt ? new Date(d.expiresAt).getTime() : NaN;
       return Number.isFinite(end) && end <= now && end > now - LOOKBACK_MS && d.productId;
     });
-    for (const deal of ended) notifyDealChanged(adminClient, deal);
-    return NextResponse.json({ notified: ended.length });
+    // Scheduled deals (lib/dealSchedule.ts) that have just started: their
+    // pages went public at the start time, with no event behind it.
+    const started = (result.items ?? []).filter((d: any) => {
+      const start = d.scheduledStartAt && d.firstPublishedAt ? new Date(d.firstPublishedAt).getTime() : NaN;
+      return Number.isFinite(start) && start <= now && start > now - LOOKBACK_MS && d.productId;
+    });
+    for (const deal of [...ended, ...started]) notifyDealChanged(adminClient, deal);
+    return NextResponse.json({ notified: ended.length + started.length });
   } catch (err) {
     console.error("[cron/expired-deals] failed", err);
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });

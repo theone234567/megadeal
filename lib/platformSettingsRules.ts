@@ -25,6 +25,10 @@ export interface PlatformSettings {
   /** Take credits when a deal is submitted. Off: submissions are free and
    *  record 0 credits charged. */
   chargeCredits: boolean;
+  /** Businesses can ask for a deal to start at a set time
+   *  (lib/dealSchedule.ts). Off: new deals start when approved; schedules
+   *  already agreed are kept. */
+  schedulingEnabled: boolean;
   /** Credits per deal, by type. Apply to new submissions only. */
   everydayCredits: number;
   flashCredits: number;
@@ -42,6 +46,9 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   flashEnabled: true,
   requireApproval: false,
   chargeCredits: true,
+  // Off until an admin turns it on (handoff pack: scheduling is enabled
+  // only once its backend works, by choice rather than by deploy).
+  schedulingEnabled: false,
   everydayCredits: 4,
   flashCredits: 1,
   everydayMaxDays: 30,
@@ -60,6 +67,7 @@ const BOOLEAN_KEYS = [
   "flashEnabled",
   "requireApproval",
   "chargeCredits",
+  "schedulingEnabled",
 ] as const;
 
 export const SETTING_LABELS: Record<keyof PlatformSettings, string> = {
@@ -68,6 +76,7 @@ export const SETTING_LABELS: Record<keyof PlatformSettings, string> = {
   flashEnabled: "Flash deals",
   requireApproval: "Every deal waits for admin approval",
   chargeCredits: "Charge credits",
+  schedulingEnabled: "Scheduled start times",
   everydayCredits: "Everyday deal cost",
   flashCredits: "Flash deal cost",
   everydayMaxDays: "Everyday maximum run",
@@ -181,6 +190,10 @@ export function settingImpacts(changes: SettingChange[]): string[] {
         return to
           ? "New submissions take credits again, at the costs below."
           : "New submissions are free: no credits are taken. Credits already spent aren't returned.";
+      case "schedulingEnabled":
+        return to
+          ? "Businesses can choose a start time for new deals. A scheduled deal shows from that time once approved; if it's approved too late, it waits for a new time instead of moving."
+          : "New deals start when approved. Deals already scheduled keep their agreed start time.";
       case "everydayCredits":
       case "flashCredits":
         return "Applies to new submissions. Deals already submitted keep what they cost.";
@@ -207,6 +220,7 @@ export type PublicPlatformSettings = Pick<
   | "everydayEnabled"
   | "flashEnabled"
   | "chargeCredits"
+  | "schedulingEnabled"
   | "everydayCredits"
   | "flashCredits"
   | "everydayMaxDays"

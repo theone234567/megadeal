@@ -40,6 +40,8 @@ import {
   dealTypeName,
 } from "@/lib/platformSettingsRules";
 import { TEST_DEAL_PHOTOS, testDealDurationValue, type TestDeal } from "@/lib/testDeals";
+import { SCHEDULE_MAX_AHEAD_DAYS, parseScheduledStart, type StartMode } from "@/lib/dealSchedule";
+import { formatNzDateTime, nzDateTimeParts } from "@/lib/nzTime";
 
 interface MerchantRecord {
   _id: string;
@@ -127,6 +129,11 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   const [codeOnWebsite, setCodeOnWebsite] = useState(false);
   const [codeWebsiteUrl, setCodeWebsiteUrl] = useState("");
   const [codeTested, setCodeTested] = useState(false);
+  // When it starts (lib/dealSchedule.ts): on approval, or at a set NZ
+  // date and time — offered while scheduling is on in Platform settings.
+  const [startMode, setStartMode] = useState<StartMode>("on_approval");
+  const [startDate, setStartDate] = useState("");
+  const [startTime, setStartTime] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -338,6 +345,9 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         setCodeOnWebsite(draft.codeOnWebsite);
         setCodeWebsiteUrl(draft.codeWebsiteUrl);
         setCodeTested(draft.codeTested);
+        setStartMode(draft.startMode);
+        setStartDate(draft.startDate);
+        setStartTime(draft.startTime);
         if (typeof item.dealCode === "string" && item.dealCode.startsWith("MEGA-")) setSavedCode(item.dealCode);
         // The photo comes back too, which the old local drafts could never
         // do — a File can't be serialised, so restoring one always meant
@@ -424,6 +434,14 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
       window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
       return;
     }
+    if (startMode === "scheduled" && !isTest) {
+      const start = parseScheduledStart(startDate, startTime);
+      if (start.error !== undefined) {
+        setError(start.error);
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        return;
+      }
+    }
     setError(null);
     setStep("preview");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -443,7 +461,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   const snapshot = JSON.stringify([
     dealName, category, description, terms, priceNow, priceWas, durationDays, isFlash, durationMinutes,
     quantityAvailable, bookingRequirement, dealCode, codeOnWebsite, codeWebsiteUrl, codeTested,
-    selectedTerms, customTerms, photoPreview ?? "", testBusiness, testSuburb,
+    selectedTerms, customTerms, photoPreview ?? "", testBusiness, testSuburb, startMode, startDate, startTime,
   ]);
   const hasContent = Boolean(dealName.trim() || description.trim());
   const unsaved = savedSnapshot !== null && snapshot !== savedSnapshot && hasContent;
@@ -518,6 +536,9 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             codeTested,
             selectedTerms,
             customTerms,
+            startMode,
+            startDate,
+            startTime,
             photoUrl: media?.url || "",
             photoMediaId: media?.id || "",
           },
@@ -618,6 +639,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           codeOnWebsite: codeOnWebsite && Boolean(dealCode),
           codeWebsiteUrl,
           codeTested,
+          ...(startMode === "scheduled" ? { startMode, startDate, startTime } : {}),
           photoUrl: media?.url || "",
           photoMediaId: media?.id || "",
         }),
@@ -852,6 +874,15 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
               {isFlash ? " (flash deal)" : ""}, from when it goes live
             </dd>
           </div>
+          {startMode === "scheduled" && startDate && startTime && (() => {
+            const start = parseScheduledStart(startDate, startTime);
+            return start.iso ? (
+              <div>
+                <dt className="text-slate-500">Starts</dt>
+                <dd className="font-semibold text-slate-800">{formatNzDateTime(start.iso)}, once approved</dd>
+              </div>
+            ) : null;
+          })()}
           {quantityAvailable && (
             <div>
               <dt className="text-slate-500">Quantity</dt>
@@ -1252,6 +1283,100 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             />
           </div>
         </div>
+
+        {/* When it starts (lib/dealSchedule.ts). Only while scheduling is
+            switched on in Platform settings, or for a draft that already
+            asked for a time (so the choice isn't hidden from them). */}
+        {!isTest && (platformSettings?.schedulingEnabled || startMode === "scheduled") && (
+          <fieldset>
+            <legend className="mb-2 block text-sm font-medium text-slate-700">When should it start?</legend>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {(
+                [
+                  { mode: "on_approval", title: "As soon as it's approved", hint: "The run starts when it goes live." },
+                  { mode: "scheduled", title: "At a set time", hint: "e.g. Friday 11:30 am for a lunch deal." },
+                ] as const
+              ).map((o) => {
+                const on = startMode === o.mode;
+                const unavailable = o.mode === "scheduled" && platformSettings !== null && !platformSettings.schedulingEnabled;
+                return (
+                  <label
+                    key={o.mode}
+                    className={`flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3 transition focus-within:ring-2 focus-within:ring-brand-400 focus-within:ring-offset-2 ${
+                      on ? "border-brand-600 bg-brand-50" : "border-slate-200 bg-white hover:border-brand-300"
+                    } ${unavailable && !on ? "cursor-not-allowed opacity-60" : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="start-mode"
+                      value={o.mode}
+                      checked={on}
+                      disabled={unavailable && !on}
+                      onChange={() => setStartMode(o.mode)}
+                      className="mt-1"
+                    />
+                    <span>
+                      <span className="block text-sm font-bold text-slate-900">{o.title}</span>
+                      <span className="block text-xs text-slate-600">{o.hint}</span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            {startMode === "scheduled" && (() => {
+              const today = nzDateTimeParts(Date.now()).date;
+              const last = nzDateTimeParts(Date.now() + SCHEDULE_MAX_AHEAD_DAYS * 86_400_000).date;
+              const start = startDate && startTime ? parseScheduledStart(startDate, startTime) : null;
+              const runMs = isFlash ? durationMinutes * 60_000 : durationDays * 86_400_000;
+              return (
+                <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor="deal-start-date" className="mb-1 block text-xs font-semibold text-slate-700">
+                        Start date
+                      </label>
+                      <input
+                        id="deal-start-date"
+                        type="date"
+                        min={today}
+                        max={last}
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="deal-start-time" className="mb-1 block text-xs font-semibold text-slate-700">
+                        Start time (NZ time)
+                      </label>
+                      <input
+                        id="deal-start-time"
+                        type="time"
+                        step={900}
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                      />
+                    </div>
+                  </div>
+                  <p role="status" className={`mt-2 text-xs ${start?.error ? "text-red-600" : "text-slate-600"}`}>
+                    {start?.error
+                      ? start.error
+                      : start?.iso
+                        ? `Shows from ${formatNzDateTime(start.iso)} until ${formatNzDateTime(Date.parse(start.iso) + runMs)}, once approved.`
+                        : "Pick a date and time at least 2 hours away."}{" "}
+                    {!start?.error && "If it can't be approved before then, we'll ask you for a new time rather than move it."}
+                  </p>
+                  {platformSettings !== null && !platformSettings.schedulingEnabled && (
+                    <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
+                      Choosing a start time is switched off at the moment. Choose &ldquo;As soon as it&apos;s approved&rdquo; to submit now, or save this as a draft.
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+          </fieldset>
+        )}
 
         <div>
           <label id="deal-photo-label" htmlFor="deal-photo" className="mb-1 block font-display text-base font-bold text-slate-900">

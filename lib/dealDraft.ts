@@ -55,6 +55,12 @@ export interface DealDraftData {
   codeOnWebsite: boolean;
   codeWebsiteUrl: string;
   codeTested: boolean;
+  /** "on_approval" (the default) or "scheduled", with the requested start
+   *  as NZ date ("YYYY-MM-DD") and time ("HH:MM"), checked on submission
+   *  (lib/dealSchedule.ts). */
+  startMode: "on_approval" | "scheduled";
+  startDate: string;
+  startTime: string;
 }
 
 export const EMPTY_DRAFT: DealDraftData = {
@@ -77,6 +83,9 @@ export const EMPTY_DRAFT: DealDraftData = {
   codeOnWebsite: false,
   codeWebsiteUrl: "",
   codeTested: false,
+  startMode: "on_approval",
+  startDate: "",
+  startTime: "",
 };
 
 /** Matches the maxLength on the matching textareas, so the form stops
@@ -126,6 +135,9 @@ export function sanitizeDraft(input: any): DealDraftData {
     codeOnWebsite: input?.codeOnWebsite === true,
     codeWebsiteUrl: text(input?.codeWebsiteUrl, 500),
     codeTested: input?.codeTested === true,
+    startMode: input?.startMode === "scheduled" ? "scheduled" : "on_approval",
+    startDate: /^\d{4}-\d{2}-\d{2}$/.test(input?.startDate ?? "") ? input.startDate : "",
+    startTime: /^\d{2}:\d{2}$/.test(input?.startTime ?? "") ? input.startTime : "",
   };
 }
 

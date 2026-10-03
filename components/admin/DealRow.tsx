@@ -8,6 +8,8 @@ import DealContentEditor from "./DealContentEditor";
 import { aiSummary, effectiveVerdict } from "@/lib/aiReview";
 import { describeMinutes } from "@/lib/dealDuration";
 import { dealDisplayStatus } from "@/lib/dealStatus";
+import { isScheduledFuture, missedScheduledStart, startLabel } from "@/lib/dealSchedule";
+import { nzDateTimeParts } from "@/lib/nzTime";
 
 export interface AdminDeal {
   _id: string;
@@ -183,6 +185,7 @@ export default function DealRow({
         {dealDisplayStatus(deal) === "Ended" && (
           <p className="mt-1 text-xs font-semibold text-slate-600">Ended — its run is over</p>
         )}
+        <ScheduleControl deal={deal} onSaved={(item) => setDeal(item)} />
         {/* Not live yet: the run starts when it's approved. */}
         {!deal.expiresAt && Number(deal.requestedDurationMinutes) > 0 && (
           <p className="mt-1 text-xs text-slate-500">
@@ -284,5 +287,79 @@ export default function DealRow({
       </tr>
     )}
     </>
+  );
+}
+
+/**
+ * A deal's requested or agreed start (lib/dealSchedule.ts), with a way to
+ * set a new one — e.g. when the start passed before the deal was
+ * reviewed, which blocks approval until it's moved — or to have it start
+ * on approval instead. Saved on its own, straight away.
+ */
+function ScheduleControl({ deal, onSaved }: { deal: AdminDeal; onSaved: (item: AdminDeal) => void }) {
+  const scheduledFuture = isScheduledFuture(deal);
+  const waiting = !deal.firstPublishedAt && !deal.everLive;
+  const missed = missedScheduledStart(deal);
+  const [open, setOpen] = useState(false);
+  const initial = deal.scheduledStartAt ? nzDateTimeParts(Date.parse(deal.scheduledStartAt)) : { date: "", time: "" };
+  const [date, setDate] = useState(initial.date);
+  const [time, setTime] = useState(initial.time);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!deal.scheduledStartAt || !(scheduledFuture || waiting)) return null;
+
+  async function send(scheduledStart: { date: string; time: string } | null) {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/deals/${deal._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scheduledStart }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Couldn't change the start time.");
+      if (data.item) onSaved(data.item);
+      setOpen(false);
+    } catch (err: any) {
+      setError(err?.message || "Couldn't change the start time.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-1 text-xs">
+      <p className={missed ? "font-semibold text-red-600" : "font-semibold text-sky-800"}>
+        {missed
+          ? "Start time passed — set a new one to approve"
+          : `${startLabel(scheduledFuture ? deal.firstPublishedAt : deal.scheduledStartAt)}${waiting ? " if approved" : ""}`}
+      </p>
+      {!open ? (
+        <button type="button" onClick={() => setOpen(true)} className="font-semibold text-brand-700 hover:underline">
+          Change start
+        </button>
+      ) : (
+        <div className="mt-1 space-y-1">
+          <div className="flex gap-1">
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="New start date (NZ)" className="rounded border border-slate-200 px-1 py-0.5" />
+            <input type="time" value={time} step={900} onChange={(e) => setTime(e.target.value)} aria-label="New start time (NZ)" className="rounded border border-slate-200 px-1 py-0.5" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" disabled={busy || !date || !time} onClick={() => send({ date, time })} className="rounded-full bg-brand-600 px-2.5 py-0.5 font-bold text-white disabled:opacity-40">
+              Set start
+            </button>
+            <button type="button" disabled={busy} onClick={() => send(null)} className="font-semibold text-slate-600 hover:underline">
+              Start on approval instead
+            </button>
+            <button type="button" onClick={() => setOpen(false)} className="text-slate-500 hover:underline">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+      {error && <p className="mt-1 max-w-[12rem] text-red-600">{error}</p>}
+    </div>
   );
 }

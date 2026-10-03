@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { hasUsableBookingRoute } from "@/lib/booking";
 import { checkDealFields } from "@/lib/dealSubmission";
+import { parseScheduledStart } from "@/lib/dealSchedule";
 import { safeWebHref } from "@/lib/socialLinks";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
@@ -96,6 +97,21 @@ export async function POST(req: NextRequest) {
     codeWebsiteUrl,
     bookingRequirement,
   } = checked.fields;
+
+  // A requested start time (lib/dealSchedule.ts), only while scheduling is
+  // switched on in Platform settings. Checked before anything is charged.
+  let scheduledStartAt: string | null = null;
+  if (body.startMode === "scheduled") {
+    if (!settings.schedulingEnabled) {
+      return NextResponse.json(
+        { error: "Choosing a start time isn't available at the moment. Choose \"As soon as it's approved\", or save this deal as a draft." },
+        { status: 403 }
+      );
+    }
+    const start = parseScheduledStart(body.startDate, body.startTime);
+    if (start.error !== undefined) return NextResponse.json({ error: start.error }, { status: 400 });
+    scheduledStartAt = start.iso;
+  }
 
   // Set once credits are taken or a draft is claimed, cleared once the
   // deal exists: if anything throws in between, the catch below gives the
@@ -326,6 +342,8 @@ export async function POST(req: NextRequest) {
     photoUrl,
     expiresAt: null,
     requestedDurationMinutes,
+    // The agreed start for a scheduled deal; null starts on approval.
+    scheduledStartAt,
     merchantEmail: member.email,
     status: "Pending Approval",
     productId,

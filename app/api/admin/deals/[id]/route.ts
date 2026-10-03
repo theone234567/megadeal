@@ -7,6 +7,7 @@ import { SITE_LAUNCHED } from "@/lib/siteConfig";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { firstPublicationFields, manualExpiryError } from "@/lib/dealDuration";
 import { hasDealExpired } from "@/lib/dealStatus";
+import { isScheduledFuture, parseScheduledStart } from "@/lib/dealSchedule";
 import { PRODUCT_FIELDS, buildProductUpdate, parseAdminContentEdit, withHistory } from "@/lib/dealAdminEdit";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
@@ -77,6 +78,38 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       }
     }
 
+    // A new start time (lib/dealSchedule.ts), or null to start on
+    // approval instead: for a deal still waiting for approval (e.g. one
+    // whose requested start passed before it was reviewed), or one that's
+    // approved but hasn't started yet. Once a deal is showing, its start
+    // is history.
+    if (body.scheduledStart !== undefined) {
+      const scheduledFuture = isScheduledFuture(existing);
+      if ((existing.firstPublishedAt || existing.everLive) && !scheduledFuture) {
+        return NextResponse.json({ error: "This deal has already started, so its start time can't change." }, { status: 409 });
+      }
+      // An approved deal keeps the run it was given, moved with its start.
+      const run = scheduledFuture
+        ? new Date(existing.expiresAt).getTime() - new Date(existing.firstPublishedAt).getTime()
+        : NaN;
+      if (body.scheduledStart === null) {
+        patch.scheduledStartAt = null;
+        if (scheduledFuture && Number.isFinite(run)) {
+          const now = Date.now();
+          patch.firstPublishedAt = new Date(now).toISOString();
+          patch.expiresAt = new Date(now + run).toISOString();
+        }
+      } else {
+        const start = parseScheduledStart(body.scheduledStart?.date, body.scheduledStart?.time, Date.now(), { admin: true });
+        if (start.error !== undefined) return NextResponse.json({ error: start.error }, { status: 400 });
+        patch.scheduledStartAt = start.iso;
+        if (scheduledFuture && Number.isFinite(run)) {
+          patch.firstPublishedAt = start.iso;
+          patch.expiresAt = new Date(Date.parse(start.iso) + run).toISOString();
+        }
+      }
+    }
+
     // Content edits (name, description, price, conditions, booking,
     // quantity). Businesses can't make these once a deal is submitted.
     const { changes, error } = parseAdminContentEdit(body, existing);
@@ -131,7 +164,11 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       if (patch.expiresAt) {
         if (!existing.firstPublishedAt && !existing.everLive) patch.firstPublishedAt = new Date().toISOString();
       } else {
-        const publication = firstPublicationFields(existing);
+        // With any new start time from this same save (only that: the
+        // rest of the patch already marks the deal as having been live).
+        const publication = firstPublicationFields(
+          patch.scheduledStartAt !== undefined ? { ...existing, scheduledStartAt: patch.scheduledStartAt } : existing
+        );
         if (publication.error) return NextResponse.json({ error: publication.error }, { status: 409 });
         Object.assign(patch, publication.fields);
       }

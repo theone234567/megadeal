@@ -5,7 +5,7 @@ import type { DealStatus } from "./types";
  * deal whose run is over keeps its status in Wix, and is shown (and
  * treated) as ended from the moment its end time passes.
  */
-export type DealDisplayStatus = DealStatus | "Ended";
+export type DealDisplayStatus = DealStatus | "Ended" | "Scheduled";
 
 export const DEAL_STATUS_STYLES: Record<DealDisplayStatus, string> = {
   Draft: "bg-brand-50 text-brand-700 border-brand-200",
@@ -14,23 +14,26 @@ export const DEAL_STATUS_STYLES: Record<DealDisplayStatus, string> = {
   Paused: "bg-slate-100 text-slate-600 border-slate-200",
   Cancelled: "bg-red-50 text-red-600 border-red-200",
   Ended: "bg-slate-100 text-slate-700 border-slate-300",
+  Scheduled: "bg-sky-50 text-sky-800 border-sky-200",
 };
 
 /** A deal's status as the business sees it — "Ended" once a Live or
- *  Paused deal's run is over. (A deal with no status predates the field
- *  and counts as Live.) */
+ *  Paused deal's run is over, "Scheduled" while an approved deal waits for
+ *  its start time (lib/dealSchedule.ts). (A deal with no status predates
+ *  the field and counts as Live.) */
 export function dealDisplayStatus(
-  deal: { status?: DealStatus | string | null; expiresAt?: string | null },
+  deal: { status?: DealStatus | string | null; expiresAt?: string | null; firstPublishedAt?: string | null },
   now: number = Date.now()
 ): DealDisplayStatus {
   const status = (deal.status || "Live") as DealStatus;
   if ((status === "Live" || status === "Paused") && hasDealExpired(deal.expiresAt, now)) return "Ended";
+  if (status === "Live" && deal.firstPublishedAt && new Date(deal.firstPublishedAt).getTime() > now) return "Scheduled";
   return status;
 }
 
 /** Ended or cancelled: finished for good, kept as history. Either can be
  *  run again only as a new deal (duplicate), with a new run length. */
-export function isPastDeal(deal: { status?: DealStatus | string | null; expiresAt?: string | null }, now?: number): boolean {
+export function isPastDeal(deal: { status?: DealStatus | string | null; expiresAt?: string | null; firstPublishedAt?: string | null }, now?: number): boolean {
   const s = dealDisplayStatus(deal, now);
   return s === "Ended" || s === "Cancelled";
 }
@@ -54,6 +57,8 @@ export function allowedDealActions(status: DealDisplayStatus | null): DealStatus
     // Over for good — nothing to pause, resume or cancel.
     case "Ended":
       return [];
+    // Approved and waiting for its start: the same choices as a live deal.
+    case "Scheduled":
     case "Live":
       return [
         { label: "Pause", target: "Paused" },

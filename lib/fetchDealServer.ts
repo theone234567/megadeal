@@ -6,6 +6,7 @@ import { businessSlug } from "./slug";
 import { CATEGORY_NAME_BY_ID, isMegaShopProduct } from "./categories";
 import { mapMerchantToBusiness, applyBusinessToDeal, type PublicBusiness } from "./business";
 import { isDealLive } from "./dealVisibility";
+import { isScheduledFuture } from "./dealSchedule";
 import { parseBookingRequirement } from "./booking";
 import { queryAllItems } from "./queryAll";
 import { searchAllProducts } from "./searchAllProducts";
@@ -19,6 +20,7 @@ function mergeDealRecord(deal: Deal, record: Record<string, any>): Deal {
   return {
     ...deal,
     expiresAt: record.expiresAt ?? null,
+    startsAt: record.firstPublishedAt ?? null,
     status: record.status ?? null,
     image: record.photoUrl || deal.image,
     isFlash: Boolean(record.isFlash),
@@ -144,7 +146,9 @@ async function readDeal(slug: string): Promise<DealRead | null> {
   if (!record) return null;
   deal = mergeDealRecord(deal, record);
   const live = isDealLive(deal);
-  const wasPublished = Boolean(record.firstPublishedAt || record.everLive);
+  // A scheduled deal that hasn't started yet was never public: no "ended"
+  // page for it either.
+  const wasPublished = Boolean(record.firstPublishedAt || record.everLive) && !isScheduledFuture(record);
   // Neither live nor ever published: nothing public to show.
   if (!live && !wasPublished) return null;
 
@@ -318,6 +322,7 @@ async function loadAllLiveDeals(): Promise<Deal[]> {
       return {
         ...deal,
         expiresAt: meta.expiresAt ?? null,
+        startsAt: meta.firstPublishedAt ?? null,
         status: meta.status ?? null,
         image: meta.photoUrl || deal.image,
         isFlash: Boolean(meta.isFlash),
@@ -485,7 +490,7 @@ export async function fetchAllLiveDealSlugsForSitemap(): Promise<
         // sitemap and IndexNow were handing Google URLs that 404. A product
         // with no row is not a deal here, and must not be advertised as one.
         if (!row) return false;
-        if (!isDealLive({ status: (row.status as DealStatus) ?? null, expiresAt: row.expiresAt ?? null })) return false;
+        if (!isDealLive({ status: (row.status as DealStatus) ?? null, expiresAt: row.expiresAt ?? null, startsAt: row.firstPublishedAt ?? null })) return false;
         return approved.has(String(row.merchantEmail || "").toLowerCase());
       })
       .map(({ p, row }: { p: any; row: any }) => ({

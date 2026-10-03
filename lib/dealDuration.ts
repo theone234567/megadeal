@@ -19,6 +19,9 @@
  * admin route, so the rules can't drift apart again.
  */
 
+import { SCHEDULE_TOLERANCE_MS } from "./dealSchedule";
+import { formatNzDateTime } from "./nzTime";
+
 export const FLASH_MAX_MINUTES = 360;
 export const EVERYDAY_MAX_DAYS = 30;
 const MINUTE = 60_000;
@@ -116,7 +119,8 @@ export type PublicationResult = { fields: Record<string, string>; error?: undefi
  *
  * - Already published (firstPublishedAt, or `everLive` from before this
  *   field existed): nothing changes.
- * - Has a requested duration: the clock starts now.
+ * - Has a requested duration: the clock starts now, or at the requested
+ *   start time for a scheduled deal (refused if that has passed).
  * - Legacy pending deal (end date set at submission, no requested
  *   duration): keeps that promised end date if it's still ahead; if it
  *   has passed or is missing, publishing is refused until someone sets a
@@ -131,6 +135,21 @@ export function firstPublicationFields(deal: Record<string, any>, now: number = 
     // Stored values were validated at submission; capped again here so a
     // hand-edited row can't publish a longer run than the rules allow.
     const ms = Math.min(requested * MINUTE, maxDurationMs(Boolean(deal.isFlash)));
+    // A requested start (lib/dealSchedule.ts): the agreed start and end are
+    // kept whenever approval comes before it (or within the tolerance just
+    // after it). Any later, the slot it was written for has gone, so it
+    // needs a new start time rather than being silently moved.
+    const scheduled = deal.scheduledStartAt ? new Date(deal.scheduledStartAt).getTime() : NaN;
+    if (Number.isFinite(scheduled)) {
+      if (scheduled < now - SCHEDULE_TOLERANCE_MS) {
+        return {
+          error: `This deal was set to start ${formatNzDateTime(scheduled)}, which has passed. It needs a new start time before it can be approved.`,
+        };
+      }
+      return {
+        fields: { firstPublishedAt: new Date(scheduled).toISOString(), expiresAt: new Date(scheduled + ms).toISOString() },
+      };
+    }
     return { fields: { firstPublishedAt: nowIso, expiresAt: new Date(now + ms).toISOString() } };
   }
 

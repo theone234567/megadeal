@@ -27,6 +27,9 @@ export interface Deal {
   inStock: boolean;
   quantityAvailable: number | null;
   expiresAt: string | null;
+  /** When it went (or, for a scheduled deal, goes) public: the Deals
+   *  row's firstPublishedAt. Not public before then (isDealLive). */
+  startsAt?: string | null;
   status: DealStatus | null;
   isFlash: boolean;
   /** The merchant's fine print. Collected since deals began and stored on

@@ -10,6 +10,7 @@ const deals = [
   { status: "Pending Approval", expiresAt: null, isFlash: false },
   { status: "Paused", expiresAt: future, isFlash: false },
   { status: "Live", expiresAt: past, isFlash: false }, // ended: never "Live"
+  { status: "Live", firstPublishedAt: "2026-10-05T00:00:00Z", expiresAt: future, isFlash: true }, // approved, not started
 ];
 
 describe("portal deal filters", () => {
@@ -26,8 +27,8 @@ describe("portal deal filters", () => {
   });
 
   it("counts each status within a type", () => {
-    expect(statusCounts(deals, "all", NOW)).toEqual({ all: 5, Live: 2, "Pending Approval": 1, Paused: 1 });
-    expect(statusCounts(deals, "flash", NOW)).toEqual({ all: 1, Live: 1, "Pending Approval": 0, Paused: 0 });
+    expect(statusCounts(deals, "all", NOW)).toEqual({ all: 6, Live: 2, Scheduled: 1, "Pending Approval": 1, Paused: 1 });
+    expect(statusCounts(deals, "flash", NOW)).toEqual({ all: 2, Live: 1, Scheduled: 1, "Pending Approval": 0, Paused: 0 });
   });
 
   it("restores only known saved filters", () => {

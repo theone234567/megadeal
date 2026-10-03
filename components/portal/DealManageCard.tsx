@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { missedScheduledStart, startLabel } from "@/lib/dealSchedule";
 import Link from "next/link";
 import type { DealStatus } from "@/lib/types";
 import { DEAL_STATUS_STYLES, allowedDealActions, dealDisplayStatus, withdrawalRefundsCredit } from "@/lib/dealStatus";
@@ -52,6 +53,8 @@ export default function DealManageCard({
     ? (new Date(deal.expiresAt).getTime() - Date.now()) / 86_400_000
     : null;
   const endingSoon = status === "Live" && daysUntilExpiry !== null && daysUntilExpiry >= 0 && daysUntilExpiry <= 3;
+  // Waiting for approval past its requested start (lib/dealSchedule.ts).
+  const missedStart = missedScheduledStart(deal);
 
   // What withdrawing this deal gives back: what it was charged.
   const refundAmount = creditsToRefund(deal);
@@ -98,8 +101,14 @@ export default function DealManageCard({
           >
             {status === "Live" && !siteLaunched ? "Approved — shows at launch" : status}
           </span>
-          <span className={`text-sm ${endingSoon ? "font-semibold text-ember-600" : "text-slate-500"}`}>
-            {deal.expiresAt
+          <span className={`text-sm ${endingSoon || missedStart ? "font-semibold text-ember-600" : "text-slate-500"}`}>
+            {status === "Scheduled"
+              ? startLabel(deal.firstPublishedAt)
+              : missedStart
+              ? "Start time passed — needs a new time"
+              : status === "Pending Approval" && deal.scheduledStartAt
+              ? `${startLabel(deal.scheduledStartAt)} if approved`
+              : deal.expiresAt
               ? `${isEnded ? "Ended" : "Ends"} ${new Date(deal.expiresAt).toLocaleDateString()}`
               : Number(deal.requestedDurationMinutes) > 0
               ? `Runs ${describeMinutes(Number(deal.requestedDurationMinutes))} once approved`

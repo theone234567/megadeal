@@ -203,6 +203,12 @@ export default function PlatformSettingsPanel() {
           <Row label="Flash deals" help="Off: no new Flash deals can be submitted.">
             <Switch id="flashEnabled" on={draft.flashEnabled} onChange={(v) => setFlag("flashEnabled", v)} />
           </Row>
+          <Row
+            label={SETTING_LABELS.schedulingEnabled}
+            help="On: businesses can pick a start time for a deal; it shows from then once approved. Off: deals start when approved, and schedules already agreed are kept."
+          >
+            <Switch id="schedulingEnabled" on={draft.schedulingEnabled} onChange={(v) => setFlag("schedulingEnabled", v)} />
+          </Row>
         </Card>
 
         <Card title="Credits & duration" intro="What each new deal costs and the longest run a business can choose.">

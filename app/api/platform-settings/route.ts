@@ -13,6 +13,7 @@ export async function GET() {
         everydayEnabled: settings.everydayEnabled,
         flashEnabled: settings.flashEnabled,
         chargeCredits: settings.chargeCredits,
+        schedulingEnabled: settings.schedulingEnabled,
         everydayCredits: settings.everydayCredits,
         flashCredits: settings.flashCredits,
         everydayMaxDays: settings.everydayMaxDays,

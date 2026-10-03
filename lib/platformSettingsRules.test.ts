@@ -22,6 +22,8 @@ describe("platform settings defaults", () => {
       flashEnabled: true,
       requireApproval: false,
       chargeCredits: true,
+      // New: off until an admin turns it on.
+      schedulingEnabled: false,
       everydayCredits: 4,
       flashCredits: 1,
       everydayMaxDays: 30,

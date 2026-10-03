@@ -2,6 +2,7 @@ import "server-only";
 import { after } from "next/server";
 import { submitUrlsToIndexNow } from "./indexNow";
 import { SITE_URL, SITE_LAUNCHED } from "./siteConfig";
+import { isScheduledFuture } from "./dealSchedule";
 import { CATEGORY_NAME_BY_ID, categoryPath } from "./categories";
 import { unwrapProduct } from "./mapDeal";
 import { businessSlug } from "./slug";
@@ -26,6 +27,10 @@ export function notifyDealChanged(
   merchant?: Record<string, any> | null
 ): void {
   if (!SITE_LAUNCHED || !deal?.productId) return;
+  // Approved but not started yet: its pages aren't public until then. The
+  // hourly job tells search engines once it starts
+  // (app/api/cron/expired-deals).
+  if (deal.status === "Live" && isScheduledFuture(deal)) return;
   const run = async () => {
     try {
       const urls = [`${SITE_URL}/`];

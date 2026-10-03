@@ -2,13 +2,13 @@ import { dealDisplayStatus } from "./dealStatus";
 
 /** The business portal's "My deals" filters: which current deals to show
  *  by status, and which deals (current and past) by type. */
-export type DealStatusFilter = "all" | "Live" | "Pending Approval" | "Paused";
+export type DealStatusFilter = "all" | "Live" | "Scheduled" | "Pending Approval" | "Paused";
 export type DealTypeFilter = "all" | "everyday" | "flash";
 
-export const STATUS_FILTERS: DealStatusFilter[] = ["all", "Live", "Pending Approval", "Paused"];
+export const STATUS_FILTERS: DealStatusFilter[] = ["all", "Live", "Scheduled", "Pending Approval", "Paused"];
 export const TYPE_FILTERS: DealTypeFilter[] = ["all", "everyday", "flash"];
 
-type FilterableDeal = { status?: string | null; expiresAt?: string | null; isFlash?: boolean | null };
+type FilterableDeal = { status?: string | null; expiresAt?: string | null; firstPublishedAt?: string | null; isFlash?: boolean | null };
 
 export function matchesType(deal: FilterableDeal, type: DealTypeFilter): boolean {
   return type === "all" || (type === "flash") === Boolean(deal.isFlash);
