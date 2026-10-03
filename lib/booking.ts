@@ -47,13 +47,32 @@ export function isBookingChoice(value: unknown): value is Exclude<BookingRequire
   return parseBookingRequirement(value) !== "unknown";
 }
 
-const BOOKINGS_ESSENTIAL = STANDARD_TERMS.find((t) => t.id === "bookings")!.label.toLowerCase();
+const termLabel = (id: string) => STANDARD_TERMS.find((t) => t.id === id)!.label.toLowerCase();
+const BOOKINGS_ESSENTIAL = termLabel("bookings");
+const WALK_INS_WELCOME = termLabel("walk-ins");
+const WHILE_STOCKS_LAST = termLabel("while-stocks");
+
+function termsInclude(terms: string | null | undefined, label: string): boolean {
+  if (!terms) return false;
+  return splitTermsForDisplay(terms).some((piece) => piece.toLowerCase() === label);
+}
 
 /** True when the rendered terms contain the standard "Bookings essential"
  *  condition (exact label, as written by the deal form). */
 export function termsSayBookingsEssential(terms: string | null | undefined): boolean {
-  if (!terms) return false;
-  return splitTermsForDisplay(terms).some((piece) => piece.toLowerCase() === BOOKINGS_ESSENTIAL);
+  return termsInclude(terms, BOOKINGS_ESSENTIAL);
+}
+
+/** The business accepts walk-ins for this offer (the form's "Walk-ins
+ *  welcome" box). Only ever said by the business: "recommended" alone is
+ *  not evidence that walk-ins are accepted. */
+export function termsSayWalkInsWelcome(terms: string | null | undefined): boolean {
+  return termsInclude(terms, WALK_INS_WELCOME);
+}
+
+/** Limited stock: the offer runs while stocks last. */
+export function termsSayWhileStocksLast(terms: string | null | undefined): boolean {
+  return termsInclude(terms, WHILE_STOCKS_LAST);
 }
 
 /** The requirement the public page acts on: the stored choice if there is
@@ -75,6 +94,9 @@ export function effectiveBookingRequirement(
 export function bookingConflict(requirement: unknown, terms: string | null | undefined): string | null {
   if (requirement === "not_required" && termsSayBookingsEssential(terms)) {
     return "You've chosen “No booking needed” but also ticked “Bookings essential”. Change one of them so they agree.";
+  }
+  if (termsSayWalkInsWelcome(terms) && (requirement === "required" || termsSayBookingsEssential(terms))) {
+    return "“Walk-ins welcome” can't go with a deal that needs a booking. Untick it, or change the booking choice.";
   }
   return null;
 }
@@ -334,10 +356,12 @@ export function getThisDealCopy(
   requirement: BookingRequirement,
   primary: BookingActionKind | null,
   code: string | null,
+  /** From the deal's terms: walk-ins accepted, and limited stock. */
+  extras: { walkIns?: boolean; limitedStock?: boolean } = {},
 ): GetDealCopy {
   const quote = code ? "quote your code" : "mention this MegaDeal offer";
   const Quote = code ? "Quote your code" : "Mention this MegaDeal offer";
-  const availability = "Subject to availability. Your code does not confirm a booking.";
+  const availability = `${extras.limitedStock ? "While stocks last. " : ""}Subject to availability. Your code does not confirm a booking.`;
 
   if (requirement === "not_required") {
     return {
@@ -345,7 +369,9 @@ export function getThisDealCopy(
       instruction: code
         ? "Show this code before ordering or paying."
         : "Mention this MegaDeal offer before ordering or paying.",
-      availability: null,
+      availability: extras.limitedStock
+        ? `While stocks last. ${code ? "Copying a code" : "This offer"} does not reserve an item.`
+        : null,
     };
   }
 
@@ -369,6 +395,11 @@ export function getThisDealCopy(
     instruction = `Book with the business and ${quote}.`;
   } else {
     instruction = `We recommend booking ahead. ${Quote} when contacting the business.`;
+  }
+  // Only when the business has said so, and never on a booking-required
+  // offer (bookingConflict stops that combination being saved).
+  if (requirement === "recommended" && extras.walkIns) {
+    instruction += ` Walk-ins are welcome too: ${code ? "show your code" : "mention this MegaDeal offer"} when you arrive.`;
   }
   return { heading, instruction, availability };
 }

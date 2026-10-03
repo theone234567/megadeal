@@ -24,7 +24,11 @@ export interface StandardTerm {
 export const STANDARD_TERMS: StandardTerm[] = [
   { id: "mention", label: "Mention MegaDeal when you book" },
   { id: "bookings", label: "Bookings essential" },
+  // Set from the "Walk-ins welcome" box under the booking question rather
+  // than the chips (lib/booking.ts reads it for the deal page's wording).
+  { id: "walk-ins", label: "Walk-ins welcome" },
   { id: "availability", label: "Subject to availability" },
+  { id: "while-stocks", label: "While stocks last" },
   { id: "other-offers", label: "Not valid with any other offer or discount" },
   { id: "public-holidays", label: "Not valid on public holidays" },
   { id: "mon-thu", label: "Valid Monday to Thursday only" },
@@ -116,6 +120,7 @@ const KEY_RESTRICTIONS: { id: string; short: string }[] = [
   { id: "bookings", short: "Bookings essential" },
   { id: "public-holidays", short: "Not on public holidays" },
   { id: "one-per-customer", short: "One per customer" },
+  { id: "while-stocks", short: "While stocks last" },
 ];
 
 export function keyRestrictions(rendered: string | null): string[] {

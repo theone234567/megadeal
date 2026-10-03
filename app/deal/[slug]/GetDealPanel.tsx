@@ -3,7 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import type { Deal } from "@/lib/types";
 import { formatOfferEndDate } from "@/lib/format";
-import { emailLink, getThisDealCopy, type BookingAction, type BookingPlan } from "@/lib/booking";
+import {
+  emailLink,
+  getThisDealCopy,
+  termsSayWalkInsWelcome,
+  termsSayWhileStocksLast,
+  type BookingAction,
+  type BookingPlan,
+} from "@/lib/booking";
 import type { DealAction } from "@/lib/dealEvents";
 import { GlobeIcon, MailIcon, MapPinIcon, PhoneIcon, TicketIcon } from "@/components/icons";
 
@@ -55,7 +62,10 @@ export default function GetDealPanel({
 
   const booking = plan.requirement === "required" || plan.requirement === "recommended";
   const primaryAction: BookingAction | null = plan.requirement === "not_required" ? null : plan.actions[0] ?? null;
-  const copy = getThisDealCopy(plan.requirement, primaryAction?.kind ?? null, code);
+  const copy = getThisDealCopy(plan.requirement, primaryAction?.kind ?? null, code, {
+    walkIns: termsSayWalkInsWelcome(deal.terms),
+    limitedStock: termsSayWhileStocksLast(deal.terms),
+  });
 
   // An email enquiry carries the offer and its code, so the business knows
   // what's being asked for.

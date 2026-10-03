@@ -92,6 +92,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
   /** Left the code box at least once — "too short" and a trailing hyphen
    *  only show after that, so they don't nag mid-typing. */
   const [dealCodeTouched, setDealCodeTouched] = useState(false);
+  // The MEGA- code a saved draft has been given (lib/dealCode.ts
+  // codeForDraft), shown in the preview when there's no code of their own.
+  const [savedCode, setSavedCode] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -228,6 +231,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         setQuantityAvailable(draft.quantityAvailable);
         setBookingRequirement(draft.bookingRequirement);
         setDealCode(draft.dealCode);
+        if (typeof item.dealCode === "string" && item.dealCode.startsWith("MEGA-")) setSavedCode(item.dealCode);
         // The photo comes back too, which the old local drafts could never
         // do — a File can't be serialised, so restoring one always meant
         // hunting for the image again.
@@ -360,6 +364,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       // Held on to so the next save updates this draft rather than
       // creating another one beside it.
       if (item?._id) setDraftId(item._id);
+      if (typeof item?.dealCode === "string" && item.dealCode.startsWith("MEGA-")) setSavedCode(item.dealCode);
       setDraftSaved(true);
     } catch (err: any) {
       setError(err?.message || "Couldn't save your draft. Please try again.");
@@ -565,7 +570,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
         durationDays,
         durationMinutes,
         imageUrl: photoPreview,
-        dealCode: normaliseDealCode(dealCode),
+        dealCode: normaliseDealCode(dealCode) || savedCode,
       },
       merchant
     );
@@ -1037,6 +1042,32 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               {BOOKING_CHOICES.find((c) => c.value === bookingRequirement)?.hint}.
             </p>
           )}
+          {/* Walk-ins are only ever offered when the business says so, and
+              only with "recommended" (a required booking rules them out).
+              Stays visible if ticked, so a conflict is never hidden. */}
+          {(bookingRequirement === "recommended" || selectedTerms.includes("walk-ins")) && (
+            <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-xl border border-slate-200 bg-white p-3">
+              <input
+                type="checkbox"
+                checked={selectedTerms.includes("walk-ins")}
+                onChange={(e) =>
+                  setSelectedTerms((prev) =>
+                    e.target.checked ? [...prev, "walk-ins"] : prev.filter((id) => id !== "walk-ins")
+                  )
+                }
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+              />
+              <span>
+                <span className="block text-sm font-bold text-slate-900">Walk-ins welcome</span>
+                <span className="block text-xs text-slate-600">
+                  Customers can also just turn up and show their code, if you have space.
+                </span>
+              </span>
+            </label>
+          )}
+          {bookingTermsConflict && selectedTerms.includes("walk-ins") && (
+            <p className="mt-2 text-sm text-red-600">{bookingTermsConflict}</p>
+          )}
           {bookingRequirement === "required" && merchant && !merchantCanTakeBookings && (
             <p className="mt-2 text-sm text-red-600">
               Your profile has no booking link, phone number or booking email yet, so customers
@@ -1063,7 +1094,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               column reads like a form to endure. These are one tap each and
               the ticked ones are obvious at a glance. */}
           <div className="flex flex-wrap gap-2">
-            {STANDARD_TERMS.map((term) => {
+            {STANDARD_TERMS.filter((t) => t.id !== "walk-ins").map((term) => {
               const on = selectedTerms.includes(term.id);
               return (
                 <button
@@ -1096,7 +1127,9 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             placeholder="Anything else specific to your deal — e.g. maximum 6 people per booking"
             className="mt-3 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
-          {bookingTermsConflict && <p className="mt-3 text-sm text-red-600">{bookingTermsConflict}</p>}
+          {bookingTermsConflict && !selectedTerms.includes("walk-ins") && (
+            <p className="mt-3 text-sm text-red-600">{bookingTermsConflict}</p>
+          )}
           {terms && (
             <p className="mt-3 rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-900">
               <span className="font-display font-bold">Customers will see: </span>
@@ -1116,7 +1149,16 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             automatically. They&apos;ll also quote it by phone or show it in person, so you can spot
             MegaDeal customers.
             <br />
-            No code of your own? Leave this blank and we&apos;ll create one. Letters, numbers and
+            No code of your own? Leave this blank and we&apos;ll create one
+            {savedCode ? (
+              <>
+                {" "}
+                (this deal&apos;s is <span className="font-mono font-semibold text-slate-800">{savedCode}</span>)
+              </>
+            ) : (
+              " when you first save it"
+            )}
+            . Letters, numbers and
             hyphens, up to {DEAL_CODE_MAX} characters (e.g. SUMMER-20). It can&apos;t be changed once
             your deal is submitted.
           </p>

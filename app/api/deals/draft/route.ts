@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { codeForDraft } from "@/lib/dealCode";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
@@ -91,7 +92,11 @@ export async function POST(req: NextRequest) {
           { status: 409 }
         );
       }
-      const updated = await adminClient.items.update("Deals", { ...existing, ...row });
+      const updated = await adminClient.items.update("Deals", {
+        ...existing,
+        ...row,
+        dealCode: codeForDraft(draft.dealCode, existing.dealCode),
+      });
       return NextResponse.json({ item: updated });
     }
 
@@ -107,7 +112,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const created = await adminClient.items.insert("Deals", row);
+    // Every deal has its code from its first saved draft (lib/dealCode.ts).
+    const created = await adminClient.items.insert("Deals", { ...row, dealCode: codeForDraft(draft.dealCode, null) });
     return NextResponse.json({ item: created });
   } catch (err) {
     console.error("[deals/draft] failed", err);

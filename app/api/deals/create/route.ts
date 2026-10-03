@@ -385,7 +385,9 @@ export async function POST(req: NextRequest) {
     productId,
     isFlash,
     bookingRequirement,
-    dealCode: customDealCode || generateDealCode(),
+    // A submitted draft keeps the code it has had since it was first
+    // saved (and shown in its preview); otherwise a new one.
+    dealCode: customDealCode || (draftRow && /^MEGA-[A-Z0-9]{5}$/.test(String(draftRow.dealCode)) ? draftRow.dealCode : generateDealCode()),
     creditsCharged: cost,
     // The editing copies have served their purpose. Leaving draftData
     // behind would mean a submitted deal carrying a stale second version

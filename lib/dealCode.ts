@@ -74,3 +74,15 @@ export function dealCodeError(code: string, opts: { allowReserved?: boolean } = 
   }
   return null;
 }
+
+/**
+ * The code a draft carries from its first save, so the private preview
+ * shows the real one and editing never changes it: the business's own
+ * code when they've entered a valid one, otherwise the MEGA- code it
+ * already has, otherwise a new one. Kept through submission.
+ */
+export function codeForDraft(ownCode: unknown, existingCode: unknown): string {
+  const own = typeof ownCode === "string" ? normaliseDealCode(ownCode) : "";
+  if (own && !dealCodeError(own)) return own;
+  return typeof existingCode === "string" && /^MEGA-[A-Z0-9]{5}$/.test(existingCode) ? existingCode : generateDealCode();
+}

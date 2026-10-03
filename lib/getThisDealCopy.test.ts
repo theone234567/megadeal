@@ -45,3 +45,26 @@ describe("getThisDealCopy", () => {
     expect(isMegaDealCode(null)).toBe(false);
   });
 });
+
+describe("walk-ins and limited stock", () => {
+  it("adds the walk-in sentence only to a recommended booking the business said takes walk-ins", () => {
+    expect(getThisDealCopy("recommended", "call", "MEGA-ABCDE", { walkIns: true }).instruction).toBe(
+      "We recommend booking ahead. Quote your code when contacting the business. Walk-ins are welcome too: show your code when you arrive.",
+    );
+    expect(getThisDealCopy("recommended", "call", "MEGA-ABCDE").instruction).not.toMatch(/walk-in/i);
+    expect(getThisDealCopy("required", "call", "MEGA-ABCDE", { walkIns: true }).instruction).not.toMatch(/walk-in/i);
+    expect(getThisDealCopy("not_required", null, "MEGA-ABCDE", { walkIns: true }).instruction).toBe(
+      "Show this code before ordering or paying.",
+    );
+  });
+
+  it("says while stocks last, and that a code doesn't reserve anything", () => {
+    expect(getThisDealCopy("not_required", null, "MEGA-ABCDE", { limitedStock: true }).availability).toBe(
+      "While stocks last. Copying a code does not reserve an item.",
+    );
+    expect(getThisDealCopy("not_required", null, "MEGA-ABCDE").availability).toBeNull();
+    expect(getThisDealCopy("required", "call", "MEGA-ABCDE", { limitedStock: true }).availability).toBe(
+      "While stocks last. Subject to availability. Your code does not confirm a booking.",
+    );
+  });
+});
