@@ -12,6 +12,8 @@ import ShareButtons from "@/components/ShareButtons";
 import GetDealPanel from "./GetDealPanel";
 import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon, CheckIcon } from "@/components/icons";
 import { trackDealEvent } from "@/lib/trackDeal";
+import { useDealActionTracker } from "@/lib/useDealActionTracker";
+import type { DealAction } from "@/lib/dealEvents";
 import { parseBusinessHours, formatBusinessHoursLines, isOpenNow } from "@/lib/businessHours";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
@@ -32,10 +34,21 @@ function ActionIcon({ kind }: { kind: BookingAction["kind"] }) {
   );
 }
 
-function ActionLink({ action, primary, small = false }: { action: BookingAction; primary: boolean; small?: boolean }) {
+function ActionLink({
+  action,
+  primary,
+  small = false,
+  onAction,
+}: {
+  action: BookingAction;
+  primary: boolean;
+  small?: boolean;
+  onAction?: (action: DealAction) => void;
+}) {
   return (
     <a
       href={action.href}
+      onClick={() => onAction?.(action.kind === "call" ? "call" : action.kind === "email" ? "email" : "website")}
       {...(action.external ? { target: "_blank", rel: "noopener noreferrer nofollow ugc" } : {})}
       className={`flex w-full items-center justify-center gap-2 rounded-full px-4 text-center font-extrabold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 ${
         small ? "min-h-10 text-xs" : "min-h-[46px] text-sm"
@@ -107,6 +120,8 @@ export default function DealDetail({
     return () => clearInterval(id);
   }, [preview]);
   const live = preview || isDealLive(deal, now);
+
+  const trackAction = useDealActionTracker(deal.id, preview);
 
   useEffect(() => {
     if (preview) return;
@@ -313,6 +328,7 @@ export default function DealDetail({
                   directionsUrl={directionsUrl}
                   restrictions={restrictions}
                   preview={preview}
+                  onAction={trackAction}
                 />
               )}
 
@@ -451,7 +467,13 @@ export default function DealDetail({
                       </a>
                     )}
                     {directionsUrl && (
-                      <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                      <a
+                        href={directionsUrl}
+                        onClick={() => trackAction("directions")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline"
+                      >
                         Get directions
                       </a>
                     )}
@@ -497,7 +519,7 @@ export default function DealDetail({
                     <h3 className="text-[0.8125rem] font-extrabold text-slate-900">{plan.contactHeading}</h3>
                     <div className="mt-2 grid gap-2 sm:grid-cols-2">
                       {plan.aboutActions.map((action) => (
-                        <ActionLink key={action.kind} action={action} primary={false} small />
+                        <ActionLink key={action.kind} action={action} primary={false} small onAction={trackAction} />
                       ))}
                     </div>
                     {plan.phone && <p className="mt-2 text-xs text-slate-600">{plan.phone.display}</p>}
@@ -527,6 +549,7 @@ export default function DealDetail({
                         <a
                           key={l.label}
                           href={l.href}
+                          onClick={l.label === "Website" ? () => trackAction("website") : undefined}
                           target="_blank"
                           rel="noopener noreferrer nofollow ugc"
                           className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-brand-700 hover:underline"

@@ -50,7 +50,7 @@ export async function incrementCreditsAtomically(
 }
 
 /**
- * Adds `amount` to one numeric field of a Wix Data item in place, without
+ * Adds `amount` to one or more numeric fields of a Wix Data item in place, without
  * reading and re-saving the whole item. Returns false on failure; never
  * throws.
  */
@@ -58,9 +58,10 @@ export async function incrementFieldAtomically(
   adminClient: any,
   collection: string,
   itemId: string,
-  field: string,
+  field: string | string[],
   amount: number
 ): Promise<boolean> {
+  const fields = Array.isArray(field) ? field : [field];
   try {
     const res = await adminClient.fetchWithAuth(`https://www.wixapis.com/wix-data/v2/items/${itemId}`, {
       method: "PATCH",
@@ -69,17 +70,17 @@ export async function incrementFieldAtomically(
         dataCollectionId: collection,
         patch: {
           dataItemId: itemId,
-          fieldModifications: [{ fieldPath: field, action: "INCREMENT_FIELD", incrementFieldOptions: { value: amount } }],
+          fieldModifications: fields.map((f) => ({ fieldPath: f, action: "INCREMENT_FIELD", incrementFieldOptions: { value: amount } })),
         },
       }),
     });
     if (!res.ok) {
-      console.error(`[incrementField] ${collection}.${field} on ${itemId} rejected (${res.status})`);
+      console.error(`[incrementField] ${collection}.${fields.join(",")} on ${itemId} rejected (${res.status})`);
       return false;
     }
     return true;
   } catch (err) {
-    console.error(`[incrementField] ${collection}.${field} on ${itemId} threw`, err);
+    console.error(`[incrementField] ${collection}.${fields.join(",")} on ${itemId} threw`, err);
     return false;
   }
 }

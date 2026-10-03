@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Deal } from "@/lib/types";
 import { formatOfferEndDate } from "@/lib/format";
 import { emailLink, getThisDealCopy, type BookingAction, type BookingPlan } from "@/lib/booking";
-import { trackDealEvent } from "@/lib/trackDeal";
+import type { DealAction } from "@/lib/dealEvents";
 import { GlobeIcon, MailIcon, MapPinIcon, PhoneIcon, TicketIcon } from "@/components/icons";
 
 /**
@@ -26,6 +26,7 @@ export default function GetDealPanel({
   directionsUrl,
   restrictions,
   preview,
+  onAction,
 }: {
   deal: Deal;
   /** bookingPlan(...) from lib/booking.ts: requirement and booking actions. */
@@ -35,6 +36,9 @@ export default function GetDealPanel({
   /** Key conditions, shown in the code view. */
   restrictions: string[];
   preview: boolean;
+  /** Counts an action (lib/useDealActionTracker.ts, shared with the rest
+   *  of the page so each is counted once per visit). */
+  onAction: (action: DealAction) => void;
 }) {
   const code = deal.dealCode;
   const business = deal.businessName || "the business";
@@ -44,14 +48,10 @@ export default function GetDealPanel({
   const closeRef = useRef<HTMLButtonElement>(null);
   const showButtonRef = useRef<HTMLButtonElement>(null);
   const codeRef = useRef<HTMLSpanElement>(null);
-  // One "click" per visit, as the old "Get deal code" reveal counted:
-  // interest in the offer, never a sale or a booking.
-  const tracked = useRef(false);
-  function trackInterest() {
-    if (preview || tracked.current) return;
-    tracked.current = true;
-    trackDealEvent(deal.id, "click");
-  }
+  // Interest in the offer, never a sale or a booking.
+  const track = onAction;
+  const actionFor = (kind: BookingAction["kind"]): DealAction =>
+    kind === "call" ? "call" : kind === "email" ? "email" : "website";
 
   const booking = plan.requirement === "required" || plan.requirement === "recommended";
   const primaryAction: BookingAction | null = plan.requirement === "not_required" ? null : plan.actions[0] ?? null;
@@ -113,7 +113,7 @@ export default function GetDealPanel({
 
   async function copyCode() {
     if (!code) return;
-    trackInterest();
+    track("copy");
     try {
       await navigator.clipboard.writeText(code);
       setCopyNote("Copied");
@@ -184,7 +184,7 @@ export default function GetDealPanel({
           ) : (
             <a
               href={main.href}
-              onClick={trackInterest}
+              onClick={() => track(actionFor(main.kind))}
               {...(main.external ? { target: "_blank", rel: "noopener noreferrer nofollow ugc" } : {})}
               className={primaryClass}
             >
@@ -209,7 +209,7 @@ export default function GetDealPanel({
               type="button"
               disabled={preview}
               onClick={() => {
-                trackInterest();
+                track("copy");
                 setShowCode(true);
               }}
               className={primaryClass}
@@ -232,7 +232,9 @@ export default function GetDealPanel({
               <a
                 key={o.key}
                 href={o.href}
-                onClick={trackInterest}
+                onClick={() =>
+                  track(o.icon === "phone" ? "call" : o.icon === "mail" ? "email" : o.icon === "map" ? "directions" : "website")
+                }
                 {...(o.external ? { target: "_blank", rel: "noopener noreferrer nofollow ugc" } : {})}
                 className="inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-brand-700 underline-offset-2 hover:underline"
               >

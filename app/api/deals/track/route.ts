@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { incrementFieldAtomically } from "@/lib/creditsAtomic";
+import { isAdminRequest } from "@/lib/adminSession";
+import { DEAL_EVENT_FIELD, isDealEvent } from "@/lib/dealEvents";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Best-effort, anonymous view/click counters for merchant-facing deal
- * analytics. Not auth-gated (it just increments a counter keyed by the
+ * Best-effort, anonymous counters for merchant-facing deal analytics:
+ * views, the visit's one "interest" (clickCount), and each "Get this
+ * deal" action separately (lib/dealEvents.ts). Not auth-gated (it just increments a counter keyed by the
  * public product id) and not precision-critical, so a lost or duplicated
  * increment under a race is an acceptable tradeoff for staying simple —
  * this never blocks or fails a request from the visitor's point of view.
@@ -17,8 +20,12 @@ export async function POST(req: NextRequest) {
   const productId = body?.productId ? String(body.productId) : "";
   const event = body?.event;
 
-  if (!productId || (event !== "view" && event !== "click")) {
+  if (!productId || !isDealEvent(event)) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
+  // An admin checking a deal isn't a customer: not counted.
+  if (await isAdminRequest(req)) {
+    return NextResponse.json({ ok: true });
   }
 
   // The last unauthenticated write endpoint without a ceiling. Every call
@@ -53,8 +60,11 @@ export async function POST(req: NextRequest) {
     // moment earlier, so a page view landing just as an admin paused,
     // edited or approved the deal could write the old version back over
     // the change.
-    const field = event === "view" ? "viewCount" : "clickCount";
-    await incrementFieldAtomically(adminClient, "Deals", record._id, field, 1);
+    // An action can also be the visit's first sign of interest; both
+    // counters move in the one patch.
+    const fields = [DEAL_EVENT_FIELD[event]];
+    if (body?.firstInterest === true && event !== "view" && event !== "click") fields.push(DEAL_EVENT_FIELD.click);
+    await incrementFieldAtomically(adminClient, "Deals", record._id, fields, 1);
   } catch (err) {
     console.error("[deals/track] failed", err);
   }

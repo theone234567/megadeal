@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import DealResults from "@/components/DealResults";
 import type { DealStatus } from "@/lib/types";
 import Link from "next/link";
 import DealContentEditor from "./DealContentEditor";
@@ -261,11 +262,9 @@ export default function DealRow({
               Code: <span className="font-mono font-semibold text-slate-700">{deal.dealCode}</span>
             </p>
           )}
-          {(deal.viewCount || deal.clickCount) && (
-            <p className="mt-1 text-xs text-slate-500">
-              👁 {deal.viewCount || 0} views · 🖱 {deal.clickCount || 0} clicks
-            </p>
-          )}
+          <div className="mt-1">
+            <DealResults deal={deal} />
+          </div>
           {!deal.productId && (
             <p className="mt-2 text-xs font-semibold text-amber-700">
               ⚠️ No Wix Store product linked — this deal won&apos;t appear on the storefront even if

@@ -7,6 +7,7 @@ import { DEAL_STATUS_STYLES, allowedDealActions, dealDisplayStatus, withdrawalRe
 import { describeMinutes } from "@/lib/dealDuration";
 import { creditsLabel, creditsToRefund } from "@/lib/platformSettingsRules";
 import PhotoUploadField from "./PhotoUploadField";
+import DealResults from "@/components/DealResults";
 
 export interface DealRecord {
   _id: string;
@@ -153,13 +154,7 @@ export default function DealManageCard({
             </p>
           )}
 
-          {(deal.viewCount || deal.clickCount) && (
-            <p className="text-xs text-slate-500">
-              👁 {deal.viewCount || 0} view{deal.viewCount === 1 ? "" : "s"} · 🖱{" "}
-              {deal.clickCount || 0} click{deal.clickCount === 1 ? "" : "s"} on &quot;Get this
-              deal&quot;
-            </p>
-          )}
+          <DealResults deal={deal} />
 
           <PhotoUploadField
             label="Deal photo"
