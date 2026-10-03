@@ -8,6 +8,7 @@ import SubscriberRow, { type AdminSubscriber } from "@/components/admin/Subscrib
 import PlatformSettingsPanel from "@/components/admin/PlatformSettingsPanel";
 import TestDealsPanel from "@/components/admin/TestDealsPanel";
 import { missedScheduledStart } from "@/lib/dealSchedule";
+import { readRevision } from "@/lib/dealRevision";
 import { useWix } from "@/context/WixProvider";
 
 export default function AdminDashboardPage() {
@@ -118,10 +119,12 @@ export default function AdminDashboardPage() {
   // Waiting for approval past their requested start (lib/dealSchedule.ts):
   // each needs a new start time before it can be approved.
   const missedStarts = deals?.filter((d) => missedScheduledStart(d)).length ?? 0;
+  const changeRequests = deals?.filter((d) => readRevision(d)).length ?? 0;
   const attention = [
     { count: pendingMerchants, label: pendingMerchants === 1 ? "business waiting for approval" : "businesses waiting for approval", tab: "merchants" as const },
     { count: pendingDeals, label: pendingDeals === 1 ? "deal waiting for review" : "deals waiting for review", tab: "deals" as const },
     { count: missedStarts, label: missedStarts === 1 ? "deal whose start time passed before review" : "deals whose start time passed before review", tab: "deals" as const },
+    { count: changeRequests, label: changeRequests === 1 ? "change request from a business" : "change requests from businesses", tab: "deals" as const },
     { count: pendingPhotos, label: pendingPhotos === 1 ? "new photo to approve" : "new photos to approve", tab: "deals" as const },
   ].filter((a) => a.count > 0);
 
@@ -293,7 +296,7 @@ export default function AdminDashboardPage() {
 
       {/* Needs attention (handoff pack, FINAL-SPEC §9): what's waiting on
           an admin, each a shortcut to the tab where it's dealt with.
-          Change requests arrive by email (the contact form), not here. */}
+          Change requests come from the portal's "Request a change". */}
       {merchants && deals && (
         <section aria-labelledby="needs-attention" className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
           <h2 id="needs-attention" className="text-sm font-bold text-slate-900">

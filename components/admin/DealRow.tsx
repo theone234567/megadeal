@@ -10,6 +10,7 @@ import { describeMinutes } from "@/lib/dealDuration";
 import { dealDisplayStatus } from "@/lib/dealStatus";
 import { isScheduledFuture, missedScheduledStart, startLabel } from "@/lib/dealSchedule";
 import { nzDateTimeParts } from "@/lib/nzTime";
+import { readRevision, revisionLines } from "@/lib/dealRevision";
 
 export interface AdminDeal {
   _id: string;
@@ -131,6 +132,7 @@ export default function DealRow({
             {deal.pendingPhotoUrl && (
               <p className="text-xs font-bold text-amber-700">New photo to approve</p>
             )}
+            {readRevision(deal) && <p className="text-xs font-bold text-amber-700">Change requested</p>}
             {aiSummary(deal.aiReview) && (
               <p
                 className={`text-xs font-semibold ${
@@ -275,6 +277,7 @@ export default function DealRow({
               missing here, check the Wix dashboard or have the business resubmit.
             </p>
           )}
+          <RevisionReview deal={deal} onSaved={(item) => setDeal(item)} />
           <DealContentEditor
             deal={deal}
             onSaved={(item) => {
@@ -360,6 +363,69 @@ function ScheduleControl({ deal, onSaved }: { deal: AdminDeal; onSaved: (item: A
         </div>
       )}
       {error && <p className="mt-1 max-w-[12rem] text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+/**
+ * A business's change request (lib/dealRevision.ts): what it asked for,
+ * against the deal as it is now. Approve applies it like an admin edit;
+ * Decline clears it, with an optional note the business sees.
+ */
+function RevisionReview({ deal, onSaved }: { deal: AdminDeal; onSaved: (item: AdminDeal) => void }) {
+  const revision = readRevision(deal);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  if (!revision) return null;
+
+  async function decide(revisionDecision: "approve" | "decline") {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/deals/${deal._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ revisionDecision, revisionNote: note }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Couldn't save the decision.");
+      if (data.item) onSaved(data.item);
+    } catch (err: any) {
+      setError(err?.message || "Couldn't save the decision.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
+      <p className="font-bold">Change requested by the business</p>
+      <ul className="mt-1 space-y-1">
+        {revisionLines(revision, deal).map((l) => (
+          <li key={l.label} className="break-words">
+            <span className="font-semibold">{l.label}:</span> <span className="text-slate-500 line-through">{l.from}</span> → {l.to}
+          </li>
+        ))}
+      </ul>
+      {revision.note && <p className="mt-1 italic">&ldquo;{revision.note}&rdquo;</p>}
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <button type="button" disabled={busy} onClick={() => decide("approve")} className="rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-white disabled:opacity-50">
+          Approve change
+        </button>
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={300}
+          placeholder="Note if declining (the business sees it)"
+          aria-label="Note for the business if declining"
+          className="min-w-0 flex-1 rounded-lg border border-amber-300 bg-white px-2 py-1 text-xs"
+        />
+        <button type="button" disabled={busy} onClick={() => decide("decline")} className="rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-bold text-red-700 disabled:opacity-50">
+          Decline
+        </button>
+      </div>
+      {error && <p className="mt-1 text-xs text-red-700">{error}</p>}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { firstPublicationFields, manualExpiryError } from "@/lib/dealDuration";
 import { hasDealExpired } from "@/lib/dealStatus";
 import { isScheduledFuture, parseScheduledStart } from "@/lib/dealSchedule";
 import { PRODUCT_FIELDS, buildProductUpdate, parseAdminContentEdit, withHistory } from "@/lib/dealAdminEdit";
+import { readRevision } from "@/lib/dealRevision";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
 
@@ -45,6 +46,10 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   }
   if (body.note !== undefined) {
     patch.statusNote = String(body.note).trim().slice(0, 500) || null;
+  }
+  const revisionDecision = body.revisionDecision;
+  if (revisionDecision !== undefined && revisionDecision !== "approve" && revisionDecision !== "decline") {
+    return NextResponse.json({ error: "Invalid decision." }, { status: 400 });
   }
   const photoDecision = body.photoDecision;
   if (photoDecision !== undefined && photoDecision !== "approve" && photoDecision !== "reject") {
@@ -110,11 +115,27 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       }
     }
 
+    // A business's change request (lib/dealRevision.ts): approving applies
+    // it exactly as an admin edit of the same fields would (checked again
+    // against the deal as it is now, product kept in step, history kept);
+    // declining just clears it. Either way it's no longer waiting.
+    let contentBody: Record<string, unknown> = body;
+    let revision: ReturnType<typeof readRevision> = null;
+    if (revisionDecision) {
+      revision = readRevision(existing);
+      if (!revision) return NextResponse.json({ error: "There's no change request waiting." }, { status: 409 });
+      patch.pendingRevision = null;
+      if (revisionDecision === "approve") contentBody = { ...body, ...revision.changes };
+    }
+
     // Content edits (name, description, price, conditions, booking,
     // quantity). Businesses can't make these once a deal is submitted.
-    const { changes, error } = parseAdminContentEdit(body, existing);
+    const { changes, error } = parseAdminContentEdit(contentBody, existing);
     if (error) {
-      return NextResponse.json({ error }, { status: 400 });
+      return NextResponse.json(
+        { error: revisionDecision === "approve" ? `This change can't be applied as it stands: ${error} Decline it with a note instead.` : error },
+        { status: 400 }
+      );
     }
     const changedFields = Object.keys(changes);
     Object.assign(patch, changes);
@@ -192,6 +213,19 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       ...existing,
       ...patch,
     });
+
+    if (revisionDecision && existing.merchantEmail) {
+      await logMerchantActivity(adminClient, {
+        merchantEmail: existing.merchantEmail,
+        type: "deal",
+        description:
+          revisionDecision === "approve"
+            ? `Your change to "${existing.dealName || "your deal"}" was approved and is now showing`
+            : `Your change to "${existing.dealName || "your deal"}" wasn't approved${
+                body.revisionNote ? `: ${String(body.revisionNote).trim().slice(0, 300)}` : ""
+              }`,
+      });
+    }
 
     if (photoDecision && existing.merchantEmail) {
       await logMerchantActivity(adminClient, {

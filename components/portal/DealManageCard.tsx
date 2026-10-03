@@ -8,6 +8,7 @@ import { DEAL_STATUS_STYLES, allowedDealActions, dealDisplayStatus, withdrawalRe
 import { describeMinutes } from "@/lib/dealDuration";
 import { creditsLabel, creditsToRefund } from "@/lib/platformSettingsRules";
 import PhotoUploadField from "./PhotoUploadField";
+import DealChangeRequest from "./DealChangeRequest";
 import DealResults from "@/components/DealResults";
 
 export interface DealRecord {
@@ -192,25 +193,22 @@ export default function DealManageCard({
             </div>
           )}
 
-          {/* Everything else about a submitted deal is fixed: customers may
-              already have a code for it, and the offer they saw has to be
-              the offer they get. */}
+          {/* A submitted deal isn't edited in place: customers may already
+              have a code for it. Changes are requested and only show once
+              approved (lib/dealRevision.ts). */}
           {!isPast && (
-            <p className="text-sm text-slate-600">
-              The offer itself can&apos;t be edited once submitted, so customers always get what they saw.
-              Spotted a mistake?{" "}
-              <Link
-                href={`/contact?change=${encodeURIComponent(deal._id)}`}
-                className="font-semibold text-brand-700 underline underline-offset-2"
-              >
-                Request a change
-              </Link>
-              {status === "Pending Approval"
-                ? `, or withdraw it${
-                    withdrawalRefundsCredit(deal) && refundAmount > 0 ? ` (you get back ${refundText})` : ""
-                  } and submit a corrected one.`
-                : ", or cancel it and duplicate it as a new deal."}
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm text-slate-600">
+                Spotted a mistake or need to change something? Request a change: customers keep seeing the
+                deal as it is until we&apos;ve approved it.
+                {status === "Pending Approval"
+                  ? ` You can also withdraw it${
+                      withdrawalRefundsCredit(deal) && refundAmount > 0 ? ` (you get back ${refundText})` : ""
+                    } and submit a corrected one.`
+                  : ""}
+              </p>
+              <DealChangeRequest deal={deal} />
+            </div>
           )}
 
           <div>
