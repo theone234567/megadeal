@@ -28,14 +28,15 @@ export const V2_SOCIALS = {
  * versioned names (bump -v1 if the bytes ever change). Masters stay out of
  * the site, in the owner's pack.
  *
- * Hero: the owner-supplied real Auckland photo already used on the homepage
- * (the image pack itself says to prefer a real, licensed skyline over its
- * illustrative one, public/megadeal-coming-soon/auckland-hero-v1.webp).
+ * Hero: the pack's brighter illustrated skyline (owner's choice, 3 Oct
+ * 2026, over the real photo the homepage uses,
+ * /megadeal/hero/auckland-skyline.webp). Positioned to keep the Sky Tower
+ * and waterfront in the short phone crop.
  */
 export const V2_HERO = {
-  src: "/megadeal/hero/auckland-skyline.webp",
-  alt: "Auckland waterfront and Sky Tower",
-  position: "50% 40%",
+  src: "/megadeal-coming-soon/auckland-hero-v1.webp",
+  alt: "Illustration of Auckland skyline across the harbour",
+  position: "60% 55%",
 };
 
 export const V2_EXAMPLE_PHOTO = {

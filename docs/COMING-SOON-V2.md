@@ -37,7 +37,7 @@ untouched by switching or rolling back.
 
 | Use | File | Source |
 | --- | --- | --- |
-| Hero | `public/megadeal/hero/auckland-skyline.webp` (master `design/hero/auckland-skyline-source.webp`) | Owner-supplied real Auckland photo, already on the homepage hero. The image pack's illustrated skyline (`auckland-hero-v1.webp`) was not used: the pack says to prefer a real one. Swap `V2_HERO` in `lib/comingSoonV2Content.ts` to change. |
+| Hero | `public/megadeal-coming-soon/auckland-hero-v1.webp` | Owner's "MegaDeal Website Images" pack: AI-generated illustration, chosen by the owner (3 Oct 2026) as brighter than the real photo the homepage uses (`public/megadeal/hero/auckland-skyline.webp`). Swap `V2_HERO` in `lib/comingSoonV2Content.ts` to change. |
 | Mascot | `public/megadeal/coming-soon-v2/mascot-hoodie.webp` (master `design/coming-soon-v2/mascot-hoodie-source.png`) | Supplied in both packs (identical file) |
 | Categories (6) and example deal | `public/megadeal-coming-soon/*-v1.webp` | Owner's "MegaDeal Website Images" pack (3 Oct 2026): AI-generated illustrations, not participating businesses. Versioned names: bump `-v1` if the bytes change. PNG masters stay in the pack, not on the site or in this repo. |
 
