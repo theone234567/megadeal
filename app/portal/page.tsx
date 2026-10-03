@@ -25,6 +25,7 @@ import {
   type DealTypeFilter,
 } from "@/lib/portalDealFilters";
 import { dealDisplayStatus, isPastDeal } from "@/lib/dealStatus";
+import { missedScheduledStart } from "@/lib/dealSchedule";
 import { StoreIcon, MapPinIcon, MailIcon, ReceiptIcon, CreditCardIcon } from "@/components/icons";
 
 interface MerchantRecord {
@@ -363,6 +364,18 @@ export default function PortalPage() {
   const shownCurrentDeals = currentDeals.filter((d) => matchesType(d, activeType) && matchesStatus(d, activeStatus));
   const pastDeals = allPastDeals.filter((d) => matchesType(d, activeType));
   const showStatusFilter = STATUS_FILTERS.filter((f) => f !== "all" && counts[f] > 0).length > 1;
+  // The Deals card's breakdown (handoff pack, FINAL-SPEC §8): live,
+  // scheduled, waiting for review and drafts, as the business sees them.
+  const overview = statusCounts(currentDeals, "all");
+  const dealSummary = [
+    overview.Live > 0 && `${overview.Live} live`,
+    overview.Scheduled > 0 && `${overview.Scheduled} scheduled`,
+    overview["Pending Approval"] > 0 && `${overview["Pending Approval"]} waiting for review`,
+    drafts.length > 0 && `${drafts.length} draft${drafts.length === 1 ? "" : "s"}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const needsNewTime = submittedDeals.filter((d) => missedScheduledStart(d)).length;
   // Has had a deal go live before, so a Pending status now means a change
   // under review rather than a first application.
   const inReReview = submittedDeals.some(
@@ -536,11 +549,12 @@ export default function PortalPage() {
                   Deals
                 </p>
                 <p className="mt-1 text-3xl font-extrabold text-slate-900">{submittedDeals.length}</p>
-                <p className="mt-1 text-sm text-slate-500">
-                  {drafts.length > 0
-                    ? `${drafts.length} draft${drafts.length === 1 ? "" : "s"} in progress`
-                    : "Live and past deals"}
-                </p>
+                <p className="mt-1 text-sm text-slate-500">{dealSummary || "Live and past deals"}</p>
+                {needsNewTime > 0 && (
+                  <p className="mt-1 text-sm font-semibold text-ember-600">
+                    {needsNewTime === 1 ? "1 deal needs" : `${needsNewTime} deals need`} a new start time
+                  </p>
+                )}
               </div>
 
               <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card">
