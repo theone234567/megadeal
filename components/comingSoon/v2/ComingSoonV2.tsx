@@ -3,9 +3,12 @@ import Link from "next/link";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import { CreditCardIcon, SearchIcon, TagIcon } from "@/components/icons";
 import { V2_CATEGORIES, V2_FAQS, V2_SOCIALS } from "@/lib/comingSoonV2Content";
-import skyline from "@/public/megadeal/hero/auckland-skyline.webp";
-import mascot from "@/public/megadeal/coming-soon-v2/mascot-hoodie.webp";
-import massage from "@/public/images/beauty-spa/beauty-massage.webp";
+
+// Plain paths, as elsewhere on the site: CI typechecks before Next has
+// generated its image module types, so static image imports fail there.
+const SKYLINE = "/megadeal/hero/auckland-skyline.webp";
+const MASCOT = "/megadeal/coming-soon-v2/mascot-hoodie.webp";
+const MASSAGE = "/images/beauty-spa/beauty-massage.webp";
 import styles from "./ComingSoonV2.module.css";
 
 /**
@@ -35,7 +38,7 @@ export default function ComingSoonV2() {
           <div className={styles.art}>
             <div className={styles.skyline}>
               <Image
-                src={skyline}
+                src={SKYLINE}
                 alt="Auckland waterfront and Sky Tower"
                 fill
                 priority
@@ -43,7 +46,14 @@ export default function ComingSoonV2() {
                 style={{ objectFit: "cover", objectPosition: "50% 40%" }}
               />
             </div>
-            <Image className={styles.mascot} src={mascot} alt="" sizes="(max-width: 767px) 110px, 190px" />
+            <Image
+              className={styles.mascot}
+              src={MASCOT}
+              alt=""
+              width={480}
+              height={496}
+              sizes="(max-width: 767px) 110px, 190px"
+            />
           </div>
           <div className={styles.conversion}>
             <h2>Be first to hear</h2>
@@ -136,7 +146,7 @@ export default function ComingSoonV2() {
             <div className={styles.exampleCard}>
               <div className={styles.examplePhoto}>
                 <Image
-                  src={massage}
+                  src={MASSAGE}
                   alt="Example: relaxation massage"
                   fill
                   loading="lazy"
