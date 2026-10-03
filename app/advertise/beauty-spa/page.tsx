@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
-import MascotFigure from "@/components/megadeal/MascotFigure";
 import {
   CalendarIcon,
   CheckIcon,
@@ -25,16 +24,15 @@ import {
 import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
-import { getMegadealArt } from "@/lib/megadealAssets";
 
 // Same "was noindex while built from spec docs alone" precedent as
 // /advertise/restaurants — flip to false only if this needs to go back to
 // draft before real assets/copy are confirmed live.
 const PAGE_LIVE_FOR_SEARCH = true;
 
-const TITLE = "Beauty & Spa Advertising Auckland | 6 Months Free";
+const TITLE = "Beauty & Spa Advertising Auckland | Up to 6 Months Free";
 const DESCRIPTION =
-  "Grow your Auckland beauty business with MegaDeal. Reach local customers with offers for nails, hair, spa, massage and more. Join free for 6 months.";
+  "Grow your Auckland beauty business with MegaDeal. Reach local customers with offers for nails, hair, spa, massage and more. Up to 6 months free advertising for eligible businesses.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -59,6 +57,18 @@ export const metadata: Metadata = {
 // WELCOME6 with no query param needed (see MerchantSignupForm.tsx's
 // `useState(referralPrefill || "WELCOME6")`).
 const SIGNUP_HREF = "/list-your-business#signup";
+
+// Hero layers, each replaceable on its own. The photo is the "MegaDeal
+// Website Images" pack's facial treatment (AI-generated illustration, not
+// a participating business), sized from the pack's master; the mascot is
+// the approved hoodie elephant the coming-soon page uses (transparent).
+const HERO_PHOTO = {
+  src: "/images/beauty-spa/beauty-hero-facial-treatment.webp",
+  small: "/images/beauty-spa/beauty-hero-facial-treatment-720.webp",
+  alt: "Beauty therapist giving a client a facial treatment in a calm spa room",
+  position: "60% 40%",
+};
+const HERO_MASCOT = { src: "/megadeal/coming-soon-v2/mascot-hoodie.webp" };
 
 const CATEGORY_CHIPS = [
   { href: "#nail-salons", label: "Nail Salons", icon: HeartIcon },
@@ -261,8 +271,8 @@ const WHY_MEGADEAL = [
   },
   {
     icon: CreditCardIcon,
-    title: "6 Months Free",
-    body: "Eligible Auckland businesses can join MegaDeal's launch offer and advertise free for their first six months.",
+    title: "Up to 6 Months Free",
+    body: "Eligible Auckland businesses that join before launch can get up to six months of free advertising.",
   },
   {
     icon: UnlockIcon,
@@ -273,17 +283,17 @@ const WHY_MEGADEAL = [
 
 const STEPS = [
   {
-    number: "01",
+    number: "1",
     title: "Join MegaDeal",
     body: "Tell us about your beauty, hair, nail, spa or wellness business.",
   },
   {
-    number: "02",
+    number: "2",
     title: "Create Your Offer",
     body: "Choose something appealing that works commercially for your business.",
   },
   {
-    number: "03",
+    number: "3",
     title: "Reach More Locals",
     body: "Give Auckland customers another reason to discover your business.",
   },
@@ -329,8 +339,6 @@ const FAQS: { q: string; a: string }[] = [
 ];
 
 export default function BeautySpaAdvertisingPage() {
-  const art = getMegadealArt();
-
   return (
     <main className={plusJakartaSans.className}>
       <ConversionTracker />
@@ -379,106 +387,90 @@ export default function BeautySpaAdvertisingPage() {
       </a>
 
       <div id="beauty-main">
-        {/* Hero */}
-        <section
-          id="hero"
-          className="relative overflow-hidden text-white"
-          style={{
-            background:
-              "radial-gradient(ellipse at 90% 0%, #813ada 0%, transparent 53%), linear-gradient(120deg, #3c087d 0%, #6416bf 62%, #7020c7 100%)",
-          }}
-        >
-          <div className="mx-auto grid max-w-[1184px] grid-cols-1 items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.08fr_1fr] lg:gap-[60px] lg:px-8 lg:pb-[85px] lg:pt-[78px]">
+        {/* Hero — the coming-soon page's treatment: a pale lavender rounded
+            panel in white space, text left and photo right (text and the
+            main button first on phones). The photo and the mascot are
+            separate layers, each replaceable on its own (HERO_PHOTO,
+            HERO_MASCOT above). */}
+        <section id="hero" className="px-4 pt-5 sm:px-6 sm:pt-7 lg:px-8">
+          <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-8 rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-5 py-7 sm:rounded-3xl sm:px-9 sm:py-10 md:grid-cols-[1.12fr_1fr] md:gap-8 lg:grid-cols-2 lg:gap-12 lg:px-12 lg:py-12">
             <div>
-              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/80">
-                <FlowerIcon className="h-3.5 w-3.5" /> Beauty &amp; spa advertising in Auckland
+              <p className="text-xs font-bold uppercase tracking-[0.08em] text-hp-purple">
+                For Auckland beauty &amp; spa businesses
               </p>
               <h1
-                className={`${fredoka.className} mt-3 text-[40px] font-semibold leading-[1.08] sm:text-[52px] lg:text-[62px]`}
+                className={`${fredoka.className} mt-3 text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
               >
-                Fill more beauty &amp; spa{" "}
-                <span style={{ color: "#ADDFFF" }}>appointments in Auckland.</span>
+                Fill quiet times.{" "}
+                <span className="block text-hp-purple">Welcome new local clients.</span>
               </h1>
-              <p className="mt-5 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
-                Turn quieter appointment times into opportunities to meet new local customers.
-                Whether you run a nail salon, hair salon, day spa, massage studio, beauty salon,
-                facial and skin business, or lash and brow studio, MegaDeal gives you another way
-                to put your business in front of Auckland locals looking for something great
-                nearby.
+              <p className="mt-4 max-w-[34rem] text-base leading-relaxed sm:text-lg md:text-base lg:text-lg" style={{ color: "#334155" }}>
+                Put your salon, spa or beauty business in front of Auckland locals looking for their
+                next treatment. You choose the offer. Customers book and pay you directly.
+              </p>
+              <p className={`${fredoka.className} mt-5 text-xl font-semibold text-hp-purple sm:text-2xl`}>
+                Up to 6 months free advertising*
               </p>
 
-              <div className="mt-7 flex flex-wrap items-center gap-3">
+              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
                 <a
-                  href="#launch-offer"
+                  href={SIGNUP_HREF}
                   data-cta-section="hero"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-extrabold text-brand-600 shadow-[0_10px_24px_rgba(20,6,50,.25)] transition hover:bg-brand-50 active:scale-95 sm:text-base"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-hp-purple px-6 py-3 text-base font-bold text-white transition hover:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
                 >
-                  Get 6 months free →
+                  List your business <span aria-hidden>→</span>
                 </a>
                 <a
                   href="#how-it-works"
                   data-cta-section="hero_secondary"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white px-6 py-3.5 text-sm font-extrabold text-[#6520B5] transition hover:border-white hover:bg-white/90 sm:text-base"
+                  className="inline-flex min-h-11 items-center text-base font-bold text-hp-purple underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
                 >
                   See how it works
                 </a>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm font-semibold text-white/85">
-                <span className="flex items-center gap-1.5">
-                  <CheckIcon className="h-4 w-4" /> 0% commission
-                </span>
-                <span aria-hidden className="text-white/40">
-                  •
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckIcon className="h-4 w-4" /> You choose the offer
-                </span>
-                <span aria-hidden className="text-white/40">
-                  •
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CheckIcon className="h-4 w-4" /> Auckland first
-                </span>
-              </div>
+              <p className="mt-5 flex flex-wrap gap-x-1.5 gap-y-1 text-sm font-semibold text-hp-ink">
+                <span className="whitespace-nowrap">0% commission</span>
+                <span aria-hidden className="text-hp-muted">·</span>
+                <span className="whitespace-nowrap">No lock-in</span>
+                <span aria-hidden className="text-hp-muted">·</span>
+                <span className="whitespace-nowrap">No credit card</span>
+              </p>
+              <p className="mt-2 text-xs" style={{ color: "#475569" }}>
+                *For eligible businesses that join before launch.{" "}
+                <Link href="/terms" className="font-semibold text-hp-purple underline underline-offset-2 hover:no-underline">
+                  Terms apply.
+                </Link>
+              </p>
             </div>
 
-            <div className="relative mx-auto w-full max-w-[420px] lg:mx-0">
-              <div
-                className="relative h-[280px] overflow-hidden rounded-[28px] shadow-[0_24px_48px_rgba(20,3,50,.4)] sm:h-[340px] lg:h-[427px]"
-                style={{ transform: "rotate(2deg)" }}
-              >
-                <Image
-                  src="/images/beauty-spa/beauty-hero.webp"
-                  alt="The MegaDeal mascot elephant beside a phone showing beauty and spa photos, in a candlelit spa setting"
-                  fill
-                  sizes="(min-width: 1024px) 420px, 90vw"
-                  className="object-cover"
-                  style={{ objectPosition: "78% center" }}
-                  loading="eager"
-                  fetchPriority="high"
+            <div className="relative">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white">
+                <picture>
+                  <source media="(min-width: 640px)" srcSet={HERO_PHOTO.src} width={1200} height={900} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={HERO_PHOTO.small}
+                    alt={HERO_PHOTO.alt}
+                    width={720}
+                    height={540}
+                    fetchPriority="high"
+                    decoding="async"
+                    className="absolute inset-0 h-full w-full object-cover"
+                    style={{ objectPosition: HERO_PHOTO.position }}
+                  />
+                </picture>
+                {/* Decorative: standing at the photo's lower-right edge, his
+                    lower half hidden by the frame, clear of the face. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={HERO_MASCOT.src}
+                  alt=""
+                  width={480}
+                  height={496}
+                  decoding="async"
+                  className="pointer-events-none absolute bottom-0 right-[4%] h-auto w-[104px] translate-y-1/2 sm:w-[140px] md:w-[110px] lg:w-[160px]"
                 />
-              </div>
-
-              {/* 0% commission sticker — same treatment as /advertise/restaurants */}
-              <div className="absolute -left-4 top-6 flex items-baseline gap-1.5 rounded-2xl bg-white px-4 py-3 shadow-card sm:-left-6">
-                <span className="text-3xl font-extrabold leading-none" style={{ color: "#0F172A" }}>
-                  0%
-                </span>
-                <span className="text-xs font-semibold leading-tight" style={{ color: "#475569" }}>
-                  commission.
-                  <br />
-                  More stays with you.
-                </span>
-              </div>
-
-              {/* Auckland launch label — same treatment as /advertise/restaurants */}
-              <div
-                className="absolute -bottom-3 -right-2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-card sm:-right-4"
-                style={{ backgroundColor: "#ADDFFF", color: "#0F172A" }}
-              >
-                <MapPinIcon className="h-3.5 w-3.5" />
-                Launching first in <strong className="font-extrabold">Auckland</strong>
               </div>
             </div>
           </div>
@@ -486,13 +478,13 @@ export default function BeautySpaAdvertisingPage() {
 
         {/* Category chips — anchor down to the matching subcategory section */}
         <nav aria-label="Beauty & spa categories" className="border-b bg-white" style={{ borderColor: "#E8E1EF" }}>
-          <div className="mx-auto max-w-[1184px] overflow-x-auto px-4 py-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1240px] overflow-x-auto px-4 py-4 sm:px-6 lg:px-8">
             <ul className="flex w-max min-w-full items-center gap-2.5 sm:flex-wrap sm:w-auto">
               {CATEGORY_CHIPS.map((c) => (
                 <li key={c.href}>
                   <a
                     href={c.href}
-                    className="flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition hover:border-[#6520B5]/40 hover:bg-[#F5EFFC]"
+                    className="flex min-h-11 shrink-0 items-center gap-2 rounded-full border bg-white px-4 py-2 text-sm font-semibold transition hover:border-[#6520B5]/40 hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
                     style={{ borderColor: "#E8E1EF", color: "#0F172A" }}
                   >
                     <c.icon className="h-4 w-4 text-[#6520B5]" />
@@ -505,9 +497,12 @@ export default function BeautySpaAdvertisingPage() {
         </nav>
 
         {/* Section 1 — the core commercial idea */}
-        <section className="bg-white px-4 py-[94px] sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1184px] text-center">
-            <h2 className={`${fredoka.className} mx-auto max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+        <section className="bg-white px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1240px] text-center">
+            <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
+              Beauty &amp; Spa Advertising in Auckland
+            </p>
+            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               An empty appointment can&rsquo;t be sold tomorrow.
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed" style={{ color: "#475569" }}>
@@ -519,7 +514,7 @@ export default function BeautySpaAdvertisingPage() {
 
             <div className="mt-10 grid grid-cols-1 gap-6 text-left sm:grid-cols-3">
               {INTRO_CARDS.map((c) => (
-                <div key={c.title} className="rounded-[24px] border bg-white p-6 shadow-card" style={{ borderColor: "#E8E1EF" }}>
+                <div key={c.title} className="rounded-xl border bg-white p-6" style={{ borderColor: "#E8E1EF" }}>
                   <span
                     className="flex h-11 w-11 items-center justify-center rounded-full"
                     style={{ backgroundColor: "#F5EFFC", color: "#6520B5" }}
@@ -540,13 +535,13 @@ export default function BeautySpaAdvertisingPage() {
 
         {/* Section 2 — one substantial block per category, each its own
             heading + anchor, matched to the chips above. */}
-        <section className="px-4 py-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
-          <div className="mx-auto max-w-[1184px]">
+        <section className="bg-hp-lavender px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1240px]">
             <div className="mx-auto max-w-2xl text-center">
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
                 Every kind of beauty business
               </p>
-              <h2 className={`${fredoka.className} mt-2 text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+              <h2 className={`${fredoka.className} mt-2 text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
                 Built for beauty &amp; spa businesses.
               </h2>
               <p className="mt-3 text-base leading-relaxed" style={{ color: "#475569" }}>
@@ -560,7 +555,7 @@ export default function BeautySpaAdvertisingPage() {
                 <div
                   key={s.id}
                   id={s.id}
-                  className="scroll-mt-[100px] overflow-hidden rounded-[24px] border bg-white shadow-card"
+                  className="scroll-mt-[100px] overflow-hidden rounded-xl border bg-white"
                   style={{ borderColor: "#E8E1EF" }}
                 >
                   <div className="relative aspect-[4/3] w-full">
@@ -602,12 +597,12 @@ export default function BeautySpaAdvertisingPage() {
         </section>
 
         {/* Section 3 — promote smarter, not just cheaper */}
-        <section className="bg-white px-4 py-[94px] sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1184px] text-center">
+        <section className="bg-white px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1240px] text-center">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               A smarter kind of promotion
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               Don&rsquo;t discount everything. Promote smarter.
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base" style={{ color: "#475569" }}>
@@ -617,7 +612,7 @@ export default function BeautySpaAdvertisingPage() {
 
             <div className="mt-10 grid grid-cols-1 gap-6 text-left sm:grid-cols-2">
               {SMARTER_CARDS.map((c) => (
-                <div key={c.title} className="flex items-start gap-4 rounded-[24px] border p-6 shadow-card" style={{ borderColor: "#E8E1EF" }}>
+                <div key={c.title} className="flex items-start gap-4 rounded-xl border bg-white p-6" style={{ borderColor: "#E8E1EF" }}>
                   <span
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
                     style={{ backgroundColor: "#F5EFFC", color: "#6520B5" }}
@@ -639,18 +634,18 @@ export default function BeautySpaAdvertisingPage() {
         </section>
 
         {/* Section 4 — example offer ideas */}
-        <section className="px-4 py-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
-          <div className="mx-auto max-w-[1184px] text-center">
+        <section className="bg-white px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1240px] text-center">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               Need inspiration?
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               Beauty promotion ideas.
             </h2>
 
             <div className="mt-10 grid grid-cols-1 gap-6 text-left sm:grid-cols-2 lg:grid-cols-3">
               {EXAMPLE_DEALS.map((d) => (
-                <div key={d.eyebrow + d.title} className="overflow-hidden rounded-[24px] border bg-white shadow-card" style={{ borderColor: "#E8E1EF" }}>
+                <div key={d.eyebrow + d.title} className="overflow-hidden rounded-xl border bg-white" style={{ borderColor: "#E8E1EF" }}>
                   <div className="relative aspect-[16/10] w-full">
                     <Image
                       src={d.image}
@@ -685,9 +680,9 @@ export default function BeautySpaAdvertisingPage() {
         </section>
 
         {/* Section 5 — the first visit is the beginning, not the whole story */}
-        <section className="bg-white px-4 py-[94px] sm:px-6 lg:px-8">
+        <section className="bg-white px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[760px] text-center">
-            <h2 className={`${fredoka.className} text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${fredoka.className} text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               Give someone a reason to try you.
             </h2>
             <p className="mt-4 text-base leading-relaxed" style={{ color: "#475569" }}>
@@ -704,18 +699,18 @@ export default function BeautySpaAdvertisingPage() {
         </section>
 
         {/* Section 6 — Why MegaDeal (nav target: #why-megadeal) */}
-        <section id="why-megadeal" className="scroll-mt-[100px] px-4 py-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
-          <div className="mx-auto max-w-[1184px] text-center">
+        <section id="why-megadeal" className="scroll-mt-[100px] bg-hp-lavender px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1240px] text-center">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               More opportunity. Less commission.
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               Why MegaDeal?
             </h2>
 
             <div className="mt-10 grid grid-cols-1 gap-6 text-left sm:grid-cols-2 lg:grid-cols-4">
               {WHY_MEGADEAL.map((w) => (
-                <div key={w.title} className="rounded-[24px] border bg-white p-6 shadow-card" style={{ borderColor: "#E8E1EF" }}>
+                <div key={w.title} className="rounded-xl border bg-white p-6" style={{ borderColor: "#E8E1EF" }}>
                   <span
                     className="flex h-11 w-11 items-center justify-center rounded-full"
                     style={{ backgroundColor: "#F5EFFC", color: "#6520B5" }}
@@ -735,12 +730,12 @@ export default function BeautySpaAdvertisingPage() {
         </section>
 
         {/* Section 7 — How it works (nav target: #how-it-works) */}
-        <section id="how-it-works" className="scroll-mt-[100px] bg-white px-4 py-[94px] sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1184px] text-center">
+        <section id="how-it-works" className="scroll-mt-[100px] bg-white px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1240px] text-center">
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               Simple. Direct. Local.
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               How it works.
             </h2>
 
@@ -748,8 +743,8 @@ export default function BeautySpaAdvertisingPage() {
               {STEPS.map((s) => (
                 <div key={s.number}>
                   <span
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-extrabold text-white"
-                    style={{ backgroundColor: "#6520B5" }}
+                    className={`${fredoka.className} flex h-12 w-12 items-center justify-center rounded-full text-2xl font-bold`}
+                    style={{ backgroundColor: "#F1EBFB", color: "#6520B5" }}
                   >
                     {s.number}
                   </span>
@@ -769,15 +764,15 @@ export default function BeautySpaAdvertisingPage() {
               className="mt-10 inline-flex items-center gap-1.5 text-sm font-bold hover:underline"
               style={{ color: "#6520B5" }}
             >
-              Get 6 months free →
+              See the launch offer →
             </a>
           </div>
         </section>
 
         {/* Section 8 — made for local beauty businesses */}
-        <section className="px-4 py-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
+        <section className="bg-white px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[760px] text-center">
-            <h2 className={`${fredoka.className} text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${fredoka.className} text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               Made for local beauty businesses.
             </h2>
             <p className="mt-4 text-base leading-relaxed" style={{ color: "#475569" }}>
@@ -796,77 +791,54 @@ export default function BeautySpaAdvertisingPage() {
         </section>
 
         {/* Section 9 — Auckland First / main launch offer (nav + CTA target: #launch-offer) */}
-        <section id="launch-offer" className="scroll-mt-[100px] bg-white px-4 py-[94px] sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1184px]">
-            <div
-              className="relative rounded-[32px] px-6 py-12 text-white sm:px-12 sm:py-14"
-              style={{
-                background:
-                  "radial-gradient(ellipse at 90% 0%, #813ada 0%, transparent 53%), linear-gradient(120deg, #3c087d 0%, #6416bf 62%, #7020c7 100%)",
-              }}
-            >
-              {/* Small supporting mascot in the corner — same placement rule
-                  as /advertise/restaurants: fully inside the box, no
-                  negative offset against overflow-hidden. */}
-              <div className="pointer-events-none absolute right-4 top-4 hidden sm:block">
-                <MascotFigure
-                  src={art.mascotWave}
-                  fallbackSrc="/brand/megadeal-elephant.svg"
-                  alt=""
-                  width={200}
-                  height={156}
-                  className="h-auto w-[110px] opacity-90 sm:w-[140px]"
-                />
+        <section id="launch-offer" className="scroll-mt-[100px] bg-white px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1240px]">
+            {/* The coming-soon page's business panel: pale blue, dark text,
+                one clear purple signup button. */}
+            <div className="grid grid-cols-1 items-center gap-8 rounded-3xl px-6 py-9 sm:px-10 sm:py-11 lg:grid-cols-[1.1fr_1fr]" style={{ backgroundColor: "#EEF6FC" }}>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
+                  Auckland first
+                </p>
+                <h2 className={`${fredoka.className} mt-2 text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
+                  Get in early. Build your presence.
+                </h2>
+                <p className="mt-4 max-w-md text-sm leading-relaxed sm:text-base" style={{ color: "#475569" }}>
+                  MegaDeal is starting where we&rsquo;re local — Auckland. We&rsquo;re building
+                  a marketplace where Aucklanders can discover deals and experiences from
+                  restaurants, beauty businesses, salons, spas and other great businesses
+                  around the city. Be there when Auckland starts discovering MegaDeal.
+                </p>
+                <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold" style={{ color: "#0F172A" }}>
+                  <span className="flex items-center gap-1.5">
+                    <CheckIcon className="h-4 w-4 text-[#6520B5]" /> 0% commission
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <UnlockIcon className="h-4 w-4 text-[#6520B5]" /> No lock-in
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <CreditCardIcon className="h-4 w-4 text-[#6520B5]" /> No credit card
+                  </span>
+                </div>
               </div>
 
-              <div className="relative grid grid-cols-1 items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-white/75">
-                    Auckland first
-                  </p>
-                  <h2 className={`${fredoka.className} mt-2 text-[28px] font-semibold leading-tight sm:text-[36px]`}>
-                    Get in early. Build your presence.
-                  </h2>
-                  <p className="mt-4 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">
-                    MegaDeal is starting where we&rsquo;re local — Auckland. We&rsquo;re building
-                    a marketplace where Aucklanders can discover deals and experiences from
-                    restaurants, beauty businesses, salons, spas and other great businesses
-                    around the city. Be there when Auckland starts discovering MegaDeal.
-                  </p>
-                  <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-white/85">
-                    <span className="flex items-center gap-1.5">
-                      <CheckIcon className="h-4 w-4" /> 0% commission
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <UnlockIcon className="h-4 w-4" /> No lock-in
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <CreditCardIcon className="h-4 w-4" /> No credit card
-                    </span>
-                  </div>
-                </div>
-
-                <div className="rounded-[24px] bg-white/10 p-6 text-center backdrop-blur-sm sm:p-8">
-                  <p
-                    className="mx-auto inline-block rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold text-white ring-1 ring-white/30"
-                  >
-                    Up to 6 months free advertising
-                  </p>
-                  <a
-                    href={SIGNUP_HREF}
-                    data-cta-section="launch_offer"
-                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-extrabold shadow-card transition hover:bg-white/90 active:scale-95 sm:text-base"
-                    style={{ color: "#6520B5" }}
-                  >
-                    Join MegaDeal — 6 months free →
-                  </a>
-                  <p className="mt-3 text-xs font-semibold text-white/80">
-                    Use WELCOME6 at signup.
-                  </p>
-                  <p className="mt-1 text-xs text-white/60">
-                    Continue to MegaDeal&rsquo;s business signup
-                  </p>
-                </div>
+              <div className="rounded-xl border bg-white p-6 text-center sm:p-8" style={{ borderColor: "#E8E1EF" }}>
+                <p className={`${fredoka.className} text-xl font-semibold sm:text-2xl`} style={{ color: "#6520B5" }}>
+                  Up to 6 months free advertising
+                </p>
+                <a
+                  href={SIGNUP_HREF}
+                  data-cta-section="launch_offer"
+                  className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-hp-purple px-6 py-3 text-base font-bold text-white transition hover:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
+                >
+                  List your business <span aria-hidden>→</span>
+                </a>
+                <p className="mt-3 text-xs font-semibold" style={{ color: "#0F172A" }}>
+                  Use WELCOME6 at signup.
+                </p>
+                <p className="mt-1 text-xs" style={{ color: "#475569" }}>
+                  Continue to MegaDeal&rsquo;s business signup
+                </p>
               </div>
             </div>
 
@@ -886,12 +858,12 @@ export default function BeautySpaAdvertisingPage() {
         </section>
 
         {/* FAQ (nav target: #questions) */}
-        <section id="questions" className="scroll-mt-[100px] bg-white px-4 py-[94px] sm:px-6 lg:px-8" style={{ backgroundColor: "#FAF8FD" }}>
+        <section id="questions" className="scroll-mt-[100px] bg-white px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl">
             <p className="text-center text-xs font-bold uppercase tracking-wider" style={{ color: "#6520B5" }}>
               Let&rsquo;s make it clear
             </p>
-            <h2 className={`${fredoka.className} mt-2 text-center text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${fredoka.className} mt-2 text-center text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               A few things you might be wondering.
             </h2>
 
@@ -901,7 +873,7 @@ export default function BeautySpaAdvertisingPage() {
                   key={f.q}
                   name="beauty-spa-faq"
                   data-faq-question={f.q}
-                  className="group rounded-2xl border bg-white p-5 shadow-card"
+                  className="group rounded-xl border bg-white p-5"
                   style={{ borderColor: "#E8E1EF" }}
                 >
                   <summary className="cursor-pointer list-none font-bold marker:content-none" style={{ color: "#0F172A" }}>
@@ -942,49 +914,39 @@ export default function BeautySpaAdvertisingPage() {
           </div>
         </section>
 
-        {/* Final CTA — same gradient-panel language as #launch-offer, no id
-            of its own since nothing needs to anchor to it. */}
-        <section className="bg-white px-4 py-[94px] sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[1184px]">
-            <div
-              className="relative rounded-[32px] px-6 py-12 text-center text-white sm:px-12 sm:py-14"
-              style={{
-                background:
-                  "radial-gradient(ellipse at 90% 0%, #813ada 0%, transparent 53%), linear-gradient(120deg, #3c087d 0%, #6416bf 62%, #7020c7 100%)",
-              }}
+        {/* Final CTA — the hero's lavender panel again, closing the page. */}
+        <section className="bg-white px-4 pb-14 sm:px-6 sm:pb-16 lg:px-8">
+          <div className="mx-auto max-w-[1240px] rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-6 py-10 text-center sm:rounded-3xl sm:px-12 sm:py-12">
+            <h2 className={`${fredoka.className} mx-auto max-w-2xl text-[26px] font-semibold leading-tight text-hp-ink [text-wrap:balance] sm:text-[32px]`}>
+              Your next customer could be looking for a new salon right now.
+            </h2>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed sm:text-base" style={{ color: "#475569" }}>
+              Give them a reason to discover yours.
+            </p>
+            <a
+              href={SIGNUP_HREF}
+              data-cta-section="final_cta"
+              className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-hp-purple px-7 py-3 text-base font-bold text-white transition hover:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
             >
-              <h2 className={`${fredoka.className} mx-auto max-w-2xl text-[28px] font-semibold leading-tight sm:text-[36px]`}>
-                Your next customer could be looking for a new salon right now.
-              </h2>
-              <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">
-                Give them a reason to discover yours.
-              </p>
-              <a
-                href={SIGNUP_HREF}
-                data-cta-section="final_cta"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-extrabold shadow-card transition hover:bg-white/90 active:scale-95 sm:text-base"
-                style={{ color: "#6520B5" }}
-              >
-                Get started free →
-              </a>
-              <p className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm font-semibold text-white/85">
-                <span className="flex items-center gap-1.5">
-                  <CheckIcon className="h-4 w-4" /> 0% commission
-                </span>
-                <span aria-hidden className="text-white/40">
-                  •
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <MapPinIcon className="h-4 w-4" /> Auckland first
-                </span>
-                <span aria-hidden className="text-white/40">
-                  •
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <HeartIcon className="h-4 w-4" /> Built for local businesses
-                </span>
-              </p>
-            </div>
+              Get started free <span aria-hidden>→</span>
+            </a>
+            <p className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm font-semibold text-hp-ink">
+              <span className="flex items-center gap-1.5">
+                <CheckIcon className="h-4 w-4 text-hp-purple" /> 0% commission
+              </span>
+              <span aria-hidden className="text-hp-muted">
+                ·
+              </span>
+              <span className="flex items-center gap-1.5">
+                <MapPinIcon className="h-4 w-4 text-hp-purple" /> Auckland first
+              </span>
+              <span aria-hidden className="text-hp-muted">
+                ·
+              </span>
+              <span className="flex items-center gap-1.5">
+                <HeartIcon className="h-4 w-4 text-hp-purple" /> Built for local businesses
+              </span>
+            </p>
           </div>
         </section>
       </div>
