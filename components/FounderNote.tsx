@@ -55,7 +55,9 @@ export default function FounderNote({
         <p>We&apos;d love to have you on board.</p>
         <div className="pt-1">
           <p className={`${caveat.className} text-3xl leading-none text-brand-700`}>Nick</p>
-          <p className="mt-1 text-sm text-slate-500">Founder, MegaDeal</p>
+          {/* Full name under the handwritten first name: a real,
+              accountable person is what a business owner checks for. */}
+          <p className="mt-1 text-sm text-slate-500">Nick White, Founder, MegaDeal</p>
         </div>
       </div>
     </>
