@@ -22,45 +22,34 @@ export const V2_SOCIALS = {
 };
 
 /**
- * Category photos: the Unsplash photos the current coming-soon page
- * already uses (Unsplash licence: free for commercial use, no attribution
- * required), loaded through next/image as today.
+ * Photos. Categories and the example deal are the owner's "MegaDeal
+ * Website Images" pack (3 Oct 2026): AI-generated illustrations, not
+ * participating businesses, served from public/megadeal-coming-soon with
+ * versioned names (bump -v1 if the bytes ever change). Masters stay out of
+ * the site, in the owner's pack.
  *
- * TODO(owner): the pack asks for a hotel BEDROOM for Travel & Getaways
- * and kayaking for Things To Do. These two are the existing page's photos
- * and should be swapped for approved ones; only the URL below changes.
+ * Hero: the owner-supplied real Auckland photo already used on the homepage
+ * (the image pack itself says to prefer a real, licensed skyline over its
+ * illustrative one, public/megadeal-coming-soon/auckland-hero-v1.webp).
  */
+export const V2_HERO = {
+  src: "/megadeal/hero/auckland-skyline.webp",
+  alt: "Auckland waterfront and Sky Tower",
+  position: "50% 40%",
+};
+
+export const V2_EXAMPLE_PHOTO = {
+  src: "/megadeal-coming-soon/example-massage-v1.webp",
+  alt: "Illustrative relaxation massage",
+};
+
 export const V2_CATEGORIES = [
-  {
-    label: "Food & Drink",
-    src: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=720&q=72",
-    alt: "Burger and fries at a restaurant",
-  },
-  {
-    label: "Beauty & Spa",
-    src: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=720&q=72",
-    alt: "Spa treatment",
-  },
-  {
-    label: "Things To Do",
-    src: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=720&q=72",
-    alt: "Outdoor activity on the water",
-  },
-  {
-    label: "Travel & Getaways",
-    src: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=720&q=72",
-    alt: "Hotel stay",
-  },
-  {
-    label: "Health & Fitness",
-    src: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=720&q=72",
-    alt: "Fitness class",
-  },
-  {
-    label: "Home & Car",
-    src: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=720&q=72",
-    alt: "Car care",
-  },
+  { label: "Food & Drink", src: "/megadeal-coming-soon/food-drink-v1.webp", alt: "Burger and fries at a cafe" },
+  { label: "Beauty & Spa", src: "/megadeal-coming-soon/beauty-spa-v1.webp", alt: "Facial treatment at a spa" },
+  { label: "Things To Do", src: "/megadeal-coming-soon/things-to-do-v1.webp", alt: "Kayaking on calm coastal water" },
+  { label: "Travel & Getaways", src: "/megadeal-coming-soon/travel-getaways-v1.webp", alt: "Hotel bedroom with a coastal view" },
+  { label: "Health & Fitness", src: "/megadeal-coming-soon/health-fitness-v1.webp", alt: "Adults attending a yoga class" },
+  { label: "Home & Car", src: "/megadeal-coming-soon/home-car-v1.webp", alt: "Cleaning a car wheel" },
 ] as const;
 
 /** Reconciled with /help and /terms: no vouchers, a deal code, pay the

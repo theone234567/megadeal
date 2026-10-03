@@ -2,13 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import { CreditCardIcon, SearchIcon, TagIcon } from "@/components/icons";
-import { V2_CATEGORIES, V2_FAQS, V2_SOCIALS } from "@/lib/comingSoonV2Content";
+import { V2_CATEGORIES, V2_EXAMPLE_PHOTO, V2_FAQS, V2_HERO, V2_SOCIALS } from "@/lib/comingSoonV2Content";
 
 // Plain paths, as elsewhere on the site: CI typechecks before Next has
 // generated its image module types, so static image imports fail there.
-const SKYLINE = "/megadeal/hero/auckland-skyline.webp";
 const MASCOT = "/megadeal/coming-soon-v2/mascot-hoodie.webp";
-const MASSAGE = "/images/beauty-spa/beauty-massage.webp";
 import styles from "./ComingSoonV2.module.css";
 
 /**
@@ -38,12 +36,12 @@ export default function ComingSoonV2() {
           <div className={styles.art}>
             <div className={styles.skyline}>
               <Image
-                src={SKYLINE}
-                alt="Auckland waterfront and Sky Tower"
+                src={V2_HERO.src}
+                alt={V2_HERO.alt}
                 fill
                 priority
                 sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1239px) 46vw, 560px"
-                style={{ objectFit: "cover", objectPosition: "50% 40%" }}
+                style={{ objectFit: "cover", objectPosition: V2_HERO.position }}
               />
             </div>
             <Image
@@ -146,8 +144,8 @@ export default function ComingSoonV2() {
             <div className={styles.exampleCard}>
               <div className={styles.examplePhoto}>
                 <Image
-                  src={MASSAGE}
-                  alt="Example: relaxation massage"
+                  src={V2_EXAMPLE_PHOTO.src}
+                  alt={V2_EXAMPLE_PHOTO.alt}
                   fill
                   loading="lazy"
                   sizes="(max-width: 767px) calc(100vw - 72px), 300px"

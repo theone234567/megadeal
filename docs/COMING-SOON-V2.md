@@ -33,16 +33,13 @@ untouched by switching or rolling back.
 
 ## Image sources
 
-| Use | File / URL | Source |
+| Use | File | Source |
 | --- | --- | --- |
-| Hero | `public/megadeal/hero/auckland-skyline.webp` (master `design/hero/auckland-skyline-source.webp`) | Owner-supplied Auckland skyline photo, already used on the homepage hero |
-| Mascot | `public/megadeal/coming-soon-v2/mascot-hoodie.webp` (master `design/coming-soon-v2/mascot-hoodie-source.png`) | Supplied in the pack |
-| Example deal | `public/images/beauty-spa/beauty-massage.webp` | Owner-supplied beauty-spa pack |
-| Categories | Unsplash URLs in `lib/comingSoonV2Content.ts` | Same photos as the current page (Unsplash licence) |
+| Hero | `public/megadeal/hero/auckland-skyline.webp` (master `design/hero/auckland-skyline-source.webp`) | Owner-supplied real Auckland photo, already on the homepage hero. The image pack's illustrated skyline (`auckland-hero-v1.webp`) was not used: the pack says to prefer a real one. Swap `V2_HERO` in `lib/comingSoonV2Content.ts` to change. |
+| Mascot | `public/megadeal/coming-soon-v2/mascot-hoodie.webp` (master `design/coming-soon-v2/mascot-hoodie-source.png`) | Supplied in both packs (identical file) |
+| Categories (6) and example deal | `public/megadeal-coming-soon/*-v1.webp` | Owner's "MegaDeal Website Images" pack (3 Oct 2026): AI-generated illustrations, not participating businesses. Versioned names: bump `-v1` if the bytes change. PNG masters stay in the pack, not on the site or in this repo. |
 
-**Owner to supply:** the pack asks for a hotel **bedroom** (Travel & Getaways) and **kayaking**
-(Things To Do). Those two are still the current page's photos; swap the URLs in
-`lib/comingSoonV2Content.ts`.
+Alt text from the pack's manifest. No text is baked into the images.
 
 ## Checks run (3 Oct 2026, local dev and production builds)
 
@@ -58,8 +55,11 @@ untouched by switching or rolling back.
 - Signup (requests intercepted, nothing sent): invalid email blocked; no consent → message and
   focus on the box; pending disables the button (a second click sent nothing); server error keeps
   the email and shows the message; success shows the confirm-email message; footer form unaffected.
-- Not checked here: category photos load (Unsplash is blocked in the build sandbox, they load for
-  visitors as on the current page); deployed cache headers; a real newsletter submission.
+- Image pack (later the same day): all eight local images load at 320, 390, 768 and 1440px, no
+  broken images, no horizontal scroll; categories crop cleanly (`object-fit: cover`), mascot keeps
+  its proportions. V2 no longer loads any Unsplash image.
+- Not checked here: deployed cache headers (files under `public/` are not automatically
+  immutable, hence the versioned names); a real newsletter submission.
 
 ## Read-only SEO / security review (findings, not changed here)
 
