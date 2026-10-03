@@ -2,35 +2,23 @@ import { caveat, fredoka } from "@/lib/fonts";
 
 /**
  * The founder's note to businesses, signed by Nick: the owner's own
- * wording, used on /list-your-business and in the business section of
- * /coming-soon, so the two pages can't drift apart.
+ * wording, on /list-your-business, right before the sign-up form. Kept to
+ * that one page: /coming-soon sends business owners there, so having it
+ * on both meant reading it twice.
  *
  * Pre-launch wording ("join early", "up to six months"): see
  * docs/LAUNCH-OFFER-CHECKLIST.md.
  */
-export default function FounderNote({
-  headingLevel = "h2",
-  compact = false,
-}: {
-  /** "h3" where the note sits inside a section that already has an h2. */
-  headingLevel?: "h2" | "h3";
-  /** Smaller heading, for the note as a card inside a section. */
-  compact?: boolean;
-}) {
-  const Heading = headingLevel;
+export default function FounderNote() {
   return (
     <>
-      <Heading
-        className={`${fredoka.className} font-bold text-slate-900 [text-wrap:balance] ${
-          compact ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl"
-        }`}
-      >
+      <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 [text-wrap:balance] sm:text-3xl`}>
         Auckland businesses, get in early
-      </Heading>
-      <p className={`mt-2 font-semibold text-brand-700 [text-wrap:balance] ${compact ? "text-base sm:text-lg" : "text-lg"}`}>
+      </h2>
+      <p className="mt-2 text-lg font-semibold text-brand-700 [text-wrap:balance]">
         Customers pay you directly. You keep every dollar.
       </p>
-      <div className={`space-y-4 text-slate-600 ${compact ? "mt-4 text-[15px] leading-6" : "mt-5"}`}>
+      <div className="mt-5 space-y-4 text-slate-600">
         <p>
           MegaDeal is proudly Kiwi-owned, and we&apos;re launching first in
           Auckland. Before we open to everyone, we&apos;re welcoming a limited

@@ -626,9 +626,9 @@ export default async function MerchantsPage() {
         </div>
       </section>
 
-      {/* Founder's note (components/FounderNote.tsx, shared with
-          /coming-soon) — honest about being new, framed as a reason to join
-          now rather than a weakness to hide. */}
+      {/* Founder's note (components/FounderNote.tsx) — honest about being
+          new, framed as a reason to join now rather than a weakness to
+          hide. This page only: /coming-soon sends business owners here. */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         {/* One left-aligned column, heading included, so it reads as a
             single note rather than a centred intro above a letter. */}

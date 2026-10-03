@@ -9,7 +9,6 @@ import { categoryPath } from "@/lib/categories";
 import CategoryPhoto from "@/components/CategoryPhoto";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import SampleDealCard from "@/components/SampleDealCard";
-import FounderNote from "@/components/FounderNote";
 import { getSignupStats, shownStats } from "@/lib/publicStats";
 import MascotFigure from "@/components/megadeal/MascotFigure";
 import { getMegadealArt } from "@/lib/megadealAssets";
@@ -617,8 +616,12 @@ export default async function ComingSoonPage() {
               <p className="mt-3 text-[15px] font-semibold leading-6 text-slate-900">
                 From cafés and salons to gyms and tour operators — if you serve local customers, you belong here.
               </p>
-              {/* The "join before launch" paragraph that was here is now
-                  said by the founder's note below, so it isn't said twice. */}
+              <p className="mt-2.5 max-w-[620px] text-[15px] leading-6 text-slate-600 lg:text-base">
+                Get in before we launch and your first months of advertising are on us. Once deals
+                go live the offer closes, so the businesses that join now are the ones customers
+                see on day one.
+              </p>
+
               <ul className="mt-6 grid gap-3 sm:grid-cols-2 sm:gap-x-8">
                 {businessBenefits.map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-[15px] font-semibold leading-6 text-slate-900">
@@ -688,12 +691,6 @@ export default async function ComingSoonPage() {
                 ))}
               </dl>
             </div>
-          </div>
-
-          {/* Founder's note (components/FounderNote.tsx, the same note as
-              on /list-your-business), as a card under the offer. */}
-          <div className="mt-8 max-w-[720px] rounded-[24px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px_34px_rgba(77,12,168,.10)] sm:p-8 lg:mt-10">
-            <FounderNote headingLevel="h3" compact />
           </div>
         </div>
       </section>
