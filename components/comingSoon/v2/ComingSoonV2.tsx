@@ -27,9 +27,8 @@ export default function ComingSoonV2() {
         <section className={styles.hero} aria-labelledby="coming-soon-heading">
           <div className={styles.intro}>
             <h1 id="coming-soon-heading">
-              Great local deals.
-              <br />
-              Coming soon.
+              Great local deals.{" "}
+              <span className={styles.accent}>Coming soon.</span>
             </h1>
             <p>Launching first in Auckland, with more NZ cities to follow.</p>
           </div>
