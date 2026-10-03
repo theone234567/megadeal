@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isBookingChoice } from "@/lib/booking";
 import { phoneLink } from "@/lib/booking";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
@@ -12,7 +13,9 @@ import { isBusinessCategory } from "@/lib/categories";
 const MAX_TEXT_LENGTH = 300;
 // See apply/route.ts — businessHours is a structured-hours JSON blob, not
 // a single-line field, so it needs its own generous length cap.
-const MAX_BUSINESS_HOURS_LENGTH = 4000;
+// Room for the weekly schedule plus up to 30 dated exceptions (worst case
+// ~5.5k): cut short, the JSON would no longer parse.
+const MAX_BUSINESS_HOURS_LENGTH = 8000;
 const MAX_BIO_LENGTH = 600;
 const MIN_BIO_LENGTH = 50;
 const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
@@ -170,6 +173,14 @@ export async function POST(req: NextRequest) {
     businessHours: cleanText(body.businessHours, MAX_BUSINESS_HOURS_LENGTH),
     bookingUrl,
     bookingEmail,
+    // The answer new deals start with ("Do customers usually need to
+    // book?"); "" means ask each time. Left alone if not sent.
+    defaultBookingRequirement:
+      body.defaultBookingRequirement === undefined
+        ? merchant.defaultBookingRequirement ?? ""
+        : isBookingChoice(body.defaultBookingRequirement)
+          ? body.defaultBookingRequirement
+          : "",
     facebookUrl,
     instagramUrl,
     priceRange,

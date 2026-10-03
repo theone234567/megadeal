@@ -22,8 +22,23 @@ export interface DaySchedule {
   ranges: TimeRange[];
 }
 
+/** One date that differs from the weekly hours: a public holiday, a
+ *  staff day, a late night. Dates are NZ calendar dates, "YYYY-MM-DD". */
+export interface HoursException {
+  date: string;
+  closed: boolean;
+  ranges: TimeRange[];
+  /** e.g. "Christmas Day" */
+  label?: string;
+}
+
+export const MAX_HOURS_EXCEPTIONS = 30;
+
 export interface BusinessHoursData {
   schedule: DaySchedule[];
+  /** Dated exceptions to the weekly schedule; those in the past are kept
+   *  but never shown. */
+  exceptions?: HoursException[];
   /** Free-text catch-all for anything the structured schedule can't
    *  express — "Closed public holidays", "Kitchen closes 30min early on
    *  Sundays", etc. */
@@ -67,10 +82,65 @@ export function parseBusinessHours(raw: string | null | undefined): BusinessHour
   });
   if (!valid) return null;
 
+  // A bad exception is dropped rather than discarding the whole schedule.
+  const rawExceptions = Array.isArray((parsed as any).exceptions) ? ((parsed as any).exceptions as unknown[]) : [];
+  const exceptions = rawExceptions
+    .filter(
+      (e: any): e is HoursException =>
+        e &&
+        typeof e === "object" &&
+        typeof e.date === "string" &&
+        /^\d{4}-\d{2}-\d{2}$/.test(e.date) &&
+        typeof e.closed === "boolean" &&
+        Array.isArray(e.ranges) &&
+        e.ranges.every((r: any) => r && typeof r.open === "string" && typeof r.close === "string"),
+    )
+    .map((e) => ({
+      date: e.date,
+      closed: e.closed,
+      ranges: e.ranges,
+      ...(typeof e.label === "string" && e.label.trim() ? { label: e.label.trim().slice(0, 60) } : {}),
+    }))
+    .slice(0, MAX_HOURS_EXCEPTIONS);
+
   return {
     schedule: schedule as DaySchedule[],
     notes: typeof (parsed as any).notes === "string" ? (parsed as any).notes : undefined,
+    ...(exceptions.length > 0 ? { exceptions } : {}),
   };
+}
+
+/** True when the business has actually given hours: at least one open day
+ *  with a time range. A schedule left all "closed" is unknown, not "closed
+ *  every day", and is never shown as closed. */
+export function hoursKnown(data: BusinessHoursData): boolean {
+  return data.schedule.some((d) => !d.closed && d.ranges.length > 0);
+}
+
+/** Today's date in New Zealand, "YYYY-MM-DD". */
+export function nzToday(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Pacific/Auckland", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+}
+
+/** The exceptions from today (NZ) up to `days` ahead, soonest first. */
+export function upcomingExceptions(data: BusinessHoursData, now: Date = new Date(), days = 60): HoursException[] {
+  const today = nzToday(now);
+  const last = nzToday(new Date(now.getTime() + days * 86_400_000));
+  return (data.exceptions ?? []).filter((e) => e.date >= today && e.date <= last).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** "Thu 25 Dec (Christmas Day): Closed", "Fri 2 Jan: 10am–2pm". */
+export function formatExceptionLine(e: HoursException): string {
+  const d = new Date(`${e.date}T12:00:00Z`);
+  const when = new Intl.DateTimeFormat("en-NZ", { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" })
+    .format(d)
+    .replace(",", "");
+  const label = e.label ? ` (${e.label})` : "";
+  const hours =
+    e.closed || e.ranges.length === 0
+      ? "Closed"
+      : e.ranges.map((r) => `${formatTime12h(r.open)}–${formatTime12h(r.close)}`).join(", ");
+  return `${when}${label}: ${hours}`;
 }
 
 export function serializeBusinessHours(data: BusinessHoursData): string {
@@ -110,9 +180,9 @@ function rangeKey(day: DaySchedule): string {
  * the data model, not a special case — a day can hold as many ranges as
  * it needs.
  */
-export function formatBusinessHoursLines(data: BusinessHoursData): string[] {
+export function formatBusinessHoursLines(data: BusinessHoursData, now: Date = new Date()): string[] {
   const lines: string[] = [];
-  let i = 0;
+  let i = hoursKnown(data) ? 0 : data.schedule.length;
   while (i < data.schedule.length) {
     const key = rangeKey(data.schedule[i]);
     let j = i;
@@ -133,6 +203,7 @@ export function formatBusinessHoursLines(data: BusinessHoursData): string[] {
     i = j + 1;
   }
   if (data.notes) lines.push(data.notes);
+  for (const e of upcomingExceptions(data, now)) lines.push(formatExceptionLine(e));
   return lines;
 }
 
@@ -151,6 +222,16 @@ export function toOpeningHoursSpecification(data: BusinessHoursData) {
   });
 }
 
+/** schema.org specialOpeningHoursSpecification for the upcoming dated
+ *  exceptions (a closed date is 00:00–00:00, as Google documents). */
+export function toSpecialOpeningHoursSpecification(data: BusinessHoursData, now: Date = new Date()) {
+  return upcomingExceptions(data, now).flatMap((e) => {
+    const base = { "@type": "OpeningHoursSpecification", validFrom: e.date, validThrough: e.date };
+    if (e.closed || e.ranges.length === 0) return [{ ...base, opens: "00:00", closes: "00:00" }];
+    return e.ranges.map((r) => ({ ...base, opens: r.open, closes: r.close }));
+  });
+}
+
 function timeToMinutes(t: string): number {
   const [h, m] = t.split(":").map(Number);
   return h * 60 + (m || 0);
@@ -158,8 +239,7 @@ function timeToMinutes(t: string): number {
 
 /** Current day/time in NZ local time, DST-aware, regardless of the
  *  server's or visitor's own timezone. */
-function nzNow(): { day: Day; minutes: number } {
-  const now = new Date();
+function nzNow(now: Date = new Date()): { day: Day; minutes: number } {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "Pacific/Auckland",
     weekday: "short",
@@ -177,9 +257,10 @@ function nzNow(): { day: Day; minutes: number } {
  *  handle a range that crosses midnight (e.g. a bar open 8pm-2am) — not
  *  needed for the kind of businesses this site lists today, but worth
  *  revisiting if that ever comes up. */
-export function isOpenNow(data: BusinessHoursData): boolean {
-  const { day, minutes } = nzNow();
-  const today = data.schedule.find((d) => d.day === day);
+export function isOpenNow(data: BusinessHoursData, now: Date = new Date()): boolean {
+  const { day, minutes } = nzNow(now);
+  const special = (data.exceptions ?? []).find((e) => e.date === nzToday(now));
+  const today = special ?? data.schedule.find((d) => d.day === day);
   if (!today || today.closed) return false;
   return today.ranges.some((r) => {
     const open = timeToMinutes(r.open);

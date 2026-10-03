@@ -93,6 +93,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
    *  never defaulted, so "no booking needed" is always the merchant's
    *  own answer (see lib/booking.ts). */
   const [bookingRequirement, setBookingRequirement] = useState("");
+  const [bookingFromProfile, setBookingFromProfile] = useState(false);
   /** The business's own deal code; blank means we generate one. */
   const [dealCode, setDealCode] = useState("");
   /** Left the code box at least once — "too short" and a trailing hyphen
@@ -164,7 +165,15 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
     }
     fetch("/api/merchants/me")
       .then((res) => (res.ok ? res.json() : { item: null }))
-      .then(({ item }) => setMerchant(item ?? null))
+      .then(({ item }) => {
+        setMerchant(item ?? null);
+        // A fresh deal starts with the profile's usual booking answer (set
+        // in the same update, so it's the starting point, not a change).
+        if (!openedDraftId && !duplicateId && isBookingChoice(item?.defaultBookingRequirement)) {
+          setBookingRequirement((current) => current || item.defaultBookingRequirement);
+          setBookingFromProfile(true);
+        }
+      })
       .catch(() => setMerchant(null));
   }, [member, isLoggedIn]);
 
@@ -1144,7 +1153,10 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
                   role="radio"
                   aria-checked={on}
                   title={choice.hint}
-                  onClick={() => setBookingRequirement(choice.value)}
+                  onClick={() => {
+                    if (choice.value !== bookingRequirement) setBookingFromProfile(false);
+                    setBookingRequirement(choice.value);
+                  }}
                   className={`rounded-full border-2 px-3.5 py-2 text-sm font-bold transition active:scale-95 ${
                     on
                       ? "border-brand-600 bg-brand-600 text-white shadow-card"
@@ -1160,6 +1172,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
           {bookingRequirement && (
             <p className="mt-2 text-xs text-slate-500">
               {BOOKING_CHOICES.find((c) => c.value === bookingRequirement)?.hint}.
+              {bookingFromProfile && " Started from your profile; change it for this deal if it's different."}
             </p>
           )}
           {/* Walk-ins are only ever offered when the business says so, and

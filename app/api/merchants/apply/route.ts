@@ -22,7 +22,9 @@ const MAX_TEXT_LENGTH = 300;
 // each with any number of time ranges, plus a notes string) — far longer
 // than a normal single-line field, so it gets its own generous cap rather
 // than MAX_TEXT_LENGTH silently truncating it into invalid JSON.
-const MAX_BUSINESS_HOURS_LENGTH = 4000;
+// Room for the weekly schedule plus up to 30 dated exceptions (worst case
+// ~5.5k): cut short, the JSON would no longer parse.
+const MAX_BUSINESS_HOURS_LENGTH = 8000;
 const MAX_BIO_LENGTH = 600;
 const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
 

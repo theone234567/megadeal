@@ -14,7 +14,7 @@ import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon, Ch
 import { trackDealEvent } from "@/lib/trackDeal";
 import { useDealActionTracker } from "@/lib/useDealActionTracker";
 import type { DealAction } from "@/lib/dealEvents";
-import { parseBusinessHours, formatBusinessHoursLines, isOpenNow } from "@/lib/businessHours";
+import { parseBusinessHours, formatBusinessHoursLines, hoursKnown, isOpenNow } from "@/lib/businessHours";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 import { placeLabel } from "@/lib/location";
@@ -484,7 +484,11 @@ export default function DealDetail({
             {deal.businessHours &&
               (() => {
                 const parsedHours = parseBusinessHours(deal.businessHours);
-                const openNow = parsedHours ? isOpenNow(parsedHours) : null;
+                // "Closed now" only when real hours say so, never because
+                // none were given.
+                const openNow = parsedHours && hoursKnown(parsedHours) ? isOpenNow(parsedHours) : null;
+                const lines = parsedHours ? formatBusinessHoursLines(parsedHours) : [deal.businessHours];
+                if (lines.length === 0) return null;
                 return (
                   <div className="mt-3 flex items-start gap-2 text-sm text-slate-600">
                     <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" />
@@ -502,11 +506,9 @@ export default function DealDetail({
                           {openNow ? "● Open now" : "Closed now"}
                         </p>
                       )}
-                      {parsedHours ? (
-                        formatBusinessHoursLines(parsedHours).map((line, i) => <p key={i}>{line}</p>)
-                      ) : (
-                        <p>{deal.businessHours}</p>
-                      )}
+                      {lines.map((line, i) => (
+                        <p key={i}>{line}</p>
+                      ))}
                     </div>
                   </div>
                 );

@@ -17,7 +17,9 @@ const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
 const MAX_TEXT_LENGTH = 300;
 // See apply/route.ts — businessHours is a structured-hours JSON blob, not
 // a single-line field, so it needs its own generous length cap.
-const MAX_BUSINESS_HOURS_LENGTH = 4000;
+// Room for the weekly schedule plus up to 30 dated exceptions (worst case
+// ~5.5k): cut short, the JSON would no longer parse.
+const MAX_BUSINESS_HOURS_LENGTH = 8000;
 const MAX_BIO_LENGTH = 600;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

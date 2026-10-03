@@ -7,6 +7,7 @@ import PhotoGalleryField from "./PhotoGalleryField";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
+import { BOOKING_CHOICES, isBookingChoice } from "@/lib/booking";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
 import { getAttribution, getFbc, getFbp } from "@/lib/attribution";
@@ -129,6 +130,9 @@ export default function MerchantProfileForm({
   const [businessHours, setBusinessHours] = useState(merchant.businessHours || "");
   const [bookingUrl, setBookingUrl] = useState(merchant.bookingUrl || "");
   const [bookingEmail, setBookingEmail] = useState(merchant.bookingEmail || "");
+  const [defaultBookingRequirement, setDefaultBookingRequirement] = useState<string>(
+    isBookingChoice(merchant.defaultBookingRequirement) ? merchant.defaultBookingRequirement : "",
+  );
   const [facebookUrl, setFacebookUrl] = useState(merchant.facebookUrl || "");
   const [instagramUrl, setInstagramUrl] = useState(merchant.instagramUrl || "");
   const [priceRange, setPriceRange] = useState(merchant.priceRange || "");
@@ -167,6 +171,7 @@ export default function MerchantProfileForm({
           businessHours,
           bookingUrl,
           bookingEmail,
+          defaultBookingRequirement,
           facebookUrl,
           instagramUrl,
           priceRange,
@@ -293,6 +298,12 @@ export default function MerchantProfileForm({
           <div>
             <dt className="text-slate-500">Booking email</dt>
             <dd className="font-medium text-slate-800">{merchant.bookingEmail || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">New deals start with</dt>
+            <dd className="font-medium text-slate-800">
+              {BOOKING_CHOICES.find((c) => c.value === merchant.defaultBookingRequirement)?.label ?? "Ask me each time"}
+            </dd>
           </div>
           <div className="sm:col-span-2">
             <dt className="text-slate-500">Socials</dt>
@@ -673,6 +684,46 @@ export default function MerchantProfileForm({
               <FieldError name="bookingEmail" />
             </div>
           </div>
+
+          {/* Saves answering the same question on every deal; each deal
+              can still change it. Never assumed: "Ask me each time" leaves
+              the deal form blank until they choose. */}
+          {!createMode && (
+            <fieldset>
+              <legend className="mb-1 block text-sm font-medium text-slate-700">
+                Do customers usually need to book?
+                <OptionalTag />
+              </legend>
+              <p className="mb-2 text-xs text-slate-500">New deals start with this answer. You can change it on any deal.</p>
+              <div className="flex flex-wrap gap-2">
+                {[...BOOKING_CHOICES.map((c) => ({ value: c.value as string, label: c.label })), { value: "", label: "Ask me each time" }].map(
+                  (c) => {
+                    const on = defaultBookingRequirement === c.value;
+                    return (
+                      <label
+                        key={c.value || "ask"}
+                        className={`cursor-pointer rounded-full border-2 px-3.5 py-1.5 text-sm font-bold transition focus-within:ring-2 focus-within:ring-brand-400 focus-within:ring-offset-1 ${
+                          on
+                            ? "border-brand-600 bg-brand-600 text-white"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-brand-300"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="defaultBookingRequirement"
+                          value={c.value}
+                          checked={on}
+                          onChange={() => setDefaultBookingRequirement(c.value)}
+                          className="sr-only"
+                        />
+                        {c.label}
+                      </label>
+                    );
+                  },
+                )}
+              </div>
+            </fieldset>
+          )}
 
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Socials</p>

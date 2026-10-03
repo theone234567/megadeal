@@ -3,12 +3,15 @@
 import {
   DAYS,
   TIME_OPTIONS,
+  MAX_HOURS_EXCEPTIONS,
   emptySchedule,
   formatTime12h,
+  nzToday,
   parseBusinessHours,
   serializeBusinessHours,
   type BusinessHoursData,
   type DaySchedule,
+  type HoursException,
 } from "@/lib/businessHours";
 
 function TimeSelect({
@@ -68,6 +71,20 @@ export default function BusinessHoursEditor({
     const schedule = [...data.schedule];
     schedule[index] = day;
     update({ ...data, schedule });
+  }
+
+  // Dated exceptions. Past ones are dropped whenever the list is edited.
+  const today = nzToday();
+  const exceptions = (data.exceptions ?? []).filter((e) => e.date >= today);
+  // Kept in the order they were added, so a row never jumps while it's
+  // being edited; customers see them sorted (upcomingExceptions).
+  function setExceptions(next: HoursException[]) {
+    update({ ...data, exceptions: next.length > 0 ? next : undefined });
+  }
+  function updateException(index: number, e: HoursException) {
+    const next = [...exceptions];
+    next[index] = e;
+    setExceptions(next);
   }
 
   function copyMondayToWeekdays() {
@@ -200,6 +217,88 @@ export default function BusinessHoursEditor({
           className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
         />
       </label>
+
+      <div className="mt-4">
+        <p className="text-sm font-medium text-slate-700">
+          Holiday &amp; special hours <span className="font-normal text-slate-500">(optional)</span>
+        </p>
+        <p className="text-xs text-slate-500">
+          Dates that differ from the week above. Customers see the ones coming up in the next two months, and
+          &ldquo;Open now&rdquo; follows them.
+        </p>
+        <div className="mt-2 space-y-2">
+          {exceptions.map((e, i) => (
+            <div key={i} className="rounded-xl border border-slate-200 bg-white p-2.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="date"
+                  aria-label="Date"
+                  value={e.date}
+                  min={today}
+                  onChange={(ev) => ev.target.value && updateException(i, { ...e, date: ev.target.value })}
+                  className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm outline-none focus:border-brand-400"
+                />
+                <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={!e.closed}
+                    onChange={(ev) =>
+                      updateException(i, {
+                        ...e,
+                        closed: !ev.target.checked,
+                        ranges: ev.target.checked && e.ranges.length === 0 ? [{ open: "10:00", close: "14:00" }] : e.ranges,
+                      })
+                    }
+                    className="h-4 w-4 rounded border-slate-300 text-brand-600"
+                  />
+                  Open
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setExceptions(exceptions.filter((_, x) => x !== i))}
+                  className="ml-auto text-xs font-semibold text-slate-500 hover:text-ember-600"
+                  aria-label={`Remove ${e.date}`}
+                >
+                  ✕
+                </button>
+              </div>
+              <input
+                type="text"
+                aria-label="What's on (optional)"
+                value={e.label ?? ""}
+                maxLength={60}
+                onChange={(ev) => updateException(i, { ...e, label: ev.target.value || undefined })}
+                placeholder="What's on (optional), e.g. Christmas Day"
+                className="mt-2 w-full rounded-lg border border-slate-200 px-2 py-1 text-sm outline-none focus:border-brand-400"
+              />
+              {!e.closed && (
+                <div className="mt-2 flex items-center gap-2">
+                  <TimeSelect
+                    ariaLabel={`${e.date} opening time`}
+                    value={e.ranges[0]?.open ?? "10:00"}
+                    onChange={(v) => updateException(i, { ...e, ranges: [{ open: v, close: e.ranges[0]?.close ?? "14:00" }] })}
+                  />
+                  <span className="text-slate-500">–</span>
+                  <TimeSelect
+                    ariaLabel={`${e.date} closing time`}
+                    value={e.ranges[0]?.close ?? "14:00"}
+                    onChange={(v) => updateException(i, { ...e, ranges: [{ open: e.ranges[0]?.open ?? "10:00", close: v }] })}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        {exceptions.length < MAX_HOURS_EXCEPTIONS && (
+          <button
+            type="button"
+            onClick={() => setExceptions([...exceptions, { date: today, closed: true, ranges: [] }])}
+            className="mt-2 text-xs font-semibold text-brand-600 hover:underline"
+          >
+            + Add a date
+          </button>
+        )}
+      </div>
     </div>
   );
 }

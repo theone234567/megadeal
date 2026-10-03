@@ -14,7 +14,14 @@ import StarRating from "@/components/StarRating";
 import ShareButtons from "@/components/ShareButtons";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { parseBusinessHours, formatBusinessHoursLines, toOpeningHoursSpecification, isOpenNow } from "@/lib/businessHours";
+import {
+  parseBusinessHours,
+  formatBusinessHoursLines,
+  hoursKnown,
+  isOpenNow,
+  toOpeningHoursSpecification,
+  toSpecialOpeningHoursSpecification,
+} from "@/lib/businessHours";
 import { wixImageUrl } from "@/lib/wixImageUrl";
 
 // Every other page that fetches live Wix data (homepage, category pages,
@@ -115,7 +122,12 @@ export default async function BusinessProfilePage(
   const directionsUrl = getDirectionsUrl(mapTarget);
   const parsedHours = parseBusinessHours(business.businessHours);
   const hoursLines = parsedHours ? formatBusinessHoursLines(parsedHours) : null;
-  const openNow = parsedHours ? isOpenNow(parsedHours) : null;
+  // "Closed now" only when real hours say so, never because none were given.
+  const known = parsedHours ? hoursKnown(parsedHours) : false;
+  const openNow = parsedHours && known ? isOpenNow(parsedHours) : null;
+  const specialHours = parsedHours ? toSpecialOpeningHoursSpecification(parsedHours) : [];
+  // Hours set but empty (no open day, no notes, no upcoming dates) show nothing.
+  const showHours = Boolean(business.businessHours) && (!hoursLines || hoursLines.length > 0);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -153,9 +165,8 @@ export default async function BusinessProfilePage(
               business.lat !== null && business.lng !== null
                 ? { "@type": "GeoCoordinates", latitude: business.lat, longitude: business.lng }
                 : undefined,
-            openingHoursSpecification: parsedHours
-              ? toOpeningHoursSpecification(parsedHours)
-              : undefined,
+            openingHoursSpecification: parsedHours && known ? toOpeningHoursSpecification(parsedHours) : undefined,
+            specialOpeningHoursSpecification: specialHours.length > 0 ? specialHours : undefined,
             // No aggregateRating here: this rating is a plain number an
             // admin types into a form (components/admin/MerchantRow.tsx),
             // not aggregated from genuine customer reviews. Marking it up
@@ -333,9 +344,9 @@ export default async function BusinessProfilePage(
               </div>
             )}
 
-            {(business.businessHours || hasSocial) && (
+            {(showHours || hasSocial) && (
               <div className="space-y-1.5 text-sm">
-                {business.businessHours && (
+                {showHours && (
                   <div className="flex items-start gap-2 text-slate-600">
                     <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" />
                     <div>
