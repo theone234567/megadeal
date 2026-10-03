@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { EyeOffIcon } from "@/components/icons";
 import AddressAutocompleteField from "@/components/AddressAutocompleteField";
 import PhotoGalleryField from "./PhotoGalleryField";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
@@ -20,6 +21,19 @@ function RequiredTag() {
 
 function OptionalTag() {
   return <span className="ml-1 font-normal text-slate-500">(optional)</span>;
+}
+
+/** Marks a field that's never shown on the public site: legal name, NZBN,
+ *  contact name and phone, postcode and the account email. Everything
+ *  else in this form is on the business's public listing
+ *  (mapMerchantToBusiness in lib/business.ts is the public set). */
+function PrivateTag() {
+  return (
+    <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-slate-100 px-1.5 py-0.5 align-middle text-[11px] font-semibold text-slate-600">
+      <EyeOffIcon className="h-3 w-3" />
+      Private
+    </span>
+  );
 }
 
 interface MerchantRecord {
@@ -244,7 +258,10 @@ export default function MerchantProfileForm({
             <dd className="font-medium text-slate-800">{merchant.website || "—"}</dd>
           </div>
           <div>
-            <dt className="text-slate-500">Email</dt>
+            <dt className="text-slate-500">
+              Email
+              <PrivateTag />
+            </dt>
             <dd className="font-medium text-slate-800">{merchant.email || "—"}</dd>
           </div>
           <div>
@@ -335,8 +352,9 @@ export default function MerchantProfileForm({
         {startEditing ? "Your business details" : "Edit business details"}
       </h2>
       <p className="mt-1 text-sm text-slate-500">
-        Everything you fill in below shows up on your public listing — except your postcode,
-        which we keep to ourselves.
+        Everything you fill in below shows on your public listing, except the fields marked{" "}
+        <span className="font-semibold text-slate-600">Private</span>. We keep those to ourselves
+        and only use them to contact you or check your business.
       </p>
       {/* Only once there's a live listing for a re-review to take down.
           Before approval this warned about a consequence that can't
@@ -400,6 +418,7 @@ export default function MerchantProfileForm({
                 <label htmlFor="profile-legalBusinessName" className="mb-1 block text-sm font-medium text-slate-700">
                   Legal / registered business name
                   <RequiredTag />
+                  <PrivateTag />
                 </label>
                 <input
                   id="profile-legalBusinessName"
@@ -415,6 +434,7 @@ export default function MerchantProfileForm({
                 <label htmlFor="profile-nzbn" className="mb-1 block text-sm font-medium text-slate-700">
                   NZBN
                   <OptionalTag />
+                  <PrivateTag />
                 </label>
                 <input
                   id="profile-nzbn"
@@ -505,6 +525,7 @@ export default function MerchantProfileForm({
               <label htmlFor="profile-postcode" className="mb-1 block text-sm font-medium text-slate-700">
                 Postcode
                 <OptionalTag />
+                <PrivateTag />
               </label>
               <input
                 id="profile-postcode"
@@ -566,6 +587,7 @@ export default function MerchantProfileForm({
                 <label htmlFor="profile-contactName" className="mb-1 block text-sm font-medium text-slate-700">
                   Contact name
                   <RequiredTag />
+                  <PrivateTag />
                 </label>
                 <input
                   id="profile-contactName"
@@ -581,6 +603,7 @@ export default function MerchantProfileForm({
                 <label htmlFor="profile-contactPhone" className="mb-1 block text-sm font-medium text-slate-700">
                   Contact phone
                   <RequiredTag />
+                  <PrivateTag />
                 </label>
                 <input
                   id="profile-contactPhone"

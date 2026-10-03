@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { RUDENESS_OVERRIDES, parseRudenessOverride, type RudenessOverride } from "@/lib/rudenessSetting";
 import type { AdminMerchant } from "@/components/admin/MerchantRow";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
+import { EyeOffIcon, GlobeIcon } from "@/components/icons";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
 
 const STATUSES = ["Pending", "Approved", "Suspended"];
@@ -418,16 +419,38 @@ export default function AdminBusinessDetailPage() {
       </section>
 
       <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card sm:col-span-2">
-          <h2 className="text-sm font-bold text-slate-900">Contact &amp; legal</h2>
+        {/* Two parts, so it's clear what customers see: Private (legal and
+            contact details only MegaDeal and the business see) and Public
+            (everything shown on the website's deal and business pages). */}
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-card sm:col-span-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-900">Private</h2>
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+              <EyeOffIcon className="h-3.5 w-3.5" /> Only MegaDeal and the business see these
+            </span>
+          </div>
           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Business (trading) name" value={businessName} onChange={setBusinessName} required />
             <Field label="Legal / registered business name" value={legalBusinessName} onChange={setLegalBusinessName} required />
             <Field label="NZBN" value={nzbn} onChange={setNzbn} />
             <Field label="Contact name" value={contactName} onChange={setContactName} required />
             <Field label="Contact phone" value={contactPhone} onChange={setContactPhone} required />
+            <Field label="Postcode" value={postcode} onChange={setPostcode} />
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-emerald-200 bg-white p-5 shadow-card sm:col-span-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-900">Public</h2>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+              <GlobeIcon className="h-3.5 w-3.5" /> Shown on the website
+            </span>
+          </div>
+          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Business (trading) name" value={businessName} onChange={setBusinessName} required />
+            <Field label="Website" value={website} onChange={setWebsite} placeholder="https://yourbusiness.co.nz" />
             <Field label="Public phone" value={phone} onChange={setPhone} required />
             <Field label="Address" value={address} onChange={setAddress} required />
+            <Field label="Suburb" value={suburb} onChange={setSuburb} placeholder="e.g. Takapuna" />
             <label className="block text-sm">
               <span className="mb-1 block font-medium text-slate-700">
                 City
@@ -446,9 +469,6 @@ export default function AdminBusinessDetailPage() {
                 ))}
               </select>
             </label>
-            <Field label="Suburb" value={suburb} onChange={setSuburb} placeholder="e.g. Takapuna" />
-            <Field label="Postcode" value={postcode} onChange={setPostcode} />
-            <Field label="Website" value={website} onChange={setWebsite} placeholder="https://yourbusiness.co.nz" />
           </div>
           {typeof merchant.lat === "number" && typeof merchant.lng === "number" && (
             <p className="mt-3 text-xs text-slate-500">
@@ -456,11 +476,7 @@ export default function AdminBusinessDetailPage() {
               business's own address autocomplete — edit their address from the portal to move it)
             </p>
           )}
-        </section>
-
-        <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card sm:col-span-2">
-          <h2 className="text-sm font-bold text-slate-900">Public profile</h2>
-          <div className="mt-3 space-y-4">
+          <div className="mt-4 space-y-4">
             <label className="block text-sm">
               <span className="mb-1 block font-medium text-slate-700">About</span>
               <textarea

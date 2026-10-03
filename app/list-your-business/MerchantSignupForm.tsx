@@ -6,6 +6,7 @@ import { useWix } from "@/context/WixProvider";
 import { currentPromo, promoForCode } from "@/lib/promo";
 import { loginMember, registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import PasswordField from "@/components/PasswordField";
+import { EyeOffIcon } from "@/components/icons";
 import { trackMetaPixelEvent, trackMetaCustomEvent } from "@/lib/metaPixel";
 import { getAttribution, getFbc, getFbp } from "@/lib/attribution";
 import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
@@ -729,6 +730,20 @@ export default function MerchantSignupForm({
   return (
     <div id="signup" className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
       <form onSubmit={handleSubmit} onChangeCapture={trackFormStarted} className="space-y-4">
+        {/* What's private and what isn't, up front. Name and email are
+            only for the account. The legal name and phone are submitted as
+            the starting public business name and booking number too
+            (readApplicationValues / submitApplication below), so this says
+            so rather than calling the whole form private. The portal marks
+            every private field. */}
+        <p className="flex items-start gap-2 rounded-xl bg-slate-50 px-3.5 py-2.5 text-sm text-slate-600">
+          <EyeOffIcon className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
+          <span>
+            Your name and email are private: we use them to set up your account and contact you,
+            and they&apos;re never shown on MegaDeal. Your business name and phone number start
+            out as the ones customers see, and you can change either in your portal.
+          </span>
+        </p>
         <div>
           <label htmlFor="signup-legalBusinessName" className="mb-1 block text-base font-medium text-slate-700">
             Legal / registered business name
