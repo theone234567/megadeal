@@ -14,6 +14,7 @@ import { BOOKING_CHOICES, bookingConflict, hasUsableBookingRoute, isBookingChoic
 import DealCard from "@/components/DealCard";
 import DealDetail from "@/app/deal/[slug]/DealDetail";
 import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
+import { CalendarIcon, CheckIcon, ZapIcon } from "@/components/icons";
 import {
   DEFAULT_EVERYDAY_DAYS,
   DEFAULT_FLASH_MINUTES,
@@ -742,6 +743,84 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
       )}
 
       <form onSubmit={handleContinueToPreview} className="mt-6 space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+        {/* The deal type first: it sets the cost, how long the deal can run
+            and how the offer should be written. */}
+        <fieldset>
+          <legend className="mb-2 block text-sm font-medium text-slate-700">What kind of deal is it?</legend>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {([false, true] as const).map((flash) => {
+              const selected = isFlash === flash;
+              const typeCost = platformSettings ? dealCreditCost(flash, platformSettings) : null;
+              const paused = platformSettings ? dealTypeBlocked(flash, platformSettings) !== null : false;
+              const longest = flash
+                ? FLASH_DURATIONS[FLASH_DURATIONS.length - 1].label
+                : DURATIONS[DURATIONS.length - 1].label;
+              return (
+                <label
+                  key={String(flash)}
+                  className={`relative flex cursor-pointer gap-3 rounded-xl border-2 p-3.5 transition focus-within:ring-2 focus-within:ring-brand-400 focus-within:ring-offset-2 ${
+                    selected ? "border-brand-600 bg-brand-50" : "border-slate-200 bg-white hover:border-brand-300"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="deal-type"
+                    value={flash ? "flash" : "everyday"}
+                    checked={selected}
+                    onChange={() => setIsFlash(flash)}
+                    className="sr-only"
+                  />
+                  <span
+                    aria-hidden
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
+                      selected ? "bg-brand-600 text-white" : "bg-brand-50 text-brand-700"
+                    }`}
+                  >
+                    {flash ? <ZapIcon className="h-5 w-5" /> : <CalendarIcon className="h-5 w-5" />}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <span className="text-sm font-bold text-slate-900">{flash ? "Flash deal" : "Everyday deal"}</span>
+                      {paused && (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">
+                          Paused
+                        </span>
+                      )}
+                    </span>
+                    <span className="mt-0.5 block text-xs leading-relaxed text-slate-600">
+                      {flash
+                        ? "A short burst to fill quiet times, e.g. \u201c2-for-1 tonight only\u201d. Shows a FLASH badge."
+                        : "A regular offer that runs for days or weeks."}
+                    </span>
+                    <span className="mt-1.5 block text-xs font-semibold text-slate-800">
+                      Up to {longest}
+                      {typeCost !== null && <> · {typeCost === 0 ? "Free" : creditsLabel(typeCost)}</>}
+                    </span>
+                  </span>
+                  {selected && (
+                    <CheckIcon aria-hidden className="absolute right-3 top-3 h-4 w-4 text-brand-600" />
+                  )}
+                </label>
+              );
+            })}
+          </div>
+          {typePaused ? (
+            <p role="status" className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
+              {typePaused} You can still build it and save it as a draft.
+            </p>
+          ) : (
+            cost !== null &&
+            credits < cost && (
+              <p role="status" className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
+                {dealTypeName(isFlash)}s use {creditsLabel(cost)} and you have {creditsText}.{" "}
+                <Link href="/contact" className="underline">
+                  Contact us to top up
+                </Link>
+                , or save it as a draft.
+              </p>
+            )
+          )}
+        </fieldset>
         <div>
           <label htmlFor="deal-name" className="mb-1 block text-sm font-medium text-slate-700">Deal name</label>
           <input
@@ -825,46 +904,6 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
           </div>
-        </div>
-
-        <div className="rounded-xl border border-brand-100 bg-brand-50/60 p-3">
-          <label className="flex cursor-pointer items-start gap-2">
-            <input
-              type="checkbox"
-              checked={isFlash}
-              onChange={(e) => setIsFlash(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
-            />
-            <span>
-              <span className="block text-sm font-bold text-slate-900">⚡ Make this a Flash Deal</span>
-              <span className="block text-xs text-slate-600">
-                Short-burst offer (minutes to hours) — great for filling quiet
-                spots, e.g. &quot;2-for-1 tonight only&quot;. Shows an animated FLASH badge.
-                {platformSettings && cost !== null && cost > 0 && platformSettings.everydayCredits !== platformSettings.flashCredits && (
-                  <>
-                    {" "}Flash deals use {creditsLabel(platformSettings.flashCredits)}, Everyday deals{" "}
-                    {creditsLabel(platformSettings.everydayCredits)}.
-                  </>
-                )}
-              </span>
-            </span>
-          </label>
-          {typePaused ? (
-            <p role="status" className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
-              {typePaused} You can still build it and save it as a draft.
-            </p>
-          ) : (
-            cost !== null &&
-            credits < cost && (
-              <p role="status" className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
-                {dealTypeName(isFlash)}s use {creditsLabel(cost)} and you have {creditsText}.{" "}
-                <Link href="/contact" className="underline">
-                  Contact us to top up
-                </Link>
-                , or save it as a draft.
-              </p>
-            )
-          )}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
