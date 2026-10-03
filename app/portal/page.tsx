@@ -14,6 +14,16 @@ import ExportDealsButton from "@/components/portal/ExportDealsButton";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
 import { usePlatformSettings } from "@/lib/usePlatformSettings";
 import { dealCostsLine } from "@/lib/platformSettingsRules";
+import {
+  STATUS_FILTERS,
+  TYPE_FILTERS,
+  matchesStatus,
+  matchesType,
+  parseSavedFilters,
+  statusCounts,
+  type DealStatusFilter,
+  type DealTypeFilter,
+} from "@/lib/portalDealFilters";
 import { dealDisplayStatus, isPastDeal } from "@/lib/dealStatus";
 import { StoreIcon, MapPinIcon, MailIcon, ReceiptIcon, CreditCardIcon } from "@/components/icons";
 
@@ -74,6 +84,26 @@ export default function PortalPage() {
   // notice never flashes up after launch.
   const [siteLaunched, setSiteLaunched] = useState(true);
   const platformSettings = usePlatformSettings();
+  // "My deals" filters, kept for this browser tab so they're still set
+  // after opening a deal to duplicate it and coming back.
+  const [statusFilter, setStatusFilter] = useState<DealStatusFilter>("all");
+  const [typeFilter, setTypeFilter] = useState<DealTypeFilter>("all");
+  useEffect(() => {
+    let saved: string | null = null;
+    try {
+      saved = sessionStorage.getItem("portal-deal-filters");
+    } catch {}
+    const f = parseSavedFilters(saved);
+    setStatusFilter(f.status);
+    setTypeFilter(f.type);
+  }, []);
+  function chooseFilters(status: DealStatusFilter, type: DealTypeFilter) {
+    setStatusFilter(status);
+    setTypeFilter(type);
+    try {
+      sessionStorage.setItem("portal-deal-filters", JSON.stringify({ status, type }));
+    } catch {}
+  }
   // Separate from `merchant` on purpose: `merchant === null` means "we
   // asked Wix and confirmed there's no business on this account," which
   // is what puts someone on the restart-signup screen. A failed request
@@ -321,9 +351,18 @@ export default function PortalPage() {
   // Ended (run over) and cancelled deals are history: listed apart, most
   // recently finished first, so what's running now isn't buried.
   const currentDeals = submittedDeals.filter((d) => !isPastDeal(d));
-  const pastDeals = submittedDeals
+  const allPastDeals = submittedDeals
     .filter((d) => isPastDeal(d))
     .sort((a, b) => finishedAt(b) - finishedAt(a));
+  // Filters only appear once there's something to narrow down; a filter
+  // left set from earlier that now matches nothing falls back to all.
+  const hasBothTypes = submittedDeals.some((d) => d.isFlash) && submittedDeals.some((d) => !d.isFlash);
+  const activeType: DealTypeFilter = hasBothTypes ? typeFilter : "all";
+  const counts = statusCounts(currentDeals, activeType);
+  const activeStatus: DealStatusFilter = counts[statusFilter] > 0 ? statusFilter : "all";
+  const shownCurrentDeals = currentDeals.filter((d) => matchesType(d, activeType) && matchesStatus(d, activeStatus));
+  const pastDeals = allPastDeals.filter((d) => matchesType(d, activeType));
+  const showStatusFilter = STATUS_FILTERS.filter((f) => f !== "all" && counts[f] > 0).length > 1;
   // Has had a deal go live before, so a Pending status now means a change
   // under review rather than a first application.
   const inReReview = submittedDeals.some(
@@ -614,15 +653,50 @@ export default function PortalPage() {
                     <h2 className="text-lg font-bold text-slate-900">My deals</h2>
                     <ExportDealsButton deals={submittedDeals} />
                   </div>
+                  {(hasBothTypes || showStatusFilter) && (
+                    <div className="mt-3 space-y-2">
+                      {hasBothTypes && (
+                        <FilterChips
+                          label="Deal type"
+                          options={TYPE_FILTERS.map((t) => ({
+                            value: t,
+                            label: t === "all" ? "All types" : t === "flash" ? "Flash" : "Everyday",
+                          }))}
+                          value={activeType}
+                          onChange={(t) => chooseFilters(activeStatus, t)}
+                        />
+                      )}
+                      {showStatusFilter && (
+                        <FilterChips
+                          label="Status"
+                          options={STATUS_FILTERS.filter((f) => f === "all" || counts[f] > 0).map((f) => ({
+                            value: f,
+                            label: `${
+                              f === "all"
+                                ? "All current"
+                                : f === "Live" && !siteLaunched
+                                  ? "Approved"
+                                  : f
+                            } (${counts[f]})`,
+                          }))}
+                          value={activeStatus}
+                          onChange={(f) => chooseFilters(f, activeType)}
+                        />
+                      )}
+                    </div>
+                  )}
                   {currentDeals.length === 0 ? (
                     <p className="mt-2 text-sm text-slate-500">
-                      {pastDeals.length > 0
+                      {allPastDeals.length > 0
                         ? "Nothing running right now. Run a past deal again below, or create a new one."
                         : "No deals yet — create your first one above."}
                     </p>
                   ) : (
                     <ul className="mt-4 space-y-3">
-                      {currentDeals.map((deal) => (
+                      {shownCurrentDeals.length === 0 && (
+                        <li className="text-sm text-slate-500">No current deals match these filters.</li>
+                      )}
+                      {shownCurrentDeals.map((deal) => (
                         <DealManageCard
                           key={deal._id}
                           deal={deal}
@@ -721,5 +795,42 @@ export default function PortalPage() {
         </>
       )}
     </div>
+  );
+}
+
+/** A row of single-choice chips (native radios, so arrow keys work). */
+function FilterChips<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <fieldset className="flex flex-wrap items-center gap-1.5">
+      <legend className="sr-only">{label}</legend>
+      {options.map((o) => (
+        <label
+          key={o.value}
+          className={`cursor-pointer rounded-full px-3 py-1.5 text-xs font-bold transition focus-within:ring-2 focus-within:ring-brand-400 focus-within:ring-offset-1 ${
+            value === o.value ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          }`}
+        >
+          <input
+            type="radio"
+            name={`deal-filter-${label}`}
+            value={o.value}
+            checked={value === o.value}
+            onChange={() => onChange(o.value)}
+            className="sr-only"
+          />
+          {o.label}
+        </label>
+      ))}
+    </fieldset>
   );
 }

@@ -84,7 +84,14 @@ export default function DealManageCard({
         onClick={() => setOpen((v) => !v)}
         className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3 text-left"
       >
-        <span className="font-medium text-slate-800">{deal.dealName || "Untitled deal"}</span>
+        <span className="font-medium text-slate-800">
+          {deal.dealName || "Untitled deal"}
+          {deal.isFlash && (
+            <span className="ml-2 inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 align-middle text-[11px] font-bold text-sky-800">
+              ⚡ Flash
+            </span>
+          )}
+        </span>
         <span className="flex shrink-0 items-center gap-3">
           <span
             className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${DEAL_STATUS_STYLES[status]}`}
