@@ -31,7 +31,7 @@ const CUSTOMER_STEPS: Step[] = [
   {
     number: "2",
     title: "Grab the deal",
-    text: `Open the deal page to see exactly what's on offer, the fine print, and who's behind it. Tap "Get deal code" to reveal the business's phone number, website and address — there's no voucher to buy and no checkout on MegaDeal. We don't take a card number or process any payment; you're just unlocking the business's contact details.`,
+    text: `Open the deal page to see exactly what's on offer, the fine print, and who's behind it. The deal code and the business's phone number, website and address are right there under "Get this deal" — there's no voucher to buy and no checkout on MegaDeal. We don't take a card number or process any payment.`,
   },
   {
     number: "3",

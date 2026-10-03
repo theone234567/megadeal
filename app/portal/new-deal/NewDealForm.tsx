@@ -438,7 +438,7 @@ export default function NewDealForm({ siteLaunched }: { siteLaunched: boolean })
             <h1 className="mt-3 text-xl font-bold text-slate-900">Your deal is live!</h1>
             <p className="mt-2 text-sm text-slate-600">
               It&apos;s been approved and customers can see it now. You can track views and
-              code reveals in your portal.
+              clicks in your portal.
             </p>
           </>
         ) : submitResult.outcome === "rejected" ? (

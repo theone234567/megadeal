@@ -207,7 +207,7 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
             />
           </label>
           <p className="text-xs text-slate-500 sm:col-span-2">
-            Customers who already revealed a code saw the old version — if a change makes the deal worse for them,
+            Customers who already saw or copied the code saw the old version — if a change makes the deal worse for them,
             honour what they saw.
           </p>
           <div className="flex gap-2 sm:col-span-2">

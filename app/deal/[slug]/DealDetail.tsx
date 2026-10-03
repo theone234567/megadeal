@@ -9,6 +9,7 @@ import { isDealLive } from "@/lib/dealVisibility";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
 import CountdownBadge from "@/components/CountdownBadge";
 import ShareButtons from "@/components/ShareButtons";
+import GetDealPanel from "./GetDealPanel";
 import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon, CheckIcon } from "@/components/icons";
 import { trackDealEvent } from "@/lib/trackDeal";
 import { parseBusinessHours, formatBusinessHoursLines, isOpenNow } from "@/lib/businessHours";
@@ -90,8 +91,6 @@ export default function DealDetail({
   moreDeals?: ReactNode;
   preview?: boolean;
 }) {
-  const [showCode, setShowCode] = useState(false);
-  const revealRef = useRef<HTMLHeadingElement>(null);
   const conditionsRef = useRef<HTMLDetailsElement>(null);
 
   // A customer can sit on this exact page for a while — it's the page
@@ -114,12 +113,6 @@ export default function DealDetail({
     trackDealEvent(deal.id, "view");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deal.id, preview]);
-
-  // Move focus to the revealed instructions so keyboard and screen-reader
-  // users land on the code and next step rather than on a vanished button.
-  useEffect(() => {
-    if (showCode) revealRef.current?.focus();
-  }, [showCode]);
 
   const category = deal.categories[0];
   const categoryEmoji = CATEGORIES.find((c) => c.name === category)?.emoji ?? "🏷️";
@@ -297,8 +290,31 @@ export default function DealDetail({
                 </p>
               )}
               <p className="mt-1.5 text-xs text-slate-600">
-                {deal.currency || "NZD"} · Pay {businessLabel} directly
+                {deal.currency || "NZD"} · Pay {businessLabel} directly · No payment to MegaDeal
               </p>
+
+              {/* Get this deal (GetDealPanel.tsx): the code, how to use it
+                  and one main action. Replaced by a plain notice once the
+                  offer has ended or sold out: no code or action then. */}
+              {!live ? (
+                <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-center" aria-live="polite">
+                  <p className="text-sm font-bold text-slate-700">This offer has ended</p>
+                  <p className="mt-0.5 text-xs text-slate-600">It can no longer be claimed through MegaDeal.</p>
+                </div>
+              ) : !deal.inStock ? (
+                <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 py-3 text-center text-sm font-bold text-slate-700" aria-live="polite">
+                  Sold out — check back soon
+                </div>
+              ) : (
+                <GetDealPanel
+                  deal={deal}
+                  plan={plan}
+                  websiteHref={websiteHref}
+                  directionsUrl={directionsUrl}
+                  restrictions={restrictions}
+                  preview={preview}
+                />
+              )}
 
               {(restrictions.length > 0 || conditions.length > 0 || (deal.expiresAt && !deal.isFlash)) && (
                 <div className="mt-5 rounded-[13px] bg-brand-50 p-4 text-[0.8125rem]">
@@ -334,91 +350,6 @@ export default function DealDetail({
                 </div>
               )}
 
-              <div className="mt-5" aria-live="polite">
-                {!live ? (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
-                    <p className="text-sm font-bold text-slate-700">This offer has ended</p>
-                    <p className="mt-0.5 text-xs text-slate-600">It can no longer be claimed through MegaDeal.</p>
-                  </div>
-                ) : !deal.inStock ? (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 py-3 text-center text-sm font-bold text-slate-700">
-                    Sold out — check back soon
-                  </div>
-                ) : !showCode ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        // Same reasoning as the view effect above: a preview
-                        // has no real deal id, so recording a click would put
-                        // fictional demand in the merchant's own analytics.
-                        // A reveal is interest only — not a sale, a booking
-                        // or a change to any stock count.
-                        if (!preview) trackDealEvent(deal.id, "click");
-                        setShowCode(true);
-                      }}
-                      className="flex min-h-12 w-full items-center justify-center rounded-full bg-brand-600 px-5 text-base font-extrabold text-white shadow-card transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 active:scale-[0.98]"
-                    >
-                      {deal.dealCode ? "Get deal code" : "Show how to use this deal"}
-                    </button>
-                    <p className="mt-2 text-center text-[0.6875rem] leading-relaxed text-slate-600">
-                      {deal.dealCode ? "Free to get the code" : "Free"} · No payment to MegaDeal
-                    </p>
-                  </>
-                ) : (
-                  <div className="rounded-[14px] border border-slate-200/80 bg-brand-50 p-4">
-                    <h3 ref={revealRef} tabIndex={-1} className="text-sm font-extrabold text-slate-900 outline-none">
-                      {plan.nextStepHeading}
-                    </h3>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-600">{plan.instruction}</p>
-                    {deal.dealCode && (
-                      <span className="my-3 block select-all rounded-[9px] border border-dashed border-brand-600 bg-white px-3 py-3 text-center font-sans text-lg font-extrabold tracking-[0.08em] text-brand-700">
-                        {deal.dealCode}
-                      </span>
-                    )}
-                    {plan.reservationNote && (
-                      <p className="text-xs leading-relaxed text-slate-600">{plan.reservationNote}</p>
-                    )}
-                    {plan.actions.length > 0 && (
-                      <div className="mt-3 grid gap-2">
-                        {plan.actions.map((action, i) => (
-                          <ActionLink key={action.kind} action={action} primary={i === 0} />
-                        ))}
-                      </div>
-                    )}
-                    {plan.phone && plan.actions.some((a) => a.kind === "call") && (
-                      <p className="mt-2 text-xs text-slate-600">{plan.phone.display}</p>
-                    )}
-                    {plan.requirement === "not_required" && directionsUrl && (
-                      <a
-                        href={directionsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full border border-brand-200 bg-white px-4 text-sm font-extrabold text-brand-700 hover:border-brand-400"
-                      >
-                        <MapPinIcon className="h-4 w-4" /> Get directions
-                      </a>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {live && deal.inStock && (
-                <ol className="mt-5 grid gap-2.5 border-t border-slate-200/80 pt-4 text-xs text-slate-600">
-                  {[
-                    deal.dealCode ? "Get your deal code" : "Check the conditions",
-                    plan.howToStep,
-                    `Pay ${businessLabel} directly at the deal price`,
-                  ].map((step, i) => (
-                    <li key={i} className="flex items-center gap-2.5">
-                      <span className="grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-brand-50 text-[0.6875rem] font-extrabold text-brand-700">
-                        {i + 1}
-                      </span>
-                      {step}
-                    </li>
-                  ))}
-                </ol>
-              )}
 
               <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                 {/* Hidden while previewing: ShareButtons defaults to the

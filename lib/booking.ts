@@ -303,3 +303,72 @@ export function bookingPlan(
     aboutActions,
   };
 }
+
+/** MegaDeal-generated codes start with "MEGA-" (lib/dealCode.ts); a
+ *  business can't choose one that does. Any other code is the business's
+ *  own, which they were asked to set up in their own booking system. */
+export function isMegaDealCode(code: string | null | undefined): boolean {
+  return Boolean(code && code.startsWith("MEGA-"));
+}
+
+export interface GetDealCopy {
+  /** "Booking required", "Booking recommended", "No booking needed"… */
+  heading: string;
+  /** One short, accurate sentence on how to use the code. */
+  instruction: string;
+  /** The one availability note, or null when none applies. */
+  availability: string | null;
+}
+
+/**
+ * The words in the deal page's "Get this deal" panel, from the booking
+ * requirement and the main action (bookingPlan's first action). Nothing
+ * here may imply that copying a code books, reserves or pays for anything.
+ *
+ * Online booking says to enter the code at checkout only when it's the
+ * business's own code (they were asked to set it up in their booking
+ * system). A MEGA- code isn't known to work there, so it's shown on
+ * arrival instead.
+ */
+export function getThisDealCopy(
+  requirement: BookingRequirement,
+  primary: BookingActionKind | null,
+  code: string | null,
+): GetDealCopy {
+  const quote = code ? "quote your code" : "mention this MegaDeal offer";
+  const Quote = code ? "Quote your code" : "Mention this MegaDeal offer";
+  const availability = "Subject to availability. Your code does not confirm a booking.";
+
+  if (requirement === "not_required") {
+    return {
+      heading: "No booking needed",
+      instruction: code
+        ? "Show this code before ordering or paying."
+        : "Mention this MegaDeal offer before ordering or paying.",
+      availability: null,
+    };
+  }
+
+  if (requirement === "unknown") {
+    return {
+      heading: "Contact the business",
+      instruction: `${Quote} when you contact the business. Check the conditions for when and how to use it.`,
+      availability,
+    };
+  }
+
+  const heading = requirement === "required" ? "Booking required" : "Booking recommended";
+  let instruction: string;
+  if (primary === "book_online" && code && !isMegaDealCode(code)) {
+    instruction = "Book online and enter this code at checkout. Check the discount applies before paying.";
+  } else if (primary === "book_online") {
+    instruction = `Book online, then ${code ? "show this code" : "mention this MegaDeal offer"} when you visit. Confirm the offer with the business.`;
+  } else if (primary === "email") {
+    instruction = `${code ? "Include this code in" : "Mention this MegaDeal offer in"} your booking enquiry. Wait for the business to confirm.`;
+  } else if (requirement === "required") {
+    instruction = `Book with the business and ${quote}.`;
+  } else {
+    instruction = `We recommend booking ahead. ${Quote} when contacting the business.`;
+  }
+  return { heading, instruction, availability };
+}

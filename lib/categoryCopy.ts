@@ -32,7 +32,7 @@ export interface CategoryCopy {
 }
 
 const HOW_IT_WORKS =
-  "MegaDeal is free for customers. There's no voucher to buy: tap “Get deal code”, contact the business to book or visit, quote your code and pay them directly at the deal price. Check each deal's conditions, because the business sets its own days, times and limits.";
+  "MegaDeal is free for customers. There's no voucher to buy: copy the deal code from the deal page, contact the business to book or visit, quote it and pay them directly at the deal price. Check each deal's conditions, because the business sets its own days, times and limits.";
 
 export const CATEGORY_COPY: Record<string, CategoryCopy> = {
   "food-drink": {

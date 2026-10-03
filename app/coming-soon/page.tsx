@@ -172,7 +172,7 @@ const FAQS: { q: string; a: string; aNode?: ReactNode }[] = [
   },
   {
     q: "How do I use a deal?",
-    a: "Open the deal, tap \"Get deal code\", then contact or visit the business and quote your code. Some deals need a booking, so check the deal's conditions first.",
+    a: "Open the deal and copy the deal code under \"Get this deal\", then contact or visit the business and quote your code. Some deals need a booking, so check the deal's conditions first.",
   },
   {
     q: "I run a local business. What does it cost?",
