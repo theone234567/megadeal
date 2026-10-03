@@ -42,6 +42,7 @@ import {
 import { TEST_DEAL_PHOTOS, testDealDurationValue, type TestDeal } from "@/lib/testDeals";
 import { SCHEDULE_MAX_AHEAD_DAYS, parseScheduledStart, type StartMode } from "@/lib/dealSchedule";
 import { formatNzDateTime, nzDateTimeParts } from "@/lib/nzTime";
+import { safeWebHref } from "@/lib/socialLinks";
 
 interface MerchantRecord {
   _id: string;
@@ -814,6 +815,11 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
       },
       isTest ? { businessName: testBusiness || null, suburb: testSuburb || null, city: "Auckland" } : merchant
     );
+    // Where "Book online" would send customers: the website-code page, or
+    // the profile's booking link or website.
+    const bookingCheckHref = safeWebHref(
+      (codeOnWebsite && dealCode ? codeWebsiteUrl : "") || merchant?.bookingUrl || merchant?.website || ""
+    );
     const durationLabel = isFlash
       ? FLASH_DURATIONS.find((d) => d.minutes === durationMinutes)?.label
       : DURATIONS.find((d) => d.days === durationDays)?.label;
@@ -839,6 +845,19 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             <p className="w-full text-xs font-semibold text-slate-500 sm:w-auto">
               Exactly what customers see. Anything missing here is missing at launch.
             </p>
+            {/* Links are off in the preview; this is the deliberate way to
+                check where customers would actually be sent. It only opens
+                the page — nothing is booked or bought. */}
+            {!isTest && bookingCheckHref && (
+              <a
+                href={bookingCheckHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border-2 border-slate-200 px-4 py-1.5 text-sm font-bold text-brand-700 hover:border-brand-300 sm:ml-auto"
+              >
+                Test your booking link ↗
+              </a>
+            )}
           </div>
         </div>
 
