@@ -42,15 +42,17 @@ export default function ComingSoonV2() {
                 sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1239px) 46vw, 560px"
                 style={{ objectFit: "cover", objectPosition: V2_HERO.position }}
               />
+              {/* Inside the photo, which clips his lower half: he stands
+                  in the scene rather than floating over its edge. */}
+              <Image
+                className={styles.mascot}
+                src={MASCOT}
+                alt=""
+                width={480}
+                height={496}
+                sizes="(max-width: 767px) 130px, 210px"
+              />
             </div>
-            <Image
-              className={styles.mascot}
-              src={MASCOT}
-              alt=""
-              width={480}
-              height={496}
-              sizes="(max-width: 767px) 110px, 190px"
-            />
           </div>
           <div className={styles.conversion}>
             <h2>Be first to hear</h2>
