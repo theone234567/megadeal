@@ -6,7 +6,7 @@ import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { CATEGORY_ID_BY_NAME } from "@/lib/categories";
 import { getOrClaimMerchant } from "@/lib/merchant";
-import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
+import { debitCreditsIfAvailable, incrementCreditsAtomically, setFieldsIf } from "@/lib/creditsAtomic";
 import { getPlatformSettings } from "@/lib/platformSettings";
 import {
   creditsLabel,
@@ -151,6 +151,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid photo." }, { status: 400 });
   }
 
+  // Set once credits are taken or a draft is claimed, cleared once the
+  // deal exists: if anything throws in between, the catch below gives the
+  // credits back and returns the draft to Draft.
+  let undoSubmission: (() => Promise<void>) | null = null;
   try {
   const adminClient = createWixAdminClient();
 
@@ -236,9 +240,57 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Create the Wix Store product first — if this fails, nothing else has
-  // happened yet (no Deals row, no credit spent), so it's safe to just
-  // return an error and let the merchant retry.
+  // Claim the draft: only one request can move it out of Draft, so a
+  // double tap or a second tab can't submit (and charge for) it twice.
+  if (draftRow) {
+    const claimed = await setFieldsIf(
+      adminClient,
+      "Deals",
+      draftRow._id,
+      { status: "Pending Approval" },
+      { status: { $eq: "Draft" } }
+    );
+    if (!claimed) {
+      return NextResponse.json({ error: "That deal has already been submitted." }, { status: 409 });
+    }
+  }
+  const releaseDraft = async () => {
+    if (!draftRow) return;
+    const back = await setFieldsIf(
+      adminClient,
+      "Deals",
+      draftRow._id,
+      { status: "Draft" },
+      { status: { $eq: "Pending Approval" } }
+    );
+    if (!back) console.error(`[deals/create] draft ${draftRow._id} couldn't be returned to Draft`);
+  };
+
+  // Take the credits before creating anything, in one step that also
+  // checks the balance covers them (the check above is only for a quick,
+  // friendly answer): two submissions at once can't overdraw the wallet.
+  if (cost > 0) {
+    const debit = await debitCreditsIfAvailable(adminClient, merchant._id, cost);
+    if (debit !== "debited") {
+      await releaseDraft();
+      return NextResponse.json(
+        debit === "insufficient"
+          ? { error: `${dealTypeName(isFlash)}s cost ${creditsLabel(cost)} and you don't have enough credits left. Contact us to top up.` }
+          : { error: "We couldn't take the credits just now. Nothing was charged. Please try again in a moment." },
+        { status: debit === "insufficient" ? 403 : 503 }
+      );
+    }
+  }
+  undoSubmission = async () => {
+    if (cost > 0) {
+      const back = await incrementCreditsAtomically(adminClient, merchant._id, cost);
+      if (!back) console.error(`[deals/create] CREDITS NOT RETURNED (${cost}) to merchant ${merchant._id} after a failed submission`);
+    }
+    await releaseDraft();
+  };
+
+  // Create the Wix Store product first — if this fails, the credits go
+  // back and the draft returns to Draft, so the merchant can just retry.
   const productBody: any = {
     product: {
       name: dealName,
@@ -275,6 +327,8 @@ export async function POST(req: NextRequest) {
   );
   if (!productRes.ok) {
     console.error("[deals/create] product creation failed", await productRes.text().catch(() => ""));
+    await undoSubmission();
+    undoSubmission = null;
     return NextResponse.json(
       { error: "Couldn't create your deal listing. Please try again or contact us." },
       { status: 502 }
@@ -283,6 +337,8 @@ export async function POST(req: NextRequest) {
   const productJson = await productRes.json();
   const productId = productJson?.product?.id;
   if (!productId) {
+    await undoSubmission();
+    undoSubmission = null;
     return NextResponse.json(
       { error: "Couldn't create your deal listing. Please try again or contact us." },
       { status: 502 }
@@ -364,44 +420,19 @@ export async function POST(req: NextRequest) {
     } catch (cleanupErr) {
       console.error("[deals/create] orphaned product cleanup failed", cleanupErr);
     }
+    await undoSubmission();
+    undoSubmission = null;
     return NextResponse.json(
-      { error: "Couldn't save your deal. Nothing was charged — please try again." },
+      { error: "Couldn't save your deal. Nothing was charged. Please try again." },
       { status: 500 }
     );
   }
 
-  // Past this point the submission has succeeded: the deal exists and is
-  // in review. What follows is bookkeeping, and a failure in it must not
-  // become a 500 — the merchant would be told to try again, resubmit, and
-  // end up with a second Stores product, a second deal and a second credit
-  // charged for the one they already have. A missing ledger line is a far
-  // smaller problem than a duplicate charge, and both failures are loud in
-  // the logs rather than silent.
-  // incrementCreditsAtomically doesn't throw — it reports failure by
-  // returning false — so the try/catch that used to wrap this call caught
-  // nothing and a refused debit passed for a successful one. The merchant
-  // kept the credit and got the deal, silently.
-  let debited = cost === 0;
-  if (cost > 0) {
-    try {
-      debited = await incrementCreditsAtomically(adminClient, merchant._id, -cost);
-    } catch (err) {
-      console.error("[deals/create] credit debit threw", err);
-    }
-  }
-  if (!debited) {
-    console.error(
-      `[deals/create] CREDITS NOT DEDUCTED (${cost}) for merchant ${merchant._id} on deal ${deal?._id} — ` +
-        `the deal is in review but the balance is unchanged.`
-    );
-    // Recorded on the deal itself, so a later withdrawal can't "refund"
-    // credits that were never taken.
-    try {
-      deal = await adminClient.items.update("Deals", { ...deal, creditsCharged: 0, creditRefunded: true });
-    } catch (err) {
-      console.error("[deals/create] couldn't record the failed debit on the deal", err);
-    }
-  }
+  // Past this point the submission has succeeded: the deal exists, is in
+  // review and has been paid for. What follows is bookkeeping, and a
+  // failure in it must not become a 500 or undo the charge: the merchant
+  // would be told to try again and end up paying twice for one deal.
+  undoSubmission = null;
 
   try {
     await logMerchantActivity(adminClient, {
@@ -410,7 +441,7 @@ export async function POST(req: NextRequest) {
       // Only claim the charge that actually happened. A minus line against
       // an unchanged balance is worse than no line: it sends the merchant
       // looking for credits that were never taken.
-      amount: debited ? -cost : 0,
+      amount: -cost,
       description: `${dealTypeName(isFlash)} submitted: "${dealName}"${cost === 0 ? " (no credits charged)" : ""}`,
     });
   } catch (err) {
@@ -421,12 +452,11 @@ export async function POST(req: NextRequest) {
   // now; clearly offensive content is turned down with the reason (and the
   // credit back); everything else waits for a person, as before. Bounded
   // by a timeout and never throws — at worst the deal just stays pending.
-  // Credits that failed to debit above mustn't be "refunded" here.
   // With "every deal waits for admin approval" on, the AI review may still
   // turn down a clearly unsuitable deal but never publishes one.
   const review = await reviewSubmittedDeal(
     adminClient,
-    debited ? deal : { ...deal, creditRefunded: true },
+    deal,
     merchant,
     { category, apply: settings.requireApproval ? "noPublish" : true }
   );
@@ -435,12 +465,15 @@ export async function POST(req: NextRequest) {
     item: review.item,
     outcome: review.outcome === "publish" ? "live" : review.outcome === "reject" ? "rejected" : "pending",
     message: review.outcome === "reject" ? review.item.statusNote ?? null : null,
-    // What a turned-down deal gave back (aiReviewApply returns what was
-    // charged, unless the charge itself failed).
-    creditsReturned: review.outcome === "reject" && debited ? cost : 0,
+    // What a turned-down deal gave back: what it was charged.
+    creditsReturned: review.outcome === "reject" && review.creditsReturned ? review.creditsReturned : 0,
   });
   } catch (err) {
     console.error("[deals/create] failed", err);
+    if (undoSubmission) {
+      await undoSubmission().catch((undoErr) => console.error("[deals/create] undo failed", undoErr));
+      return NextResponse.json({ error: "Something went wrong. Nothing was charged. Please try again." }, { status: 500 });
+    }
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
 }

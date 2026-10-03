@@ -4,7 +4,7 @@ import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { allowedDealActions, dealDisplayStatus, withdrawalRefundsCredit } from "@/lib/dealStatus";
 import { getOrClaimMerchant } from "@/lib/merchant";
-import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
+import { incrementCreditsAtomically, setFieldsIf } from "@/lib/creditsAtomic";
 import { creditsToRefund } from "@/lib/platformSettingsRules";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { notifyDealChanged } from "@/lib/indexNowDeal";
@@ -76,6 +76,26 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     // was submitted while charging was off, 1 for older deals.
     const refundAmount = creditsToRefund(deal);
     const refund = target === "Cancelled" && withdrawalRefundsCredit(deal) && refundAmount > 0;
+    // Only one request may withdraw it: a double tap, a second tab or the
+    // automatic check rejecting it at the same moment would otherwise each
+    // see "Pending Approval" and each give the credits back.
+    if (refund) {
+      const claimed = await setFieldsIf(
+        adminClient,
+        "Deals",
+        deal._id,
+        { status: "Cancelled", creditRefunded: true },
+        { status: { $eq: "Pending Approval" } }
+      );
+      if (!claimed) {
+        const now = await adminClient.items.get("Deals", deal._id).catch(() => null);
+        if (now?.status === "Pending Approval") {
+          return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 503 });
+        }
+        // Someone else got there first: it's already withdrawn or decided.
+        return NextResponse.json({ item: now ?? deal, creditRefunded: false, creditsRefunded: 0 });
+      }
+    }
     const updated = await adminClient.items.update("Deals", {
       ...deal,
       ...publication.fields,
@@ -90,7 +110,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     // Withdrawing a deal that was never public gives its credit back —
     // deals can't be edited once submitted, so withdrawing and resubmitting
     // is how a business fixes a mistake, and it shouldn't cost them. The
-    // flag above is written first, so a retry can never refund twice.
+    // claim above is made first, so only one request can ever refund it.
     if (refund) {
       const merchant = await getOrClaimMerchant(adminClient, member);
       const refunded = merchant ? await incrementCreditsAtomically(adminClient, merchant._id, refundAmount) : false;

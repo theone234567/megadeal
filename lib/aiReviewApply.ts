@@ -1,5 +1,5 @@
 import { decideAiOutcome, limitAiOutcome, reviewWithAi, type AiApplyMode, type AiOutcome, type AiReview } from "./aiReview";
-import { incrementCreditsAtomically } from "./creditsAtomic";
+import { incrementCreditsAtomically, setFieldsIf } from "./creditsAtomic";
 import { withdrawalRefundsCredit } from "./dealStatus";
 import { creditsToRefund } from "./platformSettingsRules";
 import { withHistory } from "./dealAdminEdit";
@@ -36,7 +36,7 @@ export async function reviewSubmittedDeal(
    *  "noPublish": reject but never publish (platform setting "every deal
    *  waits for admin approval"). false: review only. */
   opts: { category?: string; apply: AiApplyMode }
-): Promise<{ outcome: AiOutcome; review: AiReview | null; item: Record<string, any> }> {
+): Promise<{ outcome: AiOutcome; review: AiReview | null; item: Record<string, any>; creditsReturned?: number }> {
   try {
     const rudenessCheck = await rudenessCheckFor(adminClient, merchant);
     const review = await reviewWithAi({
@@ -94,6 +94,18 @@ export async function reviewSubmittedDeal(
     if (outcome === "reject" && waiting) {
       const amount = creditsToRefund(deal);
       const refund = withdrawalRefundsCredit(deal) && amount > 0;
+      // Only one request may move the deal out of review: if the business
+      // withdraws it at the same moment, just one of the two gives the
+      // credits back.
+      const claimed = refund
+        ? (await setFieldsIf(
+            adminClient,
+            "Deals",
+            deal._id,
+            { status: "Cancelled", creditRefunded: true },
+            { status: { $eq: "Pending Approval" } },
+          )) !== null
+        : false;
       const item = await adminClient.items.update("Deals", {
         ...deal,
         aiReview: review,
@@ -101,7 +113,7 @@ export async function reviewSubmittedDeal(
         statusNote: review.messageToBusiness || FALLBACK_REJECTION,
         ...(refund ? { creditRefunded: true } : {}),
       });
-      const refunded = refund && merchant?._id ? await incrementCreditsAtomically(adminClient, merchant._id, amount) : false;
+      const refunded = claimed && merchant?._id ? await incrementCreditsAtomically(adminClient, merchant._id, amount) : false;
       await logMerchantActivity(adminClient, {
         merchantEmail: deal.merchantEmail,
         type: refunded ? "credit" : "deal",
@@ -110,7 +122,7 @@ export async function reviewSubmittedDeal(
           review.messageToBusiness || FALLBACK_REJECTION
         }`,
       });
-      return { outcome, review, item };
+      return { outcome, review, item, creditsReturned: refunded ? amount : 0 };
     }
 
     const item = await adminClient.items.update("Deals", { ...deal, aiReview: review });
