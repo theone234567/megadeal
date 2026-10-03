@@ -17,6 +17,8 @@ const CANONICAL_HOST = new URL(SITE_URL).hostname;
  * a future duplicate deployment) without needing to know about it here.
  * Skips localhost/127.0.0.1 so local dev and the CI preview step (which
  * hits localhost:8787) aren't redirected into a live domain.
+ * vercel.json now also switches that project's Git deployments off; the
+ * real site deploys only from .github/workflows/deploy.yml.
  */
 function isCanonicalHost(host: string) {
   return host === CANONICAL_HOST || host === "localhost" || host === "127.0.0.1";
