@@ -78,7 +78,11 @@ export default function DealCard({
   // per card — a dozen at once just from looking at the homepage, enough
   // for Wix to start turning requests away and the clicked deal to fail.
   // The deal page's loading screen still shows as soon as it's clicked.
-  const wrapperProps = preview ? {} : { href: `/deal/${deal.slug}`, prefetch: false };
+  // A test deal (lib/testDeals.ts) has no public page; its card goes to
+  // the admin-only one.
+  const wrapperProps = preview
+    ? {}
+    : { href: deal.isTest ? `/admin/test-deals/${deal.id}` : `/deal/${deal.slug}`, prefetch: false };
 
   // Business and place on one line, one icon: the card's single metadata row.
   const metaLine = [deal.businessName, locality].filter(Boolean).join(" · ");
@@ -120,6 +124,12 @@ export default function DealCard({
           <div aria-hidden className="flex h-full w-full items-center justify-center text-hp-purple/40">
             <PlaceholderIcon className="h-10 w-10" />
           </div>
+        )}
+
+        {deal.isTest && (
+          <span className="absolute bottom-2 left-2 rounded-full bg-hp-ink/85 px-2 py-0.5 text-xs font-bold text-white">
+            Test deal
+          </span>
         )}
 
         {soldOut ? (

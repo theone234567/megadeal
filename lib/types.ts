@@ -66,4 +66,7 @@ export interface Deal {
    *  asked (lib/booking.ts keeps their old wording). */
   codeOnWebsite?: boolean | null;
   codeWebsiteUrl?: string | null;
+  /** An admin test deal (lib/testDeals.ts): never in Wix, shown only on
+   *  admin previews, linking to its private page. */
+  isTest?: boolean;
 }

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { Deal } from "@/lib/types";
+import { useWithTestDeals } from "@/lib/useTestDeals";
 import { useUserLocation, type LocationStatus } from "@/lib/geo";
 import { pushUrl, useUrlSearch } from "@/lib/useUrlSearch";
 import { SORT_OPTIONS, dealDistanceKm, type SortOption } from "@/lib/sortDeals";
@@ -84,8 +85,11 @@ export default function HomeDeals({
   initialDeals,
   initialSearch = "",
   basePath = "/",
+  testDeals = false,
 }: {
   initialDeals: Deal[];
+  /** Add the admin's test deals (pre-launch previews only). */
+  testDeals?: boolean;
   /** The query string the server rendered with. */
   initialSearch?: string;
   basePath?: string;
@@ -110,7 +114,8 @@ export default function HomeDeals({
     return () => clearInterval(id);
   }, []);
 
-  const matching = matchDeals(initialDeals, filters, now, coords);
+  const allDeals = useWithTestDeals(initialDeals, testDeals);
+  const matching = matchDeals(allDeals, filters, now, coords);
   const { flash, everyday } = splitByType(matching, filters.type);
   const shown = filters.type === "flash" ? flash.length : filters.type === "everyday" ? everyday.length : matching.length;
 

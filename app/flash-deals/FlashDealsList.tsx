@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { isDealLive } from "@/lib/dealVisibility";
 import type { Deal } from "@/lib/types";
+import { useWithTestDeals } from "@/lib/useTestDeals";
 import { sortDeals, type SortOption } from "@/lib/sortDeals";
 import { useUserLocation } from "@/lib/geo";
 import DealGrid from "@/components/DealGrid";
@@ -22,7 +23,7 @@ const DealsMap = dynamic(() => import("@/components/DealsMap"), {
 
 // Deals are fetched server-side (see page.tsx) so listings are present in
 // the raw HTML on first load. This component only filters/sorts on top.
-export default function FlashDealsList({ initialDeals }: { initialDeals: Deal[] }) {
+export default function FlashDealsList({ initialDeals, testDeals = false }: { initialDeals: Deal[]; testDeals?: boolean }) {
   const [sort, setSort] = useState<SortOption>("ending");
   const [view, setView] = useState<DealsView>("grid");
   const [now, setNow] = useState(() => Date.now());
@@ -40,7 +41,8 @@ export default function FlashDealsList({ initialDeals }: { initialDeals: Deal[] 
     return () => clearInterval(id);
   }, []);
 
-  const flash = initialDeals.filter((d) => d.isFlash && isDealLive(d, now));
+  const allDeals = useWithTestDeals(initialDeals, testDeals);
+  const flash = allDeals.filter((d) => d.isFlash && isDealLive(d, now));
   const sorted = sortDeals(flash, sort, coords);
   const emptyMessage = "No flash deals right now — check back soon, they come and go fast!";
 

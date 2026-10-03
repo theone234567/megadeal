@@ -87,7 +87,7 @@ export default async function FlashDealsPage() {
       </div>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Suspense fallback={null}>
-          <FlashDealsList initialDeals={deals} />
+          <FlashDealsList initialDeals={deals} testDeals={!SITE_LAUNCHED} />
         </Suspense>
       </div>
     </main>

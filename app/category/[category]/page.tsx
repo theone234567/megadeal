@@ -129,7 +129,7 @@ export default async function CategoryPage(
         {copy && <p className="mt-1.5 mb-5 max-w-2xl text-sm text-slate-600 sm:text-base">{copy.intro}</p>}
         {!copy && <div className="mb-5" />}
         <Suspense fallback={null}>
-          <CategoryDeals category={category} initialDeals={deals} />
+          <CategoryDeals category={category} initialDeals={deals} testDeals={!SITE_LAUNCHED} />
         </Suspense>
         {copy && (
           <section className="mt-12 max-w-2xl border-t border-slate-100 pt-8">

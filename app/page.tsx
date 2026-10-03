@@ -3,7 +3,7 @@ import SearchAwareHero from "@/components/SearchAwareHero";
 import HomeDeals from "./HomeDeals";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import type { Metadata } from "next";
-import { SITE_URL, SITE_NAME } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { toSearchString } from "@/lib/homeFilters";
 
@@ -88,7 +88,7 @@ export default async function HomePage(props: { searchParams: Promise<Record<str
         <Hero />
       </SearchAwareHero>
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
-        <HomeDeals initialDeals={deals} initialSearch={initialSearch} />
+        <HomeDeals initialDeals={deals} initialSearch={initialSearch} testDeals={!SITE_LAUNCHED} />
       </div>
     </main>
   );

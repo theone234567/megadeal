@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { isDealLive } from "@/lib/dealVisibility";
 import type { Deal } from "@/lib/types";
+import { useWithTestDeals } from "@/lib/useTestDeals";
 import { sortDeals, type SortOption } from "@/lib/sortDeals";
 import { useUserLocation } from "@/lib/geo";
 import DealGrid from "@/components/DealGrid";
@@ -26,9 +27,12 @@ const DealsMap = dynamic(() => import("@/components/DealsMap"), {
 export default function CategoryDeals({
   category,
   initialDeals,
+  testDeals = false,
 }: {
   category: string;
   initialDeals: Deal[];
+  /** Add the admin's test deals (pre-launch previews only). */
+  testDeals?: boolean;
 }) {
   const searchParams = useSearchParams();
   const city = (searchParams.get("city") ?? "").toLowerCase().trim();
@@ -50,7 +54,8 @@ export default function CategoryDeals({
     return () => clearInterval(id);
   }, []);
 
-  let filtered = initialDeals.filter((d) => isDealLive(d, now) && d.categories.includes(category));
+  const allDeals = useWithTestDeals(initialDeals, testDeals);
+  let filtered = allDeals.filter((d) => isDealLive(d, now) && d.categories.includes(category));
   if (city) {
     filtered = filtered.filter((d) => (d.businessCity ?? "").toLowerCase() === city);
   }
