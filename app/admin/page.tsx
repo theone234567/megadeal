@@ -7,6 +7,7 @@ import DealRow, { type AdminDeal } from "@/components/admin/DealRow";
 import SubscriberRow, { type AdminSubscriber } from "@/components/admin/SubscriberRow";
 import PlatformSettingsPanel from "@/components/admin/PlatformSettingsPanel";
 import TestDealsPanel from "@/components/admin/TestDealsPanel";
+import { missedScheduledStart } from "@/lib/dealSchedule";
 import { useWix } from "@/context/WixProvider";
 
 export default function AdminDashboardPage() {
@@ -114,6 +115,15 @@ export default function AdminDashboardPage() {
   const pendingMerchants = merchants?.filter((m) => (m.status || "Pending") === "Pending").length ?? 0;
   const pendingDeals = deals?.filter((d) => (d.status || "Live") === "Pending Approval").length ?? 0;
   const pendingPhotos = deals?.filter((d) => d.pendingPhotoUrl && d.status !== "Cancelled").length ?? 0;
+  // Waiting for approval past their requested start (lib/dealSchedule.ts):
+  // each needs a new start time before it can be approved.
+  const missedStarts = deals?.filter((d) => missedScheduledStart(d)).length ?? 0;
+  const attention = [
+    { count: pendingMerchants, label: pendingMerchants === 1 ? "business waiting for approval" : "businesses waiting for approval", tab: "merchants" as const },
+    { count: pendingDeals, label: pendingDeals === 1 ? "deal waiting for review" : "deals waiting for review", tab: "deals" as const },
+    { count: missedStarts, label: missedStarts === 1 ? "deal whose start time passed before review" : "deals whose start time passed before review", tab: "deals" as const },
+    { count: pendingPhotos, label: pendingPhotos === 1 ? "new photo to approve" : "new photos to approve", tab: "deals" as const },
+  ].filter((a) => a.count > 0);
 
   const merchantQuery = merchantSearch.toLowerCase().trim();
   const filteredMerchants = merchants?.filter((m) => {
@@ -279,6 +289,34 @@ export default function AdminDashboardPage() {
             {signingOutBusiness ? "Signing out…" : "Sign out of business account"}
           </button>
         </div>
+      )}
+
+      {/* Needs attention (handoff pack, FINAL-SPEC §9): what's waiting on
+          an admin, each a shortcut to the tab where it's dealt with.
+          Change requests arrive by email (the contact form), not here. */}
+      {merchants && deals && (
+        <section aria-labelledby="needs-attention" className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+          <h2 id="needs-attention" className="text-sm font-bold text-slate-900">
+            Needs attention
+          </h2>
+          {attention.length === 0 ? (
+            <p className="mt-1 text-sm text-slate-500">Nothing is waiting on you.</p>
+          ) : (
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {attention.map((a) => (
+                <li key={a.label}>
+                  <button
+                    type="button"
+                    onClick={() => setTab(a.tab)}
+                    className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-900 hover:border-amber-300 hover:bg-amber-100"
+                  >
+                    <span className="font-extrabold">{a.count}</span> {a.label} →
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       )}
 
       <div className="mt-6 flex flex-wrap gap-2">
