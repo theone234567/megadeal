@@ -1281,6 +1281,10 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
               placeholder="e.g. 50"
               className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
             />
+            <p className="mt-1 text-xs text-slate-500">
+              How many you&apos;re offering. It isn&apos;t counted down automatically or shown to customers as
+              stock left.
+            </p>
           </div>
         </div>
 

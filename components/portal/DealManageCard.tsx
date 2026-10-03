@@ -135,15 +135,12 @@ export default function DealManageCard({
                     <span className="ml-2 rounded-full bg-slate-800 px-2 py-0.5 text-xs font-bold text-white">
                       Sold out
                     </span>
-                  ) : deal.quantityAvailable !== undefined &&
-                    deal.quantityAvailable !== null &&
-                    deal.quantityAvailable <= 5 ? (
-                    <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-600">
-                      Only {deal.quantityAvailable} left
-                    </span>
                   ) : deal.quantityAvailable ? (
+                    // The number the business set; nothing counts it down
+                    // (customers book and pay the business directly), so
+                    // it isn't shown as stock left.
                     <span className="ml-2 text-xs font-normal text-slate-500">
-                      · {deal.quantityAvailable} available
+                      · {deal.quantityAvailable} offered
                     </span>
                   ) : null}
                 </p>
