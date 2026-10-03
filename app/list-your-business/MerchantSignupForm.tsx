@@ -7,6 +7,7 @@ import { currentPromo, promoForCode } from "@/lib/promo";
 import { loginMember, registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import PasswordField from "@/components/PasswordField";
 import { EyeOffIcon } from "@/components/icons";
+import { phoneLink } from "@/lib/booking";
 import { trackMetaPixelEvent, trackMetaCustomEvent } from "@/lib/metaPixel";
 import { getAttribution, getFbc, getFbp } from "@/lib/attribution";
 import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
@@ -15,6 +16,17 @@ import { AUTH_TIMEOUT_MS, withTimeout } from "@/lib/withTimeout";
 
 function RequiredTag() {
   return <span className="ml-1 font-normal text-ember-600">Required</span>;
+}
+
+/** A field that's only for MegaDeal, never shown on the site (same tag as
+ *  the portal profile form). */
+function PrivateTag() {
+  return (
+    <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-slate-100 px-1.5 py-0.5 align-middle text-[11px] font-semibold text-slate-600">
+      <EyeOffIcon className="h-3 w-3" />
+      Private
+    </span>
+  );
 }
 
 /**
@@ -81,6 +93,9 @@ type ApplicationValues = {
   businessName: string;
   contactName: string;
   contactPhone: string;
+  /** The public number customers see (MerchantRecord.phone): its own
+   *  field, or the contact phone when "Same as my contact phone" is ticked. */
+  businessPhone: string;
   legalBusinessName: string;
   couponCode: string;
   honeypot: string;
@@ -97,6 +112,10 @@ function readApplicationValues(formData: FormData): ApplicationValues {
     businessName: legalBusinessName,
     contactName: String(formData.get("contactName") ?? ""),
     contactPhone: String(formData.get("contactPhone") ?? ""),
+    businessPhone:
+      formData.get("samePhone") === "on"
+        ? String(formData.get("contactPhone") ?? "")
+        : String(formData.get("businessPhone") ?? ""),
     legalBusinessName,
     couponCode: String(formData.get("couponCode") ?? ""),
     honeypot: String(formData.get(HONEYPOT_FIELD) ?? ""),
@@ -119,7 +138,7 @@ async function submitApplication(values: ApplicationValues): Promise<string | un
       contactName: values.contactName,
       contactPhone: values.contactPhone,
       legalBusinessName: values.legalBusinessName,
-      phone: values.contactPhone,
+      phone: values.businessPhone,
       couponCode: values.couponCode,
       mg_contact_ref: values.honeypot,
       agreedToTerms: values.agreedToTerms,
@@ -238,6 +257,9 @@ export default function MerchantSignupForm({
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  // Business phone (public) is the contact phone (private) too. Off by
+  // default, so a personal mobile is only made public by choice.
+  const [samePhone, setSamePhone] = useState(false);
 
   // Set once Wix comes back with EMAIL_VERIFICATION_REQUIRED — the rest of
   // the form stays filled in underneath while this is shown, nothing is
@@ -334,6 +356,21 @@ export default function MerchantSignupForm({
     // Wix's member nickname and the application both use, same as
     // readApplicationValues.
     const businessName = String(formData.get("legalBusinessName") ?? "").trim();
+
+    // The business phone is shown to customers as a tap-to-call number, so
+    // the server only accepts a full one (phoneLink, /api/merchants/apply).
+    // Checked here, before the account is created, so a typo gets a clear
+    // message on the right field rather than failing after sign-up.
+    const sameNumber = formData.get("samePhone") === "on";
+    const publicPhone = String(formData.get(sameNumber ? "contactPhone" : "businessPhone") ?? "");
+    if (!phoneLink(publicPhone)) {
+      setSubmitError(
+        sameNumber
+          ? "Your contact phone is also your business phone, so enter it in full, including the area code."
+          : "Enter your business phone in full, including the area code."
+      );
+      return;
+    }
 
     // Only when an account is being created. A signed-in visitor has no
     // password field rendered, so `password` is "" and these would reject
@@ -730,18 +767,16 @@ export default function MerchantSignupForm({
   return (
     <div id="signup" className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
       <form onSubmit={handleSubmit} onChangeCapture={trackFormStarted} className="space-y-4">
-        {/* What's private and what isn't, up front. Name and email are
-            only for the account. The legal name and phone are submitted as
-            the starting public business name and booking number too
-            (readApplicationValues / submitApplication below), so this says
-            so rather than calling the whole form private. The portal marks
-            every private field. */}
+        {/* What's private and what isn't, up front: name, email and
+            contact phone are only for the account; the legal name is the
+            starting public business name (readApplicationValues), and the
+            business phone is public. Each private field is tagged. */}
         <p className="flex items-start gap-2 rounded-xl bg-slate-50 px-3.5 py-2.5 text-sm text-slate-600">
           <EyeOffIcon className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
           <span>
-            Your name and email are private: we use them to set up your account and contact you,
-            and they&apos;re never shown on MegaDeal. Your business name and phone number start
-            out as the ones customers see, and you can change either in your portal.
+            Details marked Private are only for us: we use them to set up your account and contact
+            you, and they&apos;re never shown on MegaDeal. Your business name and business phone
+            are what customers see, and you can change either in your portal.
           </span>
         </p>
         <div>
@@ -769,6 +804,7 @@ export default function MerchantSignupForm({
           <label htmlFor="signup-contactName" className="mb-1 block text-base font-medium text-slate-700">
             Your name
             <RequiredTag />
+            <PrivateTag />
           </label>
           <input
             id="signup-contactName"
@@ -797,6 +833,7 @@ export default function MerchantSignupForm({
               <label htmlFor="signup-email" className="mb-1 block text-base font-medium text-slate-700">
                 Email
                 <RequiredTag />
+                <PrivateTag />
               </label>
               <input
                 id="signup-email"
@@ -844,10 +881,15 @@ export default function MerchantSignupForm({
           </>
         )}
 
+        {/* Two numbers: a private one for us to reach them, and the public
+            one customers see on the listing. Often the same number, hence
+            the tick box, but a personal mobile shouldn't become public
+            just because it was the number given at signup. */}
         <div>
           <label htmlFor="signup-contactPhone" className="mb-1 block text-base font-medium text-slate-700">
-            Phone number
+            Contact phone
             <RequiredTag />
+            <PrivateTag />
           </label>
           <input
             id="signup-contactPhone"
@@ -859,15 +901,42 @@ export default function MerchantSignupForm({
             placeholder="021 234 5678 or 09 123 4567"
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
           />
-          {/* This one number does double duty until the portal separates them
-              (see MerchantProfileForm: "Contact phone" vs "Booking phone
-              number") — worth saying so up front rather than letting someone
-              discover their number is now public by finding it on their own
-              listing. */}
           <p className="mt-1 text-sm text-slate-500">
-            We&apos;ll use this to reach you about your application, and show it to
-            customers as your booking number too — you can set a different
-            public number later in your portal.
+            Your mobile or business number, so we can reach you about your application.
+            Never shown on MegaDeal.
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="signup-businessPhone" className="mb-1 block text-base font-medium text-slate-700">
+            Business phone for customers
+            <RequiredTag />
+          </label>
+          <label className="mb-2 flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              name="samePhone"
+              checked={samePhone}
+              onChange={(e) => setSamePhone(e.target.checked)}
+              className="h-5 w-5 shrink-0 rounded border-slate-300"
+            />
+            Same as my contact phone
+          </label>
+          {!samePhone && (
+            <input
+              id="signup-businessPhone"
+              required
+              name="businessPhone"
+              autoComplete="off"
+              type="tel"
+              maxLength={300}
+              placeholder="09 123 4567"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+            />
+          )}
+          <p className="mt-1 text-sm text-slate-500">
+            Shown on your listing so customers can call you to book. You can change it later in
+            your portal.
           </p>
         </div>
 
