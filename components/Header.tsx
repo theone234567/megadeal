@@ -80,7 +80,9 @@ export default function Header() {
     return (
       <header className={`sticky top-0 z-30 border-b ${T.landingBar}`}>
         <div className="mx-auto flex h-[74px] w-full max-w-[1184px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href={pathname!} aria-label="MegaDeal home" className="flex min-w-0 shrink items-center gap-3">
+          {/* The logo always goes to the homepage (megadeal.co.nz); before
+              launch that shows visitors the coming-soon page. */}
+          <Link href="/" aria-label="MegaDeal home" className="flex min-w-0 shrink items-center gap-3">
             <BrandLogo placement="landing" tone={T.logo} />
             <span className={`hidden h-5 w-px shrink-0 sm:block ${T.divider}`} aria-hidden />
             <span className={`hidden shrink-0 text-sm sm:inline-block ${T.muted}`}>
@@ -116,7 +118,7 @@ export default function Header() {
     return (
       <header className={`sticky top-0 z-50 border-b ${T.comingSoonBar}`}>
         <div className="mx-auto flex min-h-[51px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-2 sm:min-h-[58px] sm:gap-5 sm:px-8 lg:min-h-[61px] lg:px-10 xl:px-12">
-          <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
+          <Link href="/" aria-label="MegaDeal home" className="min-w-0 shrink">
             <BrandLogo placement="landing" tone={T.logo} />
           </Link>
 
