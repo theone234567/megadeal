@@ -84,7 +84,7 @@ export default function AdminAuditPage() {
                       {e.target && <span className="font-normal text-slate-600"> · {e.target}</span>}
                     </p>
                     {e.detail && <p className="break-words text-slate-600">{e.detail}</p>}
-                    {e.ip && <p className="text-xs text-slate-400">IP {e.ip}</p>}
+                    {e.ip && <p className="text-xs text-slate-500">IP {e.ip}</p>}
                   </div>
                 </li>
               ))}

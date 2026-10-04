@@ -150,7 +150,7 @@ export default function TwoFactorPage() {
               {confirmed && <p role="status" className="mt-2 text-sm font-semibold text-emerald-700">That works.</p>}
             </li>
 
-            <li className={`rounded-2xl border p-5 ${confirmed ? "border-brand-200 bg-brand-50" : "border-slate-200 bg-white opacity-60"}`}>
+            <li className={`rounded-2xl border p-5 ${confirmed ? "border-brand-200 bg-brand-50" : "border-dashed border-slate-300 bg-white"}`}>
               <h2 className="font-bold text-slate-900">3. Turn it on in Cloudflare</h2>
               {confirmed ? (
                 <div className="mt-1 space-y-2 text-sm text-slate-700">

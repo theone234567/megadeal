@@ -90,7 +90,7 @@ export default function DealChangeRequest({ deal }: { deal: DealRecord }) {
           <ul className="mt-2 space-y-1">
             {revisionLines(pending, row).map((l) => (
               <li key={l.label} className="break-words">
-                <span className="font-semibold">{l.label}:</span> <span className="text-slate-500 line-through">{l.from}</span> →{" "}
+                <span className="font-semibold">{l.label}:</span> <span className="text-slate-600 line-through">{l.from}</span> →{" "}
                 {l.to}
               </li>
             ))}

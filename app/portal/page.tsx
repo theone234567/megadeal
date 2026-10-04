@@ -474,7 +474,7 @@ export default function PortalPage() {
           <section id="overview" className="space-y-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                   Business overview
                 </p>
                 <h1 className="mt-1 text-[28px] font-extrabold leading-tight text-slate-900 sm:text-[32px]">
@@ -528,7 +528,7 @@ export default function PortalPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card">
-                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600">
                   <CreditCardIcon className="h-4 w-4" />
                   Available credits
                 </p>
@@ -544,7 +544,7 @@ export default function PortalPage() {
               </div>
 
               <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card">
-                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-600">
                   <ReceiptIcon className="h-4 w-4" />
                   Deals
                 </p>
@@ -558,7 +558,7 @@ export default function PortalPage() {
               </div>
 
               <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                   Application status
                 </p>
                 <p className="mt-1 text-2xl font-extrabold text-slate-900">
@@ -789,7 +789,7 @@ export default function PortalPage() {
               of filing them separately. */}
           <section id="credits" className="space-y-6">
             <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                 Deal credits
               </p>
               <p className="mt-1 text-4xl font-extrabold text-brand-700">

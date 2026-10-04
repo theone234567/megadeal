@@ -199,6 +199,7 @@ export default function DealRow({
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
+          aria-label="Status"
           className="rounded-lg border border-slate-200 px-2 py-1 text-sm"
         >
           {STATUSES.map((s) => (
@@ -404,7 +405,7 @@ function RevisionReview({ deal, onSaved }: { deal: AdminDeal; onSaved: (item: Ad
       <ul className="mt-1 space-y-1">
         {revisionLines(revision, deal).map((l) => (
           <li key={l.label} className="break-words">
-            <span className="font-semibold">{l.label}:</span> <span className="text-slate-500 line-through">{l.from}</span> → {l.to}
+            <span className="font-semibold">{l.label}:</span> <span className="text-slate-600 line-through">{l.from}</span> → {l.to}
           </li>
         ))}
       </ul>

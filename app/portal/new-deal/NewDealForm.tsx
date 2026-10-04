@@ -70,6 +70,9 @@ export interface TestDealFormMode {
 
 export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: boolean; testMode?: TestDealFormMode }) {
   const isTest = Boolean(testMode);
+  // In the portal, PortalShell already provides the page's <main>; the
+  // admin's test-deal pages have none of their own.
+  const Main = isTest ? "main" : "div";
   const { isLoggedIn, member } = useWix();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -664,9 +667,9 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
 
   if (merchant === undefined || (!isTest && member === undefined)) {
     return (
-      <main className="mx-auto max-w-2xl px-4 py-16 text-center">
+      <Main className="mx-auto max-w-2xl px-4 py-16 text-center">
         <p className="text-slate-500">Loading…</p>
-      </main>
+      </Main>
     );
   }
 
@@ -682,7 +685,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
 
   if (!merchant) {
     return (
-      <main className="mx-auto max-w-md px-4 py-16 text-center">
+      <Main className="mx-auto max-w-md px-4 py-16 text-center">
         <p className="text-slate-600">
           You don&apos;t have a business application on file yet.
         </p>
@@ -692,13 +695,13 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         >
           Sign up your business
         </Link>
-      </main>
+      </Main>
     );
   }
 
   if (submitted) {
     return (
-      <main className="mx-auto max-w-lg px-4 py-16 text-center">
+      <Main className="mx-auto max-w-lg px-4 py-16 text-center">
         {submitResult.outcome === "live" ? (
           <>
             <span className="text-4xl">🎉</span>
@@ -740,7 +743,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         >
           Back to portal
         </Link>
-      </main>
+      </Main>
     );
   }
 
@@ -774,7 +777,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
 
   if (!isTest && credits < cheapest) {
     return (
-      <main className="mx-auto max-w-md px-4 py-16 text-center">
+      <Main className="mx-auto max-w-md px-4 py-16 text-center">
         <span className="text-4xl">💳</span>
         <h1 className="mt-3 text-xl font-bold text-slate-900">
           {credits === 0 ? "No deal credits left" : "Not enough credits for a deal"}
@@ -789,7 +792,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         >
           Back to portal
         </Link>
-      </main>
+      </Main>
     );
   }
 
@@ -986,13 +989,13 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
+    <Main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
       <Link
         href={isTest ? "/admin?tab=tests" : "/portal"}
         onClick={(e) => {
           if (unsaved && !window.confirm("You have changes that haven't been saved yet. Leave anyway?")) e.preventDefault();
         }}
-        className="text-sm text-slate-500 hover:text-brand-700"
+        className="text-sm text-slate-600 hover:text-brand-700"
       >
         {isTest ? "← Back to test deals" : "← Back to portal"}
       </Link>
@@ -1008,7 +1011,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
       ) : (
       <>
       <h1 className="mt-3 text-2xl font-extrabold text-slate-900">Create a deal</h1>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-slate-600">
         {/* Not enough for this type: the note by the Flash choice says so. */}
         {cost === null || credits < cost
           ? `You have ${creditsText}. `
@@ -1748,7 +1751,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           )}
         </div>
       </form>
-    </main>
+    </Main>
   );
 }
 
