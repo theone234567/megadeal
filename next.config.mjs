@@ -39,7 +39,27 @@ const nextConfig = {
   async redirects() {
     // The public merchant-signup section has moved twice now: /merchants ->
     // /businesses -> /list-your-business. Keep both historical paths working.
+    //
+    // www goes to the bare domain for every path. middleware.ts already
+    // sends any other host to the canonical one, but its matcher skips
+    // robots.txt, sitemap.xml, icons, share images and /api, so those
+    // were answered on www as well. Redirects here run before middleware
+    // and for every route (OpenNext honours `has: host`). Query strings
+    // carry over. Files in public/ are served by Cloudflare before the
+    // Worker runs, so a www image URL still loads; nothing links to one.
+    const canonical = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://megadeal.co.nz");
+    const wwwHost = canonical.hostname.startsWith("www.") ? null : `www.${canonical.hostname}`;
     return [
+      ...(wwwHost
+        ? [
+            {
+              source: "/:path*",
+              has: [{ type: "host", value: wwwHost.replace(/\./g, "\\.") }],
+              destination: `${canonical.origin}/:path*`,
+              permanent: true,
+            },
+          ]
+        : []),
       { source: "/merchants", destination: "/list-your-business", permanent: true },
       { source: "/merchants/:path*", destination: "/list-your-business/:path*", permanent: true },
       { source: "/businesses", destination: "/list-your-business", permanent: true },
