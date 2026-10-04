@@ -15,6 +15,7 @@ const PRIVATE = {
   postcode: "9999",
   couponCode: "WELCOME6",
   referralCode: "REF-PRIVATE",
+  referredByCode: "MDREFPRIV",
   credits: 24,
   status: "Approved",
   adminNotes: "internal note",

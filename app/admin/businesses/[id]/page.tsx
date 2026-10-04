@@ -535,8 +535,12 @@ export default function AdminBusinessDetailPage() {
           <h2 className="text-sm font-bold text-slate-900">Referral &amp; promo</h2>
           <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-slate-500">Code they entered at signup</dt>
+              <dt className="text-slate-500">Promo code at signup</dt>
               <dd className="font-medium text-slate-800">{merchant.couponCode || "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">Referral code at signup</dt>
+              <dd className="font-medium text-slate-800">{merchant.referredByCode || "—"}</dd>
             </div>
             <div>
               <dt className="text-slate-500">Their code to share (generated)</dt>
@@ -548,11 +552,12 @@ export default function AdminBusinessDetailPage() {
             <div>
               <dt className="text-slate-500">Bonus status</dt>
               <dd className="font-medium text-slate-800">
-                {merchant.promoRewarded
-                  ? "✓ WELCOME6 promo already granted"
-                  : merchant.referralRewarded
-                  ? "✓ Referral bonus already granted"
-                  : "Not yet granted"}
+                {[
+                  merchant.promoRewarded && "✓ Promo granted",
+                  merchant.referralRewarded && "✓ Referral bonus granted",
+                ]
+                  .filter(Boolean)
+                  .join(" · ") || "Not yet granted"}
               </dd>
             </div>
             <div>

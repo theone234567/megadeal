@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { REFERRAL_BONUS_CREDITS, referralCreditsLabel } from "@/lib/referralBonus";
+import { REFERRAL_BONUS_CREDITS, referralCreditsLabel, signupCodes } from "@/lib/referralBonus";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
@@ -357,19 +357,24 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     introGranted = INTRO_CREDITS;
   }
 
-  const enteredCode = String(existing.couponCode || "").trim().toUpperCase();
+  // The launch offer and a referral apply together (lib/referralBonus.ts
+  // signupCodes): each has its own one-time claim, so neither can be
+  // granted twice.
+  const { promoCode: enteredCode, referralCode: enteredReferral } = signupCodes(
+    existing,
+    (c) => promoForCode(c, SITE_LAUNCHED) !== null
+  );
 
-  // The free-advertising promo. Checked first since it's a fixed code, not
-  // anyone's real referralCode — if it matches, this signup isn't a peer
-  // referral at all. After launch, WELCOME6 typed before launch still
-  // counts, as the launch offer (lib/promo.ts).
-  const promo = promoForCode(enteredCode, SITE_LAUNCHED);
+  // The free-advertising promo. After launch, WELCOME6 typed before launch
+  // still counts, as the launch offer (lib/promo.ts).
+  const promo = enteredCode ? promoForCode(enteredCode, SITE_LAUNCHED) : null;
   if (becomingApproved && promo) {
     if (await claimPromoAtomically(adminClient, existing._id)) {
       promoGranted = promo.credits;
       patch.promoRewarded = true;
     }
-  } else if (becomingApproved && enteredCode) {
+  }
+  if (becomingApproved && enteredReferral) {
     // Referral bonus: if this merchant signed up with someone else's referral
     // code, both sides get a bonus once this merchant is approved. The claim
     // itself is an atomic conditional patch (see claimReferralAtomically) so
@@ -382,7 +387,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     // never got paid. Nothing failed visibly; the bonus just didn't happen.
     const referrerResult = await adminClient.items
       .query("Merchants")
-      .eq("referralCode", enteredCode)
+      .eq("referralCode", enteredReferral)
       .find();
     const candidate = (referrerResult.items ?? []).find((m: any) => m._id !== existing._id) || null;
     if (candidate && (await claimReferralAtomically(adminClient, existing._id))) {
@@ -561,10 +566,12 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       const creditsNote =
         totalGranted > 0
           ? `We've added ${totalGranted} free deal credit${totalGranted === 1 ? "" : "s"} to your account${
-              promoGranted > 0
+              promoGranted > 0 && referralBonusGranted > 0
+                ? ` (including your ${promo?.code ?? enteredCode} free advertising offer and a ${REFERRAL_BONUS_CREDITS}-credit referral bonus)`
+                : promoGranted > 0
                 ? ` (including your ${promo?.code ?? enteredCode} free advertising offer)`
                 : referralBonusGranted > 0
-                ? " (including a referral bonus)"
+                ? ` (including a ${REFERRAL_BONUS_CREDITS}-credit referral bonus)`
                 : ""
             } so you can get started right away.`
           : "";

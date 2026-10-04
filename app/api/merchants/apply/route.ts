@@ -235,6 +235,9 @@ export async function POST(req: NextRequest) {
       item = await adminClient.items.insert("Merchants", {
         ...fields,
         couponCode: cleanText(body.couponCode, 50),
+        // Who referred them, from the signup form's own box (or a ?ref=
+        // link). Applies alongside the promo code (lib/referralBonus.ts).
+        referredByCode: cleanText(body.referredByCode, 20).toUpperCase(),
         creditsBalance: 0,
         status: "Pending",
         logoUrl: "",

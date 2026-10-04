@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { currentPromo, promoForCode } from "@/lib/promo";
+import { referralCreditsLabel } from "@/lib/referralBonus";
 import { loginMember, registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
 import PasswordField from "@/components/PasswordField";
 import { EyeOffIcon } from "@/components/icons";
@@ -98,6 +99,7 @@ type ApplicationValues = {
   businessPhone: string;
   legalBusinessName: string;
   couponCode: string;
+  referredByCode: string;
   honeypot: string;
   agreedToTerms: boolean;
 };
@@ -118,6 +120,7 @@ function readApplicationValues(formData: FormData): ApplicationValues {
         : String(formData.get("businessPhone") ?? ""),
     legalBusinessName,
     couponCode: String(formData.get("couponCode") ?? ""),
+    referredByCode: String(formData.get("referredByCode") ?? ""),
     honeypot: String(formData.get(HONEYPOT_FIELD) ?? ""),
     agreedToTerms: formData.get("agreedToTerms") === "on",
   };
@@ -140,6 +143,7 @@ async function submitApplication(values: ApplicationValues): Promise<string | un
       legalBusinessName: values.legalBusinessName,
       phone: values.businessPhone,
       couponCode: values.couponCode,
+      referredByCode: values.referredByCode,
       mg_contact_ref: values.honeypot,
       agreedToTerms: values.agreedToTerms,
       // First-touch ad attribution (see lib/attribution.ts) — carried
@@ -241,18 +245,19 @@ export default function MerchantSignupForm({
    * then on this session uses it.
    */
   const [needsVisibleCaptcha, setNeedsVisibleCaptcha] = useState(false);
-  // Pre-filled with the current offer's code (or a real ?ref= referral code,
-  // if that's how the visitor arrived) — visible and editable, so someone
-  // who wants to swap in a different referral code they were given can.
-  const [couponCode, setCouponCode] = useState(referralPrefill || promo.code);
+  // Pre-filled with the current offer's code. A referral (?ref= link, or
+  // a code someone was given) has its own box: the two apply together
+  // (lib/referralBonus.ts), so a referred business keeps its offer.
+  const [couponCode, setCouponCode] = useState(promo.code);
+  const [referredByCode, setReferredByCode] = useState(referralPrefill.trim().toUpperCase().slice(0, 20));
 
   // Which of the three things the promo field currently holds, so the help
   // text under it can say what will actually happen rather than always
   // promising the free-advertising offer. After launch, WELCOME6 still counts
   // (as the launch offer), the same rule approval uses.
   const trimmedCoupon = couponCode.trim().toUpperCase();
-  const promoState: "welcome" | "referral" | "empty" =
-    promoForCode(trimmedCoupon, launched) ? "welcome" : trimmedCoupon === "" ? "empty" : "referral";
+  const promoState: "welcome" | "other" | "empty" =
+    promoForCode(trimmedCoupon, launched) ? "welcome" : trimmedCoupon === "" ? "empty" : "other";
   const beforeLaunch = launched ? "" : " if you're approved before launch";
 
   const [password, setPassword] = useState("");
@@ -945,12 +950,11 @@ export default function MerchantSignupForm({
           once you&apos;re in your portal.
         </p>
 
-        {/* Visible and pre-filled with WELCOME6 (or a real ?ref= referral
-            code) by default — this is what actually triggers the "up to 6
-            months free" offer at admin-approval time (see PROMO_CODE in
+        {/* Visible and pre-filled with the current offer's code — this is
+            what triggers the free-advertising offer at approval (see
             app/api/admin/merchants/[id]/route.ts), so an empty value here
-            would silently apply no offer at all. Editable so someone with
-            a different referral code can swap it in. */}
+            would silently apply no offer at all. A referral code has its
+            own box below and applies as well. */}
         <div>
           <label htmlFor="signup-couponCode" className="mb-1 block text-base font-medium text-slate-700">
             Promo code
@@ -965,16 +969,6 @@ export default function MerchantSignupForm({
             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
             className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
           />
-          {/*
-            The promo code and peer referral codes share this one field, and
-            the approval logic treats them as mutually exclusive (see the
-            `if (promo) ... else if (referral)` branches in
-            app/api/admin/merchants/[id]/route.ts). Someone arriving on a
-            ?ref= link therefore has the referrer's code pre-filled here
-            while the rest of the page advertises the 6-month offer — so
-            without this they would have quietly forfeited the much larger
-            offer they came for, and only found out after approval.
-          */}
           {promoState === "welcome" && (
             <p className="mt-1 text-sm text-slate-500">
               {/* The code as typed: after launch WELCOME6 still counts, for the
@@ -982,19 +976,18 @@ export default function MerchantSignupForm({
               🎁 {trimmedCoupon} gets you up to {promo.months} months free advertising{beforeLaunch}.
             </p>
           )}
-          {promoState === "referral" && (
+          {promoState === "other" && (
             <p className="mt-1 text-sm text-slate-600">
-              You&apos;re using referral code{" "}
-              <span className="font-semibold">{couponCode.trim()}</span>. A referral code and the
-              {promo.code} launch offer can&apos;t be combined — only one applies.{" "}
+              <span className="font-semibold">{couponCode.trim()}</span> isn&apos;t a current promo code. A
+              referral code goes in the box below.{" "}
               <button
                 type="button"
                 onClick={() => setCouponCode(promo.code)}
                 className="font-semibold text-brand-600 underline hover:no-underline"
               >
-                Use {promo.code} instead
+                Use {promo.code}
               </button>{" "}
-              for up to {promo.months} months free advertising.
+              for up to {promo.months} months free advertising{beforeLaunch}.
             </p>
           )}
           {promoState === "empty" && (
@@ -1010,6 +1003,28 @@ export default function MerchantSignupForm({
               for up to {promo.months} months free advertising{beforeLaunch}.
             </p>
           )}
+        </div>
+
+        <div>
+          <label htmlFor="signup-referredByCode" className="mb-1 block text-base font-medium text-slate-700">
+            Referral code <span className="font-normal text-slate-500">(optional)</span>
+          </label>
+          <input
+            id="signup-referredByCode"
+            name="referredByCode"
+            autoComplete="off"
+            type="text"
+            maxLength={20}
+            value={referredByCode}
+            onChange={(e) => setReferredByCode(e.target.value.toUpperCase())}
+            placeholder="e.g. MD1A2B3C"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+          />
+          <p className="mt-1 text-sm text-slate-600">
+            {referredByCode.trim()
+              ? `🤝 When you're approved, you and the business that referred you each get ${referralCreditsLabel}, on top of any promo code.`
+              : "Referred by another business? Enter their code."}
+          </p>
         </div>
 
         <label className="flex items-start gap-2 text-base text-slate-600">
