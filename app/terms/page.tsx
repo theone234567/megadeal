@@ -99,7 +99,10 @@ export default function TermsPage() {
         example, reversing credits granted in error, or crediting back an
         amount that was incorrectly deducted. Advertising credits expire
         12 months after they&apos;re granted if unused, and expired
-        credits are removed from the business&apos;s balance.
+        credits are removed from the business&apos;s balance. Credits
+        granted before our official launch under the free advertising
+        offer below count those 12 months from the date MegaDeal launches
+        to customers, not from the date they were granted.
       </p>
       <p>
         MegaDeal may offer up to 6 months of free advertising credits to

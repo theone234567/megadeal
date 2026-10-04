@@ -84,7 +84,7 @@ const FAQS: { q: string; a: string; render?: React.ReactNode }[] = [
     // app/api/merchants/apply/route.ts and the Merchants schema throughout
     // this project, is advertising credits only. No subscription tier
     // exists to describe accurately, so this doesn't claim one does.
-    a: "You can choose whether to continue. Advertising after your free period is paid for through advertising credits, with pricing shown in your business portal before you are asked to pay. MegaDeal takes 0% commission on sales, and there is no lock-in contract.",
+    a: "You can choose whether to continue. Advertising after your free period is paid for through advertising credits, with pricing confirmed with you before you are asked to pay. MegaDeal takes 0% commission on sales, and there is no lock-in contract.",
   },
   {
     q: "Which restaurants can apply?",

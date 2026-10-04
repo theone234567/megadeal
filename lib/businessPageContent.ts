@@ -57,7 +57,7 @@ const SHARED = {
 const FAQ_AFTER_FREE_PERIOD = {
   question: "What happens after my free period?",
   answer:
-    "You can choose whether to continue advertising using pay-as-you-go credits. You’ll see the cost in your business portal before purchasing. There’s no lock-in contract, and you can stop advertising at any time.",
+    "You can choose whether to continue advertising using pay-as-you-go credits. We’ll confirm the cost with you before you buy any. There’s no lock-in contract, and you can stop advertising at any time.",
 };
 const FAQ_BOOK_AND_PAY = {
   question: "How do customers book and pay?",

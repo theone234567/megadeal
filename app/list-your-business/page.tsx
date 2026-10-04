@@ -235,7 +235,7 @@ const FAQS = [
   },
   {
     q: "How much will advertising cost after the free period?",
-    a: "After your free period, you keep advertising with simple pay-as-you-go credits — never a percentage of your sales. Exact pricing is confirmed in your business portal before you're asked to pay anything, and you can cancel or pause at any time.",
+    a: "After your free period, you keep advertising with simple pay-as-you-go credits — never a percentage of your sales. Exact pricing is confirmed with you before you're asked to pay anything, and you can cancel or pause at any time.",
   },
   {
     q: "Do customers pay MegaDeal?",
