@@ -100,5 +100,5 @@ export const COMING_SOON_DESIGN = comingSoonDesign(process.env.COMING_SOON_DESIG
 export function listBusinessDesign(value: string | undefined): "v2" | "legacy" {
   return value === "v2" ? "v2" : "legacy";
 }
-const LIST_BUSINESS_LIVE = "legacy";
+const LIST_BUSINESS_LIVE = "v2";
 export const LIST_BUSINESS_DESIGN = listBusinessDesign(process.env.LIST_BUSINESS_DESIGN ?? LIST_BUSINESS_LIVE);
