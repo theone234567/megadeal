@@ -58,7 +58,7 @@
 .main { max-width: 1264px; margin: 0 auto; padding: 0 32px 48px; }
 .cards { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: -84px; }
 .card {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: start;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: stretch;
   padding: 28px; border-radius: 20px; background: #fff; border: 1px solid var(--line);
   box-shadow: 0 10px 30px rgb(40 20 90 / 0.10);
 }
@@ -66,9 +66,14 @@
 .cardIcon svg { width: 34px; height: 34px; }
 .customerCard .cardIcon { background: var(--pink-pale); color: var(--pink); }
 .businessCard .cardIcon { background: var(--lavender); color: var(--purple); }
+.cardIcon { align-self: start; }
+/* Button pinned to the card's bottom, so the two cards' buttons line up
+   whichever card has the longer text. */
+.cardBody { display: flex; flex-direction: column; }
 .cardBody h2 { font-size: 26px; line-height: 1.2; color: var(--ink); }
 .cardBody p { margin-top: 8px; font-size: 16px; line-height: 1.5; color: var(--muted); }
-.cardBody .button { margin-top: 18px; }
+.cardBody p { margin-bottom: 18px; }
+.cardBody .button { margin-top: auto; }
 
 .button {
   display: flex; width: 100%; min-height: 52px; align-items: center; justify-content: center; gap: 10px;
