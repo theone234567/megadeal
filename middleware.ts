@@ -95,15 +95,23 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
-  // Coming-soon V2 preview (lib/siteConfig.ts COMING_SOON_DESIGN): a
-  // signed-in admin sees the new design at /coming-soon?design=v2 while
-  // everyone else keeps the current one. The internal preview address is
-  // admin-only too. Never cached, never indexed.
-  if (path === "/coming-soon/v2-preview" || (path === "/coming-soon" && request.nextUrl.searchParams.get("design") === "v2")) {
+  // Coming-soon design previews (lib/siteConfig.ts COMING_SOON_DESIGN): a
+  // signed-in admin sees a design at /coming-soon?design=v2 or ?design=v3
+  // (the V3 pack of 4 Oct 2026, preview only) while everyone else keeps
+  // the current one. The internal preview addresses are admin-only too.
+  // Never cached, never indexed.
+  const csDesign = request.nextUrl.searchParams.get("design");
+  const csPreview =
+    path === "/coming-soon/v2-preview" || path === "/coming-soon/v3-preview"
+      ? path
+      : path === "/coming-soon" && (csDesign === "v2" || csDesign === "v3")
+        ? `/coming-soon/${csDesign}-preview`
+        : null;
+  if (csPreview) {
     const admin = await hasValidAdminSignature(request.cookies.get(ADMIN_COOKIE_NAME)?.value);
     if (path === "/coming-soon" && !admin) return; // the normal page
     const res = admin
-      ? NextResponse.rewrite(new URL("/coming-soon/v2-preview", request.url))
+      ? NextResponse.rewrite(new URL(csPreview, request.url))
       : NextResponse.redirect(new URL("/coming-soon", request.url), 307);
     res.headers.set("Cache-Control", "private, no-store");
     res.headers.set("X-Robots-Tag", "noindex, nofollow");

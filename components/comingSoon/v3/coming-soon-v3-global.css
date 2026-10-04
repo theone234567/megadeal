@@ -1,0 +1,13 @@
+/* Loaded only by ComingSoonV3 (admin preview). The shared header's
+   coming-soon bar has a darker purple bottom border; on this design the
+   header and hero are one purple surface, so the border takes the hero's
+   colour while this page is showing. Nothing else on the site renders
+   data-coming-soon="v3", so no other page is affected. */
+body:has([data-coming-soon="v3"]) header.sticky {
+  border-bottom-color: #6520b5;
+}
+/* This page has its own email signup panel; the footer's copy of the same
+   form would be a second one a screen below it. */
+body:has([data-coming-soon="v3"]) footer section[aria-labelledby="footer-signup-heading"] {
+  display: none;
+}
