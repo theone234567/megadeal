@@ -140,8 +140,9 @@ export default function ComingSoonV2() {
               </li>
             </ol>
           </div>
+          {/* No caption (owner's call, 4 Oct 2026): "Example price" on the
+              card and "Your business" keep it plainly an example. */}
           <figure className={styles.example}>
-            <figcaption>Example deal — not available to redeem</figcaption>
             <div className={styles.exampleCard}>
               <div className={styles.examplePhoto}>
                 <Image

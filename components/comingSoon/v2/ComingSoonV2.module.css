@@ -64,7 +64,6 @@
 .steps h3 { font-size: 19px; }
 .steps p { color: var(--muted); font-size: 15px; margin-top: 2px; }
 .example { margin: 0; padding: 14px; background: #f5f6fa; border-radius: 10px; }
-.example figcaption { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
 .exampleCard { display: grid; grid-template-columns: 1.05fr 1fr; background: #fff; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .examplePhoto { position: relative; min-height: 190px; }
 .exampleText { padding: 16px; }
