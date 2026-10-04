@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import MerchantRow, { type AdminMerchant } from "@/components/admin/MerchantRow";
 import DealRow, { type AdminDeal } from "@/components/admin/DealRow";
 import SubscriberRow, { type AdminSubscriber } from "@/components/admin/SubscriberRow";
@@ -234,6 +235,9 @@ export default function AdminDashboardPage() {
               ? "Submission failed — retry"
               : "Submit all pages to Bing"}
           </button>
+          <Link href="/admin/two-factor" className="text-sm font-medium text-slate-500 hover:text-brand-700">
+            Two-factor sign-in
+          </Link>
           <button
             onClick={handleLogout}
             className="text-sm font-medium text-slate-500 hover:text-brand-700"

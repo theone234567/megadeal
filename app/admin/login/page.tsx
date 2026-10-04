@@ -10,6 +10,9 @@ export default function AdminLoginPage() {
   const { isLoggedIn, member, logout } = useWix();
   const [signingOut, setSigningOut] = useState(false);
   const [password, setPassword] = useState("");
+  // Two-factor sign-in, once the server asks for it (lib/totp.ts).
+  const [needsCode, setNeedsCode] = useState(false);
+  const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -29,10 +32,14 @@ export default function AdminLoginPage() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, ...(needsCode ? { code } : {}) }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        if (data.needsCode) {
+          setNeedsCode(true);
+          setCode("");
+        }
         setError(data.error || "Something went wrong.");
         return;
       }
@@ -83,7 +90,27 @@ export default function AdminLoginPage() {
             placeholder="Admin password"
             inputClassName="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-brand-400"
           />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {needsCode && (
+            <div className="text-left">
+              <label htmlFor="admin-code" className="mb-1 block text-sm font-semibold text-slate-700">
+                Code from your authenticator app
+              </label>
+              <input
+                id="admin-code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9 ]*"
+                maxLength={7}
+                autoFocus
+                required
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="123 456"
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 text-center font-mono text-lg tracking-[0.3em] outline-none focus:border-brand-400"
+              />
+            </div>
+          )}
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={loading}
