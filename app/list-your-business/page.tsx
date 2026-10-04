@@ -183,6 +183,8 @@ const BUSINESS_TYPES = [
   {
     icon: TicketIcon,
     label: "Things To Do",
+    href: "/advertise/things-to-do",
+    ctaLabel: "Explore activity offer ideas →",
     color: { bg: "bg-sky-100", icon: "text-sky-600" },
     description:
       "Bring more people to your tours, activities and experiences. Promote available spaces on selected dates and give locals a reason to try something different.",
