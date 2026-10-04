@@ -22,9 +22,13 @@ interface EmailSignupFormProps {
    *  by side it was squeezed to where a real address scrolled out of view
    *  while typing). "stacked": always under. "row": always beside. */
   layout?: "row" | "stacked" | "responsive";
-  /** "pill" (default) or "rounded": 8px corners and 48px-high controls,
-   *  for the coming-soon V2 design. Shape only; behaviour is identical. */
+  /** "pill" (default) or "rounded": 8px corners, 52px-high controls, 14px
+   *  consent text and 12px spacing, for the coming-soon design. Look only;
+   *  behaviour is identical. */
   shape?: "pill" | "rounded";
+  /** A visible label for the email box (it then names the box for screen
+   *  readers too). Without it the box keeps its hidden "Email address". */
+  label?: string;
 }
 
 export default function EmailSignupForm({
@@ -37,8 +41,11 @@ export default function EmailSignupForm({
   center = false,
   layout = "responsive",
   shape = "pill",
+  label,
 }: EmailSignupFormProps) {
-  const corners = shape === "rounded" ? "min-h-12 rounded-lg" : "rounded-full";
+  const rounded = shape === "rounded";
+  const corners = rounded ? "min-h-[52px] rounded-lg" : "rounded-full";
+  const emailId = useId();
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   // Set when someone presses the button without ticking the consent box.
@@ -89,6 +96,7 @@ export default function EmailSignupForm({
   if (state === "done") {
     return (
       <p
+        role="status"
         className={`rounded-2xl px-5 py-3 text-center text-sm font-bold shadow-card ${
           surface === "plain" ? "bg-brand-50 text-brand-700" : "bg-white/90 text-brand-700"
         }`}
@@ -117,6 +125,11 @@ export default function EmailSignupForm({
   return (
     <div>
       <form onSubmit={handleSubmit} className="w-full max-w-lg">
+        {label && (
+          <label htmlFor={emailId} className={`block font-bold text-[#0F172A] ${rounded ? "mb-3 text-base sm:text-lg" : "mb-2 text-sm"}`}>
+            {label}
+          </label>
+        )}
         <div
           className={
             layout === "stacked"
@@ -127,22 +140,25 @@ export default function EmailSignupForm({
           }
         >
           <input
+            id={emailId}
             type="email"
             required
             // The placeholder disappears once typing starts and isn't a
-            // name screen readers can rely on, so the box carries its own.
-            aria-label="Email address"
+            // name screen readers can rely on, so the box carries its own
+            // (or the visible label above names it).
+            aria-label={label ? undefined : "Email address"}
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={placeholder}
             // 16px on phones: iOS zooms the page into any smaller input.
-            className={`w-full min-w-0 ${corners} px-4 py-3 text-base sm:text-sm ${inputClass}`}
+            className={`w-full min-w-0 ${corners} px-4 py-3 text-base ${rounded ? "" : "sm:text-sm"} ${inputClass}`}
           />
           <button
             type="submit"
             disabled={state === "saving"}
-            className={`${corners} px-5 py-3 text-sm font-bold text-white shadow-card transition active:scale-95 disabled:opacity-60 ${
+            aria-busy={state === "saving" || undefined}
+            className={`${corners} py-3 ${rounded ? "px-6 text-base" : "px-5 text-sm"} font-bold text-white shadow-card transition active:scale-95 disabled:opacity-60 ${
               layout === "stacked" ? "w-full" : layout === "responsive" ? "w-full sm:w-auto sm:shrink-0" : "shrink-0"
             } ${buttonClass}`}
           >
@@ -150,7 +166,7 @@ export default function EmailSignupForm({
           </button>
         </div>
         <label
-          className={`mt-2 flex items-start gap-2 text-xs ${
+          className={`flex items-start gap-2 ${rounded ? "mt-3 text-sm leading-relaxed" : "mt-2 text-xs"} ${
             center ? "mx-auto max-w-xl" : ""
           } ${mutedTextClass}`}
         >
@@ -194,7 +210,7 @@ export default function EmailSignupForm({
         )}
       </form>
       {state === "error" && (
-        <p className={`mt-2 text-xs ${surface === "plain" ? "text-red-600" : "text-red-100"}`}>
+        <p role="alert" className={`mt-2 ${rounded ? "text-sm" : "text-xs"} ${surface === "plain" ? "text-red-600" : "text-red-100"}`}>
           {errorMessage}
         </p>
       )}

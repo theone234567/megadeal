@@ -26,13 +26,20 @@ export default function ComingSoonV2() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
+        {/* Hero: one heading, one line of introduction, one signup and the
+            Auckland artwork. Text and signup left, artwork right (desktop);
+            heading, introduction, artwork, signup (phone). */}
         <section className={styles.hero} aria-labelledby="coming-soon-heading">
           <div className={styles.intro}>
             <h1 id="coming-soon-heading">
               Great local deals.{" "}
               <span className={styles.accent}>Coming soon.</span>
             </h1>
-            <p>Launching first in Auckland, with more NZ cities to follow.</p>
+            <p>
+              Food, experiences, beauty and more.
+              <br />
+              Launching first in Auckland.
+            </p>
           </div>
           <div className={styles.art}>
             <div className={styles.skyline}>
@@ -41,27 +48,19 @@ export default function ComingSoonV2() {
                 alt={V2_HERO.alt}
                 fill
                 priority
-                sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1239px) 46vw, 560px"
+                sizes="(max-width: 767px) calc(100vw - 84px), (max-width: 1223px) 44vw, 506px"
                 style={{ objectFit: "cover", objectPosition: V2_HERO.position }}
               />
-              {/* Inside the photo, which clips his lower half: he stands
-                  in the scene rather than floating over its edge. */}
-              <Image
-                className={styles.mascot}
-                src={MASCOT}
-                alt=""
-                width={480}
-                height={496}
-                sizes="(max-width: 767px) 130px, 210px"
-              />
+              {/* Small and decorative; the photo's edge hides his lower half. */}
+              <Image className={styles.mascot} src={MASCOT} alt="" width={480} height={496} sizes="(max-width: 767px) 72px, 104px" />
             </div>
           </div>
           <div className={styles.conversion}>
-            <h2>Be first to hear</h2>
             <div className={styles.signup}>
               <EmailSignupForm
                 audience="customer"
                 source="coming-soon"
+                label="Get notified when we launch."
                 placeholder="Email address"
                 buttonLabel="Notify me"
                 surface="plain"
@@ -69,12 +68,28 @@ export default function ComingSoonV2() {
               />
             </div>
             <nav className={styles.socials} aria-label="Follow MegaDeal">
-              <span>Follow us:</span>
               <a href={V2_SOCIALS.instagram}>Instagram</a>
+              <span aria-hidden="true">·</span>
               <a href={V2_SOCIALS.facebook}>Facebook</a>
+              <span aria-hidden="true">·</span>
               <a href={V2_SOCIALS.tiktok}>TikTok</a>
             </nav>
           </div>
+        </section>
+
+        {/* The business invitation, outside the hero so the email signup
+            stays the one main action. Outlined button for the same reason. */}
+        <section className={styles.business} aria-labelledby="business-heading">
+          <div>
+            <h2 id="business-heading">Run a local business?</h2>
+            <p className={styles.businessOffer}>Get up to 6 months free advertising.</p>
+            <p className={styles.fine}>
+              For eligible pre-launch businesses. <Link href="/terms#businesses">Terms apply.</Link>
+            </p>
+          </div>
+          <Link className={styles.outlineButton} href="/list-your-business">
+            Explore the business offer <span aria-hidden="true">→</span>
+          </Link>
         </section>
 
         <ul className={styles.benefits} aria-label="How MegaDeal works for you">
@@ -155,28 +170,6 @@ export default function ComingSoonV2() {
           </figure>
         </section>
 
-        <section className={styles.business} aria-labelledby="business-heading">
-          <div>
-            <p className={styles.eyebrow}>For local businesses</p>
-            <h2 id="business-heading">Fill quiet times. Reach more local customers.</h2>
-            <p>You choose the offer. Customers book or buy directly from you.</p>
-            <ul>
-              <li>Up to 6 months free advertising*</li>
-              <li>0% commission</li>
-              <li>No lock-in</li>
-            </ul>
-          </div>
-          <div>
-            <Link className={styles.button} href="/list-your-business">
-              List your business <span aria-hidden="true">→</span>
-            </Link>
-            <p className={styles.fine}>
-              After your free period: pay-as-you-go credits.
-              <br />
-              *For eligible businesses that join before launch. <Link href="/terms">Terms</Link> apply.
-            </p>
-          </div>
-        </section>
 
         <section className={styles.section} aria-labelledby="faq-heading">
           <h2 id="faq-heading">A few things to know</h2>

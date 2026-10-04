@@ -16,7 +16,8 @@
   font-family: var(--font-jakarta), system-ui, sans-serif;
 }
 .page * { box-sizing: border-box; }
-.main { max-width: 1240px; margin: 0 auto; padding: 28px 32px 48px; }
+/* 1160px of content with 32px margins either side. */
+.main { max-width: 1224px; margin: 0 auto; padding: 28px 32px 48px; }
 .page h1, .page h2, .page h3 { font-family: var(--font-fredoka), var(--font-jakarta), sans-serif; margin: 0; text-wrap: balance; }
 /* Same sizes as the Beauty & Spa hero (app/advertise/beauty-spa): 34px on
    phones, 40px on large phones, 34px on tablets, 46px, then 50px from 1280px. */
@@ -28,23 +29,35 @@
 .page a { color: var(--purple); text-underline-offset: 3px; }
 .page :is(a, button, input, summary):focus-visible { outline: 3px solid var(--purple); outline-offset: 3px; }
 
-/* Hero: text left, photo right (desktop); intro, photo, form (phone). */
-/* Lavender panel with rounded corners, as on the homepage hero. */
-.hero { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "intro art" "conversion art"; gap: 28px 40px; align-items: start; padding: 32px 36px 28px; margin-bottom: 28px; border-radius: 24px; background: linear-gradient(135deg, var(--lavender) 0%, var(--lavender) 50%, #ece4fa 100%); }
+/* Hero: a plain pale-lavender panel, 48px padding and a 52px gap. Text
+   and signup left; the artwork right at its own 3:2 proportions, centred
+   rather than stretched to the text's height. On phones: heading and
+   introduction, artwork, then the signup. Spacing: heading to intro 24px,
+   intro to signup 32px, consent to social links 24px (label to input and
+   input to consent, 12px, are in EmailSignupForm's "rounded" shape). */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "intro art" "conversion art"; column-gap: 52px; row-gap: 32px; align-items: start; padding: 48px; border-radius: 24px; background: var(--lavender); }
 .accent { display: block; color: var(--purple); }
-.intro { grid-area: intro; padding-top: 16px; }
-.intro p { margin-top: 20px; font-size: 18px; max-width: 49ch; }
-.art { grid-area: art; position: relative; }
-.skyline { position: relative; height: 410px; border-radius: 12px; overflow: hidden; background: var(--pale); }
-/* Bottom half hidden by the photo's edge (.skyline clips it). */
-.mascot { position: absolute; right: 6%; bottom: 0; width: clamp(150px, 16vw, 210px); height: auto; transform: translateY(50%); pointer-events: none; }
+.intro { grid-area: intro; align-self: end; }
+.intro p { margin-top: 24px; font-size: 18px; line-height: 1.55; color: var(--ink); text-wrap: balance; }
+.art { grid-area: art; align-self: center; position: relative; }
+.skyline { position: relative; aspect-ratio: 3 / 2; border-radius: 16px; overflow: hidden; background: var(--pale); }
+/* Small and unobtrusive; the photo's edge hides his lower half. */
+.mascot { position: absolute; right: 5%; bottom: 0; width: 104px; height: auto; transform: translateY(45%); pointer-events: none; }
 .conversion { grid-area: conversion; align-self: start; }
-.conversion h2 { font-size: 20px; margin-bottom: 12px; }
-.signup { max-width: 520px; }
-.socials { display: flex; align-items: center; flex-wrap: wrap; gap: 0 16px; margin-top: 16px; font-size: 15px; }
+.signup { max-width: 500px; }
+.socials { display: flex; align-items: center; flex-wrap: wrap; gap: 0 10px; margin-top: 24px; font-size: 16px; color: var(--muted); }
 .socials a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
 
-.benefits { display: grid; grid-template-columns: repeat(3, 1fr); list-style: none; padding: 20px 0; margin: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); gap: 20px; }
+/* Business invitation: a plain white band under the hero, same width. */
+.business { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 30px; padding: 4px 48px 28px; border-bottom: 1px solid var(--line); }
+.business h2 { font-size: 26px; }
+.businessOffer { margin-top: 6px; font-size: 18px; font-weight: 700; color: var(--ink); }
+.fine { margin-top: 6px; font-size: 14px; color: var(--muted); }
+.fine a { text-decoration: underline; font-weight: 600; }
+.outlineButton { display: inline-flex; flex: none; justify-content: center; align-items: center; gap: 10px; min-height: 52px; padding: 12px 24px; border: 2px solid var(--purple); border-radius: 8px; background: #fff; color: var(--purple) !important; font-weight: 700; text-decoration: none; }
+.outlineButton:hover { background: var(--lavender); }
+
+.benefits { display: grid; grid-template-columns: repeat(3, 1fr); list-style: none; padding: 20px 0; margin: 8px 0 0; border-bottom: 1px solid var(--line); gap: 20px; }
 .benefits li { display: flex; gap: 14px; align-items: flex-start; }
 .benefits li + li { border-left: 1px solid var(--line); padding-left: 20px; }
 .benefitIcon { width: 28px; height: 28px; flex: none; color: var(--purple); margin-top: 2px; }
@@ -69,14 +82,6 @@
 .exampleDeal { max-width: 340px; margin: 0 auto; pointer-events: none; user-select: none; }
 .page .exampleDeal h3 { font-size: 1rem; font-weight: 600; line-height: 1.35; }
 
-.business { display: grid; grid-template-columns: 1fr 300px; gap: 24px; background: var(--pale); padding: 24px; border-radius: 10px; margin-top: 36px; align-items: center; }
-.business h2 { font-size: 26px; margin: 8px 0; }
-.eyebrow { text-transform: uppercase; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
-.business ul { display: flex; flex-wrap: wrap; gap: 6px 20px; list-style: none; padding: 0; margin: 12px 0 0; font-size: 15px; font-weight: 700; }
-.button { display: inline-flex; justify-content: center; align-items: center; gap: 10px; min-height: 48px; padding: 12px 24px; border-radius: 8px; background: var(--purple); color: #fff !important; font-weight: 700; text-decoration: none; }
-.button:hover { background: #501590; }
-.business .button { width: 100%; }
-.fine { margin-top: 10px; font-size: 13px; color: var(--muted); text-align: center; }
 
 .faq details { border-bottom: 1px solid var(--line); }
 .faq details:first-child { border-top: 1px solid var(--line); }
@@ -88,13 +93,16 @@
 
 @media (max-width: 767px) {
   .main { padding: 24px 20px 32px; }
-  .hero { grid-template-columns: 1fr; grid-template-areas: "intro" "art" "conversion"; gap: 22px; padding: 22px 18px 20px; margin-bottom: 20px; border-radius: 20px; }
-  .intro { padding: 0; }
+  .hero { grid-template-columns: minmax(0, 1fr); grid-template-areas: "intro" "art" "conversion"; gap: 24px; padding: 22px; border-radius: 20px; }
+  .intro { align-self: start; }
   .page h1 { font-size: 34px; }
-  .intro p { font-size: 16px; margin-top: 16px; }
-  .skyline { height: 160px; }
-  .mascot { width: 130px; right: 5%; }
-  .socials { gap: 0 14px; margin-top: 12px; }
+  .intro p { font-size: 16px; margin-top: 24px; }
+  .skyline { aspect-ratio: auto; height: 160px; border-radius: 12px; }
+  .mascot { width: 72px; right: 5%; }
+  .socials { margin-top: 20px; }
+  .business { flex-direction: column; align-items: stretch; gap: 18px; margin-top: 28px; padding: 0 2px 24px; }
+  .business h2 { font-size: 24px; }
+  .outlineButton { width: 100%; }
   .benefits { grid-template-columns: 1fr; gap: 0; padding: 0; }
   .benefits li { padding: 14px 0; }
   .benefits li + li { border-left: 0; border-top: 1px solid var(--line); padding-left: 0; }
@@ -102,18 +110,23 @@
   .categoryPhoto { aspect-ratio: 4 / 3; }
   .page h2 { font-size: 26px; }
   .conversion h2 { font-size: 20px; }
-  .explainer, .business { grid-template-columns: 1fr; gap: 20px; }
-  .business { padding: 20px; }
-  .business h2 { font-size: 24px; }
-  .business ul { flex-direction: column; }
-  .section, .business { margin-top: 30px; }
+  .explainer { grid-template-columns: 1fr; gap: 20px; }
+  .section { margin-top: 30px; }
 }
 @media (min-width: 768px) and (max-width: 1023px) {
   .categories { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .hero { padding: 28px 24px 24px; column-gap: 24px; }
+  .hero { padding: 32px; column-gap: 32px; }
+  .business { padding: 4px 32px 28px; }
   .page h1 { font-size: 34px; }
   .socials { gap: 0 12px; }
-  .skyline { height: 340px; }
 }
 @media (min-width: 640px) and (max-width: 767px) { .page h1 { font-size: 40px; } }
 .visuallyHidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+/* The narrowest phones (320–359px): keep the heading's two lines, the
+   social links and the business button each on one line. */
+@media (max-width: 359px) {
+  .hero { padding: 20px; }
+  .page h1 { font-size: 30px; }
+  .socials { gap: 0 6px; font-size: 15px; }
+  .outlineButton { padding: 12px 14px; font-size: 15px; white-space: nowrap; }
+}
