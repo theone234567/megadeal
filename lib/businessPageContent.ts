@@ -12,7 +12,11 @@ import { currentPromo } from "./promo";
 
 export interface BusinessPageCopy {
   eyebrow: string;
+  /** The h1 as one sentence, and as its two lines: the first in ink,
+   *  the second in purple (as on the Beauty & Spa hero). */
   headline: string;
+  headlineLead: string;
+  headlineAccent: string;
   subheading: string;
   intro: string;
   heroCta: string;
@@ -82,6 +86,8 @@ export function businessPageCopy(launched: boolean): BusinessPageCopy {
     return {
       ...SHARED,
       headline: "Up to 6 months free advertising.",
+      headlineLead: "Up to 6 months",
+      headlineAccent: "free advertising.",
       offerQualifier: "For eligible pre-launch businesses. Terms and conditions apply.",
       launchNote: "Your free advertising starts when MegaDeal goes live.",
       faqs: [
@@ -108,6 +114,8 @@ export function businessPageCopy(launched: boolean): BusinessPageCopy {
   return {
     ...SHARED,
     headline: SHARED.subheading,
+    headlineLead: "Fill quiet times.",
+    headlineAccent: "Reach more local customers.",
     subheading: `Up to ${promo.months} months free advertising for new businesses.`,
     offerQualifier: "For eligible businesses. Terms and conditions apply.",
     launchNote: null,

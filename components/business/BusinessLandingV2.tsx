@@ -113,34 +113,43 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
 
       <div className="mx-auto w-full max-w-[1184px] px-5 sm:px-8">
         {/* Hero */}
-        <section aria-labelledby="business-title" className="grid items-center gap-8 pb-8 pt-8 sm:pt-12 lg:grid-cols-[1.2fr_1fr] lg:gap-12">
+        {/* Lavender rounded panel and ink + purple heading, sized as on the
+            Beauty & Spa and coming-soon heroes. */}
+        <section
+          aria-labelledby="business-title"
+          className="mt-5 grid items-center gap-8 rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-5 py-7 sm:mt-7 sm:rounded-3xl sm:px-9 sm:py-10 lg:grid-cols-[1.2fr_1fr] lg:gap-12 lg:px-12 lg:py-12"
+        >
           <div>
-            <p className="text-xs font-bold tracking-[0.12em] text-slate-600 sm:text-sm">{copy.eyebrow}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.08em] text-hp-purple">{copy.eyebrow}</p>
             <h1
               id="business-title"
-              className="mt-3 text-balance font-display text-[2.25rem] font-bold leading-[1.04] tracking-tight text-brand-600 sm:text-5xl lg:text-[3.6rem]"
+              className="mt-3 font-display text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]"
             >
-              {copy.headline}
+              {copy.headlineLead} <span className="block text-hp-purple">{copy.headlineAccent}</span>
             </h1>
-            <p className="mt-4 text-xl font-bold text-slate-900 sm:text-2xl">{copy.subheading}</p>
-            <p className="mt-2 text-base text-slate-700 sm:text-lg">{copy.intro}</p>
+            <p className="mt-4 text-xl font-bold text-hp-ink sm:text-2xl">{copy.subheading}</p>
+            <p className="mt-2 text-base sm:text-lg" style={{ color: "#334155" }}>{copy.intro}</p>
             <a href="#business-signup" data-cta-section="hero" className="btn-primary mt-6 w-full px-7 py-3 text-base sm:w-auto">
               {copy.heroCta} →
             </a>
-            <p className="mt-4 text-sm text-slate-600">
+            <p className="mt-4 text-sm" style={{ color: "#475569" }}>
               {copy.offerQualifier.replace(/ Terms and conditions apply\.$/, "")}{" "}
               <Link href={OFFER_TERMS_HREF} className="font-semibold text-brand-600 underline underline-offset-2">
                 Terms and conditions apply.
               </Link>
             </p>
-            {copy.launchNote && <p className="mt-1 text-sm text-slate-600">{copy.launchNote}</p>}
+            {copy.launchNote && (
+              <p className="mt-1 text-sm" style={{ color: "#475569" }}>
+                {copy.launchNote}
+              </p>
+            )}
           </div>
 
           {/* The real DealCard, as customers see it on the site, with
               example details: a card that can't drift from the real one.
               Not a link, and labelled as an example. */}
           <figure className="relative mx-auto w-full max-w-[340px] sm:max-w-[380px] lg:mr-0">
-            <figcaption className="mb-2 text-center text-xs font-semibold text-slate-600 sm:text-sm">
+            <figcaption className="mb-2 text-center text-xs font-semibold sm:text-sm" style={{ color: "#475569" }}>
               Example deal — not available to redeem
             </figcaption>
             <div aria-hidden className="pointer-events-none select-none rounded-2xl shadow-card-hover">
@@ -158,7 +167,7 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
         </section>
 
         {/* Benefits */}
-        <ul className="grid gap-5 border-t border-slate-200 py-7 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-slate-200">
+        <ul className="grid gap-5 pb-2 pt-8 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-slate-200">
           {copy.benefits.map(([title, text], i) => {
             const Icon = BENEFIT_ICONS[i];
             return (
