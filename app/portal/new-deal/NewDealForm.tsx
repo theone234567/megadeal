@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { uploadPhoto } from "@/lib/imageUpload";
 import { CATEGORIES } from "@/lib/categories";
-import { parseDraft, MAX_DRAFT_TEXT } from "@/lib/dealDraft";
+import { parseDraft, MAX_DRAFT_TEXT, draftRevisionOf } from "@/lib/dealDraft";
 import { STANDARD_TERMS, renderTerms, parseTerms } from "@/lib/dealTerms";
 import { buildPreviewDeal } from "@/lib/previewDeal";
 import { DEAL_CODE_MAX, dealCodeError, normaliseDealCode } from "@/lib/dealCode";
@@ -160,6 +160,11 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
   const [autosaveError, setAutosaveError] = useState<string | null>(null);
   const savingRef = useRef(false);
+  // The draft's save count as this form last loaded or saved it; sent with
+  // each save so one from another tab or device in between is flagged
+  // instead of silently overwritten (lib/dealDraft.ts isDraftConflict).
+  const revisionRef = useRef<number | null>(null);
+  const [conflict, setConflict] = useState(false);
   // Bumped in the same update that (re)fills the form from a saved draft
   // or a duplicated deal: that state is the starting point, not an unsaved
   // change. Doing it in the same render (not via a flag) means a repeated
@@ -332,6 +337,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           return;
         }
         const draft = parseDraft(item);
+        revisionRef.current = draftRevisionOf(item);
         setBaselineTick((t) => t + 1);
         setDealName(draft.dealName);
         setCategory(draft.category);
@@ -479,11 +485,11 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
 
   // Saves a few seconds after the last change, on the form step only.
   useEffect(() => {
-    if (isTest || !unsaved || !draftLoaded || step !== "form" || submitting || submitted) return;
+    if (isTest || !unsaved || !draftLoaded || conflict || step !== "form" || submitting || submitted) return;
     const t = setTimeout(() => saveDraft(true), 3000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [snapshot, unsaved, draftLoaded, step, submitting, submitted]);
+  }, [snapshot, unsaved, draftLoaded, conflict, step, submitting, submitted]);
 
   // Leaving with unsaved changes asks first (closing or reloading the tab).
   useEffect(() => {
@@ -496,7 +502,9 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
     return () => window.removeEventListener("beforeunload", warn);
   }, [unsaved, submitted]);
 
-  async function saveDraft(auto = false) {
+  /** `force` saves over a newer version from another tab or device: the
+   *  business chose "Keep my version". */
+  async function saveDraft(auto = false, force = false) {
     // One save at a time: two overlapping first saves would create two
     // drafts. A change made meanwhile is picked up by the next autosave.
     if (savingRef.current) return;
@@ -522,6 +530,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           draftId,
+          baseRevision: draftId && revisionRef.current !== null ? revisionRef.current : undefined,
+          force: force || undefined,
           draft: {
             dealName,
             category,
@@ -550,12 +560,20 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        if (res.status === 409 && data.conflict) {
+          // Shown in the save status with the two ways out; autosave
+          // stops until the business picks one.
+          setConflict(true);
+          return;
+        }
         throw new Error(data.error || "Couldn't save your draft.");
       }
       const { item } = await res.json();
       // Held on to so the next save updates this draft rather than
       // creating another one beside it.
       if (item?._id) setDraftId(item._id);
+      revisionRef.current = draftRevisionOf(item);
+      setConflict(false);
       if (typeof item?.dealCode === "string" && item.dealCode.startsWith("MEGA-")) setSavedCode(item.dealCode);
       setSavedSnapshot(saving);
       setAutosaveError(null);
@@ -979,6 +997,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
                 saved={Boolean(draftId) && !unsaved}
                 error={autosaveError}
                 onRetry={() => saveDraft()}
+                conflict={conflict}
+                onKeepMine={() => saveDraft(false, true)}
               />
             </div>
           )}
@@ -1746,6 +1766,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             saved={Boolean(draftId) && !unsaved}
             error={autosaveError}
             onRetry={() => saveDraft()}
+            conflict={conflict}
+            onKeepMine={() => saveDraft(false, true)}
           />
             </>
           )}
@@ -1763,15 +1785,35 @@ function SaveStatus({
   saved,
   error,
   onRetry,
+  conflict = false,
+  onKeepMine,
 }: {
   saving: boolean;
   unsaved: boolean;
   saved: boolean;
   error: string | null;
   onRetry: () => void;
+  /** Saved from another tab or device since this form loaded the draft. */
+  conflict?: boolean;
+  onKeepMine?: () => void;
 }) {
   let content: React.ReactNode = null;
   if (saving) content = <span className="text-slate-500">Saving…</span>;
+  else if (conflict)
+    content = (
+      <span role="alert" className="block rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm font-normal text-amber-900">
+        <span className="font-semibold">This draft was changed in another tab or on another device.</span> Your changes
+        here aren&apos;t saved yet.{" "}
+        <button type="button" onClick={() => window.location.reload()} className="font-bold underline">
+          Load the latest version
+        </button>{" "}
+        (drops the changes here) or{" "}
+        <button type="button" onClick={onKeepMine} className="font-bold underline">
+          keep my version
+        </button>{" "}
+        (replaces the other one).
+      </span>
+    );
   else if (error && unsaved)
     content = (
       <span className="text-red-600">

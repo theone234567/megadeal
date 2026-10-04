@@ -4,7 +4,7 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { isWixMediaUrl } from "@/lib/photoUrl";
-import { sanitizeDraft, draftToRow } from "@/lib/dealDraft";
+import { sanitizeDraft, draftToRow, draftRevisionOf, isDraftConflict } from "@/lib/dealDraft";
 import { getOrClaimMerchant } from "@/lib/merchant";
 
 export const dynamic = "force-dynamic";
@@ -92,10 +92,18 @@ export async function POST(req: NextRequest) {
           { status: 409 }
         );
       }
+      // Saved from another tab or device since this form loaded it.
+      if (isDraftConflict(existing, body.baseRevision, body.force)) {
+        return NextResponse.json(
+          { error: "This draft was changed in another tab or on another device.", conflict: true },
+          { status: 409 }
+        );
+      }
       const updated = await adminClient.items.update("Deals", {
         ...existing,
         ...row,
         dealCode: codeForDraft(draft.dealCode, existing.dealCode),
+        draftRevision: draftRevisionOf(existing) + 1,
       });
       return NextResponse.json({ item: updated });
     }
@@ -113,7 +121,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Every deal has its code from its first saved draft (lib/dealCode.ts).
-    const created = await adminClient.items.insert("Deals", { ...row, dealCode: codeForDraft(draft.dealCode, null) });
+    const created = await adminClient.items.insert("Deals", {
+      ...row,
+      dealCode: codeForDraft(draft.dealCode, null),
+      draftRevision: 1,
+    });
     return NextResponse.json({ item: created });
   } catch (err) {
     console.error("[deals/draft] failed", err);

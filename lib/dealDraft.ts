@@ -261,3 +261,24 @@ export function parseDraft(row: any): DealDraftData {
     dealCode: stored.dealCode || extra.dc || "",
   });
 }
+
+/**
+ * Two tabs or devices editing the same draft (handoff pack §5: a save
+ * conflict is flagged, not silently lost). Every save bumps
+ * `draftRevision` on the row, and the form sends the revision it last
+ * loaded or saved. If the row has moved on since, someone else saved in
+ * between, and this save is refused until the business chooses: load the
+ * newer version, or keep theirs (`force`).
+ *
+ * A save with no revision (a form opened before this existed) is let
+ * through, as before. Drafts saved before this existed count as 0.
+ */
+export function draftRevisionOf(row: Record<string, any> | null | undefined): number {
+  const n = Number(row?.draftRevision);
+  return Number.isInteger(n) && n > 0 ? n : 0;
+}
+
+export function isDraftConflict(row: Record<string, any>, baseRevision: unknown, force: unknown): boolean {
+  if (force === true || typeof baseRevision !== "number") return false;
+  return baseRevision !== draftRevisionOf(row);
+}
