@@ -38,7 +38,7 @@ export default function ComingSoonV2() {
             <p>
               Food, experiences, beauty and more.
               <br />
-              Launching first in Auckland.
+              <span className={styles.launching}>Launching first in Auckland.</span>
             </p>
           </div>
           <div className={styles.art}>

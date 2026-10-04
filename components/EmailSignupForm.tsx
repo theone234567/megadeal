@@ -111,14 +111,20 @@ export default function EmailSignupForm({
       ? "bg-ember-600 hover:bg-ember-700"
       : "bg-brand-600 hover:bg-brand-700";
 
+  // The "rounded" shape sits on the coming-soon page's soft-grey panel:
+  // its colours come from that design (charcoal label, #625D6B supporting
+  // text, purple links, a slightly firmer grey border, no button shadow).
   const inputClass =
-    surface === "plain"
+    rounded
+      ? "border border-[#D6D3DC] bg-white text-[#37343D] outline-none placeholder:text-[#625D6B] focus:border-brand-400"
+      : surface === "plain"
       ? "border border-slate-200 bg-white text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400"
       : "border border-white/40 bg-white/95 text-slate-800 outline-none placeholder:text-slate-400 focus:border-white";
 
-  const mutedTextClass = surface === "plain" ? "text-slate-600" : "text-white/80";
-  const linkClass =
-    surface === "plain"
+  const mutedTextClass = rounded ? "text-[#625D6B]" : surface === "plain" ? "text-slate-600" : "text-white/80";
+  const linkClass = rounded
+    ? "font-semibold text-brand-600 underline hover:text-brand-700"
+    : surface === "plain"
       ? "underline hover:text-brand-700"
       : "underline hover:text-white";
 
@@ -126,7 +132,7 @@ export default function EmailSignupForm({
     <div>
       <form onSubmit={handleSubmit} className="w-full max-w-lg">
         {label && (
-          <label htmlFor={emailId} className={`block font-bold text-[#0F172A] ${rounded ? "mb-3 text-base sm:text-lg" : "mb-2 text-sm"}`}>
+          <label htmlFor={emailId} className={`block font-bold ${rounded ? "text-[#222126]" : "text-[#0F172A]"} ${rounded ? "mb-3 text-base sm:text-lg" : "mb-2 text-sm"}`}>
             {label}
           </label>
         )}
@@ -158,7 +164,7 @@ export default function EmailSignupForm({
             type="submit"
             disabled={state === "saving"}
             aria-busy={state === "saving" || undefined}
-            className={`${corners} py-3 ${rounded ? "px-6 text-base" : "px-5 text-sm"} font-bold text-white shadow-card transition active:scale-95 disabled:opacity-60 ${
+            className={`${corners} py-3 ${rounded ? "px-6 text-base" : "px-5 text-sm"} font-bold text-white ${rounded ? "" : "shadow-card"} transition active:scale-95 disabled:opacity-60 ${
               layout === "stacked" ? "w-full" : layout === "responsive" ? "w-full sm:w-auto sm:shrink-0" : "shrink-0"
             } ${buttonClass}`}
           >

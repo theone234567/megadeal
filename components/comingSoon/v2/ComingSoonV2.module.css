@@ -8,9 +8,16 @@
   --muted: #475569;
   --line: #e2e8f0;
   --pale: #eef6fc;
-  /* Homepage hero palette (tailwind.config.ts hp-ink / hp-lavender). */
-  --heading: #211a35;
   --lavender: #f5f0fc;
+  /* Hero palette (owner's approved mockup, 4 Oct 2026). The mockup's blue,
+     #287EAA, is 4.15:1 on the grey panel, short of WCAG AA for normal
+     text; #24769F is the nearest shade that passes (4.64:1). */
+  --heading: #222126;
+  --body: #37343d;
+  --support: #625d6b;
+  --panel: #f6f5f8;
+  --auckland: #24769f;
+  --border: #e4e2e8;
   color: var(--ink);
   background: #fff;
   font-family: var(--font-jakarta), system-ui, sans-serif;
@@ -29,30 +36,34 @@
 .page a { color: var(--purple); text-underline-offset: 3px; }
 .page :is(a, button, input, summary):focus-visible { outline: 3px solid var(--purple); outline-offset: 3px; }
 
-/* Hero: a plain pale-lavender panel, 48px padding and a 52px gap. Text
+/* Hero: a plain soft-grey panel, 48px padding and a 52px gap. Text
    and signup left; the artwork right at its own 3:2 proportions, centred
    rather than stretched to the text's height. On phones: heading and
    introduction, artwork, then the signup. Spacing: heading to intro 24px,
    intro to signup 32px, consent to social links 24px (label to input and
    input to consent, 12px, are in EmailSignupForm's "rounded" shape). */
-.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "intro art" "conversion art"; column-gap: 52px; row-gap: 32px; align-items: start; padding: 48px; border-radius: 24px; background: var(--lavender); }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "intro art" "conversion art"; column-gap: 52px; row-gap: 32px; align-items: start; padding: 48px; border-radius: 24px; background: var(--panel); }
 .accent { display: block; color: var(--purple); }
 .intro { grid-area: intro; align-self: end; }
-.intro p { margin-top: 24px; font-size: 18px; line-height: 1.55; color: var(--ink); text-wrap: balance; }
+.intro p { margin-top: 24px; font-size: 18px; line-height: 1.55; color: var(--body); text-wrap: balance; }
+/* The only blue on the page. */
+.launching { color: var(--auckland); font-weight: 600; }
 .art { grid-area: art; align-self: center; position: relative; }
 .skyline { position: relative; aspect-ratio: 3 / 2; border-radius: 16px; overflow: hidden; background: var(--pale); }
 /* Small and unobtrusive; the photo's edge hides his lower half. */
 .mascot { position: absolute; right: 5%; bottom: 0; width: 104px; height: auto; transform: translateY(45%); pointer-events: none; }
 .conversion { grid-area: conversion; align-self: start; }
 .signup { max-width: 500px; }
-.socials { display: flex; align-items: center; flex-wrap: wrap; gap: 0 10px; margin-top: 24px; font-size: 16px; color: var(--muted); }
+.socials { display: flex; align-items: center; flex-wrap: wrap; gap: 0 10px; margin-top: 24px; font-size: 16px; color: var(--support); }
 .socials a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
 
-/* Business invitation: a plain white band under the hero, same width. */
-.business { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 30px; padding: 4px 48px 28px; border-bottom: 1px solid var(--line); }
+/* Business invitation: a white bordered panel under the hero, aligned to
+   its outer edges. */
+.business { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 28px; padding: 28px 48px; border: 1px solid var(--border); border-radius: 24px; background: #fff; }
 .business h2 { font-size: 26px; }
-.businessOffer { margin-top: 6px; font-size: 18px; font-weight: 700; color: var(--ink); }
-.fine { margin-top: 6px; font-size: 14px; color: var(--muted); }
+.business h2 { color: var(--heading); }
+.businessOffer { margin-top: 6px; font-size: 18px; font-weight: 700; color: var(--body); }
+.fine { margin-top: 6px; font-size: 14px; color: var(--support); }
 .fine a { text-decoration: underline; font-weight: 600; }
 .outlineButton { display: inline-flex; flex: none; justify-content: center; align-items: center; gap: 10px; min-height: 52px; padding: 12px 24px; border: 2px solid var(--purple); border-radius: 8px; background: #fff; color: var(--purple) !important; font-weight: 700; text-decoration: none; }
 .outlineButton:hover { background: var(--lavender); }
@@ -99,8 +110,7 @@
   .intro p { font-size: 16px; margin-top: 24px; }
   .skyline { aspect-ratio: auto; height: 160px; border-radius: 12px; }
   .mascot { width: 72px; right: 5%; }
-  .socials { margin-top: 20px; }
-  .business { flex-direction: column; align-items: stretch; gap: 18px; margin-top: 28px; padding: 0 2px 24px; }
+  .business { flex-direction: column; align-items: stretch; gap: 18px; margin-top: 28px; padding: 22px; border-radius: 20px; }
   .business h2 { font-size: 24px; }
   .outlineButton { width: 100%; }
   .benefits { grid-template-columns: 1fr; gap: 0; padding: 0; }
@@ -116,7 +126,7 @@
 @media (min-width: 768px) and (max-width: 1023px) {
   .categories { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .hero { padding: 32px; column-gap: 32px; }
-  .business { padding: 4px 32px 28px; }
+  .business { padding: 28px 32px; }
   .page h1 { font-size: 34px; }
   .socials { gap: 0 12px; }
 }
@@ -125,7 +135,8 @@
 /* The narrowest phones (320–359px): keep the heading's two lines, the
    social links and the business button each on one line. */
 @media (max-width: 359px) {
-  .hero { padding: 20px; }
+  .hero, .business { padding: 20px; }
+  .business h2 { font-size: 21px; }
   .page h1 { font-size: 30px; }
   .socials { gap: 0 6px; font-size: 15px; }
   .outlineButton { padding: 12px 14px; font-size: 15px; white-space: nowrap; }
