@@ -7,7 +7,9 @@ import EmailSignupForm from "@/components/EmailSignupForm";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "./MerchantSignupForm";
-import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, SITE_LAUNCHED, LIST_BUSINESS_DESIGN } from "@/lib/siteConfig";
+import BusinessLandingV2 from "@/components/business/BusinessLandingV2";
+import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { getSignupStats, shownStats } from "@/lib/publicStats";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
@@ -28,7 +30,7 @@ const LIST_YOUR_BUSINESS_SOCIAL_TITLE = `${LIST_YOUR_BUSINESS_TITLE} — MegaDea
 const LIST_YOUR_BUSINESS_DESCRIPTION =
   "Auckland businesses: claim up to 6 months free advertising on MegaDeal before launch. 0% commission, no lock-in, no credit card required.";
 
-export const metadata: Metadata = {
+const LEGACY_METADATA: Metadata = {
   title: LIST_YOUR_BUSINESS_TITLE,
   description: LIST_YOUR_BUSINESS_DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/list-your-business` },
@@ -48,6 +50,28 @@ export const metadata: Metadata = {
     description: LIST_YOUR_BUSINESS_DESCRIPTION,
   },
 };
+
+// The redesign (LIST_BUSINESS_DESIGN=v2): the pack's title and
+// description, launch-aware so a cached page never advertises the ended
+// pre-launch offer.
+const V2_TITLE = "Advertise Your Auckland Business";
+const V2_DESCRIPTION = SITE_LAUNCHED
+  ? `Reach local customers with MegaDeal. Eligible new businesses can get up to ${currentPromo(true).months} months of free advertising. No commission. Terms apply.`
+  : "Reach local customers with MegaDeal. Eligible Auckland businesses can get up to six months of free advertising from launch. No commission. Terms apply.";
+const V2_METADATA: Metadata = {
+  title: V2_TITLE,
+  description: V2_DESCRIPTION,
+  alternates: { canonical: `${SITE_URL}/list-your-business` },
+  openGraph: {
+    title: `${V2_TITLE} | MegaDeal`,
+    description: V2_DESCRIPTION,
+    url: `${SITE_URL}/list-your-business`,
+    type: "website",
+  },
+  twitter: { card: "summary_large_image", title: `${V2_TITLE} | MegaDeal`, description: V2_DESCRIPTION },
+};
+
+export const metadata: Metadata = LIST_BUSINESS_DESIGN === "v2" ? V2_METADATA : LEGACY_METADATA;
 
 // The exact CTA used everywhere on this page — one wording, always
 // scrolling to the signup form, so a visitor never has to work out which
@@ -276,6 +300,7 @@ function SectionCta({ section }: { section: string }) {
 }
 
 export default async function MerchantsPage() {
+  if (LIST_BUSINESS_DESIGN === "v2") return <BusinessLandingV2 launched={SITE_LAUNCHED} />;
   // The live counters, each only once it reaches 60 (shownStats in
   // lib/publicStats.ts): a small number undercuts the trust they're for.
   const stats = shownStats(await getSignupStats());

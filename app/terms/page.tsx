@@ -60,7 +60,7 @@ export default function TermsPage() {
         to it.
       </p>
 
-      <h2>3. Businesses listing deals</h2>
+      <h2 id="businesses">3. Businesses listing deals</h2>
       <p>
         Businesses list deals on MegaDeal in exchange for advertising
         credits or a subscription fee, paid to MegaDeal for the listing

@@ -110,6 +110,24 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
+  // Same for the /list-your-business redesign (LIST_BUSINESS_DESIGN):
+  // /list-your-business?design=v2 shows it to a signed-in admin only.
+  if (
+    path === "/list-your-business/v2-preview" ||
+    (path === "/list-your-business" && request.nextUrl.searchParams.get("design") === "v2")
+  ) {
+    const admin = await hasValidAdminSignature(request.cookies.get(ADMIN_COOKIE_NAME)?.value);
+    if (path === "/list-your-business" && !admin) return; // the normal page
+    const preview = new URL("/list-your-business/v2-preview", request.url);
+    // Keeps ?ref= so a referral link can be tried in the preview.
+    const ref = request.nextUrl.searchParams.get("ref");
+    if (ref) preview.searchParams.set("ref", ref);
+    const res = admin ? NextResponse.rewrite(preview) : NextResponse.redirect(new URL("/list-your-business", request.url), 307);
+    res.headers.set("Cache-Control", "private, no-store");
+    res.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return res;
+  }
+
   if (!SITE_LAUNCHED && (path === "/" || PRELAUNCH_PRIVATE.test(path))) {
     // Admin preview: before launch the customer side is visible only to
     // someone signed into /admin, so test deals from a real business

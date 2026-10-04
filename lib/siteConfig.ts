@@ -85,3 +85,20 @@ export function comingSoonDesign(value: string | undefined): "v2" | "legacy" {
 }
 const COMING_SOON_LIVE = "v2";
 export const COMING_SOON_DESIGN = comingSoonDesign(process.env.COMING_SOON_DESIGN ?? COMING_SOON_LIVE);
+
+/**
+ * Which /list-your-business design visitors get: "legacy" (the current
+ * page) or "v2" (the redesign with the two-step signup, from the
+ * Business Page pack). Only an exact "v2" turns it on; anything else is
+ * legacy. Same arrangement as COMING_SOON_DESIGN: the value is set in
+ * code (LIST_BUSINESS_LIVE) because the site is built by Cloudflare,
+ * which never saw the GitHub workflow's variables; LIST_BUSINESS_DESIGN
+ * in the build environment overrides it. Admins can preview v2 at
+ * /list-your-business?design=v2 whatever this says. The signup backend
+ * is the same for both, so switching never affects accounts or credits.
+ */
+export function listBusinessDesign(value: string | undefined): "v2" | "legacy" {
+  return value === "v2" ? "v2" : "legacy";
+}
+const LIST_BUSINESS_LIVE = "legacy";
+export const LIST_BUSINESS_DESIGN = listBusinessDesign(process.env.LIST_BUSINESS_DESIGN ?? LIST_BUSINESS_LIVE);

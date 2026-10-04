@@ -44,6 +44,9 @@ const HONEYPOT_FIELD = "mg_contact_ref";
  *  false positive again, the page recovers instead of hanging forever. */
 const HONEYPOT_RESET_MS = 2000;
 
+/** Account errors from Wix that are fixed on step 1 of the two-step form. */
+const STEP_ONE_ERRORS = new Set(["emailAlreadyExists", "invalidEmail", "invalidPassword"]);
+
 /**
  * CRO EXPERIMENT — short initial signup (easy to revert): the form used to
  * also collect legal business name's NZBN, referral code as a visible
@@ -169,8 +172,16 @@ export default function MerchantSignupForm({
    *  before launch, WELCOME3 after — lib/promo.ts). The runtime flag isn't
    *  visible in the browser, so it's passed in. */
   launched = false,
+  /** The redesigned page (LIST_BUSINESS_DESIGN=v2): the same form and the
+   *  same submit, laid out as step 1 (your details) and step 2 (your
+   *  business, offer codes and terms). Continue only checks the fields in
+   *  the browser; nothing is created until the final button, which runs
+   *  exactly the submit the one-page form runs. Both steps stay mounted
+   *  (one hidden), so every field is still read from the form at submit. */
+  twoStep = false,
 }: {
   launched?: boolean;
+  twoStep?: boolean;
 }) {
   const promo = currentPromo(launched);
   const { client, member, isLoggedIn, logout } = useWix();
@@ -188,6 +199,18 @@ export default function MerchantSignupForm({
    *  expires after ~2 minutes, so it is cleared after every attempt. */
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = useRef<RecaptchaCheckboxHandle | null>(null);
+  // Two-step layout only (see `twoStep`).
+  const [step, setStep] = useState<1 | 2>(1);
+  const stepHeadingRef = useRef<HTMLHeadingElement>(null);
+  const step1Ref = useRef<HTMLDivElement>(null);
+  const step2Ref = useRef<HTMLDivElement>(null);
+  const stepChangedRef = useRef(false);
+  useEffect(() => {
+    // Moving between steps puts focus on the heading, so a screen reader
+    // hears where it is; not on first load.
+    if (stepChangedRef.current) stepHeadingRef.current?.focus();
+    stepChangedRef.current = true;
+  }, [step]);
   /**
    * The business already attached to the signed-in account, if any.
    * undefined while unknown, null once we know there is none.
@@ -330,12 +353,59 @@ export default function MerchantSignupForm({
       setPendingEmail(outcome.email);
     } else {
       setSubmitError(outcome.message);
+      // An email or password problem is fixed on step 1.
+      if (twoStep && outcome.status === "error" && STEP_ONE_ERRORS.has(outcome.errorCode ?? "")) setStep(1);
     }
+  }
+
+  /** Two-step layout: the browser's own checks on one step's fields,
+   *  showing the first problem. The form is noValidate there, because
+   *  the hidden step's required fields would otherwise block Continue. */
+  function stepFieldsValid(box: HTMLElement | null): boolean {
+    if (!box) return true;
+    const fields = box.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input, select, textarea");
+    for (const el of Array.from(fields)) {
+      if (el.name === HONEYPOT_FIELD) continue;
+      if (!el.checkValidity()) {
+        el.reportValidity();
+        el.focus();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** Step 1 → step 2. Checks only; no account, no request. */
+  function goToBusinessStep() {
+    setSubmitError(null);
+    if (!stepFieldsValid(step1Ref.current)) return;
+    if (password.length < 8) {
+      setSubmitError("Your password needs to be at least 8 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setSubmitError("Those passwords don't match.");
+      return;
+    }
+    setStep(2);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // Two-step layout: Enter or Continue on step 1 only moves on.
+    if (twoStep && step === 1) {
+      goToBusinessStep();
+      return;
+    }
     setSubmitError(null);
+    if (twoStep) {
+      // Step 1 was checked on Continue; check it again in case, then step 2.
+      if (!stepFieldsValid(step1Ref.current)) {
+        setStep(1);
+        return;
+      }
+      if (!stepFieldsValid(step2Ref.current)) return;
+    }
 
     const formData = new FormData(e.currentTarget);
 
@@ -769,9 +839,43 @@ export default function MerchantSignupForm({
     );
   }
 
+  const legalNameField = (
+          <div>
+            <label htmlFor="signup-legalBusinessName" className="mb-1 block text-base font-medium text-slate-700">
+              Legal / registered business name
+              <RequiredTag />
+            </label>
+            <input
+              id="signup-legalBusinessName"
+              required
+              name="legalBusinessName"
+              autoComplete="organization"
+              type="text"
+              maxLength={300}
+              placeholder="e.g. Harbourside Bistro Limited"
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+            />
+            <p className="mt-1 text-sm text-slate-500">
+              Must be a New Zealand registered Limited company — we
+              don&apos;t currently accept sole traders or partnerships.
+            </p>
+          </div>
+  );
+
   return (
     <div id="signup" className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
-      <form onSubmit={handleSubmit} onChangeCapture={trackFormStarted} className="space-y-4">
+      <form onSubmit={handleSubmit} onChangeCapture={trackFormStarted} noValidate={twoStep} className="space-y-4">
+        {twoStep && (
+          <div>
+            <h3 ref={stepHeadingRef} tabIndex={-1} className="text-xl font-bold text-slate-900 outline-none">
+              Create your business account
+            </h3>
+            <p aria-live="polite" className="mt-1 text-sm font-semibold text-slate-600">
+              Step {step} of 2 · {step === 1 ? "Your details" : "Your business"}
+            </p>
+          </div>
+        )}
+        <div ref={step1Ref} hidden={twoStep && step !== 1} className="space-y-4">
         {/* What's private and what isn't, up front: name, email and
             contact phone are only for the account; the legal name is the
             starting public business name (readApplicationValues), and the
@@ -784,26 +888,7 @@ export default function MerchantSignupForm({
             are what customers see, and you can change either in your portal.
           </span>
         </p>
-        <div>
-          <label htmlFor="signup-legalBusinessName" className="mb-1 block text-base font-medium text-slate-700">
-            Legal / registered business name
-            <RequiredTag />
-          </label>
-          <input
-            id="signup-legalBusinessName"
-            required
-            name="legalBusinessName"
-            autoComplete="organization"
-            type="text"
-            maxLength={300}
-            placeholder="e.g. Harbourside Bistro Limited"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
-          />
-          <p className="mt-1 text-sm text-slate-500">
-            Must be a New Zealand registered Limited company — we
-            don&apos;t currently accept sole traders or partnerships.
-          </p>
-        </div>
+        {!twoStep && legalNameField}
 
         <div>
           <label htmlFor="signup-contactName" className="mb-1 block text-base font-medium text-slate-700">
@@ -885,6 +970,27 @@ export default function MerchantSignupForm({
             </div>
           </>
         )}
+
+        {twoStep && (
+          <>
+            {submitError && step === 1 && (
+              <p role="alert" className="text-sm text-ember-600">
+                {submitError}
+              </p>
+            )}
+            <button
+              type="submit"
+              className="w-full rounded-full bg-brand-600 py-3.5 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95"
+            >
+              Continue to business details →
+            </button>
+            <p className="text-center text-sm text-slate-600">Next: business name, contact details and launch offer.</p>
+          </>
+        )}
+        </div>
+
+        <div ref={step2Ref} hidden={twoStep && step !== 2} className="space-y-4">
+        {twoStep && legalNameField}
 
         {/* Two numbers: a private one for us to reach them, and the public
             one customers see on the listing. Often the same number, hence
@@ -1067,13 +1173,28 @@ export default function MerchantSignupForm({
           <p className="text-sm text-ember-600">{submitError}</p>
         )}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded-full bg-brand-600 py-3.5 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
-        >
-          {submitting ? "Submitting…" : "Claim my free advertising →"}
-        </button>
+        <div className={twoStep ? "flex gap-3" : undefined}>
+          {twoStep && (
+            <button
+              type="button"
+              onClick={() => {
+                setSubmitError(null);
+                setStep(1);
+              }}
+              disabled={submitting}
+              className="shrink-0 rounded-full border border-slate-300 px-5 py-3.5 font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+            >
+              Back
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full rounded-full bg-brand-600 py-3.5 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
+          >
+            {submitting ? "Submitting…" : twoStep ? "Create your business account" : "Claim my free advertising →"}
+          </button>
+        </div>
         <p className="text-center text-sm text-slate-500">
           Takes about 60 seconds • No credit card required • No obligation
         </p>
@@ -1084,6 +1205,8 @@ export default function MerchantSignupForm({
             Sign in to your business portal
           </a>
         </p>
+
+        </div>
 
         {/*
           Honeypot — last in the DOM so password managers and Chrome's
