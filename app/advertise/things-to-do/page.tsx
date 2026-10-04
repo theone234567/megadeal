@@ -67,22 +67,20 @@ export const metadata: Metadata = {
 const SIGNUP_HREF = "/list-your-business#signup";
 const TERMS_HREF = "/terms#businesses";
 
-// The MegaDeal Website Images pack's kayaking scene (AI-generated
-// illustration, not a participating business), sized from its master.
+// Photos from the owner's "Things To Do Web Images" pack (4 Oct 2026):
+// AI-generated illustrative scenes, not verified businesses or places
+// (docs/THINGS-TO-DO-IMAGES.md). Alt text as supplied in its manifest.
+const IMG = "/images/advertise/things-to-do";
 const HERO_PHOTO = {
-  src: "/images/things-to-do/hero-kayaking-v1.webp",
-  small: "/images/things-to-do/hero-kayaking-v1-720.webp",
-  alt: "Kayaker paddling on calm coastal water",
-  position: "50% 55%",
+  src: `${IMG}/hero-kayaking-v1.webp`, // 1536×1024
+  small: `${IMG}/hero-kayaking-v1-768.webp`, // 768×512, for phones
+  alt: "Kayakers paddling on calm coastal water",
+  position: "50% 50%",
 };
 const HERO_MASCOT = { src: "/megadeal/coming-soon-v2/mascot-hoodie.webp" };
 
-/**
- * One card per kind of activity business. `image` is null until its
- * photo is supplied (docs/THINGS-TO-DO-IMAGES.md lists each one); the
- * card then shows its icon on a lavender panel instead of a photo that
- * doesn't belong to it.
- */
+/** One card per kind of activity business, matching the pills. A card
+ *  with no `image` shows its icon on a lavender panel instead. */
 const CATEGORIES: {
   id: string;
   title: string;
@@ -95,7 +93,7 @@ const CATEGORIES: {
     id: "tours-sightseeing",
     title: "Tours & Sightseeing",
     icon: CompassIcon,
-    image: null,
+    image: { src: `${IMG}/tours-sightseeing-v1.webp`, alt: "A guide showing a harbour viewpoint to visitors" },
     body: "Promote guided walks, sightseeing tours and local discovery experiences to Aucklanders looking to see more of their own city. A MegaDeal offer can focus on selected departures with spare places, while leaving your busiest tours at their usual price.",
     offerIdeas: ["Midweek guided tour", "Local discovery package", "Small-group experience", "Selected-departure offer"],
   },
@@ -103,7 +101,7 @@ const CATEGORIES: {
     id: "adventure-outdoors",
     title: "Adventure & Outdoors",
     icon: LeafIcon,
-    image: null,
+    image: { src: `${IMG}/adventure-outdoors-v1.webp`, alt: "Cyclists riding along a scenic coastal trail" },
     body: "Introduce more locals to kayaking, climbing and other outdoor experiences. Choose the session, group size and dates that suit your operation. Make any age, ability, equipment and weather requirements clear so customers can choose an experience that is right for them.",
     offerIdeas: ["Quiet-session adventure", "Introductory outdoor experience", "Activity for two", "Selected weekday package"],
   },
@@ -111,7 +109,7 @@ const CATEGORIES: {
     id: "indoor-activities",
     title: "Indoor Activities",
     icon: TicketIcon,
-    image: null,
+    image: { src: `${IMG}/indoor-activities-v1.webp`, alt: "Friends enjoying an indoor bowling activity" },
     body: "Give locals a reason to visit on quieter days. Bowling, escape rooms, mini golf and other indoor activities can promote selected sessions or group packages without reducing prices across the whole schedule. Keep the inclusions and booking requirements easy to understand.",
     offerIdeas: ["Midweek group package", "Selected-session offer", "Activity plus a complimentary extra", "Introductory experience"],
   },
@@ -119,7 +117,7 @@ const CATEGORIES: {
     id: "family-experiences",
     title: "Family Experiences",
     icon: UsersIcon,
-    image: null,
+    image: { src: `${IMG}/family-experiences-v1.webp`, alt: "A family playing mini golf together" },
     body: "Help families plan their next day out with a clear offer on a local activity or attraction. A family package or selected-date offer can introduce new visitors to your business. Explain how many adults and children are included, along with age limits and available dates.",
     offerIdeas: ["Family activity package", "Selected-date experience", "Parent-and-child offer", "Activity package with an extra"],
   },
@@ -127,7 +125,7 @@ const CATEGORIES: {
     id: "workshops-classes",
     title: "Workshops & Classes",
     icon: SparklesIcon,
-    image: null,
+    image: { src: `${IMG}/workshops-classes-v1.webp`, alt: "Adults learning pottery in a creative workshop" },
     body: "Introduce locals to a new skill or hobby with selected creative workshops and introductory classes. Whether you offer pottery, cooking, art or another hands-on experience, choose a promotion that works for your materials, group size and schedule.",
     offerIdeas: ["Beginner pottery workshop", "Creative class for two", "Introductory hobby session", "Selected-date cooking class"],
   },
@@ -135,7 +133,7 @@ const CATEGORIES: {
     id: "cruises-day-trips",
     title: "Cruises & Day Trips",
     icon: SuitcaseIcon,
-    image: null,
+    image: { src: `${IMG}/cruises-day-trips-v1.webp`, alt: "A passenger boat on a coastal sightseeing trip" },
     body: "Showcase available places on selected sailings and day trips. Focus on departures where you would like more customers, and make the departure point, duration and inclusions clear. Customers book with you directly, so you stay in control of availability and confirmation.",
     offerIdeas: ["Weekday cruise", "Selected-departure package", "Day trip with an added extra", "Local sightseeing experience"],
   },
@@ -182,13 +180,15 @@ const SMARTER_CARDS = [
   },
 ] as const;
 
+// Each idea reuses its category card's photo (already downloaded for the
+// card above), so it's decorative here: empty alt, the text says it all.
 const PROMOTION_IDEAS = [
-  { tag: "Midweek", title: "Guided local tour", offer: "Selected weekday departure", icon: CompassIcon },
-  { tag: "Outdoors", title: "Adventure for two", offer: "Introductory experience package", icon: LeafIcon },
-  { tag: "Indoors", title: "Bowling or escape room", offer: "Quiet-session group offer", icon: TicketIcon },
-  { tag: "Family", title: "A day out together", offer: "Selected-date family package", icon: UsersIcon },
-  { tag: "Creative", title: "Try a new skill", offer: "Beginner workshop experience", icon: SparklesIcon },
-  { tag: "On the water", title: "Cruise or day trip", offer: "Selected departure with an extra", icon: SuitcaseIcon },
+  { tag: "Midweek", title: "Guided local tour", offer: "Selected weekday departure", image: `${IMG}/tours-sightseeing-v1.webp` },
+  { tag: "Outdoors", title: "Adventure for two", offer: "Introductory experience package", image: `${IMG}/adventure-outdoors-v1.webp` },
+  { tag: "Indoors", title: "Bowling or escape room", offer: "Quiet-session group offer", image: `${IMG}/indoor-activities-v1.webp` },
+  { tag: "Family", title: "A day out together", offer: "Selected-date family package", image: `${IMG}/family-experiences-v1.webp` },
+  { tag: "Creative", title: "Try a new skill", offer: "Beginner workshop experience", image: `${IMG}/workshops-classes-v1.webp` },
+  { tag: "On the water", title: "Cruise or day trip", offer: "Selected departure with an extra", image: `${IMG}/cruises-day-trips-v1.webp` },
 ] as const;
 
 const WHY_MEGADEAL = [
@@ -368,13 +368,13 @@ export default function ThingsToDoAdvertisingPage() {
             <div className="relative">
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white">
                 <picture>
-                  <source media="(min-width: 640px)" srcSet={HERO_PHOTO.src} width={1200} height={900} />
+                  <source media="(min-width: 640px)" srcSet={HERO_PHOTO.src} width={1536} height={1024} />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={HERO_PHOTO.small}
                     alt={HERO_PHOTO.alt}
-                    width={720}
-                    height={540}
+                    width={768}
+                    height={512}
                     fetchPriority="high"
                     decoding="async"
                     className="absolute inset-0 h-full w-full object-cover"
@@ -553,25 +553,25 @@ export default function ThingsToDoAdvertisingPage() {
 
             <div className="mt-10 grid grid-cols-1 gap-6 text-left sm:grid-cols-2 lg:grid-cols-3">
               {PROMOTION_IDEAS.map((d) => (
-                <div key={d.tag} className="rounded-xl border bg-white p-6" style={LINE}>
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: "#F5EFFC", color: "#6520B5" }}>
-                      <d.icon className="h-5 w-5" />
-                    </span>
+                <div key={d.tag} className="overflow-hidden rounded-xl border bg-white" style={LINE}>
+                  <div className="relative aspect-[16/10] w-full">
+                    <Image src={d.image} alt="" fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+                  </div>
+                  <div className="p-6">
                     <p className="text-xs font-bold uppercase tracking-wide" style={PURPLE}>
                       {d.tag}
                     </p>
-                  </div>
-                  <p className={`${fredoka.className} mt-3 text-lg font-semibold`} style={INK}>
-                    {d.title}
-                  </p>
-                  <div className="mt-4 rounded-xl border border-dashed px-3 py-2.5" style={LINE}>
-                    <p className="text-[10px] font-bold uppercase tracking-wide" style={MUTED}>
-                      Example offer
+                    <p className={`${fredoka.className} mt-1 text-lg font-semibold`} style={INK}>
+                      {d.title}
                     </p>
-                    <p className="mt-0.5 text-sm font-bold" style={INK}>
-                      {d.offer}
-                    </p>
+                    <div className="mt-4 rounded-xl border border-dashed px-3 py-2.5" style={LINE}>
+                      <p className="text-[10px] font-bold uppercase tracking-wide" style={MUTED}>
+                        Example offer
+                      </p>
+                      <p className="mt-0.5 text-sm font-bold" style={INK}>
+                        {d.offer}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}
