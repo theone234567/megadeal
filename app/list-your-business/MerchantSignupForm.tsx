@@ -1351,29 +1351,17 @@ export default function MerchantSignupForm({
         </div>
 
         {/*
-          Honeypot — last in the DOM so password managers and Chrome's
-          "fill the whole form" heuristic have already finished with the
-          real fields before they reach it, and positioned off-screen with
-          inline styles rather than utility classes so it can't be undone
-          by a Tailwind purge, a cascade collision, or a stylesheet that
-          fails to load. A bot that fills every input still trips it.
+          Honeypot — a bot that fills every input in the markup trips it.
+          Inside a display:none wrapper (inline style, so no stylesheet can
+          undo it): browsers and password managers don't autofill a field
+          that can't be focused. It used to sit 1px off-screen instead,
+          which still counts as fillable, and an owner's own browser
+          autofilled it on the live form (4 Oct 2026), blocking the signup.
+          Kept last in the DOM as well.
         */}
-        <input
-          type="text"
-          name={HONEYPOT_FIELD}
-          tabIndex={-1}
-          autoComplete="off"
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            left: "-9999px",
-            top: "auto",
-            width: "1px",
-            height: "1px",
-            overflow: "hidden",
-            opacity: 0,
-          }}
-        />
+        <div aria-hidden="true" style={{ display: "none" }}>
+          <input type="text" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" />
+        </div>
       </form>
     </div>
   );
