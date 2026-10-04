@@ -226,7 +226,7 @@ export default function ComingSoonV3() {
                 accent="ember"
                 surface="plain"
                 shape="rounded"
-                layout="stacked"
+                layout="responsive"
               />
               <p className={styles.small}>No spam. Just great deals.</p>
             </div>

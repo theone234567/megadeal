@@ -1,13 +1,15 @@
 /* Coming-soon V3 (owner's pack of 4 Oct 2026). Scoped to this module.
-   Brand colours are the site's own: purple #6520B5 / #501590 (Tailwind
-   hp-purple, brand-600) and the existing pink "ember" #C7128A / #A10F70
-   for customer actions (white text 5.3:1). Fonts come from next/font
-   via the root layout. */
+   Brighter, friendlier purple and pink (owner's request, 4 Oct 2026),
+   each the brightest shade that keeps white button text at WCAG AA:
+   purple #7B2FF2 (5.95:1), pink #E0007A (4.72:1). The header takes the
+   same purple on this page (coming-soon-v3-global.css). Fonts come from
+   next/font via the root layout. */
 .page {
-  --purple: #6520b5;
-  --purple-dark: #501590;
-  --pink: #c7128a;
-  --pink-dark: #a10f70;
+  --purple: #7b2ff2;
+  --purple-dark: #6620d8;
+  --hero-end: #8d47f6;
+  --pink: #e0007a;
+  --pink-dark: #c2006a;
   --ink: #171334;
   --muted: #595572;
   --lavender: #f4f0ff;
@@ -26,9 +28,9 @@
 .page :is(a, button, input):focus-visible { outline: 3px solid var(--purple); outline-offset: 3px; }
 
 /* ---------- Hero ---------- */
-.hero { background: var(--purple); color: #fff; }
+.hero { background: linear-gradient(180deg, var(--purple) 0%, var(--hero-end) 100%); color: #fff; }
 .heroInner {
-  max-width: 1264px; margin: 0 auto; padding: 32px 32px 96px;
+  max-width: 1264px; margin: 0 auto; padding: 16px 32px 100px;
   display: grid; grid-template-columns: minmax(0, 49fr) minmax(0, 51fr); gap: 32px; align-items: center;
 }
 .pill {
@@ -36,25 +38,25 @@
   background: rgb(255 255 255 / 0.16); border: 1px solid rgb(255 255 255 / 0.28);
   font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
 }
-.hero h1 { margin-top: 20px; font-size: 58px; line-height: 1.04; letter-spacing: -0.02em; color: #fff; }
-.lede { margin-top: 18px; max-width: 34em; font-size: 18px; line-height: 1.55; color: rgb(255 255 255 / 0.94); }
-.offer { margin-top: 16px; font-size: 15px; font-weight: 600; line-height: 1.5; color: #fff; }
+.hero h1 { margin-top: 16px; font-size: 52px; line-height: 1.04; letter-spacing: -0.02em; color: #fff; }
+.lede { margin-top: 14px; max-width: 34em; font-size: 18px; line-height: 1.55; color: rgb(255 255 255 / 0.94); }
+.offer { margin-top: 12px; font-size: 15px; font-weight: 600; line-height: 1.5; color: #fff; }
 .offerStar { color: #fff !important; text-decoration: none; padding: 0 2px; }
 .hero :is(a):focus-visible { outline-color: #fff; }
 
-.visual { position: relative; padding: 8px 120px 40px 0; }
+.visual { position: relative; padding: 4px 100px 16px 0; }
 .photoFrame {
-  position: relative; width: 100%; max-width: 560px; aspect-ratio: 560 / 350;
+  position: relative; width: 100%; max-width: 500px; aspect-ratio: 500 / 300;
   border: 4px solid #fff; border-radius: 30px; overflow: hidden; background: #cfe3f5;
   transform: rotate(2deg); box-shadow: 0 18px 40px rgb(20 0 60 / 0.25);
 }
 /* Sky Tower's needle sits near the top: anchor the crop to the top. */
 .photo { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 40% 0%; }
-.mascot { position: absolute; right: 0; bottom: 0; width: 300px; height: auto; pointer-events: none; }
+.mascot { position: absolute; right: 0; bottom: -6px; width: 250px; height: auto; pointer-events: none; }
 
 /* ---------- Audience cards ---------- */
 .main { max-width: 1264px; margin: 0 auto; padding: 0 32px 48px; }
-.cards { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: -52px; }
+.cards { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: -84px; }
 .card {
   display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: start;
   padding: 28px; border-radius: 20px; background: #fff; border: 1px solid var(--line);
@@ -114,10 +116,16 @@
 /* ---------- Signup panels ---------- */
 .signupRow { margin-top: 52px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; scroll-margin-top: 90px; }
 .customerPanel {
-  display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 20px; align-items: start;
-  padding: 28px; border-radius: 20px; background: var(--pink-pale); scroll-margin-top: 90px;
+  position: relative; padding: 28px; border-radius: 20px; background: var(--pink-pale); scroll-margin-top: 90px;
 }
-.panelMascot { width: 150px; height: auto; align-self: end; }
+/* The mascot peeks over the panel's top-right corner, so the form gets the
+   panel's full width (email box and button on one row, consent on two
+   lines) instead of a narrow column beside him. */
+.panelMascot { position: absolute; top: -34px; right: 18px; width: 100px; height: auto; pointer-events: none; }
+.customerPanel h2 { padding-right: 104px; }
+/* The shared form's pink button, in this page's brighter pink. */
+.customerPanel button[type="submit"] { background-color: var(--pink); }
+.customerPanel button[type="submit"]:hover { background-color: var(--pink-dark); }
 .customerPanel h2, .businessPanel h2 { font-size: 26px; line-height: 1.2; color: var(--ink); }
 .panelLede { margin-top: 6px; margin-bottom: 16px; font-size: 16px; line-height: 1.5; color: var(--muted); }
 .small { margin-top: 10px; font-size: 14px; color: var(--muted); }
@@ -150,11 +158,11 @@
 
 /* ---------- Tablet: 768–1099px ---------- */
 @media (max-width: 1099px) {
-  .heroInner { padding: 28px 24px 88px; gap: 24px; }
-  .hero h1 { font-size: 44px; }
+  .heroInner { padding: 16px 24px 96px; gap: 24px; }
+  .hero h1 { font-size: 42px; }
   .lede { font-size: 17px; }
-  .visual { padding-right: 90px; }
-  .mascot { width: 220px; }
+  .visual { padding-right: 80px; }
+  .mascot { width: 200px; }
   .main { padding: 0 24px 40px; }
   .card { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 24px; }
   .cardIcon { width: 56px; height: 56px; }
@@ -163,29 +171,29 @@
   .benefits li:nth-child(3) { padding-left: 0; border-left: 0; }
   .steps { grid-template-columns: minmax(0, 1fr); max-width: 560px; margin-inline: auto; gap: 18px; }
   .categories { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .customerPanel { grid-template-columns: minmax(0, 1fr); }
-  .panelMascot { display: none; }
+  /* Panels full width, one above the other, so the email row has room. */
+  .signupRow { grid-template-columns: minmax(0, 1fr); gap: 44px; }
   .launch { grid-template-columns: minmax(0, 1fr); }
 }
 /* Below 900px the hero stacks: text first, then the photo and mascot. */
 @media (max-width: 899px) {
-  .heroInner { grid-template-columns: minmax(0, 1fr); padding-bottom: 72px; }
+  .heroInner { grid-template-columns: minmax(0, 1fr); padding-bottom: 92px; }
   .visual { max-width: 560px; }
 }
 
 /* ---------- Phones: up to 767px ---------- */
 @media (max-width: 767px) {
-  .heroInner { padding: 20px 16px 40px; gap: 18px; }
+  .heroInner { padding: 14px 16px 52px; gap: 14px; }
   .pill { font-size: 12px; padding: 5px 12px; }
-  .hero h1 { margin-top: 14px; font-size: 38px; line-height: 1.08; }
-  .lede { margin-top: 14px; font-size: 16px; line-height: 1.5; }
-  .offer { margin-top: 12px; font-size: 14px; }
+  .hero h1 { margin-top: 12px; font-size: 34px; line-height: 1.08; }
+  .lede { margin-top: 10px; font-size: 16px; line-height: 1.5; }
+  .offer { margin-top: 10px; font-size: 14px; }
   /* Photo about 270px wide (3:2, ~180px high) with the mascot on its right. */
-  .visual { padding: 0 0 6px; height: 196px; }
-  .photoFrame { width: 76%; max-width: 290px; aspect-ratio: 3 / 2; border-width: 3px; border-radius: 20px; transform: rotate(-1deg); }
-  .mascot { width: 150px; right: 0; bottom: 0; }
+  .visual { padding: 0; height: 172px; }
+  .photoFrame { width: 72%; max-width: 260px; aspect-ratio: 3 / 2; border-width: 3px; border-radius: 20px; transform: rotate(-1deg); }
+  .mascot { width: 136px; right: 0; bottom: 0; }
   .main { padding: 0 16px 32px; }
-  .cards { grid-template-columns: minmax(0, 1fr); gap: 14px; margin-top: -16px; }
+  .cards { grid-template-columns: minmax(0, 1fr); gap: 14px; margin-top: -36px; }
   .card { grid-template-columns: auto minmax(0, 1fr); gap: 14px; padding: 20px; border-radius: 16px; }
   .cardIcon { width: 46px; height: 46px; }
   .cardIcon svg { width: 24px; height: 24px; }
@@ -211,7 +219,9 @@
   .categories li:last-child .categoryPhoto { height: 100%; }
   .categoryLabel { font-size: 14px; min-height: 48px; padding: 8px 12px; gap: 8px; }
   .categoryIcon { width: 20px; height: 20px; }
-  .signupRow { grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 40px; }
+  .signupRow { gap: 16px; margin-top: 40px; }
+  .panelMascot { display: none; }
+  .customerPanel h2 { padding-right: 0; }
   .customerPanel, .businessPanel { padding: 20px; border-radius: 16px; }
   .customerPanel h2, .businessPanel h2 { font-size: 22px; }
   /* Launch plan: readable wrapping text instead of a tiny timeline. */
@@ -226,9 +236,9 @@
 @media (max-width: 359px) {
   .heroInner { padding-inline: 12px; }
   .main { padding-inline: 12px; }
-  .hero h1 { font-size: 32px; }
-  .visual { height: 170px; }
-  .mascot { width: 126px; }
+  .hero h1 { font-size: 30px; }
+  .visual { height: 156px; }
+  .mascot { width: 120px; }
   .card { padding: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
