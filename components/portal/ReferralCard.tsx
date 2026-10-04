@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ShareButtons from "@/components/ShareButtons";
 import { SITE_URL } from "@/lib/siteConfig";
+import { referralCreditsLabel } from "@/lib/referralBonus";
 
 export default function ReferralCard({ referralCode }: { referralCode?: string }) {
   const [copied, setCopied] = useState(false);
@@ -26,7 +27,7 @@ export default function ReferralCard({ referralCode }: { referralCode?: string }
       <h2 className="text-lg font-bold text-slate-900">🤝 Refer a business</h2>
       <p className="mt-1 text-sm text-slate-600">
         Know another business that would fit MegaDeal? Share your link — when
-        they sign up and get approved, you both get 2 bonus deal credits.
+        they sign up and get approved, you both get {referralCreditsLabel}.
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
@@ -45,7 +46,7 @@ export default function ReferralCard({ referralCode }: { referralCode?: string }
       </div>
       <ShareButtons
         title="Join me on MegaDeal — advertise your business for free"
-        text="I'm advertising my business for free on MegaDeal and thought of you! Sign up with my link and we'll both get 2 bonus deal credits — no cost, no commission:"
+        text={`I'm advertising my business for free on MegaDeal and thought of you! Sign up with my link and we'll both get ${referralCreditsLabel} — no cost, no commission:`}
         url={referralUrl}
         label="Share your referral link"
         className="mt-3"

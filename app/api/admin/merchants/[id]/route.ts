@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { REFERRAL_BONUS_CREDITS, referralCreditsLabel } from "@/lib/referralBonus";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
@@ -29,7 +30,6 @@ function cleanText(value: unknown, maxLength: number): string {
 }
 
 const INTRO_CREDITS = 2;
-const REFERRAL_BONUS_CREDITS: number = 2;
 // The free-advertising offer advertised on /list-your-business: WELCOME6
 // (up to 6 months, 24 credits) before launch, WELCOME3 (3 months, 12
 // credits) from launch — see lib/promo.ts, which decides by SITE_LAUNCHED
@@ -516,8 +516,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
           // both, not just the recipient's own.
           const safeReferrerName = escapeHtml(referrerFresh.businessName || "there");
           const safeReferredName = escapeHtml(existing.businessName || "a new business");
-          const referralCreditsLabel = `${REFERRAL_BONUS_CREDITS} bonus deal credit${REFERRAL_BONUS_CREDITS === 1 ? "" : "s"}`;
-          await sendTransactionalEmail({
+                    await sendTransactionalEmail({
             to: referrerFresh.email,
             subject: "You earned referral credits on MegaDeal!",
             html: brandedEmailHtml(`
