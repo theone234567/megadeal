@@ -23,8 +23,10 @@ import { BUSINESS_TYPES } from "./businessTypes";
 /**
  * /advertise/home-car — for cleaning, garden, home-maintenance and
  * automotive businesses, built from the Home & Car business pack
- * (29 Sep 2026) on the /advertise/beauty-spa template: same gradient,
- * fonts, cards, business header (components/Header.tsx) and signup route.
+ * (29 Sep 2026); restyled 4 Oct 2026 to the current /advertise/beauty-spa
+ * look (lavender hero panel and photo, pills, cards, buttons) with all of
+ * its own copy kept. Same business header (components/Header.tsx) and
+ * signup route as the other business pages.
  *
  * A business page, not a deal listing: the 24 offer ideas are editorial
  * examples (businessTypes.ts), never merchant data, and carry no
@@ -63,15 +65,27 @@ const SIGNUP_HREF = "/list-your-business#signup";
 const PROMO = PRELAUNCH_PROMO;
 const PROMO_MONTHS = `${PROMO.months} months`;
 
-const HERO_GRADIENT =
-  "radial-gradient(ellipse at 90% 0%, #813ada 0%, transparent 53%), linear-gradient(120deg, #3c087d 0%, #6416bf 62%, #7020c7 100%)";
+// Hero photo (owner-supplied, 4 Oct 2026): AI-generated illustration of a
+// mobile car detailer outside a home, not a verified business or property.
+// Versioned files; the previous hero art (hero-house-*, hero-car-*,
+// mascot-welcome-current-*) is still in public/images/home-car-business/.
+const HERO_PHOTO = {
+  src: "/images/advertise/home-car/home-car-hero-v2.webp", // 1448×1086
+  small: "/images/advertise/home-car/home-car-hero-v2-720.webp", // 720×540, phones
+  alt: "A mobile car detailer washing a car outside a home.",
+};
+// The approved mascot this page already used, kept small (owner's brief).
+const HERO_MASCOT = "/images/home-car-business/mascot-welcome-current-480.webp";
+
+// Beauty & Spa's buttons and section heading (app/advertise/beauty-spa).
+const PRIMARY_BUTTON =
+  "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-hp-purple px-6 py-3 text-base font-bold text-white transition hover:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2";
 
 const INK = "#0F172A";
 const BODY = "#475569";
 const PURPLE = "#6520B5";
 const LINE = "#E8E1EF";
-const LAVENDER = "#F5F0FC";
-const SOFT = "#FAF8FD";
+const LAVENDER = "#F5EFFC";
 
 const QUIET_DAYS = [
   {
@@ -214,20 +228,22 @@ const FAQS: { id: string; q: string; a: string }[] = [
   },
 ];
 
+
 /** Sub-heading label, as on the other business pages. */
-function Eyebrow({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
+function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <p className={`text-xs font-bold uppercase tracking-wider ${light ? "text-white/80" : ""}`} style={light ? undefined : { color: PURPLE }}>
+    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: PURPLE }}>
       {children}
     </p>
   );
 }
 
+/** Beauty & Spa's section heading: Fredoka, 26/32px, centred. */
 function SectionHeading({ id, children, className = "" }: { id?: string; children: React.ReactNode; className?: string }) {
   return (
     <h2
       id={id}
-      className={`${fredoka.className} text-[30px] font-semibold leading-tight sm:text-[39px] ${className}`}
+      className={`${fredoka.className} mx-auto max-w-2xl text-center text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px] ${className}`}
       style={{ color: INK }}
     >
       {children}
@@ -304,88 +320,110 @@ export default function HomeCarAdvertisingPage() {
       </a>
 
       <div id="home-car-main">
-        {/* Hero: text and art in separate columns, so the mascot can
-            never cover the copy. */}
-        <section className="relative overflow-hidden text-white" style={{ background: HERO_GRADIENT }}>
-          <div className="mx-auto grid max-w-[1184px] grid-cols-1 items-center gap-5 px-4 pb-10 pt-10 sm:px-6 sm:pt-14 lg:grid-cols-[48fr_52fr] lg:gap-12 lg:px-8 lg:pb-[72px] lg:pt-[64px]">
+        {/* Hero — Beauty & Spa's: a pale lavender rounded panel, text left
+            and one photo right (text and buttons first on phones). */}
+        <section className="px-4 pt-5 sm:px-6 sm:pt-7 lg:px-8">
+          <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-8 rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-5 py-7 sm:rounded-3xl sm:px-9 sm:py-10 md:grid-cols-[1.12fr_1fr] md:gap-8 lg:grid-cols-2 lg:gap-12 lg:px-12 lg:py-12">
             <div>
-              {/* The small label is part of the heading, looking exactly as
-                  it did beside it: "More local jobs." alone says nothing
-                  about what the page is, and the page's one heading is
-                  what search engines and AI answers lean on most after
-                  the title. */}
+              {/* The small label is part of the heading: "More local jobs."
+                  alone says nothing about what the page is, and the page's
+                  one heading is what search engines and AI answers lean on
+                  most after the title. */}
               <h1>
-                <span className="block text-xs font-bold uppercase tracking-wider text-white/80">
+                <span className="block text-xs font-bold uppercase tracking-[0.08em] text-hp-purple">
                   Home &amp; car advertising in Auckland
                 </span>{" "}
                 <span
-                  className={`${fredoka.className} mt-3 block text-[34px] font-semibold leading-[1.1] min-[390px]:text-[38px] sm:text-[50px] lg:text-[58px]`}
+                  className={`${fredoka.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
                 >
                   More local jobs.{" "}
-                  <span className="block" style={{ color: "#ADDFFF" }}>
-                    More reasons to choose you.
-                  </span>
+                  <span className="block text-hp-purple">More reasons to choose you.</span>
                 </span>
               </h1>
-              <p className="mt-5 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
+              <p className="mt-4 max-w-[34rem] text-base leading-relaxed sm:text-lg md:text-base lg:text-lg" style={{ color: "#334155" }}>
                 Give Auckland locals a reason to try your cleaning, gardening, home-maintenance or
                 automotive business. Promote selected services when you have capacity, with an offer
                 that works for you.
               </p>
 
-              <div className="mt-7 flex flex-col gap-3 min-[400px]:flex-row min-[400px]:flex-wrap min-[400px]:items-center">
+              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+                {/* One line at every width: full width with a little less
+                    padding on the narrowest phones. */}
                 <a
                   href="#launch-offer"
                   data-cta-section="hero"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-extrabold text-brand-600 shadow-[0_10px_24px_rgba(20,6,50,.25)] transition hover:bg-brand-50 active:scale-95 sm:text-base"
+                  className={`${PRIMARY_BUTTON} w-full whitespace-nowrap max-[359px]:px-3 max-[359px]:text-[15px] min-[400px]:w-auto`}
                 >
                   Explore the launch offer →
                 </a>
                 <a
                   href="#how-it-works"
                   data-cta-section="hero_secondary"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white/70 bg-white px-6 py-3.5 text-sm font-extrabold text-[#6520B5] transition hover:border-white hover:bg-white/90 sm:text-base"
+                  className="inline-flex min-h-11 items-center text-base font-bold text-hp-purple underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
                 >
                   See how it works
                 </a>
               </div>
 
-              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-white/90">
+              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-hp-ink">
                 {["0% commission", "You choose the offer", "Auckland first"].map((p) => (
                   <span key={p} className="flex items-center gap-1.5">
-                    <CheckIcon className="h-4 w-4" /> {p}
+                    <CheckIcon className="h-4 w-4 text-hp-purple" /> {p}
                   </span>
                 ))}
-                <a href="#launch-offer" className="underline underline-offset-2 hover:no-underline">
+                <a href="#launch-offer" className="text-hp-purple underline underline-offset-2 hover:no-underline">
                   Eligibility and offer terms
                 </a>
               </div>
             </div>
 
-            <HeroArt />
+            <div className="relative">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white">
+                {/* <picture>, as on Beauty & Spa: next/image is unoptimized on
+                    this site (next.config.mjs), so it can't hand phones a
+                    smaller file; this does. */}
+                <picture>
+                  <source media="(min-width: 640px)" srcSet={HERO_PHOTO.src} width={1448} height={1086} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={HERO_PHOTO.small}
+                    alt={HERO_PHOTO.alt}
+                    width={720}
+                    height={540}
+                    fetchPriority="high"
+                    decoding="async"
+                    className="absolute inset-0 h-full w-full object-cover"
+                    style={{ objectPosition: "60% 50%" }}
+                  />
+                </picture>
+                {/* Small and decorative, in the corner clear of the worker;
+                    hidden on narrow phones. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={HERO_MASCOT}
+                  alt=""
+                  width={480}
+                  height={496}
+                  decoding="async"
+                  className="pointer-events-none absolute bottom-2 right-2 hidden h-[64px] w-auto sm:block lg:h-[76px]"
+                />
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Shortcuts to the six business sections. Plain anchor links
-            (not filters), a 2 x 3 grid on phones. */}
+        {/* Shortcuts to the six business sections: Beauty & Spa's pills,
+            wrapping onto more lines rather than scrolling. */}
         <nav aria-label="Home & car business types" className="border-b bg-white" style={{ borderColor: LINE }}>
-          <ul className="mx-auto grid max-w-[1184px] grid-cols-2 gap-2.5 px-4 py-4 sm:grid-cols-3 sm:px-6 lg:grid-cols-6 lg:px-8">
+          <ul className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-2.5 px-4 py-4 sm:px-6 lg:px-8">
             {BUSINESS_TYPES.map((b) => (
               <li key={b.id}>
                 <a
                   href={`#${b.id}`}
-                  // Icon above the label under 360px wide and on desktop, beside it
-                  // in between: at 320px a label like "Maintenance" doesn't
-                  // fit beside the icon in a half-width chip.
-                  className="flex h-full min-h-[48px] flex-col items-center justify-center gap-1.5 rounded-2xl border px-2 py-3 text-center text-sm font-semibold leading-snug transition hover:border-[#6520B5]/40 hover:bg-[#F5EFFC] min-[360px]:flex-row min-[360px]:justify-start min-[360px]:gap-2.5 min-[360px]:px-3.5 min-[360px]:py-2.5 min-[360px]:text-left lg:flex-col lg:justify-center lg:gap-2 lg:py-4 lg:text-center"
+                  className="flex min-h-11 items-center gap-2 rounded-full border bg-white px-4 py-2 text-sm font-semibold transition hover:border-[#6520B5]/40 hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
                   style={{ borderColor: LINE, color: INK }}
                 >
-                  <span
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-                    style={{ backgroundColor: LAVENDER, color: PURPLE }}
-                  >
-                    <b.icon className="h-[18px] w-[18px]" />
-                  </span>
+                  <b.icon className="h-4 w-4 text-[#6520B5]" />
                   {b.title}
                 </a>
               </li>
@@ -394,26 +432,26 @@ export default function HomeCarAdvertisingPage() {
         </nav>
 
         {/* Put quieter days to work */}
-        <section className="bg-white px-4 py-14 sm:px-6 sm:py-[80px] lg:px-8">
-          <div className="mx-auto max-w-[1184px]">
-            <div className="max-w-2xl">
+        <section className="bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="mx-auto max-w-2xl text-center">
               <SectionHeading>Put quieter days to work.</SectionHeading>
-              <p className="mt-3 text-base leading-relaxed" style={{ color: BODY }}>
+              <p className="mt-4 text-base leading-relaxed" style={{ color: BODY }}>
                 A gap in the calendar can be an opportunity to introduce your business to someone
                 new. Build an offer around a service you want to promote, a day you have capacity,
                 or a package that helps customers understand what you do.
               </p>
             </div>
-            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
               {QUIET_DAYS.map((c) => (
-                <div key={c.title} className="rounded-[24px] border bg-white p-6 shadow-card" style={{ borderColor: LINE }}>
+                <div key={c.title} className="rounded-xl border bg-white p-6" style={{ borderColor: LINE }}>
                   <span className="flex h-11 w-11 items-center justify-center rounded-full" style={{ backgroundColor: LAVENDER, color: PURPLE }}>
                     <c.icon className="h-5 w-5" />
                   </span>
-                  <h3 className={`${fredoka.className} mt-4 text-lg font-semibold`} style={{ color: INK }}>
+                  <h3 className={`${fredoka.className} mt-4 font-semibold`} style={{ color: INK }}>
                     {c.title}
                   </h3>
-                  <p className="mt-1.5 text-[15px] leading-relaxed" style={{ color: BODY }}>
+                  <p className="mt-1.5 text-sm leading-relaxed" style={{ color: BODY }}>
                     {c.body}
                   </p>
                 </div>
@@ -423,9 +461,9 @@ export default function HomeCarAdvertisingPage() {
         </section>
 
         {/* The six business types, each with four example offer ideas */}
-        <section className="px-4 py-14 sm:px-6 sm:py-[80px] lg:px-8" style={{ backgroundColor: SOFT }}>
-          <div className="mx-auto max-w-[1184px]">
-            <div className="max-w-2xl">
+        <section className="bg-hp-lavender px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="mx-auto max-w-2xl text-center">
               <SectionHeading>Real offer ideas for your kind of business.</SectionHeading>
               <p className="mt-3 text-base leading-relaxed" style={{ color: BODY }}>
                 Different businesses need different promotions. Start with an idea below, then shape
@@ -433,47 +471,47 @@ export default function HomeCarAdvertisingPage() {
               </p>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
               {BUSINESS_TYPES.map((b) => (
                 <article
                   key={b.id}
                   id={b.id}
                   aria-labelledby={`${b.id}-heading`}
-                  className="scroll-mt-[104px] overflow-hidden rounded-[24px] border bg-white shadow-card"
+                  className="scroll-mt-[100px] overflow-hidden rounded-xl border bg-white"
                   style={{ borderColor: LINE }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`/images/home-car-business/${b.image}-1200.webp`}
                     srcSet={`/images/home-car-business/${b.image}-640.webp 640w, /images/home-car-business/${b.image}-1200.webp 1200w`}
-                    sizes="(min-width: 1024px) 570px, 100vw"
+                    sizes="(min-width: 1024px) 600px, 100vw"
                     alt={b.imageAlt}
                     width={1200}
                     height={800}
                     loading="lazy"
                     decoding="async"
-                    className="h-[190px] w-full object-cover sm:h-[220px]"
+                    className="aspect-[3/2] w-full object-cover"
                   />
-                  <div className="p-6 sm:p-7">
+                  <div className="p-7">
                     <div className="flex items-center gap-3">
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: LAVENDER, color: PURPLE }}>
                         <b.icon className="h-5 w-5" />
                       </span>
-                      <h3 id={`${b.id}-heading`} className={`${fredoka.className} text-[22px] font-semibold`} style={{ color: INK }}>
+                      <h3 id={`${b.id}-heading`} className={`${fredoka.className} text-xl font-semibold`} style={{ color: INK }}>
                         {b.title}
                       </h3>
                     </div>
-                    <p className="mt-3 text-base leading-[1.55]" style={{ color: BODY }}>
+                    <p className="mt-3 text-sm leading-relaxed" style={{ color: BODY }}>
                       {b.intro}
                     </p>
 
-                    <div className="mt-5 rounded-2xl p-4 sm:p-5" style={{ backgroundColor: LAVENDER }}>
-                      <h4 className="text-xs font-bold uppercase tracking-wide" style={{ color: PURPLE }}>
+                    <div className="mt-4 rounded-xl border border-dashed p-3.5" style={{ borderColor: LINE }}>
+                      <h4 className="text-[10px] font-bold uppercase tracking-wide" style={{ color: BODY }}>
                         Example offer ideas
                       </h4>
-                      <ul className="mt-3 space-y-2.5">
+                      <ul className="mt-2 space-y-2">
                         {b.ideas.map((idea) => (
-                          <li key={idea.title} className="flex items-start gap-2.5 text-[15px] leading-snug" style={{ color: INK }}>
+                          <li key={idea.title} className="flex items-start gap-2 text-sm leading-snug" style={{ color: INK }}>
                             <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#6520B5]" />
                             <span>
                               <strong className="font-semibold">{idea.title}</strong>{" "}
@@ -488,7 +526,7 @@ export default function HomeCarAdvertisingPage() {
                       <h4 className="text-sm font-bold" style={{ color: INK }}>
                         Make the scope clear
                       </h4>
-                      <ul className="mt-1.5 space-y-1.5 text-[14px] leading-relaxed" style={{ color: BODY }}>
+                      <ul className="mt-1.5 space-y-1.5 text-sm leading-relaxed" style={{ color: BODY }}>
                         {b.ideas.map((idea) => (
                           <li key={idea.title}>
                             <span className="font-semibold" style={{ color: INK }}>
@@ -504,7 +542,7 @@ export default function HomeCarAdvertisingPage() {
               ))}
             </div>
 
-            <p className="mx-auto mt-8 max-w-2xl text-center text-[15px] font-semibold leading-relaxed" style={{ color: INK }}>
+            <p className="mx-auto mt-8 max-w-2xl text-center text-sm font-semibold leading-relaxed" style={{ color: INK }}>
               Ideas for inspiration only. Each business chooses its own offer, price, availability,
               service area and conditions. These examples are not live deals.
             </p>
@@ -512,34 +550,36 @@ export default function HomeCarAdvertisingPage() {
         </section>
 
         {/* Make your offer clear from the start */}
-        <section className="bg-white px-4 py-14 sm:px-6 sm:py-[80px] lg:px-8">
-          <div className="mx-auto max-w-[1184px]">
-            <div className="max-w-2xl">
+        <section className="bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="mx-auto max-w-2xl text-center">
               <SectionHeading>Make your offer clear from the start.</SectionHeading>
               <p className="mt-3 text-base leading-relaxed" style={{ color: BODY }}>
                 A useful offer answers the customer&rsquo;s practical questions before they book.
               </p>
             </div>
-            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {CLEAR_OFFER.map((c) => (
-                <div key={c.title} className="rounded-[24px] border p-6" style={{ borderColor: LINE }}>
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full" style={{ backgroundColor: LAVENDER, color: PURPLE }}>
+                <div key={c.title} className="flex items-start gap-4 rounded-xl border bg-white p-6" style={{ borderColor: LINE }}>
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: LAVENDER, color: PURPLE }}>
                     <c.icon className="h-5 w-5" />
                   </span>
-                  <h3 className="mt-3 font-bold" style={{ color: INK }}>
-                    {c.title}
-                  </h3>
-                  <p className="mt-1 text-[15px] leading-relaxed" style={{ color: BODY }}>
-                    {c.body}
-                  </p>
+                  <div>
+                    <h3 className="font-bold" style={{ color: INK }}>
+                      {c.title}
+                    </h3>
+                    <p className="mt-1 text-sm leading-relaxed" style={{ color: BODY }}>
+                      {c.body}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="mt-8 rounded-[24px] p-6 sm:p-8" style={{ backgroundColor: SOFT }}>
-              <h3 className={`${fredoka.className} text-xl font-semibold`} style={{ color: INK }}>
+            <div className="mx-auto mt-10 max-w-[760px] text-center">
+              <h3 className={`${fredoka.className} text-2xl font-semibold`} style={{ color: INK }}>
                 Start with one focused offer.
               </h3>
-              <p className="mt-2 max-w-3xl text-base leading-relaxed" style={{ color: BODY }}>
+              <p className="mt-3 text-base leading-relaxed" style={{ color: BODY }}>
                 Choose a service you deliver well and can describe clearly. A midweek valet, a
                 lawn-and-edge bundle or an introductory home clean can be easier to understand than
                 a broad discount across everything you do. Check the labour, materials and travel
@@ -550,19 +590,19 @@ export default function HomeCarAdvertisingPage() {
         </section>
 
         {/* Why MegaDeal (header link: #why-megadeal) */}
-        <section id="why-megadeal" className="scroll-mt-[100px] px-4 py-14 sm:px-6 sm:py-[80px] lg:px-8" style={{ backgroundColor: SOFT }}>
-          <div className="mx-auto max-w-[1184px]">
+        <section id="why-megadeal" className="scroll-mt-[100px] bg-hp-lavender px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+          <div className="mx-auto max-w-[1240px]">
             <SectionHeading>Why MegaDeal?</SectionHeading>
-            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {WHY_MEGADEAL.map((w) => (
-                <div key={w.title} className="rounded-[24px] border bg-white p-6 shadow-card" style={{ borderColor: LINE }}>
+                <div key={w.title} className="rounded-xl border bg-white p-6" style={{ borderColor: LINE }}>
                   <span className="flex h-11 w-11 items-center justify-center rounded-full" style={{ backgroundColor: LAVENDER, color: PURPLE }}>
                     <w.icon className="h-5 w-5" />
                   </span>
-                  <h3 className={`${fredoka.className} mt-4 text-lg font-semibold`} style={{ color: INK }}>
+                  <h3 className={`${fredoka.className} mt-4 font-semibold`} style={{ color: INK }}>
                     {w.title}
                   </h3>
-                  <p className="mt-1.5 text-[15px] leading-relaxed" style={{ color: BODY }}>
+                  <p className="mt-1.5 text-sm leading-relaxed" style={{ color: BODY }}>
                     {w.body}
                   </p>
                 </div>
@@ -572,23 +612,23 @@ export default function HomeCarAdvertisingPage() {
         </section>
 
         {/* How it works (header link: #how-it-works) */}
-        <section id="how-it-works" className="scroll-mt-[100px] bg-white px-4 py-14 sm:px-6 sm:py-[80px] lg:px-8">
-          <div className="mx-auto max-w-[1184px]">
+        <section id="how-it-works" className="scroll-mt-[100px] bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+          <div className="mx-auto max-w-[1240px] text-center">
             <SectionHeading>How it works.</SectionHeading>
-            <ol className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <ol className="mt-10 grid grid-cols-1 gap-10 text-left sm:grid-cols-3 sm:gap-8">
               {STEPS.map((s) => (
-                <li key={s.number} className="rounded-[24px] border p-6" style={{ borderColor: LINE }}>
+                <li key={s.number}>
                   <span
                     aria-hidden
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-extrabold text-white"
-                    style={{ backgroundColor: PURPLE }}
+                    className={`${fredoka.className} flex h-12 w-12 items-center justify-center rounded-full text-2xl font-bold`}
+                    style={{ backgroundColor: "#F1EBFB", color: PURPLE }}
                   >
                     {s.number}
                   </span>
-                  <h3 className={`${fredoka.className} mt-3 text-lg font-semibold`} style={{ color: INK }}>
+                  <h3 className={`${fredoka.className} mt-3 font-semibold`} style={{ color: INK }}>
                     {s.title}
                   </h3>
-                  <p className="mt-1 text-[15px] leading-relaxed" style={{ color: BODY }}>
+                  <p className="mt-1 text-sm leading-relaxed" style={{ color: BODY }}>
                     {s.body}
                   </p>
                 </li>
@@ -597,7 +637,7 @@ export default function HomeCarAdvertisingPage() {
             <a
               href="#launch-offer"
               data-cta-section="process"
-              className="mt-8 inline-flex items-center gap-1.5 text-base font-bold hover:underline"
+              className="mt-10 inline-flex items-center gap-1.5 text-sm font-bold hover:underline"
               style={{ color: PURPLE }}
             >
               Explore the launch offer →
@@ -605,55 +645,53 @@ export default function HomeCarAdvertisingPage() {
           </div>
         </section>
 
-        {/* Launch offer (header and hero buttons land here) */}
-        <section id="launch-offer" className="scroll-mt-[100px] px-4 py-14 sm:px-6 sm:py-[80px] lg:px-8" style={{ backgroundColor: SOFT }}>
-          <div className="mx-auto max-w-[1184px]">
-            <div className="relative overflow-hidden rounded-[32px] px-6 py-10 text-white sm:px-12 sm:py-14" style={{ background: HERO_GRADIENT }}>
-              <div className="relative grid grid-cols-1 items-center gap-8 lg:grid-cols-[1.15fr_1fr]">
-                <div>
-                  <Eyebrow light>Auckland first</Eyebrow>
-                  <h2 className={`${fredoka.className} mt-2 text-[28px] font-semibold leading-tight sm:text-[36px]`}>
-                    Get in early. Build your presence.
-                  </h2>
-                  <p className="mt-3 text-lg font-bold leading-snug sm:text-xl">
-                    Up to {PROMO_MONTHS} free advertising for eligible Auckland businesses.
-                  </p>
-                  <p className="mt-3 max-w-md text-base leading-relaxed text-white/90">
-                    Give your home-service or automotive business time to prepare its listing and
-                    offer ahead of launch.
-                  </p>
-                </div>
-
-                <div className="relative rounded-[24px] bg-white/10 p-6 text-center ring-1 ring-white/20 sm:p-8">
-                  <a
-                    href={SIGNUP_HREF}
-                    data-cta-section="launch_offer"
-                    className="flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3.5 text-base font-extrabold shadow-card transition hover:bg-white/90 active:scale-95"
-                    style={{ color: PURPLE }}
-                  >
-                    Join MegaDeal →
-                  </a>
-                  <p className="mt-4 text-base font-bold">Use {PROMO.code} at signup.</p>
-                  <p className="mt-1 text-sm text-white/85">Continue to MegaDeal&rsquo;s business signup.</p>
-                </div>
+        {/* Launch offer (header and hero buttons land here) — Beauty &
+            Spa's pale blue panel with a white signup card. */}
+        <section id="launch-offer" className="scroll-mt-[100px] bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+          <div className="mx-auto max-w-[1240px]">
+            <div className="grid grid-cols-1 items-center gap-8 rounded-3xl px-6 py-9 sm:px-10 sm:py-11 lg:grid-cols-[1.1fr_1fr]" style={{ backgroundColor: "#EEF6FC" }}>
+              <div>
+                <Eyebrow>Auckland first</Eyebrow>
+                <h2 className={`${fredoka.className} mt-2 text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: INK }}>
+                  Get in early. Build your presence.
+                </h2>
+                <p className="mt-3 text-lg font-bold leading-snug" style={{ color: INK }}>
+                  Up to {PROMO_MONTHS} free advertising for eligible Auckland businesses.
+                </p>
+                <p className="mt-3 max-w-md text-sm leading-relaxed sm:text-base" style={{ color: BODY }}>
+                  Give your home-service or automotive business time to prepare its listing and
+                  offer ahead of launch.
+                </p>
               </div>
 
-              <p className="relative mt-8 border-t border-white/20 pt-5 text-sm leading-relaxed text-white/90">
-                For eligible Auckland businesses applying before launch. Current eligibility requires
-                a New Zealand registered limited company. Subject to approval and fair use.{" "}
-                <Link href="/terms" className="font-bold text-white underline underline-offset-2 hover:no-underline">
-                  View offer terms
-                </Link>
-              </p>
+              <div className="rounded-xl border bg-white p-6 text-center sm:p-8" style={{ borderColor: LINE }}>
+                <a href={SIGNUP_HREF} data-cta-section="launch_offer" className={`flex w-full ${PRIMARY_BUTTON}`}>
+                  Join MegaDeal →
+                </a>
+                <p className="mt-3 text-xs font-semibold" style={{ color: INK }}>
+                  Use {PROMO.code} at signup.
+                </p>
+                <p className="mt-1 text-xs" style={{ color: BODY }}>
+                  Continue to MegaDeal&rsquo;s business signup.
+                </p>
+              </div>
             </div>
 
-            <p className="mx-auto mt-5 max-w-2xl text-center text-sm leading-relaxed" style={{ color: BODY }}>
+            <p className="mx-auto mt-5 max-w-2xl text-center text-xs leading-relaxed" style={{ color: BODY }}>
+              For eligible Auckland businesses applying before launch. Current eligibility requires
+              a New Zealand registered limited company. Subject to approval and fair use.{" "}
+              <Link href="/terms" className="underline hover:no-underline" style={{ color: PURPLE }}>
+                View offer terms
+              </Link>
+            </p>
+
+            <p className="mx-auto mt-3 max-w-2xl text-center text-xs leading-relaxed" style={{ color: BODY }}>
               Run a restaurant, café, salon or spa instead?{" "}
-              <Link href="/advertise/restaurants" className="font-semibold underline hover:no-underline" style={{ color: PURPLE }}>
+              <Link href="/advertise/restaurants" className="underline hover:no-underline" style={{ color: PURPLE }}>
                 Restaurant advertising
               </Link>{" "}
               ·{" "}
-              <Link href="/advertise/beauty-spa" className="font-semibold underline hover:no-underline" style={{ color: PURPLE }}>
+              <Link href="/advertise/beauty-spa" className="underline hover:no-underline" style={{ color: PURPLE }}>
                 Beauty &amp; spa advertising
               </Link>
             </p>
@@ -663,34 +701,36 @@ export default function HomeCarAdvertisingPage() {
         {/* FAQ (header link: #questions) — native details/summary: keyboard
             and screen readers work without any script, and every answer is
             in the page's HTML. */}
-        <section id="questions" className="scroll-mt-[100px] bg-white px-4 py-14 sm:px-6 sm:py-[80px] lg:px-8">
+        <section id="questions" className="scroll-mt-[100px] bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
           <div className="mx-auto max-w-3xl">
-            <SectionHeading className="text-center">A few things you might be wondering.</SectionHeading>
+            <SectionHeading>A few things you might be wondering.</SectionHeading>
             <div className="mt-8 space-y-3">
               {FAQS.map((f) => (
                 <details
                   key={f.id}
                   name="home-car-faq"
                   data-faq-question={f.id}
-                  className="group rounded-2xl border bg-white shadow-card"
+                  className="group rounded-xl border bg-white p-5"
                   style={{ borderColor: LINE }}
                 >
                   <summary
-                    className="flex min-h-[56px] cursor-pointer list-none items-center justify-between gap-4 rounded-2xl px-5 py-4 font-bold marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6520B5]"
+                    className="cursor-pointer list-none font-bold marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6520B5]"
                     style={{ color: INK }}
                   >
-                    {f.q}
-                    <span aria-hidden className="shrink-0 text-xl leading-none text-slate-500 transition group-open:rotate-45">
-                      +
+                    <span className="flex items-center justify-between gap-4">
+                      {f.q}
+                      <span aria-hidden className="shrink-0 text-slate-500 transition group-open:rotate-45">
+                        +
+                      </span>
                     </span>
                   </summary>
-                  <p className="px-5 pb-5 text-[15px] leading-relaxed" style={{ color: BODY }}>
+                  <p className="mt-3 text-sm leading-relaxed" style={{ color: BODY }}>
                     {f.a}
                   </p>
                 </details>
               ))}
             </div>
-            <p className="mt-8 text-center text-[15px]" style={{ color: BODY }}>
+            <p className="mt-8 text-center text-sm" style={{ color: BODY }}>
               Have a question about your business?{" "}
               <Link href="/contact" className="font-bold hover:underline" style={{ color: PURPLE }}>
                 Talk to the MegaDeal team
@@ -699,121 +739,38 @@ export default function HomeCarAdvertisingPage() {
           </div>
         </section>
 
-        {/* Closing call to action */}
-        <section className="bg-white px-4 pb-14 sm:px-6 sm:pb-[80px] lg:px-8">
-          <div className="mx-auto max-w-[1184px]">
-            <div className="rounded-[32px] px-6 py-12 text-center text-white sm:px-12 sm:py-14" style={{ background: HERO_GRADIENT }}>
-              <h2 className={`${fredoka.className} mx-auto max-w-2xl text-[28px] font-semibold leading-tight sm:text-[36px]`}>
-                Give local customers a reason to choose you.
-              </h2>
-              <p className="mx-auto mt-3 max-w-md text-base leading-relaxed text-white/90">
-                Prepare a clear offer that shows what your business does well.
-              </p>
-              <a
-                href={SIGNUP_HREF}
-                data-cta-section="final_cta"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-base font-extrabold shadow-card transition hover:bg-white/90 active:scale-95"
-                style={{ color: PURPLE }}
-              >
-                List my business →
-              </a>
-              <p className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-semibold text-white/90">
-                <span className="flex items-center gap-1.5">
-                  <CheckIcon className="h-4 w-4" /> 0% commission
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <MapPinIcon className="h-4 w-4" /> Auckland first
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <HeartIcon className="h-4 w-4" /> Built for local businesses
-                </span>
-              </p>
-            </div>
+        {/* Closing call to action — the hero's lavender panel again */}
+        <section className="bg-white px-4 pb-14 sm:px-6 sm:pb-16 lg:px-8">
+          <div className="mx-auto max-w-[1240px] rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-6 py-10 text-center sm:rounded-3xl sm:px-12 sm:py-12">
+            <h2 className={`${fredoka.className} mx-auto max-w-2xl text-[26px] font-semibold leading-tight text-hp-ink [text-wrap:balance] sm:text-[32px]`}>
+              Give local customers a reason to choose you.
+            </h2>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed sm:text-base" style={{ color: BODY }}>
+              Prepare a clear offer that shows what your business does well.
+            </p>
+            <a href={SIGNUP_HREF} data-cta-section="final_cta" className={`mt-6 ${PRIMARY_BUTTON}`}>
+              List my business →
+            </a>
+            <p className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm font-semibold text-hp-ink">
+              <span className="flex items-center gap-1.5">
+                <CheckIcon className="h-4 w-4 text-hp-purple" /> 0% commission
+              </span>
+              <span aria-hidden className="text-hp-muted">
+                ·
+              </span>
+              <span className="flex items-center gap-1.5">
+                <MapPinIcon className="h-4 w-4 text-hp-purple" /> Auckland first
+              </span>
+              <span aria-hidden className="text-hp-muted">
+                ·
+              </span>
+              <span className="flex items-center gap-1.5">
+                <HeartIcon className="h-4 w-4 text-hp-purple" /> Built for local businesses
+              </span>
+            </p>
           </div>
         </section>
       </div>
     </main>
   );
 }
-
-/**
- * The hero art, straight on the hero's purple: MegaDeal's current hoodie
- * elephant (unchanged, never redrawn) in front, with the pack's house and
- * car as smaller supporting pieces behind it — house on the left, car on the
- * right, standing on the same ground line as the elephant's feet.
- *
- * The pack drew the house and car as one wide transparent image, far apart
- * and on different ground lines; hero-house-* and hero-car-* are the two
- * halves of it, cut apart unchanged so each can be placed here. The
- * original backdrop files are still in the folder.
- *
- * Everything is positioned in percentages of one box with a fixed aspect
- * ratio, so the whole scene scales together and nothing is cropped. The only
- * effects: one faint, wide glow so the purple hoodie doesn't sink into the
- * purple background, and small soft shadows under the feet, house and
- * wheels. Decorative apart from the mascot's description.
- */
-function HeroArt() {
-  return (
-    <div className="relative mx-auto aspect-[4/3] w-full max-w-[420px] sm:max-w-[500px] lg:aspect-[6/5] lg:max-w-[600px]">
-      {/* The glow: fades to nothing well inside a box larger than the art,
-          so it has no edge anywhere. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -inset-[20%]"
-        style={{
-          background:
-            "radial-gradient(closest-side, rgba(226, 204, 255, 0.30), rgba(226, 204, 255, 0.12) 50%, rgba(226, 204, 255, 0) 100%)",
-        }}
-      />
-
-      {/* Ground shadows, local to what stands on the ground. */}
-      <span aria-hidden className={`${SHADOW} bottom-[1%] left-[1%] h-[7%] w-[33%]`} style={SHADOW_STYLE} />
-      <span aria-hidden className={`${SHADOW} bottom-[1%] right-[0%] h-[6%] w-[31%]`} style={SHADOW_STYLE} />
-      <span aria-hidden className={`${SHADOW} bottom-[-1.5%] left-1/2 h-[7%] w-[40%] -translate-x-1/2 lg:w-[52%]`} style={SHADOW_STYLE} />
-
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/images/home-car-business/hero-house-640.webp"
-        srcSet="/images/home-car-business/hero-house-360.webp 360w, /images/home-car-business/hero-house-640.webp 640w"
-        sizes="(min-width: 1024px) 220px, 36vw"
-        alt=""
-        width={640}
-        height={324}
-        className="absolute bottom-[1.5%] left-0 h-auto w-[35%] select-none object-contain lg:w-[36%]"
-        loading="eager"
-        decoding="async"
-      />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/images/home-car-business/hero-car-640.webp"
-        srcSet="/images/home-car-business/hero-car-360.webp 360w, /images/home-car-business/hero-car-640.webp 640w"
-        sizes="(min-width: 1024px) 200px, 32vw"
-        alt=""
-        width={640}
-        height={353}
-        className="absolute bottom-[0.5%] right-0 h-auto w-[31%] select-none object-contain lg:w-[32%]"
-        loading="eager"
-        decoding="async"
-      />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/images/home-car-business/mascot-welcome-current-820.webp"
-        srcSet="/images/home-car-business/mascot-welcome-current-480.webp 480w, /images/home-car-business/mascot-welcome-current-820.webp 820w"
-        sizes="(min-width: 1024px) 480px, 60vw"
-        alt="MegaDeal's welcoming lavender elephant wearing a purple M hoodie"
-        width={820}
-        height={847}
-        className="absolute bottom-0 left-1/2 h-[97%] w-auto max-w-none -translate-x-1/2 select-none object-contain"
-        loading="eager"
-        fetchPriority="high"
-        decoding="async"
-      />
-    </div>
-  );
-}
-
-const SHADOW = "pointer-events-none absolute rounded-[50%]";
-const SHADOW_STYLE = {
-  background: "radial-gradient(closest-side, rgba(30, 6, 72, 0.38), rgba(30, 6, 72, 0))",
-};
