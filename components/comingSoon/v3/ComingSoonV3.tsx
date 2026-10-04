@@ -83,8 +83,9 @@ export default function ComingSoonV3() {
       <section className={styles.hero} aria-labelledby="cs3-title">
         <div className={styles.heroInner}>
           <div className={styles.heroCopy}>
-            <p className={styles.pill}>Launching first in Auckland</p>
-            <h1 id="cs3-title">Big local deals are on the way, Auckland.</h1>
+            <h1 id="cs3-title">
+              Big local deals are on the way, <span className={styles.accent}>Auckland.</span>
+            </h1>
             <p className={styles.lede}>
               MegaDeal is getting ready to launch in Auckland — helping local businesses fill quiet
               times and helping deal hunters discover standout local offers.

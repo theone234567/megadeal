@@ -33,12 +33,10 @@
   max-width: 1264px; margin: 0 auto; padding: 16px 32px 100px;
   display: grid; grid-template-columns: minmax(0, 49fr) minmax(0, 51fr); gap: 32px; align-items: center;
 }
-.pill {
-  display: inline-block; padding: 6px 14px; border-radius: 999px;
-  background: rgb(255 255 255 / 0.16); border: 1px solid rgb(255 255 255 / 0.28);
-  font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-}
-.hero h1 { margin-top: 16px; font-size: 52px; line-height: 1.04; letter-spacing: -0.02em; color: #fff; }
+.hero h1 { font-size: 52px; line-height: 1.04; letter-spacing: -0.02em; color: #fff; }
+/* "Auckland." in ice blue (owner's choice, 4 Oct 2026): echoes the sky in
+   the skyline photo; 4.8:1 on the hero purple (3:1 needed, large text). */
+.accent { color: #bfefff; }
 .lede { margin-top: 14px; max-width: 34em; font-size: 18px; line-height: 1.55; color: rgb(255 255 255 / 0.94); }
 .offer { margin-top: 12px; font-size: 15px; font-weight: 600; line-height: 1.5; color: #fff; }
 .offerStar { color: #fff !important; text-decoration: none; padding: 0 2px; }
@@ -189,8 +187,7 @@
 /* ---------- Phones: up to 767px ---------- */
 @media (max-width: 767px) {
   .heroInner { padding: 14px 16px 52px; gap: 14px; }
-  .pill { font-size: 12px; padding: 5px 12px; }
-  .hero h1 { margin-top: 12px; font-size: 34px; line-height: 1.08; }
+  .hero h1 { margin-top: 4px; font-size: 34px; line-height: 1.08; }
   .lede { margin-top: 10px; font-size: 16px; line-height: 1.5; }
   .offer { margin-top: 10px; font-size: 14px; }
   /* Photo about 270px wide (3:2, ~180px high) with the mascot on its right. */
