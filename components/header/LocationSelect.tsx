@@ -15,7 +15,7 @@ function Select({ city }: { city: string }) {
 
   return (
     <label
-      className={`relative flex h-11 shrink-0 items-center gap-1.5 rounded-full px-2 text-sm font-semibold focus-within:ring-2 ${
+      className={`relative flex h-10 shrink-0 items-center gap-1.5 rounded-full px-2 text-sm font-semibold focus-within:ring-2 ${
         PURPLE_HEADER ? "text-white hover:bg-white/10 focus-within:ring-white" : "text-hp-ink hover:bg-hp-lavender focus-within:ring-hp-purple"
       }`}
     >

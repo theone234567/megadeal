@@ -38,7 +38,7 @@ function SearchForm({ initial }: { initial: string }) {
         e.preventDefault();
         goHome(pathname, router, { q: query.trim() });
       }}
-      className={`flex h-12 w-full items-center rounded-full border pl-4 pr-1 focus-within:ring-2 ${
+      className={`flex h-10 w-full items-center rounded-full border pl-4 pr-1 focus-within:ring-2 ${
         // On the purple header: a plain white field. On the white one: the
         // pale lavender field it had before.
         PURPLE_HEADER
@@ -59,7 +59,7 @@ function SearchForm({ initial }: { initial: string }) {
       <button
         type="submit"
         aria-label="Search"
-        className="flex h-10 w-12 shrink-0 items-center justify-center rounded-full bg-hp-purple text-white transition hover:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
+        className="flex h-8 w-10 shrink-0 items-center justify-center rounded-full bg-hp-purple text-white transition hover:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
       >
         <SearchIcon className="h-5 w-5" />
       </button>

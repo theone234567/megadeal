@@ -48,11 +48,12 @@ export default function BrandLogo({
 
 // The flat lockup is about 4.8:1 and has no empty space around it, so it
 // needs less height than the classic image for the same presence: about
-// 150px wide on phones and 190px on desktop.
+// 130px wide on phones and 160px on desktop (15% under the first sizes,
+// 4 Oct 2026, so the header is less dominant).
 const MINIMAL_HEIGHT: Record<LogoPlacement, string> = {
   // 24px under 360px wide, where "All areas" and the menu share its row.
-  site: "h-6 min-[360px]:h-8 lg:h-10",
-  landing: "h-7 sm:h-8 lg:h-9",
+  site: "h-5 min-[360px]:h-[27px] lg:h-[34px]",
+  landing: "h-6 sm:h-[27px] lg:h-[31px]",
   portal: "h-7",
 };
 

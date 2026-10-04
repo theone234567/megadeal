@@ -79,7 +79,7 @@ export default function Header() {
   if (businessLanding) {
     return (
       <header className={`sticky top-0 z-30 border-b ${T.landingBar}`}>
-        <div className="mx-auto flex h-[87px] w-full max-w-[1184px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-[74px] w-full max-w-[1184px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href={pathname!} aria-label="MegaDeal home" className="flex min-w-0 shrink items-center gap-3">
             <BrandLogo placement="landing" tone={T.logo} />
             <span className={`hidden h-5 w-px shrink-0 sm:block ${T.divider}`} aria-hidden />
@@ -115,7 +115,7 @@ export default function Header() {
   if (isComingSoon) {
     return (
       <header className={`sticky top-0 z-50 border-b ${T.comingSoonBar}`}>
-        <div className="mx-auto flex min-h-[60px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:min-h-[68px] sm:gap-5 sm:px-8 lg:min-h-[72px] lg:px-10 xl:px-12">
+        <div className="mx-auto flex min-h-[51px] w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-2 sm:min-h-[58px] sm:gap-5 sm:px-8 lg:min-h-[61px] lg:px-10 xl:px-12">
           <Link href="/coming-soon" aria-label="MegaDeal home" className="min-w-0 shrink">
             <BrandLogo placement="landing" tone={T.logo} />
           </Link>
@@ -125,7 +125,7 @@ export default function Header() {
               customer sign-in. */}
           <Link
             href="/portal"
-            className={`shrink-0 whitespace-nowrap rounded-full border-[1.5px] bg-white px-3 py-2.5 text-xs font-extrabold text-brand-600 transition hover:bg-hp-lavender sm:px-5 sm:text-sm lg:px-6 lg:py-3 ${T.comingSoonSignIn}`}
+            className={`shrink-0 whitespace-nowrap rounded-full border-[1.5px] bg-white px-3 py-2 text-xs font-extrabold text-brand-600 transition hover:bg-hp-lavender sm:px-5 sm:text-sm lg:px-6 lg:py-2.5 ${T.comingSoonSignIn}`}
           >
             Business sign in<span className="hidden sm:inline"> →</span>
           </Link>
@@ -143,7 +143,7 @@ export default function Header() {
 
   return (
     <header className={`sticky top-0 z-30 border-b ${T.storefrontBar}`}>
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:gap-5 lg:px-8 lg:py-3.5">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-2.5 px-4 py-2.5 sm:px-6 lg:flex-row lg:items-center lg:gap-5 lg:px-8 lg:py-3">
         <div className="flex items-center justify-between gap-2 lg:contents">
           <Link
             href="/"
@@ -171,11 +171,11 @@ export default function Header() {
           {location}
           <Link
             href="/portal"
-            className={`inline-flex h-11 items-center rounded-full px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 ${T.signIn}`}
+            className={`inline-flex h-10 items-center rounded-full px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 ${T.signIn}`}
           >
             Business sign in
           </Link>
-          <Link href="/list-your-business" className={`btn-secondary h-11 min-h-0 px-4 text-sm ${T.listBusiness}`}>
+          <Link href="/list-your-business" className={`btn-secondary h-10 min-h-0 px-4 text-sm ${T.listBusiness}`}>
             <StoreIcon className="h-[18px] w-[18px]" />
             List your business
           </Link>

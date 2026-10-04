@@ -35,7 +35,7 @@ export default function MobileMenu() {
         aria-label="Open menu"
         aria-haspopup="dialog"
         onClick={() => dialogRef.current?.showModal()}
-        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 ${
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 ${
           PURPLE_HEADER ? "text-white hover:bg-white/10 focus-visible:ring-white" : "text-hp-ink hover:bg-hp-lavender focus-visible:ring-hp-purple"
         }`}
       >
