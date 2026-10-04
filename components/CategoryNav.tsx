@@ -82,7 +82,7 @@ export default function CategoryNav(props: Props) {
                 prefetch={props.mode === "filter" ? false : undefined}
                 onClick={(e) => handleClick(e, filterHref(slug))}
                 aria-current={selected ? "true" : undefined}
-                className={`group flex h-full min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-[0.875rem] font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 lg:flex-col lg:justify-center lg:gap-2 lg:whitespace-normal lg:rounded-none lg:border-0 lg:border-b-[3px] lg:px-1 lg:pb-3 lg:pt-3 lg:text-center ${
+                className={`group flex h-full min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-[0.875rem] font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 lg:flex-col lg:justify-start lg:gap-2 lg:whitespace-normal xl:whitespace-nowrap lg:rounded-none lg:border-0 lg:border-b-[3px] lg:px-1 lg:pb-3 lg:pt-3 lg:text-center ${
                   selected
                     ? "border-hp-purple bg-hp-purple text-white lg:border-hp-purple lg:bg-transparent lg:text-hp-ink"
                     : "border-hp-line bg-white text-hp-ink hover:border-hp-boundary lg:border-transparent lg:bg-transparent lg:hover:border-hp-line"
