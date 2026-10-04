@@ -10,6 +10,7 @@ import { hasDealExpired } from "@/lib/dealStatus";
 import { isScheduledFuture, parseScheduledStart } from "@/lib/dealSchedule";
 import { PRODUCT_FIELDS, buildProductUpdate, parseAdminContentEdit, withHistory } from "@/lib/dealAdminEdit";
 import { readRevision } from "@/lib/dealRevision";
+import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
 
@@ -213,6 +214,32 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       ...existing,
       ...patch,
     });
+
+    // Audit trail (lib/adminAudit.ts): what this save did, in plain words.
+    {
+      const parts: string[] = [];
+      const toStatus = patch.status !== undefined && patch.status !== existing.status ? patch.status : null;
+      if (toStatus) parts.push(`${existing.status || "Live"} → ${toStatus}`);
+      if (changedFields.length) parts.push(`edited ${changedFields.join(", ")}`);
+      if (patch.expiresAt && patch.expiresAt !== existing.expiresAt) parts.push(`ends ${patch.expiresAt}`);
+      if (body.scheduledStart !== undefined) parts.push(patch.scheduledStartAt ? `start ${patch.scheduledStartAt}` : "start on approval");
+      if (revisionDecision) parts.push(`change request ${revisionDecision === "approve" ? "approved" : "declined"}`);
+      if (photoDecision) parts.push(`new photo ${photoDecision === "approve" ? "approved" : "declined"}`);
+      if (patch.merchantEmail !== undefined && patch.merchantEmail !== existing.merchantEmail) parts.push(`reassigned to ${patch.merchantEmail}`);
+      if (patch.statusNote !== undefined && patch.statusNote !== existing.statusNote && patch.statusNote) parts.push(`note: ${patch.statusNote}`);
+      await logAdminAction({
+        action:
+          toStatus === "Live" && existing.status === "Pending Approval"
+            ? "Deal approved"
+            : toStatus === "Cancelled"
+            ? "Deal cancelled"
+            : toStatus === "Paused"
+            ? "Deal paused"
+            : "Deal updated",
+        target: auditTarget(existing.dealName, existing._id),
+        detail: parts.join("; ") || undefined,
+      });
+    }
 
     if (revisionDecision && existing.merchantEmail) {
       await logMerchantActivity(adminClient, {

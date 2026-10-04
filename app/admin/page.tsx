@@ -218,9 +218,9 @@ export default function AdminDashboardPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold text-slate-900">Admin dashboard</h1>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <button
             onClick={handleIndexNowSubmitAll}
             disabled={indexNowStatus === "submitting"}
@@ -235,6 +235,9 @@ export default function AdminDashboardPage() {
               ? "Submission failed — retry"
               : "Submit all pages to Bing"}
           </button>
+          <Link href="/admin/audit" className="text-sm font-medium text-slate-500 hover:text-brand-700">
+            Audit log
+          </Link>
           <Link href="/admin/two-factor" className="text-sm font-medium text-slate-500 hover:text-brand-700">
             Two-factor sign-in
           </Link>

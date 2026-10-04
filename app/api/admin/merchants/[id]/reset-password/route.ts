@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { adminResetMemberPassword } from "@/lib/wixPassword";
@@ -44,6 +45,8 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     }
 
     const password = await adminResetMemberPassword(email);
+    // The temporary password itself is never logged.
+    await logAdminAction({ action: "Business password reset", target: auditTarget(merchant.businessName || email, merchant._id) });
     return NextResponse.json({ password });
   } catch (err: any) {
     console.error("[admin/merchants/[id]/reset-password] failed", err);

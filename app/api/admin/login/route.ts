@@ -7,6 +7,7 @@ import {
   clearIpAttempts,
 } from "@/lib/adminRateLimit";
 import { verifyTotp } from "@/lib/totp";
+import { logAdminAction } from "@/lib/adminAudit";
 import { getRateLimitKv } from "@/lib/rateLimit";
 
 const TOTP_LAST_STEP_KEY = "admin-totp-last-step";
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
 
   if (!password || !verifyAdminPassword(password)) {
     const result = await recordFailedIpAttempt(ip);
+    await logAdminAction({ action: "Failed sign-in", detail: result.locked ? "Wrong password; locked out" : "Wrong password", ip });
     if (result.locked) {
       return NextResponse.json(
         {
@@ -73,6 +75,7 @@ export async function POST(req: NextRequest) {
     const lastStep = Number((await kv?.get(TOTP_LAST_STEP_KEY)) ?? NaN);
     if (step === null || (Number.isFinite(lastStep) && step <= lastStep)) {
       const result = await recordFailedIpAttempt(ip);
+      await logAdminAction({ action: "Failed sign-in", detail: result.locked ? "Right password, wrong or reused code; locked out" : "Right password, wrong or reused code", ip });
       if (result.locked) {
         return NextResponse.json(
           { error: `Too many incorrect attempts. Try again in ${result.minutesLeft} minute${result.minutesLeft === 1 ? "" : "s"}.` },
@@ -88,6 +91,7 @@ export async function POST(req: NextRequest) {
   }
 
   await clearIpAttempts(ip);
+  await logAdminAction({ action: "Signed in", detail: totpSecret ? "Password and authenticator code" : "Password", ip });
 
   const res = NextResponse.json({ ok: true });
   res.cookies.set(ADMIN_COOKIE_NAME, createAdminSessionToken(), {

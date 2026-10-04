@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { submitUrlsToIndexNow } from "@/lib/indexNow";
 import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
@@ -57,6 +58,7 @@ export async function POST(req: NextRequest) {
     }
     await submitUrlsToIndexNow(urls);
 
+    await logAdminAction({ action: "Submitted all pages to search engines", detail: `${urls.length} URLs` });
     return NextResponse.json({ submitted: urls.length });
   } catch (err) {
     console.error("[admin/seo/indexnow-submit-all] failed", err);

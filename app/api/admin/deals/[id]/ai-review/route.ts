@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     if (!review) {
       return NextResponse.json({ error: "The AI check didn't respond. Try again in a moment." }, { status: 502 });
     }
+    await logAdminAction({ action: "AI review run", target: auditTarget(deal.dealName, deal._id), detail: outcome ? `Outcome: ${outcome}` : undefined });
     return NextResponse.json({ item, outcome });
   } catch (err) {
     console.error("[admin/deals/[id]/ai-review] failed", err);

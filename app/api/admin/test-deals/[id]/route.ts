@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { codeForDraft } from "@/lib/dealCode";
 import { draftToRow } from "@/lib/dealDraft";
@@ -23,6 +24,7 @@ export async function PUT(req: NextRequest, props: { params: Promise<{ id: strin
   try {
     const result = await updateTestDeal(id, body?.deal);
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status, headers: NO_STORE });
+    await logAdminAction({ action: "Test deal edited", target: auditTarget(result.deal.dealName, result.deal.id) });
     return NextResponse.json({ item: result.deal }, { headers: NO_STORE });
   } catch (err) {
     console.error("[admin/test-deals] update failed", err);
@@ -37,6 +39,7 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
     if (!(await deleteTestDeal(id))) {
       return NextResponse.json({ error: "That test deal no longer exists." }, { status: 404, headers: NO_STORE });
     }
+    await logAdminAction({ action: "Test deal deleted", target: auditTarget(null, id) });
     return NextResponse.json({ ok: true }, { headers: NO_STORE });
   } catch (err) {
     console.error("[admin/test-deals] delete failed", err);
@@ -60,6 +63,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     try {
       const result = await restartTestDeal(id);
       if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status, headers: NO_STORE });
+      await logAdminAction({ action: "Test deal timer restarted", target: auditTarget(result.deal.dealName, result.deal.id) });
       return NextResponse.json({ item: result.deal }, { headers: NO_STORE });
     } catch (err) {
       console.error("[admin/test-deals] restart failed", err);
@@ -91,6 +95,11 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       const created = await adminClient.items.insert("Deals", {
         ...draftToRow(testDealToDraft(test), email),
         dealCode: codeForDraft("", null),
+      });
+      await logAdminAction({
+        action: "Test deal copied to a real draft",
+        target: auditTarget(test.dealName, test.id),
+        detail: `Draft for ${merchant.businessName || email}`,
       });
       return NextResponse.json({ draftId: created?._id ?? null, businessName: merchant.businessName ?? null }, { headers: NO_STORE });
     } catch (err) {

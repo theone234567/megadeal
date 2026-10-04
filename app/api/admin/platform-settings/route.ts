@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
 import { getPlatformSettings, getSettingsHistory, savePlatformSettings } from "@/lib/platformSettings";
+import { SETTING_LABELS, formatSettingValue } from "@/lib/platformSettingsRules";
+import { logAdminAction } from "@/lib/adminAudit";
 
 // Admin only: the platform settings, their version and change history.
 // Never cached: every read reflects the latest save.
@@ -36,6 +38,12 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: result.error, errors: result.errors }, { status: result.status, headers: NO_STORE });
     }
     const history = await getSettingsHistory();
+    if (result.changes.length) {
+      await logAdminAction({
+        action: "Platform settings changed",
+        detail: result.changes.map((c) => `${SETTING_LABELS[c.key]}: ${formatSettingValue(c.key, c.from)} → ${formatSettingValue(c.key, c.to)}`).join("; "),
+      });
+    }
     return NextResponse.json({ ...result.stored, history, launched: SITE_LAUNCHED, changes: result.changes }, { headers: NO_STORE });
   } catch (err) {
     console.error("[admin/platform-settings] save failed", err);

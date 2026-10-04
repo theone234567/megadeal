@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createTestDeal, listTestDeals } from "@/lib/testDealStore";
 import { testDealRunning, testDealToDeal } from "@/lib/testDeals";
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
     if (!result.ok) {
       return NextResponse.json({ error: result.error }, { status: result.status, headers: NO_STORE });
     }
+    await logAdminAction({ action: "Test deal added", target: auditTarget(result.deal.dealName, result.deal.id) });
     return NextResponse.json({ item: result.deal }, { headers: NO_STORE });
   } catch (err) {
     console.error("[admin/test-deals] create failed", err);

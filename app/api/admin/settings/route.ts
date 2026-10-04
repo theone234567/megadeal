@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { getSiteRudenessCheck, setSiteRudenessCheck } from "@/lib/rudenessSetting";
@@ -23,6 +24,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const adminClient = createWixAdminClient();
     await setSiteRudenessCheck(adminClient, body.rudenessCheck);
+    await logAdminAction({ action: "Setting changed", detail: `Rudeness check ${body.rudenessCheck ? "on" : "off"}` });
     return NextResponse.json({ rudenessCheck: body.rudenessCheck });
   } catch (err) {
     console.error("[admin/settings] save failed", err);

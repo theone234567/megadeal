@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { queryAllByEmail } from "@/lib/queryAll";
@@ -588,6 +589,21 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     }
   }
 
+  // Audit trail (lib/adminAudit.ts).
+  {
+    const parts: string[] = [];
+    if (patch.status !== undefined && patch.status !== existing.status) parts.push(`${existing.status || "Pending"} → ${patch.status}`);
+    if (adminAdjustDelta !== 0) parts.push(`credits ${adminAdjustDelta > 0 ? "+" : ""}${adminAdjustDelta}: ${creditsReason}`);
+    const fields = Object.keys(patch).filter((k) => k !== "status" && !k.startsWith("_") && (patch as any)[k] !== existing[k]);
+    if (fields.length) parts.push(`edited ${fields.slice(0, 12).join(", ")}${fields.length > 12 ? "…" : ""}`);
+    const toStatus = patch.status !== undefined && patch.status !== existing.status ? patch.status : null;
+    await logAdminAction({
+      action: toStatus === "Approved" ? "Business approved" : toStatus === "Suspended" ? "Business suspended" : "Business updated",
+      target: auditTarget(existing.businessName || existing.email, existing._id),
+      detail: parts.join("; ") || undefined,
+    });
+  }
+
   return NextResponse.json({ item: updated, warnings });
   } catch (err) {
     console.error("[admin/merchants/[id]] failed", err);
@@ -691,6 +707,11 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
     }
 
     await adminClient.items.remove("Merchants", params.id);
+    await logAdminAction({
+      action: "Business deleted",
+      target: auditTarget(merchant.businessName || merchant.email, merchant._id),
+      detail: `${email || "no email"}; ${drafts.length} draft${drafts.length === 1 ? "" : "s"} removed`,
+    });
     return NextResponse.json({ ok: true, deletedDrafts: drafts.length });
   } catch (err) {
     console.error("[admin/merchants/[id]] DELETE failed", err);
