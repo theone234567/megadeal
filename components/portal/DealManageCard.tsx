@@ -240,7 +240,28 @@ export default function DealManageCard({
                 ))}
               </div>
             )}
-            {actionError && <p className="mt-2 text-sm text-red-600">{actionError}</p>}
+            {/* What Pause does, in the business's terms: the end date is
+                fixed at first publication and pausing never moves it
+                (lib/dealStatus.ts hasDealExpired). */}
+            {(status === "Live" || status === "Scheduled") && (
+              <p className="mt-2 text-xs text-slate-600">
+                <span className="font-semibold">Pause</span> takes this deal off MegaDeal straight away, for
+                example if you&apos;ve run out or are too busy. Choose &ldquo;Make live&rdquo; to bring it back
+                any time before it ends. Pausing doesn&apos;t stop the clock: the end date stays the same.
+              </p>
+            )}
+            {status === "Paused" && (
+              <p className="mt-2 text-xs text-slate-600">
+                Paused: customers can&apos;t see this deal on MegaDeal. Choose &ldquo;Make live&rdquo; to show it
+                again
+                {deal.expiresAt
+                  ? ` before it ends on ${new Date(deal.expiresAt).toLocaleDateString("en-NZ", { day: "numeric", month: "short", timeZone: "Pacific/Auckland" })}`
+                  : ""}
+                .
+                Pausing doesn&apos;t stop the clock.
+              </p>
+            )}
+            {actionError &&<p className="mt-2 text-sm text-red-600">{actionError}</p>}
           </div>
 
           {/* Finished deals get it as the main action: it's the one thing
