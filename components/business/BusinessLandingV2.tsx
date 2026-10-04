@@ -4,7 +4,10 @@ import Link from "next/link";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "@/app/list-your-business/MerchantSignupForm";
-import { CalendarIcon, CheckIcon, ChevronDownIcon, MapPinIcon, PercentIcon, StoreIcon, UsersIcon } from "@/components/icons";
+import DealCard from "@/components/DealCard";
+import { CalendarIcon, CheckIcon, ChevronDownIcon, PercentIcon, StoreIcon, UsersIcon } from "@/components/icons";
+import { renderTerms } from "@/lib/dealTerms";
+import type { Deal } from "@/lib/types";
 import { businessPageCopy, OFFER_TERMS_HREF } from "@/lib/businessPageContent";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
@@ -20,6 +23,53 @@ import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
  */
 
 const BENEFIT_ICONS = [UsersIcon, CalendarIcon, PercentIcon];
+
+/** What a business's deal looks like to customers: example details on
+ *  the pack's illustrative photo. Never a real business or a live offer. */
+const EXAMPLE_DEAL: Deal = {
+  id: "example",
+  slug: "example",
+  name: "Gourmet burger & fries for two",
+  description: "",
+  image: "/megadeal-coming-soon/food-drink-v1.webp",
+  now: 29,
+  was: 48,
+  formattedNow: null,
+  formattedWas: null,
+  discountPercent: 0,
+  currency: "NZD",
+  ribbon: null,
+  categories: ["Food & Drink"],
+  variantId: null,
+  inStock: true,
+  quantityAvailable: null,
+  expiresAt: null,
+  status: "Live",
+  isFlash: false,
+  terms: renderTerms(["mon-thu", "dine-in"], ""),
+  businessName: "Your business",
+  businessLogoUrl: null,
+  businessWebsite: null,
+  businessPhone: null,
+  businessAddress: null,
+  businessCity: "Auckland",
+  businessSuburb: null,
+  businessSlug: null,
+  businessBio: null,
+  businessHours: null,
+  businessFacebookUrl: null,
+  businessInstagramUrl: null,
+  businessPriceRange: null,
+  businessAmenities: [],
+  businessBookingUrl: null,
+  businessBookingEmail: null,
+  businessLat: null,
+  businessLng: null,
+  businessRating: null,
+  businessReviewCount: null,
+  dealCode: null,
+  bookingRequirement: "unknown",
+};
 
 export default function BusinessLandingV2({ launched }: { launched: boolean }) {
   const copy = businessPageCopy(launched);
@@ -86,34 +136,23 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
             {copy.launchNote && <p className="mt-1 text-sm text-slate-600">{copy.launchNote}</p>}
           </div>
 
-          <figure className="relative mx-auto w-full max-w-[480px] rounded-2xl border border-slate-200 bg-white p-2.5 shadow-card lg:max-w-none">
-            <div className="relative overflow-hidden rounded-xl">
-              <Image
-                src="/megadeal-coming-soon/food-drink-v1.webp"
-                alt="Illustrative burger and fries offer"
-                width={800}
-                height={600}
-                sizes="(max-width: 1024px) 90vw, 470px"
-                className="aspect-[3/2] max-h-[200px] w-full object-cover sm:max-h-none"
-              />
-              <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-900 shadow">
-                Example listing
-              </span>
-            </div>
-            <figcaption className="px-2 pb-1 pr-28 pt-3">
-              <strong className="block font-display text-lg text-slate-900 sm:text-xl">Your offer could be here</strong>
-              <span className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-600">
-                <MapPinIcon className="h-4 w-4 shrink-0" />
-                Your business · Auckland
-              </span>
+          {/* The real DealCard, as customers see it on the site, with
+              example details: a card that can't drift from the real one.
+              Not a link, and labelled as an example. */}
+          <figure className="relative mx-auto w-full max-w-[340px] sm:max-w-[380px] lg:mr-0">
+            <figcaption className="mb-2 text-center text-xs font-semibold text-slate-600 sm:text-sm">
+              Example deal — not available to redeem
             </figcaption>
+            <div aria-hidden className="pointer-events-none select-none rounded-2xl shadow-card-hover">
+              <DealCard deal={EXAMPLE_DEAL} preview />
+            </div>
             <Image
               src="/megadeal/coming-soon-v2/mascot-hoodie-240.webp"
               alt=""
               width={240}
               height={248}
               sizes="110px"
-              className="absolute -right-2 bottom-1 h-auto w-[96px] sm:w-[110px]"
+              className="absolute -bottom-4 -right-3 h-auto w-[84px] sm:-right-8 sm:w-[110px] lg:-right-6 xl:-right-10"
             />
           </figure>
         </section>
