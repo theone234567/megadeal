@@ -16,6 +16,8 @@ export default function PasswordField({
   required,
   autoFocus,
   inputClassName,
+  invalid,
+  describedBy,
 }: {
   id?: string;
   value: string;
@@ -25,6 +27,9 @@ export default function PasswordField({
   required?: boolean;
   autoFocus?: boolean;
   inputClassName: string;
+  /** Marks the input invalid and points it at its error message. */
+  invalid?: boolean;
+  describedBy?: string;
 }) {
   const [visible, setVisible] = useState(false);
 
@@ -39,6 +44,8 @@ export default function PasswordField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
         className={`${inputClassName} pr-10`}
       />
       <button

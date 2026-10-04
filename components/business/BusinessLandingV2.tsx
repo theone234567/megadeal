@@ -5,7 +5,7 @@ import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "@/app/list-your-business/MerchantSignupForm";
 import DealCard from "@/components/DealCard";
-import { CalendarIcon, CheckIcon, ChevronDownIcon, CloseIcon, PercentIcon, StoreIcon, UsersIcon } from "@/components/icons";
+import { CalendarIcon, CheckIcon, ChevronDownIcon, PercentIcon, UsersIcon } from "@/components/icons";
 import { EXAMPLE_BURGER_DEAL } from "@/lib/exampleDeals";
 import { businessPageCopy, OFFER_TERMS_HREF } from "@/lib/businessPageContent";
 import { safeJsonLd } from "@/lib/safeJsonLd";
@@ -159,50 +159,49 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
           <p className="mt-5 text-sm text-slate-600 sm:text-center">{copy.dealNote}</p>
         </section>
 
-        {/* Signup */}
+        {/* Signup (approved white design, 4 Oct 2026): white section, no
+            panel; introduction 40%, form 60%. Each piece is rendered once,
+            in phone order (introduction, company requirement, form, the
+            rest of the eligibility); from lg the grid places the
+            eligibility under the introduction and the form beside them. */}
         <section
           id="business-signup"
           aria-labelledby="signup-title"
-          className="mt-10 grid scroll-mt-24 gap-6 rounded-3xl bg-sky-50 p-4 sm:mt-12 sm:p-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-10"
+          className="mt-4 grid scroll-mt-24 grid-cols-1 gap-y-6 bg-white py-8 sm:py-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:grid-rows-[auto_auto_auto_1fr] lg:gap-x-10 lg:gap-y-0"
         >
-          <div>
-            <h2 id="signup-title" className="text-balance font-display text-3xl font-bold leading-tight text-brand-600 sm:text-[2.5rem]">
-              {copy.signupHeading}
+          <div className="lg:col-start-1 lg:row-start-1">
+            <h2
+              id="signup-title"
+              className="font-display text-[32px] font-bold leading-[1.1] text-brand-600 sm:text-[36px] lg:text-[40px]"
+            >
+              <span className="block">{copy.signupHeading[0]}</span>
+              <span className="block">{copy.signupHeading[1]}</span>
             </h2>
+            <p className="mt-3 text-base text-[#222126] sm:text-lg">{copy.signupIntro}</p>
             <ul className="mt-5 space-y-2.5">
               {copy.reassurances.map((t) => (
-                <li key={t} className="flex items-center gap-3 text-base text-slate-800">
+                <li key={t} className="flex items-center gap-2.5 text-base text-[#222126]">
                   <CheckIcon className="h-5 w-5 shrink-0 text-brand-600" />
                   {t}
                 </li>
               ))}
             </ul>
-            <div className="mt-6 rounded-2xl border border-sky-100 bg-white px-4 py-4 shadow-sm sm:px-5">
-              <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-slate-600">Who can join</h3>
-              <ul className="mt-3 space-y-2.5 text-sm text-slate-800 sm:text-[0.9375rem]">
-                <li className="flex items-start gap-3">
-                  <CheckIcon className="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-emerald-50 p-0.5 text-emerald-600" />
-                  <span>{copy.eligibleFor}</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckIcon className="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-emerald-50 p-0.5 text-emerald-600" />
-                  <span>{copy.bookingClarification}</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CloseIcon className="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-rose-50 p-0.5 text-rose-600" />
-                  <span>{copy.notEligible}</span>
-                </li>
-              </ul>
-              <p className="mt-4 flex items-start gap-3 border-t border-slate-100 pt-3.5 text-sm font-semibold text-slate-800 sm:text-[0.9375rem]">
-                <StoreIcon className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
-                {copy.companyEligibility}
-              </p>
-            </div>
           </div>
-          {/* useSearchParams (?ref=) inside needs a Suspense boundary. */}
-          <Suspense fallback={null}>
-            <MerchantSignupForm launched={launched} twoStep />
-          </Suspense>
+          <p className="text-base font-medium text-[#222126] lg:col-start-1 lg:row-start-3 lg:mt-3">
+            {copy.companyEligibility}
+          </p>
+          <div className="min-w-0 lg:col-start-2 lg:row-span-4 lg:row-start-1">
+            {/* useSearchParams (?ref=) inside needs a Suspense boundary. */}
+            <Suspense fallback={null}>
+              <MerchantSignupForm launched={launched} twoStep />
+            </Suspense>
+          </div>
+          <div className="space-y-3 border-t border-[#E4E2E8] pt-5 text-base text-[#625D6B] lg:col-start-1 lg:row-start-2 lg:mt-6 lg:pt-6">
+            <p>{copy.eligibleFor}</p>
+            <p>
+              {copy.bookingClarification} {copy.notEligible}
+            </p>
+          </div>
         </section>
 
         {/* FAQ */}

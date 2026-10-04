@@ -26,9 +26,12 @@ export interface BusinessPageCopy {
   benefits: [string, string][];
   steps: [string, string][];
   dealNote: string;
-  signupHeading: string;
+  /** Two lines: the break falls after the first. */
+  signupHeading: [string, string];
+  signupIntro: string;
   reassurances: string[];
-  /** "Who can join", as three lines: who's welcome, what's welcome, who isn't. */
+  /** Eligibility beside the signup: who's welcome, what's welcome, who
+   *  isn't, and (shown first on phones) the company requirement. */
   eligibleFor: string;
   bookingClarification: string;
   notEligible: string;
@@ -52,12 +55,13 @@ const SHARED = {
     ["Create and preview deals", "Choose your offer, availability and conditions."],
   ] as [string, string][],
   dealNote: "Choose an Everyday Deal for an ongoing offer, or a Flash Deal for a short promotion.",
-  signupHeading: "Let’s get your business ready.",
+  signupHeading: ["Let’s get your", "business ready."] as [string, string],
+  signupIntro: "Create your account, then tell us about your business.",
   reassurances: ["No credit card required to sign up.", "No lock-in contracts.", "Cancel anytime."],
-  eligibleFor: "Local services, experiences and hospitality.",
+  eligibleFor: "For local services, experiences and hospitality.",
   bookingClarification: "Online bookings and payments for eligible local services are welcome.",
   notEligible: "E-commerce retail and adult businesses are not eligible.",
-  companyEligibility: "Currently accepting New Zealand registered limited companies.",
+  companyEligibility: "Currently accepting NZ registered limited companies.",
 };
 
 const FAQ_AFTER_FREE_PERIOD = {

@@ -44,6 +44,24 @@ const HONEYPOT_FIELD = "mg_contact_ref";
  *  false positive again, the page recovers instead of hanging forever. */
 const HONEYPOT_RESET_MS = 2000;
 
+/** The two-step form's messages, shown under the field they're about
+ *  (keyed by input id, or name for a field without one). Anything not
+ *  listed falls back to the browser's own message. */
+const FIELD_MESSAGES: Record<string, { missing: string; invalid?: string }> = {
+  "signup-contactName": { missing: "Enter your name." },
+  "signup-email": { missing: "Enter your email address.", invalid: "Enter a valid email address, like you@business.co.nz." },
+  "signup-password": { missing: "Create a password." },
+  "signup-confirmPassword": { missing: "Confirm your password." },
+  "signup-legalBusinessName": { missing: "Enter your registered business name." },
+  "signup-contactPhone": { missing: "Enter a contact phone number." },
+  "signup-businessPhone": { missing: "Enter a business phone number, or tick “Same as my contact phone”." },
+  "signup-agreedToTerms": { missing: "Tick the box to agree to the terms and privacy policy." },
+};
+
+function fieldKey(el: Element): string {
+  return el.id || el.getAttribute("name") || "";
+}
+
 /** Account errors from Wix that are fixed on step 1 of the two-step form. */
 const STEP_ONE_ERRORS = new Set(["emailAlreadyExists", "invalidEmail", "invalidPassword"]);
 
@@ -201,6 +219,10 @@ export default function MerchantSignupForm({
   const captchaRef = useRef<RecaptchaCheckboxHandle | null>(null);
   // Two-step layout only (see `twoStep`).
   const [step, setStep] = useState<1 | 2>(1);
+  /** Two-step layout: problems found on Continue or submit, by field.
+   *  Empty until then, so untouched fields never look wrong; a field's
+   *  message clears as soon as it's edited. */
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const step1Ref = useRef<HTMLDivElement>(null);
   const step2Ref = useRef<HTMLDivElement>(null);
@@ -358,35 +380,79 @@ export default function MerchantSignupForm({
     }
   }
 
-  /** Two-step layout: the browser's own checks on one step's fields,
-   *  showing the first problem. The form is noValidate there, because
-   *  the hidden step's required fields would otherwise block Continue. */
-  function stepFieldsValid(box: HTMLElement | null): boolean {
-    if (!box) return true;
+  /** Two-step layout: the browser's own checks on one step's fields, as
+   *  messages for each field that fails. The form is noValidate there,
+   *  because the hidden step's required fields would otherwise block
+   *  Continue. */
+  function stepErrors(box: HTMLElement | null): Record<string, string> {
+    const errors: Record<string, string> = {};
+    if (!box) return errors;
     const fields = box.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input, select, textarea");
     for (const el of Array.from(fields)) {
-      if (el.name === HONEYPOT_FIELD) continue;
-      if (!el.checkValidity()) {
-        el.reportValidity();
-        el.focus();
-        return false;
+      if (el.name === HONEYPOT_FIELD || el.checkValidity()) continue;
+      const key = fieldKey(el);
+      const text = FIELD_MESSAGES[key];
+      errors[key] = (el.validity.valueMissing ? text?.missing : text?.invalid) ?? el.validationMessage;
+    }
+    return errors;
+  }
+
+  /** Step 1's checks: the fields, then the password rules. */
+  function stepOneErrors(): Record<string, string> {
+    const errors = stepErrors(step1Ref.current);
+    if (!isLoggedIn) {
+      if (!errors["signup-password"] && password.length < 8) {
+        errors["signup-password"] = "Use at least 8 characters.";
+      }
+      if (!errors["signup-confirmPassword"] && confirmPassword && password !== confirmPassword) {
+        errors["signup-confirmPassword"] = "Those passwords don't match.";
       }
     }
-    return true;
+    return errors;
+  }
+
+  /** Shows the messages and focuses the first field with one (in page
+   *  order). True when there are none. */
+  function showFieldErrors(errors: Record<string, string>, box: HTMLElement | null): boolean {
+    setFieldErrors(errors);
+    if (Object.keys(errors).length === 0) return true;
+    const first = Array.from(box?.querySelectorAll<HTMLElement>("input, select, textarea") ?? []).find(
+      (el) => errors[fieldKey(el)]
+    );
+    first?.focus();
+    return false;
+  }
+
+  function clearFieldError(target: EventTarget) {
+    if (!(target instanceof Element)) return;
+    const key = fieldKey(target);
+    // The password rules involve both boxes, so editing either clears both.
+    const keys = key === "signup-password" || key === "signup-confirmPassword" ? ["signup-password", "signup-confirmPassword"] : [key];
+    setFieldErrors((prev) => {
+      if (!keys.some((k) => prev[k])) return prev;
+      const next = { ...prev };
+      for (const k of keys) delete next[k];
+      return next;
+    });
+  }
+
+  /** The props an input needs while it has a message. */
+  function errorProps(id: string) {
+    return fieldErrors[id] ? { "aria-invalid": true, "aria-describedby": `${id}-error` } : {};
+  }
+
+  function fieldError(id: string) {
+    return fieldErrors[id] ? (
+      <p id={`${id}-error`} className="mt-1.5 text-sm font-medium text-red-700">
+        {fieldErrors[id]}
+      </p>
+    ) : null;
   }
 
   /** Step 1 → step 2. Checks only; no account, no request. */
   function goToBusinessStep() {
     setSubmitError(null);
-    if (!stepFieldsValid(step1Ref.current)) return;
-    if (password.length < 8) {
-      setSubmitError("Your password needs to be at least 8 characters.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setSubmitError("Those passwords don't match.");
-      return;
-    }
+    if (!showFieldErrors(stepOneErrors(), step1Ref.current)) return;
     setStep(2);
   }
 
@@ -400,11 +466,12 @@ export default function MerchantSignupForm({
     setSubmitError(null);
     if (twoStep) {
       // Step 1 was checked on Continue; check it again in case, then step 2.
-      if (!stepFieldsValid(step1Ref.current)) {
+      if (Object.keys(stepOneErrors()).length > 0) {
+        setFieldErrors(stepOneErrors());
         setStep(1);
         return;
       }
-      if (!stepFieldsValid(step2Ref.current)) return;
+      if (!showFieldErrors(stepErrors(step2Ref.current), step2Ref.current)) return;
     }
 
     const formData = new FormData(e.currentTarget);
@@ -439,6 +506,14 @@ export default function MerchantSignupForm({
     const sameNumber = formData.get("samePhone") === "on";
     const publicPhone = String(formData.get(sameNumber ? "contactPhone" : "businessPhone") ?? "");
     if (!phoneLink(publicPhone)) {
+      if (twoStep) {
+        const id = sameNumber ? "signup-contactPhone" : "signup-businessPhone";
+        showFieldErrors(
+          { [id]: sameNumber ? "This is your business phone too, so enter it in full, including the area code." : "Enter the number in full, including the area code." },
+          step2Ref.current
+        );
+        return;
+      }
       setSubmitError(
         sameNumber
           ? "Your contact phone is also your business phone, so enter it in full, including the area code."
@@ -769,7 +844,11 @@ export default function MerchantSignupForm({
     return (
       <div
         id="signup"
-        className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8"
+        className={
+          twoStep
+            ? "scroll-mt-[140px] rounded-2xl border border-[#E4E2E8] bg-white p-5 sm:p-7"
+            : "scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8"
+        }
       >
         <p className="text-sm font-semibold text-slate-500">Checking your account…</p>
         <div aria-hidden className="mt-4 space-y-3">
@@ -839,11 +918,28 @@ export default function MerchantSignupForm({
     );
   }
 
+  // Two-step layout (the redesigned page): its own type, spacing and
+  // controls, from the approved white design. The one-page form keeps its
+  // existing look.
+  const cardClass = twoStep
+    ? "scroll-mt-[140px] rounded-2xl border border-[#E4E2E8] bg-white p-5 sm:p-7"
+    : "scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8";
+  const labelClass = twoStep
+    ? "mb-1.5 block text-[15px] font-semibold text-[#222126]"
+    : "mb-1 block text-base font-medium text-slate-700";
+  const inputClass = twoStep
+    ? "h-12 w-full rounded-[10px] border border-[#8F8999] bg-white px-3.5 text-base text-[#222126] outline-none transition placeholder:text-[#706B79] focus:border-brand-600 focus:ring-1 focus:ring-brand-600 aria-[invalid=true]:border-red-700 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-red-700"
+    : "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400";
+  const hintClass = twoStep ? "mt-1.5 text-sm text-[#625D6B]" : "mt-1 text-sm text-slate-500";
+  const primaryButtonClass = twoStep
+    ? "flex h-[50px] w-full items-center justify-center rounded-xl bg-brand-600 px-5 text-center text-base font-bold text-white transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+    : "w-full rounded-full bg-brand-600 py-3.5 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60";
+
   const legalNameField = (
           <div>
-            <label htmlFor="signup-legalBusinessName" className="mb-1 block text-base font-medium text-slate-700">
+            <label htmlFor="signup-legalBusinessName" className={labelClass}>
               Legal / registered business name
-              <RequiredTag />
+              {!twoStep && <RequiredTag />}
             </label>
             <input
               id="signup-legalBusinessName"
@@ -853,9 +949,11 @@ export default function MerchantSignupForm({
               type="text"
               maxLength={300}
               placeholder="e.g. Harbourside Bistro Limited"
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+              className={inputClass}
+              {...errorProps("signup-legalBusinessName")}
             />
-            <p className="mt-1 text-sm text-slate-500">
+            {fieldError("signup-legalBusinessName")}
+            <p className={hintClass}>
               Must be a New Zealand registered Limited company — we
               don&apos;t currently accept sole traders or partnerships.
             </p>
@@ -863,38 +961,57 @@ export default function MerchantSignupForm({
   );
 
   return (
-    <div id="signup" className="scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
-      <form onSubmit={handleSubmit} onChangeCapture={trackFormStarted} noValidate={twoStep} className="space-y-4">
+    <div id="signup" className={cardClass}>
+      <form
+        onSubmit={handleSubmit}
+        onChangeCapture={trackFormStarted}
+        // Bubble phase, not capture: clearing a message re-renders the form,
+        // and doing that before the field's own onChange had run reset a
+        // controlled password box, losing a pasted or autofilled value.
+        onInput={twoStep ? (e) => clearFieldError(e.target) : undefined}
+        noValidate={twoStep}
+        className={twoStep ? "space-y-5" : "space-y-4"}
+      >
         {twoStep && (
           <div>
-            <h3 ref={stepHeadingRef} tabIndex={-1} className="text-xl font-bold text-slate-900 outline-none">
+            <h3 ref={stepHeadingRef} tabIndex={-1} className="text-[22px] font-bold leading-tight text-[#222126] outline-none sm:text-2xl">
               Create your business account
             </h3>
-            <p aria-live="polite" className="mt-1 text-sm font-semibold text-slate-600">
+            <p aria-live="polite" className="mt-1.5 text-sm font-semibold text-[#625D6B]">
               Step {step} of 2 · {step === 1 ? "Your details" : "Your business"}
+            </p>
+            <p className="mt-0.5 text-sm text-[#625D6B]">
+              {step === 1 ? "All fields are required." : "All fields are required unless marked optional."}
             </p>
           </div>
         )}
-        <div ref={step1Ref} hidden={twoStep && step !== 1} className="space-y-4">
+        {/* Two-step: a size container, so the four fields sit in two rows
+            only when the form itself has room (480px), whatever the page
+            layout around it. */}
+        <div ref={step1Ref} hidden={twoStep && step !== 1} className={twoStep ? "[container-type:inline-size]" : "space-y-4"}>
         {/* What's private and what isn't, up front: name, email and
             contact phone are only for the account; the legal name is the
             starting public business name (readApplicationValues), and the
-            business phone is public. Each private field is tagged. */}
-        <p className="flex items-start gap-2 rounded-xl bg-slate-50 px-3.5 py-2.5 text-sm text-slate-600">
-          <EyeOffIcon className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
-          <span>
-            Details marked Private are only for us: we use them to set up your account and contact
-            you, and they&apos;re never shown on MegaDeal. Your business name and business phone
-            are what customers see, and you can change either in your portal.
-          </span>
-        </p>
+            business phone is public. Each private field is tagged. The
+            two-step form says it in one line under the fields instead. */}
+        {!twoStep && (
+          <p className="flex items-start gap-2 rounded-xl bg-slate-50 px-3.5 py-2.5 text-sm text-slate-600">
+            <EyeOffIcon className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
+            <span>
+              Details marked Private are only for us: we use them to set up your account and contact
+              you, and they&apos;re never shown on MegaDeal. Your business name and business phone
+              are what customers see, and you can change either in your portal.
+            </span>
+          </p>
+        )}
         {!twoStep && legalNameField}
 
+        <div className={twoStep ? "grid grid-cols-1 gap-x-5 gap-y-[18px] [@container(min-width:480px)]:grid-cols-2" : "contents"}>
         <div>
-          <label htmlFor="signup-contactName" className="mb-1 block text-base font-medium text-slate-700">
+          <label htmlFor="signup-contactName" className={labelClass}>
             Your name
-            <RequiredTag />
-            <PrivateTag />
+            {!twoStep && <RequiredTag />}
+            {!twoStep && <PrivateTag />}
           </label>
           <input
             id="signup-contactName"
@@ -904,8 +1021,10 @@ export default function MerchantSignupForm({
             type="text"
             maxLength={300}
             placeholder="Full name"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+            className={inputClass}
+            {...errorProps("signup-contactName")}
           />
+          {fieldError("signup-contactName")}
         </div>
 
         {/* Credentials are only asked for when there is no account yet.
@@ -913,17 +1032,17 @@ export default function MerchantSignupForm({
             and the fields being `required` would block the form outright
             on values they have no reason to retype. */}
         {isLoggedIn ? (
-          <div className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-800">
+          <div className={`rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-800 ${twoStep ? "[@container(min-width:480px)]:col-span-2" : ""}`}>
             You&rsquo;re already signed in, so we just need your business details below — no new
             password required.
           </div>
         ) : (
           <>
             <div>
-              <label htmlFor="signup-email" className="mb-1 block text-base font-medium text-slate-700">
-                Email
-                <RequiredTag />
-                <PrivateTag />
+              <label htmlFor="signup-email" className={labelClass}>
+                {twoStep ? "Email address" : "Email"}
+                {!twoStep && <RequiredTag />}
+                {!twoStep && <PrivateTag />}
               </label>
               <input
                 id="signup-email"
@@ -931,16 +1050,20 @@ export default function MerchantSignupForm({
                 name="email"
                 type="email"
                 autoComplete="email"
-                placeholder="you@yourbusiness.co.nz"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+                placeholder={twoStep ? "you@business.co.nz" : "you@yourbusiness.co.nz"}
+                className={inputClass}
+                {...errorProps("signup-email")}
               />
+              {fieldError("signup-email")}
             </div>
 
-            <div className={`grid grid-cols-1 gap-4 ${twoStep ? "" : "items-end sm:grid-cols-2"}`}>
+            {/* Two-step: "contents", so the passwords are the second row
+                of the field grid above. */}
+            <div className={twoStep ? "contents" : "grid grid-cols-1 items-end gap-4 sm:grid-cols-2"}>
               <div>
-                <label htmlFor="signup-password" className="mb-1 block text-base font-medium text-slate-700">
+                <label htmlFor="signup-password" className={labelClass}>
                   Password
-                  <RequiredTag />
+                  {!twoStep && <RequiredTag />}
                 </label>
                 <PasswordField
                   id="signup-password"
@@ -948,14 +1071,17 @@ export default function MerchantSignupForm({
                   autoComplete="new-password"
                   value={password}
                   onChange={setPassword}
-                  placeholder="At least 8 characters"
-                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+                  placeholder={twoStep ? "Create a password" : "At least 8 characters"}
+                  inputClassName={inputClass}
+                  invalid={Boolean(fieldErrors["signup-password"])}
+                  describedBy={fieldErrors["signup-password"] ? "signup-password-error" : undefined}
                 />
+                {fieldError("signup-password")}
               </div>
               <div>
-                <label htmlFor="signup-confirmPassword" className="mb-1 block text-base font-medium text-slate-700">
+                <label htmlFor="signup-confirmPassword" className={labelClass}>
                   Confirm password
-                  <RequiredTag />
+                  {!twoStep && <RequiredTag />}
                 </label>
                 <PasswordField
                   id="signup-confirmPassword"
@@ -963,28 +1089,33 @@ export default function MerchantSignupForm({
                   autoComplete="new-password"
                   value={confirmPassword}
                   onChange={setConfirmPassword}
-                  placeholder="Same password again"
-                  inputClassName="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+                  placeholder={twoStep ? "Confirm your password" : "Same password again"}
+                  inputClassName={inputClass}
+                  invalid={Boolean(fieldErrors["signup-confirmPassword"])}
+                  describedBy={fieldErrors["signup-confirmPassword"] ? "signup-confirmPassword-error" : undefined}
                 />
+                {fieldError("signup-confirmPassword")}
               </div>
             </div>
           </>
         )}
+        </div>
 
         {twoStep && (
           <>
+            {/* Checked against lib/business.ts: the public listing is built
+                from the business name, phone, website and address only
+                (lib/businessPrivacy.test.ts). */}
+            <p className="mt-4 text-sm text-[#625D6B]">Your name and email aren&rsquo;t shown on your public listing.</p>
             {submitError && step === 1 && (
-              <p role="alert" className="text-sm text-ember-600">
+              <p role="alert" className="mt-4 text-sm font-medium text-red-700">
                 {submitError}
               </p>
             )}
-            <button
-              type="submit"
-              className="w-full rounded-full bg-brand-600 py-3.5 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95"
-            >
+            <button type="submit" className={`mt-5 ${primaryButtonClass}`}>
               Continue to business details →
             </button>
-            <p className="text-center text-sm text-slate-600">Next: business name, contact details and launch offer.</p>
+            <p className="mt-3 text-center text-sm text-[#625D6B]">Next: business name, contact details and launch offer.</p>
           </>
         )}
         </div>
@@ -997,10 +1128,10 @@ export default function MerchantSignupForm({
             the tick box, but a personal mobile shouldn't become public
             just because it was the number given at signup. */}
         <div>
-          <label htmlFor="signup-contactPhone" className="mb-1 block text-base font-medium text-slate-700">
+          <label htmlFor="signup-contactPhone" className={labelClass}>
             Contact phone
-            <RequiredTag />
-            <PrivateTag />
+            {!twoStep && <RequiredTag />}
+            {!twoStep && <PrivateTag />}
           </label>
           <input
             id="signup-contactPhone"
@@ -1010,18 +1141,20 @@ export default function MerchantSignupForm({
             type="tel"
             maxLength={300}
             placeholder="021 234 5678 or 09 123 4567"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+            className={inputClass}
+            {...errorProps("signup-contactPhone")}
           />
-          <p className="mt-1 text-sm text-slate-500">
+          {fieldError("signup-contactPhone")}
+          <p className={hintClass}>
             Your mobile or business number, so we can reach you about your application.
             Never shown on MegaDeal.
           </p>
         </div>
 
         <div>
-          <label htmlFor="signup-businessPhone" className="mb-1 block text-base font-medium text-slate-700">
+          <label htmlFor="signup-businessPhone" className={labelClass}>
             Business phone for customers
-            <RequiredTag />
+            {!twoStep && <RequiredTag />}
           </label>
           <label className="mb-2 flex items-center gap-2 text-sm text-slate-700">
             <input
@@ -1042,10 +1175,12 @@ export default function MerchantSignupForm({
               type="tel"
               maxLength={300}
               placeholder="09 123 4567"
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+              className={inputClass}
+              {...errorProps("signup-businessPhone")}
             />
           )}
-          <p className="mt-1 text-sm text-slate-500">
+          {!samePhone && fieldError("signup-businessPhone")}
+          <p className={hintClass}>
             Shown on your listing so customers can call you to book. You can change it later in
             your portal.
           </p>
@@ -1062,8 +1197,9 @@ export default function MerchantSignupForm({
             would silently apply no offer at all. A referral code has its
             own box below and applies as well. */}
         <div>
-          <label htmlFor="signup-couponCode" className="mb-1 block text-base font-medium text-slate-700">
+          <label htmlFor="signup-couponCode" className={labelClass}>
             Promo code
+            {twoStep && <span className="font-normal text-[#625D6B]"> (optional)</span>}
           </label>
           <input
             id="signup-couponCode"
@@ -1073,7 +1209,7 @@ export default function MerchantSignupForm({
             maxLength={50}
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+            className={inputClass}
           />
           {promoState === "welcome" && (
             <p className="mt-1 text-sm text-slate-500">
@@ -1112,8 +1248,8 @@ export default function MerchantSignupForm({
         </div>
 
         <div>
-          <label htmlFor="signup-referredByCode" className="mb-1 block text-base font-medium text-slate-700">
-            Referral code <span className="font-normal text-slate-500">(optional)</span>
+          <label htmlFor="signup-referredByCode" className={labelClass}>
+            Referral code <span className={`font-normal ${twoStep ? "text-[#625D6B]" : "text-slate-500"}`}>(optional)</span>
           </label>
           <input
             id="signup-referredByCode"
@@ -1124,7 +1260,7 @@ export default function MerchantSignupForm({
             value={referredByCode}
             onChange={(e) => setReferredByCode(e.target.value.toUpperCase())}
             placeholder="e.g. MD1A2B3C"
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400"
+            className={inputClass}
           />
           <p className="mt-1 text-sm text-slate-600">
             {referredByCode.trim()
@@ -1136,6 +1272,7 @@ export default function MerchantSignupForm({
         <label className="flex items-start gap-2 text-base text-slate-600">
           <input
             required
+            id="signup-agreedToTerms"
             type="checkbox"
             name="agreedToTerms"
             checked={agreedToTerms}
@@ -1144,6 +1281,7 @@ export default function MerchantSignupForm({
                phone (WCAG 2.2 SC 2.5.8). The wrapping <label> already makes
                the text tappable too. */
             className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+            {...errorProps("signup-agreedToTerms")}
           />
           <span>
             I agree to MegaDeal&apos;s{" "}
@@ -1157,6 +1295,7 @@ export default function MerchantSignupForm({
             .
           </span>
         </label>
+        {fieldError("signup-agreedToTerms")}
 
         {/* Hidden unless Wix has rejected an invisible token, so the usual
             signup shows no challenge at all. Wix verifies the token, so the
@@ -1170,7 +1309,9 @@ export default function MerchantSignupForm({
         )}
 
         {submitError && (
-          <p className="text-sm text-ember-600">{submitError}</p>
+          <p role={twoStep ? "alert" : undefined} className={twoStep ? "text-sm font-medium text-red-700" : "text-sm text-ember-600"}>
+            {submitError}
+          </p>
         )}
 
         <div className={twoStep ? "flex gap-3" : undefined}>
@@ -1182,7 +1323,7 @@ export default function MerchantSignupForm({
                 setStep(1);
               }}
               disabled={submitting}
-              className="shrink-0 rounded-full border border-slate-300 px-5 py-3.5 font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+              className="h-[50px] shrink-0 rounded-xl border border-[#8F8999] px-5 font-bold text-[#37343D] transition hover:bg-[#F6F5F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:opacity-60"
             >
               Back
             </button>
@@ -1190,7 +1331,8 @@ export default function MerchantSignupForm({
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-full bg-brand-600 py-3.5 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60"
+            aria-busy={submitting || undefined}
+            className={primaryButtonClass}
           >
             {submitting ? "Submitting…" : twoStep ? "Create your business account" : "Claim my free advertising →"}
           </button>
