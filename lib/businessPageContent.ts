@@ -24,8 +24,10 @@ export interface BusinessPageCopy {
   dealNote: string;
   signupHeading: string;
   reassurances: string[];
-  eligibility: string;
+  /** "Who can join", as three lines: who's welcome, what's welcome, who isn't. */
+  eligibleFor: string;
   bookingClarification: string;
+  notEligible: string;
   companyEligibility: string;
   faqs: { question: string; answer: string }[];
 }
@@ -48,9 +50,9 @@ const SHARED = {
   dealNote: "Choose an Everyday Deal for an ongoing offer, or a Flash Deal for a short promotion.",
   signupHeading: "Let’s get your business ready.",
   reassurances: ["No credit card required to sign up.", "No lock-in contracts.", "Cancel anytime."],
-  eligibility:
-    "For local services, experiences and hospitality. E-commerce retail and adult businesses are not eligible.",
+  eligibleFor: "Local services, experiences and hospitality.",
   bookingClarification: "Online bookings and payments for eligible local services are welcome.",
+  notEligible: "E-commerce retail and adult businesses are not eligible.",
   companyEligibility: "Currently accepting New Zealand registered limited companies.",
 };
 

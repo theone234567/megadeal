@@ -5,7 +5,7 @@ import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "@/app/list-your-business/MerchantSignupForm";
 import DealCard from "@/components/DealCard";
-import { CalendarIcon, CheckIcon, ChevronDownIcon, PercentIcon, StoreIcon, UsersIcon } from "@/components/icons";
+import { CalendarIcon, CheckIcon, ChevronDownIcon, CloseIcon, PercentIcon, StoreIcon, UsersIcon } from "@/components/icons";
 import { renderTerms } from "@/lib/dealTerms";
 import type { Deal } from "@/lib/types";
 import { businessPageCopy, OFFER_TERMS_HREF } from "@/lib/businessPageContent";
@@ -215,14 +215,27 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
                 </li>
               ))}
             </ul>
-            <div className="mt-6 space-y-1 border-t border-sky-200 pt-5 text-sm text-slate-700">
-              <p>{copy.eligibility}</p>
-              <p>{copy.bookingClarification}</p>
+            <div className="mt-6 rounded-2xl border border-sky-100 bg-white px-4 py-4 shadow-sm sm:px-5">
+              <h3 className="text-sm font-bold uppercase tracking-[0.08em] text-slate-600">Who can join</h3>
+              <ul className="mt-3 space-y-2.5 text-sm text-slate-800 sm:text-[0.9375rem]">
+                <li className="flex items-start gap-3">
+                  <CheckIcon className="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-emerald-50 p-0.5 text-emerald-600" />
+                  <span>{copy.eligibleFor}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckIcon className="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-emerald-50 p-0.5 text-emerald-600" />
+                  <span>{copy.bookingClarification}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CloseIcon className="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-rose-50 p-0.5 text-rose-600" />
+                  <span>{copy.notEligible}</span>
+                </li>
+              </ul>
+              <p className="mt-4 flex items-start gap-3 border-t border-slate-100 pt-3.5 text-sm font-semibold text-slate-800 sm:text-[0.9375rem]">
+                <StoreIcon className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+                {copy.companyEligibility}
+              </p>
             </div>
-            <p className="mt-5 flex items-start gap-3 rounded-xl bg-white/70 px-4 py-3 text-sm font-semibold text-slate-800">
-              <StoreIcon className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
-              {copy.companyEligibility}
-            </p>
           </div>
           {/* useSearchParams (?ref=) inside needs a Suspense boundary. */}
           <Suspense fallback={null}>
