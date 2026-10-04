@@ -39,11 +39,6 @@ export const V2_HERO = {
   position: "60% 55%",
 };
 
-export const V2_EXAMPLE_PHOTO = {
-  src: "/megadeal-coming-soon/example-massage-v1.webp",
-  alt: "Illustrative relaxation massage",
-};
-
 export const V2_CATEGORIES = [
   { label: "Food & Drink", src: "/megadeal-coming-soon/food-drink-v1.webp", alt: "Burger and fries at a cafe" },
   { label: "Beauty & Spa", src: "/megadeal-coming-soon/beauty-spa-v1.webp", alt: "Facial treatment at a spa" },

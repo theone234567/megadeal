@@ -6,8 +6,7 @@ import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "@/app/list-your-business/MerchantSignupForm";
 import DealCard from "@/components/DealCard";
 import { CalendarIcon, CheckIcon, ChevronDownIcon, CloseIcon, PercentIcon, StoreIcon, UsersIcon } from "@/components/icons";
-import { renderTerms } from "@/lib/dealTerms";
-import type { Deal } from "@/lib/types";
+import { EXAMPLE_BURGER_DEAL } from "@/lib/exampleDeals";
 import { businessPageCopy, OFFER_TERMS_HREF } from "@/lib/businessPageContent";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
@@ -24,52 +23,6 @@ import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 
 const BENEFIT_ICONS = [UsersIcon, CalendarIcon, PercentIcon];
 
-/** What a business's deal looks like to customers: example details on
- *  the pack's illustrative photo. Never a real business or a live offer. */
-const EXAMPLE_DEAL: Deal = {
-  id: "example",
-  slug: "example",
-  name: "Gourmet burger & fries for two",
-  description: "",
-  image: "/megadeal-coming-soon/food-drink-v1.webp",
-  now: 29,
-  was: 48,
-  formattedNow: null,
-  formattedWas: null,
-  discountPercent: 0,
-  currency: "NZD",
-  ribbon: null,
-  categories: ["Food & Drink"],
-  variantId: null,
-  inStock: true,
-  quantityAvailable: null,
-  expiresAt: null,
-  status: "Live",
-  isFlash: false,
-  terms: renderTerms(["mon-thu", "dine-in"], ""),
-  businessName: "Your business",
-  businessLogoUrl: null,
-  businessWebsite: null,
-  businessPhone: null,
-  businessAddress: null,
-  businessCity: "Auckland",
-  businessSuburb: null,
-  businessSlug: null,
-  businessBio: null,
-  businessHours: null,
-  businessFacebookUrl: null,
-  businessInstagramUrl: null,
-  businessPriceRange: null,
-  businessAmenities: [],
-  businessBookingUrl: null,
-  businessBookingEmail: null,
-  businessLat: null,
-  businessLng: null,
-  businessRating: null,
-  businessReviewCount: null,
-  dealCode: null,
-  bookingRequirement: "unknown",
-};
 
 export default function BusinessLandingV2({ launched }: { launched: boolean }) {
   const copy = businessPageCopy(launched);
@@ -153,7 +106,7 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
               Example deal — not available to redeem
             </figcaption>
             <div aria-hidden className="pointer-events-none select-none rounded-2xl shadow-card-hover">
-              <DealCard deal={EXAMPLE_DEAL} preview />
+              <DealCard deal={EXAMPLE_BURGER_DEAL} preview />
             </div>
             <Image
               src="/megadeal/coming-soon-v2/mascot-hoodie-240.webp"

@@ -2,7 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import { CreditCardIcon, SearchIcon, TagIcon } from "@/components/icons";
-import { V2_CATEGORIES, V2_EXAMPLE_PHOTO, V2_FAQS, V2_HERO, V2_SOCIALS } from "@/lib/comingSoonV2Content";
+import { V2_CATEGORIES, V2_FAQS, V2_HERO, V2_SOCIALS } from "@/lib/comingSoonV2Content";
+import DealCard from "@/components/DealCard";
+import { EXAMPLE_MASSAGE_DEAL } from "@/lib/exampleDeals";
 
 // Plain paths, as elsewhere on the site: CI typechecks before Next has
 // generated its image module types, so static image imports fail there.
@@ -140,26 +142,15 @@ export default function ComingSoonV2() {
               </li>
             </ol>
           </div>
-          {/* No caption (owner's call, 4 Oct 2026): "Example price" on the
-              card and "Your business" keep it plainly an example. */}
+          {/* No visible caption (owner's call, 4 Oct 2026): "Your
+              business" on the card keeps it plainly an example. */}
           <figure className={styles.example}>
-            <div className={styles.exampleCard}>
-              <div className={styles.examplePhoto}>
-                <Image
-                  src={V2_EXAMPLE_PHOTO.src}
-                  alt={V2_EXAMPLE_PHOTO.alt}
-                  fill
-                  loading="lazy"
-                  sizes="(max-width: 767px) calc(100vw - 72px), 300px"
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-              <div className={styles.exampleText}>
-                <h3>60-minute relaxation massage</h3>
-                <p>Your business · Auckland</p>
-                <strong>$49</strong>
-                <p>Example price</p>
-              </div>
+            {/* The real DealCard, as on the site, with example details
+                (lib/exampleDeals.ts). Not a link; hidden from screen
+                readers, which get the caption below instead. */}
+            <figcaption className={styles.visuallyHidden}>Example deal</figcaption>
+            <div aria-hidden className={styles.exampleDeal}>
+              <DealCard deal={EXAMPLE_MASSAGE_DEAL} preview />
             </div>
           </figure>
         </section>
