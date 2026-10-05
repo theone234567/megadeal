@@ -8,6 +8,7 @@ import DealCard from "@/components/DealCard";
 import { CalendarIcon, CheckIcon, ChevronDownIcon, PercentIcon, UsersIcon } from "@/components/icons";
 import { EXAMPLE_BURGER_DEAL } from "@/lib/exampleDeals";
 import { businessPageCopy, OFFER_TERMS_HREF } from "@/lib/businessPageContent";
+import { ADVERTISE_PAGES } from "@/lib/businessLinks";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 
@@ -157,6 +158,18 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
             ))}
           </ol>
           <p className="mt-5 text-sm text-slate-600 sm:text-center">{copy.dealNote}</p>
+          {/* Ideas by industry, on their own pages (lib/businessLinks.ts). */}
+          <nav aria-label="Advertising by industry" className="mt-4 text-sm text-slate-600 sm:text-center">
+            <span className="font-semibold text-slate-800">Ideas for your industry:</span>{" "}
+            {ADVERTISE_PAGES.map((p, i) => (
+              <span key={p.href}>
+                {i > 0 && <span aria-hidden> · </span>}
+                <Link href={p.href} className="inline-block py-1 font-semibold text-brand-600 underline-offset-2 hover:underline">
+                  {p.short}
+                </Link>
+              </span>
+            ))}
+          </nav>
         </section>
 
         {/* Signup (approved white design, 4 Oct 2026): white section, no

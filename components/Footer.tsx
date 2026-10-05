@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ADVERTISE_PAGES } from "@/lib/businessLinks";
 import { usePathname } from "next/navigation";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import SocialLinks from "./SocialLinks";
@@ -12,6 +13,8 @@ import EmailSignupForm from "./EmailSignupForm";
  * dead-ends every visitor on the pre-launch site. Until we're live, point
  * the whole column at the coming-soon page's category preview instead.
  */
+const FOOTER_BUSINESS_LINKS = [{ href: "/list-your-business", label: "List your business" }, ...ADVERTISE_PAGES];
+
 function footerCategories(siteLaunched: boolean) {
   return CATEGORIES.map((category) => ({
     name: category.name,
@@ -100,7 +103,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
           </div>
         </section>
 
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
           <div>
             <h2 className="mb-3 text-sm font-bold text-slate-900">Categories</h2>
             <ul className="space-y-1 text-sm text-slate-600">
@@ -113,10 +116,22 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
               ))}
             </ul>
           </div>
+          {/* The advertise pages, linked from every page (lib/businessLinks.ts). */}
+          <div>
+            <h2 className="mb-3 text-sm font-bold text-slate-900">For businesses</h2>
+            <ul className="space-y-1 text-sm text-slate-600">
+              {FOOTER_BUSINESS_LINKS.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="inline-block py-1 hover:text-brand-700">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
           <div>
             <h2 className="mb-3 text-sm font-bold text-slate-900">Company</h2>
             <ul className="space-y-1 text-sm text-slate-600">
-              <li><Link href="/list-your-business" className="inline-block py-1 hover:text-brand-700">List your business</Link></li>
               <li><Link href="/about" className="inline-block py-1 hover:text-brand-700">About MegaDeal</Link></li>
               <li><Link href="/how-it-works" className="inline-block py-1 hover:text-brand-700">How it works</Link></li>
               <li><Link href="/careers" className="inline-block py-1 hover:text-brand-700">Careers</Link></li>
