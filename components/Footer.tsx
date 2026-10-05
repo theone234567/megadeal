@@ -122,7 +122,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
               {ADVERTISE_PAGES.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className="inline-block py-1 hover:text-brand-700">
-                    {l.footer}
+                    {l.name} advertising
                   </Link>
                 </li>
               ))}

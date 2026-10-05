@@ -6,6 +6,7 @@ import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "@/app/list-your-business/MerchantSignupForm";
 import DealCard from "@/components/DealCard";
 import {
+  ArrowRightIcon,
   CalendarIcon,
   CheckIcon,
   ChevronDownIcon,
@@ -33,8 +34,13 @@ import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
  */
 
 const BENEFIT_ICONS = [UsersIcon, CalendarIcon, PercentIcon];
-// In ADVERTISE_PAGES order: restaurants, beauty & spa, activities, home & car.
-const INDUSTRY_ICONS = [UtensilsIcon, FlowerIcon, CompassIcon, WrenchIcon];
+// The category bar's icons (components/CategoryNav.tsx), by category slug.
+const INDUSTRY_ICONS: Record<(typeof ADVERTISE_PAGES)[number]["slug"], typeof CompassIcon> = {
+  "food-drink": UtensilsIcon,
+  "beauty-spa": FlowerIcon,
+  "things-to-do": CompassIcon,
+  "home-car": WrenchIcon,
+};
 
 
 export default function BusinessLandingV2({ launched }: { launched: boolean }) {
@@ -246,29 +252,35 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
         </section>
 
         {/* Ideas by industry: this page is the hub for business owners,
-            each industry page a spoke (lib/businessLinks.ts). */}
-        <section aria-labelledby="industries-title" className="mb-12 mt-10 sm:mt-12">
+            each industry page a spoke (lib/businessLinks.ts). Same names
+            and icons as the site's category bar. */}
+        <section
+          aria-labelledby="industries-title"
+          className="mb-12 mt-10 rounded-3xl bg-hp-lavender px-4 py-7 sm:mt-12 sm:px-8 sm:py-9"
+        >
           <h2 id="industries-title" className="font-display text-2xl font-bold text-slate-900 sm:text-[1.75rem]">
             Advertising ideas for your industry
           </h2>
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {ADVERTISE_PAGES.map((p, i) => {
-              const Icon = INDUSTRY_ICONS[i];
+          <p className="mt-1.5 text-base text-slate-600">
+            Offer ideas, examples and tips for your type of business.
+          </p>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2 sm:gap-4">
+            {ADVERTISE_PAGES.map((p) => {
+              const Icon = INDUSTRY_ICONS[p.slug];
               return (
                 <li key={p.href}>
                   <Link
                     href={p.href}
-                    // Phones: icon beside the text, so four cards stay short.
-                    className="group grid h-full grid-cols-[2.5rem_minmax(0,1fr)] gap-x-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-brand-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 sm:flex sm:flex-col sm:p-5"
+                    className="group flex h-full items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-5"
                   >
-                    <span className="row-span-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-                      <Icon className="h-5 w-5" />
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 sm:h-14 sm:w-14">
+                      <Icon className="h-6 w-6 sm:h-7 sm:w-7" />
                     </span>
-                    <span className="font-display text-lg font-bold text-slate-900 sm:mt-3">{p.title}</span>
-                    <span className="mt-0.5 text-sm text-slate-600 sm:mt-1">{p.blurb}</span>
-                    <span className="mt-2 text-sm font-semibold text-brand-600 group-hover:underline sm:mt-3">
-                      See ideas <span aria-hidden>→</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-display text-lg font-bold text-slate-900">{p.name}</span>
+                      <span className="mt-0.5 block text-sm leading-snug text-slate-600">{p.blurb}</span>
                     </span>
+                    <ArrowRightIcon className="h-5 w-5 shrink-0 text-brand-600 transition group-hover:translate-x-0.5 motion-reduce:transition-none" />
                   </Link>
                 </li>
               );

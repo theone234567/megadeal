@@ -1,33 +1,33 @@
 /**
- * The business advertising pages. Before 5 Oct 2026 nothing on the site
- * linked to them (only the sitemap did), and pages nothing links to rank
- * poorly. Linked from the footer on every page and, as cards with a line
- * each, from /list-your-business: the hub for business owners, with each
- * industry page as a spoke.
+ * The business advertising pages, one per customer category (names as in
+ * lib/categories.ts). Before 5 Oct 2026 nothing on the site linked to them
+ * (only the sitemap did), and pages nothing links to rank poorly. Linked
+ * from the footer on every page and, as cards, from /list-your-business:
+ * the hub for business owners, with each industry page as a spoke.
  */
 export const ADVERTISE_PAGES = [
   {
+    slug: "food-drink",
     href: "/advertise/restaurants",
-    title: "Restaurants & cafés",
-    footer: "Restaurants",
-    blurb: "Fill quieter tables and welcome new regulars.",
+    name: "Food & Drink",
+    blurb: "Restaurants, cafés and bars: fill quieter tables and welcome new regulars.",
   },
   {
+    slug: "beauty-spa",
     href: "/advertise/beauty-spa",
-    title: "Beauty & spa",
-    footer: "Beauty & spa",
-    blurb: "Promote quieter appointment times to local clients.",
+    name: "Beauty & Spa",
+    blurb: "Salons, spas and clinics: promote your quieter appointment times.",
   },
   {
+    slug: "things-to-do",
     href: "/advertise/things-to-do",
-    title: "Activities & experiences",
-    footer: "Things to do",
-    blurb: "Fill tours, sessions and classes with more locals.",
+    name: "Things To Do",
+    blurb: "Tours, activities and classes: fill more sessions with locals.",
   },
   {
+    slug: "home-car",
     href: "/advertise/home-car",
-    title: "Home & car services",
-    footer: "Home & car",
-    blurb: "Win more local jobs, from cleaning to car care.",
+    name: "Home & Car",
+    blurb: "Cleaning, garden and car services: win more local jobs.",
   },
 ] as const;
