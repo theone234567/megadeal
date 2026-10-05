@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import EmailSignupForm from "@/components/EmailSignupForm";
-import { ADVERTISE_PAGES } from "@/lib/businessLinks";
 import { CreditCardIcon, SearchIcon, TagIcon } from "@/components/icons";
 import { V2_CATEGORIES, V2_FAQS, V2_HERO, V2_SOCIALS } from "@/lib/comingSoonV2Content";
 import DealCard from "@/components/DealCard";
@@ -86,17 +85,6 @@ export default function ComingSoonV2() {
             <p className={styles.businessOffer}>Get up to 6 months free advertising.</p>
             <p className={styles.fine}>
               For eligible pre-launch businesses. <Link href="/terms#businesses">Terms apply.</Link>
-            </p>
-            {/* Ideas by industry, on their own pages (lib/businessLinks.ts). */}
-            <p className={styles.fine}>
-              Ideas for{" "}
-              {ADVERTISE_PAGES.map((p, i) => (
-                <span key={p.href}>
-                  {i > 0 && (i === ADVERTISE_PAGES.length - 1 ? " and " : ", ")}
-                  <Link href={p.href}>{p.short.toLowerCase()}</Link>
-                </span>
-              ))}
-              .
             </p>
           </div>
           <Link className={styles.outlineButton} href="/list-your-business">

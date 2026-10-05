@@ -5,7 +5,17 @@ import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "@/app/list-your-business/MerchantSignupForm";
 import DealCard from "@/components/DealCard";
-import { CalendarIcon, CheckIcon, ChevronDownIcon, PercentIcon, UsersIcon } from "@/components/icons";
+import {
+  CalendarIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  CompassIcon,
+  FlowerIcon,
+  PercentIcon,
+  UsersIcon,
+  UtensilsIcon,
+  WrenchIcon,
+} from "@/components/icons";
 import { EXAMPLE_BURGER_DEAL } from "@/lib/exampleDeals";
 import { businessPageCopy, OFFER_TERMS_HREF } from "@/lib/businessPageContent";
 import { ADVERTISE_PAGES } from "@/lib/businessLinks";
@@ -23,6 +33,8 @@ import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
  */
 
 const BENEFIT_ICONS = [UsersIcon, CalendarIcon, PercentIcon];
+// In ADVERTISE_PAGES order: restaurants, beauty & spa, activities, home & car.
+const INDUSTRY_ICONS = [UtensilsIcon, FlowerIcon, CompassIcon, WrenchIcon];
 
 
 export default function BusinessLandingV2({ launched }: { launched: boolean }) {
@@ -158,18 +170,6 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
             ))}
           </ol>
           <p className="mt-5 text-sm text-slate-600 sm:text-center">{copy.dealNote}</p>
-          {/* Ideas by industry, on their own pages (lib/businessLinks.ts). */}
-          <nav aria-label="Advertising by industry" className="mt-4 text-sm text-slate-600 sm:text-center">
-            <span className="font-semibold text-slate-800">Ideas for your industry:</span>{" "}
-            {ADVERTISE_PAGES.map((p, i) => (
-              <span key={p.href}>
-                {i > 0 && <span aria-hidden> · </span>}
-                <Link href={p.href} className="inline-block py-1 font-semibold text-brand-600 underline-offset-2 hover:underline">
-                  {p.short}
-                </Link>
-              </span>
-            ))}
-          </nav>
         </section>
 
         {/* Signup (approved white design, 4 Oct 2026): white section, no
@@ -218,7 +218,7 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
         </section>
 
         {/* FAQ */}
-        <section aria-labelledby="faq-title" className="mb-12 mt-10 sm:mt-12">
+        <section aria-labelledby="faq-title" className="mt-10 sm:mt-12">
           <h2 id="faq-title" className="font-display text-2xl font-bold text-slate-900 sm:text-[1.75rem]">
             Frequently asked questions
           </h2>
@@ -243,6 +243,37 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
               </details>
             ))}
           </div>
+        </section>
+
+        {/* Ideas by industry: this page is the hub for business owners,
+            each industry page a spoke (lib/businessLinks.ts). */}
+        <section aria-labelledby="industries-title" className="mb-12 mt-10 sm:mt-12">
+          <h2 id="industries-title" className="font-display text-2xl font-bold text-slate-900 sm:text-[1.75rem]">
+            Advertising ideas for your industry
+          </h2>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {ADVERTISE_PAGES.map((p, i) => {
+              const Icon = INDUSTRY_ICONS[i];
+              return (
+                <li key={p.href}>
+                  <Link
+                    href={p.href}
+                    // Phones: icon beside the text, so four cards stay short.
+                    className="group grid h-full grid-cols-[2.5rem_minmax(0,1fr)] gap-x-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-brand-300 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 sm:flex sm:flex-col sm:p-5"
+                  >
+                    <span className="row-span-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="font-display text-lg font-bold text-slate-900 sm:mt-3">{p.title}</span>
+                    <span className="mt-0.5 text-sm text-slate-600 sm:mt-1">{p.blurb}</span>
+                    <span className="mt-2 text-sm font-semibold text-brand-600 group-hover:underline sm:mt-3">
+                      See ideas <span aria-hidden>→</span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </section>
       </div>
     </main>
