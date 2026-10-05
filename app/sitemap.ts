@@ -11,8 +11,32 @@ import { CATEGORIES, categoryPath } from "@/lib/categories";
 // static sitemap would go stale between deploys. Regenerate hourly instead.
 export const revalidate = 3600;
 
+/**
+ * When each static page's content last really changed (from git history,
+ * 5 Oct 2026), sent as <lastmod> so Google and Bing know which pages to
+ * recrawl. Bump a page's date when you change its wording. Not the build
+ * time: search engines ignore a lastmod that changes on every deploy.
+ */
+const CONTENT_UPDATED: Record<string, string> = {
+  "/coming-soon": "2026-10-05",
+  "/list-your-business": "2026-10-05",
+  "/advertise/restaurants": "2026-10-04",
+  "/advertise/beauty-spa": "2026-10-05",
+  "/advertise/home-car": "2026-10-05",
+  "/advertise/things-to-do": "2026-10-05",
+  "/how-it-works": "2026-10-03",
+  "/redeem": "2026-10-03",
+  "/help": "2026-10-05",
+  "/about": "2026-09-27",
+  "/contact": "2026-10-05",
+  "/careers": "2026-09-27",
+  "/terms": "2026-10-04",
+  "/privacy": "2026-09-27",
+  "/refund-policy": "2026-09-27",
+};
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticPages: MetadataRoute.Sitemap = [
+  const staticPages: MetadataRoute.Sitemap = ([
     // While pre-launch (middleware.ts redirects "/" to /coming-soon),
     // submitting the bare "/" here would just hand crawlers a redirect
     // stub — point them at the real front door instead. Flips back
@@ -42,7 +66,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/terms`, changeFrequency: "yearly", priority: 0.1 },
     { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.1 },
     { url: `${SITE_URL}/refund-policy`, changeFrequency: "yearly", priority: 0.1 },
-  ];
+  ] satisfies MetadataRoute.Sitemap).map((page) => {
+    // After launch "/" is the live deals homepage, which changes all the
+    // time, so it gets no fixed date (CONTENT_UPDATED has no "" key).
+    const updated = CONTENT_UPDATED[page.url.slice(SITE_URL.length)];
+    return updated ? { ...page, lastModified: updated } : page;
+  });
 
   // MegaShop is gated by its own separate flag, not SITE_LAUNCHED — same
   // robots:{index:false} gate as its own generateMetadata while not

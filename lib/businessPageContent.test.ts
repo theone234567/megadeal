@@ -7,7 +7,7 @@ const BANNED = /founder|Nick|free to join|early access|every business approved|c
 describe("list-your-business v2 copy", () => {
   it("before launch: the pack's offer, qualifier and six FAQs", () => {
     const c = businessPageCopy(false);
-    expect(c.headline).toBe("Up to 6 months free advertising.");
+    expect(c.headline).toBe("Advertise your Auckland business. Up to 6 months free.");
     expect(c.offerQualifier).toMatch(/pre-launch/);
     expect(c.launchNote).toMatch(/starts when MegaDeal goes live/);
     expect(c.faqs).toHaveLength(6);

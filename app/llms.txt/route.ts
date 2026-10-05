@@ -22,7 +22,7 @@ const categoryLinks = CATEGORIES.map(
   (c) => `  - ${c.name}: ${categoryPath(c.name)}`
 ).join("\n");
 
-const INTRO = `> MegaDeal is New Zealand's daily deals advertising platform — not a marketplace. It lists time-limited discounts (up to 50% off) from real local businesses across ${categoryPhrase}. MegaDeal never processes payment: customers contact the business directly (call, book, or visit) to redeem a deal, and pay the business, not MegaDeal. Businesses list their own deals through a business portal, paying MegaDeal in advertising credits, never a commission on sales.`;
+const INTRO = `> MegaDeal is New Zealand's daily deals advertising platform — not a marketplace. It lists time-limited offers from real local businesses across ${categoryPhrase}: discounts, packages or added extras, each chosen by the business. MegaDeal never processes payment: customers contact the business directly (call, book, or visit) to redeem a deal, and pay the business, not MegaDeal. Businesses list their own deals through a business portal, paying MegaDeal in advertising credits, never a commission on sales.`;
 
 const BUSINESS_PITCH = `MegaDeal is currently launching in Auckland, New Zealand. Local businesses that join and get approved before launch can receive up to 6 months of free advertising (promo code WELCOME6, conditions apply — see /terms), zero commission on sales, and no credit card required. Full details are at /list-your-business.`;
 

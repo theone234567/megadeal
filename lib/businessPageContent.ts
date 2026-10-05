@@ -89,9 +89,10 @@ export function businessPageCopy(launched: boolean): BusinessPageCopy {
   if (!launched) {
     return {
       ...SHARED,
-      headline: "Up to 6 months free advertising.",
-      headlineLead: "Up to 6 months",
-      headlineAccent: "free advertising.",
+      // Says what and where first (SEO review, 5 Oct 2026), then the offer.
+      headline: "Advertise your Auckland business. Up to 6 months free.",
+      headlineLead: "Advertise your Auckland business.",
+      headlineAccent: "Up to 6 months free.",
       offerQualifier: "For eligible pre-launch businesses. Terms and conditions apply.",
       launchNote: "Your free advertising starts when MegaDeal goes live.",
       faqs: [
@@ -119,7 +120,7 @@ export function businessPageCopy(launched: boolean): BusinessPageCopy {
     ...SHARED,
     headline: SHARED.subheading,
     headlineLead: "Fill quiet times.",
-    headlineAccent: "Reach more local customers.",
+    headlineAccent: "Reach more Auckland customers.",
     subheading: `Up to ${promo.months} months free advertising for new businesses.`,
     offerQualifier: "For eligible businesses. Terms and conditions apply.",
     launchNote: null,

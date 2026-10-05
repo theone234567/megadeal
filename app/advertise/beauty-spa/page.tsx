@@ -30,9 +30,9 @@ import { fredoka, plusJakartaSans } from "@/lib/fonts";
 // draft before real assets/copy are confirmed live.
 const PAGE_LIVE_FOR_SEARCH = true;
 
-const TITLE = "Beauty & Spa Advertising Auckland | Up to 6 Months Free";
+const TITLE = "Beauty & Spa Advertising Auckland";
 const DESCRIPTION =
-  "Grow your Auckland beauty business with MegaDeal. Reach local customers with offers for nails, hair, spa, massage and more. Up to 6 months free advertising for eligible businesses.";
+  "Reach Auckland customers with offers for nails, hair, spa, massage and more. 0% commission, and up to 6 months free advertising for eligible businesses.";
 
 export const metadata: Metadata = {
   title: TITLE,

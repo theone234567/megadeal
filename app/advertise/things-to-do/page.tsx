@@ -42,7 +42,7 @@ const CTA_LABEL = "Claim my free advertising";
 
 const TITLE = "Activity & Experience Advertising Auckland";
 const DESCRIPTION =
-  "Promote your Auckland tours, activities and experiences with MegaDeal. Reach local customers, pay 0% commission and access the current launch advertising offer. Terms apply.";
+  "Promote your Auckland tours, activities and experiences with MegaDeal. Reach local customers, pay 0% commission and get the launch advertising offer.";
 
 export const metadata: Metadata = {
   title: TITLE,

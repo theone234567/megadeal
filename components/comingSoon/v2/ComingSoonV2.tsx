@@ -33,7 +33,7 @@ export default function ComingSoonV2() {
           <div className={styles.intro}>
             <h1 id="coming-soon-heading">
               Great local deals.{" "}
-              <span className={styles.accent}>Coming soon.</span>
+              <span className={styles.accent}>Coming soon to Auckland.</span>
             </h1>
             <p>
               Food, experiences, beauty and more.

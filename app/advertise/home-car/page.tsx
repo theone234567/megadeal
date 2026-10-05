@@ -260,9 +260,10 @@ export default function HomeCarAdvertisingPage() {
           service it describes, as on /advertise/beauty-spa and
           /advertise/restaurants. The publisher is the site's one
           Organization (app/layout.tsx), by @id. Deliberately no markup for
-          the 24 offer ideas (examples, not offers anyone can buy) or the
-          FAQ (FAQ rich results are gone; the answers are plain text on the
-          page, which is what search and AI answers read). */}
+          the 24 offer ideas (examples, not offers anyone can buy). The FAQ
+          has FAQPage markup like the other advertise pages: Google no
+          longer shows FAQ rich results for most sites, but Bing (which
+          feeds ChatGPT search and Copilot) and AI crawlers still read it. */}
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
@@ -276,6 +277,21 @@ export default function HomeCarAdvertisingPage() {
             inLanguage: "en-NZ",
             publisher: { "@id": ORGANIZATION_ID },
             about: { "@id": `${PAGE_URL}#service` },
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: FAQS.map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
           }),
         }}
       />
