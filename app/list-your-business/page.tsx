@@ -71,7 +71,11 @@ const V2_METADATA: Metadata = {
   twitter: { card: "summary_large_image", title: `${V2_TITLE} | MegaDeal`, description: V2_DESCRIPTION },
 };
 
-export const metadata: Metadata = LIST_BUSINESS_DESIGN === "v2" ? V2_METADATA : LEGACY_METADATA;
+// The older design still carries the pre-launch offer (6 months, WELCOME6),
+// so from launch the redesign is shown whatever LIST_BUSINESS_DESIGN says.
+const SHOW_V2 = LIST_BUSINESS_DESIGN === "v2" || SITE_LAUNCHED;
+
+export const metadata: Metadata = SHOW_V2 ? V2_METADATA : LEGACY_METADATA;
 
 // The exact CTA used everywhere on this page — one wording, always
 // scrolling to the signup form, so a visitor never has to work out which
@@ -302,7 +306,7 @@ function SectionCta({ section }: { section: string }) {
 }
 
 export default async function MerchantsPage() {
-  if (LIST_BUSINESS_DESIGN === "v2") return <BusinessLandingV2 launched={SITE_LAUNCHED} />;
+  if (SHOW_V2) return <BusinessLandingV2 launched={SITE_LAUNCHED} />;
   // The live counters, each only once it reaches 60 (shownStats in
   // lib/publicStats.ts): a small number undercuts the trust they're for.
   const stats = shownStats(await getSignupStats());

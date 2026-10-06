@@ -42,8 +42,8 @@ pre-launch offer." (rest of the paragraph unchanged)
 
 - `/coming-soon` and `components/comingSoon/*` redirect to `/` after launch.
 - The older `/list-your-business` design (`LIST_BUSINESS_DESIGN=legacy`) and its founder's
-  note (`components/FounderNote.tsx`) still say 6 months / WELCOME6. They are only shown if
-  the page design is switched back to legacy; reword them first if it ever is.
+  note (`components/FounderNote.tsx`) still say 6 months / WELCOME6. From launch the page
+  shows the redesign whatever that setting says, so they can't appear.
 
 ## After launch, check
 
