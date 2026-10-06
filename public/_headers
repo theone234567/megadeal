@@ -22,5 +22,7 @@
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 /images/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/megadeal-coming-soon/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
 /badge/*
   Cache-Control: public, max-age=86400, stale-while-revalidate=604800
