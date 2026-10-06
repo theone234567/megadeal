@@ -1,4 +1,5 @@
 import "server-only";
+import { flashDealsPath } from "./cities";
 import { after } from "next/server";
 import { submitUrlsToIndexNow } from "./indexNow";
 import { SITE_URL, SITE_LAUNCHED } from "./siteConfig";
@@ -34,7 +35,7 @@ export function notifyDealChanged(
   const run = async () => {
     try {
       const urls = [`${SITE_URL}/`];
-      if (deal.isFlash) urls.push(`${SITE_URL}/flash-deals`);
+      if (deal.isFlash) urls.push(`${SITE_URL}${flashDealsPath()}`);
 
       const product = unwrapProduct(
         await adminClient.productsV3.getProduct(deal.productId, { fields: ["ALL_CATEGORIES_INFO"] } as any)

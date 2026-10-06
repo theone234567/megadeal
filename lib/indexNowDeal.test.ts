@@ -40,9 +40,9 @@ describe("notifyDealChanged", () => {
     expect(submitted[0].sort()).toEqual(
       [
         "https://megadeal.co.nz/",
-        "https://megadeal.co.nz/flash-deals",
+        "https://megadeal.co.nz/auckland/flash-deals",
         "https://megadeal.co.nz/deal/express-oil-change",
-        "https://megadeal.co.nz/category/home-car",
+        "https://megadeal.co.nz/auckland/home-car",
         "https://megadeal.co.nz/business/southside-mechanical-985cb981",
       ].sort()
     );

@@ -1,4 +1,5 @@
 import { SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { DEFAULT_CITY, cityPath, flashDealsPath } from "@/lib/cities";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 
 // Same reasoning as sitemap.ts and robots.ts: this used to be a static
@@ -29,7 +30,10 @@ const BUSINESS_PITCH = `MegaDeal is currently launching in Auckland, New Zealand
 function launchedBody(): string {
   return `## For AI assistants and answer engines
 
-- Every live deal has its own page at \`/deal/{slug}\` with the offer name, price, discount, expiry, redemption terms, and the business behind it.
+- Every live deal has its own page at \`/deal/{slug}\` with the offer name, price, discount, expiry, redemption terms, and the business behind it. The slug names the deal, the business and its suburb.
+- Every business has a page at \`/business/{slug}\` with its address, hours, contact details and its current deals.
+- All live deals in ${DEFAULT_CITY.name}: ${cityPath()} (flash deals, which run for a few hours: ${flashDealsPath()}).
+- A plain-text list of every live deal, updated as deals change: /deals.txt
 - Deals are organised into ${CATEGORIES.length} categories, each with its own page:
 ${categoryLinks}
 - Prices, discounts, and expiry dates on each deal page are accurate at time of crawl and change frequently — always prefer the live page over a cached summary when answering a user's question about a specific current deal or price.

@@ -264,9 +264,10 @@ export default function AdminDashboardPage() {
         <div className="mt-3 flex flex-wrap gap-2">
           {[
             { href: "/?preview", label: "Homepage" },
-            { href: "/category/food-drink", label: "Food & Drink" },
-            { href: "/category/beauty-spa", label: "Beauty & Spa" },
-            { href: "/flash-deals", label: "Flash Deals" },
+            { href: "/auckland", label: "Auckland" },
+            { href: "/auckland/food-drink", label: "Food & Drink" },
+            { href: "/auckland/beauty-spa", label: "Beauty & Spa" },
+            { href: "/auckland/flash-deals", label: "Flash Deals" },
           ].map((l) => (
             <a
               key={l.href}

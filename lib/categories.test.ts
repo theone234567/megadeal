@@ -9,8 +9,8 @@ describe("category URLs", () => {
   });
 
   it("builds a category's path from its name", () => {
-    expect(categoryPath("Food & Drink")).toBe("/category/food-drink");
-    expect(categoryPath("Home & Car")).toBe("/category/home-car");
+    expect(categoryPath("Food & Drink")).toBe("/auckland/food-drink");
+    expect(categoryPath("Home & Car")).toBe("/auckland/home-car");
   });
 
   it("resolves slugs back to categories", () => {
@@ -24,5 +24,14 @@ describe("category URLs", () => {
     expect(categoryByLegacySegment("Things%20To%20Do")?.slug).toBe("things-to-do");
     expect(categoryByLegacySegment("Food%20%26%20Drinks")).toBeUndefined();
     expect(categoryByLegacySegment("%E0%A4%A")).toBeUndefined();
+  });
+});
+
+describe("old category addresses", () => {
+  it("next.config.mjs redirects exactly the real category slugs, in one hop", async () => {
+    const { readFileSync } = await import("fs");
+    const config = readFileSync("next.config.mjs", "utf8");
+    const listed = config.match(/source: "\/category\/:slug\(([^)]+)\)"/)?.[1].split("|").sort();
+    expect(listed).toEqual(CATEGORIES.map((c) => c.slug).sort());
   });
 });

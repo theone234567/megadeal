@@ -1,5 +1,6 @@
 "use client";
 
+import { flashDealsPath } from "@/lib/cities";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { isDealLive } from "@/lib/dealVisibility";
@@ -56,7 +57,7 @@ export default function FlashDeals({ initialDeals }: { initialDeals: Deal[] }) {
             <p className="mt-1 text-sm text-slate-600">Short-notice offers, each with a real deadline.</p>
           </div>
           <Link
-            href="/flash-deals"
+            href={flashDealsPath()}
             className="shrink-0 text-sm font-bold text-brand-700 hover:text-brand-800 hover:underline"
           >
             See all →

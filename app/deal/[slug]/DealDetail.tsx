@@ -1,5 +1,6 @@
 "use client";
 
+import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import type { Deal } from "@/lib/types";
@@ -202,7 +203,7 @@ export default function DealDetail({
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       <Breadcrumbs
-        items={[...(category ? [{ name: category, href: categoryPath(category) }] : []), { name: deal.name }]}
+        items={[{ name: DEFAULT_CITY.name, href: cityPath() }, ...(category ? [{ name: category, href: categoryPath(category) }] : []), { name: deal.name }]}
       />
 
       {/* 1. Title and business */}

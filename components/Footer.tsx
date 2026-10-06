@@ -4,23 +4,29 @@ import Link from "next/link";
 import { ADVERTISE_PAGES } from "@/lib/businessLinks";
 import { usePathname } from "next/navigation";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
+import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import SocialLinks from "./SocialLinks";
 import EmailSignupForm from "./EmailSignupForm";
 
 /**
- * Before launch, /category/* pages render the full launched-site chrome
+ * Before launch, the /auckland/* category pages render the full launched-site chrome
  * over an empty "No deals yet" grid, so linking there from the footer
  * dead-ends every visitor on the pre-launch site. Until we're live, point
  * the whole column at the coming-soon page's category preview instead.
  */
 
 function footerCategories(siteLaunched: boolean) {
-  return CATEGORIES.map((category) => ({
-    name: category.name,
-    href: siteLaunched
-      ? categoryPath(category.name)
-      : "/coming-soon#categories",
-  }));
+  // The city page first: it's the page for "deals in Auckland", and every
+  // page linking to it is what tells search engines it matters.
+  return [
+    ...(siteLaunched ? [{ name: `All ${DEFAULT_CITY.name} deals`, href: cityPath() }] : []),
+    ...CATEGORIES.map((category) => ({
+      name: category.name,
+      href: siteLaunched
+        ? categoryPath(category.name)
+        : "/coming-soon#categories",
+    })),
+  ];
 }
 
 /**

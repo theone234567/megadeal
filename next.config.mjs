@@ -66,6 +66,13 @@ const nextConfig = {
             },
           ]
         : []),
+      // Category and flash-deal pages moved under the city (Oct 2026,
+      // before launch): /category/food-drink -> /auckland/food-drink.
+      // Only the real slugs, so every old address takes one hop: an old
+      // percent-encoded name (/category/Food%20%26%20Drink) goes straight
+      // to its new address from middleware.ts instead.
+      { source: "/category/:slug(food-drink|beauty-spa|things-to-do|travel-getaways|health-fitness|home-car)", destination: "/auckland/:slug", permanent: true },
+      { source: "/flash-deals", destination: "/auckland/flash-deals", permanent: true },
       { source: "/merchants", destination: "/list-your-business", permanent: true },
       { source: "/merchants/:path*", destination: "/list-your-business/:path*", permanent: true },
       { source: "/businesses", destination: "/list-your-business", permanent: true },

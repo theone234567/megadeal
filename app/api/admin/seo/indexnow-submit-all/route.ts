@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cityPath, flashDealsPath } from "@/lib/cities";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { submitUrlsToIndexNow } from "@/lib/indexNow";
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
       );
       const businesses = await fetchAllBusinessSlugsForSitemap();
       const businessUrls = businesses.map((b) => `${SITE_URL}/business/${b.slug}`);
-      urls = [...staticUrls, `${SITE_URL}/flash-deals`, ...categoryUrls, ...dealUrls, ...businessUrls];
+      urls = [...staticUrls, `${SITE_URL}${cityPath()}`, `${SITE_URL}${flashDealsPath()}`, ...categoryUrls, ...dealUrls, ...businessUrls];
     }
     await submitUrlsToIndexNow(urls);
 

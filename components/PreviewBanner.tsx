@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
-const PRELAUNCH_PRIVATE = /^\/(?:category|deal|flash-deals|business)(?:\/|$)/;
+const PRELAUNCH_PRIVATE = /^\/(?:auckland|deal|business)(?:\/|$)/;
 
 /**
  * A reminder that the page is an admin-only preview, so a pre-launch

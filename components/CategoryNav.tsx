@@ -1,5 +1,6 @@
 "use client";
 
+import { cityPath } from "@/lib/cities";
 import Link from "next/link";
 import type { ComponentType } from "react";
 import { CATEGORIES } from "@/lib/categories";
@@ -49,7 +50,7 @@ export default function CategoryNav(props: Props) {
   // indexable one, with its own title and text — so search engines and
   // "open in new tab" get that. On the homepage a plain click filters the
   // deals in place instead, keeping the other filters.
-  const pageHref = (slug: string) => (slug ? `/category/${slug}` : "/");
+  const pageHref = (slug: string) => (slug ? `${cityPath()}/${slug}` : "/");
   const filterHref = (slug: string) =>
     props.mode === "filter" ? homeHref(props.filters, { category: slug }, props.basePath) : pageHref(slug);
 

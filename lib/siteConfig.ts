@@ -23,7 +23,7 @@ export const ORGANIZATION_ID = `${SITE_URL}/#organization`;
  * THE LAUNCH SWITCH. Change to `true` to launch MegaDeal.
  *
  * While false, the customer side of the site — the homepage deal grid,
- * /category/*, /deal/*, /flash-deals and /business/* — is visible only to
+ * /auckland (and its category and flash-deal pages), /deal/* and /business/* — is visible only to
  * someone signed into /admin (see middleware.ts); everyone else is sent
  * to /coming-soon, so real businesses' test deals can be created and
  * checked end to end without the public seeing them. Business sign-up,

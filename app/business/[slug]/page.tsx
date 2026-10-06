@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -184,7 +185,7 @@ export default async function BusinessProfilePage(
         }}
       />
 
-      <Breadcrumbs items={[{ name: business.businessName }]} />
+      <Breadcrumbs items={[{ name: DEFAULT_CITY.name, href: cityPath() }, { name: business.businessName }]} />
 
       <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
         <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">

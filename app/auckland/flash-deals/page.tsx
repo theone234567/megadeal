@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { DEFAULT_CITY, flashDealsPath } from "@/lib/cities";
 import type { Metadata } from "next";
 import CategoryNav from "@/components/CategoryNav";
 import HowToUseStrip from "@/components/HowToUseStrip";
@@ -16,9 +17,9 @@ export const revalidate = 30;
 // already appends "| MegaDeal". openGraph/twitter titles aren't run
 // through that template, so those keep the brand-inclusive version.
 export const metadata: Metadata = {
-  title: "Flash Deals — Short-Burst Offers",
+  title: `Flash Deals in ${DEFAULT_CITY.name} — Short-Burst Offers`,
   description: `All of ${SITE_NAME}'s current flash deals in one place — short-burst offers that end fast, so grab them while they last.`,
-  alternates: { canonical: `${SITE_URL}/flash-deals` },
+  alternates: { canonical: `${SITE_URL}${flashDealsPath()}` },
   // Pre-launch, "/" redirects to /coming-soon so visitors never see a
   // demo-data-filled deal grid (see SITE_LAUNCHED in lib/siteConfig.ts)
   // — but this page is reachable directly regardless, so it needs the
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: `Flash Deals | ${SITE_NAME}`,
     description: "Short-burst offers that end fast — grab them while they last.",
-    url: `${SITE_URL}/flash-deals`,
+    url: `${SITE_URL}${flashDealsPath()}`,
     siteName: SITE_NAME,
     type: "website",
     // Named explicitly. Every other page picks up app/opengraph-image.tsx

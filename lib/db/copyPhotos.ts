@@ -72,6 +72,8 @@ export async function copyWixPhotos(db: Sql, bucket: PhotoBucket, fetchFn: Fetch
     try {
       const res = await fetchFn(url);
       if (!res.ok) throw new Error(`Wix answered ${res.status}`);
+      // Checked before reading, so an oversized file is never held in memory.
+      if (Number(res.headers.get("content-length") ?? 0) > MAX_BYTES) throw new Error("empty or too large");
       const bytes = new Uint8Array(await res.arrayBuffer());
       if (bytes.length === 0 || bytes.length > MAX_BYTES) throw new Error("empty or too large");
       const type = sniff(bytes);

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { cityPath, flashDealsPath } from "@/lib/cities";
 import { SITE_URL, SITE_LAUNCHED, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
 import {
   fetchAllLiveDealSlugsForSitemap,
@@ -142,14 +143,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // and carries the same pre-launch robots:{index:false} gate — belongs
   // here, not in the unconditional staticPages list above.
   const flashDealsPage: MetadataRoute.Sitemap = [
-    { url: `${SITE_URL}/flash-deals`, changeFrequency: "hourly", priority: 0.6 },
+    { url: `${SITE_URL}${flashDealsPath()}`, changeFrequency: "hourly", priority: 0.6 },
   ];
+
+  // The city page lists every live deal in the city, so it's dated by the
+  // newest of them, and left out while there are none (it's noindexed
+  // then, like an empty category).
+  const cityPages: MetadataRoute.Sitemap = deals.length
+    ? [{ url: `${SITE_URL}${cityPath()}`, lastModified: newest(deals.map((d) => d.updatedAt)), changeFrequency: "daily", priority: 0.8 }]
+    : [];
 
   return [
     ...staticPages,
     ...categoryPages,
     ...dealPages,
     ...businessPages,
+    ...cityPages,
     ...flashDealsPage,
     ...megaShopPages,
   ];

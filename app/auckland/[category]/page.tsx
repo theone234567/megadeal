@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CategoryNav from "@/components/CategoryNav";
@@ -122,7 +123,7 @@ export default async function CategoryPage(
             }}
           />
         )}
-        <Breadcrumbs items={[{ name: category }]} />
+        <Breadcrumbs items={[{ name: DEFAULT_CITY.name, href: cityPath() }, { name: category }]} />
         <h1 className="font-display text-2xl font-bold text-slate-900">
           {copy ? copy.h1 : `${category} deals in ${SEO_REGION}`}
         </h1>

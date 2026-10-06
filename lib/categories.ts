@@ -1,13 +1,15 @@
+import { DEFAULT_CITY, type CityDef } from "./cities";
+
 /**
  * Single source of truth for the site's fixed storefront categories —
  * previously duplicated (name/emoji in CategoryNav, id/name maps in
  * fetchDeals.ts and fetchDealServer.ts), which risked the copies drifting
  * apart. IDs are the real Wix Stores category ids for this site.
  *
- * `slug` is the category's URL segment (/category/food-drink). Category
- * URLs used to be the display name percent-encoded
- * (/category/Food%20%26%20Drink); middleware.ts 308-redirects those old
- * URLs to the slug form. Treat a slug as permanent once the site has
+ * `slug` is the category's URL segment (/auckland/food-drink). Category
+ * pages were at /category/<slug> before Oct 2026, and before that at the
+ * display name percent-encoded (/category/Food%20%26%20Drink); both old
+ * forms are permanently redirected (next.config.mjs, middleware.ts). Treat a slug as permanent once the site has
  * launched — changing one means another redirect and lost search ranking.
  */
 export interface CategoryDef {
@@ -30,10 +32,10 @@ export function categoryBySlug(slug: string): CategoryDef | undefined {
   return CATEGORIES.find((c) => c.slug === slug);
 }
 
-/** Site-relative URL of a category's page, from its display name. */
-export function categoryPath(name: string): string {
+/** Site-relative URL of a category's page in a city, from its display name. */
+export function categoryPath(name: string, city: CityDef = DEFAULT_CITY): string {
   const category = CATEGORIES.find((c) => c.name === name);
-  return `/category/${category ? category.slug : encodeURIComponent(name)}`;
+  return `/${city.slug}/${category ? category.slug : encodeURIComponent(name)}`;
 }
 
 /**
