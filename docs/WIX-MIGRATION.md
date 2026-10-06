@@ -460,6 +460,20 @@ hour or two; after that, fix forward.
 Turning it off: remove the line and deploy. Businesses sign in with
 Wix again; accounts created meanwhile would need to sign up on Wix.
 
+### Monitoring
+
+Once the data is in the new database, an outage there takes pages down,
+and nobody would know until a business said so. Set up a free uptime
+monitor (UptimeRobot or Better Stack) when stage 2 goes live:
+
+- Address: `https://megadeal.co.nz/api/health`, every 5 minutes.
+- Alert when it doesn't answer 200 (it says 503 when the database is
+  down). Send alerts to your email and phone.
+
+It answers "ok" or "down" and nothing more. Also worth turning on:
+Supabase > Organization > Usage alerts, so you hear before the plan's
+limits are reached.
+
 ### Backups
 
 Every night at about 2:30am a GitHub job (`.github/workflows/backup.yml`)
