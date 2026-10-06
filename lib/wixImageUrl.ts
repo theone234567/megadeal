@@ -1,4 +1,5 @@
-import { isWixMediaUrl } from "./photoUrl";
+import { isOwnMediaUrl, isWixMediaUrl, PHOTO_SIZES } from "./photoUrl";
+import { SITE_URL } from "./siteConfig";
 
 /**
  * Requests an appropriately sized, WebP-encoded version of a Wix Media
@@ -13,7 +14,10 @@ import { isWixMediaUrl } from "./photoUrl";
  * to ask for a resize. Format documented at
  * https://dev.wix.com/docs/api-reference/assets/media/media-manager/url-image-transformation
  *
- * Non-Wix URLs (sample/placeholder photos from Unsplash/Pixabay, or
+ * Photos in MegaDeal's own storage (/media/…, lib/photoStorage.ts) are
+ * resized the same way by that route, for the sizes in PHOTO_SIZES.
+ *
+ * Other URLs (sample/placeholder photos from Unsplash/Pixabay, or
  * anything malformed) pass through unchanged — this only ever narrows what
  * a real Wix media URL asks for, never rewrites a host it doesn't recognize.
  *
@@ -21,21 +25,26 @@ import { isWixMediaUrl } from "./photoUrl";
  * link previewers don't show WebP.
  */
 export function wixImageUrl(url: string, width: number, height: number, format: "webp" | "jpg" = "webp"): string {
+  const w = Math.round(width);
+  const h = Math.round(height);
+  if (isOwnMediaUrl(url, SITE_URL)) return PHOTO_SIZES.has(`${w}x${h}`) ? `${url}?w=${w}&h=${h}&f=${format}` : url;
   if (!isWixMediaUrl(url)) return url;
-  return `${url}/v1/fill/w_${Math.round(width)},h_${Math.round(height)}/file.${format}`;
+  return `${url}/v1/fill/w_${w},h_${h}/file.${format}`;
 }
 
 /**
  * The same Wix photo at several widths, one shape (width ÷ height =
  * `ratio`), as an <img srcSet>, so a phone downloads a size that fits it
- * rather than the desktop one. undefined for photos that aren't Wix media,
- * which can't be resized this way.
+ * rather than the desktop one. undefined for photos that can't be resized
+ * this way (not Wix's or MegaDeal's own, or a size the site doesn't make).
  *
  * Needed because next/image makes no srcset while images are unoptimized
  * (next.config.mjs), so every card fetched its 750px photo even on a
  * phone, where the card is under 200px wide.
  */
 export function wixImageSrcSet(url: string, widths: number[], ratio: number): string | undefined {
-  if (!isWixMediaUrl(url)) return undefined;
+  const own = isOwnMediaUrl(url, SITE_URL);
+  if (!own && !isWixMediaUrl(url)) return undefined;
+  if (own && !widths.every((w) => PHOTO_SIZES.has(`${Math.round(w)}x${Math.round(w / ratio)}`))) return undefined;
   return widths.map((w) => `${wixImageUrl(url, w, w / ratio)} ${w}w`).join(", ");
 }

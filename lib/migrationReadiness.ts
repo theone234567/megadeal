@@ -2,7 +2,7 @@ import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { dataBackend, withDb, type Sql } from "./db/connection";
 import { countWixPhotos } from "./db/copyPhotos";
-import { photoBucket, photoStorage } from "./photoStorage";
+import { photoBucket, photoResizer, photoStorage } from "./photoStorage";
 import { authBackend } from "./authSession";
 import { getRateLimitKv } from "./rateLimit";
 
@@ -184,6 +184,11 @@ async function photosSection(dbReady: boolean, facts: DatabaseFacts | null): Pro
     (await photoBucket())
       ? ok("Photo storage", "The PHOTOS storage bucket is connected.")
       : missing("Photo storage", "No storage bucket. Create an R2 bucket in Cloudflare and add it to wrangler.toml as PHOTOS.")
+  );
+  checks.push(
+    (await photoResizer())
+      ? ok("Smaller copies", "Cloudflare Images (the IMAGES binding) makes the sizes each page shows.")
+      : warning("Smaller copies", "The IMAGES binding is missing, so photos would be sent full size: slower pages. It's in wrangler.toml; check it deployed.")
   );
   if (facts?.wixPhotosLeft != null) {
     checks.push(

@@ -19,7 +19,23 @@ const bucket = {
   },
 };
 
-vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext: async () => ({ env: { PHOTOS: bucket } }) }));
+/** A stand-in for Cloudflare Images: `resize` decides what it gives back. */
+const RESIZED = Uint8Array.from([0x52, 0x49, 0x46, 0x46, 9, 9]);
+let resize: (opts: { t: unknown; o: unknown }) => Uint8Array = () => RESIZED;
+const resizeCalls: { t: unknown; o: unknown }[] = [];
+const images = {
+  input: () => ({
+    transform: (t: unknown) => ({
+      output: async (o: unknown) => {
+        resizeCalls.push({ t, o });
+        const bytes = resize({ t, o });
+        return { image: () => new Blob([bytes as Uint8Array<ArrayBuffer>]).stream() };
+      },
+    }),
+  }),
+};
+
+vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext: async () => ({ env: { PHOTOS: bucket, IMAGES: images } }) }));
 vi.mock("@/lib/memberAuth", () => ({ getVerifiedMember: async () => ({ id: "m1", email: "a@b.nz", loginEmailVerified: true, nickname: null }) }));
 vi.mock("@/lib/adminSession", () => ({ isAdminRequest: async () => false }));
 vi.mock("@/lib/rateLimit", () => ({ checkRateLimit: async () => ({ limited: false }), getClientIp: () => "1.2.3.4", getRateLimitKv: async () => null }));
@@ -98,5 +114,71 @@ describe("uploading to MegaDeal's own storage", () => {
     vi.stubEnv("DATA_BACKEND", "wix");
     const { photoStorage } = await import("./photoStorage");
     expect(photoStorage()).toBe("wix");
+  });
+});
+
+describe("smaller copies of photos in MegaDeal's own storage", () => {
+  const id = "photos/2026-10/harbour-bistro-0a1b2c3d4e5f.jpg";
+  const get = async (query: string) => {
+    const { GET } = await import("@/app/media/[...key]/route");
+    return GET(new NextRequest(`${SITE}/media/${id}${query}`), { params: Promise.resolve({ key: id.split("/") }) });
+  };
+  beforeEach(() => {
+    stored.set(id, { bytes: JPEG, contentType: "image/jpeg" });
+    resize = () => RESIZED;
+    resizeCalls.length = 0;
+    vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it("pages ask for the sizes they show, as Wix photos do", async () => {
+    const { wixImageUrl, wixImageSrcSet } = await import("./wixImageUrl");
+    const url = `${SITE}/media/${id}`;
+    expect(wixImageUrl(url, 750, 500)).toBe(`${url}?w=750&h=500&f=webp`);
+    expect(wixImageUrl(url, 1200, 630, "jpg")).toBe(`${url}?w=1200&h=630&f=jpg`);
+    expect(wixImageSrcSet(url, [360, 540, 750], 3 / 2)).toBe(`${url}?w=360&h=240&f=webp 360w, ${url}?w=540&h=360&f=webp 540w, ${url}?w=750&h=500&f=webp 750w`);
+    // A size the site doesn't make: the original, not a broken image.
+    expect(wixImageUrl(url, 333, 222)).toBe(url);
+    expect(wixImageSrcSet(url, [333], 3 / 2)).toBeUndefined();
+  });
+
+  it("makes a listed size, cropped to fill, in the format asked for", async () => {
+    const res = await get("?w=750&h=500&f=webp");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("image/webp");
+    expect(res.headers.get("cache-control")).toContain("immutable");
+    expect(new Uint8Array(await res.arrayBuffer())).toEqual(RESIZED);
+    expect(resizeCalls).toEqual([{ t: { width: 750, height: 500, fit: "cover" }, o: { format: "image/webp", quality: 82 } }]);
+
+    const share = await get("?w=1200&h=630&f=jpg");
+    expect(share.headers.get("content-type")).toBe("image/jpeg");
+  });
+
+  it("gives the original for any other size, without resizing", async () => {
+    for (const q of ["?w=5000&h=5000", "?w=750&h=500&f=avif", "?w=750", "?w=750.0&h=500"]) {
+      const res = await get(q);
+      expect(res.headers.get("content-type"), q).toBe("image/jpeg");
+      expect(new Uint8Array(await res.arrayBuffer())).toEqual(JPEG);
+    }
+    expect(resizeCalls).toEqual([]);
+  });
+
+  it("gives the original if resizing fails or comes back empty", async () => {
+    resize = () => {
+      throw new Error("Images unavailable");
+    };
+    const failed = await get("?w=750&h=500&f=webp");
+    expect(failed.status).toBe(200);
+    expect(new Uint8Array(await failed.arrayBuffer())).toEqual(JPEG);
+
+    resize = () => new Uint8Array();
+    const empty = await get("?w=750&h=500&f=webp");
+    expect(failed.headers.get("content-type")).toBe("image/jpeg");
+    expect(new Uint8Array(await empty.arrayBuffer())).toEqual(JPEG);
+  });
+
+  it("still 404s a photo that isn't there", async () => {
+    stored.clear();
+    expect((await get("?w=750&h=500&f=webp")).status).toBe(404);
   });
 });

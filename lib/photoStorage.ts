@@ -39,6 +39,25 @@ export async function photoBucket(): Promise<PhotoBucket | null> {
   }
 }
 
+/** The Cloudflare Images calls the /media route uses to make smaller copies. */
+export interface PhotoResizer {
+  input(stream: ReadableStream): {
+    transform(t: { width: number; height: number; fit: "cover" }): {
+      output(o: { format: string; quality: number }): Promise<{ image(): ReadableStream }>;
+    };
+  };
+}
+
+/** The IMAGES binding (wrangler.toml), or null away from Cloudflare. */
+export async function photoResizer(): Promise<PhotoResizer | null> {
+  try {
+    const { env } = await getCloudflareContext({ async: true });
+    return (env.IMAGES as unknown as PhotoResizer | undefined) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** A key that's new every time (so cached copies never go stale) and
  *  readable (the business or deal name it was uploaded for). */
 export function newPhotoKey(slug: string, ext: string, now = new Date()): string {

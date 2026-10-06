@@ -47,3 +47,19 @@ export function isOwnMediaUrl(url: unknown, siteUrl: string): url is string {
 export function isUploadedPhotoUrl(url: unknown, siteUrl: string): url is string {
   return isWixMediaUrl(url) || isOwnMediaUrl(url, siteUrl);
 }
+
+/**
+ * The sizes (width x height) the pages ask for: a photo in MegaDeal's own
+ * storage is resized to these and nothing else (app/media/[...key]), so
+ * no one can make the site produce and store endless variants. A size not
+ * listed gets the original photo, never a broken one.
+ */
+export const PHOTO_SIZES: ReadonlySet<string> = new Set([
+  "160x160", // business logo
+  "360x240", "540x360", "750x500", // deal cards
+  "480x360", "640x480", "900x675", "1200x900", // deal pages
+  "600x600", // business gallery
+  "800x600", // shop cards
+  "1000x750", // AI deal review
+  "1200x630", // share previews
+]);
