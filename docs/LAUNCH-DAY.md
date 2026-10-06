@@ -62,6 +62,12 @@ What then changes by itself:
    goes only to confirmed subscribers who haven't unsubscribed, each person once (pressing
    Send again sends nothing new), with their own unsubscribe link. Sending only works once
    the site has launched.
+
+   Until email moves to MegaDeal's own sending (`EMAIL_PROVIDER=resend`,
+   `docs/WIX-MIGRATION.md`), these go out through Wix's email service, which is meant for
+   one-off messages and counts against the site's monthly Wix email allowance (5,000 on the
+   Core plan, per `lib/sendEmail.ts`). Fine for a launch list of a few hundred; for a big
+   list, move email to Resend first.
 10. **Check the offer end to end** (`docs/LAUNCH-OFFER-CHECKLIST.md`, "After launch, check"):
     approve a test signup that used WELCOME3; it should get 12 credits and its email should
     name WELCOME3.

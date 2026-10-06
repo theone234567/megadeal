@@ -72,7 +72,14 @@ async function unsubscribeUrlFor(r: Recipient): Promise<string | undefined | nul
   if (!token) {
     token = randomBytes(32).toString("hex");
     try {
-      await createDataClient().items.update("EmailSignups", { ...(r.row as { _id: string }), unsubscribeToken: token });
+      // Saving the link rewrites the whole row, so it's read again first:
+      // writing back the copy from the start of the batch would undo an
+      // unsubscribe made since. Someone who has just unsubscribed (or is
+      // no longer confirmed) isn't sent it.
+      const client = createDataClient();
+      const fresh = (await client.items.get("EmailSignups", String(r.row._id))) as Record<string, unknown> | null;
+      if (!fresh || fresh.unsubscribed || fresh.verified !== true) return null;
+      await client.items.update("EmailSignups", { ...(fresh as { _id: string }), unsubscribeToken: token });
     } catch (err) {
       console.error("[admin/announcement] couldn't save an unsubscribe link", err);
       return null;
