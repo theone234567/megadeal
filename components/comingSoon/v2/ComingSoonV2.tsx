@@ -8,7 +8,8 @@ import { EXAMPLE_MASSAGE_DEAL } from "@/lib/exampleDeals";
 
 // Plain paths, as elsewhere on the site: CI typechecks before Next has
 // generated its image module types, so static image imports fail there.
-const MASCOT = "/megadeal/coming-soon-v2/mascot-hoodie.webp";
+// The 240px copy: he's shown at most 104px wide.
+const MASCOT = "/megadeal/coming-soon-v2/mascot-hoodie-240.webp";
 const HERO_SIZES = "(max-width: 767px) calc(100vw - 84px), (max-width: 1223px) 44vw, 506px";
 import styles from "./ComingSoonV2.module.css";
 
@@ -59,7 +60,7 @@ export default function ComingSoonV2() {
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: V2_HERO.position }}
               />
               {/* Small and decorative; the photo's edge hides his lower half. */}
-              <Image className={styles.mascot} src={MASCOT} alt="" width={480} height={496} sizes="(max-width: 767px) 72px, 104px" />
+              <Image className={styles.mascot} src={MASCOT} alt="" width={240} height={248} sizes="(max-width: 767px) 72px, 104px" />
             </div>
           </div>
           <div className={styles.conversion}>

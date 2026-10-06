@@ -459,28 +459,35 @@ export default function BeautySpaAdvertisingPage() {
 
             <div className="relative">
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white">
-                <picture>
-                  <source media="(min-width: 640px)" srcSet={HERO_PHOTO.src} width={1200} height={900} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={HERO_PHOTO.small}
-                    alt={HERO_PHOTO.alt}
-                    width={720}
-                    height={540}
-                    fetchPriority="high"
-                    decoding="async"
-                    className="absolute inset-0 h-full w-full object-cover"
-                    style={{ objectPosition: HERO_PHOTO.position }}
-                  />
-                </picture>
+                {/* Both sizes on offer, and the browser picks: the column is at
+                    most ~550px wide, so most screens take the 720px copy and
+                    only high-density ones the 1200px original. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={HERO_PHOTO.small}
+                  srcSet={`${HERO_PHOTO.small} 720w, ${HERO_PHOTO.src} 1200w`}
+                  sizes="(min-width: 1280px) 548px, (min-width: 768px) 45vw, calc(100vw - 72px)"
+                  alt={HERO_PHOTO.alt}
+                  width={720}
+                  height={540}
+                  fetchPriority="high"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  style={{ objectPosition: HERO_PHOTO.position }}
+                />
                 {/* Decorative: standing at the photo's lower-right edge, his
                     lower half hidden by the frame, clear of the face. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={HERO_MASCOT.src}
+                  // Shown 104–160px wide: the 240px copy (12KB) unless the
+                  // screen is high-density, not always the 480px one (36KB).
+                  srcSet="/megadeal/coming-soon-v2/mascot-hoodie-240.webp 240w, /megadeal/coming-soon-v2/mascot-hoodie.webp 480w"
+                  sizes="(min-width: 1024px) 160px, (min-width: 768px) 110px, (min-width: 640px) 140px, 104px"
                   alt=""
                   width={480}
                   height={496}
+                  loading="lazy"
                   decoding="async"
                   className="pointer-events-none absolute bottom-0 right-[4%] h-auto w-[104px] translate-y-1/2 sm:w-[140px] md:w-[110px] lg:w-[160px]"
                 />

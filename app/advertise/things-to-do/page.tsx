@@ -351,9 +351,14 @@ export default function ThingsToDoAdvertisingPage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={HERO_MASCOT.src}
+                  // Shown 104–160px wide: the 240px copy (12KB) unless the
+                  // screen is high-density, not always the 480px one (36KB).
+                  srcSet="/megadeal/coming-soon-v2/mascot-hoodie-240.webp 240w, /megadeal/coming-soon-v2/mascot-hoodie.webp 480w"
+                  sizes="(min-width: 1024px) 160px, (min-width: 768px) 110px, (min-width: 640px) 140px, 104px"
                   alt=""
                   width={480}
                   height={496}
+                  loading="lazy"
                   decoding="async"
                   className="pointer-events-none absolute bottom-0 right-[4%] h-auto w-[104px] translate-y-1/2 sm:w-[140px] md:w-[110px] lg:w-[160px]"
                 />
