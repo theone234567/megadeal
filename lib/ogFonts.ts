@@ -1,5 +1,4 @@
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readPublicFile } from "./publicFile";
 
 /**
  * The site's own two brand faces (see lib/fonts.ts — Fredoka for headings,
@@ -13,27 +12,31 @@ import { join } from "path";
  * static assets rather than fetched from Google at request time, so this
  * has no runtime dependency on a third party staying up.
  *
- * Read from disk at build time — see lib/ogLogo.ts for why: these routes
- * are prerendered once during `next build`, a real Node process with a
- * real filesystem, not fetched per-request in the Cloudflare Workers
- * runtime this project actually deploys to.
+ * Read with readPublicFile (lib/publicFile.ts): from disk during the
+ * build, from the deployed static assets on Cloudflare, where these images
+ * are made per request.
  */
-type OgFont = { name: string; data: Buffer; weight: 600 | 700; style: "normal" };
+type OgFont = { name: string; data: ArrayBuffer; weight: 600 | 700; style: "normal" };
 
 let cachedFonts: OgFont[] | null = null;
 
-export function getOgFonts(): OgFont[] {
+const bytes = async (path: string) => {
+  const b = await readPublicFile(path);
+  return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
+};
+
+export async function getOgFonts(): Promise<OgFont[]> {
   if (!cachedFonts) {
     cachedFonts = [
       {
         name: "Fredoka",
-        data: readFileSync(join(process.cwd(), "public/megadeal/fonts/Fredoka-Bold.ttf")),
+        data: await bytes("megadeal/fonts/Fredoka-Bold.ttf"),
         weight: 700,
         style: "normal",
       },
       {
         name: "Plus Jakarta Sans",
-        data: readFileSync(join(process.cwd(), "public/megadeal/fonts/PlusJakartaSans-SemiBold.ttf")),
+        data: await bytes("megadeal/fonts/PlusJakartaSans-SemiBold.ttf"),
         weight: 600,
         style: "normal",
       },

@@ -14,16 +14,16 @@ export const contentType = "image/png";
 const LOGO_WIDTH = 620;
 const LOGO_HEIGHT = Math.round((LOGO_WIDTH * 724) / 2172);
 
-export default function ThingsToDoOpengraphImage() {
+export default async function ThingsToDoOpengraphImage() {
   let logoDataUri: string | null = null;
   try {
-    logoDataUri = getLogoDataUri();
+    logoDataUri = await getLogoDataUri();
   } catch (err) {
     console.error("[opengraph-image] logo read failed", err);
   }
-  let fonts: ReturnType<typeof getOgFonts> = [];
+  let fonts: Awaited<ReturnType<typeof getOgFonts>> = [];
   try {
-    fonts = getOgFonts();
+    fonts = await getOgFonts();
   } catch (err) {
     console.error("[opengraph-image] font read failed", err);
   }

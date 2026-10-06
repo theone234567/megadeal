@@ -1,5 +1,4 @@
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readPublicFile } from "./publicFile";
 
 /**
  * The real MegaDeal logo (elephant + wordmark), pre-rendered to PNG
@@ -10,19 +9,16 @@ import { join } from "path";
  * has inconsistent WebP support across versions, while PNG is universally
  * safe.
  *
- * Read from disk at build time, not fetched by URL. opengraph-image routes
- * with no dynamic params are prerendered once during `next build` — a real
- * Node process with a real filesystem, unlike this project's Cloudflare
- * Workers *runtime* (which is what ruled out `fs` for anything that runs
- * per-request). A same-origin fetch here would in fact be a build-time
- * chicken-and-egg bug: the asset this fetch wants doesn't exist on
- * production yet, because deploying it is the whole point of this build.
+ * Read with readPublicFile: from disk during `next build`, and from the
+ * deployed static assets on Cloudflare, where these images are in fact
+ * made per request (see lib/publicFile.ts). Never fetched from the live
+ * site by URL: during a build, the file may not be deployed yet.
  */
 let cachedDataUri: string | null = null;
 
-export function getLogoDataUri(): string {
+export async function getLogoDataUri(): Promise<string> {
   if (cachedDataUri) return cachedDataUri;
-  const buf = readFileSync(join(process.cwd(), "public/megadeal/megadeal-logo-og.png"));
+  const buf = Buffer.from(await readPublicFile("megadeal/megadeal-logo-og.png"));
   cachedDataUri = `data:image/png;base64,${buf.toString("base64")}`;
   return cachedDataUri;
 }

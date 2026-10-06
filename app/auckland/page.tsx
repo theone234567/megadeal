@@ -36,8 +36,10 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: { canonical: url },
     // Empty, or before launch: kept out of search, like an empty category.
     robots: SITE_LAUNCHED && deals.length > 0 ? undefined : { index: false, follow: true },
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url, siteName: SITE_NAME, type: "website" },
-    twitter: { card: "summary", title: `${title} | ${SITE_NAME}`, description },
+    // The image named, as on flash deals: a page's own openGraph replaces
+    // the layout's whole, so without it a shared link has no picture.
+    openGraph: { title: `${title} | ${SITE_NAME}`, description, url, siteName: SITE_NAME, type: "website", images: [`${SITE_URL}/opengraph-image`] },
+    twitter: { card: "summary_large_image", title: `${title} | ${SITE_NAME}`, description, images: [`${SITE_URL}/opengraph-image`] },
   };
 }
 

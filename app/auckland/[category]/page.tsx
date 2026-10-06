@@ -66,8 +66,10 @@ export async function generateMetadata(
     // same protection: no category page should get indexed while the
     // catalog might still hold pre-launch test data.
     robots: SITE_LAUNCHED && hasDeals ? undefined : { index: false, follow: true },
-    openGraph: { title: socialTitle, description, url, siteName: SITE_NAME, type: "website" },
-    twitter: { card: "summary", title: socialTitle, description },
+    // The image named, as on flash deals: a page's own openGraph replaces
+    // the layout's whole, so without it a shared link has no picture.
+    openGraph: { title: socialTitle, description, url, siteName: SITE_NAME, type: "website", images: [`${SITE_URL}/opengraph-image`] },
+    twitter: { card: "summary_large_image", title: socialTitle, description, images: [`${SITE_URL}/opengraph-image`] },
   };
 }
 
