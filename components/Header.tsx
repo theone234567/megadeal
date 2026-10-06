@@ -124,9 +124,12 @@ export default function Header() {
 
           {/* Business sign-in only: deal hunters have no account. On phones
               this used to read just "Sign in", which looked like a
-              customer sign-in. */}
+              customer sign-in.  Not prefetched (here and in the
+              header below): fetching the portal's code ahead of time cost
+              every visitor ~100KB for the few businesses who sign in. */}
           <Link
             href="/portal"
+            prefetch={false}
             className={`shrink-0 whitespace-nowrap rounded-full border-[1.5px] bg-white px-3 py-2 text-xs font-extrabold text-brand-600 transition hover:bg-hp-lavender sm:px-5 sm:text-sm lg:px-6 lg:py-2.5 ${T.comingSoonSignIn}`}
           >
             Business sign in<span className="hidden sm:inline"> →</span>
@@ -173,6 +176,7 @@ export default function Header() {
           {location}
           <Link
             href="/portal"
+            prefetch={false}
             className={`inline-flex h-10 items-center rounded-full px-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 ${T.signIn}`}
           >
             Business sign in

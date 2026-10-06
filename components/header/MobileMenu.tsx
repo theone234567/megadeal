@@ -87,7 +87,7 @@ export default function MobileMenu() {
               List your business
               <ArrowRightIcon className="h-4 w-4" />
             </Link>
-            <Link href="/portal" onClick={close} className="btn-secondary w-full min-h-[48px] text-base">
+            <Link href="/portal" prefetch={false} onClick={close} className="btn-secondary w-full min-h-[48px] text-base">
               Business sign in
             </Link>
           </div>
