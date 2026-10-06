@@ -56,9 +56,12 @@ What then changes by itself:
    `/list-your-business`: the preview should show the new logo and, for the business page,
    up to 3 months. Facebook keeps old previews for a while; its Sharing Debugger refreshes one.
 9. **Tell the people who asked.** The coming-soon page and footer promised subscribers an
-   email at launch. There's no built-in launch email yet: Admin → Subscribers lists them.
-   Send only to confirmed (verified) subscribers, with an unsubscribe link. Tell approved
-   businesses too: they can now submit their drafts.
+   email at launch, and the portal promised approved businesses one. Admin → Subscribers →
+   **Launch email**: pick the group (deal-alert subscribers, businesses on the launch
+   waitlist, approved businesses), edit the draft, Preview, Send me a test, then Send. It
+   goes only to confirmed subscribers who haven't unsubscribed, each person once (pressing
+   Send again sends nothing new), with their own unsubscribe link. Sending only works once
+   the site has launched.
 10. **Check the offer end to end** (`docs/LAUNCH-OFFER-CHECKLIST.md`, "After launch, check"):
     approve a test signup that used WELCOME3; it should get 12 credits and its email should
     name WELCOME3.

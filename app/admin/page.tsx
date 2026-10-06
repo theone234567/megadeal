@@ -8,6 +8,7 @@ import DealRow, { type AdminDeal } from "@/components/admin/DealRow";
 import SubscriberRow, { type AdminSubscriber } from "@/components/admin/SubscriberRow";
 import PlatformSettingsPanel from "@/components/admin/PlatformSettingsPanel";
 import TestDealsPanel from "@/components/admin/TestDealsPanel";
+import AnnouncementPanel from "@/components/admin/AnnouncementPanel";
 import { missedScheduledStart } from "@/lib/dealSchedule";
 import { readRevision } from "@/lib/dealRevision";
 import { useWix } from "@/context/WixProvider";
@@ -514,6 +515,7 @@ export default function AdminDashboardPage() {
 
       {tab === "subscribers" && (
         <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+          <AnnouncementPanel />
           <div className="flex flex-wrap items-center justify-between gap-3">
             <label className="flex items-center gap-2 text-sm text-slate-600">
               <input
