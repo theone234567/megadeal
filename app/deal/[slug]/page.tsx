@@ -9,6 +9,7 @@ import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney, truncateForMeta } from "@/lib/format";
 import { placeLabel } from "@/lib/location";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { dealOffer } from "@/lib/dealOffer";
 import { wixImageUrl } from "@/lib/wixImageUrl";
 
 // See app/page.tsx for why this is a short revalidate window rather than
@@ -196,18 +197,7 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
             image: deal.image ? [deal.image] : undefined,
             category: deal.categories[0] || undefined,
             brand: deal.businessName ? { "@type": "Brand", name: deal.businessName } : undefined,
-            offers: {
-              "@type": "Offer",
-              url: `${SITE_URL}/deal/${deal.slug}`,
-              priceCurrency: deal.currency || "NZD",
-              price: deal.now,
-              availability:
-                deal.inStock !== false
-                  ? "https://schema.org/InStock"
-                  : "https://schema.org/SoldOut",
-              priceValidUntil: deal.expiresAt ?? undefined,
-              seller,
-            },
+            offers: dealOffer(deal, SITE_URL, seller),
           }),
         }}
       />
