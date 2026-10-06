@@ -88,15 +88,17 @@ export default function RootLayout({
         {/* First thing in the tree: a tab stranded by a deploy should
             repair itself before the visitor hits a dead form. */}
         <StaleBuildRecovery />
-        {/* Every deal photo and most API calls come from Wix's domains —
-            opening the connection before those requests are discovered
-            mid-render shaves the DNS/TLS handshake off the critical path.
+        {/* Deal photos come from Wix's image server until they move to
+            MegaDeal's own storage (docs/WIX-MIGRATION.md; remove this
+            then): opening the connection before those requests are
+            discovered mid-render shaves the DNS/TLS handshake off the
+            critical path. (No preconnect to wixapis.com: browsers never
+            call it on these pages, this site's server does.)
             Next.js auto-hoists <link> elements into <head> for you — a
             manually authored <head> here conflicts with the one Next
             already renders from the metadata export above and broke
             hydration site-wide, which is why this isn't wrapped in one. */}
         <link rel="preconnect" href="https://static.wixstatic.com" />
-        <link rel="preconnect" href="https://www.wixapis.com" crossOrigin="" />
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger

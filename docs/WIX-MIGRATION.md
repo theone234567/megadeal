@@ -404,4 +404,7 @@ Wix again; accounts created meanwhile would need to sign up on Wix.
   subscription (except Wix Stores, while MegaShop is there).
 - Delete the `wix-export/` folders: they hold personal details.
 - Remove `WIX_API_KEY` and the other Wix secrets once nothing uses them.
+- Once every photo is copied: remove the `static.wixstatic.com`
+  preconnect in `app/layout.tsx`, and the Wix entries in the security
+  policy in `next.config.mjs` (keep them while MegaShop is on Wix).
 - Supabase: turn on point-in-time recovery (Pro plan) before launch.
