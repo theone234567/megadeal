@@ -120,6 +120,10 @@ export default function DealCard({
             // Empty: the title is already the link's text, so repeating it
             // as the photo's alt made screen readers announce it twice.
             alt=""
+            // A hero card's photo loads first. (Any photo that isn't lazy
+            // also becomes a preload in the page's prefetched data, so
+            // desktop pages showing a link to it fetch it in advance; phones,
+            // where those links sit in the closed menu, don't.)
             loading={priority ? "eager" : "lazy"}
             {...(priority ? { fetchPriority: "high" } : {})}
             decoding="async"
