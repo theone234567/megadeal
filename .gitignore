@@ -38,3 +38,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 screenshot-artifacts/
+
+# Wix data exports for the database move (scripts/wix-export.mjs): personal
+# details of businesses and subscribers, never committed.
+/wix-export/

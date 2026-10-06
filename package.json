@@ -36,6 +36,7 @@
     "safari >= 15"
   ],
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@opennextjs/cloudflare": "1.20.6",
     "@types/js-cookie": "^3.0.6",
     "@types/leaflet": "^1.9.22",
