@@ -54,7 +54,7 @@ const CUSTOMER_STEPS: Step[] = [
   {
     number: "4",
     title: "Get new deals by email (optional)",
-    text: `Pop your email into the sign-up box (footer, or the corner prompt that appears as you browse) to get new local deals sent to your inbox. Straight after, check that inbox for an email from us and click the "Confirm my email" button in it — that one click is what actually switches your alerts on, so you don't get signed up to something you never asked for if someone else typed in your address by mistake. No account or password needed, and every email has an unsubscribe link if you change your mind.`,
+    text: `Pop your email into the sign-up box at the bottom of any page to get new local deals sent to your inbox. Straight after, check that inbox for an email from us and click the "Confirm my email" button in it — that one click is what actually switches your alerts on, so you don't get signed up to something you never asked for if someone else typed in your address by mistake. No account or password needed, and every email has an unsubscribe link if you change your mind.`,
   },
 ];
 
