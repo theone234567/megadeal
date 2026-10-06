@@ -376,6 +376,8 @@ describe("admin work and the rest of the business portal", () => {
     expect(await verifyEmailSignupByToken(first!.verifyToken)).toBe(false); // replaced by the newer link
     expect(await verifyEmailSignupByToken(again!.verifyToken)).toBe(true);
     expect(await verifyEmailSignupByToken(again!.verifyToken)).toBe(false); // works once
+    // The link from the first email still works, though a newer one was sent.
+    expect(await unsubscribeEmailSignupByToken(first!.unsubscribeToken)).toBe(true);
     expect(await unsubscribeEmailSignupByToken(again!.unsubscribeToken)).toBe(true);
     expect(await db.query("select verified, unsubscribed from public.email_signups")).toEqual([{ verified: true, unsubscribed: true }]);
   });

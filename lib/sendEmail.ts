@@ -1,5 +1,8 @@
 import { randomUUID } from "crypto";
 import { createWixAdminClient } from "./wixAdmin";
+import { emailHtmlToText, headerSafe } from "./emailText";
+
+const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
 
 /**
  * Sends a transactional email via Wix's own Email Transmissions API —
@@ -25,6 +28,7 @@ export async function sendTransactionalEmail({
   subject,
   html,
   replyTo,
+  unsubscribeUrl,
 }: {
   to: string;
   subject: string;
@@ -34,7 +38,31 @@ export async function sendTransactionalEmail({
   // "hit reply, a real person reads every message" — so that reply
   // actually reaches someone instead of vanishing into a no-reply mailbox.
   replyTo?: string;
+  /** For mailing-list email: the one-click unsubscribe address, sent as
+   *  the List-Unsubscribe header (Gmail and Yahoo require it of senders
+   *  like us). Leave out for one-off messages (receipts, password resets). */
+  unsubscribeUrl?: string;
 }): Promise<boolean> {
+  // One address, or a few separated by commas (ADMIN_NOTIFY_EMAIL may
+  // list several). Each must be a plain address: nothing that could add
+  // recipients or headers of its own.
+  const recipients = headerSafe(to, 1000)
+    .split(",")
+    .map((a) => a.trim())
+    .filter(Boolean)
+    .slice(0, 10);
+  const safeSubject = headerSafe(subject);
+  const safeReplyTo = replyTo ? headerSafe(replyTo, 320) : undefined;
+  if (!recipients.length || !recipients.every((a) => EMAIL_RE.test(a)) || (safeReplyTo && !EMAIL_RE.test(safeReplyTo))) {
+    console.error("[sendTransactionalEmail] refused: not an email address");
+    return false;
+  }
+  if (process.env.EMAIL_PROVIDER === "resend") {
+    return sendWithResend({ to: recipients, subject: safeSubject, html, replyTo: safeReplyTo, unsubscribeUrl });
+  }
+  subject = safeSubject;
+  replyTo = safeReplyTo;
+
   let adminClient;
   try {
     adminClient = createWixAdminClient();
@@ -55,7 +83,7 @@ export async function sendTransactionalEmail({
           senderName: "MegaDeal",
           senderEmailAddress: "no-reply@megadeal.co.nz",
           replyTo: { emailAddress: replyTo || "no-reply@megadeal.co.nz" },
-          toRecipients: [{ emailAddress: to }],
+          toRecipients: recipients.map((emailAddress) => ({ emailAddress })),
           type: "TRANSACTIONAL",
         },
         idempotencyKey: randomUUID(),
@@ -67,4 +95,48 @@ export async function sendTransactionalEmail({
     console.error("[sendTransactionalEmail] failed", await res.text().catch(() => ""));
   }
   return res.ok;
+}
+
+/**
+ * MegaDeal's own sending (EMAIL_PROVIDER=resend, RESEND_API_KEY), from
+ * EMAIL_FROM (default "MegaDeal <no-reply@megadeal.co.nz>"). The domain
+ * must be verified with Resend and carry its SPF and DKIM records, plus a
+ * DMARC record, before this is switched on: docs/WIX-MIGRATION.md. A new
+ * sending domain has no reputation yet, which is why the site moved to
+ * Wix's sending before (see above), so the switch comes with a warm-up.
+ */
+async function sendWithResend(msg: { to: string[]; subject: string; html: string; replyTo?: string; unsubscribeUrl?: string }): Promise<boolean> {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) {
+    console.error("[sendTransactionalEmail] EMAIL_PROVIDER=resend but RESEND_API_KEY isn't set");
+    return false;
+  }
+  const headers: Record<string, string> = {};
+  if (msg.unsubscribeUrl) {
+    headers["List-Unsubscribe"] = `<${msg.unsubscribeUrl}>`;
+    headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
+  }
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Idempotency-Key": randomUUID() },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM || "MegaDeal <no-reply@megadeal.co.nz>",
+        to: msg.to,
+        subject: msg.subject,
+        html: msg.html,
+        text: emailHtmlToText(msg.html),
+        reply_to: msg.replyTo || undefined,
+        headers: Object.keys(headers).length ? headers : undefined,
+      }),
+    });
+    if (!res.ok) {
+      // The provider's answer, never the message or the address.
+      console.error("[sendTransactionalEmail] Resend refused", res.status, (await res.text().catch(() => "")).slice(0, 300));
+    }
+    return res.ok;
+  } catch (err) {
+    console.error("[sendTransactionalEmail] Resend unreachable", err);
+    return false;
+  }
 }

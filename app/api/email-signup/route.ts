@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
     const sent = await sendTransactionalEmail({
       to: email,
       subject: "Confirm your MegaDeal email alerts 🐘",
+      unsubscribeUrl,
       html:
         brandedEmailHtml(`
             <h1 style="margin:0 0 12px;font-size:20px;color:#211033;">One click and you're in 🎉</h1>

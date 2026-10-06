@@ -312,6 +312,18 @@ const EMAIL_SIGNUPS: Collection = {
     f("verifyToken", "verify_token_hash", { expr: "null::text", write: hashed }),
     f("unsubscribeToken", "unsubscribe_token_hash", { expr: "null::text", write: hashed }),
   ],
+  // A new unsubscribe link doesn't retire the earlier ones: they're still
+  // in the person's inbox, and must keep working.
+  async beforeWrite(cols, item, db) {
+    if (!("unsubscribe_token_hash" in cols) || !item._id) return;
+    const [row] = await db.query<{ current: string | null; old: string[] }>(
+      "select unsubscribe_token_hash as current, old_unsubscribe_token_hashes as old from public.email_signups where id::text = $1 or wix_id = $1",
+      [String(item._id)]
+    );
+    if (row?.current && row.current !== cols.unsubscribe_token_hash) {
+      cols.old_unsubscribe_token_hashes = [...row.old.filter((h) => h !== row.current), row.current].slice(-50);
+    }
+  },
 };
 
 const CONTACT_MESSAGES: Collection = {
@@ -427,9 +439,11 @@ class Query {
         this.conds.push("false");
         return this;
       }
-      const col = field === "verifyToken" ? "t.verify_token_hash" : "t.unsubscribe_token_hash";
       this.params.push(hashed(value));
-      this.conds.push(`${col} = $${this.params.length}`);
+      const p = `$${this.params.length}`;
+      this.conds.push(
+        field === "verifyToken" ? `t.verify_token_hash = ${p}` : `(t.unsubscribe_token_hash = ${p} or ${p} = any(t.old_unsubscribe_token_hashes))`
+      );
       return this;
     }
     return this.add((e, p) => `${e} = ${p}`, field, value);

@@ -150,6 +150,33 @@ Redirects and "not found" are decided before the page streams, so they
 are real 308s and 404s, and an old address never reveals a pending,
 suspended or test page.
 
+## Step 4 so far: email (switched off)
+
+`EMAIL_PROVIDER=resend` sends through Resend instead of Wix
+(`lib/sendEmail.ts`): every email gets a plain-text part, mailing-list
+email gets the one-click unsubscribe header Gmail and Yahoo require, and
+addresses and subjects can't carry extra headers. Until it's switched
+on, email goes through Wix exactly as before.
+
+Before switching on (a new sending domain has no reputation, which is
+why the site moved to Wix's sending once already):
+
+1. Add megadeal.co.nz in Resend and put its SPF and DKIM records in the
+   domain's DNS (Cloudflare). Add a DMARC record, starting with
+   `v=DMARC1; p=none; rua=mailto:<your address>`; move to
+   `p=quarantine` once the reports look clean.
+2. Set `RESEND_API_KEY` as a Cloudflare secret, `EMAIL_FROM` (e.g.
+   `MegaDeal <hello@megadeal.co.nz>`) and `EMAIL_PROVIDER=resend`.
+3. Warm up: switch on while volumes are low (before launch), watch the
+   Resend dashboard for bounces and spam reports for a week.
+
+Unsubscribing is safe from link scanners: the link in an email opens a
+page with an Unsubscribe button (workplace mail security opens every
+link in a message, and used to unsubscribe people), and a mail app's own
+Unsubscribe button works in one click. Every unsubscribe link a person
+was sent keeps working, as the Unsolicited Electronic Messages Act
+expects.
+
 ## The steps
 
 Each step ships on its own and can be rolled back. About 4–5 weeks in
