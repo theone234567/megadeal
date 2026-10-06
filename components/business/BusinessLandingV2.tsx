@@ -125,7 +125,7 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
               Example deal — not available to redeem
             </figcaption>
             <div aria-hidden className="pointer-events-none select-none rounded-2xl shadow-card-hover">
-              <DealCard deal={EXAMPLE_BURGER_DEAL} preview />
+              <DealCard deal={EXAMPLE_BURGER_DEAL} preview priority />
             </div>
             <Image
               src="/megadeal/coming-soon-v2/mascot-hoodie-240.webp"

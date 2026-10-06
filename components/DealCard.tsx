@@ -50,11 +50,15 @@ export default function DealCard({
    *  Next doesn't prefetch that route just because the card scrolled into
    *  view. */
   preview = false,
+  /** The card is the largest thing on screen when the page opens (a hero):
+   *  its photo loads straight away instead of lazily. */
+  priority = false,
 }: {
   deal: Deal;
   /** Distance from the viewer, in km — shown beside the locality when known. */
   distanceKm?: number | null;
   preview?: boolean;
+  priority?: boolean;
 }) {
   const soldOut = !deal.inStock;
   // From the two real prices: a "was" at or below the deal price is no saving.
@@ -116,7 +120,8 @@ export default function DealCard({
             // Empty: the title is already the link's text, so repeating it
             // as the photo's alt made screen readers announce it twice.
             alt=""
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
+            {...(priority ? { fetchPriority: "high" } : {})}
             decoding="async"
             className={`absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-[1.02] ${soldOut ? "grayscale" : ""}`}
           />

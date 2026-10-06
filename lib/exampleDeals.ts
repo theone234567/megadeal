@@ -55,7 +55,8 @@ function exampleDeal(fields: Partial<Deal> & Pick<Deal, "id" | "name" | "image" 
 export const EXAMPLE_BURGER_DEAL = exampleDeal({
   id: "example-burger",
   name: "Gourmet burger & fries for two",
-  image: "/megadeal-coming-soon/food-drink-v1.webp",
+  // A copy sized for the card (under 300px wide), not the 800px original.
+  image: "/megadeal-coming-soon/food-drink-v1-560w.webp",
   now: 29,
   was: 48,
   categories: ["Food & Drink"],
