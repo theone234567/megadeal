@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { consumePasswordResetToken } from "@/lib/passwordResetTokens";
 import { setMemberPassword } from "@/lib/wixPassword";
+import { accountIdForEmail, authBackend, endAllSessions } from "@/lib/authSession";
+import { adminSetPassword } from "@/lib/supabaseAuth";
 
-const MIN_PASSWORD_LENGTH = 8;
+// Wix's rule; MegaDeal's own logins ask for 10 (lib/authRoutes.ts).
+const minPasswordLength = () => (authBackend() === "supabase" ? 10 : 8);
 
 /** The other half of the self-service reset flow: the page at
  *  /reset-password posts here with the token from the emailed link and
@@ -15,9 +18,9 @@ export async function POST(req: NextRequest) {
   if (!token) {
     return NextResponse.json({ error: "This reset link is invalid." }, { status: 400 });
   }
-  if (newPassword.length < MIN_PASSWORD_LENGTH) {
+  if (newPassword.length < minPasswordLength() || newPassword.length > 200) {
     return NextResponse.json(
-      { error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters.` },
+      { error: `Password must be at least ${minPasswordLength()} characters.` },
       { status: 400 }
     );
   }
@@ -34,13 +37,29 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    if (authBackend() === "supabase") {
+      // The link proved the address: set the password (making the login
+      // for a business brought over from Wix), then end every session
+      // that used the old one.
+      const userId = await accountIdForEmail(email);
+      const set = await adminSetPassword(email, newPassword, userId);
+      if (!set.ok) {
+        console.error("[auth/confirm-password-reset] refused", set.status, set.code);
+        const weak = set.code === "weak_password";
+        return NextResponse.json(
+          { error: weak ? "Choose a stronger password: longer, and not a common one." : "Couldn't set your new password. Please try again." },
+          { status: weak ? 400 : 502 }
+        );
+      }
+      await endAllSessions(set.data.id ?? userId);
+      return NextResponse.json({ ok: true });
+    }
     await setMemberPassword(email, newPassword);
     return NextResponse.json({ ok: true });
-  } catch (err: any) {
+  } catch (err) {
+    // Never the provider's own text: it can say more than a visitor should
+    // see (security review finding 2).
     console.error("[auth/confirm-password-reset] failed", err);
-    return NextResponse.json(
-      { error: err?.message || "Couldn't set your new password. Please try again." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Couldn't set your new password. Please try again." }, { status: 500 });
   }
 }

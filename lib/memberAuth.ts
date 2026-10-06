@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { createWixClient } from "./wixClient";
 import { MEMBER_COOKIE_NAME, parseTokens } from "./memberSession";
+import { authBackend, getSupabaseMember } from "./authSession";
 
 export interface VerifiedMember {
   id: string;
@@ -25,6 +26,8 @@ export interface VerifiedMember {
  * stealable tokens in place.
  */
 export async function getVerifiedMember(req: NextRequest): Promise<VerifiedMember | null> {
+  // MegaDeal's own logins (lib/authSession.ts), once switched on.
+  if (authBackend() === "supabase") return getSupabaseMember(req);
   const tokens = parseTokens(req.cookies.get(MEMBER_COOKIE_NAME)?.value);
   if (!tokens) return null;
 

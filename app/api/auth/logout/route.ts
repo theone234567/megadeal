@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createWixClient } from "@/lib/wixClient";
 import { MEMBER_COOKIE_NAME, parseTokens } from "@/lib/memberSession";
+import { ACCESS_COOKIE, authBackend, clearSessionCookies } from "@/lib/authSession";
+import { signOut } from "@/lib/supabaseAuth";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +17,13 @@ export const dynamic = "force-dynamic";
  * forgets them, and the caller falls back to a plain redirect.
  */
 export async function POST(req: NextRequest) {
+  if (authBackend() === "supabase") {
+    const access = req.cookies.get(ACCESS_COOKIE)?.value;
+    if (access) await signOut(access).catch(() => null);
+    const res = NextResponse.json({ logoutUrl: null });
+    clearSessionCookies(res);
+    return res;
+  }
   const tokens = parseTokens(req.cookies.get(MEMBER_COOKIE_NAME)?.value);
   const body = await req.json().catch(() => null);
   const returnTo = typeof body?.returnTo === "string" ? body.returnTo : undefined;

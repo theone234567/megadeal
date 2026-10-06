@@ -7,6 +7,7 @@ import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { SITE_URL } from "@/lib/siteConfig";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { authBackend } from "@/lib/authSession";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // The found/not-found paths below cost very different amounts of real
@@ -71,7 +72,13 @@ export async function POST(req: NextRequest) {
     // dashboard shows) — there's no member to reset a password for yet,
     // and setMemberPassword's Sign On step would silently create one if
     // we called it anyway. Treated the same as "email not found."
-    if (merchant?.email && merchant._owner) {
+    //
+    // On MegaDeal's own logins it's the other way round: a business
+    // brought over from Wix has no login yet (Wix passwords can't be
+    // moved), and this link is how it sets one, so any business on file
+    // qualifies. The link proves the address before anything is set.
+    const eligible = authBackend() === "supabase" ? Boolean(merchant?.email) : Boolean(merchant?.email && merchant._owner);
+    if (merchant?.email && eligible) {
       const token = await createPasswordResetToken(merchant.email);
       if (token) {
         const resetUrl = `${SITE_URL}/reset-password?token=${token}`;

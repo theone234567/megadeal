@@ -21,6 +21,7 @@
     "@wix/redirects": "^1.0.31",
     "@wix/sdk": "^1.14.1",
     "@wix/stores": "^1.0.373",
+    "jose": "^6.2.12",
     "js-cookie": "^3.0.5",
     "leaflet": "^1.9.4",
     "next": "^16.3.8",

@@ -134,7 +134,18 @@ const MERCHANTS: Collection = {
   idWhere: "(t.wix_id = $1 or t.id::text = $1)",
   ignoreOnWrite: ["_id", "_createdDate", "_updatedDate"],
   fields: [
-    f("_owner", "wix_owner_id"),
+    // The login that owns the business: a Wix member until logins move,
+    // then a MegaDeal (Supabase) account. Read when asked, so switching
+    // AUTH_BACKEND needs no restart of anything else.
+    {
+      wix: "_owner",
+      get col() {
+        return process.env.AUTH_BACKEND === "supabase" ? "owner_id" : "wix_owner_id";
+      },
+      get expr() {
+        return process.env.AUTH_BACKEND === "supabase" ? "t.owner_id::text" : "t.wix_owner_id";
+      },
+    } as Field,
     f("_createdDate", null, { expr: "t.created_at", read: asDate, readOnly: true }),
     f("_updatedDate", null, { expr: "t.updated_at", read: asDate, readOnly: true }),
     // Its page address, made by the database from name and suburb.
