@@ -332,20 +332,22 @@ export default function ThingsToDoAdvertisingPage() {
 
             <div className="relative">
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white">
-                <picture>
-                  <source media="(min-width: 640px)" srcSet={HERO_PHOTO.src} width={1536} height={1024} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={HERO_PHOTO.small}
-                    alt={HERO_PHOTO.alt}
-                    width={768}
-                    height={512}
-                    fetchPriority="high"
-                    decoding="async"
-                    className="absolute inset-0 h-full w-full object-cover"
-                    style={{ objectPosition: HERO_PHOTO.position }}
-                  />
-                </picture>
+                {/* Both sizes on offer, and the browser picks: the column is at
+                    most ~550px wide, so most screens take the small one, and
+                    only high-density ones the full 1536px original. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={HERO_PHOTO.small}
+                  srcSet={`${HERO_PHOTO.small} 768w, ${HERO_PHOTO.src} 1536w`}
+                  sizes="(min-width: 1280px) 548px, (min-width: 768px) 45vw, calc(100vw - 72px)"
+                  alt={HERO_PHOTO.alt}
+                  width={768}
+                  height={512}
+                  fetchPriority="high"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  style={{ objectPosition: HERO_PHOTO.position }}
+                />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={HERO_MASCOT.src}

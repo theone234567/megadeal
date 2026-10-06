@@ -400,23 +400,24 @@ export default function HomeCarAdvertisingPage() {
 
             <div className="relative">
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white">
-                {/* <picture>, as on Beauty & Spa: next/image is unoptimized on
-                    this site (next.config.mjs), so it can't hand phones a
-                    smaller file; this does. */}
-                <picture>
-                  <source media="(min-width: 640px)" srcSet={HERO_PHOTO.src} width={1448} height={1086} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={HERO_PHOTO.small}
-                    alt={HERO_PHOTO.alt}
-                    width={720}
-                    height={540}
-                    fetchPriority="high"
-                    decoding="async"
-                    className="absolute inset-0 h-full w-full object-cover"
-                    style={{ objectPosition: "60% 50%" }}
-                  />
-                </picture>
+                {/* A plain img with both sizes on offer (next/image is
+                    unoptimized on this site, next.config.mjs), and the browser
+                    picks: the column is at most ~550px wide, so most screens
+                    take the small one, and only high-density ones the full
+                    1448px original. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={HERO_PHOTO.small}
+                  srcSet={`${HERO_PHOTO.small} 720w, ${HERO_PHOTO.src} 1448w`}
+                  sizes="(min-width: 1280px) 548px, (min-width: 768px) 45vw, calc(100vw - 72px)"
+                  alt={HERO_PHOTO.alt}
+                  width={720}
+                  height={540}
+                  fetchPriority="high"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  style={{ objectPosition: "60% 50%" }}
+                />
                 {/* Small and decorative, in the corner clear of the worker;
                     hidden on narrow phones. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
