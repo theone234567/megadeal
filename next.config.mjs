@@ -121,6 +121,7 @@ const nextConfig = {
         // could have revealed it — only loading the live site with the
         // policy enforcing did.
         "https://static.cloudflareinsights.com",
+        "https://challenges.cloudflare.com",               // Turnstile (business logins off Wix)
       ].filter(Boolean).join(" "),
       // Tailwind ships as a stylesheet, but Next still injects inline
       // <style> during hydration, so this cannot be tightened either.
@@ -168,6 +169,7 @@ const nextConfig = {
       [
         "frame-src 'self'",
         "https://www.google.com",                        // reCAPTCHA challenge
+        "https://challenges.cloudflare.com",             // Turnstile challenge
         "https://*.wixsite.com https://*.wix.com https://*.editorx.io", // Wix OAuth authorize
       ].join(" "),
       // No <object>/<embed>, and nothing may re-point relative URLs.

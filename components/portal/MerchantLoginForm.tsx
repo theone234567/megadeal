@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useWix } from "@/context/WixProvider";
-import { loginMember, submitVerificationCode } from "@/lib/wixAuth";
+import * as wixAuth from "@/lib/wixAuth";
+import * as siteAuth from "@/lib/siteAuth";
+import { getTurnstileToken, preloadTurnstile } from "@/lib/turnstileClient";
 import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
 import PasswordField from "@/components/PasswordField";
 import RecaptchaCheckbox, { type RecaptchaCheckboxHandle } from "@/components/RecaptchaCheckbox";
@@ -28,11 +30,20 @@ const INPUT_CLASS =
 export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirectTo?: string }) {
   // Warm reCAPTCHA while the visitor types, so obtaining the token adds
   // nothing to the wait after they press sign in.
+  const { client, authBackend } = useWix();
+  // Whose logins: Wix's (today) or MegaDeal's own (lib/siteAuth.ts).
+  const auth = authBackend === "supabase" ? siteAuth : wixAuth;
   useEffect(() => {
-    preloadCaptcha();
-  }, []);
+    if (authBackend === "supabase") preloadTurnstile();
+    else preloadCaptcha();
+  }, [authBackend]);
 
-  const { client } = useWix();
+  /** The background robot check: Turnstile on MegaDeal's own logins,
+   *  Wix's invisible reCAPTCHA otherwise. */
+  const invisibleCaptchaToken = () =>
+    authBackend === "supabase"
+      ? getTurnstileToken(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "")
+      : getInvisibleCaptchaToken((client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? "");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -81,17 +92,14 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
       // nothing on screen to explain it.
       const attempt = async (useVisible: boolean) =>
         withTimeout(
-          loginMember(
+          auth.loginMember(
             client,
             email,
             password,
             useVisible
               ? { recaptchaToken: visibleCaptchaToken }
               : {
-                  invisibleRecaptchaToken: await getInvisibleCaptchaToken(
-                    (client.auth as { captchaInvisibleSiteKey?: string })
-                      .captchaInvisibleSiteKey ?? ""
-                  ),
+                  invisibleRecaptchaToken: await invisibleCaptchaToken(),
                 }
           ),
           AUTH_TIMEOUT_MS,
@@ -174,13 +182,11 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
       // always null, every resend went out empty, and Wix refused every
       // one. The resend could never succeed once the fallback was active.
       const captchaTokens = {
-        invisibleRecaptchaToken: await getInvisibleCaptchaToken(
-          (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
-        ),
+        invisibleRecaptchaToken: await invisibleCaptchaToken(),
       };
 
       const outcome = await withTimeout(
-        loginMember(client, email, password, captchaTokens),
+        auth.loginMember(client, email, password, captchaTokens),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try again."
       );
@@ -212,7 +218,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     setError(null);
     setSubmitting(true);
     try {
-      const outcome = await submitVerificationCode(client, code, pendingState);
+      const outcome = await auth.submitVerificationCode(client, code, pendingState);
       if (outcome.status === "success") {
         window.location.href = redirectTo;
       } else if (outcome.status === "error") {
@@ -264,6 +270,9 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
           required
           value={code}
           onChange={(e) => setCode(e.target.value)}
+            aria-label="Verification code from your email"
+            autoComplete="one-time-code"
+            inputMode="numeric"
           placeholder="Verification code"
           autoFocus
           className={`${INPUT_CLASS} text-center tracking-[0.3em]`}
@@ -335,7 +344,9 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
       />
       {/* Hidden unless Wix has rejected an invisible token, so a normal
           sign-in shows no challenge at all. */}
-      {needsVisibleCaptcha && (
+      {/* Where Turnstile shows a challenge, if it ever needs one. */}
+      {authBackend === "supabase" && <div data-turnstile-slot />}
+      {needsVisibleCaptcha && authBackend !== "supabase" && (
         <RecaptchaCheckbox
           ref={captchaRef}
           siteKey={(client.auth as { captchaVisibleSiteKey?: string }).captchaVisibleSiteKey ?? ""}

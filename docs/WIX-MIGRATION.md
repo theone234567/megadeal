@@ -150,6 +150,44 @@ Redirects and "not found" are decided before the page streams, so they
 are real 308s and 404s, and an old address never reveals a pending,
 suspended or test page.
 
+## Step 3 so far: business logins (switched off)
+
+`AUTH_BACKEND=supabase` (only with `DATA_BACKEND=postgres`) moves business
+sign-up, sign-in, sign-out and password reset to Supabase Auth. The
+forms look and behave the same: sign up, enter the 6-digit code from the
+email, you're in. Every step runs through this site's server
+(`app/api/auth/*`); the browser never talks to Supabase.
+
+Security built in: rate limits per visitor and per address; requests
+must come from this site; the Turnstile robot check (refuses if not
+configured); the same answer whether or not an address has an account;
+sessions in httpOnly cookies checked against the database on every
+request, so signing out, a password reset, or deleting an account takes
+effect at once. Login emails come from MegaDeal through a signed hook.
+
+Tested end to end against a real Supabase Auth server and Postgres
+(`lib/authE2E.test.ts`, run with `E2E_AUTH=1`) and in a browser: sign
+up, code, portal, wrong password, sign in, sign out.
+
+Existing businesses: Wix passwords can't be moved. Each business uses
+"Forgot password" once; the emailed link sets their new password and
+creates their login, and their business is theirs when they sign in.
+
+Supabase settings (Authentication):
+
+- Email sign-ups on, "Confirm email" on, OTP length 6, OTP expiry 600s.
+- Minimum password length 10; turn on leaked-password protection.
+- Hooks > Send Email: `https://megadeal.co.nz/api/auth/email-hook`; its
+  secret becomes `SEND_EMAIL_HOOK_SECRET`.
+- Rate limits: our server sends every request, so raise the per-address
+  limits for sign-in and code checks (ours apply first, per visitor).
+
+Cloudflare secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+`SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET` (or leave it out to
+use the project's signing keys), `SEND_EMAIL_HOOK_SECRET`,
+`TURNSTILE_SECRET_KEY`; and `NEXT_PUBLIC_TURNSTILE_SITE_KEY` as a build
+variable.
+
 ## Step 4 so far: email (switched off)
 
 `EMAIL_PROVIDER=resend` sends through Resend instead of Wix

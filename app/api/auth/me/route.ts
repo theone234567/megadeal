@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
+import { authBackend } from "@/lib/authSession";
 
 export const dynamic = "force-dynamic";
 
@@ -18,8 +19,10 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: NextRequest) {
   const member = await getVerifiedMember(req);
+  // Which logins the forms should use (context/WixProvider.tsx).
+  const backend = authBackend();
   if (!member) {
-    return NextResponse.json({ member: null });
+    return NextResponse.json({ member: null, authBackend: backend });
   }
   return NextResponse.json({
     member: {
@@ -28,5 +31,6 @@ export async function GET(req: NextRequest) {
       loginEmailVerified: member.loginEmailVerified,
       nickname: member.nickname,
     },
+    authBackend: backend,
   });
 }

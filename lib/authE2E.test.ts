@@ -144,7 +144,7 @@ describe.skipIf(!ENABLED)("business logins on Supabase, end to end", () => {
     const wixEmail = `imported+${Date.now()}@cafe.test`;
     const { withDb } = await import("./db/connection");
     await withDb((db) =>
-      db.query("insert into public.merchants (email, business_name, status, wix_owner_id) values ($1, 'Imported Cafe', 'Approved', 'wix-member-9')", [wixEmail])
+      db.query("insert into public.merchants (email, business_name, status, wix_owner_id) values ($1, 'Imported Cafe', 'Approved', $2)", [wixEmail, `wix-member-${Date.now()}`])
     );
     const request = await import("@/app/api/auth/request-password-reset/route");
     await request.POST(req("/api/auth/request-password-reset", { email: wixEmail }));

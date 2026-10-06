@@ -5,7 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { useWix } from "@/context/WixProvider";
 import { currentPromo, promoForCode } from "@/lib/promo";
 import { referralCreditsLabel } from "@/lib/referralBonus";
-import { loginMember, registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/wixAuth";
+import * as wixAuth from "@/lib/wixAuth";
+import type { AuthOutcome } from "@/lib/wixAuth";
+import * as siteAuth from "@/lib/siteAuth";
+import { getTurnstileToken, preloadTurnstile } from "@/lib/turnstileClient";
 import PasswordField from "@/components/PasswordField";
 import { EyeOffIcon } from "@/components/icons";
 import { phoneLink } from "@/lib/booking";
@@ -202,7 +205,10 @@ export default function MerchantSignupForm({
   twoStep?: boolean;
 }) {
   const promo = currentPromo(launched);
-  const { client, member, isLoggedIn, logout } = useWix();
+  const { client, member, isLoggedIn, logout, authBackend } = useWix();
+  // Whose logins: Wix's (today) or MegaDeal's own (lib/siteAuth.ts). Same
+  // calls and outcomes either way.
+  const auth = authBackend === "supabase" ? siteAuth : wixAuth;
   const searchParams = useSearchParams();
   const referralPrefill = searchParams.get("ref") || "";
   const startedRef = useRef(false);
@@ -328,8 +334,17 @@ export default function MerchantSignupForm({
   // Warm reCAPTCHA while the visitor is still filling the form, so
   // obtaining the token adds nothing to the wait after they submit.
   useEffect(() => {
-    preloadCaptcha();
-  }, []);
+    if (authBackend === "supabase") preloadTurnstile();
+    else preloadCaptcha();
+  }, [authBackend]);
+
+  /** The background robot check's token: Turnstile on MegaDeal's own
+   *  logins (it only interrupts someone it finds suspicious), Wix's
+   *  invisible reCAPTCHA otherwise. */
+  async function invisibleCaptchaToken(): Promise<string | null> {
+    if (authBackend === "supabase") return getTurnstileToken(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "");
+    return getInvisibleCaptchaToken((client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? "");
+  }
 
   function trackFormStarted() {
     if (startedRef.current) return;
@@ -599,7 +614,7 @@ export default function MerchantSignupForm({
       // job is conversions.
       const attempt = async (useVisible: boolean) =>
         withTimeout(
-          registerMember(
+          auth.registerMember(
             client,
             email,
             password,
@@ -607,10 +622,7 @@ export default function MerchantSignupForm({
             useVisible
               ? { recaptchaToken: captchaToken }
               : {
-                  invisibleRecaptchaToken: await getInvisibleCaptchaToken(
-                    (client.auth as { captchaInvisibleSiteKey?: string })
-                      .captchaInvisibleSiteKey ?? ""
-                  ),
+                  invisibleRecaptchaToken: await invisibleCaptchaToken(),
                 }
           ),
           AUTH_TIMEOUT_MS,
@@ -711,13 +723,11 @@ export default function MerchantSignupForm({
       // always null, every resend went out empty, and Wix refused every
       // one. The resend could never succeed once the fallback was active.
       const captchaTokens = {
-        invisibleRecaptchaToken: await getInvisibleCaptchaToken(
-          (client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? ""
-        ),
+        invisibleRecaptchaToken: await invisibleCaptchaToken(),
       };
 
       const outcome = await withTimeout(
-        loginMember(client, pendingEmail, password, captchaTokens),
+        auth.loginMember(client, pendingEmail, password, captchaTokens),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try again."
       );
@@ -760,7 +770,7 @@ export default function MerchantSignupForm({
     setSubmitting(true);
     try {
       const outcome = await withTimeout(
-        submitVerificationCode(client, code, pendingState),
+        auth.submitVerificationCode(client, code, pendingState),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try entering your code again."
       );
@@ -793,6 +803,9 @@ export default function MerchantSignupForm({
             required
             value={code}
             onChange={(e) => setCode(e.target.value)}
+            aria-label="Verification code from your email"
+            autoComplete="one-time-code"
+            inputMode="numeric"
             placeholder="Verification code"
             autoFocus
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-sm tracking-widest outline-none focus:border-brand-400"
@@ -1300,7 +1313,9 @@ export default function MerchantSignupForm({
         {/* Hidden unless Wix has rejected an invisible token, so the usual
             signup shows no challenge at all. Wix verifies the token, so the
             site key must be Wix's own — it comes off the SDK client. */}
-        {needsVisibleCaptcha && (
+        {/* Where Turnstile shows a challenge, if it ever needs one. */}
+        {authBackend === "supabase" && <div data-turnstile-slot />}
+        {needsVisibleCaptcha && authBackend !== "supabase" && (
           <RecaptchaCheckbox
             ref={captchaRef}
             siteKey={(client?.auth as { captchaVisibleSiteKey?: string } | undefined)?.captchaVisibleSiteKey ?? ""}

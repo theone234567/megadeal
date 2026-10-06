@@ -25,6 +25,11 @@ interface WixContextValue {
   member: SessionMember | null | undefined;
   isLoggedIn: boolean;
   logout: (returnTo?: string) => Promise<void>;
+  /** Whose logins the sign-up and sign-in forms use: Wix's, or
+   *  MegaDeal's own (lib/siteAuth.ts). From the server's AUTH_BACKEND, by
+   *  /api/auth/me, so pages built ahead of time still follow a switch;
+   *  known by the time `member` is (both come from the one call). */
+  authBackend: "wix" | "supabase";
 }
 
 const WixContext = createContext<WixContextValue | null>(null);
@@ -47,6 +52,7 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
   // and the captcha site keys hanging off client.auth in the first place.
   const client = useMemo(() => createWixBrowserClient(), []);
   const [member, setMember] = useState<SessionMember | null | undefined>(undefined);
+  const [authBackend, setAuthBackend] = useState<"wix" | "supabase">("wix");
 
   const fetchMember = useCallback(async () => {
     // Asked of our own server, which reads the httpOnly cookie. This used
@@ -59,7 +65,8 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
         setMember(null);
         return;
       }
-      const { member: current } = await res.json();
+      const { member: current, authBackend: backend } = await res.json();
+      setAuthBackend(backend === "supabase" ? "supabase" : "wix");
       setMember(current ?? null);
     } catch {
       setMember(null);
@@ -95,6 +102,7 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
     member,
     isLoggedIn: Boolean(member),
     logout,
+    authBackend,
   };
 
   return <WixContext.Provider value={value}>{children}</WixContext.Provider>;
