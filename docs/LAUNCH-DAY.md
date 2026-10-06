@@ -61,7 +61,9 @@ What then changes by itself:
    waitlist, approved businesses, businesses awaiting approval: the application email
    promised them a launch email too), edit the draft, Preview, Send me a test, then Send. It
    goes only to confirmed subscribers who haven't unsubscribed, each person once (pressing
-   Send again sends nothing new), with their own unsubscribe link. Sending only works once
+   Send again sends nothing new), with their own unsubscribe link. An address that can't be
+   sent to is passed over so it doesn't hold up the rest, and tried again if you press Send
+   an hour or more later. Sending only works once
    the site has launched.
 
    Until email moves to MegaDeal's own sending (`EMAIL_PROVIDER=resend`,

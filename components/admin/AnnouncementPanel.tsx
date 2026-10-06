@@ -21,6 +21,8 @@ const AUDIENCE_LABEL: Record<Audience, string> = {
 interface Status {
   total: number;
   alreadySent: number;
+  /** Couldn't be sent in the last hour; tried again after that. */
+  waiting: number;
   launched: boolean;
   testTo: boolean;
   draft: { subject: string; body: string };
@@ -105,17 +107,28 @@ export default function AnnouncementPanel() {
     setBusy("send");
     setMessage(null);
     let sentTotal = 0;
+    // A batch that sends nothing is normal once in a while (a run of
+    // addresses that can't be sent to; the server passes over them from
+    // then on). Two in a row means sending itself is down: stop there
+    // rather than work through the whole list failing.
+    let emptyBatches = 0;
     try {
       for (let i = 0; i < 500; i++) {
         const data = await post("send");
         sentTotal += data.sent;
+        emptyBatches = data.sent === 0 ? emptyBatches + 1 : 0;
         setMessage({ tone: "ok", text: `Sending… ${sentTotal} sent so far.` });
-        if (data.remaining === 0) {
-          setMessage({ tone: "ok", text: `Done. ${sentTotal} sent.` });
-          break;
-        }
-        if (data.sent === 0) {
-          setMessage({ tone: "error", text: `${sentTotal} sent; ${data.remaining} couldn't be sent. Try again later.` });
+        if (data.remaining === 0 || emptyBatches >= 2) {
+          setMessage(
+            data.remaining
+              ? {
+                  tone: "error",
+                  text: `${sentTotal} sent, then sending stopped: emails weren't going out. ${data.remaining} not tried yet. Press Send again later; nobody gets it twice.`,
+                }
+              : data.waiting
+                ? { tone: "error", text: `${sentTotal} sent. ${data.waiting} couldn't be sent; press Send again in an hour to retry them.` }
+                : { tone: "ok", text: `Done. ${sentTotal} sent.` }
+          );
           break;
         }
       }
@@ -127,7 +140,7 @@ export default function AnnouncementPanel() {
     }
   }
 
-  const toSend = status ? status.total - status.alreadySent : 0;
+  const toSend = status ? status.total - status.alreadySent - status.waiting : 0;
 
   return (
     <section className="mb-8 rounded-xl border border-slate-200 p-5">
@@ -169,7 +182,9 @@ export default function AnnouncementPanel() {
           </label>
           <p className="text-sm text-slate-600">
             {status
-              ? `${status.total} ${status.total === 1 ? "person" : "people"}${status.alreadySent ? `, ${status.alreadySent} already sent it` : ""}.`
+              ? `${status.total} ${status.total === 1 ? "person" : "people"}${status.alreadySent ? `, ${status.alreadySent} already sent it` : ""}${
+                  status.waiting ? `, ${status.waiting} couldn't be sent in the last hour` : ""
+                }.`
               : "Counting…"}
           </p>
           <label className="grid gap-1 text-sm font-semibold text-slate-700">

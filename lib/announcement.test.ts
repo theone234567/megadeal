@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addressHash, announcementHtml, bodyToHtml, businessRecipients, CAMPAIGN_RE, dealsDigestBody, parseSentList, sentListKey, subscriberRecipients } from "./announcement";
+import { RETRY_FAILED_AFTER_MS, addressHash, announcementHtml, failedListKey, parseFailedList, bodyToHtml, businessRecipients, CAMPAIGN_RE, dealsDigestBody, parseSentList, sentListKey, subscriberRecipients } from "./announcement";
 
 const row = (o: Record<string, unknown>) => ({ audience: "customer", verified: true, unsubscribed: false, unsubscribeToken: "tok", ...o });
 
@@ -115,5 +115,21 @@ describe("the new-deals draft", () => {
     expect(html).toContain('<a href="https://megadeal.co.nz/deal/x" style="color:#6520B5;">https://megadeal.co.nz/deal/x</a>.');
     expect(html).not.toContain('href="javascript');
     expect(html).toContain("&lt;a href=x&gt;");
+  });
+});
+
+describe("failed list", () => {
+  it("keeps failures for an hour, then lets them be tried again", () => {
+    const now = 1_000_000_000_000;
+    const raw = JSON.stringify({ a: now - 1000, b: now - RETRY_FAILED_AFTER_MS - 1, c: "x" });
+    const list = parseFailedList(raw, now);
+    expect([...list.keys()]).toEqual(["a"]);
+  });
+
+  it("reads anything odd as none, and is kept apart from the sent list", () => {
+    expect(parseFailedList("[1,2]").size).toBe(0);
+    expect(parseFailedList("nope").size).toBe(0);
+    expect(parseFailedList(null).size).toBe(0);
+    expect(failedListKey("launch", "customers")).not.toBe(sentListKey("launch", "customers"));
   });
 });

@@ -19,6 +19,8 @@ import {
   businessRecipients,
   dealsDigestBody,
   addressHash,
+  failedListKey,
+  parseFailedList,
   parseSentList,
   sentListKey,
   subscriberRecipients,
@@ -38,7 +40,9 @@ export const dynamic = "force-dynamic";
  *   POST { action: "send" }     sends the next batch; call again until
  *                               `remaining` is 0. Only once the site has
  *                               launched, and each address once per
- *                               announcement and audience.
+ *                               announcement and audience. Addresses that
+ *                               fail are passed over for an hour
+ *                               (`waiting`), then tried again.
  */
 
 const headers = { "Cache-Control": "private, no-store" };
@@ -111,8 +115,10 @@ export async function GET(req: NextRequest) {
     const list = await recipients(audience);
     const kv = await getRateLimitKv();
     const sentList = parseSentList(kv ? await kv.get(sentListKey(campaign, audience)) : null);
+    const failedList = parseFailedList(kv ? await kv.get(failedListKey(campaign, audience)) : null);
     const alreadySent = list.filter((r) => sentList.has(addressHash(r.email))).length;
-    return json({ audience, total: list.length, alreadySent, launched: SITE_LAUNCHED, testTo: Boolean(process.env.ADMIN_NOTIFY_EMAIL), draft: DRAFTS[audience] });
+    const waiting = list.filter((r) => !sentList.has(addressHash(r.email)) && failedList.has(addressHash(r.email))).length;
+    return json({ audience, total: list.length, alreadySent, waiting, launched: SITE_LAUNCHED, testTo: Boolean(process.env.ADMIN_NOTIFY_EMAIL), draft: DRAFTS[audience] });
   } catch (err) {
     console.error("[admin/announcement] count failed", err);
     return json({ error: "Couldn't count the list. Please try again." }, 500);
@@ -163,9 +169,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const key = sentListKey(campaign, audience);
-    const sentList = parseSentList(await kv.get(key));
+    const failedKey = failedListKey(campaign, audience);
+    const [sentRaw, failedRaw] = await Promise.all([kv.get(key), kv.get(failedKey)]);
+    const sentList = parseSentList(sentRaw);
+    const failedList = parseFailedList(failedRaw);
     const everyone = await recipients(audience);
-    const todo = everyone.filter((r) => !sentList.has(addressHash(r.email)));
+    const notSent = everyone.filter((r) => !sentList.has(addressHash(r.email)));
+    const todo = notSent.filter((r) => !failedList.has(addressHash(r.email)));
     let sent = 0;
     let failed = 0;
     // Written once at the end of the batch (Cloudflare allows about one
@@ -187,21 +197,24 @@ export async function POST(req: NextRequest) {
           sentList.add(addressHash(r.email));
           sent++;
         } else {
+          failedList.set(addressHash(r.email), Date.now());
           failed++;
         }
       }
     } finally {
       if (sent) await kv.put(key, JSON.stringify([...sentList]), { expirationTtl: SENT_TTL_SECONDS });
+      if (failed) await kv.put(failedKey, JSON.stringify(Object.fromEntries(failedList)), { expirationTtl: SENT_TTL_SECONDS });
     }
-    // Failed ones stay on the list and are tried again next time.
-    const remaining = todo.length - sent;
+    const remaining = todo.length - sent - failed;
+    // Not sent it yet but passed over for now, including this batch's failures.
+    const waiting = notSent.length - sent - remaining;
     if (sent || failed) {
       await logAdminAction({
         action: `Sent announcement "${campaign}" (${audience})`,
         detail: `${sent} sent${failed ? `, ${failed} failed` : ""}, ${remaining} to go`,
       });
     }
-    return json({ sent, failed, alreadySent: everyone.length - todo.length + sent, remaining });
+    return json({ sent, failed, waiting, alreadySent: everyone.length - notSent.length + sent, remaining });
   } catch (err) {
     console.error("[admin/announcement] send failed", err);
     return json({ error: "Sending stopped. Please try again: nobody is sent it twice." }, 500);

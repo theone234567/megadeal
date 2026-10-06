@@ -200,5 +200,32 @@ export function parseSentList(raw: string | null): Set<string> {
   }
 }
 
+/**
+ * Addresses that couldn't be sent to, with when: passed over for an hour,
+ * so one that keeps failing doesn't hold up everyone after it, then tried
+ * again the next time Send is pressed. Fingerprints only, like the sent list.
+ */
+export const RETRY_FAILED_AFTER_MS = 60 * 60 * 1000;
+
+export function failedListKey(campaign: string, audience: AnnouncementAudience): string {
+  return `${sentListKey(campaign, audience)}:failed`;
+}
+
+/** The stored failures still being passed over at `now`; anything unreadable counts as none. */
+export function parseFailedList(raw: string | null, now = Date.now()): Map<string, number> {
+  const out = new Map<string, number>();
+  if (!raw) return out;
+  try {
+    const obj = JSON.parse(raw);
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) return out;
+    for (const [hash, at] of Object.entries(obj)) {
+      if (typeof at === "number" && now - at < RETRY_FAILED_AFTER_MS) out.set(hash, at);
+    }
+  } catch {
+    // ignored: counts as none
+  }
+  return out;
+}
+
 /** Announcement names: short, lower case, so a typo can't re-send to everyone. */
 export const CAMPAIGN_RE = /^[a-z0-9][a-z0-9-]{1,39}$/;
