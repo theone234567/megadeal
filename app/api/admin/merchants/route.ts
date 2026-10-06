@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { queryAllItems } from "@/lib/queryAll";
 
 export async function GET(req: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     // Paged: the dashboard's own search and pagination were operating on
     // whatever 50 rows happened to come back first.
     const items = await queryAllItems(

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { getOrClaimMerchant } from "@/lib/merchant";
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const deal = await adminClient.items.get("Deals", params.id);
     if (!deal) {
       return NextResponse.json({ error: "Deal not found." }, { status: 404 });

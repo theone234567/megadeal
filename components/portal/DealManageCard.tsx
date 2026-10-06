@@ -23,6 +23,8 @@ export interface DealRecord {
   merchantEmail?: string;
   statusNote?: string | null;
   dealCode?: string | null;
+  /** Who paused it: only the business's own pause can be lifted here. */
+  pausedBy?: "business" | "admin" | null;
   [key: string]: any;
 }
 
@@ -46,7 +48,9 @@ export default function DealManageCard({
 
   // "Ended" once the run is over, whatever the stored status says.
   const status = dealDisplayStatus(deal);
-  const actions = allowedDealActions(status);
+  // A deal MegaDeal paused is restarted by MegaDeal (the status route
+  // refuses it too), so it offers no "Make live".
+  const actions = allowedDealActions(status).filter((a) => !(deal.pausedBy === "admin" && a.target === "Live"));
   const isCancelled = status === "Cancelled";
   const isEnded = status === "Ended";
   const isPast = isCancelled || isEnded;
@@ -166,6 +170,9 @@ export default function DealManageCard({
             <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
               <span className="font-semibold">Note from MegaDeal:</span> {deal.statusNote}
             </p>
+          )}
+          {status === "Paused" && deal.pausedBy === "admin" && (
+            <p className="text-sm text-slate-600">MegaDeal paused this deal. <a href="/contact" className="font-semibold text-brand-700 underline">Contact us</a> to restart it.</p>
           )}
 
           <DealResults deal={deal} />

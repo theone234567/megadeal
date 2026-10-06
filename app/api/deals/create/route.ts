@@ -5,7 +5,7 @@ import { parseScheduledStart } from "@/lib/dealSchedule";
 import { safeWebHref } from "@/lib/socialLinks";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { debitCreditsIfAvailable, incrementCreditsAtomically, setFieldsIf } from "@/lib/creditsAtomic";
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
   // credits back and returns the draft to Draft.
   let undoSubmission: (() => Promise<void>) | null = null;
   try {
-  const adminClient = createWixAdminClient();
+  const adminClient = createDataClient();
 
   const merchant = await getOrClaimMerchant(adminClient, member);
   if (!merchant) {

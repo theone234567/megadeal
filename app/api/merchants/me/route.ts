@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
 
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const merchant = await getOrClaimMerchant(adminClient, member);
     // siteLaunched is a server-only setting; the portal needs it to tell
     // businesses that, before launch, everything they see is a preview.

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { getSiteRudenessCheck, setSiteRudenessCheck } from "@/lib/rudenessSetting";
 
 /** Site-wide admin settings. Currently just the rudeness check. */
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
-  const adminClient = createWixAdminClient();
+  const adminClient = createDataClient();
   return NextResponse.json({ rudenessCheck: await getSiteRudenessCheck(adminClient) });
 }
 
@@ -22,7 +22,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     await setSiteRudenessCheck(adminClient, body.rudenessCheck);
     await logAdminAction({ action: "Setting changed", detail: `Rudeness check ${body.rudenessCheck ? "on" : "off"}` });
     return NextResponse.json({ rudenessCheck: body.rudenessCheck });

@@ -1,4 +1,5 @@
 import { createWixAdminClient } from "@/lib/wixAdmin";
+import { dataBackend, withDb } from "@/lib/db/connection";
 
 const DAILY_LIMIT = 200;
 
@@ -19,6 +20,14 @@ function todayKey(): string {
  */
 export async function tryConsumePlacesQuota(): Promise<boolean> {
   try {
+    // On MegaDeal's own database the check and the count are one step, so
+    // two lookups at once can't both take the last one.
+    if (dataBackend() === "postgres") {
+      const [row] = await withDb((db) =>
+        db.query<{ ok: boolean }>("select public.use_api_allowance('google-places', $1, $2::date) as ok", [DAILY_LIMIT, todayKey()])
+      );
+      return Boolean(row?.ok);
+    }
     const adminClient = createWixAdminClient();
     const date = todayKey();
     const result = await adminClient.items.query("ApiUsageCounters").eq("date", date).find();

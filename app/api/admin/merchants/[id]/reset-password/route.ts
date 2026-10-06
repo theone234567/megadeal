@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { adminResetMemberPassword } from "@/lib/wixPassword";
 
 /**
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const merchant = await adminClient.items.get("Merchants", params.id);
     if (!merchant) {
       return NextResponse.json({ error: "Business not found." }, { status: 404 });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { queryAllItems } from "@/lib/queryAll";
 
 function csvCell(value: unknown): string {
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const verifiedOnly = req.nextUrl.searchParams.get("verifiedOnly") === "true";
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     // Paged: this exports the mailing list, and a default page of 50 meant
     // handing over an incomplete list that looked complete. The
     // verifiedOnly filter then narrowed that truncated 50 further.

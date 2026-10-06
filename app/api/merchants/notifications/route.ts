@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { getOrClaimMerchant } from "@/lib/merchant";
 
 /**
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const merchant = await getOrClaimMerchant(adminClient, member);
     if (!merchant) {
       return NextResponse.json({ error: "No business application found for this account." }, { status: 404 });

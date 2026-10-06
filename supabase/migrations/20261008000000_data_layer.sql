@@ -32,3 +32,9 @@ alter table public.deals add constraint deals_public_complete check (
   status in ('Draft', 'Pending Approval', 'Cancelled')
   or (slug is not null and name <> '' and price_now is not null and category_slug is not null)
 );
+
+-- Two fields the site writes that the first schema missed: which business
+-- referred this one (shown to admins), and when a replacement deal photo
+-- was sent for approval.
+alter table public.merchants add column referred_by text check (length(referred_by) <= 300);
+alter table public.deals add column pending_photo_at timestamptz;

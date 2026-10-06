@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { queryAllByEmail } from "@/lib/queryAll";
 
 const MAX_ITEMS = 100;
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const merchant = await adminClient.items.get("Merchants", params.id);
     if (!merchant?.email) {
       return NextResponse.json({ items: [] });

@@ -3,7 +3,7 @@ import { phoneLink } from "@/lib/booking";
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { insertEmailSignup } from "@/lib/emailSignups";
@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
   let item: any;
   let isNewApplication = true;
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const existing = await getOrClaimMerchant(adminClient, member);
 
     const fields = {

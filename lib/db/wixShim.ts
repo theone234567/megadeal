@@ -88,6 +88,18 @@ const category = {
     return slug;
   },
 };
+/** A web link as the site renders it (lib/socialLinks.ts safeWebHref):
+ *  "https://" added when no scheme was typed; only http(s) is stored. */
+const link = {
+  write: (v: any) => {
+    const raw = typeof v === "string" ? v.trim() : "";
+    if (!raw) return null;
+    const candidate = /^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : `https://${raw}`;
+    const url = new URL(candidate);
+    if ((url.protocol !== "https:" && url.protocol !== "http:") || /\s/.test(candidate)) throw new Error(`Not a web link: ${raw}`);
+    return candidate;
+  },
+};
 const hashed = (v: any) => (v === null || v === undefined || v === "" ? null : createHash("sha256").update(String(v)).digest("hex"));
 
 function f(wix: string, col: string | null, extra: Partial<Field> = {}): Field {
@@ -134,11 +146,11 @@ const MERCHANTS: Collection = {
     f("email", "email", { keepBlank: true }),
     bool("emailVerified", "email_verified"),
     f("phone", "phone"),
-    f("website", "website"),
-    f("bookingUrl", "booking_url"),
+    f("website", "website", link),
+    f("bookingUrl", "booking_url", link),
     f("bookingEmail", "booking_email"),
-    f("facebookUrl", "facebook_url"),
-    f("instagramUrl", "instagram_url"),
+    f("facebookUrl", "facebook_url", link),
+    f("instagramUrl", "instagram_url", link),
     f("address", "address"),
     f("suburb", "suburb"),
     f("city", "city"),
@@ -166,13 +178,14 @@ const MERCHANTS: Collection = {
         return JSON.stringify(parsed);
       },
     }),
-    f("logoUrl", "logo_url"),
+    f("logoUrl", "logo_url", link),
     numeric("rating", "rating"),
     numeric("reviewCount", "review_count"),
     f("creditsBalance", "credits_balance", { read: num, write: (v: any) => num(v) ?? 0 }),
     f("couponCode", "coupon_code"),
     f("referralCode", "referral_code"),
     f("referredByCode", "referred_by_code"),
+    f("referredBy", "referred_by"),
     bool("referralRewarded", "referral_rewarded"),
     bool("promoRewarded", "promo_rewarded"),
     bool("notifyReferralBonus", "notify_referral_bonus"),
@@ -202,7 +215,7 @@ const DEALS: Collection = {
     numeric("priceNow", "price_now"),
     numeric("priceWas", "price_was"),
     numeric("quantityAvailable", "quantity_available"),
-    f("photoUrl", "photo_url"),
+    f("photoUrl", "photo_url", link),
     bool("isFlash", "is_flash"),
     f("status", "status"),
     f("pausedBy", "paused_by"),
@@ -210,7 +223,7 @@ const DEALS: Collection = {
     f("bookingRequirement", "booking_requirement"),
     f("dealCode", "deal_code"),
     f("codeOnWebsite", "code_on_website"),
-    f("codeWebsiteUrl", "code_website_url"),
+    f("codeWebsiteUrl", "code_website_url", link),
     f("creditsCharged", "credits_charged", { read: num, write: (v: any) => num(v) ?? 0 }),
     bool("creditRefunded", "credit_refunded"),
     numeric("requestedDurationMinutes", "requested_duration_minutes"),
@@ -220,8 +233,9 @@ const DEALS: Collection = {
     timestamp("expiresAt", "expires_at"),
     bool("everLive", "ever_live"),
     f("pendingRevision", "pending_revision", jsonText),
-    f("pendingPhotoUrl", "pending_photo_url"),
+    f("pendingPhotoUrl", "pending_photo_url", link),
     f("pendingPhotoReview", "pending_photo_review", jsonObject),
+    timestamp("pendingPhotoAt", "pending_photo_at"),
     f("aiReview", "ai_review", jsonObject),
     f("contentHistory", "content_history", {
       read: (v: any) => (Array.isArray(v) && v.length ? v : null),
@@ -698,7 +712,7 @@ async function conditionalPatch(db: Sql, c: Collection, id: string, body: Row): 
   const conds: string[] = [];
   for (const [wix, cond] of Object.entries(body?.condition?.filter ?? {})) {
     const { expr, field } = fieldExpr(c, wix);
-    const entries = cond !== null && typeof cond === "object" ? Object.entries(cond as Row) : [["$eq", cond]];
+    const entries: [string, unknown][] = cond !== null && typeof cond === "object" ? Object.entries(cond as Row) : [["$eq", cond]];
     for (const [op, value] of entries) {
       if (!OPS[op]) return json({ message: `Unsupported condition ${op}` }, 400);
       params.push(filterValue(field, value));

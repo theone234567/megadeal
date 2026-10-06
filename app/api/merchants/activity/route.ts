@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { queryAllByEmail } from "@/lib/queryAll";
 import { getOrClaimMerchant } from "@/lib/merchant";
 
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const merchant = await getOrClaimMerchant(adminClient, member);
     if (!merchant?.email) {
       return NextResponse.json({ items: [] });

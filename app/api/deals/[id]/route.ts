@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const deal = await adminClient.items.get("Deals", params.id);
     if (!deal) {
       return NextResponse.json({ error: "Deal not found." }, { status: 404 });
@@ -59,7 +59,7 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const deal = await adminClient.items.get("Deals", params.id);
     if (!deal) {
       return NextResponse.json({ error: "Deal not found." }, { status: 404 });

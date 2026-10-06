@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { REFERRAL_BONUS_CREDITS, referralCreditsLabel, signupCodes } from "@/lib/referralBonus";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { queryAllByEmail } from "@/lib/queryAll";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
@@ -106,7 +106,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const item = await adminClient.items.get("Merchants", params.id);
     if (!item) {
       return NextResponse.json({ error: "Business not found." }, { status: 404 });
@@ -279,7 +279,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   }
 
   try {
-  const adminClient = createWixAdminClient();
+  const adminClient = createDataClient();
   const existing = await adminClient.items.get("Merchants", params.id);
   if (!existing) {
     return NextResponse.json({ error: "Merchant not found." }, { status: 404 });
@@ -648,7 +648,7 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const merchant = await adminClient.items.get("Merchants", params.id);
     if (!merchant) {
       return NextResponse.json({ error: "Business not found." }, { status: 404 });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { notifyDealChanged } from "@/lib/indexNowDeal";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
@@ -58,7 +58,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const existing = await adminClient.items.get("Deals", params.id);
     if (!existing) {
       return NextResponse.json({ error: "Deal not found." }, { status: 404 });
@@ -208,6 +208,13 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         },
         { status: 409 }
       );
+    }
+
+    // An admin's pause is marked as theirs, so the business can't simply
+    // restart the deal (app/api/deals/[id]/status). Any other status
+    // clears it.
+    if (patch.status !== undefined && patch.status !== existing.status) {
+      patch.pausedBy = patch.status === "Paused" ? "admin" : null;
     }
 
     const updated = await adminClient.items.update("Deals", {

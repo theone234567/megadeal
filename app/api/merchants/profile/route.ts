@@ -3,7 +3,7 @@ import { isBookingChoice } from "@/lib/booking";
 import { phoneLink } from "@/lib/booking";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
 import { notifyBusinessChanged } from "@/lib/indexNowDeal";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-  const adminClient = createWixAdminClient();
+  const adminClient = createDataClient();
   const merchant = await getOrClaimMerchant(adminClient, member);
   if (!merchant) {
     return NextResponse.json({ error: "No business application found for this account." }, { status: 404 });

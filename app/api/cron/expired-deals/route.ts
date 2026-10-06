@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash, timingSafeEqual } from "crypto";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { notifyDealChanged } from "@/lib/indexNowDeal";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
 
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   if (!SITE_LAUNCHED) return NextResponse.json({ notified: 0, skipped: "not launched" });
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     // Filtered here rather than in the query: expiresAt is compared as a
     // timestamp whatever form Wix stores it in.
     const result = await adminClient.items.query("Deals").eq("status", "Live").limit(1000).find();

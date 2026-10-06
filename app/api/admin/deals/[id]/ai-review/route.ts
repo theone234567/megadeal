@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
 
 /**
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const deal = await adminClient.items.get("Deals", params.id);
     if (!deal) {
       return NextResponse.json({ error: "Deal not found." }, { status: 404 });

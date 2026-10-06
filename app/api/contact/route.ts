@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     await adminClient.items.insert("ContactMessages", { name, email, message });
   } catch (err) {
     console.error("[contact] failed", err);

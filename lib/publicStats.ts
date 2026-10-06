@@ -1,4 +1,4 @@
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { queryAllItems } from "@/lib/queryAll";
 
 export interface SignupStats {
@@ -45,7 +45,7 @@ export function shownStats(stats: SignupStats | null): SignupStats | null {
  */
 export async function getSignupStats(): Promise<SignupStats | null> {
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     // Both paged. These two numbers are shown to visitors as counts of
     // real businesses and real subscribers, and an unpaged read caps at
     // Wix's default page of 50 — so past 50 the figures would freeze while

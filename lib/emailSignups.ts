@@ -1,5 +1,5 @@
 import { randomBytes } from "crypto";
-import { createWixAdminClient } from "./wixAdmin";
+import { createDataClient } from "./dataClient";
 import { queryAllByEmail } from "./queryAll";
 
 /**
@@ -70,7 +70,7 @@ export async function insertEmailSignup({
   verified: boolean;
 }): Promise<EmailSignupResult | null> {
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
 
     const existing = (
       await queryAllByEmail(
@@ -132,7 +132,7 @@ export async function insertEmailSignup({
 
 export async function verifyEmailSignupByToken(token: string): Promise<boolean> {
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const result = await adminClient.items.query("EmailSignups").eq("verifyToken", token).find();
     const signup = result.items?.[0];
     if (!signup) return false;
@@ -155,7 +155,7 @@ export async function verifyEmailSignupByToken(token: string): Promise<boolean> 
 
 export async function unsubscribeEmailSignupByToken(token: string): Promise<boolean> {
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const result = await adminClient.items
       .query("EmailSignups")
       .eq("unsubscribeToken", token)

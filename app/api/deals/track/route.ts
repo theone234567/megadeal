@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { incrementFieldAtomically } from "@/lib/creditsAtomic";
 import { isAdminRequest } from "@/lib/adminSession";
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const result = await adminClient.items.query("Deals").eq("productId", productId).find();
     const record = result.items?.[0];
     if (!record) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { allowedDealActions, dealDisplayStatus, withdrawalRefundsCredit } from "@/lib/dealStatus";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { incrementCreditsAtomically, setFieldsIf } from "@/lib/creditsAtomic";
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
   }
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const deal = await adminClient.items.get("Deals", params.id);
     if (!deal) {
       return NextResponse.json({ error: "Deal not found." }, { status: 404 });
@@ -61,6 +61,16 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     const allowed = allowedDealActions(deal.status ?? "Live").some((a) => a.target === target);
     if (!allowed) {
       return NextResponse.json({ error: "That status change isn't allowed." }, { status: 400 });
+    }
+
+    // A deal MegaDeal paused (pausedBy "admin", set by the admin deal
+    // route) stays paused until MegaDeal restarts it. Only a business's
+    // own pause can be lifted here.
+    if (deal.status === "Paused" && deal.pausedBy === "admin" && target === "Live") {
+      return NextResponse.json(
+        { error: "MegaDeal paused this deal, so it can't be restarted from here. Contact us and we'll sort it out." },
+        { status: 403 }
+      );
     }
 
     // "Make live" normally resumes a paused deal whose clock is already
@@ -100,6 +110,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       ...deal,
       ...publication.fields,
       status: target,
+      pausedBy: target === "Paused" ? "business" : null,
       ...(target === "Live" ? { everLive: true } : {}),
       ...(refund ? { creditRefunded: true } : {}),
     });

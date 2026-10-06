@@ -5,7 +5,7 @@ import { codeForDraft } from "@/lib/dealCode";
 import { draftToRow } from "@/lib/dealDraft";
 import { deleteTestDeal, getTestDeal, restartTestDeal, updateTestDeal } from "@/lib/testDealStore";
 import { testDealToDraft } from "@/lib/testDeals";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       const test = await getTestDeal(id);
       if (!test) return NextResponse.json({ error: "That test deal no longer exists." }, { status: 404, headers: NO_STORE });
 
-      const adminClient = createWixAdminClient();
+      const adminClient = createDataClient();
       const merchant = await adminClient.items.get("Merchants", merchantId).catch(() => null);
       const email = typeof merchant?.email === "string" ? merchant.email.toLowerCase() : "";
       if (!merchant || !email) return NextResponse.json({ error: "That business couldn't be found." }, { status: 404, headers: NO_STORE });

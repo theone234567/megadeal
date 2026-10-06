@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { canRequestRevision, parseRevisionRequest } from "@/lib/dealRevision";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 
@@ -19,7 +19,7 @@ async function ownDeal(req: NextRequest, id: string) {
   if (await memberRateLimited("deal-revision", member.id, 30, HOUR)) {
     return { error: NextResponse.json({ error: "That's a lot of requests at once — please try again shortly." }, { status: 429 }) };
   }
-  const adminClient = createWixAdminClient();
+  const adminClient = createDataClient();
   const deal = await adminClient.items.get("Deals", id).catch(() => null);
   if (!deal) return { error: NextResponse.json({ error: "Deal not found." }, { status: 404 }) };
   if ((deal.merchantEmail || "").toLowerCase() !== member.email.toLowerCase()) {

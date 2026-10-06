@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { queryAllByEmail } from "@/lib/queryAll";
 import { createPasswordResetToken } from "@/lib/passwordResetTokens";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
 
   const startedAt = Date.now();
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
     const rows = await queryAllByEmail(
       (e) => adminClient.items.query("Merchants").eq("email", e),
       email,

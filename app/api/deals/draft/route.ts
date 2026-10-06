@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { codeForDraft } from "@/lib/dealCode";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
-import { createWixAdminClient } from "@/lib/wixAdmin";
+import { createDataClient } from "@/lib/dataClient";
 import { isWixMediaUrl } from "@/lib/photoUrl";
 import { sanitizeDraft, draftToRow, draftRevisionOf, isDraftConflict } from "@/lib/dealDraft";
 import { getOrClaimMerchant } from "@/lib/merchant";
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   const draftId = typeof body.draftId === "string" ? body.draftId : null;
 
   try {
-    const adminClient = createWixAdminClient();
+    const adminClient = createDataClient();
 
     // Same gate as /api/deals/create. Being a signed-in site member is not
     // the same as being a merchant: without this, anyone with an account

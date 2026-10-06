@@ -139,6 +139,7 @@ export function mapMerchant(item: Row, issues: Issue[]): Row {
     coupon_code: orNull(str(item.couponCode)),
     referral_code: orNull(str(item.referralCode)),
     referred_by_code: orNull(str(item.referredByCode).toUpperCase()),
+    referred_by: orNull(str(item.referredBy)),
     referral_rewarded: Boolean(item.referralRewarded),
     promo_rewarded: Boolean(item.promoRewarded),
     notify_referral_bonus: Boolean(item.notifyReferralBonus),
@@ -283,6 +284,7 @@ export function mapDeal(item: Row, product: Row | null, merchantIdByEmail: Map<s
     pending_revision: json(item.pendingRevision, issues, record, "pendingRevision"),
     pending_photo_url: normaliseUrl(item.pendingPhotoUrl, issues, record, "pendingPhotoUrl"),
     pending_photo_review: json(item.pendingPhotoReview, issues, record, "pendingPhotoReview"),
+    pending_photo_at: date(item.pendingPhotoAt),
     ai_review: json(item.aiReview, issues, record, "aiReview"),
     content_history: (() => {
       const h = json(item.contentHistory, issues, record, "contentHistory");
