@@ -94,6 +94,40 @@ Found on the way: the site shows each deal's name and price from its Wix
 Stores product, not the Deals row. The converter now keeps the product's
 and lists any deal where the two differ.
 
+## Step 2, continued: every route, and the import
+
+- `lib/db/wixShim.ts`: the site's existing route code runs unchanged on
+  the new database. It answers the same calls the routes make to Wix
+  (look up, save, delete, the few Stores product calls, and the
+  "only if" updates used for credits and claims), each as a single SQL
+  statement where it has to be all-or-nothing. A field it doesn't know
+  is an error, never dropped.
+- `lib/dataClient.ts`: what the routes ask for their client. Wix today;
+  the new database when `DATA_BACKEND=postgres`. Photo uploads, email and
+  logins still go to Wix until their own steps.
+- `lib/db/routes.test.ts`: 21 tests run the real routes end to end on the
+  new database (signup, drafts, submission and charging, approval by an
+  admin or the AI review, AI rejection with refund, pause and restart,
+  withdrawal refunds, another business blocked, view counts, profile and
+  photos, change requests, admin edits, referrals, credit top-ups,
+  deletion, admin lists, settings, contact form, mailing list, the
+  expiry job).
+- `lib/db/importWix.ts` and `scripts/wix-import.ts`: load an export.
+  Rehearsal by default (runs everything, then undoes it); `--commit` for
+  real. Writes `import-report.json` listing every record it couldn't
+  bring over cleanly and every paused deal to check.
+
+    node scripts/wix-export.mjs
+    DATABASE_URL=… npx tsx scripts/wix-import.ts wix-export/<folder>
+    DATABASE_URL=… npx tsx scripts/wix-import.ts wix-export/<folder> --commit
+
+Also fixed on the way (security review finding 1): when an admin pauses
+a deal it's marked as theirs, and the business can no longer restart it;
+the portal says MegaDeal paused it. This works on Wix today too.
+
+Still on Wix after step 2: business logins and password resets (step 3),
+photo uploads (step 1), email (step 4), and MegaShop.
+
 ## The steps
 
 Each step ships on its own and can be rolled back. About 4–5 weeks in

@@ -1,5 +1,9 @@
 import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import type { Sql } from "./sql";
+
+export type { Sql } from "./sql";
+export { inTransaction } from "./sql";
 
 /**
  * The connection to MegaDeal's own database (docs/WIX-MIGRATION.md).
@@ -14,12 +18,6 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
  * that bypasses row-level security and makes its own checks, as it does
  * with Wix today; row-level security guards everything else.
  */
-
-/** The one thing the data code needs from a database: run a query. The
- *  tests pass an in-process Postgres with the same interface. */
-export interface Sql {
-  query<T = Record<string, any>>(text: string, params?: unknown[]): Promise<T[]>;
-}
 
 declare global {
   interface CloudflareEnv {
@@ -61,21 +59,5 @@ export async function withDb<T>(fn: (db: Sql) => Promise<T>): Promise<T> {
     });
   } finally {
     client.end().catch(() => {});
-  }
-}
-
-/**
- * Runs `fn` in one transaction: everything it writes lands together, or
- * (if it throws) none of it does.
- */
-export async function inTransaction<T>(db: Sql, fn: (db: Sql) => Promise<T>): Promise<T> {
-  await db.query("begin");
-  try {
-    const result = await fn(db);
-    await db.query("commit");
-    return result;
-  } catch (err) {
-    await db.query("rollback").catch(() => {});
-    throw err;
   }
 }
