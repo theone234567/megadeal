@@ -935,7 +935,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
 
         {isTest ? (
           <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-            Test deal: only admins can see it, on the private previews. Nothing is charged or sent to Wix.{" "}
+            Test deal: only admins can see it, on the private previews. Nothing is charged or published.{" "}
             {testMode?.id ? "Saving keeps its timer running from when it last started." : "Its timer starts when you save it."}
           </p>
         ) : !siteLaunched ? (
@@ -1025,7 +1025,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           <h1 className="mt-3 text-2xl font-extrabold text-slate-900">{testMode?.id ? "Edit test deal" : "Create a test deal"}</h1>
           <p className="mt-1 text-sm text-slate-500">
             The same form businesses use, checked by the same rules. Only admins can see test deals, and nothing is
-            charged or sent to Wix.
+            charged or published.
           </p>
         </>
       ) : (

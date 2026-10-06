@@ -722,7 +722,7 @@ export default function AdminBusinessDetailPage() {
           deals block the delete — cancel those first. This can&apos;t be undone.
         </p>
         <p className="mt-2 max-w-xl text-xs text-red-800/70">
-          Their MegaDeal login isn&apos;t deleted — that lives in Wix Members. They
+          Their login isn&apos;t deleted — logins are kept separately from businesses. They
           can still sign in, and will be asked to start a new application, which is
           what frees the email up for testing again.
         </p>

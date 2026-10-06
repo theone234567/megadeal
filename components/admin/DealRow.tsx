@@ -273,9 +273,9 @@ export default function DealRow({
           </div>
           {!deal.productId && (
             <p className="mt-2 text-xs font-semibold text-amber-700">
-              ⚠️ No Wix Store product linked — this deal won&apos;t appear on the storefront even if
-              set to Live. Deals normally get a product automatically when submitted; if one is
-              missing here, check the Wix dashboard or have the business resubmit.
+              ⚠️ This deal has no page on the site yet — it won&apos;t appear on the storefront even if
+              set to Live. Deals normally get one automatically when submitted; if it&apos;s
+              missing here, have the business resubmit.
             </p>
           )}
           <RevisionReview deal={deal} onSaved={(item) => setDeal(item)} />

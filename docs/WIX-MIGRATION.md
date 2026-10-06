@@ -444,6 +444,25 @@ migrations applied and no data:
 `scripts/take-backup.ts` takes the same copy by hand, to a file, any
 time (e.g. before the final import).
 
+### Privacy policy: update with each switch
+
+The privacy policy (`app/privacy/page.tsx`, "Service providers and
+overseas disclosure") names Wix as the provider of logins, data and
+email. That stays true until the switches; once they're on it isn't, and
+the Privacy Act expects the policy to say who processes personal
+information. A suggested replacement for that paragraph's provider list,
+for you to check (and have checked) before using:
+
+> This includes Supabase (our database and business logins, hosted in
+> Sydney, Australia), Cloudflare (hosting, security checks and photo
+> storage), Resend (transactional email), Google's Places API for
+> business-address autocomplete, Google Analytics for site traffic
+> reporting, and Meta (Facebook/Instagram) for ad measurement. While
+> MegaShop runs on Wix, Wix.com processes MegaShop orders.
+
+Change it in the same deploy as the last switch, and update the "Last
+updated" date at the top of the page.
+
 ### Stage 4: after the move
 
 - Keep Wix for a month, read-only, as a fallback; then end the

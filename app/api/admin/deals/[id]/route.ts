@@ -326,7 +326,7 @@ async function syncProduct(
     );
     if (!getRes.ok) {
       console.error("[admin/deals/[id]] product read failed", getRes.status, await getRes.text().catch(() => ""));
-      return "Couldn't read this deal's Wix product, so nothing was changed. Try again.";
+      return "Couldn't read this deal's listing, so nothing was changed. Try again.";
     }
     const { product } = await getRes.json();
     const priceNow = Number(patch.priceNow ?? existing.priceNow);
@@ -348,6 +348,6 @@ async function syncProduct(
     return null;
   } catch (err: any) {
     console.error("[admin/deals/[id]] product sync failed", err);
-    return err?.message || "Couldn't update this deal's Wix product, so nothing was changed.";
+    return err?.message || "Couldn't update this deal's listing, so nothing was changed.";
   }
 }

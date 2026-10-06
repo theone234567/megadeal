@@ -26,7 +26,7 @@ export default async function AdminDealPreviewPage(props: { params: Promise<{ id
   if (!result) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <p className="text-slate-600">This deal couldn&apos;t be loaded — it may have no Wix product yet.</p>
+        <p className="text-slate-600">This deal couldn&apos;t be loaded — it may not have been submitted yet (a draft has no page to preview).</p>
         <Link href="/admin" className="mt-4 inline-block font-semibold text-brand-700 hover:underline">
           ← Back to admin
         </Link>

@@ -133,7 +133,7 @@ export default function TestDealsPanel({ merchants }: { merchants: AdminMerchant
           <h2 className="text-xl font-extrabold text-slate-900">Test deals</h2>
           <p className="mt-0.5 max-w-2xl text-sm text-slate-500">
             Everyday and Flash deals only you can see. Before launch they appear on the private homepage, category and
-            Flash previews, marked “Test deal”. Nothing is charged or counted, and nothing goes to Wix.
+            Flash previews, marked “Test deal”. Nothing is charged or counted, and nothing is published.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
