@@ -105,6 +105,19 @@ describe("the public", () => {
     expect(names).not.toContain("Not Yet Approved");
   });
 
+  it("can call only the two harmless helpers, nothing that reads or changes data", async () => {
+    const callable = (role: string) =>
+      as(SERVER, `select p.proname as name from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                   where n.nspname = 'public' and has_function_privilege($1, p.oid, 'execute') order by 1`, [role]);
+    for (const role of ["anon", "authenticated"]) {
+      expect((await callable(role)).map((r) => r.name), role).toEqual(["is_http_url", "slugify"]);
+    }
+    // And a function added later doesn't become callable on its own.
+    await db.exec("create function public.added_later() returns int language sql as 'select 1'");
+    expect((await callable("anon")).map((r) => r.name)).not.toContain("added_later");
+    await db.exec("drop function public.added_later()");
+  });
+
   it("can't read the tables behind the views", async () => {
     for (const table of ["merchants", "deals", "merchant_activity", "email_signups", "contact_messages", "api_usage_counters"]) {
       await expect(as(PUBLIC, `select * from public.${table}`), table).rejects.toThrow(/permission denied/);

@@ -465,12 +465,13 @@ class Query {
   isNotEmpty(field: string) {
     return this.add((e) => `(${e} is not null and ${e}::text <> '')`, field);
   }
+  // Whole numbers only: these go into the statement's text.
   limit(n: number) {
-    this.lim = Math.max(0, Math.min(1000, n));
+    this.lim = Number.isFinite(n) ? Math.max(0, Math.min(1000, Math.trunc(n))) : this.lim;
     return this;
   }
   skip(n: number) {
-    this.off = Math.max(0, n);
+    this.off = Number.isFinite(n) ? Math.max(0, Math.trunc(n)) : 0;
     return this;
   }
   async find(): Promise<{ items: Row[] }> {

@@ -93,6 +93,9 @@ describe("businesses", () => {
     expect(await queryAllItems(() => client().items.query("Merchants"), "t")).toHaveLength(3);
     expect((await client().items.query("Merchants").limit(2).find()).items).toHaveLength(2);
     expect((await client().items.query("Merchants").limit(2).skip(2).find()).items).toHaveLength(1);
+    // Not a whole number: the default page, never an error or the text itself.
+    expect((await client().items.query("Merchants").limit("2; drop table x" as any).skip(Number.NaN).find()).items).toHaveLength(3);
+    expect((await client().items.query("Merchants").limit(1.7).find()).items).toHaveLength(1);
   });
 });
 
