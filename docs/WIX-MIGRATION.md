@@ -238,6 +238,39 @@ every stage below; it changes nothing.
 Do the stages in this order. Each one is a small change you can make on
 a quiet morning, with time to watch it afterwards.
 
+### Rehearse first (recommended)
+
+Before switching the live site, run the whole switch-over once on a
+private copy: the same code with every switch on, its own database and
+buckets, and no visitors. Everything in this checklist then happens
+twice, and the second time (for real) holds no surprises.
+
+1. A second Supabase project (e.g. `megadeal-staging`), a second
+   Hyperdrive, and buckets `megadeal-photos-staging` and
+   `megadeal-backups-staging`.
+2. Add to `wrangler.toml` (once those exist):
+
+       [env.staging]
+       name = "megadeal-staging"
+       vars = { DATA_BACKEND = "postgres", PHOTO_STORAGE = "r2", AUTH_BACKEND = "supabase", EMAIL_PROVIDER = "resend" }
+       kv_namespaces = [{ binding = "RATE_LIMIT_KV", id = "<a new KV namespace>" }]
+       r2_buckets = [{ binding = "PHOTOS", bucket_name = "megadeal-photos-staging" }, { binding = "BACKUPS", bucket_name = "megadeal-backups-staging" }]
+       hyperdrive = [{ binding = "HYPERDRIVE", id = "<the staging Hyperdrive id>" }]
+       images = { binding = "IMAGES" }
+
+   and set its secrets with `npx wrangler secret put <NAME> --env staging`.
+3. Deploy it by hand: `npx opennextjs-cloudflare build && npx wrangler
+   deploy --env staging`. It gets a `*.workers.dev` address; put it
+   behind Cloudflare Access (Zero Trust > Access > Applications) so only
+   you can open it.
+4. Import a fresh Wix export into it, then walk through what a business
+   does: sign up, finish the listing with a photo, create and submit a
+   deal; approve it in admin; open the public pages; reset a password.
+   Moving off Wix should be all ticks.
+
+Its pages say `noindex` before launch, but keep it behind Access anyway:
+it holds a copy of real businesses' details.
+
 ### Where settings go
 
 - **Switches** (`EMAIL_PROVIDER`, `DATA_BACKEND`, `PHOTO_STORAGE`,
