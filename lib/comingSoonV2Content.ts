@@ -43,13 +43,14 @@ export const V2_HERO = {
   position: "60% 55%",
 };
 
+// 400px copies: the tiles are shown at most ~180px wide.
 export const V2_CATEGORIES = [
-  { label: "Food & Drink", src: "/megadeal-coming-soon/food-drink-v1.webp", alt: "Burger and fries at a cafe" },
-  { label: "Beauty & Spa", src: "/megadeal-coming-soon/beauty-spa-v1.webp", alt: "Facial treatment at a spa" },
-  { label: "Things To Do", src: "/megadeal-coming-soon/things-to-do-v1.webp", alt: "Kayaking on calm coastal water" },
-  { label: "Travel & Getaways", src: "/megadeal-coming-soon/travel-getaways-v1.webp", alt: "Hotel bedroom with a coastal view" },
-  { label: "Health & Fitness", src: "/megadeal-coming-soon/health-fitness-v1.webp", alt: "Adults attending a yoga class" },
-  { label: "Home & Car", src: "/megadeal-coming-soon/home-car-v1.webp", alt: "Cleaning a car wheel" },
+  { label: "Food & Drink", src: "/megadeal-coming-soon/food-drink-v1-400w.webp", alt: "Burger and fries at a cafe" },
+  { label: "Beauty & Spa", src: "/megadeal-coming-soon/beauty-spa-v1-400w.webp", alt: "Facial treatment at a spa" },
+  { label: "Things To Do", src: "/megadeal-coming-soon/things-to-do-v1-400w.webp", alt: "Kayaking on calm coastal water" },
+  { label: "Travel & Getaways", src: "/megadeal-coming-soon/travel-getaways-v1-400w.webp", alt: "Hotel bedroom with a coastal view" },
+  { label: "Health & Fitness", src: "/megadeal-coming-soon/health-fitness-v1-400w.webp", alt: "Adults attending a yoga class" },
+  { label: "Home & Car", src: "/megadeal-coming-soon/home-car-v1-400w.webp", alt: "Cleaning a car wheel" },
 ] as const;
 
 /** Reconciled with /help and /terms: no vouchers, a deal code, pay the
