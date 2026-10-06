@@ -388,9 +388,12 @@ hour or two; after that, fix forward.
 6. Check: sign up as a new test business (code arrives, portal opens),
    sign out, sign in, wrong password is refused, "Forgot password"
    email arrives and its link works once only.
-7. Email each existing business: MegaDeal has a new sign-in; use
-   "Forgot password" on the sign-in page once to set a password, then
-   sign in as usual. Their business and deals are waiting.
+7. Moving off Wix > Business logins: press **Email them a set-password
+   link**. Each business that hasn't set a password yet gets one email
+   with a link to choose one (it works once, for 7 days; after that,
+   "Forgot password" does the same). Their business, deals and credits
+   are waiting when they sign in. Pressing it again never emails anyone
+   twice in a week.
 
 Turning it off: remove the line and deploy. Businesses sign in with
 Wix again; accounts created meanwhile would need to sign up on Wix.

@@ -6,6 +6,7 @@ import { getRateLimitKv } from "./rateLimit";
 // sitting in an inbox any longer than it needs to be.
 const TTL_SECONDS = 60 * 60;
 const KEY_PREFIX = "pwreset:";
+export const INVITE_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 function hashToken(raw: string): string {
   return createHash("sha256").update(raw).digest("hex");
@@ -28,11 +29,13 @@ function hashToken(raw: string): string {
  * that as "can't process this request" (fail closed), not silently skip
  * sending the email, since there'd be nothing to validate the click against.
  */
-export async function createPasswordResetToken(email: string): Promise<string | null> {
+export async function createPasswordResetToken(email: string, ttlSeconds: number = TTL_SECONDS): Promise<string | null> {
   const kv = await getRateLimitKv();
   if (!kv) return null;
   const raw = randomBytes(32).toString("hex");
-  await kv.put(KEY_PREFIX + hashToken(raw), email, { expirationTtl: TTL_SECONDS });
+  // At most a week (the invitation to set a password after the move off
+  // Wix, lib/loginInvites.ts); an hour for "Forgot password".
+  await kv.put(KEY_PREFIX + hashToken(raw), email, { expirationTtl: Math.min(Math.max(60, ttlSeconds), INVITE_TTL_SECONDS) });
   return raw;
 }
 

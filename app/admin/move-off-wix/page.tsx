@@ -118,6 +118,80 @@ function CopyPhotos({ left, onDone }: { left: number; onDone: () => void }) {
   );
 }
 
+/** Emails each business without a login yet a link to set its password (app/api/admin/login-invites). */
+function LoginInvites() {
+  const [waiting, setWaiting] = useState<number | null>(null);
+  const [running, setRunning] = useState(false);
+  const [done, setDone] = useState<{ sent: number; alreadySent: number; failed: string[] } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const count = useCallback(() => {
+    fetch("/api/admin/login-invites", { cache: "no-store" })
+      .then(async (res) => {
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json.error || "Couldn't check.");
+        setWaiting(json.waiting);
+      })
+      .catch((err) => setError(err.message));
+  }, []);
+  useEffect(count, [count]);
+
+  async function run() {
+    if (!window.confirm(`Email ${waiting} business${waiting === 1 ? "" : "es"} a link to set a password for the new sign-in?`)) return;
+    setRunning(true);
+    setError(null);
+    const total = { sent: 0, alreadySent: 0, failed: [] as string[] };
+    try {
+      // A batch at a time until none are left, or a batch sends nothing.
+      for (let i = 0; i < 100; i++) {
+        const res = await fetch("/api/admin/login-invites", { method: "POST" });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json.error || "Sending stopped. Try again.");
+        total.sent += json.sent;
+        total.alreadySent = json.alreadySent;
+        total.failed = [...new Set([...total.failed, ...json.failed])];
+        setDone({ ...total });
+        if (json.remaining === 0 || json.sent === 0) break;
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setRunning(false);
+      count();
+    }
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <p className="text-sm text-slate-700">
+        {waiting === null
+          ? "Checking which businesses still need a password…"
+          : waiting === 0
+            ? "Every business has set a password for the new sign-in."
+            : `${waiting} business${waiting === 1 ? " hasn't" : "es haven't"} set a password for the new sign-in yet. Each can be emailed a link to set one (it works once, for 7 days); a business is emailed at most once a week.`}
+      </p>
+      {waiting !== null && waiting > 0 && (
+        <button
+          onClick={run}
+          disabled={running}
+          className="mt-3 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+        >
+          {running ? "Sending…" : "Email them a set-password link"}
+        </button>
+      )}
+      <div aria-live="polite" className="mt-2 text-sm text-slate-700">
+        {done && (
+          <p>
+            {done.sent} emailed.{done.alreadySent > 0 && ` ${done.alreadySent} already emailed this week.`}
+            {done.failed.length > 0 && ` Couldn't email: ${done.failed.join(", ")}.`}
+          </p>
+        )}
+        {error && <p className="text-red-700">{error}</p>}
+      </div>
+    </div>
+  );
+}
+
 /** Admin: how ready each step off Wix is, checked live (lib/migrationReadiness.ts). */
 export default function MoveOffWixPage() {
   const [data, setData] = useState<Readiness | null>(null);
@@ -213,6 +287,7 @@ export default function MoveOffWixPage() {
                 {s.id === "photos" && s.on && data.wixPhotosLeft != null && data.wixPhotosLeft > 0 && (
                   <CopyPhotos left={data.wixPhotosLeft} onDone={load} />
                 )}
+                {s.id === "logins" && s.on && <LoginInvites />}
               </li>
             );
           })}

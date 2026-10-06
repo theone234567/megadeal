@@ -416,7 +416,7 @@ async function loginsSection(dbReady: boolean, facts: DatabaseFacts | null, emai
       ? ok("Attempt limits", "The RATE_LIMIT_KV store is connected: repeated sign-in attempts are slowed down.")
       : missing("Attempt limits", "The RATE_LIMIT_KV binding is missing, so sign-in attempts aren't limited.")
   );
-  checks.push(info("Existing businesses", "Wix passwords can't be copied. At the switch, each business sets a new password once from a reset email."));
+  checks.push(info("Existing businesses", "Wix passwords can't be copied, so each business sets a new password once, from an emailed link. Once this is switched on, send the links with the button below."));
 
   return {
     id: "logins",

@@ -217,6 +217,48 @@ describe.skipIf(!ENABLED)("business logins on Supabase, end to end", () => {
     expect(sent).toEqual([]);
   });
 
+  it("an admin emails each business without a login a link to set its password, once", async () => {
+    vi.doMock("@/lib/adminSession", () => ({ isAdminRequest: async () => true }));
+    vi.doMock("@/lib/adminAudit", () => ({ logAdminAction: async () => {} }));
+    const stamp = Date.now();
+    const emails = { approved: `invite-a+${stamp}@cafe.test`, pending: `invite-p+${stamp}@cafe.test`, suspended: `invite-s+${stamp}@cafe.test` };
+    const { withDb } = await import("./db/connection");
+    for (const [status, e] of [["Approved", emails.approved], ["Pending", emails.pending], ["Suspended", emails.suspended]]) {
+      await withDb((db) => db.query("insert into public.merchants (email, business_name, status) values ($1, $2, $3)", [e.toUpperCase(), `Invite ${status}`, status]));
+    }
+    const route = await import("@/app/api/admin/login-invites/route");
+    sent.length = 0;
+    for (let i = 0; i < 20; i++) {
+      const r = await (await route.POST(req("/api/admin/login-invites", {}))).json();
+      if (r.remaining === 0) break;
+    }
+    const to = (e: string) => sent.filter((m) => m.to === e);
+    expect(to(emails.approved)).toHaveLength(1);
+    expect(to(emails.pending)).toHaveLength(1);
+    expect(to(emails.suspended)).toHaveLength(0);
+    expect(to(emails.approved)[0].html).toContain("Hi Invite Approved");
+
+    // Pressing it again doesn't email them twice.
+    const again = await (await route.POST(req("/api/admin/login-invites", {}))).json();
+    expect(again.sent).toBe(0);
+    expect(to(emails.approved)).toHaveLength(1);
+    // Only from the admin page itself.
+    expect((await route.POST(req("/api/admin/login-invites", {}, {}, "https://evil.example"))).status).toBe(403);
+
+    // The link sets the password; the business is then no longer waiting.
+    const link = to(emails.approved)[0].html.match(/reset-password\?token=([0-9a-f]+)/)![1];
+    const confirm = await import("@/app/api/auth/confirm-password-reset/route");
+    expect((await confirm.POST(req("/api/auth/confirm-password-reset", { token: link, newPassword: "an invited long password" }))).status).toBe(200);
+    const login = await import("@/app/api/auth/login/route");
+    expect(await (await login.POST(req("/api/auth/login", { email: emails.approved, password: "an invited long password" }))).json()).toEqual({ status: "success" });
+    const { businessesWithoutLogin } = await import("./loginInvites");
+    const waiting = (await withDb(businessesWithoutLogin)).map((b) => b.email);
+    expect(waiting).not.toContain(emails.approved);
+    expect(waiting).toContain(emails.pending);
+    vi.doUnmock("@/lib/adminSession");
+    vi.doUnmock("@/lib/adminAudit");
+  });
+
   it("the email hook sends only what Supabase signed, recently", async () => {
     const hook = await import("@/app/api/auth/email-hook/route");
     const body = JSON.stringify({ user: { email: "hook@bistro.test" }, email_data: { token: "123456", email_action_type: "signup" } });
