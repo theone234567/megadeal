@@ -59,10 +59,12 @@ export async function generateMetadata(
     // reach the business and the live deals it links to.
     const ended = await fetchEndedDeal(params.slug).catch(() => null);
     if (ended) {
+      // As the page itself says (EndedDeal): run out, or paused for now.
+      const expired = Boolean(ended.expiresAt && new Date(ended.expiresAt).getTime() <= Date.now());
       return {
-        title: `${ended.name}${ended.businessName ? ` at ${ended.businessName}` : ""} — deal ended`,
+        title: `${ended.name}${ended.businessName ? ` at ${ended.businessName}` : ""} — ${expired ? "deal ended" : "not available right now"}`,
         description: truncateForMeta(
-          `This deal has ended.${ended.businessName ? ` See ${ended.businessName}'s current deals` : " See current deals"} on ${SITE_NAME}.`
+          `${expired ? "This deal has ended." : "This deal isn't available right now."}${ended.businessName ? ` See ${ended.businessName}'s current deals` : " See current deals"} on ${SITE_NAME}.`
         ),
         robots: { index: false, follow: true },
       };
