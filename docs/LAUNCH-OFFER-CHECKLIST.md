@@ -19,7 +19,7 @@ Driven by `lib/promo.ts` and `SITE_LAUNCHED`:
   `/advertise/home-car`, `/advertise/things-to-do`, `/how-it-works`, `/about`, the footer
   banner, `llms.txt` and the share images that state the offer. Before launch they render
   exactly as before; from launch they say up to 3 months with WELCOME3 and drop the
-  "before launch" framing. The new post-launch wording was put to the owner for approval.
+  "before launch" framing. The owner approved the post-launch wording on 6 Oct 2026.
 
 Launch with the code switch (`LAUNCHED = true` in `lib/siteConfig.ts`, then push): these
 pages are pre-rendered, so a runtime-only `SITE_LAUNCHED` would leave them on the pre-launch
