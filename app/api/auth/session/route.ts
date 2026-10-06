@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createWixClient } from "@/lib/wixClient";
+import { authBackend } from "@/lib/authSession";
 import {
   MEMBER_COOKIE_NAME,
   MEMBER_COOKIE_OPTIONS,
@@ -23,6 +24,9 @@ export const dynamic = "force-dynamic";
  * fails confusingly on the next request.
  */
 export async function POST(req: NextRequest) {
+  // Only for Wix sign-ins; MegaDeal's own logins set their session in
+  // app/api/auth/verify and login.
+  if (authBackend() === "supabase") return NextResponse.json({ error: "Not available." }, { status: 404 });
   const body = await req.json().catch(() => null);
   const tokens = body?.tokens;
   if (!tokens || typeof tokens !== "object") {

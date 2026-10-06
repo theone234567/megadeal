@@ -3,7 +3,7 @@ import { createWixClient } from "./wixClient";
 // No 0/O/1/l/I — easy to read aloud or over the phone without ambiguity.
 const PASSWORD_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
 
-function generateTempPassword(length = 12): string {
+export function generateTempPassword(length = 12): string {
   const bytes = new Uint8Array(length);
   crypto.getRandomValues(bytes);
   let out = "";

@@ -175,6 +175,24 @@ describe.skipIf(!ENABLED)("business logins on Supabase, end to end", () => {
     expect((await (await me.GET(req("/api/auth/me", undefined, session))).json()).member).toBeNull();
   });
 
+  it("an admin can give a business a new password, which signs it out elsewhere", async () => {
+    vi.doMock("@/lib/adminSession", () => ({ isAdminRequest: async () => true }));
+    vi.doMock("@/lib/adminAudit", () => ({ logAdminAction: async () => {}, auditTarget: (n: unknown) => String(n) }));
+    const { withDb } = await import("./db/connection");
+    const [m] = await withDb((db) => db.query<{ id: string }>("select coalesce(wix_id, id::text) as id from public.merchants where lower(email) = $1", [email]));
+    const login = await import("@/app/api/auth/login/route");
+    const before = cookiesOf(await login.POST(req("/api/auth/login", { email, password: "another long new password" })));
+    const route = await import("@/app/api/admin/merchants/[id]/reset-password/route");
+    const res = await route.POST(req(`/api/admin/merchants/${m.id}/reset-password`, {}), { params: Promise.resolve({ id: m.id }) });
+    const { password: fresh } = await res.json();
+    expect(fresh).toMatch(/^\S{16}$/);
+    const me = await import("@/app/api/auth/me/route");
+    expect((await (await me.GET(req("/api/auth/me", undefined, before))).json()).member).toBeNull();
+    expect(await (await login.POST(req("/api/auth/login", { email, password: fresh }))).json()).toEqual({ status: "success" });
+    vi.doUnmock("@/lib/adminSession");
+    vi.doUnmock("@/lib/adminAudit");
+  });
+
   it("the email hook sends only what Supabase signed, recently", async () => {
     const hook = await import("@/app/api/auth/email-hook/route");
     const body = JSON.stringify({ user: { email: "hook@bistro.test" }, email_data: { token: "123456", email_action_type: "signup" } });
