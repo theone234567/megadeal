@@ -32,11 +32,12 @@ export type Who = { role: "anon" | "authenticated" | "service_role"; uid?: strin
 export const PUBLIC: Who = { role: "anon" };
 export const SERVER: Who = { role: "service_role" };
 
-export async function createTestDb() {
+/** `migrations: false` gives Supabase's own pieces only, as a new project has. */
+export async function createTestDb(opts: { migrations?: boolean } = {}) {
   const db = new PGlite();
   await db.exec(SUPABASE_STUB);
   const dir = join(process.cwd(), "supabase/migrations");
-  for (const file of readdirSync(dir).filter((f) => f.endsWith(".sql")).sort()) {
+  for (const file of opts.migrations === false ? [] : readdirSync(dir).filter((f) => f.endsWith(".sql")).sort()) {
     await db.exec(readFileSync(join(dir, file), "utf8"));
   }
 

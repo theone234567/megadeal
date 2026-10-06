@@ -5,8 +5,9 @@
  *   DATABASE_URL=… npx tsx scripts/restore-backup.ts backups-2026-10-06T14-23-00Z.json.gz            rehearsal
  *   DATABASE_URL=… npx tsx scripts/restore-backup.ts backups-2026-10-06T14-23-00Z.json.gz --commit   for real
  *
- * The database needs the tables first (every file in supabase/migrations,
- * in order) and no data: a restore never mixes with what's there. A
+ * The database needs the tables first (DATABASE_URL=… npx tsx
+ * scripts/migrate.ts --apply) and no data: a restore never mixes with
+ * what's there. A
  * rehearsal loads everything, checks it and then undoes it.
  *
  * The backup file holds personal details: delete it when you're done.

@@ -335,9 +335,16 @@ Set up (any time before):
 
 1. Supabase: a new project in the **Sydney** region, with a long
    generated database password stored in a password manager.
-2. Apply the migrations in `supabase/migrations`, in order (Supabase
-   CLI `supabase db push`, or paste each file into the SQL editor,
-   oldest first).
+2. Create the tables and rules (everything in `supabase/migrations`):
+
+       DATABASE_URL=… npx tsx scripts/migrate.ts            # shows what it will do
+       DATABASE_URL=… npx tsx scripts/migrate.ts --apply
+
+   Use the connection string from Supabase > Connect (direct, or the
+   session pooler on port 5432). Each file applies whole or not at all,
+   and running it again only applies what's new, so it's also how later
+   updates get in. (It records them where the Supabase CLI does, so
+   `supabase db push` works too.)
 3. Supabase > Settings > API > Data API: turn it off, or remove
    `public` from the exposed schemas. The site never uses it (it
    connects to the database directly), and with it off, the public key
@@ -469,7 +476,7 @@ A copy holds personal details: it never leaves the private bucket except
 to restore.
 
 To restore, into a new Supabase project (or any Postgres) with the
-migrations applied and no data:
+tables created (`scripts/migrate.ts --apply`) and no data:
 
 1. Download the copy you want from the `BACKUPS` bucket in Cloudflare
    R2.
