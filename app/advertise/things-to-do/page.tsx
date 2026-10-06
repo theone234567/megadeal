@@ -176,7 +176,9 @@ const BENEFITS = [
   {
     icon: MapPinIcon,
     title: "Local Auckland Audience",
-    body: "MegaDeal is launching in Auckland first and is designed to help locals discover businesses around them.",
+    body: LAUNCHED
+      ? "MegaDeal is live in Auckland and is designed to help locals discover businesses around them."
+      : "MegaDeal is launching in Auckland first and is designed to help locals discover businesses around them.",
   },
   {
     icon: MegaphoneIcon,
@@ -227,7 +229,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "What businesses are currently eligible?",
-    a: "MegaDeal is launching in Auckland first and currently accepts New Zealand registered limited companies. Sole traders and partnerships are not currently eligible. E-commerce retail and adult businesses are not eligible. Eligible local activity businesses can use their own websites for bookings and payments. Applications and offers remain subject to the existing eligibility and approval process.",
+    a: `${LAUNCHED ? "MegaDeal is live in Auckland and currently accepts" : "MegaDeal is launching in Auckland first and currently accepts"} New Zealand registered limited companies. Sole traders and partnerships are not currently eligible. E-commerce retail and adult businesses are not eligible. Eligible local activity businesses can use their own websites for bookings and payments. Applications and offers remain subject to the existing eligibility and approval process.`,
   },
 ];
 

@@ -21,7 +21,8 @@ import {
   UsersIcon,
   ZapIcon,
 } from "@/components/icons";
-import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 
@@ -30,9 +31,15 @@ import { fredoka, plusJakartaSans } from "@/lib/fonts";
 // draft before real assets/copy are confirmed live.
 const PAGE_LIVE_FOR_SEARCH = true;
 
+// The offer follows the site's launch state (SITE_LAUNCHED, lib/promo.ts):
+// before launch, up to 6 months with WELCOME6 for businesses joining
+// before launch; after it, the launch offer, with no pre-launch wording.
+const LAUNCHED = SITE_LAUNCHED;
+const PROMO = currentPromo(LAUNCHED);
+const OFFER = `Up to ${PROMO.months} months free advertising`;
+
 const TITLE = "Beauty & Spa Advertising Auckland";
-const DESCRIPTION =
-  "Reach Auckland customers with offers for nails, hair, spa, massage and more. 0% commission, and up to 6 months free advertising for eligible businesses.";
+const DESCRIPTION = `Reach Auckland customers with offers for nails, hair, spa, massage and more. 0% commission, and up to ${PROMO.months} months free advertising for eligible businesses.`;
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -53,9 +60,8 @@ export const metadata: Metadata = {
 };
 
 // Same signup route and default-promo behaviour /advertise/restaurants
-// already relies on — MerchantSignupForm's promo field defaults to
-// WELCOME6 with no query param needed (see MerchantSignupForm.tsx's
-// `useState(referralPrefill || "WELCOME6")`).
+// already relies on — MerchantSignupForm's promo field defaults to the
+// current offer code with no query param needed (see MerchantSignupForm.tsx).
 const SIGNUP_HREF = "/list-your-business#signup";
 
 // Hero layers, each replaceable on its own. The photo is the "MegaDeal
@@ -262,7 +268,9 @@ const WHY_MEGADEAL = [
   {
     icon: MapPinIcon,
     title: "Local Customers",
-    body: "MegaDeal is launching in Auckland first, with a focus on connecting locals with businesses around them.",
+    body: LAUNCHED
+      ? "MegaDeal is live in Auckland, with a focus on connecting locals with businesses around them."
+      : "MegaDeal is launching in Auckland first, with a focus on connecting locals with businesses around them.",
   },
   {
     icon: PercentIcon,
@@ -271,8 +279,10 @@ const WHY_MEGADEAL = [
   },
   {
     icon: CreditCardIcon,
-    title: "Up to 6 Months Free",
-    body: "Eligible Auckland businesses that join before launch can get up to six months of free advertising.",
+    title: `Up to ${PROMO.months} Months Free`,
+    body: LAUNCHED
+      ? `Eligible new Auckland businesses can get up to ${PROMO.months} months of free advertising.`
+      : "Eligible Auckland businesses that join before launch can get up to six months of free advertising.",
   },
   {
     icon: UnlockIcon,
@@ -306,7 +316,9 @@ const STEPS = [
 const FAQS: { q: string; a: string }[] = [
   {
     q: "How much does it cost to advertise my beauty business on MegaDeal?",
-    a: "MegaDeal is currently offering eligible Auckland businesses up to six months of free advertising as part of our launch offer. Use WELCOME6 at signup.",
+    a: LAUNCHED
+      ? `MegaDeal is currently offering eligible new Auckland businesses up to ${PROMO.months} months of free advertising as part of our launch offer. Use ${PROMO.code} at signup.`
+      : "MegaDeal is currently offering eligible Auckland businesses up to six months of free advertising as part of our launch offer. Use WELCOME6 at signup.",
   },
   {
     q: "Does MegaDeal take commission?",
@@ -326,7 +338,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Is MegaDeal only available in Auckland?",
-    a: "MegaDeal is launching in Auckland first.",
+    a: LAUNCHED ? "For now, yes. MegaDeal is live in Auckland." : "MegaDeal is launching in Auckland first.",
   },
   {
     q: "Is MegaDeal only for large salons?",
@@ -365,9 +377,10 @@ export default function BeautySpaAdvertisingPage() {
             url: `${SITE_URL}/advertise/beauty-spa`,
             makesOffer: {
               "@type": "Offer",
-              name: "Up to 6 months free advertising",
-              description:
-                "Up to 6 months of free advertising credits for qualifying businesses that join MegaDeal before its Auckland launch, using code WELCOME6. Conditions apply.",
+              name: OFFER,
+              description: LAUNCHED
+                ? `Up to ${PROMO.months} months of free advertising credits for qualifying new businesses on MegaDeal in Auckland, using code ${PROMO.code}. Conditions apply.`
+                : "Up to 6 months of free advertising credits for qualifying businesses that join MegaDeal before its Auckland launch, using code WELCOME6. Conditions apply.",
               price: "0",
               priceCurrency: "NZD",
               availability: "https://schema.org/LimitedAvailability",
@@ -409,7 +422,7 @@ export default function BeautySpaAdvertisingPage() {
                 next treatment. You choose the offer. Customers book and pay you directly.
               </p>
               <p className={`${fredoka.className} mt-5 text-xl font-semibold text-hp-purple sm:text-2xl`}>
-                Up to 6 months free advertising*
+                {OFFER}*
               </p>
 
               <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -437,7 +450,7 @@ export default function BeautySpaAdvertisingPage() {
                 <span className="whitespace-nowrap">No credit card</span>
               </p>
               <p className="mt-2 text-xs" style={{ color: "#475569" }}>
-                *For eligible businesses that join before launch.{" "}
+                *{LAUNCHED ? "For eligible new businesses." : "For eligible businesses that join before launch."}{" "}
                 <Link href="/terms" className="font-semibold text-hp-purple underline underline-offset-2 hover:no-underline">
                   Terms apply.
                 </Link>
@@ -764,7 +777,7 @@ export default function BeautySpaAdvertisingPage() {
               className="mt-10 inline-flex items-center gap-1.5 text-sm font-bold hover:underline"
               style={{ color: "#6520B5" }}
             >
-              See the launch offer →
+              {LAUNCHED ? "See the offer →" : "See the launch offer →"}
             </a>
           </div>
         </section>
@@ -801,13 +814,12 @@ export default function BeautySpaAdvertisingPage() {
                   Auckland first
                 </p>
                 <h2 className={`${fredoka.className} mt-2 text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
-                  Get in early. Build your presence.
+                  {LAUNCHED ? "Get discovered. Build your presence." : "Get in early. Build your presence."}
                 </h2>
                 <p className="mt-4 max-w-md text-sm leading-relaxed sm:text-base" style={{ color: "#475569" }}>
-                  MegaDeal is starting where we&rsquo;re local — Auckland. We&rsquo;re building
-                  a marketplace where Aucklanders can discover deals and experiences from
-                  restaurants, beauty businesses, salons, spas and other great businesses
-                  around the city. Be there when Auckland starts discovering MegaDeal.
+                  {LAUNCHED
+                    ? "MegaDeal is starting where we’re local — Auckland. Aucklanders come to MegaDeal to discover deals and experiences from restaurants, beauty businesses, salons, spas and other great businesses around the city. Put your business in front of them."
+                    : "MegaDeal is starting where we’re local — Auckland. We’re building a marketplace where Aucklanders can discover deals and experiences from restaurants, beauty businesses, salons, spas and other great businesses around the city. Be there when Auckland starts discovering MegaDeal."}
                 </p>
                 <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold" style={{ color: "#0F172A" }}>
                   <span className="flex items-center gap-1.5">
@@ -824,7 +836,7 @@ export default function BeautySpaAdvertisingPage() {
 
               <div className="rounded-xl border bg-white p-6 text-center sm:p-8" style={{ borderColor: "#E8E1EF" }}>
                 <p className={`${fredoka.className} text-xl font-semibold sm:text-2xl`} style={{ color: "#6520B5" }}>
-                  Up to 6 months free advertising
+                  {OFFER}
                 </p>
                 <a
                   href={SIGNUP_HREF}
@@ -834,7 +846,7 @@ export default function BeautySpaAdvertisingPage() {
                   List your business <span aria-hidden>→</span>
                 </a>
                 <p className="mt-3 text-xs font-semibold" style={{ color: "#0F172A" }}>
-                  Use WELCOME6 at signup.
+                  Use {PROMO.code} at signup.
                 </p>
                 <p className="mt-1 text-xs" style={{ color: "#475569" }}>
                   Continue to MegaDeal&rsquo;s business signup
@@ -843,7 +855,7 @@ export default function BeautySpaAdvertisingPage() {
             </div>
 
             <p className="mx-auto mt-5 max-w-2xl text-center text-xs leading-relaxed" style={{ color: "#475569" }}>
-              For eligible Auckland businesses applying before launch. Current eligibility
+              {LAUNCHED ? "For eligible new Auckland businesses." : "For eligible Auckland businesses applying before launch."} Current eligibility
               requires a New Zealand registered limited company. Subject to approval and fair
               use.{" "}
               <Link href="/terms" className="underline hover:no-underline" style={{ color: "#6520B5" }}>

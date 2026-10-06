@@ -1,6 +1,11 @@
 import { ImageResponse } from "next/og";
 import { getLogoDataUri } from "@/lib/ogLogo";
 import { getOgFonts } from "@/lib/ogFonts";
+import { SITE_LAUNCHED } from "@/lib/siteConfig";
+import { currentPromo } from "@/lib/promo";
+
+// The offer line follows the launch state, as the page does.
+const PROMO = currentPromo(SITE_LAUNCHED);
 
 // Route-segment override of the root app/opengraph-image.tsx — Next.js
 // picks this one for any /list-your-business URL instead of the generic
@@ -69,7 +74,7 @@ export default async function BusinessesOpengraphImage() {
             maxWidth: 980,
           }}
         >
-          Up to 6 months free advertising
+          {`Up to ${PROMO.months} months free advertising`}
         </div>
         <div
           style={{

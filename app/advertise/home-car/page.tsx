@@ -14,10 +14,10 @@ import {
   UnlockIcon,
   UsersIcon,
 } from "@/components/icons";
-import { ORGANIZATION_ID, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { ORGANIZATION_ID, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
-import { PRELAUNCH_PROMO } from "@/lib/promo";
+import { currentPromo } from "@/lib/promo";
 import { BUSINESS_TYPES } from "./businessTypes";
 
 /**
@@ -58,11 +58,12 @@ export const metadata: Metadata = {
 // The same signup the other business pages send people to.
 const SIGNUP_HREF = "/list-your-business#signup";
 
-// The pre-launch offer, from the one place it's defined (lib/promo.ts), so
-// this page can't drift from the signup form and admin approval. At launch
-// the offer becomes 3 months (WELCOME3); switching this page over is part
-// of wiring that change through signup and approval, not done here alone.
-const PROMO = PRELAUNCH_PROMO;
+// The offer, from the one place it's defined (lib/promo.ts), so this page
+// can't drift from the signup form and admin approval: up to 6 months
+// (WELCOME6) before launch, the launch offer (WELCOME3) after it, with no
+// pre-launch wording left behind.
+const LAUNCHED = SITE_LAUNCHED;
+const PROMO = currentPromo(LAUNCHED);
 const PROMO_MONTHS = `${PROMO.months} months`;
 
 // Hero photo (owner-supplied, 4 Oct 2026): AI-generated illustration of a
@@ -142,7 +143,9 @@ const WHY_MEGADEAL = [
   {
     icon: CreditCardIcon,
     title: "A launch offer for eligible businesses",
-    body: `Eligible Auckland businesses applying before launch may receive up to ${PROMO_MONTHS} of free advertising, subject to the current offer terms.`,
+    body: LAUNCHED
+      ? `Eligible new Auckland businesses may receive up to ${PROMO_MONTHS} of free advertising, subject to the current offer terms.`
+      : `Eligible Auckland businesses applying before launch may receive up to ${PROMO_MONTHS} of free advertising, subject to the current offer terms.`,
   },
   {
     icon: UnlockIcon,
@@ -181,7 +184,7 @@ const FAQS: { id: string; q: string; a: string }[] = [
   {
     id: "eligibility",
     q: "What are the current eligibility requirements?",
-    a: "The current launch offer is for eligible Auckland businesses applying before launch and requires a New Zealand registered limited company. Approval and fair-use conditions apply. Check the current offer terms before applying.",
+    a: `${LAUNCHED ? "The current launch offer is for eligible new Auckland businesses" : "The current launch offer is for eligible Auckland businesses applying before launch"} and requires a New Zealand registered limited company. Approval and fair-use conditions apply. Check the current offer terms before applying.`,
   },
   {
     id: "cost",
@@ -219,7 +222,7 @@ const FAQS: { id: string; q: string; a: string }[] = [
   {
     id: "go-live",
     q: "When will my business or offer go live?",
-    a: "Publication follows MegaDeal's current approval and launch process. Applying does not guarantee immediate publication. Check the status and instructions provided through the business signup or portal.",
+    a: `${LAUNCHED ? "Publication follows MegaDeal's current approval process." : "Publication follows MegaDeal's current approval and launch process."} Applying does not guarantee immediate publication. Check the status and instructions provided through the business signup or portal.`,
   },
   {
     id: "not-listed",
@@ -318,7 +321,9 @@ export default function HomeCarAdvertisingPage() {
             makesOffer: {
               "@type": "Offer",
               name: `Up to ${PROMO_MONTHS} free advertising`,
-              description: `Up to ${PROMO_MONTHS} of free advertising credits for qualifying businesses that join MegaDeal before its Auckland launch, using code ${PROMO.code}. Conditions apply.`,
+              description: LAUNCHED
+                ? `Up to ${PROMO_MONTHS} of free advertising credits for qualifying new businesses on MegaDeal in Auckland, using code ${PROMO.code}. Conditions apply.`
+                : `Up to ${PROMO_MONTHS} of free advertising credits for qualifying businesses that join MegaDeal before its Auckland launch, using code ${PROMO.code}. Conditions apply.`,
               price: "0",
               priceCurrency: "NZD",
               availability: "https://schema.org/LimitedAvailability",
@@ -669,14 +674,15 @@ export default function HomeCarAdvertisingPage() {
               <div>
                 <Eyebrow>Auckland first</Eyebrow>
                 <h2 className={`${fredoka.className} mt-2 text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: INK }}>
-                  Get in early. Build your presence.
+                  {LAUNCHED ? "Get discovered. Build your presence." : "Get in early. Build your presence."}
                 </h2>
                 <p className="mt-3 text-lg font-bold leading-snug" style={{ color: INK }}>
                   Up to {PROMO_MONTHS} free advertising for eligible Auckland businesses.
                 </p>
                 <p className="mt-3 max-w-md text-sm leading-relaxed sm:text-base" style={{ color: BODY }}>
-                  Give your home-service or automotive business time to prepare its listing and
-                  offer ahead of launch.
+                  {LAUNCHED
+                    ? "Put your home-service or automotive business in front of Auckland locals looking for their next job done."
+                    : "Give your home-service or automotive business time to prepare its listing and offer ahead of launch."}
                 </p>
               </div>
 
@@ -694,7 +700,7 @@ export default function HomeCarAdvertisingPage() {
             </div>
 
             <p className="mx-auto mt-5 max-w-2xl text-center text-xs leading-relaxed" style={{ color: BODY }}>
-              For eligible Auckland businesses applying before launch. Current eligibility requires
+              {LAUNCHED ? "For eligible new Auckland businesses." : "For eligible Auckland businesses applying before launch."} Current eligibility requires
               a New Zealand registered limited company. Subject to approval and fair use.{" "}
               <Link href="/terms" className="underline hover:no-underline" style={{ color: PURPLE }}>
                 View offer terms

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { PercentIcon, ClockIcon, EyeIcon, CheckIcon } from "@/components/icons";
 import { pageMetadata } from "@/lib/pageMetadata";
+import { SITE_LAUNCHED } from "@/lib/siteConfig";
 
 export const metadata: Metadata = pageMetadata({
   title: "About Us",
@@ -130,7 +131,7 @@ export default function AboutPage() {
             Where we operate
           </h2>
           <p className="mt-3 text-slate-600">
-            We&apos;re launching in Auckland first, with the rest of
+            {SITE_LAUNCHED ? "We're live in Auckland first" : "We're launching in Auckland first"}, with the rest of
             New Zealand following shortly after — Wellington,
             Christchurch, Hamilton and Queenstown are next on the list. If
             there&apos;s a business you love that you&apos;d like to

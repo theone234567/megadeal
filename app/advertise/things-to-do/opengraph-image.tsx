@@ -1,6 +1,11 @@
 import { ImageResponse } from "next/og";
 import { getLogoDataUri } from "@/lib/ogLogo";
 import { getOgFonts } from "@/lib/ogFonts";
+import { SITE_LAUNCHED } from "@/lib/siteConfig";
+import { currentPromo } from "@/lib/promo";
+
+// The offer line follows the launch state, as the page does.
+const PROMO = currentPromo(SITE_LAUNCHED);
 
 // Route-segment override of the root app/opengraph-image.tsx, same
 // reasoning as app/advertise/restaurants/opengraph-image.tsx: without this,
@@ -76,7 +81,7 @@ export default async function ThingsToDoOpengraphImage() {
             textAlign: "center",
           }}
         >
-          Up to 6 months free advertising for Auckland activity businesses
+          {`Up to ${PROMO.months} months free advertising for Auckland activity businesses`}
         </div>
       </div>
     ),

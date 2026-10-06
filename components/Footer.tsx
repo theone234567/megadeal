@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import SocialLinks from "./SocialLinks";
+import { currentPromo } from "@/lib/promo";
 import EmailSignupForm from "./EmailSignupForm";
 
 /**
@@ -38,6 +39,9 @@ function footerCategories(siteLaunched: boolean) {
  */
 export default function Footer({ siteLaunched = false }: { siteLaunched?: boolean }) {
   const FOOTER_CATEGORIES = footerCategories(siteLaunched);
+  // The business offer of the moment: 6 months / WELCOME6 before launch,
+  // the launch offer after (lib/promo.ts).
+  const promo = currentPromo(siteLaunched);
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
   // The homepage has its own business invitation between the deal
@@ -63,7 +67,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
             <div>
               <h2 className="text-lg font-bold text-white">Own a local business?</h2>
               <p className="text-sm text-brand-100">
-                List your deal on MegaDeal and get up to 6 months free advertising — use code <span className="font-bold">WELCOME6</span> at signup.{" "}
+                List your deal on MegaDeal and get up to {promo.months} months free advertising — use code <span className="font-bold">{promo.code}</span> at signup.{" "}
                 <Link href="/terms" className="text-brand-200 underline hover:text-white">
                   Conditions apply.
                 </Link>

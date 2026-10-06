@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { SITE_NAME } from "@/lib/siteConfig";
+import { SITE_LAUNCHED, SITE_NAME } from "@/lib/siteConfig";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { pageMetadata } from "@/lib/pageMetadata";
@@ -90,25 +90,46 @@ const BUSINESS_STEPS: Step[] = [
     title: "Get notified and log in",
     text: "You'll get a welcome email the moment your account is approved. From there, log in to your business portal any time — you'll have a couple of free introductory deal credits waiting, and you can complete the rest of your profile whenever suits, if you haven't already.",
   },
-  {
-    number: "5",
-    title: "Your deal goes live at launch",
-    text: (
-      <>
-        Your deal stays queued and ready from the moment you submit it —
-        it goes live for customers the moment MegaDeal officially
-        launches, not before. We&apos;ll email you when that happens, and
-        your business portal will reflect it too. Got a question in the
-        meantime? Feel free to{" "}
-        <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
-          get in touch
-        </Link>{" "}
-        any time.
-      </>
-    ),
-    schemaText:
-      "Your deal stays queued and ready from the moment you submit it — it goes live for customers the moment MegaDeal officially launches, not before. You'll get an email when that happens.",
-  },
+  // Before launch, submitted deals wait for launch day; after it, they go
+  // live once approved (there's no "deal is live" email, so none is promised).
+  SITE_LAUNCHED
+    ? {
+        number: "5",
+        title: "Your deal goes live once approved",
+        text: (
+          <>
+            Submit your deal from your business portal. Our team checks it,
+            and once it&apos;s approved it goes live for customers — your
+            business portal shows where it&apos;s at. Got a question in the
+            meantime? Feel free to{" "}
+            <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
+              get in touch
+            </Link>{" "}
+            any time.
+          </>
+        ),
+        schemaText:
+          "Submit your deal from your business portal. Our team checks it, and once it's approved it goes live for customers — your business portal shows where it's at.",
+      }
+    : {
+        number: "5",
+        title: "Your deal goes live at launch",
+        text: (
+          <>
+            Your deal stays queued and ready from the moment you submit it —
+            it goes live for customers the moment MegaDeal officially
+            launches, not before. We&apos;ll email you when that happens, and
+            your business portal will reflect it too. Got a question in the
+            meantime? Feel free to{" "}
+            <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
+              get in touch
+            </Link>{" "}
+            any time.
+          </>
+        ),
+        schemaText:
+          "Your deal stays queued and ready from the moment you submit it — it goes live for customers the moment MegaDeal officially launches, not before. You'll get an email when that happens.",
+      },
   {
     number: "6",
     title: "Top up anytime",

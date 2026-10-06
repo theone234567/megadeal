@@ -16,7 +16,8 @@ import {
   UsersIcon,
   UtensilsIcon,
 } from "@/components/icons";
-import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
@@ -30,9 +31,17 @@ import { getMegadealArt } from "@/lib/megadealAssets";
 // than the consumer-facing pages still gated behind SITE_LAUNCHED).
 const PAGE_LIVE_FOR_SEARCH = true;
 
-const TITLE = "Restaurant Advertising Auckland | 6 Months Free";
-const DESCRIPTION =
-  "Promote your Auckland restaurant or café with MegaDeal. Apply before launch for up to six months of free advertising and 0% commission. T&Cs apply.";
+// The offer follows the site's launch state (SITE_LAUNCHED, lib/promo.ts):
+// before launch, "apply before launch" for up to 6 months with WELCOME6;
+// after it, the launch offer, with no pre-launch wording left behind.
+const LAUNCHED = SITE_LAUNCHED;
+const PROMO = currentPromo(LAUNCHED);
+const OFFER = `Up to ${PROMO.months} months free advertising`;
+
+const TITLE = `Restaurant Advertising Auckland | ${PROMO.months} Months Free`;
+const DESCRIPTION = LAUNCHED
+  ? `Promote your Auckland restaurant or café with MegaDeal. Eligible new businesses get up to ${PROMO.months} months of free advertising and 0% commission. T&Cs apply.`
+  : "Promote your Auckland restaurant or café with MegaDeal. Apply before launch for up to six months of free advertising and 0% commission. T&Cs apply.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -52,9 +61,9 @@ export const metadata: Metadata = {
   },
 };
 
-// Signup already defaults its promo field to WELCOME6 without any query
-// param (see MerchantSignupForm.tsx's `useState(referralPrefill ||
-// "WELCOME6")`) — so this is accurate today, not a claim to prefill.
+// Signup already defaults its promo field to the current offer code
+// without any query param (see MerchantSignupForm.tsx) — so this is
+// accurate, not a claim to prefill.
 const SIGNUP_HREF = "/list-your-business#signup";
 
 // `a` is the plain-text answer — the single source of truth, and what
@@ -88,27 +97,48 @@ const FAQS: { q: string; a: string; render?: React.ReactNode }[] = [
   },
   {
     q: "Which restaurants can apply?",
-    a: "MegaDeal is launching in Auckland first. Under the current terms, your business must be a New Zealand registered limited company. Sole traders and partnerships are not currently eligible. Business applications and offers are reviewed before approval.",
+    a: `${LAUNCHED ? "MegaDeal is live in Auckland." : "MegaDeal is launching in Auckland first."} Under the current terms, your business must be a New Zealand registered limited company. Sole traders and partnerships are not currently eligible. Business applications and offers are reviewed before approval.`,
   },
-  {
-    q: "How do I get up to six months free?",
-    a: "Apply before MegaDeal's Auckland launch and use WELCOME6 at signup. The offer is for qualifying businesses, is subject to approval and fair use, and provides up to six months of free advertising credits. See the full offer terms for details.",
-    render: (
-      <>
-        Apply before MegaDeal&rsquo;s Auckland launch and use WELCOME6 at
-        signup. The offer is for qualifying businesses, is subject to
-        approval and fair use, and provides up to six months of free
-        advertising credits. See the full offer terms for details.{" "}
-        <Link href="/terms" className="text-[#6520B5] underline hover:no-underline">
-          Read the terms.
-        </Link>
-      </>
-    ),
-  },
-  {
-    q: "Is MegaDeal already live?",
-    a: "MegaDeal is preparing to launch in Auckland. You can apply now and get your restaurant listing and offers ready ahead of launch. Joining early gives you time to prepare; it is not a guarantee of bookings or sales.",
-  },
+  LAUNCHED
+    ? {
+        q: `How do I get up to ${PROMO.months} months free?`,
+        a: `Sign up as a business and use ${PROMO.code} at signup. The offer is for qualifying new businesses, is subject to approval and fair use, and provides up to ${PROMO.months} months of free advertising credits. See the full offer terms for details.`,
+        render: (
+          <>
+            Sign up as a business and use {PROMO.code} at signup. The offer is
+            for qualifying new businesses, is subject to approval and fair use,
+            and provides up to {PROMO.months} months of free advertising
+            credits. See the full offer terms for details.{" "}
+            <Link href="/terms" className="text-[#6520B5] underline hover:no-underline">
+              Read the terms.
+            </Link>
+          </>
+        ),
+      }
+    : {
+        q: "How do I get up to six months free?",
+        a: "Apply before MegaDeal's Auckland launch and use WELCOME6 at signup. The offer is for qualifying businesses, is subject to approval and fair use, and provides up to six months of free advertising credits. See the full offer terms for details.",
+        render: (
+          <>
+            Apply before MegaDeal&rsquo;s Auckland launch and use WELCOME6 at
+            signup. The offer is for qualifying businesses, is subject to
+            approval and fair use, and provides up to six months of free
+            advertising credits. See the full offer terms for details.{" "}
+            <Link href="/terms" className="text-[#6520B5] underline hover:no-underline">
+              Read the terms.
+            </Link>
+          </>
+        ),
+      },
+  LAUNCHED
+    ? {
+        q: "Is MegaDeal already live?",
+        a: "Yes. MegaDeal is live in Auckland. Once your business and offer are approved, your deal is shown to local deal hunters. Advertising is not a guarantee of bookings or sales.",
+      }
+    : {
+        q: "Is MegaDeal already live?",
+        a: "MegaDeal is preparing to launch in Auckland. You can apply now and get your restaurant listing and offers ready ahead of launch. Joining early gives you time to prepare; it is not a guarantee of bookings or sales.",
+      },
 ];
 
 const BENEFITS = [
@@ -205,10 +235,10 @@ const FOOD_BUSINESS_TYPES = [
 const STEPS = [
   {
     number: "01",
-    title: "Apply before launch",
+    title: LAUNCHED ? "Create your account" : "Apply before launch",
     body: (
       <>
-        Create your business account and use <strong>WELCOME6</strong> to
+        Create your business account and use <strong>{PROMO.code}</strong> to
         apply for the introductory advertising offer.
       </>
     ),
@@ -256,9 +286,10 @@ export default function RestaurantAdvertisingPage() {
             url: `${SITE_URL}/advertise/restaurants`,
             makesOffer: {
               "@type": "Offer",
-              name: "Up to 6 months free advertising",
-              description:
-                "Up to 6 months of free advertising credits for qualifying businesses that join MegaDeal before its Auckland launch, using code WELCOME6. Conditions apply.",
+              name: OFFER,
+              description: LAUNCHED
+                ? `Up to ${PROMO.months} months of free advertising credits for qualifying new businesses on MegaDeal in Auckland, using code ${PROMO.code}. Conditions apply.`
+                : "Up to 6 months of free advertising credits for qualifying businesses that join MegaDeal before its Auckland launch, using code WELCOME6. Conditions apply.",
               price: "0",
               priceCurrency: "NZD",
               availability: "https://schema.org/LimitedAvailability",
@@ -299,8 +330,9 @@ export default function RestaurantAdvertisingPage() {
                 <span style={{ color: "#ADDFFF" }}>new regulars.</span>
               </h1>
               <p className="mt-5 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
-                Give locals a reason to try your restaurant. Join MegaDeal
-                before launch for up to six months of free advertising, with{" "}
+                {LAUNCHED
+                  ? `Give locals a reason to try your restaurant. Join MegaDeal for up to ${PROMO.months} months of free advertising, with `
+                  : "Give locals a reason to try your restaurant. Join MegaDeal before launch for up to six months of free advertising, with "}
                 <strong className="font-bold text-white">
                   0% commission on your sales.
                 </strong>
@@ -325,7 +357,7 @@ export default function RestaurantAdvertisingPage() {
               </div>
 
               <p className="mt-4 text-xs text-white/60">
-                For eligible businesses joining before launch.{" "}
+                {LAUNCHED ? "For eligible new businesses." : "For eligible businesses joining before launch."}{" "}
                 <Link href="/terms" className="underline decoration-white/40 underline-offset-2 hover:text-white/90 hover:decoration-white/90">
                   T&amp;Cs apply.
                 </Link>
@@ -366,7 +398,7 @@ export default function RestaurantAdvertisingPage() {
                 style={{ backgroundColor: "#ADDFFF", color: "#0F172A" }}
               >
                 <MapPinIcon className="h-3.5 w-3.5" />
-                Launching first in <strong className="font-extrabold">Auckland</strong>
+                {LAUNCHED ? "Now live in " : "Launching first in "}<strong className="font-extrabold">Auckland</strong>
               </div>
 
             </div>
@@ -598,7 +630,7 @@ export default function RestaurantAdvertisingPage() {
               className="mt-10 inline-flex items-center gap-1.5 text-sm font-bold hover:underline"
               style={{ color: "#6520B5" }}
             >
-              Get my restaurant ready for launch →
+              {LAUNCHED ? "Get my restaurant listed →" : "Get my restaurant ready for launch →"}
             </a>
           </div>
         </section>
@@ -635,15 +667,15 @@ export default function RestaurantAdvertisingPage() {
               <div className="relative grid grid-cols-1 items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider text-white/75">
-                    The Auckland launch offer
+                    {LAUNCHED ? "The Auckland offer" : "The Auckland launch offer"}
                   </p>
                   <h2 className={`${fredoka.className} mt-2 text-[28px] font-semibold leading-tight sm:text-[36px]`}>
                     A new way to get discovered. Your first months are on us.
                   </h2>
                   <p className="mt-4 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">
-                    Apply before MegaDeal launches in Auckland and get up to{" "}
+                    {LAUNCHED ? "Join MegaDeal in Auckland and get up to " : "Apply before MegaDeal launches in Auckland and get up to "}
                     <strong className="font-bold text-white">
-                      six months of free advertising.
+                      {LAUNCHED ? `${PROMO.months} months of free advertising.` : "six months of free advertising."}
                     </strong>{" "}
                     Put your restaurant on the menu for local deal hunters.
                   </p>
@@ -664,7 +696,7 @@ export default function RestaurantAdvertisingPage() {
                   <p
                     className="mx-auto inline-block rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold text-white ring-1 ring-white/30"
                   >
-                    Up to 6 months free advertising
+                    {OFFER}
                   </p>
                   <a
                     href={SIGNUP_HREF}
@@ -675,7 +707,7 @@ export default function RestaurantAdvertisingPage() {
                     Claim my free advertising →
                   </a>
                   <p className="mt-3 text-xs font-semibold text-white/80">
-                    Use WELCOME6 at signup.
+                    Use {PROMO.code} at signup.
                   </p>
                   <p className="mt-1 text-xs text-white/60">
                     Continue to MegaDeal&rsquo;s business signup
@@ -685,7 +717,7 @@ export default function RestaurantAdvertisingPage() {
             </div>
 
             <p className="mx-auto mt-5 max-w-2xl text-center text-xs leading-relaxed" style={{ color: "#475569" }}>
-              For qualifying Auckland businesses applying before launch.
+              {LAUNCHED ? "For qualifying new Auckland businesses." : "For qualifying Auckland businesses applying before launch."}{" "}
               Current eligibility requires a New Zealand registered limited
               company. Subject to approval and fair use.{" "}
               <Link href="/terms" className="underline hover:no-underline" style={{ color: "#6520B5" }}>

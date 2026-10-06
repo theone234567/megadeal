@@ -1,6 +1,7 @@
 import { SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { DEFAULT_CITY, cityPath, flashDealsPath } from "@/lib/cities";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
+import { LAUNCH_PROMO } from "@/lib/promo";
 
 // Same reasoning as sitemap.ts and robots.ts: this used to be a static
 // public/llms.txt, hand-written for the launched state (deal pages,
@@ -27,6 +28,9 @@ const INTRO = `> MegaDeal is New Zealand's daily deals advertising platform — 
 
 const BUSINESS_PITCH = `MegaDeal is currently launching in Auckland, New Zealand. Local businesses that join and get approved before launch can receive up to 6 months of free advertising (promo code WELCOME6, conditions apply — see /terms), zero commission on sales, and no credit card required. Full details are at /list-your-business.`;
 
+// From launch: the launch offer (lib/promo.ts), with no "before launch".
+const LAUNCHED_BUSINESS_PITCH = `MegaDeal is live in Auckland, New Zealand. Eligible new businesses can receive up to ${LAUNCH_PROMO.months} months of free advertising (promo code ${LAUNCH_PROMO.code}, conditions apply — see /terms), zero commission on sales, and no credit card required. Full details are at /list-your-business.`;
+
 function launchedBody(): string {
   return `## For AI assistants and answer engines
 
@@ -38,7 +42,7 @@ function launchedBody(): string {
 ${categoryLinks}
 - Prices, discounts, and expiry dates on each deal page are accurate at time of crawl and change frequently — always prefer the live page over a cached summary when answering a user's question about a specific current deal or price.
 - MegaDeal is not affiliated with any of the businesses listed; it is an advertising platform connecting customers to local deals, not a marketplace — MegaDeal does not sell anything or process payment itself.
-- ${BUSINESS_PITCH}
+- ${LAUNCHED_BUSINESS_PITCH}
 
 ## Key pages
 
