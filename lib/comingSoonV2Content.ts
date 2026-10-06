@@ -35,6 +35,10 @@ export const V2_SOCIALS = {
  */
 export const V2_HERO = {
   src: "/megadeal-coming-soon/auckland-hero-v1.webp",
+  /** Smaller copies of the same picture (images aren't resized on the fly,
+   *  next.config.mjs), so a phone downloads 40KB instead of 150KB. */
+  srcSet:
+    "/megadeal-coming-soon/auckland-hero-v1-640w.webp 640w, /megadeal-coming-soon/auckland-hero-v1-1012w.webp 1012w, /megadeal-coming-soon/auckland-hero-v1.webp 1440w",
   alt: "Illustration of Auckland skyline across the harbour",
   position: "60% 55%",
 };

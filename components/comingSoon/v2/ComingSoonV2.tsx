@@ -9,6 +9,7 @@ import { EXAMPLE_MASSAGE_DEAL } from "@/lib/exampleDeals";
 // Plain paths, as elsewhere on the site: CI typechecks before Next has
 // generated its image module types, so static image imports fail there.
 const MASCOT = "/megadeal/coming-soon-v2/mascot-hoodie.webp";
+const HERO_SIZES = "(max-width: 767px) calc(100vw - 84px), (max-width: 1223px) 44vw, 506px";
 import styles from "./ComingSoonV2.module.css";
 
 /**
@@ -43,13 +44,19 @@ export default function ComingSoonV2() {
           </div>
           <div className={styles.art}>
             <div className={styles.skyline}>
-              <Image
+              {/* A plain img with a choice of sizes: next/image can't offer
+                  one while images aren't resized on the fly (next.config.mjs).
+                  Fetched first, as the largest thing on the page. */}
+              <link rel="preload" as="image" href={V2_HERO.src} imageSrcSet={V2_HERO.srcSet} imageSizes={HERO_SIZES} {...{ fetchPriority: "high" }} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={V2_HERO.src}
+                srcSet={V2_HERO.srcSet}
+                sizes={HERO_SIZES}
                 alt={V2_HERO.alt}
-                fill
-                priority
-                sizes="(max-width: 767px) calc(100vw - 84px), (max-width: 1223px) 44vw, 506px"
-                style={{ objectFit: "cover", objectPosition: V2_HERO.position }}
+                {...{ fetchPriority: "high" }}
+                decoding="async"
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: V2_HERO.position }}
               />
               {/* Small and decorative; the photo's edge hides his lower half. */}
               <Image className={styles.mascot} src={MASCOT} alt="" width={480} height={496} sizes="(max-width: 767px) 72px, 104px" />
