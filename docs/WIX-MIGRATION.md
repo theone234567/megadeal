@@ -12,8 +12,8 @@ working throughout.
 | Wix Members (business logins, email codes, captcha) | Supabase Auth + Cloudflare Turnstile | Standard, well-audited logins; we own the user table |
 | Wix Data collections (Merchants, Deals, MerchantActivity, EmailSignups, ContactMessages, ApiUsageCounters) | Supabase Postgres, Sydney region | Real constraints, transactions and row-level security |
 | Wix Stores products (each live deal's name, price, photo, address, ribbon, category) | Columns on the `deals` table | One record per deal instead of two kept in sync |
-| Wix media uploads (static.wixstatic.com) | Cloudflare Images (or R2) | Same network as the site; existing photos are copied over |
-| Wix email (verification codes, notices) | Resend or Postmark, with SPF, DKIM and DMARC on megadeal.co.nz | Deliverability and our own templates |
+| Wix media uploads (static.wixstatic.com) | Cloudflare R2, served from megadeal.co.nz/media/ | Same network as the site; existing photos are copied over |
+| Wix email (verification codes, notices) | Resend, with SPF, DKIM and DMARC on megadeal.co.nz | Deliverability and our own templates |
 | SiteSettings collection | Already mostly in Cloudflare KV; the rest moves to Postgres | |
 | Admin audit log, platform settings | Stay in Cloudflare KV | Already off Wix |
 
@@ -215,39 +215,190 @@ Unsubscribe button works in one click. Every unsubscribe link a person
 was sent keeps working, as the Unsolicited Electronic Messages Act
 expects.
 
-## The steps
+## Where each step stands
 
-Each step ships on its own and can be rolled back. About 4–5 weeks in
-total, finishing before launch.
+Everything is built and tested, and every switch is off. The live site
+runs on Wix exactly as before until a switch is turned on.
 
-1. **Photos (about 3 days).** New uploads go to Cloudflare. Existing
-   wixstatic photos are copied, and the stored links are rewritten at import.
-2. **Data layer (about 1.5 weeks).** The server reads and writes Postgres
-   instead of Wix Data and Stores, behind the same functions the pages
-   use today. Run both side by side on a copy first, comparing results,
-   then switch.
-3. **Logins (about 1 week).** Supabase Auth for business accounts, with
-   the same pages and flows. Wix passwords can't be exported, so each
-   business sets a new password once, through a "set your password" email
-   sent at the switch. Before launch, there are few accounts to move.
-4. **Email (about 2 days).** Verification codes and notices go through
-   Resend or Postmark from megadeal.co.nz.
-5. **Cutover (about 2 days).** Final export and import, compare the
-   counts with `summary.json`, switch, and watch closely for a week. Wix
-   stays read-only for a month as a fallback, then the subscription ends.
+| Step | Switch | Needs |
+| --- | --- | --- |
+| Email | `EMAIL_PROVIDER=resend` | Resend, DNS records |
+| Database | `DATA_BACKEND=postgres` | Supabase, Hyperdrive, the import |
+| Photos | `PHOTO_STORAGE=r2` | the database switch, an R2 bucket |
+| Business logins | `AUTH_BACKEND=supabase` | the database switch, Supabase Auth settings, Turnstile |
 
-## What the owner needs to set up
+MegaShop stays on Wix Stores for now.
 
-- A **Supabase** project in the **Sydney** region. The free tier is enough
-  until launch; Pro is US$25/month after that. Put its URL and service
-  role key in Cloudflare secrets (and `.dev.vars` for local work); never
-  commit them.
-- A **Cloudflare Images** subscription (from US$5/month) or an R2 bucket.
-- A **Resend** or **Postmark** account, with the DNS records they give
-  added to megadeal.co.nz.
-- A **Hyperdrive** configuration in Cloudflare pointing at the Supabase
-  database (free on the Workers paid plan), added to `wrangler.toml` as the
-  `HYPERDRIVE` binding.
-- A **Turnstile** site key (free) to replace the Wix captcha.
-- A decision on the password reset: businesses set a new password once at
-  the switch.
+**Admin > Moving off Wix** (`/admin/move-off-wix`) checks all of this
+live and says in plain words what's done and what's missing. Use it at
+every stage below; it changes nothing.
+
+## Switch-over checklist
+
+Do the stages in this order. Each one is a small change you can make on
+a quiet morning, with time to watch it afterwards.
+
+### Where settings go
+
+- **Switches** (`EMAIL_PROVIDER`, `DATA_BACKEND`, `PHOTO_STORAGE`,
+  `AUTH_BACKEND`) go in `wrangler.toml` under `[vars]`, in a commit.
+  Each switch is then on record, and turning it off is a revert. Don't set
+  them as plain variables in the Cloudflare dashboard: every deploy
+  replaces those with what `wrangler.toml` says, so they would quietly
+  vanish.
+- **Keys and passwords** go under Workers > megadeal > Settings >
+  Variables and Secrets, as type **Secret**. Secrets survive deploys and
+  can't be read back. Never put one in `wrangler.toml` or a commit.
+- **`NEXT_PUBLIC_*` values** (the Turnstile site key) are build
+  variables: Settings > Build > Variables. They're built into the page,
+  so they're public by design.
+- **Bindings** (`HYPERDRIVE`, `PHOTOS`) go in `wrangler.toml`. Add each
+  one only once the resource exists in Cloudflare: a deploy with a
+  binding to something that doesn't exist fails.
+
+### Stage 1: email (a week before the database)
+
+Email can move on its own, and a new sending domain needs a week of low
+volume to build a reputation, so it goes first.
+
+1. Create a Resend account. Add the domain `megadeal.co.nz`.
+2. In Cloudflare DNS, add the records Resend shows: DKIM
+   (`resend._domainkey`) and the `send` subdomain's SPF and MX. Add DMARC
+   if there isn't one: `_dmarc` TXT `v=DMARC1; p=none; rua=mailto:<your
+   address>`.
+3. Wait until Resend shows the domain as Verified.
+4. Create a **sending access** API key (not full access) and save it as
+   the secret `RESEND_API_KEY`. Optional: `EMAIL_FROM`, e.g.
+   `MegaDeal <hello@megadeal.co.nz>`; it must be on the verified domain.
+5. Moving off Wix: the Email section should be all ticks.
+6. Add `EMAIL_PROVIDER = "resend"` to `[vars]`, commit, deploy.
+7. Check: send yourself a business sign-up code and a contact-form
+   message; both should arrive in the inbox, not spam. In Gmail, "Show
+   original" should say SPF, DKIM and DMARC: PASS.
+8. Watch Resend's dashboard for a week for bounces and complaints.
+   After two clean weeks of DMARC reports, change DMARC to
+   `p=quarantine`.
+
+Turning it off: remove the line and deploy. Email goes back to Wix at
+once; nothing is lost.
+
+### Stage 2: the database and photos
+
+This is the big one. Once it's on, every change (sign-ups, deals,
+credits, approvals) is saved in the new database, and Wix stops seeing
+them.
+
+Set up (any time before):
+
+1. Supabase: a new project in the **Sydney** region, with a long
+   generated database password stored in a password manager.
+2. Apply the migrations in `supabase/migrations`, in order (Supabase
+   CLI `supabase db push`, or paste each file into the SQL editor,
+   oldest first).
+3. Supabase > Settings > API > Data API: turn it off, or remove
+   `public` from the exposed schemas. The site never uses it (it
+   connects to the database directly), and with it off, the public key
+   can't be used to query tables at all. Row-level security stays on
+   regardless, as a second lock.
+4. Cloudflare > Hyperdrive: create a configuration with the database's
+   connection string (Supabase > Connect: the direct connection, or the
+   session pooler on port 5432; not the transaction pooler on 6543,
+   since Hyperdrive does its own pooling).
+   Add to `wrangler.toml`:
+
+       [[hyperdrive]]
+       binding = "HYPERDRIVE"
+       id = "<the Hyperdrive id>"
+
+5. Cloudflare > R2: create a bucket (e.g. `megadeal-photos`). Leave
+   public access **off**: the site serves the photos itself, from
+   megadeal.co.nz/media/. Add to `wrangler.toml`:
+
+       [[r2_buckets]]
+       binding = "PHOTOS"
+       bucket_name = "megadeal-photos"
+
+6. Rehearse the import on the new database (it changes nothing):
+
+       node scripts/wix-export.mjs
+       DATABASE_URL=… npx tsx scripts/wix-import.ts wix-export/<folder>
+
+   Read `import-report.json`. Every record it lists needs a decision.
+
+On the day:
+
+1. Pick a quiet time. Don't approve anything during the switch, and ask
+   any business you're working with not to edit for an hour: a change
+   made in Wix after the export doesn't come across.
+2. Export again and import for real:
+
+       node scripts/wix-export.mjs
+       DATABASE_URL=… npx tsx scripts/wix-import.ts wix-export/<folder> --commit
+
+3. Moving off Wix: Database all ticks; the business, deal and
+   subscriber counts match `summary.json` in the export.
+4. Add `DATA_BACKEND = "postgres"` and `PHOTO_STORAGE = "r2"` to
+   `[vars]`, commit, deploy.
+5. Moving off Wix > Photos: press **Copy photos from Wix** and let it
+   finish. Anything it can't copy is listed; those stay on Wix's address
+   and keep working.
+6. Re-pause any deal an admin had paused: the import lists them (Wix
+   doesn't record who paused a deal).
+7. Check, signed in as admin and in a private window:
+   - the admin lists show every business and deal;
+   - a business page and a deal page open at their new addresses;
+   - an old address (`/business/<name>-<id>`, a Wix deal address)
+     redirects to the new one;
+   - a business can sign in (still with Wix), see its deals and save
+     its profile;
+   - a photo upload works, and the photo's address starts
+     `megadeal.co.nz/media/`.
+8. Admin > "Submit all pages to Bing", and resubmit the sitemap in
+   Google Search Console, so search engines pick up the new addresses
+   quickly.
+
+Turning it off: remove the two lines and deploy. The site reads Wix
+again, but **anything changed since the switch stays only in the new
+database**: it would need copying back by hand. Decide within the first
+hour or two; after that, fix forward.
+
+### Stage 3: business logins (the same day or soon after)
+
+1. Supabase > Authentication:
+   - Providers > Email: on, "Confirm email" on, OTP length 6, OTP
+     expiry 600 seconds.
+   - Passwords: minimum length 10; leaked-password protection on (Pro
+     plan).
+   - Hooks > Send Email: HTTPS, `https://megadeal.co.nz/api/auth/email-hook`.
+     Generate its secret and save it as the secret
+     `SEND_EMAIL_HOOK_SECRET` (it starts `v1,whsec_`).
+   - Rate limits: our server makes every request, so raise the
+     per-address limits for sign-ins and code checks. Ours apply first,
+     per visitor.
+2. Secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+   `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_JWT_SECRET` (Settings >
+   API; leave it out if the project uses the newer signing keys).
+3. Cloudflare > Turnstile: add a widget for `megadeal.co.nz`, managed
+   mode. The site key goes in build variables as
+   `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, the secret as the secret
+   `TURNSTILE_SECRET_KEY`. Make sure `TURNSTILE_DISABLED` is **not** set
+   anywhere live.
+4. Moving off Wix: Business logins all ticks.
+5. Add `AUTH_BACKEND = "supabase"` to `[vars]`, commit, deploy.
+6. Check: sign up as a new test business (code arrives, portal opens),
+   sign out, sign in, wrong password is refused, "Forgot password"
+   email arrives and its link works once only.
+7. Email each existing business: MegaDeal has a new sign-in; use
+   "Forgot password" on the sign-in page once to set a password, then
+   sign in as usual. Their business and deals are waiting.
+
+Turning it off: remove the line and deploy. Businesses sign in with
+Wix again; accounts created meanwhile would need to sign up on Wix.
+
+### Stage 4: after the move
+
+- Keep Wix for a month, read-only, as a fallback; then end the
+  subscription (except Wix Stores, while MegaShop is there).
+- Delete the `wix-export/` folders: they hold personal details.
+- Remove `WIX_API_KEY` and the other Wix secrets once nothing uses them.
+- Supabase: turn on point-in-time recovery (Pro plan) before launch.
