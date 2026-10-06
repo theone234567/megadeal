@@ -259,10 +259,20 @@ twice, and the second time (for real) holds no surprises.
        images = { binding = "IMAGES" }
 
    and set its secrets with `npx wrangler secret put <NAME> --env staging`.
-3. Deploy it by hand: `npx opennextjs-cloudflare build && npx wrangler
-   deploy --env staging`. It gets a `*.workers.dev` address; put it
-   behind Cloudflare Access (Zero Trust > Access > Applications) so only
-   you can open it.
+3. Deploy it by hand, built with its own address: the site's address is
+   built in, and it decides the canonical-host redirect, which sign-in
+   requests count as "from this site", and the robot check's hostname. A
+   copy built with megadeal.co.nz would send every visit there and
+   refuse its own sign-ins.
+
+       NEXT_PUBLIC_SITE_URL=https://megadeal-staging.<your-subdomain>.workers.dev \
+       NEXT_PUBLIC_TURNSTILE_SITE_KEY=<site key> \
+       npx opennextjs-cloudflare build && npx wrangler deploy --env staging
+
+   Add that hostname to the Turnstile widget's allowed hostnames. Put the
+   address behind Cloudflare Access (Zero Trust > Access >
+   Applications) so only you can open it. Build again without those
+   variables before anything else is deployed from the same folder.
 4. Import a fresh Wix export into it, then walk through what a business
    does: sign up, finish the listing with a photo, create and submit a
    deal; approve it in admin; open the public pages; reset a password.
