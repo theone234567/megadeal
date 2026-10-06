@@ -233,6 +233,23 @@ MegaShop stays on Wix Stores for now.
 live and says in plain words what's done and what's missing. Use it at
 every stage below; it changes nothing.
 
+### How long the rest takes (estimate, Oct 2026)
+
+The building is done; what's left is setting up the accounts and
+switching. Roughly a day of the owner's time, spread over about two weeks:
+
+| Stage | Owner's time | Elapsed |
+| --- | --- | --- |
+| Set up the accounts (Supabase, Resend and its DNS records, the R2 bucket and Hyperdrive, Turnstile), following the stages below | 2–4 hours | a day or two, while DNS settles |
+| 1. Email on Resend, then the new sending domain warms up | under an hour | about a week |
+| Rehearse the database switch on a copy (recommended) | about an hour | the same day |
+| 2. Database and photos: import, switch, watch | a quiet morning | a morning |
+| 3. Business logins | about an hour | the same day or soon after |
+| 4. Keep Wix read-only as a fallback, then end the subscription | minutes | a month |
+
+Each stage is its own switch and can be turned back off, so a problem
+on the day means switching back, not a rush to fix.
+
 ## Switch-over checklist
 
 Do the stages in this order. Each one is a small change you can make on
