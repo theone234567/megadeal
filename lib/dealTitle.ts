@@ -41,3 +41,25 @@ export function dealTitles(deal: DealTitleInput): { title: string; full: string 
   const title = ordered.find((t) => t.length <= TITLE_MAX) ?? `${name}${where(null)}`;
   return { title, full };
 }
+
+/**
+ * A business page's search title, shortened the same way: "Harbour &
+ * Hearth, Takapuna, Auckland — Deals & Offers", then without the city,
+ * then "— Deals", then without the suburb. The place is left out where
+ * the business name already says it ("Auckland Rapid Plumbing").
+ */
+export function businessTitle(b: { businessName: string; suburb: string | null; city: string | null }): string {
+  const name = b.businessName.trim();
+  const lower = name.toLowerCase();
+  const notInName = (v: string | null) => (v && v.trim() && !lower.includes(v.trim().toLowerCase()) ? v.trim() : null);
+  const suburb = notInName(b.suburb);
+  const place = placeLabel(suburb, notInName(b.city));
+  const at = (p: string | null) => (p ? `${name}, ${p}` : name);
+  const ordered = [
+    `${at(place)} — Deals & Offers`,
+    `${at(suburb ?? place)} — Deals & Offers`,
+    `${at(suburb ?? place)} — Deals`,
+    `${name} — Deals`,
+  ];
+  return ordered.find((t) => t.length <= TITLE_MAX) ?? name;
+}

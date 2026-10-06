@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TITLE_MAX, dealTitles } from "./dealTitle";
+import { TITLE_MAX, businessTitle, dealTitles } from "./dealTitle";
 
 const base = {
   name: "Pizza for two",
@@ -57,5 +57,31 @@ describe("dealTitles", () => {
 
   it("doesn't repeat the city when the suburb names it", () => {
     expect(dealTitles({ ...base, name: "Pizza", businessSuburb: "Auckland CBD" }).title).toBe("Pizza at Harbour & Hearth, Auckland CBD — 30% off, $29");
+  });
+});
+
+describe("businessTitle", () => {
+  const b = { businessName: "Harbour & Hearth", suburb: "Takapuna", city: "Auckland" };
+
+  it("names the suburb and city when it fits", () => {
+    expect(businessTitle(b)).toBe("Harbour & Hearth, Takapuna, Auckland — Deals & Offers");
+  });
+
+  it("leaves out a place the name already says", () => {
+    expect(businessTitle({ ...b, businessName: "Auckland Rapid Plumbing" })).toBe("Auckland Rapid Plumbing, Takapuna — Deals & Offers");
+    expect(businessTitle({ ...b, businessName: "Takapuna Beach Cafe" })).toBe("Takapuna Beach Cafe, Auckland — Deals & Offers");
+  });
+
+  it("shortens long ones: city, then wording, then suburb", () => {
+    const at = (businessName: string) => businessTitle({ ...b, businessName });
+    expect(at("The Harbour & Hearth Kitchen")).toBe("The Harbour & Hearth Kitchen, Takapuna — Deals & Offers");
+    expect(at("The Harbour & Hearth Kitchen and Bar")).toBe("The Harbour & Hearth Kitchen and Bar, Takapuna — Deals");
+    expect(at("The Harbour & Hearth Kitchen, Bar and Grill")).toBe("The Harbour & Hearth Kitchen, Bar and Grill — Deals");
+    // Never cut: the name is what people search for.
+    expect(at("The Harbour & Hearth Kitchen, Bar, Grill and Wine Room")).toBe("The Harbour & Hearth Kitchen, Bar, Grill and Wine Room");
+  });
+
+  it("works without a place", () => {
+    expect(businessTitle({ ...b, suburb: null, city: null })).toBe("Harbour & Hearth — Deals & Offers");
   });
 });

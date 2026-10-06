@@ -15,6 +15,7 @@ import StarRating from "@/components/StarRating";
 import ShareButtons from "@/components/ShareButtons";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { businessTitle } from "@/lib/dealTitle";
 import {
   parseBusinessHours,
   formatBusinessHoursLines,
@@ -47,15 +48,10 @@ export async function generateMetadata(
 
   const { business, deals } = result;
   // The town in the title is the strongest local signal a page can send
-  // for "<business> <town>" and "<service> near me" searches — skipped
-  // when the business name already says it ("Auckland Rapid Plumbing").
-  // Suburb and city ("Takapuna, Auckland"), each left out when the business
-  // name already says it ("Auckland Rapid Plumbing, Takapuna").
-  const name = business.businessName.toLowerCase();
-  const notInName = (v: string | null | undefined) => (v && !name.includes(v.trim().toLowerCase()) ? v.trim() : null);
-  const placeText = placeLabel(notInName(business.suburb), notInName(business.city));
-  const place = placeText ? `, ${placeText}` : "";
-  const title = `${business.businessName}${place} — Deals & Offers`;
+  // for "<business> <town>" and "<service> near me" searches: "Harbour &
+  // Hearth, Takapuna, Auckland — Deals & Offers", shortened for long
+  // names to what search results show (lib/dealTitle.ts).
+  const title = businessTitle(business);
   // business.bio is merchant-written free text (up to 600 chars) —
   // truncated at a word boundary, same as deal descriptions on
   // /deal/[slug], so a long bio gets a clean SERP snippet instead of
