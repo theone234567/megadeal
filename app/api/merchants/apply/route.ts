@@ -48,7 +48,7 @@ function welcomeEmailHtml(businessName: string): string {
             : `
         <p style="margin:0 0 16px;">One thing to know: MegaDeal hasn't launched to customers yet. Until we do, your portal is a preview — you can set up your listing and build deals as drafts, and we'll email you the moment we go live.</p>`
         }
-        <p style="margin:0 0 16px;">You can check your application status, manage your profile, and keep an eye on your credits anytime from your <a href="${SITE_URL}/portal" style="color:#7a17f0;font-weight:700;">business portal</a>.</p>
+        <p style="margin:0 0 16px;">You can check your application status, manage your profile, and keep an eye on your credits anytime from your <a href="${SITE_URL}/portal" style="color:#6520B5;font-weight:700;">business portal</a>.</p>
         <p style="margin:0 0 16px;">If anything's unclear, or you just want to say hi, hit reply — a real person reads every message.</p>
         <p style="margin:0 0 16px;">Thanks for giving MegaDeal a go — welcome to the herd. 🐘</p>
         <p style="margin:0;">— The MegaDeal team</p>

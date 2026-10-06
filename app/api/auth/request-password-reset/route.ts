@@ -28,7 +28,7 @@ function resetEmailHtml(businessName: string, resetUrl: string): string {
     <p style="margin:0 0 16px;">Hi ${safeName},</p>
     <p style="margin:0 0 16px;">We got a request to reset the password on your MegaDeal business account. Tap below to set a new one:</p>
     <p style="margin:0 0 16px;text-align:center;">
-      <a href="${resetUrl}" style="display:inline-block;background:#7a17f0;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Reset password</a>
+      <a href="${resetUrl}" style="display:inline-block;background:#6520B5;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Reset password</a>
     </p>
     <p style="margin:0 0 16px;">This link works once and expires in an hour. If you didn't ask for this, you can safely ignore it — your password hasn't changed.</p>
   `);

@@ -47,7 +47,7 @@ export default async function OpengraphImage() {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logoDataUri} width={LOGO_WIDTH} height={LOGO_HEIGHT} alt="" />
         ) : (
-          <span style={{ fontSize: 80, fontWeight: 700, fontFamily: "Fredoka", color: "#7a17f0" }}>
+          <span style={{ fontSize: 80, fontWeight: 700, fontFamily: "Fredoka", color: "#6520B5" }}>
             MegaDeal
           </span>
         )}

@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
               address and we'll take it from there.
             </p>
             <div style="text-align:center;margin:28px 0;">
-              <a href="${confirmUrl}" style="display:inline-block;background:#7a17f0;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 36px;border-radius:9999px;">
+              <a href="${confirmUrl}" style="display:inline-block;background:#6520B5;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 36px;border-radius:9999px;">
                 Confirm my email
               </a>
             </div>

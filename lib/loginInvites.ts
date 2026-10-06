@@ -45,7 +45,7 @@ export function inviteEmailHtml(businessName: string, link: string): string {
     <p style="margin:0 0 16px;">Hi ${escapeHtml(businessName || "there")},</p>
     <p style="margin:0 0 16px;">MegaDeal has a new, faster sign-in. Your business, deals and credits are all still here; you just need to choose a password, once.</p>
     <p style="margin:0 0 16px;text-align:center;">
-      <a href="${link}" style="display:inline-block;background:#7a17f0;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Set my password</a>
+      <a href="${link}" style="display:inline-block;background:#6520B5;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Set my password</a>
     </p>
     <p style="margin:0 0 16px;">This link works once and expires in 7 days. After that, use "Forgot password" on the sign-in page.</p>
     <p style="margin:0;font-size:13px;color:#8b8494;">Questions? Just reply to this email.</p>

@@ -529,7 +529,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
               <p style="margin:0 0 16px;">Hi ${safeReferrerName},</p>
               <p style="margin:0 0 16px;">Great news — a business you referred, <strong>${safeReferredName}</strong>, has been approved on MegaDeal. We've added
               ${referralCreditsLabel} to your account. Thanks for spreading the word!</p>
-              <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#7a17f0;font-weight:700;">View your portal</a></p>
+              <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6520B5;font-weight:700;">View your portal</a></p>
             `),
           });
         } catch (err) {
@@ -551,7 +551,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
           <p style="margin:0 0 16px;">We've checked your business details and you're approved again${
             SITE_LAUNCHED ? " — your live deals are showing to customers again" : ""
           }.</p>
-          <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#7a17f0;font-weight:700;">Go to your portal</a></p>
+          <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6520B5;font-weight:700;">Go to your portal</a></p>
         `),
       });
     } catch (err) {
@@ -586,7 +586,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
               ? "Log in to your business portal to submit your first deal:"
               : "MegaDeal hasn&#39;t launched to customers yet, so for now you can set up your listing and build your deals as drafts in your business portal. We&#39;ll email you the moment we go live, and you can submit them straight away:"
           }</p>
-          <p style="margin:0 0 16px;"><a href="${SITE_URL}/portal" style="color:#7a17f0;font-weight:700;">Go to your portal</a></p>
+          <p style="margin:0 0 16px;"><a href="${SITE_URL}/portal" style="color:#6520B5;font-weight:700;">Go to your portal</a></p>
           ${creditsNote ? `<p style="margin:0;">${creditsNote}</p>` : ""}
         `),
       });
