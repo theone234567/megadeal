@@ -211,9 +211,10 @@ describe("data rules", () => {
     await as(SERVER, "update public.merchants set website = 'https://harbourbistro.co.nz' where id = $1", [merchantA]);
   });
 
-  it("needs a submitted deal to be complete, but not a draft", async () => {
-    await expect(insertDeal(merchantA, { status: "Pending Approval", slug: null })).rejects.toThrow(/deals_submitted_complete/);
-    await expect(insertDeal(merchantA, { status: "Pending Approval", category_slug: null })).rejects.toThrow(/deals_submitted_complete/);
+  it("needs a deal customers can see to be complete, but not a draft or one being submitted", async () => {
+    await expect(insertDeal(merchantA, { status: "Live", slug: null })).rejects.toThrow(/deals_public_complete/);
+    await expect(insertDeal(merchantA, { status: "Paused", paused_by: "business", category_slug: null })).rejects.toThrow(/deals_public_complete/);
+    await expect(insertDeal(merchantA, { status: "Pending Approval", slug: null })).resolves.toBeTruthy();
     await expect(insertDeal(merchantA, { status: "Draft", slug: null, name: "", price_now: null, category_slug: null })).resolves.toBeTruthy();
   });
 
