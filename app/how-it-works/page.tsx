@@ -88,7 +88,7 @@ const BUSINESS_STEPS: Step[] = [
   {
     number: "4",
     title: "Get notified and log in",
-    text: "You'll get a welcome email the moment your account is approved. From there, log in to your business portal any time — you'll have a couple of free introductory deal credits waiting, and you can complete the rest of your profile whenever suits, if you haven't already.",
+    text: "You'll get a welcome email the moment your account is approved. From there, log in to your business portal any time — you'll have a couple of free introductory deal credits waiting (plus your free advertising credits, if you signed up with an offer code), and you can complete the rest of your profile whenever suits, if you haven't already.",
   },
   // Before launch, deals can only be saved as drafts (app/api/deals/create
   // refuses submissions); after it, they go live once approved. There's no
@@ -132,8 +132,8 @@ const BUSINESS_STEPS: Step[] = [
       },
   {
     number: "6",
-    title: "Top up anytime",
-    text: "Once your free credits run out, you can top up your account from your portal whenever you're ready to list another deal.",
+    title: "Top up when you need more",
+    text: "Once your free credits run out, get in touch and we'll top up your account whenever you're ready to list another deal. Your portal shows your balance and every credit used.",
   },
 ];
 
