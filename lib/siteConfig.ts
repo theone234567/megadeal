@@ -29,10 +29,13 @@ export const ORGANIZATION_ID = `${SITE_URL}/#organization`;
  * checked end to end without the public seeing them. Business sign-up,
  * the merchant portal and admin stay reachable regardless.
  *
- * Lives in code so launching is a one-line change and a deploy. The
- * SITE_LAUNCHED runtime variable in the Cloudflare Worker's settings
- * still launches the site too (no redeploy needed) — either one being
- * true counts as launched.
+ * Lives in code so launching is a one-line change and a deploy: the way
+ * to launch. The SITE_LAUNCHED variable in the Cloudflare Worker's
+ * settings launches it too (either one being true counts), but only if
+ * it's added as type **Secret**: every deploy replaces the plain-text
+ * variables with wrangler.toml's (which has no keep_vars), so a
+ * plain-text SITE_LAUNCHED would vanish at the next deploy and quietly
+ * send the site back to "coming soon".
  *
  * Before flipping it: cancel test deals and the test business in /admin.
  */
