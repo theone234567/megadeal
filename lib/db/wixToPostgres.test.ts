@@ -188,6 +188,13 @@ describe("mapDeal", () => {
     expect(issues).toEqual([expect.objectContaining({ field: "merchantEmail", value: "nobody@example.nz" })]);
   });
 
+  it("keeps the name and price customers see (the product's), and lists any disagreement", () => {
+    const issues: Issue[] = [];
+    const row = mapDeal({ ...WIX_DEAL, dealName: "Old name", priceNow: 45 }, WIX_PRODUCT, ids, issues)!;
+    expect(row).toMatchObject({ name: "Two-course dinner", price_now: 49 });
+    expect(issues.map((i) => i.field).sort()).toEqual(["dealName", "priceNow"]);
+  });
+
   it("takes the price from the product when the row has none", () => {
     const row = mapDeal({ ...WIX_DEAL, priceNow: undefined, priceWas: undefined }, WIX_PRODUCT, ids, [])!;
     expect(row).toMatchObject({ price_now: 49, price_was: 80 });

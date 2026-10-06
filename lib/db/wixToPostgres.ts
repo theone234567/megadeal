@@ -215,9 +215,19 @@ export function mapDeal(item: Row, product: Row | null, merchantIdByEmail: Map<s
     status = fallback;
   }
 
+  // The product's name and prices are what customers see today (the deal
+  // page and cards read them from Stores), so they win; the Deals row's
+  // copies fill in for a draft with no product. Any disagreement is listed.
   const prices = productPrices(product);
-  const priceNow = num(item.priceNow) ?? prices.now;
-  let priceWas = num(item.priceWas) ?? prices.was ?? priceNow;
+  const priceNow = prices.now ?? num(item.priceNow);
+  let priceWas = prices.was ?? num(item.priceWas) ?? priceNow;
+  if (product && prices.now !== null && num(item.priceNow) !== null && num(item.priceNow) !== prices.now) {
+    issues.push({ record, field: "priceNow", problem: `differs from the live product (${prices.now}), product kept`, value: item.priceNow });
+  }
+  const productName = str((product as any)?.name);
+  if (productName && str(item.dealName) && productName !== str(item.dealName)) {
+    issues.push({ record, field: "dealName", problem: `differs from the live product ("${productName}"), product kept`, value: item.dealName });
+  }
   if (priceNow !== null && priceWas !== null && priceWas < priceNow) {
     issues.push({ record, field: "priceWas", problem: "original price below deal price, set equal", value: priceWas });
     priceWas = priceNow;
@@ -241,7 +251,7 @@ export function mapDeal(item: Row, product: Row | null, merchantIdByEmail: Map<s
     wix_product_id: orNull(str(item.productId)) ?? orNull(str((product as any)?.id)),
     merchant_id: merchantId,
     slug,
-    name: str(item.dealName) || str((product as any)?.name),
+    name: productName || str(item.dealName),
     description: str(item.description),
     category_slug: category,
     photo_url: normaliseUrl(item.photoUrl || productImage, issues, record, "photoUrl"),

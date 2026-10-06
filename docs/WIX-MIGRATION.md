@@ -70,6 +70,30 @@ Nothing on the live site changes in this step.
   unsubscribe links will keep working: from step 2 the site hashes the
   token in the link and compares it with the stored hash.
 
+## Step 2 so far: the storefront reads (switched off)
+
+- `lib/db/connection.ts`: the database connection, through Cloudflare
+  Hyperdrive in production (`DATABASE_URL` locally). It is used only when
+  `DATA_BACKEND=postgres`; until then the site reads Wix exactly as before
+  and doesn't even load the driver.
+- `lib/db/publicReads.ts`: the deal listing, deal page, "this deal has
+  ended" page, business page, sitemap lists and admin preview, read from
+  Postgres in the same shapes the Wix reads produce. `lib/fetchDealServer.ts`
+  picks one or the other.
+- `lib/db/publicReads.test.ts`: builds the same business and deals both
+  ways (Wix fixtures through today's code, and converted into the new
+  database) and checks the storefront gets the same thing, field for
+  field.
+- Business page addresses keep their Wix id prefix
+  (`supabase/migrations/20261007000000_business_slug_id.sql`), so shared
+  and indexed links keep working.
+- Checked on a real Postgres and the Cloudflare Worker build: the pages
+  render from the new database, and the Worker bundles the driver.
+
+Found on the way: the site shows each deal's name and price from its Wix
+Stores product, not the Deals row. The converter now keeps the product's
+and lists any deal where the two differ.
+
 ## The steps
 
 Each step ships on its own and can be rolled back. About 4–5 weeks in
@@ -100,6 +124,9 @@ total, finishing before launch.
 - A **Cloudflare Images** subscription (from US$5/month) or an R2 bucket.
 - A **Resend** or **Postmark** account, with the DNS records they give
   added to megadeal.co.nz.
+- A **Hyperdrive** configuration in Cloudflare pointing at the Supabase
+  database (free on the Workers paid plan), added to `wrangler.toml` as the
+  `HYPERDRIVE` binding.
 - A **Turnstile** site key (free) to replace the Wix captcha.
 - A decision on the password reset: businesses set a new password once at
   the switch.

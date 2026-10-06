@@ -13,6 +13,8 @@ import { searchAllProducts } from "./searchAllProducts";
 import { toListingDeal } from "./listingDeal";
 import { readEdgeCache, writeEdgeCache } from "./edgeCache";
 import type { Deal, DealStatus } from "./types";
+import { dataBackend, withDb } from "./db/connection";
+import * as pg from "./db/publicReads";
 
 /** Overlays a deal's Deals row (status, dates, photo, terms, code…) on
  *  the fields mapped from its Stores product. */
@@ -124,6 +126,7 @@ interface DealRead {
 /** The deal behind a slug, with its business applied, live or not; null when
  *  it isn't a real deal from an approved business. */
 async function readDeal(slug: string): Promise<DealRead | null> {
+  if (dataBackend() === "postgres") return withDb((db) => pg.readDealBySlug(db, slug));
   const adminClient = createWixAdminClient();
   const res = await adminClient.productsV3.getProductBySlug(slug, {
     fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO"],
@@ -203,7 +206,9 @@ const LISTING_FRESH_MS = 60 * 1000;
 const LISTING_STALE_MS = 15 * 60 * 1000;
 // Bump when the shape of a stored Deal changes, so a deploy never reads a
 // copy stored by the previous version.
-const LISTING_CACHE_KEY = "live-deals-v1";
+// Per data source, so switching to the new database (or back) never
+// serves the other one's copy.
+const LISTING_CACHE_KEY = `live-deals-v1-${dataBackend()}`;
 
 // The deals are kept whole — contact details, deal code and all — so the
 // deal page can use them (fetchDealForSEO). Listings get them trimmed by
@@ -265,6 +270,7 @@ async function liveDealFromListing(slug: string): Promise<Deal | null> {
 /** One full read of the listing from Wix. Throws on failure — the
  *  caller decides what to serve instead. */
 async function loadAllLiveDeals(): Promise<Deal[]> {
+  if (dataBackend() === "postgres") return withDb((db) => pg.loadLiveDeals(db));
   const adminClient = createWixAdminClient();
   const [productsRes, dealsResult, merchantsResult] = await Promise.all([
     searchAllProducts(
@@ -373,6 +379,13 @@ async function loadBusinessProfileBySlug(
   const idPrefix = slugParam.split("-").pop();
   if (!idPrefix || !/^[0-9a-f]{8}$/.test(idPrefix)) return null;
 
+  if (dataBackend() === "postgres") {
+    const liveDeals = fetchAllLiveDealsServer();
+    const business = await withDb((db) => pg.readBusinessBySlugId(db, idPrefix));
+    if (!business) return null;
+    return { business, deals: (await liveDeals).filter((d) => d.businessSlug === business.slug) };
+  }
+
   const adminClient = createWixAdminClient();
   // Started now, alongside the business read below; it's the same
   // cached listing the homepage uses, so it's often already in memory.
@@ -428,6 +441,7 @@ export async function fetchAllBusinessSlugsForSitemap(): Promise<
   { slug: string; email: string; updatedAt: string | null }[]
 > {
   try {
+    if (dataBackend() === "postgres") return await withDb((db) => pg.listBusinessesForSitemap(db));
     const adminClient = createWixAdminClient();
     // Paged: an unpaged read capped the sitemap at 50 businesses, so
     // every business past that was never submitted to Google at all.
@@ -460,6 +474,7 @@ export async function fetchAllLiveDealSlugsForSitemap(): Promise<
   { slug: string; updatedAt: string | null; categories: string[]; merchantEmail: string }[]
 > {
   try {
+    if (dataBackend() === "postgres") return await withDb((db) => pg.listLiveDealsForSitemap(db));
     const adminClient = createWixAdminClient();
     const [allProducts, dealsResult, merchants] = await Promise.all([
       searchAllProducts(adminClient, ["ALL_CATEGORIES_INFO"], "sitemap"),
@@ -517,6 +532,7 @@ export async function fetchDealForAdminPreview(
   dealId: string
 ): Promise<{ deal: Deal; record: Record<string, any> } | null> {
   try {
+    if (dataBackend() === "postgres") return await withDb((db) => pg.readDealForAdmin(db, dealId));
     const adminClient = createWixAdminClient();
     const record = await adminClient.items.get("Deals", dealId);
     if (!record?.productId) return null;

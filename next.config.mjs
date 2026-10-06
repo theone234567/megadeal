@@ -18,6 +18,12 @@ const BUILD_SHA = (
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // The Postgres driver (lib/db/connection.ts) reaches the database on
+  // Cloudflare through pg-cloudflare, which it loads only when running
+  // there, so the build's file tracing misses it and the Worker bundle
+  // fails to build. Kept out of Next's bundle and copied in whole.
+  serverExternalPackages: ["pg", "pg-cloudflare"],
+  outputFileTracingIncludes: { "/**": ["./node_modules/pg-cloudflare/**/*"] },
   env: {
     NEXT_PUBLIC_BUILD_SHA: BUILD_SHA,
     NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
