@@ -331,3 +331,46 @@ describe("page addresses", () => {
     await expect(t.as({ role: "authenticated", uid: "00000000-0000-0000-0000-000000000001" }, "select * from public.slug_redirects")).rejects.toThrow(/permission denied/);
   });
 });
+
+describe("who gets a business address", () => {
+  let t: Awaited<ReturnType<typeof createTestDb>>;
+  const q = <T = any>(sql: string, params: unknown[] = []) => t.as<T>({ role: "service_role" }, sql, params);
+  const slugOf = async (id: string) => (await q<{ slug: string }>("select slug from public.merchants where id = $1", [id]))[0].slug;
+  const apply = async (email: string, status = "Pending") =>
+    (await q<{ id: string }>("insert into public.merchants (email, business_name, suburb, status) values ($1, 'Harbour Bistro', 'Ponsonby', $2) returning id", [email, status]))[0].id;
+  const approve = (id: string) => q("update public.merchants set status = 'Approved', first_approved_at = now() where id = $1", [id]);
+
+  beforeAll(async () => {
+    t = await createTestDb();
+  }, 60_000);
+  afterAll(async () => {
+    await t.db.close();
+  });
+
+  it("an application that's never approved can't keep the plain address from the real business", async () => {
+    const squatter = await apply("spam@x.nz");
+    const real = await apply("real@x.nz");
+    expect(await slugOf(squatter)).toBe("harbour-bistro-ponsonby");
+    expect(await slugOf(real)).toBe("harbour-bistro-ponsonby-2");
+    await approve(real);
+    expect(await slugOf(real)).toBe("harbour-bistro-ponsonby");
+    expect(await slugOf(squatter)).not.toBe("harbour-bistro-ponsonby");
+    // Neither address was ever public, so nothing is kept to redirect.
+    expect(await q("select count(*)::int as n from public.slug_redirects")).toEqual([{ n: 0 }]);
+  });
+
+  it("a business that has been public keeps its address, even suspended", async () => {
+    await q("delete from public.merchants");
+    const first = await apply("first@x.nz");
+    await approve(first);
+    await q("update public.merchants set status = 'Suspended' where id = $1", [first]);
+    const second = await apply("second@x.nz");
+    await approve(second);
+    expect(await slugOf(first)).toBe("harbour-bistro-ponsonby");
+    expect(await slugOf(second)).toBe("harbour-bistro-ponsonby-2");
+    // Approving again doesn't move an address for nothing.
+    await q("update public.merchants set status = 'Pending' where id = $1", [second]);
+    await approve(second);
+    expect(await slugOf(second)).toBe("harbour-bistro-ponsonby-2");
+  });
+});

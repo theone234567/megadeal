@@ -251,8 +251,9 @@ describe("what the public never gets", () => {
     expect(await resolveBusinessRedirect(db, "harbour-bistro-aaaaaaaa")).toBeNull();
     const [{ slug: pendingSlug }] = await db.query<{ slug: string }>("select slug from public.merchants where email = 'p@x.nz'");
     expect(await readBusinessBySlug(db, pendingSlug)).toBeNull();
-    // Two businesses with one name: the second gets -2.
-    expect((await listBusinessesForSitemap(db)).map((b) => b.slug)).toEqual(["harbour-bistro-2"]);
+    // Two businesses with one name: the approved one gets the plain
+    // address, not the application that was there first.
+    expect((await listBusinessesForSitemap(db)).map((b) => b.slug)).toEqual(["harbour-bistro"]);
   });
 
   it("a new business's address is its name and suburb, macrons and all", async () => {
