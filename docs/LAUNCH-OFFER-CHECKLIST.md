@@ -14,16 +14,20 @@ Driven by `lib/promo.ts` and `SITE_LAUNCHED`:
 - **Signup form** (`MerchantSignupForm`): pre-fills WELCOME3 and says "up to 3 months free
   advertising" (no "if you're approved before launch").
 - The approval email and credit history name the code that was redeemed.
+- **Every business page and site-wide mention** (Oct 2026): `/list-your-business` (the v2
+  design that is live), `/advertise/restaurants`, `/advertise/beauty-spa`,
+  `/advertise/home-car`, `/advertise/things-to-do`, `/how-it-works`, `/about`, the footer
+  banner, `llms.txt` and the share images that state the offer. Before launch they render
+  exactly as before; from launch they say up to 3 months with WELCOME3 and drop the
+  "before launch" framing. The new post-launch wording was put to the owner for approval.
 
 Launch with the code switch (`LAUNCHED = true` in `lib/siteConfig.ts`, then push): these
-pages are pre-rendered, so a runtime-only `SITE_LAUNCHED` would leave the form on WELCOME6.
+pages are pre-rendered, so a runtime-only `SITE_LAUNCHED` would leave them on the pre-launch
+wording.
 
 ## Must be updated before or at launch (owner to approve wording)
 
-Every line below still says 6 months / WELCOME6 / "before launch". Proposed replacements are
-drafts only.
-
-### 1. Terms — `app/terms/page.tsx` (the offer paragraph) — needs owner/legal approval
+### Terms — `app/terms/page.tsx` (the offer paragraph) — needs owner/legal approval
 
 Now: "MegaDeal may offer up to 6 months of free advertising credits to businesses that join
 before our official launch in Auckland — this offer is only available before launch, not
@@ -34,42 +38,16 @@ businesses approved before our official launch in Auckland, and up to 3 months (
 WELCOME3) for businesses approved after it. Businesses approved before launch keep their
 pre-launch offer." (rest of the paragraph unchanged)
 
-### 2. /list-your-business — `app/list-your-business/page.tsx`
+## Not switched, because visitors don't see them after launch
 
-- Title/description (lines ~26–29): "Up to 6 Months Free Advertising…" → "Up to 3 Months Free
-  Advertising for Auckland Businesses"; "claim up to 6 months free advertising on MegaDeal
-  before launch" → "get up to 3 months free advertising on MegaDeal".
-- Hero badge / bullets / "Up to 6 months FREE" card, FAQ "Is MegaDeal really free?" and the
-  "only time the up-to-6-months offer" answer, the JSON-LD Offer, "Coming soon to Auckland —
-  up to 6 months free before launch", "Pre-launch offer — up to 6 months free", "The
-  up-to-6-months-free offer is only available to qualifying businesses that join before deals
-  go live… use code WELCOME6" → 3 months / WELCOME3, and drop "before launch" framing.
-- Share image `app/list-your-business/opengraph-image.tsx`: "Up to 6 months free advertising".
-- Founder's note ("Auckland businesses, get in early", signed Nick): "Before we open to
-  everyone, we're welcoming a limited number of local businesses to join early" and "Businesses
-  that join now get up to six months of free advertising" → drop the before-launch framing and
-  say up to 3 months; "get in early" and "from day one" may also need a new heading.
-
-### 3. /advertise/restaurants and /advertise/beauty-spa
-
-Titles ("| 6 Months Free"), descriptions, hero buttons ("Get 6 months free →"), FAQs ("How do I
-get up to six months free?", "Use WELCOME6 at signup"), the "6 Months Free" card, JSON-LD
-Offer, launch panel ("Up to 6 months free advertising", "Join MegaDeal — 6 months free →",
-"Use WELCOME6 at signup."), share images.
-
-### 4. /advertise/home-car
-
-Reads months and code from `PRELAUNCH_PROMO`; at launch change it to `LAUNCH_PROMO` and reword
-"applying before launch" in the launch panel, "Why MegaDeal" card and FAQs.
-
-### 5. Site-wide
-
-- Footer `components/Footer.tsx`: "get up to 6 months free advertising — use code WELCOME6".
-- `app/llms.txt/route.ts` BUSINESS_PITCH: "…before launch can receive up to 6 months…".
-- `/coming-soon` and `components/comingSoon/*` redirect to `/` after launch, so they can stay.
+- `/coming-soon` and `components/comingSoon/*` redirect to `/` after launch.
+- The older `/list-your-business` design (`LIST_BUSINESS_DESIGN=legacy`) and its founder's
+  note (`components/FounderNote.tsx`) still say 6 months / WELCOME6. They are only shown if
+  the page design is switched back to legacy; reword them first if it ever is.
 
 ## After launch, check
 
 - Approve a test business that entered WELCOME3: 12 credits, email names WELCOME3.
 - `/list-your-business` signup form shows WELCOME3.
 - Search the site for "6 months" and "WELCOME6": only historical/terms mentions remain.
+- Share a business page link (e.g. in a message to yourself): the preview says up to 3 months.
