@@ -209,6 +209,8 @@ export default function MerchantSignupForm({
   // Whose logins: Wix's (today) or MegaDeal's own (lib/siteAuth.ts). Same
   // calls and outcomes either way.
   const auth = authBackend === "supabase" ? siteAuth : wixAuth;
+  // Wix's rule, or the longer one MegaDeal's own logins ask for (lib/authRoutes.ts).
+  const minPassword = authBackend === "supabase" ? 10 : 8;
   const searchParams = useSearchParams();
   const referralPrefill = searchParams.get("ref") || "";
   const startedRef = useRef(false);
@@ -416,8 +418,8 @@ export default function MerchantSignupForm({
   function stepOneErrors(): Record<string, string> {
     const errors = stepErrors(step1Ref.current);
     if (!isLoggedIn) {
-      if (!errors["signup-password"] && password.length < 8) {
-        errors["signup-password"] = "Use at least 8 characters.";
+      if (!errors["signup-password"] && password.length < minPassword) {
+        errors["signup-password"] = `Use at least ${minPassword} characters.`;
       }
       if (!errors["signup-confirmPassword"] && confirmPassword && password !== confirmPassword) {
         errors["signup-confirmPassword"] = "Those passwords don't match.";
@@ -543,8 +545,8 @@ export default function MerchantSignupForm({
     // the already-signed-in path stayed broken despite being handled
     // further down.
     if (!isLoggedIn) {
-      if (password.length < 8) {
-        setSubmitError("Your password needs to be at least 8 characters.");
+      if (password.length < minPassword) {
+        setSubmitError(`Your password needs to be at least ${minPassword} characters.`);
         return;
       }
       if (password !== confirmPassword) {
@@ -1084,7 +1086,7 @@ export default function MerchantSignupForm({
                   autoComplete="new-password"
                   value={password}
                   onChange={setPassword}
-                  placeholder={twoStep ? "Create a password" : "At least 8 characters"}
+                  placeholder={twoStep ? "Create a password" : `At least ${minPassword} characters`}
                   inputClassName={inputClass}
                   invalid={Boolean(fieldErrors["signup-password"])}
                   describedBy={fieldErrors["signup-password"] ? "signup-password-error" : undefined}

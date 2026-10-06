@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import PasswordField from "@/components/PasswordField";
 
@@ -15,11 +15,19 @@ function ResetPasswordForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  // Wix's rule, or the longer one MegaDeal's own logins ask for (lib/authRoutes.ts).
+  const [minPassword, setMinPassword] = useState(8);
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => d?.authBackend === "supabase" && setMinPassword(10))
+      .catch(() => {});
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
+    if (password.length < minPassword) {
+      setError(`Password must be at least ${minPassword} characters.`);
       return;
     }
     if (password !== confirm) {
@@ -91,7 +99,7 @@ function ResetPasswordForm() {
             required
             value={password}
             onChange={setPassword}
-            placeholder="At least 8 characters"
+            placeholder={`At least ${minPassword} characters`}
             autoComplete="new-password"
             inputClassName={INPUT_CLASS}
           />
