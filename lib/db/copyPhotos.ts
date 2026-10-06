@@ -53,6 +53,12 @@ const PENDING_SQL = `
     select pending_photo_url, created_at from public.deals where pending_photo_url like 'https://%wixstatic.com/%'
   ) x group by url order by min(created_at), url`;
 
+/** How many Wix photo addresses are still in use. */
+export async function countWixPhotos(db: Sql): Promise<number> {
+  const [row] = await db.query<{ n: string }>(`select count(*) as n from (${PENDING_SQL}) pending`);
+  return Number(row?.n ?? 0);
+}
+
 /**
  * `skip`: how many still-pending photos to pass over, i.e. the ones that
  * failed in earlier batches of this run, so a photo Wix won't give us
