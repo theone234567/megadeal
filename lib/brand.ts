@@ -11,10 +11,14 @@
  * To go back to the old logo and white headers, change "minimal" to
  * "classic" below.
  *
- * The share images (lib/ogLogo.ts) follow it too, from a PNG rendered from
- * the minimal SVG. Not covered, because they use their own raster file: the
- * emailed logo (lib/emailTemplate.ts) and the favicon (app/icon.png). They
- * still use the classic logo.
+ * The share images (lib/ogLogo.ts) and the emailed logo (lib/emailTemplate.ts)
+ * follow it too, from PNGs rendered from the minimal SVG.
+ *
+ * The browser-tab and home-screen icons (app/favicon.ico, app/icon.png,
+ * app/apple-icon.png) are files Next serves as they are, so they don't
+ * follow this switch: they show the minimal elephant (from
+ * public/brand/minimal/megadeal-favicon-minimal.svg). The classic ones are
+ * kept in design/logo-classic/; copy them back over app/ to restore them.
  */
 export const LOGO_STYLE: "classic" | "minimal" = "minimal";
 
