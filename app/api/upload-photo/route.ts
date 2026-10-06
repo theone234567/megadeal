@@ -3,6 +3,8 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { isAdminRequest } from "@/lib/adminSession";
+import { newPhotoKey, photoBucket, photoStorage, putPhoto } from "@/lib/photoStorage";
+import { SITE_URL } from "@/lib/siteConfig";
 
 // Generous cap on the decoded image — the client already resizes/compresses
 // before sending, this just guards against an oversized/malicious payload.
@@ -35,6 +37,23 @@ function slugify(input: string): string {
     .replace(/^-+|-+$/g, "")
     .slice(0, MAX_SLUG_LENGTH)
     .replace(/-+$/g, ""); // slice() can leave a trailing hyphen mid-word
+}
+
+/** The first bytes every file of this image type starts with. */
+function looksLike(mimeType: string, bytes: Uint8Array): boolean {
+  const starts = (...sig: number[]) => sig.every((b, i) => bytes[i] === b);
+  switch (mimeType) {
+    case "image/jpeg":
+      return starts(0xff, 0xd8, 0xff);
+    case "image/png":
+      return starts(0x89, 0x50, 0x4e, 0x47);
+    case "image/gif":
+      return starts(0x47, 0x49, 0x46, 0x38);
+    case "image/webp":
+      return starts(0x52, 0x49, 0x46, 0x46) && bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+    default:
+      return false;
+  }
 }
 
 /**
@@ -90,6 +109,32 @@ export async function POST(req: NextRequest) {
   const bytes = Buffer.from(match[2], "base64");
   if (bytes.length === 0 || bytes.length > MAX_BYTES) {
     return NextResponse.json({ error: "That image is too large." }, { status: 400 });
+  }
+
+  // The file's contents must be the image type it claims: a renamed file
+  // (an HTML page called .png, say) is turned away, so nothing but real
+  // images is ever stored or served back from the site.
+  if (!looksLike(mimeType, bytes)) {
+    return NextResponse.json({ error: "Please upload a JPEG, PNG, WebP or GIF image." }, { status: 400 });
+  }
+
+  // MegaDeal's own storage, once switched on (lib/photoStorage.ts). The
+  // key doubles as the id the deal form passes back.
+  if (photoStorage() === "r2") {
+    try {
+      const bucket = await photoBucket();
+      if (!bucket) {
+        console.error("[upload-photo] PHOTO_STORAGE=r2 but no PHOTOS bucket is bound");
+        return NextResponse.json({ error: "Couldn't start the upload." }, { status: 502 });
+      }
+      const ext = mimeType === "image/jpeg" ? "jpg" : mimeType.split("/")[1];
+      const key = newPhotoKey(slugify(label), ext);
+      const url = await putPhoto(bucket, key, bytes, mimeType, SITE_URL);
+      return NextResponse.json({ url, id: key });
+    } catch (err) {
+      console.error("[upload-photo] storage failed", err);
+      return NextResponse.json({ error: "Upload failed." }, { status: 502 });
+    }
   }
 
   try {

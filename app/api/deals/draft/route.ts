@@ -3,7 +3,8 @@ import { codeForDraft } from "@/lib/dealCode";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
-import { isWixMediaUrl } from "@/lib/photoUrl";
+import { isUploadedPhotoUrl } from "@/lib/photoUrl";
+import { SITE_URL } from "@/lib/siteConfig";
 import { sanitizeDraft, draftToRow, draftRevisionOf, isDraftConflict } from "@/lib/dealDraft";
 import { getOrClaimMerchant } from "@/lib/merchant";
 
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
   // A photo URL is the one field here that gets written somewhere it will
   // later be rendered, so it has to be one of ours rather than any URL the
   // caller fancies pointing us at.
-  if (draft.photoUrl && !isWixMediaUrl(draft.photoUrl)) {
+  if (draft.photoUrl && !isUploadedPhotoUrl(draft.photoUrl, SITE_URL)) {
     return NextResponse.json({ error: "Invalid photo." }, { status: 400 });
   }
 

@@ -267,8 +267,10 @@ const nextConfig = {
         // HTML — is the point.
         // API routes are excluded because several set their own
         // Cache-Control (/api/version needs no-store), and two
-        // Cache-Control headers on one response is ambiguous.
-        source: "/((?!_next/static|_next/image|api/).*)",
+        // Cache-Control headers on one response is ambiguous. So are
+        // uploaded photos (/media/, app/media/[...key]): each has a new
+        // name, so they're cached for a year like _next/static.
+        source: "/((?!_next/static|_next/image|api/|media/).*)",
         headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }],
       },
       {

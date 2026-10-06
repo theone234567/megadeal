@@ -20,3 +20,30 @@ export function isWixMediaUrl(url: unknown): url is string {
     return false;
   }
 }
+
+/** An uploaded photo stored by MegaDeal itself (lib/photoStorage.ts):
+ *  https://<this site>/media/photos/… and nothing else. */
+export function isOwnMediaUrl(url: unknown, siteUrl: string): url is string {
+  if (typeof url !== "string" || url.length > 500) return false;
+  try {
+    const parsed = new URL(url);
+    const site = new URL(siteUrl);
+    return (
+      parsed.protocol === "https:" &&
+      parsed.host === site.host &&
+      /^\/media\/photos\/[0-9]{4}-[0-9]{2}\/[a-z0-9-]+\.(?:jpeg|jpg|png|webp|gif)$/.test(parsed.pathname) &&
+      !parsed.search &&
+      !parsed.hash
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * A photo URL the site itself issued (/api/upload-photo): Wix Media, or
+ * MegaDeal's own storage. What every route that accepts a photo checks.
+ */
+export function isUploadedPhotoUrl(url: unknown, siteUrl: string): url is string {
+  return isWixMediaUrl(url) || isOwnMediaUrl(url, siteUrl);
+}

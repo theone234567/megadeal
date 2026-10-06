@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
-import { isWixMediaUrl } from "@/lib/photoUrl";
+import { isUploadedPhotoUrl } from "@/lib/photoUrl";
+import { SITE_URL } from "@/lib/siteConfig";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { reviewPendingPhoto } from "@/lib/aiReviewApply";
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
   const body = await req.json().catch(() => null);
   const photoUrl = body?.photoUrl;
-  if (!isWixMediaUrl(photoUrl)) {
+  if (!isUploadedPhotoUrl(photoUrl, SITE_URL)) {
     return NextResponse.json({ error: "Invalid photo." }, { status: 400 });
   }
 

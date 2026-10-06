@@ -6,7 +6,7 @@ import { safeWebHref } from "@/lib/socialLinks";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
-import { isWixMediaUrl } from "@/lib/photoUrl";
+import { isUploadedPhotoUrl } from "@/lib/photoUrl";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { debitCreditsIfAvailable, incrementCreditsAtomically, setFieldsIf } from "@/lib/creditsAtomic";
 import { getPlatformSettings } from "@/lib/platformSettings";
@@ -20,7 +20,7 @@ import {
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { generateDealCode } from "@/lib/dealCode";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
-import { SITE_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
 import { toRequestedMinutes } from "@/lib/dealDuration";
 
 const WIX_STORES_APP_ID = "215238eb-22a5-4c36-9e7b-e7c08025e04e";
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   const checked = checkDealFields(body, {
     typeBlocked: (flash) => dealTypeBlocked(flash, settings),
     maxDuration: (flash) => maxRequestedDuration(flash, settings),
-    photoError: (url) => (isWixMediaUrl(url) ? null : "Invalid photo."),
+    photoError: (url) => (isUploadedPhotoUrl(url, SITE_URL) ? null : "Invalid photo."),
   });
   if (!checked.ok) return NextResponse.json({ error: checked.error }, { status: checked.status });
   const {

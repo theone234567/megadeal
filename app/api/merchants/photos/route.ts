@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
-import { isWixMediaUrl } from "@/lib/photoUrl";
+import { isUploadedPhotoUrl } from "@/lib/photoUrl";
+import { SITE_URL } from "@/lib/siteConfig";
 import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
 import { MAX_BUSINESS_PHOTOS, serializeBusinessPhotos } from "@/lib/businessPhotos";
 
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  if (!photos.every(isWixMediaUrl)) {
+  if (!photos.every((p: unknown) => isUploadedPhotoUrl(p, SITE_URL))) {
     return NextResponse.json({ error: "Invalid photo." }, { status: 400 });
   }
 

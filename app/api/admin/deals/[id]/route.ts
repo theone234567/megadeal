@@ -3,8 +3,8 @@ import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { notifyDealChanged } from "@/lib/indexNowDeal";
-import { SITE_LAUNCHED } from "@/lib/siteConfig";
-import { isWixMediaUrl } from "@/lib/photoUrl";
+import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
+import { isUploadedPhotoUrl } from "@/lib/photoUrl";
 import { firstPublicationFields, manualExpiryError } from "@/lib/dealDuration";
 import { hasDealExpired } from "@/lib/dealStatus";
 import { isScheduledFuture, parseScheduledStart } from "@/lib/dealSchedule";
@@ -40,7 +40,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   }
   if (body.photoUrl !== undefined) {
     // Only a photo from our own uploader (Wix Media), never an arbitrary URL.
-    if (!isWixMediaUrl(body.photoUrl)) {
+    if (!isUploadedPhotoUrl(body.photoUrl, SITE_URL)) {
       return NextResponse.json({ error: "Invalid photo." }, { status: 400 });
     }
     patch.photoUrl = body.photoUrl;
