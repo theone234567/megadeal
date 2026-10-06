@@ -57,7 +57,7 @@ What then changes by itself:
    up to 3 months. Facebook keeps old previews for a while; its Sharing Debugger refreshes one.
 9. **Tell the people who asked.** The coming-soon page and footer promised subscribers an
    email at launch, and the portal promised approved businesses one. Admin → Subscribers →
-   **Launch email**: pick the group (deal-alert subscribers, businesses on the launch
+   **Email subscribers** (email name `launch`): pick the group (deal-alert subscribers, businesses on the launch
    waitlist, approved businesses), edit the draft, Preview, Send me a test, then Send. It
    goes only to confirmed subscribers who haven't unsubscribed, each person once (pressing
    Send again sends nothing new), with their own unsubscribe link. Sending only works once
@@ -67,7 +67,8 @@ What then changes by itself:
    `docs/WIX-MIGRATION.md`), these go out through Wix's email service, which is meant for
    one-off messages and counts against the site's monthly Wix email allowance (5,000 on the
    Core plan, per `lib/sendEmail.ts`). Fine for a launch list of a few hundred; for a big
-   list, move email to Resend first.
+   list, move email to Resend first. Later emails (say, a monthly round-up of new deals) use
+   the same tool with a new email name, such as `deals-2026-12`.
 10. **Check the offer end to end** (`docs/LAUNCH-OFFER-CHECKLIST.md`, "After launch, check"):
     approve a test signup that used WELCOME3; it should get 12 credits and its email should
     name WELCOME3.

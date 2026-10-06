@@ -27,6 +27,10 @@ interface Status {
 
 export default function AnnouncementPanel() {
   const [audience, setAudience] = useState<Audience>("customers");
+  // Each email name goes to each person once. "launch" is the launch
+  // email; a new name (e.g. "deals-2026-11") is a new email.
+  const [campaign, setCampaign] = useState("launch");
+  const campaignOk = /^[a-z0-9][a-z0-9-]{1,39}$/.test(campaign);
   const [status, setStatus] = useState<Status | null>(null);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
@@ -35,10 +39,10 @@ export default function AnnouncementPanel() {
   const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
 
-  const load = useCallback(async (a: Audience, keepText = false) => {
+  const load = useCallback(async (a: Audience, c: string, keepText = false) => {
     setStatus(null);
     try {
-      const res = await fetch(`/api/admin/announcement?audience=${a}`, { cache: "no-store" });
+      const res = await fetch(`/api/admin/announcement?audience=${a}&campaign=${encodeURIComponent(c)}`, { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Couldn't load.");
       setStatus(data);
@@ -53,14 +57,15 @@ export default function AnnouncementPanel() {
   }, []);
 
   useEffect(() => {
-    load(audience);
+    load(audience, "launch");
+    setCampaign("launch");
   }, [audience, load]);
 
   async function post(action: "preview" | "test" | "send") {
     const res = await fetch("/api/admin/announcement", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, audience, subject, body }),
+      body: JSON.stringify({ action, audience, campaign, subject, body }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Something went wrong. Please try again.");
@@ -104,7 +109,7 @@ export default function AnnouncementPanel() {
       setMessage({ tone: "error", text: `${sentTotal} sent, then: ${err instanceof Error ? err.message : "sending stopped."}` });
     } finally {
       setBusy(null);
-      load(audience, true);
+      load(audience, campaign, true);
     }
   }
 
@@ -112,10 +117,10 @@ export default function AnnouncementPanel() {
 
   return (
     <section className="mb-8 rounded-xl border border-slate-200 p-5">
-      <h3 className="text-base font-extrabold text-slate-900">Launch email</h3>
+      <h3 className="text-base font-extrabold text-slate-900">Email subscribers</h3>
       <p className="mt-1 text-sm text-slate-600">
-        One email to everyone in a group who asked for it: confirmed subscribers only, each person once. Look at it and send
-        yourself a test first.
+        One email to everyone in a group who asked for it: confirmed subscribers only, each person once. Starts with the launch
+        email. Look at it and send yourself a test first.
       </p>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -135,6 +140,18 @@ export default function AnnouncementPanel() {
                 </option>
               ))}
             </select>
+          </label>
+          <label className="grid gap-1 text-sm font-semibold text-slate-700">
+            Email name <span className="font-normal text-slate-500">(each name goes to each person once; use a new one, like deals-2026-11, for a new email)</span>
+            <input
+              id="announcement-campaign"
+              value={campaign}
+              maxLength={40}
+              onChange={(e) => setCampaign(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
+              onBlur={() => campaignOk && load(audience, campaign, true)}
+              disabled={busy !== null}
+              className="rounded-lg border border-slate-300 px-3 py-2 font-mono font-normal"
+            />
           </label>
           <p className="text-sm text-slate-600">
             {status
@@ -185,7 +202,7 @@ export default function AnnouncementPanel() {
               <button
                 type="button"
                 onClick={() => setConfirming(true)}
-                disabled={busy !== null || !status?.launched || toSend <= 0}
+                disabled={busy !== null || !status?.launched || toSend <= 0 || !campaignOk}
                 className="rounded-full bg-brand-600 px-4 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
               >
                 {busy === "send" ? "Sending…" : `Send to ${toSend} ${toSend === 1 ? "person" : "people"}`}
