@@ -16,6 +16,8 @@ import type { Deal } from "./types";
  *    audience merchant)
  *  - "businesses": approved businesses (Merchants, status Approved), which
  *    the portal tells "We'll email you when we launch"
+ *  - "pending": businesses still awaiting approval (status Pending), which
+ *    the application email promises the same
  *
  * Only addresses that confirmed their subscription and haven't
  * unsubscribed, each once (rows can repeat an address under different
@@ -24,8 +26,8 @@ import type { Deal } from "./types";
  * sender rules require.
  */
 
-export type AnnouncementAudience = "customers" | "waitlist" | "businesses";
-export const AUDIENCES: AnnouncementAudience[] = ["customers", "waitlist", "businesses"];
+export type AnnouncementAudience = "customers" | "waitlist" | "businesses" | "pending";
+export const AUDIENCES: AnnouncementAudience[] = ["customers", "waitlist", "businesses", "pending"];
 
 export interface Recipient {
   email: string;
@@ -59,12 +61,12 @@ export function subscriberRecipients(rows: Record<string, unknown>[], audience: 
   return [...seen.values()].filter((r) => !unsubscribed.has(r.email));
 }
 
-/** Approved businesses, each address once. */
-export function businessRecipients(rows: Record<string, unknown>[]): Recipient[] {
+/** Businesses with one status (approved by default), each address once. */
+export function businessRecipients(rows: Record<string, unknown>[], status: "Approved" | "Pending" = "Approved"): Recipient[] {
   const seen = new Map<string, Recipient>();
   for (const row of rows) {
     const email = String(row.email ?? "").trim().toLowerCase();
-    if (!EMAIL_RE.test(email) || row.status !== "Approved") continue;
+    if (!EMAIL_RE.test(email) || row.status !== status) continue;
     if (!seen.has(email)) seen.set(email, { email, name: typeof row.businessName === "string" ? row.businessName : undefined });
   }
   return [...seen.values()];
@@ -75,6 +77,7 @@ export const BUTTON: Record<AnnouncementAudience, { label: string; path: string 
   customers: { label: "See today's deals", path: "/" },
   waitlist: { label: "List my business", path: "/list-your-business" },
   businesses: { label: "Go to my business portal", path: "/portal" },
+  pending: { label: "Go to my business portal", path: "/portal" },
 };
 
 /** First drafts, to be edited in the admin page before sending. */
@@ -86,6 +89,10 @@ export const DRAFTS: Record<AnnouncementAudience, { subject: string; body: strin
   waitlist: {
     subject: "MegaDeal is live: list your business",
     body: "MegaDeal is now live in Auckland, and you asked to hear when it was.\n\nEligible new businesses can get up to 3 months of free advertising with code WELCOME3, with 0% commission on your sales. Terms apply.",
+  },
+  pending: {
+    subject: "MegaDeal is live in Auckland",
+    body: "MegaDeal is now live in Auckland.\n\nWe're still reviewing your business application. Once you're approved, you can submit the deals you've saved in your business portal, and each goes live once our team has checked it.",
   },
   businesses: {
     subject: "MegaDeal is live: submit your deals",
@@ -147,7 +154,7 @@ export function announcementHtml(opts: {
   const site = opts.siteUrl.replace(/\/$/, "");
   const button = BUTTON[opts.audience];
   const why =
-    opts.audience === "businesses"
+    opts.audience === "businesses" || opts.audience === "pending"
       ? "You're getting this because your business has a MegaDeal account."
       : opts.audience === "waitlist"
         ? "You're getting this because you asked MegaDeal for launch news for businesses."

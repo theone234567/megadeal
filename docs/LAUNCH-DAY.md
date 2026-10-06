@@ -58,7 +58,8 @@ What then changes by itself:
 9. **Tell the people who asked.** The coming-soon page and footer promised subscribers an
    email at launch, and the portal promised approved businesses one. Admin → Subscribers →
    **Email subscribers** (email name `launch`): pick the group (deal-alert subscribers, businesses on the launch
-   waitlist, approved businesses), edit the draft, Preview, Send me a test, then Send. It
+   waitlist, approved businesses, businesses awaiting approval: the application email
+   promised them a launch email too), edit the draft, Preview, Send me a test, then Send. It
    goes only to confirmed subscribers who haven't unsubscribed, each person once (pressing
    Send again sends nothing new), with their own unsubscribe link. Sending only works once
    the site has launched.

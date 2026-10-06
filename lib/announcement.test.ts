@@ -42,6 +42,14 @@ describe("who gets the announcement", () => {
     ]);
     expect(list).toEqual([{ email: "owner@bistro.nz", name: "Bistro" }]);
   });
+
+  it("businesses awaiting approval are their own group", () => {
+    const rows = [
+      { email: "owner@bistro.nz", status: "Approved" },
+      { email: "new@spa.nz", status: "Pending", businessName: "Spa" },
+    ];
+    expect(businessRecipients(rows, "Pending")).toEqual([{ email: "new@spa.nz", name: "Spa" }]);
+  });
 });
 
 describe("the email", () => {

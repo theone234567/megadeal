@@ -55,9 +55,10 @@ function audienceOf(value: unknown): AnnouncementAudience | null {
 
 async function recipients(audience: AnnouncementAudience): Promise<Recipient[]> {
   const client = createDataClient();
-  if (audience === "businesses") {
-    const rows = await queryAllItems(() => client.items.query("Merchants").eq("status", "Approved"), "Merchants (announcement)");
-    return businessRecipients(rows);
+  if (audience === "businesses" || audience === "pending") {
+    const status = audience === "businesses" ? "Approved" : "Pending";
+    const rows = await queryAllItems(() => client.items.query("Merchants").eq("status", status), "Merchants (announcement)");
+    return businessRecipients(rows, status);
   }
   const rows = await queryAllItems(() => client.items.query("EmailSignups"), "EmailSignups (announcement)");
   return subscriberRecipients(rows, audience === "customers" ? "customer" : "merchant");
@@ -138,7 +139,7 @@ export async function POST(req: NextRequest) {
   if (!body || body.length > BODY_MAX) return json({ error: `Write the message (up to ${BODY_MAX} characters).` }, 400);
 
   if (input.action === "preview") {
-    return json({ html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: audience === "businesses" ? undefined : `${SITE_URL}/unsubscribe` }) });
+    return json({ html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: audience === "businesses" || audience === "pending" ? undefined : `${SITE_URL}/unsubscribe` }) });
   }
 
   if (input.action === "test") {
@@ -147,7 +148,7 @@ export async function POST(req: NextRequest) {
     const ok = await sendTransactionalEmail({
       to,
       subject: `[Test] ${subject}`,
-      html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: audience === "businesses" ? undefined : `${SITE_URL}/unsubscribe` }),
+      html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: audience === "businesses" || audience === "pending" ? undefined : `${SITE_URL}/unsubscribe` }),
     }).catch(() => false);
     return ok ? json({ ok: true }) : json({ error: "The test didn't send. Please try again." }, 502);
   }

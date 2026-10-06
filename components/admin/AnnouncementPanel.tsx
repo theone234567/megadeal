@@ -9,12 +9,13 @@ import { useCallback, useEffect, useState } from "react";
  * each address gets it once, however often the button is pressed.
  */
 
-type Audience = "customers" | "waitlist" | "businesses";
+type Audience = "customers" | "waitlist" | "businesses" | "pending";
 
 const AUDIENCE_LABEL: Record<Audience, string> = {
   customers: "Deal-alert subscribers",
   waitlist: "Businesses on the launch waitlist",
   businesses: "Approved businesses",
+  pending: "Businesses awaiting approval",
 };
 
 interface Status {
