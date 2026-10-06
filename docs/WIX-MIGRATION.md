@@ -470,7 +470,13 @@ monitor (UptimeRobot or Better Stack) when stage 2 goes live:
 - Alert when it doesn't answer 200 (it says 503 when the database is
   down). Send alerts to your email and phone.
 
-It answers "ok" or "down" and nothing more. Also worth turning on:
+It answers "ok" or "down" and nothing more. On Supabase's free plan it
+also matters for another reason: a project with no activity for a week
+is paused, which would take the site down. The monitor's checks (and the
+nightly backup) keep it active; move to the Pro plan, which never
+pauses, before launch.
+
+Also worth turning on:
 Supabase > Organization > Usage alerts, so you hear before the plan's
 limits are reached.
 
