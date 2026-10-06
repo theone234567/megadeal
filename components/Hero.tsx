@@ -32,10 +32,15 @@ export default function Hero() {
           aria-hidden
           className="relative h-[104px] [mask-image:linear-gradient(to_bottom,black_60%,transparent)] min-[360px]:h-[116px] sm:absolute sm:inset-y-0 sm:right-0 sm:h-auto sm:w-[54%] sm:[mask-image:linear-gradient(to_right,transparent,black_30%)]"
         >
+          {/* Both sizes on offer, and the browser picks: on wider screens
+              the band is 54% of a hero at most 1200px wide (~650px), so a
+              standard screen takes the 800px copy (46KB) and only a
+              high-density one the 1600px original (137KB). */}
           <picture>
-            <source media="(min-width: 640px)" srcSet="/megadeal/hero/auckland-skyline.webp" width={1600} height={702} />
             <img
               src="/megadeal/hero/auckland-skyline-800.webp"
+              srcSet="/megadeal/hero/auckland-skyline-800.webp 800w, /megadeal/hero/auckland-skyline.webp 1600w"
+              sizes="(min-width: 1200px) 650px, (min-width: 640px) 54vw, 100vw"
               alt=""
               width={800}
               height={351}
