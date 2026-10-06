@@ -32,6 +32,7 @@ export default function ReferralCard({ referralCode }: { referralCode?: string }
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
         <input
           readOnly
+          aria-label="Your referral link"
           value={referralUrl}
           onClick={(e) => e.currentTarget.select()}
           className="w-full min-w-0 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 outline-none"

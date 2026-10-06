@@ -84,7 +84,7 @@ export default function ShareButtons({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <span className={`font-semibold text-slate-500 ${isMd ? "text-sm" : "text-xs"}`}>
+      <span className={`font-semibold text-slate-600 ${isMd ? "text-sm" : "text-xs"}`}>
         Share:
       </span>
       <a

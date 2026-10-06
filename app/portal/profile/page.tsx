@@ -154,14 +154,14 @@ export default function PortalProfilePage() {
       <div>
         <Link
           href="/portal"
-          className="inline-flex items-center gap-1 text-sm font-semibold text-slate-500 hover:text-brand-700"
+          className="inline-flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-brand-700"
         >
           ← Back to overview
         </Link>
         <h1 className="mt-2 text-[28px] font-extrabold leading-tight text-slate-900 sm:text-[32px]">
           Business profile
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-600">
           Everything customers see on your listing, plus the contact and booking details behind
           it.
         </p>
