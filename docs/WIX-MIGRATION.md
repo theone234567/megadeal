@@ -318,7 +318,17 @@ Set up (any time before):
        binding = "PHOTOS"
        bucket_name = "megadeal-photos"
 
-6. Rehearse the import on the new database (it changes nothing):
+6. Cloudflare > R2: a second private bucket for the nightly backups
+   (e.g. `megadeal-backups`). Under its Settings, add a lifecycle rule:
+   delete objects after 30 days. Add to `wrangler.toml`:
+
+       [[r2_buckets]]
+       binding = "BACKUPS"
+       bucket_name = "megadeal-backups"
+
+   The nightly job uses the same `CRON_SECRET` as the hourly one (in
+   GitHub and in Cloudflare). See "Backups" below.
+7. Rehearse the import on the new database (it changes nothing):
 
        node scripts/wix-export.mjs
        DATABASE_URL=… npx tsx scripts/wix-import.ts wix-export/<folder>
@@ -330,10 +340,12 @@ On the day:
 1. Pick a quiet time. Don't approve anything during the switch, and ask
    any business you're working with not to edit for an hour: a change
    made in Wix after the export doesn't come across.
-2. Export again and import for real:
+2. Export again and import for real, then take a copy of the result
+   to keep:
 
        node scripts/wix-export.mjs
        DATABASE_URL=… npx tsx scripts/wix-import.ts wix-export/<folder> --commit
+       DATABASE_URL=… npx tsx scripts/take-backup.ts
 
 3. Moving off Wix: Database all ticks; the business, deal and
    subscriber counts match `summary.json` in the export.
@@ -397,6 +409,40 @@ hour or two; after that, fix forward.
 
 Turning it off: remove the line and deploy. Businesses sign in with
 Wix again; accounts created meanwhile would need to sign up on Wix.
+
+### Backups
+
+Every night at about 2:30am a GitHub job (`.github/workflows/backup.yml`)
+asks the site to save a copy of every table in the new database to the
+private `BACKUPS` bucket (`app/api/cron/backup`, `lib/db/backup.ts`):
+businesses, deals, credits activity, the mailing list, messages,
+settings and old page addresses. Copies are gzipped JSON and kept for
+30 days by the bucket's lifecycle rule. If one fails, the GitHub job
+fails and GitHub emails you; Moving off Wix also shows how old the
+latest copy is. Logins aren't in it (Supabase keeps those, and any
+business can set a new password from an emailed link).
+
+A copy holds personal details: it never leaves the private bucket except
+to restore.
+
+To restore, into a new Supabase project (or any Postgres) with the
+migrations applied and no data:
+
+1. Download the copy you want from the `BACKUPS` bucket in Cloudflare
+   R2.
+2. Rehearse, then restore for real:
+
+       DATABASE_URL=… npx tsx scripts/restore-backup.ts backups-<time>.json.gz
+       DATABASE_URL=… npx tsx scripts/restore-backup.ts backups-<time>.json.gz --commit
+
+   Everything goes back exactly as saved, page addresses and dates
+   included, in one step: all of it or none. It refuses a database that
+   already has data.
+3. Point Hyperdrive at the restored database, then delete the downloaded
+   file.
+
+`scripts/take-backup.ts` takes the same copy by hand, to a file, any
+time (e.g. before the final import).
 
 ### Stage 4: after the move
 

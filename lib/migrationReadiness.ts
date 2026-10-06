@@ -5,6 +5,7 @@ import { countWixPhotos } from "./db/copyPhotos";
 import { photoBucket, photoResizer, photoStorage } from "./photoStorage";
 import { authBackend } from "./authSession";
 import { getRateLimitKv } from "./rateLimit";
+import { backupBucket, latestBackup } from "./backupStorage";
 
 /**
  * The admin "Moving off Wix" page (app/admin/move-off-wix): for each switch
@@ -123,6 +124,27 @@ async function connectionKind(): Promise<"hyperdrive" | "url" | null> {
   return set("DATABASE_URL") ? "url" : null;
 }
 
+/** The nightly copy (app/api/cron/backup): a warning, never a blocker. */
+async function backupCheck(): Promise<Check> {
+  const bucket = await backupBucket();
+  if (!bucket) return warning("Nightly backup", "No BACKUPS bucket. Create a private R2 bucket and add it to wrangler.toml as BACKUPS, so there's a copy of the data every night.");
+  if (!set("CRON_SECRET")) return warning("Nightly backup", "CRON_SECRET isn't set, so the nightly job can't run. Set the same value in GitHub and Cloudflare.");
+  try {
+    const latest = await latestBackup(bucket);
+    if (!latest) {
+      return (dataBackend() === "postgres" ? warning : info)("Nightly backup", "No backup yet. The first is taken the night after the database is switched on (or run the job by hand in GitHub Actions).");
+    }
+    const hours = (Date.now() - new Date(latest.uploaded).getTime()) / 3_600_000;
+    const when = hours < 1 ? "under an hour ago" : hours < 48 ? `${Math.round(hours)} hours ago` : `${Math.round(hours / 24)} days ago`;
+    return hours <= 36
+      ? ok("Nightly backup", `Latest copy taken ${when} (${Math.round(latest.size / 1024)} KB).`)
+      : warning("Nightly backup", `The latest copy is from ${when}: the nightly job may be failing. Check GitHub Actions.`);
+  } catch (err) {
+    console.error("[migrationReadiness] backup check failed", err);
+    return warning("Nightly backup", "Couldn't look in the backup bucket just now.");
+  }
+}
+
 async function databaseSection(): Promise<{ section: Section; facts: DatabaseFacts | null }> {
   const checks: Check[] = [];
   let facts: DatabaseFacts | null = null;
@@ -170,6 +192,8 @@ async function databaseSection(): Promise<{ section: Section; facts: DatabaseFac
       );
     }
   }
+
+  checks.push(await backupCheck());
 
   const ready = checks.every((c) => c.state !== "missing");
   return {

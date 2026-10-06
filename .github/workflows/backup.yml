@@ -1,0 +1,31 @@
+# Every night, asks the site to save a copy of MegaDeal's own database to
+# its private BACKUPS bucket in Cloudflare R2 (app/api/cron/backup). Only
+# does anything once the data has moved off Wix (DATA_BACKEND=postgres).
+#
+# Uses the same CRON_SECRET as the hourly expired-deals job. Until it's set
+# in GitHub, this job does nothing. A failed backup fails this job, and
+# GitHub emails the repository owner.
+
+name: Nightly database backup
+
+on:
+  schedule:
+    - cron: "23 14 * * *" # 2:23am or 3:23am in Auckland
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Save a copy of the database
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "CRON_SECRET isn't set yet - nothing to do."
+            exit 0
+          fi
+          curl -fsS --max-time 120 -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            https://megadeal.co.nz/api/cron/backup

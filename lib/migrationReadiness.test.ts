@@ -6,7 +6,8 @@ import { createTestDb } from "./db/testDb";
 import type { Sql } from "./db/sql";
 
 vi.mock("server-only", () => ({}));
-vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext: async () => ({ env: {} }) }));
+let cfEnv: Record<string, unknown> = {};
+vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext: async () => ({ env: cfEnv }) }));
 vi.mock("./rateLimit", () => ({ getRateLimitKv: async () => ({ get: async () => null, put: async () => {} }) }));
 
 let pglite: PGlite;
@@ -23,7 +24,10 @@ beforeAll(async () => {
   pglite = (await createTestDb()).db;
 });
 
-afterEach(() => vi.unstubAllEnvs());
+afterEach(() => {
+  vi.unstubAllEnvs();
+  cfEnv = {};
+});
 
 describe("database facts", () => {
   it("has a marker for every migration", () => {
@@ -119,7 +123,11 @@ describe("checkReadiness", () => {
     allSet();
     const r = await checkReadiness(services().fetchFn);
     // Nothing is imported into the test database.
-    expect(section(r, "database").checks.filter((c) => c.state !== "ok").map((c) => c.label)).toEqual(["Data copied from Wix"]);
+    // (and, with no bucket here, the nightly backup: a warning, not a blocker)
+    expect(section(r, "database").checks.filter((c) => c.state !== "ok").map((c) => [c.label, c.state])).toEqual([
+      ["Data copied from Wix", "missing"],
+      ["Nightly backup", "warning"],
+    ]);
     expect(section(r, "email").ready).toBe(true);
     expect(check(r, "photos", "Photo storage")?.state).toBe("missing");
     expect(check(r, "logins", "Email codes required")?.state).toBe("ok");
@@ -175,5 +183,42 @@ describe("checkReadiness", () => {
     } finally {
       pglite = real;
     }
+  });
+});
+
+describe("the nightly backup check", () => {
+  const bucketWith = (...ages: number[]) => ({
+    put: async () => {},
+    list: async () => ({
+      objects: ages.map((h) => {
+        const at = new Date(Date.now() - h * 3_600_000);
+        return { key: `backups/${at.toISOString()}.json.gz`, uploaded: at, size: 20_480 };
+      }),
+      truncated: false,
+    }),
+  });
+
+  it("is fine with a copy from last night, and says when", async () => {
+    allSet();
+    vi.stubEnv("CRON_SECRET", "s");
+    cfEnv = { BACKUPS: bucketWith(50, 26, 3) };
+    const c = check(await checkReadiness(services().fetchFn), "database", "Nightly backup");
+    expect(c).toMatchObject({ state: "ok", detail: "Latest copy taken 3 hours ago (20 KB)." });
+  });
+
+  it("warns when the latest copy is old: the job may be failing", async () => {
+    allSet();
+    vi.stubEnv("CRON_SECRET", "s");
+    cfEnv = { BACKUPS: bucketWith(80) };
+    const c = check(await checkReadiness(services().fetchFn), "database", "Nightly backup");
+    expect(c?.state).toBe("warning");
+    expect(c?.detail).toContain("3 days ago");
+  });
+
+  it("warns when the job can't run", async () => {
+    allSet();
+    vi.stubEnv("CRON_SECRET", "");
+    cfEnv = { BACKUPS: bucketWith(3) };
+    expect(check(await checkReadiness(services().fetchFn), "database", "Nightly backup")?.detail).toContain("CRON_SECRET");
   });
 });

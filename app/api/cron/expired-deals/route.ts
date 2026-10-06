@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash, timingSafeEqual } from "crypto";
 import { createDataClient } from "@/lib/dataClient";
 import { notifyDealChanged } from "@/lib/indexNowDeal";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
+import { cronCaller } from "@/lib/cronAuth";
 
 /**
  * Hourly (see .github/workflows/indexnow-expired.yml): tells Bing and the
@@ -22,23 +22,10 @@ import { SITE_LAUNCHED } from "@/lib/siteConfig";
 // catches everything. Re-sending a URL is harmless.
 const LOOKBACK_MS = 3 * 60 * 60 * 1000;
 
-function secretMatches(given: string, expected: string): boolean {
-  // Hashed first so the comparison is constant-time whatever the lengths.
-  const a = createHash("sha256").update(given).digest();
-  const b = createHash("sha256").update(expected).digest();
-  return timingSafeEqual(a, b);
-}
-
 export async function POST(req: NextRequest) {
-  const expected = process.env.CRON_SECRET;
-  if (!expected) {
-    return NextResponse.json({ error: "Not configured." }, { status: 503 });
-  }
-  const auth = req.headers.get("authorization") ?? "";
-  const given = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-  if (!given || !secretMatches(given, expected)) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  }
+  const caller = cronCaller(req);
+  if (caller === "unset") return NextResponse.json({ error: "Not configured." }, { status: 503 });
+  if (caller === "refused") return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
   // Before launch deal pages aren't public, so there's nothing to tell.
   if (!SITE_LAUNCHED) return NextResponse.json({ notified: 0, skipped: "not launched" });
