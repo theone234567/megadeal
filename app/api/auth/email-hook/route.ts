@@ -71,15 +71,16 @@ export async function POST(req: NextRequest) {
   const expires = "It works once, for the next 10 minutes.";
   const notYou = "Didn't ask for this? You can ignore this email; nothing changes until the code is used.";
   const message =
-    action === "recovery"
-      ? { subject: `${code} is your MegaDeal password code`, html: codeEmail("Set your password", `Enter this code on MegaDeal to choose a new password. ${expires}`, code, notYou) }
-      : action === "signup"
-        ? { subject: `${code} is your MegaDeal sign-up code`, html: codeEmail("Confirm your email", `Enter this code on MegaDeal to finish creating your business account. ${expires}`, code, notYou) }
-        : null;
+    action === "signup"
+      ? { subject: `${code} is your MegaDeal sign-up code`, html: codeEmail("Confirm your email", `Enter this code on MegaDeal to finish creating your business account. ${expires}`, code, notYou) }
+      : null;
   if (!message) {
-    // Kinds of email MegaDeal doesn't use (magic links, invites, email
-    // changes): refused,
-    // so nothing goes out that the site never offers.
+    // Only the sign-up code is MegaDeal's. Everything else Supabase can
+    // send (password codes, magic links, invites, email changes) is
+    // refused, so nothing goes out that the site never offers: password
+    // resets use the site's own emailed link
+    // (app/api/auth/request-password-reset), and refusing an email
+    // change stops the change itself.
     return NextResponse.json({ error: { http_code: 400, message: `Unsupported email: ${action}` } }, { status: 400 });
   }
   const sent = await sendTransactionalEmail({ to: email, subject: message.subject, html: message.html });

@@ -21,12 +21,15 @@ export async function authPreflight(
   const body = ((await req.json().catch(() => null)) ?? {}) as Record<string, unknown>;
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase().slice(0, 254) : "";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return stop("Enter a valid email address.", 400);
+  // The robot check before the per-address limit: otherwise anyone could
+  // lock a business out of signing in by sending junk for its address,
+  // without solving a single check.
+  if (opts.captcha && !(await verifyTurnstile(body.captchaToken, ip))) {
+    return stop("The security check didn't pass. Please try again.", 400);
+  }
   // Per address too, so one account can't be hammered from many places.
   if ((await checkRateLimit(`${opts.limitKey}-email:${email}`, 10, 15 * 60)).limited) {
     return stop("Too many attempts for this email. Please wait a few minutes and try again.", 429);
-  }
-  if (opts.captcha && !(await verifyTurnstile(body.captchaToken, ip))) {
-    return stop("The security check didn't pass. Please try again.", 400);
   }
   return { body, ip, email };
 }

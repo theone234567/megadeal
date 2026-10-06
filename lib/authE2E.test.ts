@@ -193,6 +193,30 @@ describe.skipIf(!ENABLED)("business logins on Supabase, end to end", () => {
     vi.doUnmock("@/lib/adminAudit");
   });
 
+  it("an account that hasn't applied for a business yet can still reset its password", async () => {
+    const solo = `solo+${Date.now()}@bistro.test`;
+    const register = await import("@/app/api/auth/register/route");
+    await register.POST(req("/api/auth/register", { email: solo, password }));
+    const verify = await import("@/app/api/auth/verify/route");
+    expect((await verify.POST(req("/api/auth/verify", { email: solo, code: latestCode(solo) }))).status).toBe(200);
+
+    sent.length = 0;
+    const request = await import("@/app/api/auth/request-password-reset/route");
+    await request.POST(req("/api/auth/request-password-reset", { email: solo.toUpperCase() }));
+    const mail = sent.find((m) => m.to === solo);
+    expect(mail?.html).toContain("Hi there");
+    const link = mail!.html.match(/reset-password\?token=([0-9a-f]+)/)![1];
+    const confirm = await import("@/app/api/auth/confirm-password-reset/route");
+    expect((await confirm.POST(req("/api/auth/confirm-password-reset", { token: link, newPassword: "a solo new password" }))).status).toBe(200);
+    const login = await import("@/app/api/auth/login/route");
+    expect(await (await login.POST(req("/api/auth/login", { email: solo, password: "a solo new password" }))).json()).toEqual({ status: "success" });
+
+    // An address with no account and no business gets nothing.
+    sent.length = 0;
+    await request.POST(req("/api/auth/request-password-reset", { email: `nobody+${Date.now()}@bistro.test` }));
+    expect(sent).toEqual([]);
+  });
+
   it("the email hook sends only what Supabase signed, recently", async () => {
     const hook = await import("@/app/api/auth/email-hook/route");
     const body = JSON.stringify({ user: { email: "hook@bistro.test" }, email_data: { token: "123456", email_action_type: "signup" } });

@@ -89,10 +89,6 @@ export const refreshSession = async (refreshToken: string) =>
 /** Ends this session (its refresh token stops working). */
 export const signOut = (accessToken: string) => call<object>("/logout?scope=local", { bearer: accessToken });
 
-/** Sets a new password for the signed-in account. */
-export const updatePassword = (accessToken: string, password: string) =>
-  call<object>("/user", { method: "PUT", body: { password }, bearer: accessToken });
-
 /**
  * Sets an account's password, creating the account if there isn't one
  * (a business brought over from Wix: Wix passwords can't be exported).

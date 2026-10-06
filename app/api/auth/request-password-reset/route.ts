@@ -6,8 +6,8 @@ import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { SITE_URL } from "@/lib/siteConfig";
-import { checkRateLimit } from "@/lib/rateLimit";
-import { authBackend } from "@/lib/authSession";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { accountIdForEmail, authBackend } from "@/lib/authSession";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // The found/not-found paths below cost very different amounts of real
@@ -52,7 +52,10 @@ export async function POST(req: NextRequest) {
   // café network sharing one address shouldn't get one business's request
   // limit spent by another's.
   const { limited } = await checkRateLimit(`pwreset-request:${email.toLowerCase()}`, 5, 60 * 60);
-  if (limited) {
+  // And a generous cap per visitor, so one source can't send reset emails
+  // to address after address.
+  const { limited: busy } = await checkRateLimit(`pwreset-request-ip:${getClientIp(req)}`, 30, 60 * 60);
+  if (limited || busy) {
     // Same response as success — the limit itself isn't something to reveal.
     return NextResponse.json({ ok: true });
   }
@@ -77,15 +80,23 @@ export async function POST(req: NextRequest) {
     // brought over from Wix has no login yet (Wix passwords can't be
     // moved), and this link is how it sets one, so any business on file
     // qualifies. The link proves the address before anything is set.
-    const eligible = authBackend() === "supabase" ? Boolean(merchant?.email) : Boolean(merchant?.email && merchant._owner);
-    if (merchant?.email && eligible) {
-      const token = await createPasswordResetToken(merchant.email);
+    //
+    // There, an account that hasn't finished its business application
+    // yet (so has no business on file) can reset its password too.
+    const to =
+      authBackend() === "supabase"
+        ? merchant?.email || ((await accountIdForEmail(email)) ? email.toLowerCase() : "")
+        : merchant?.email && merchant._owner
+          ? merchant.email
+          : "";
+    if (to) {
+      const token = await createPasswordResetToken(to);
       if (token) {
         const resetUrl = `${SITE_URL}/reset-password?token=${token}`;
         await sendTransactionalEmail({
-          to: merchant.email,
+          to,
           subject: "Reset your MegaDeal password",
-          html: resetEmailHtml(merchant.businessName, resetUrl),
+          html: resetEmailHtml(merchant?.businessName ?? "", resetUrl),
         });
       }
     }
