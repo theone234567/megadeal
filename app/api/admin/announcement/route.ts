@@ -4,6 +4,7 @@ import { isAdminRequest } from "@/lib/adminSession";
 import { logAdminAction } from "@/lib/adminAudit";
 import { fromOwnSite } from "@/lib/authSession";
 import { createDataClient } from "@/lib/dataClient";
+import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { queryAllItems } from "@/lib/queryAll";
 import { getRateLimitKv } from "@/lib/rateLimit";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
@@ -16,6 +17,7 @@ import {
   SUBJECT_MAX,
   announcementHtml,
   businessRecipients,
+  dealsDigestBody,
   addressHash,
   parseSentList,
   sentListKey,
@@ -30,6 +32,7 @@ export const dynamic = "force-dynamic";
  * Admin only: the launch announcement (lib/announcement.ts).
  *
  *   GET  ?audience=&campaign=   how many would get it, how many already have
+ *   GET  ?draft=deals           a message listing the live deals, to edit
  *   POST { action: "preview" }  the email as it will look
  *   POST { action: "test" }     sends it to ADMIN_NOTIFY_EMAIL only
  *   POST { action: "send" }     sends the next batch; call again until
@@ -90,6 +93,16 @@ async function unsubscribeUrlFor(r: Recipient): Promise<string | undefined | nul
 
 export async function GET(req: NextRequest) {
   if (!(await isAdminRequest(req))) return json({ error: "Unauthorized." }, 401);
+  if (req.nextUrl.searchParams.get("draft") === "deals") {
+    if (!SITE_LAUNCHED) return json({ error: "There are no public deals before launch." }, 409);
+    try {
+      const body = dealsDigestBody(await fetchAllLiveDealsServer(), SITE_URL);
+      return body ? json({ body }) : json({ error: "There are no live everyday deals to list." }, 404);
+    } catch (err) {
+      console.error("[admin/announcement] deals draft failed", err);
+      return json({ error: "Couldn't load the deals. Please try again." }, 500);
+    }
+  }
   const audience = audienceOf(req.nextUrl.searchParams.get("audience"));
   const campaign = req.nextUrl.searchParams.get("campaign") || "launch";
   if (!audience || !CAMPAIGN_RE.test(campaign)) return json({ error: "Choose who it's for." }, 400);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addressHash, announcementHtml, bodyToHtml, businessRecipients, CAMPAIGN_RE, parseSentList, sentListKey, subscriberRecipients } from "./announcement";
+import { addressHash, announcementHtml, bodyToHtml, businessRecipients, CAMPAIGN_RE, dealsDigestBody, parseSentList, sentListKey, subscriberRecipients } from "./announcement";
 
 const row = (o: Record<string, unknown>) => ({ audience: "customer", verified: true, unsubscribed: false, unsubscribeToken: "tok", ...o });
 
@@ -70,5 +70,42 @@ describe("the email", () => {
     expect(parseSentList(null).size).toBe(0);
     expect(CAMPAIGN_RE.test("launch")).toBe(true);
     expect(CAMPAIGN_RE.test("Launch Day!")).toBe(false);
+  });
+});
+
+describe("the new-deals draft", () => {
+  const deal = (o: Record<string, unknown>) =>
+    ({ slug: "s", name: "Deal", businessName: "Biz", businessSuburb: "Ponsonby", now: 59, was: 98, discountPercent: 40, isFlash: false, startsAt: "2026-11-01T00:00:00Z", ...o }) as never;
+  const now = Date.parse("2026-11-03T00:00:00Z");
+
+  it("lists this week's everyday deals with links, newest first, and leaves out flash deals", () => {
+    const body = dealsDigestBody(
+      [
+        deal({ slug: "old", name: "Old", startsAt: "2026-10-01T00:00:00Z" }),
+        deal({ slug: "new", name: "Dinner", startsAt: "2026-11-02T00:00:00Z" }),
+        deal({ slug: "flash", name: "Flash", isFlash: true, startsAt: "2026-11-02T12:00:00Z" }),
+        deal({ slug: "mid", name: "Massage", startsAt: "2026-11-01T00:00:00Z", was: 0, now: 80 }),
+      ],
+      "https://megadeal.co.nz",
+      now
+    );
+    expect(body.split("\n\n")).toEqual([
+      "New on MegaDeal this week:",
+      "Dinner at Biz, Ponsonby ($59, 40% off)\nhttps://megadeal.co.nz/deal/new",
+      "Massage at Biz, Ponsonby ($80)\nhttps://megadeal.co.nz/deal/mid",
+      "All deals: https://megadeal.co.nz/auckland",
+    ]);
+  });
+
+  it("falls back to the newest live deals, and is empty with none", () => {
+    expect(dealsDigestBody([deal({ startsAt: "2026-09-01T00:00:00Z" })], "https://megadeal.co.nz", now)).toMatch(/^Some of the deals/);
+    expect(dealsDigestBody([], "https://megadeal.co.nz", now)).toBe("");
+  });
+
+  it("turns web addresses into links, and only those", () => {
+    const html = bodyToHtml("See https://megadeal.co.nz/deal/x. Or javascript:alert(1) <a href=x>");
+    expect(html).toContain('<a href="https://megadeal.co.nz/deal/x" style="color:#6520B5;">https://megadeal.co.nz/deal/x</a>.');
+    expect(html).not.toContain('href="javascript');
+    expect(html).toContain("&lt;a href=x&gt;");
   });
 });

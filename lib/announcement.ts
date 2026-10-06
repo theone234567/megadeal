@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { brandedEmailHtml } from "./emailTemplate";
 import { escapeHtml } from "./escapeHtml";
+import type { Deal } from "./types";
 
 /**
  * The launch announcement (and any later one-off announcement): one email,
@@ -95,15 +96,46 @@ export const DRAFTS: Record<AnnouncementAudience, { subject: string; body: strin
 export const SUBJECT_MAX = 150;
 export const BODY_MAX = 4000;
 
-/** Plain text in, safe HTML paragraphs out: a blank line starts a new paragraph. */
+/** Web addresses in already-escaped text become links (http and https only). */
+function linkify(escaped: string): string {
+  return escaped.replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g, (url) => `<a href="${url}" style="color:#6520B5;">${url}</a>`);
+}
+
+/** Plain text in, safe HTML paragraphs out: a blank line starts a new
+ *  paragraph, and web addresses become links. */
 export function bodyToHtml(body: string): string {
   return body
     .replace(/\r\n?/g, "\n")
     .split(/\n{2,}/)
     .map((p) => p.trim())
     .filter(Boolean)
-    .map((p) => `<p style="margin:0 0 16px;">${escapeHtml(p).replace(/\n/g, "<br />")}</p>`)
+    .map((p) => `<p style="margin:0 0 16px;">${linkify(escapeHtml(p)).replace(/\n/g, "<br />")}</p>`)
     .join("");
+}
+
+const money = (n: number) => `$${Number.isInteger(n) ? n : n.toFixed(2)}`;
+
+/**
+ * A first draft for a "new deals" email: the everyday deals that started in
+ * the last week (or, if none did, the newest live ones), up to 10, each
+ * with its link. Flash deals run for hours, so they'd be over before most
+ * people read it.
+ */
+export function dealsDigestBody(deals: Deal[], siteUrl: string, now = Date.now()): string {
+  const site = siteUrl.replace(/\/$/, "");
+  const everyday = deals
+    .filter((d) => !d.isFlash)
+    .sort((a, b) => Date.parse(b.startsAt ?? "") - Date.parse(a.startsAt ?? "") || 0);
+  const week = everyday.filter((d) => d.startsAt && now - Date.parse(d.startsAt) <= 7 * 24 * 3600 * 1000);
+  const picked = (week.length ? week : everyday).slice(0, 10);
+  if (!picked.length) return "";
+  const intro = week.length ? "New on MegaDeal this week:" : "Some of the deals on MegaDeal right now:";
+  const lines = picked.map((d) => {
+    const where = [d.businessName, d.businessSuburb].filter(Boolean).join(", ");
+    const price = d.was > d.now ? `${money(d.now)}, ${d.discountPercent}% off` : money(d.now);
+    return `${d.name}${where ? ` at ${where}` : ""} (${price})\n${site}/deal/${d.slug}`;
+  });
+  return [intro, ...lines, `All deals: ${site}/auckland`].join("\n\n");
 }
 
 export function announcementHtml(opts: {

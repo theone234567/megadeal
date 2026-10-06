@@ -86,6 +86,19 @@ export default function AnnouncementPanel() {
     }
   }
 
+  async function fillWithDeals() {
+    setMessage(null);
+    try {
+      const res = await fetch("/api/admin/announcement?draft=deals", { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't load the deals.");
+      setBody(data.body);
+      setPreview(null);
+    } catch (err) {
+      setMessage({ tone: "error", text: err instanceof Error ? err.message : "Couldn't load the deals." });
+    }
+  }
+
   async function sendAll() {
     setConfirming(false);
     setBusy("send");
@@ -179,6 +192,16 @@ export default function AnnouncementPanel() {
               className="rounded-lg border border-slate-300 px-3 py-2 font-normal"
             />
           </label>
+          {audience === "customers" && status?.launched && (
+            <button
+              type="button"
+              onClick={fillWithDeals}
+              disabled={busy !== null}
+              className="justify-self-start text-sm font-semibold text-brand-700 underline underline-offset-2 hover:no-underline disabled:opacity-60"
+            >
+              Fill the message with the live deals
+            </button>
+          )}
 
           <div className="flex flex-wrap gap-2">
             <button
