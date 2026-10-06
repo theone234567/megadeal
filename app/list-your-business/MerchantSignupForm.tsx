@@ -205,7 +205,7 @@ export default function MerchantSignupForm({
   twoStep?: boolean;
 }) {
   const promo = currentPromo(launched);
-  const { client, member, isLoggedIn, logout, authBackend } = useWix();
+  const { client, getClient, loginClient, member, isLoggedIn, logout, authBackend } = useWix();
   // Whose logins: Wix's (today) or MegaDeal's own (lib/siteAuth.ts). Same
   // calls and outcomes either way.
   const auth = authBackend === "supabase" ? siteAuth : wixAuth;
@@ -345,8 +345,10 @@ export default function MerchantSignupForm({
    *  invisible reCAPTCHA otherwise. */
   async function invisibleCaptchaToken(): Promise<string | null> {
     if (authBackend === "supabase") return getTurnstileToken(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "");
-    return getInvisibleCaptchaToken((client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? "");
+    const wix = await getClient();
+    return getInvisibleCaptchaToken((wix.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? "");
   }
+
 
   function trackFormStarted() {
     if (startedRef.current) return;
@@ -558,13 +560,6 @@ export default function MerchantSignupForm({
       setSubmitError("You must agree to the Terms and Conditions to apply.");
       return;
     }
-    if (!client?.auth) {
-      setSubmitError(
-        "We couldn't reach our sign-up service. Please refresh the page and try again."
-      );
-      return;
-    }
-
     // Only once the checkbox is actually showing. Before that the
     // invisible check runs inside the submit below and there is nothing
     // for anyone to tick.
@@ -610,6 +605,7 @@ export default function MerchantSignupForm({
 
     setSubmitting(true);
     try {
+      const wix = await loginClient();
       // Invisible first, so a normal visitor never sees a challenge at
       // all — reCAPTCHA only interrupts someone it finds suspicious,
       // which is the whole point of the invisible variant on a page whose
@@ -617,7 +613,7 @@ export default function MerchantSignupForm({
       const attempt = async (useVisible: boolean) =>
         withTimeout(
           auth.registerMember(
-            client,
+            wix,
             email,
             password,
             businessName,
@@ -708,7 +704,7 @@ export default function MerchantSignupForm({
    * https://dev.wix.com/docs/go-headless/develop-your-project/self-managed-headless/authentication/members/custom-login-page/custom-login/custom-login-using-the-js-sdk
    */
   async function handleResendCode() {
-    if (resendCooldown > 0 || submitting || !client?.auth) return;
+    if (resendCooldown > 0 || submitting) return;
 
     setSubmitError(null);
     setResendNotice(null);
@@ -724,12 +720,13 @@ export default function MerchantSignupForm({
       // attempt because tokens are single-use — so on this screen it was
       // always null, every resend went out empty, and Wix refused every
       // one. The resend could never succeed once the fallback was active.
+      const wix = await loginClient();
       const captchaTokens = {
         invisibleRecaptchaToken: await invisibleCaptchaToken(),
       };
 
       const outcome = await withTimeout(
-        auth.loginMember(client, pendingEmail, password, captchaTokens),
+        auth.loginMember(wix, pendingEmail, password, captchaTokens),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try again."
       );
@@ -763,16 +760,10 @@ export default function MerchantSignupForm({
   async function handleVerifySubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError(null);
-    if (!client?.auth) {
-      setSubmitError(
-        "We couldn't reach our sign-up service. Please refresh the page and try again."
-      );
-      return;
-    }
     setSubmitting(true);
     try {
       const outcome = await withTimeout(
-        auth.submitVerificationCode(client, code, pendingState),
+        auth.submitVerificationCode(await loginClient(), code, pendingState),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try entering your code again."
       );

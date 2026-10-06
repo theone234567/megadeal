@@ -30,7 +30,7 @@ const INPUT_CLASS =
 export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirectTo?: string }) {
   // Warm reCAPTCHA while the visitor types, so obtaining the token adds
   // nothing to the wait after they press sign in.
-  const { client, authBackend } = useWix();
+  const { client, getClient, loginClient, authBackend } = useWix();
   // Whose logins: Wix's (today) or MegaDeal's own (lib/siteAuth.ts).
   const auth = authBackend === "supabase" ? siteAuth : wixAuth;
   useEffect(() => {
@@ -40,10 +40,10 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
 
   /** The background robot check: Turnstile on MegaDeal's own logins,
    *  Wix's invisible reCAPTCHA otherwise. */
-  const invisibleCaptchaToken = () =>
+  const invisibleCaptchaToken = async () =>
     authBackend === "supabase"
       ? getTurnstileToken(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "")
-      : getInvisibleCaptchaToken((client.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? "");
+      : getInvisibleCaptchaToken(((await getClient()).auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? "");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -90,10 +90,11 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
       // the Wix call after it was previously unbounded — so a stalled
       // request could leave the button on "Signing in…" indefinitely with
       // nothing on screen to explain it.
+      const wix = await loginClient();
       const attempt = async (useVisible: boolean) =>
         withTimeout(
           auth.loginMember(
-            client,
+            wix,
             email,
             password,
             useVisible
@@ -137,7 +138,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
       }
     } catch (err) {
       setError(
-        err instanceof Error && err.message.startsWith("That took too long")
+        err instanceof Error && (err.message.startsWith("That took too long") || err.message.startsWith("We couldn't reach"))
           ? err.message
           : "Couldn't sign you in. Please try again."
       );
@@ -186,7 +187,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
       };
 
       const outcome = await withTimeout(
-        auth.loginMember(client, email, password, captchaTokens),
+        auth.loginMember(await loginClient(), email, password, captchaTokens),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try again."
       );
@@ -218,7 +219,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     setError(null);
     setSubmitting(true);
     try {
-      const outcome = await auth.submitVerificationCode(client, code, pendingState);
+      const outcome = await auth.submitVerificationCode(await loginClient(), code, pendingState);
       if (outcome.status === "success") {
         window.location.href = redirectTo;
       } else if (outcome.status === "error") {
@@ -349,7 +350,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
       {needsVisibleCaptcha && authBackend !== "supabase" && (
         <RecaptchaCheckbox
           ref={captchaRef}
-          siteKey={(client.auth as { captchaVisibleSiteKey?: string }).captchaVisibleSiteKey ?? ""}
+          siteKey={(client?.auth as { captchaVisibleSiteKey?: string } | undefined)?.captchaVisibleSiteKey ?? ""}
           onChange={setVisibleCaptchaToken}
         />
       )}

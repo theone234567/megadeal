@@ -5,10 +5,10 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
+  useRef,
   useState,
 } from "react";
-import { createWixBrowserClient, type WixBrowserClient } from "@/lib/wixBrowserClient";
+import type { WixBrowserClient } from "@/lib/wixBrowserClient";
 
 /** The only member details a page is given. Wix's full member object is
  *  contact data; none of it belongs in the browser just to render a name
@@ -21,7 +21,18 @@ export interface SessionMember {
 }
 
 interface WixContextValue {
-  client: WixBrowserClient;
+  /** The Wix client once it has loaded, else null. For reading Wix's
+   *  captcha site key while rendering; anything that calls Wix awaits
+   *  getClient() instead. */
+  client: WixBrowserClient | null;
+  /** The Wix client, loading it first if need be (lib/wixBrowserClient.ts,
+   *  about 100KB of SDK). Rejects if it can't be loaded. */
+  getClient: () => Promise<WixBrowserClient>;
+  /** What the sign-up and sign-in calls are given (lib/wixAuth.ts or
+   *  lib/siteAuth.ts): the Wix client, loaded on demand, for Wix's logins;
+   *  nothing for MegaDeal's own, which take no client, so the SDK is never
+   *  fetched for them. Throws a plain sentence if Wix's can't be loaded. */
+  loginClient: () => Promise<WixBrowserClient>;
   member: SessionMember | null | undefined;
   isLoggedIn: boolean;
   logout: (returnTo?: string) => Promise<void>;
@@ -50,7 +61,30 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
   // live in an httpOnly cookie this can't see), so a visitor token only
   // ever mattered for Custom Login's register/login/verify state machine
   // and the captcha site keys hanging off client.auth in the first place.
-  const client = useMemo(() => createWixBrowserClient(), []);
+  //
+  // The SDK itself is loaded on demand too, not with the page: it's about
+  // 100KB that the sign-up page (one that should be fast for search) and
+  // the portal would otherwise download before showing anything. Once the
+  // page is idle it's fetched in the background, and only while Wix's
+  // logins are the ones in use (authBackend below), so after the switch
+  // to MegaDeal's own logins it isn't downloaded at all. A form submitted
+  // before it arrives just waits for it (getClient).
+  const [client, setClient] = useState<WixBrowserClient | null>(null);
+  const loading = useRef<Promise<WixBrowserClient> | null>(null);
+  const getClient = useCallback(() => {
+    if (!loading.current) {
+      loading.current = import("@/lib/wixBrowserClient").then(({ createWixBrowserClient }) => {
+        const c = createWixBrowserClient();
+        setClient(c);
+        return c;
+      });
+      // A failed download (offline for a moment) can be tried again.
+      loading.current.catch(() => {
+        loading.current = null;
+      });
+    }
+    return loading.current;
+  }, []);
   const [member, setMember] = useState<SessionMember | null | undefined>(undefined);
   const [authBackend, setAuthBackend] = useState<"wix" | "supabase">("wix");
 
@@ -77,6 +111,19 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
     fetchMember();
   }, [fetchMember]);
 
+  // Warm the SDK once the page has settled, so a sign-up or sign-in
+  // rarely waits for it — but only once we know Wix's logins are in use.
+  useEffect(() => {
+    if (member === undefined || authBackend !== "wix") return;
+    const warm = () => void getClient().catch(() => {});
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(warm, { timeout: 4000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = setTimeout(warm, 1500);
+    return () => clearTimeout(id);
+  }, [member, authBackend, getClient]);
+
   const logout = useCallback(async (returnTo?: string) => {
     // The server clears the cookie and builds the Wix logout URL, since
     // that needs the tokens. If anything goes wrong the session is still
@@ -97,8 +144,20 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
     window.location.href = logoutUrl || target;
   }, []);
 
+  const loginClient = useCallback(async () => {
+    // lib/siteAuth.ts ignores its client argument.
+    if (authBackend === "supabase") return null as unknown as WixBrowserClient;
+    try {
+      return await getClient();
+    } catch {
+      throw new Error("We couldn't reach our sign-in service. Please refresh the page and try again.");
+    }
+  }, [authBackend, getClient]);
+
   const value: WixContextValue = {
     client,
+    getClient,
+    loginClient,
     member,
     isLoggedIn: Boolean(member),
     logout,
