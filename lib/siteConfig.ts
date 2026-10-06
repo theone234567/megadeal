@@ -44,6 +44,15 @@ const LAUNCHED = false;
 export const SITE_LAUNCHED = LAUNCHED || process.env.SITE_LAUNCHED === "true";
 
 /**
+ * The day the site launched, as "YYYY-MM-DD" (New Zealand date). Set it in
+ * the same change as LAUNCHED = true. The business pages switch to the
+ * launch offer at that moment, and this is the date the sitemap then gives
+ * them as "last changed", so Google and Bing recrawl them promptly (see
+ * lib/sitemapDates.ts). Left empty, the sitemap keeps the older dates.
+ */
+export const LAUNCHED_ON = "";
+
+/**
  * Same gate as SITE_LAUNCHED, but for MegaShop specifically: while false,
  * /megashop and every /megashop/[slug] product page stay noindex no
  * matter how many products are in the catalog. Phase 1 product pages get

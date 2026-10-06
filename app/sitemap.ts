@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { cityPath, flashDealsPath } from "@/lib/cities";
-import { SITE_URL, SITE_LAUNCHED, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_URL, SITE_LAUNCHED, LAUNCHED_ON, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
+import { contentUpdated } from "@/lib/sitemapDates";
 import {
   fetchAllLiveDealSlugsForSitemap,
   fetchAllBusinessSlugsForSitemap,
@@ -11,30 +12,6 @@ import { CATEGORIES, categoryPath } from "@/lib/categories";
 // Deals are created/edited by merchants continuously, so a build-time-only
 // static sitemap would go stale between deploys. Regenerate hourly instead.
 export const revalidate = 3600;
-
-/**
- * When each static page's content last really changed (from git history,
- * 5 Oct 2026), sent as <lastmod> so Google and Bing know which pages to
- * recrawl. Bump a page's date when you change its wording. Not the build
- * time: search engines ignore a lastmod that changes on every deploy.
- */
-const CONTENT_UPDATED: Record<string, string> = {
-  "/coming-soon": "2026-10-05",
-  "/list-your-business": "2026-10-05",
-  "/advertise/restaurants": "2026-10-04",
-  "/advertise/beauty-spa": "2026-10-05",
-  "/advertise/home-car": "2026-10-05",
-  "/advertise/things-to-do": "2026-10-05",
-  "/how-it-works": "2026-10-03",
-  "/redeem": "2026-10-03",
-  "/help": "2026-10-05",
-  "/about": "2026-09-27",
-  "/contact": "2026-10-05",
-  "/careers": "2026-09-27",
-  "/terms": "2026-10-04",
-  "/privacy": "2026-09-27",
-  "/refund-policy": "2026-09-27",
-};
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = ([
@@ -69,8 +46,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/refund-policy`, changeFrequency: "yearly", priority: 0.1 },
   ] satisfies MetadataRoute.Sitemap).map((page) => {
     // After launch "/" is the live deals homepage, which changes all the
-    // time, so it gets no fixed date (CONTENT_UPDATED has no "" key).
-    const updated = CONTENT_UPDATED[page.url.slice(SITE_URL.length)];
+    // time, so it gets no fixed date (CONTENT_UPDATED has no "" key). Pages
+    // whose wording switches at launch get the launch date (lib/sitemapDates.ts).
+    const updated = contentUpdated(page.url.slice(SITE_URL.length), SITE_LAUNCHED, LAUNCHED_ON);
     return updated ? { ...page, lastModified: updated } : page;
   });
 
