@@ -8,6 +8,7 @@ import { fetchDealForSEO, fetchEndedDeal, fetchAllLiveDealsServer } from "@/lib/
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney, truncateForMeta } from "@/lib/format";
 import { placeLabel } from "@/lib/location";
+import { dealTitles } from "@/lib/dealTitle";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { dealOffer } from "@/lib/dealOffer";
 import { wixImageUrl } from "@/lib/wixImageUrl";
@@ -74,22 +75,17 @@ export async function generateMetadata(
   }
 
   const price = formatMoney(deal.now, deal.currency, deal.formattedNow);
-  // Where, as specifically as it's known ("at Harbour & Hearth, Takapuna,
-  // Auckland"): the title is what search results show and match most, and
-  // people search for things near a place ("pizza Takapuna").
-  const place = placeLabel(deal.businessSuburb, deal.businessCity);
-  const businessSuffix = deal.businessName
-    ? ` at ${deal.businessName}${place ? `, ${place}` : ""}`
-    : place
-      ? ` in ${place}`
-      : "";
+  // "Pizza for two at Harbour & Hearth, Takapuna — 30% off, $29": the place
+  // as specifically as it's known, since people search for things near a
+  // place ("pizza Takapuna"). Shortened to what search results show
+  // (lib/dealTitle.ts); share previews get the whole thing.
   // The root layout's title.template ("%s | MegaDeal") already appends the
   // brand name to this — no "| SITE_NAME" suffix needed here, or the
   // rendered title doubles up. openGraph/twitter titles aren't run through
   // that template (shown standalone, e.g. on social platforms), so those
   // keep the brand-inclusive version.
-  const title = `${deal.name}${businessSuffix} — ${deal.discountPercent > 0 ? `${deal.discountPercent}% off, ` : ""}${price}`;
-  const socialTitle = `${title} | ${SITE_NAME}`;
+  const { title, full } = dealTitles({ ...deal, price });
+  const socialTitle = `${full} | ${SITE_NAME}`;
   const description = dealMetaDescription(deal, price);
   const url = `${SITE_URL}/deal/${deal.slug}`;
   // The 1200x630 shape Facebook, LinkedIn and WhatsApp previews expect,
