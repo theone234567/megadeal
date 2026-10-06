@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
 import { categoryByLegacySegment, categoryBySlug, categoryPath } from "@/lib/categories";
 import { ADMIN_COOKIE_NAME, hasValidAdminSignature } from "@/lib/adminCookie";
+import { blockedForMaintenance, MAINTENANCE_MESSAGE } from "@/lib/maintenance";
 
 const CANONICAL_HOST = new URL(SITE_URL).hostname;
 
@@ -57,6 +58,16 @@ function isCanonicalHost(host: string) {
  * deferring it to.
  */
 export async function middleware(request: NextRequest) {
+  // API requests come here only for the switch-over pause
+  // (lib/maintenance.ts); otherwise they go straight on, untouched.
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    if (!blockedForMaintenance(request.method, request.nextUrl.pathname)) return NextResponse.next();
+    return NextResponse.json(
+      { error: MAINTENANCE_MESSAGE },
+      { status: 503, headers: { "Retry-After": "1800", "Cache-Control": "no-store" } }
+    );
+  }
+
   if (!isCanonicalHost(request.nextUrl.hostname)) {
     return NextResponse.redirect(
       new URL(request.nextUrl.pathname + request.nextUrl.search, SITE_URL),
@@ -176,7 +187,10 @@ export const config = {
   // sitemap crawler (and everything else hitting those paths) off this
   // function's critical path entirely, which matters even more now that
   // this function is meant to be the fast, boring case for everyone else.
+  // API requests too, but only for the switch-over pause: the first lines
+  // of middleware() send them straight on otherwise.
   matcher: [
+    "/api/:path*",
     "/((?!(?:.*/)?(?:favicon\\.ico|sitemap\\.xml|robots\\.txt|manifest\\.webmanifest|opengraph-image|(?:apple-)?icon(?:\\.png)?|security\\.txt)(?:/.*)?$)(?!_next/static|_next/image|.well-known|api/).*)",
   ],
 };

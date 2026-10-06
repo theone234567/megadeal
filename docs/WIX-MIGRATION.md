@@ -387,9 +387,14 @@ Set up (any time before):
 
 On the day:
 
-1. Pick a quiet time. Don't approve anything during the switch, and ask
-   any business you're working with not to edit for an hour: a change
-   made in Wix after the export doesn't come across.
+1. Pick a quiet time. Pause changes: add `MAINTENANCE_MODE = "writes"`
+   to `[vars]`, commit, deploy. Pages, signing in and admin keep
+   working, but saving anything (sign-ups, profiles, deals, the mailing
+   list) says "saving changes is paused for about an hour". A change
+   made in Wix after the export wouldn't come across, so this stops any
+   being made. Unsubscribes still work (they must be honoured at once):
+   if anyone unsubscribes during the pause, mark them unsubscribed in
+   the new database after the switch. Don't approve anything meanwhile.
 2. Export again and import for real, then take a copy of the result
    to keep:
 
@@ -400,7 +405,7 @@ On the day:
 3. Moving off Wix: Database all ticks; the business, deal and
    subscriber counts match `summary.json` in the export.
 4. Add `DATA_BACKEND = "postgres"` and `PHOTO_STORAGE = "r2"` to
-   `[vars]`, commit, deploy.
+   `[vars]`, and remove `MAINTENANCE_MODE`, in one commit; deploy.
 5. Moving off Wix > Photos: press **Copy photos from Wix** and let it
    finish. Anything it can't copy is listed; those stay on Wix's address
    and keep working.

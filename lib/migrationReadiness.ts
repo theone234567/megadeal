@@ -7,6 +7,7 @@ import { photoBucket, photoResizer, photoStorage } from "./photoStorage";
 import { authBackend } from "./authSession";
 import { getRateLimitKv } from "./rateLimit";
 import { backupBucket, latestBackup } from "./backupStorage";
+import { maintenanceOn } from "./maintenance";
 
 /**
  * The admin "Moving off Wix" page (app/admin/move-off-wix): for each switch
@@ -183,6 +184,9 @@ async function databaseSection(): Promise<{ section: Section; facts: DatabaseFac
   }
 
   checks.push(await backupCheck());
+  if (maintenanceOn()) {
+    checks.push(warning("Changes paused", "MAINTENANCE_MODE=writes is on: businesses can't save anything. Remove it from wrangler.toml once the switch is done."));
+  }
 
   const ready = checks.every((c) => c.state !== "missing");
   return {
