@@ -12,6 +12,7 @@ import PreviewBanner from "@/components/PreviewBanner";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
 import { ORGANIZATION_ID, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { SEARCH_LOGO } from "@/lib/brand";
 import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
 import { MegadealArtProvider } from "@/context/MegadealArtProvider";
@@ -111,15 +112,15 @@ export default function RootLayout({
               url: SITE_URL,
               description: SITE_DESCRIPTION,
               areaServed: { "@type": "Country", name: "New Zealand" },
-              // Same lockup Header.tsx renders — gives Google/AI answer
-              // engines an actual brand image to attach to this entity
-              // (used in Knowledge Panels and AI-generated citations),
-              // alongside the sameAs profiles below.
+              // The logo the headers show (SEARCH_LOGO, lib/brand.ts) — gives
+              // Google/AI answer engines an actual brand image to attach to
+              // this entity (used in Knowledge Panels and AI-generated
+              // citations), alongside the sameAs profiles below.
               logo: {
                 "@type": "ImageObject",
-                url: `${SITE_URL}/megadeal/megadeal-logo.webp`,
-                width: 2000,
-                height: 667,
+                url: `${SITE_URL}${SEARCH_LOGO.path}`,
+                width: SEARCH_LOGO.width,
+                height: SEARCH_LOGO.height,
               },
               // Ties the brand's social profiles to this entity for Google —
               // one of the standard signals behind a Knowledge Panel.

@@ -31,3 +31,15 @@ export const BRAND_PURPLE = "#6520B5";
  * LOGO_STYLE, so the one switch above restores both together.
  */
 export const PURPLE_HEADER = LOGO_STYLE === "minimal";
+
+/**
+ * The logo search engines attach to MegaDeal (the Organization structured
+ * data in app/layout.tsx: Google's knowledge panel and AI answer citations).
+ * Follows LOGO_STYLE: the purple minimal logo as a PNG (Google needs a
+ * raster or SVG image of at least 112px, legible on white), or the classic
+ * lockup.
+ */
+export const SEARCH_LOGO =
+  LOGO_STYLE === "minimal"
+    ? { path: "/megadeal/megadeal-logo-og-minimal.png", width: 1233, height: 260 }
+    : { path: "/megadeal/megadeal-logo.webp", width: 2000, height: 667 };
