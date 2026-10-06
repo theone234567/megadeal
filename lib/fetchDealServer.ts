@@ -376,15 +376,17 @@ export const fetchBusinessProfileBySlug = cache((slug: string) =>
 async function loadBusinessProfileBySlug(
   slugParam: string
 ): Promise<{ business: BusinessProfile; deals: Deal[] } | null> {
-  const idPrefix = slugParam.split("-").pop();
-  if (!idPrefix || !/^[0-9a-f]{8}$/.test(idPrefix)) return null;
-
+  // MegaDeal's own database: readable addresses (business name and
+  // suburb). Old ones are redirected before this runs (pageLookup below).
   if (dataBackend() === "postgres") {
     const liveDeals = fetchAllLiveDealsServer();
-    const business = await withDb((db) => pg.readBusinessBySlugId(db, idPrefix));
+    const business = await withDb((db) => pg.readBusinessBySlug(db, slugParam));
     if (!business) return null;
     return { business, deals: (await liveDeals).filter((d) => d.businessSlug === business.slug) };
   }
+
+  const idPrefix = slugParam.split("-").pop();
+  if (!idPrefix || !/^[0-9a-f]{8}$/.test(idPrefix)) return null;
 
   const adminClient = createWixAdminClient();
   // Started now, alongside the business read below; it's the same
@@ -555,3 +557,34 @@ export async function fetchDealForAdminPreview(
     return null;
   }
 }
+
+/**
+ * What a deal or business address should answer before its page starts:
+ * a permanent redirect to where it lives now (an old address), "missing"
+ * for a real 404, or neither (show the page). Asked by the pages' layouts,
+ * which run before the page starts streaming behind loading.tsx: from
+ * inside the stream a redirect can only be a refresh and a "not found" is
+ * sent with status 200, neither of which search engines treat as meant.
+ *
+ * Only on MegaDeal's own database, where these reads are quick. On Wix,
+ * addresses never change, and waiting for Wix here would hold back the
+ * loading skeleton, so the page decides as before.
+ *
+ * The page's own reads are the same cached calls, so it doesn't read twice.
+ */
+export const pageLookup = cache(
+  async (kind: "deal" | "business", slug: string): Promise<{ redirect: string | null; missing: boolean }> => {
+    const show = { redirect: null, missing: false };
+    if (dataBackend() !== "postgres") return show;
+    try {
+      const found = kind === "deal" ? (await fetchDealForSEO(slug)) ?? (await fetchEndedDeal(slug)) : await fetchBusinessProfileBySlug(slug);
+      if (found) return show;
+      const redirect = await withDb((db) => (kind === "deal" ? pg.resolveDealRedirect(db, slug) : pg.resolveBusinessRedirect(db, slug)));
+      return { redirect, missing: !redirect };
+    } catch (err) {
+      // A failed read isn't "not found": the page shows its usual error.
+      console.error("[pageLookup] failed", kind, slug, err);
+      return show;
+    }
+  }
+);

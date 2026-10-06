@@ -128,6 +128,28 @@ the portal says MegaDeal paused it. This works on Wix today too.
 Still on Wix after step 2: business logins and password resets (step 3),
 photo uploads (step 1), email (step 4), and MegaShop.
 
+## Page addresses (decided 7 Oct 2026, before launch)
+
+| Page | Address | Notes |
+| --- | --- | --- |
+| City | `/auckland` | every live deal by category |
+| Category | `/auckland/food-drink` | was `/category/food-drink` (308) |
+| Flash deals | `/auckland/flash-deals` | was `/flash-deals` (308) |
+| Deal | `/deal/<deal>-<business>-<suburb>` | given at submission, never changes |
+| Business | `/business/<name>-<suburb>` | follows a rename; the old one redirects |
+| AI deal list | `/deals.txt` | plain text, not indexed by search engines |
+
+The city and category addresses are live as soon as they ship. The deal
+and business formats come with the new database (Wix sets them until
+then). The database makes every address (`supabase/migrations/
+20261009000000_clean_slugs.sql`): te reo macrons become plain letters
+(Ōtāhuhu → otahuhu), a clash gets `-2`, and a retired address is kept in
+`slug_redirects` and never given to anyone else. Wix-era addresses (the
+deal's old slug, the business's `<name>-<id>` form) redirect with a 308.
+Redirects and "not found" are decided before the page streams, so they
+are real 308s and 404s, and an old address never reveals a pending,
+suspended or test page.
+
 ## The steps
 
 Each step ships on its own and can be rolled back. About 4–5 weeks in

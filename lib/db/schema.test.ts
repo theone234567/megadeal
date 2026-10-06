@@ -212,7 +212,7 @@ describe("data rules", () => {
   });
 
   it("needs a deal customers can see to be complete, but not a draft or one being submitted", async () => {
-    await expect(insertDeal(merchantA, { status: "Live", slug: null })).rejects.toThrow(/deals_public_complete/);
+    await expect(insertDeal(merchantA, { status: "Live", price_now: null })).rejects.toThrow(/deals_public_complete/);
     await expect(insertDeal(merchantA, { status: "Paused", paused_by: "business", category_slug: null })).rejects.toThrow(/deals_public_complete/);
     await expect(insertDeal(merchantA, { status: "Pending Approval", slug: null })).resolves.toBeTruthy();
     await expect(insertDeal(merchantA, { status: "Draft", slug: null, name: "", price_now: null, category_slug: null })).resolves.toBeTruthy();
@@ -269,5 +269,65 @@ describe("counters", () => {
       results.push(use_api_allowance);
     }
     expect(results).toEqual([true, true, true, false]);
+  });
+});
+
+describe("page addresses", () => {
+  let t: Awaited<ReturnType<typeof createTestDb>>;
+  const q = <T = any>(sql: string, params: unknown[] = []) => t.as<T>({ role: "service_role" }, sql, params);
+
+  beforeAll(async () => {
+    t = await createTestDb();
+  }, 60_000);
+  afterAll(async () => {
+    await t.db.close();
+  });
+
+  async function business(name: string, suburb: string | null, email: string) {
+    const [m] = await q<{ id: string; slug: string }>(
+      "insert into public.merchants (email, business_name, suburb, status) values ($1, $2, $3, 'Approved') returning id, slug",
+      [email, name, suburb]
+    );
+    return m;
+  }
+
+  it("names a business by name and suburb, readable and unique", async () => {
+    expect((await business("Kai Café & Bar", "Ōtāhuhu", "a@x.nz")).slug).toBe("kai-cafe-bar-otahuhu");
+    expect((await business("Kai Café & Bar", "Ōtāhuhu", "b@x.nz")).slug).toBe("kai-cafe-bar-otahuhu-2");
+    expect((await business("!!!", null, "c@x.nz")).slug).toBe("business");
+    expect((await business("x".repeat(200), "Ponsonby", "d@x.nz")).slug).toHaveLength(80);
+  });
+
+  it("a rename moves the address and keeps the old one as a redirect, never reused by anyone else", async () => {
+    const m = await business("Harbour Bistro", "Ponsonby", "e@x.nz");
+    await q("update public.merchants set business_name = 'Harbour Bistro & Bar' where id = $1", [m.id]);
+    const [{ slug }] = await q("select slug from public.merchants where id = $1", [m.id]);
+    expect(slug).toBe("harbour-bistro-bar-ponsonby");
+    expect(await q("select old_slug from public.slug_redirects where merchant_id = $1", [m.id])).toEqual([{ old_slug: "harbour-bistro-ponsonby" }]);
+    // Someone else with the old name can't take the old address.
+    expect((await business("Harbour Bistro", "Ponsonby", "f@x.nz")).slug).toBe("harbour-bistro-ponsonby-2");
+    // Other changes (credits, status) leave the address alone.
+    await q("update public.merchants set credits_balance = 5, status = 'Pending' where id = $1", [m.id]);
+    expect(await q("select slug from public.merchants where id = $1", [m.id])).toEqual([{ slug: "harbour-bistro-bar-ponsonby" }]);
+    // Renaming back takes its own old address again.
+    await q("update public.merchants set business_name = 'Harbour Bistro' where id = $1", [m.id]);
+    expect(await q("select slug from public.merchants where id = $1", [m.id])).toEqual([{ slug: "harbour-bistro-ponsonby" }]);
+    expect(await q("select old_slug from public.slug_redirects where merchant_id = $1 order by old_slug", [m.id])).toEqual([{ old_slug: "harbour-bistro-bar-ponsonby" }]);
+  });
+
+  it("a deal gets its address when submitted (deal, business, suburb), and keeps it", async () => {
+    const m = await business("Sushi Ten", "Mt Eden", "g@x.nz");
+    const [draft] = await q<{ id: string; slug: string | null }>("insert into public.deals (merchant_id, status, name) values ($1, 'Draft', 'Sushi for two') returning id, slug", [m.id]);
+    expect(draft.slug).toBeNull();
+    await q("update public.deals set status = 'Pending Approval' where id = $1", [draft.id]);
+    const [{ slug }] = await q("select slug from public.deals where id = $1", [draft.id]);
+    expect(slug).toBe("sushi-for-two-sushi-ten-mt-eden");
+    await q("update public.deals set name = 'Sushi for three' where id = $1", [draft.id]);
+    expect(await q("select slug from public.deals where id = $1", [draft.id])).toEqual([{ slug: "sushi-for-two-sushi-ten-mt-eden" }]);
+  });
+
+  it("redirects are for the server only", async () => {
+    await expect(t.as({ role: "anon" }, "select * from public.slug_redirects")).rejects.toThrow(/permission denied/);
+    await expect(t.as({ role: "authenticated", uid: "00000000-0000-0000-0000-000000000001" }, "select * from public.slug_redirects")).rejects.toThrow(/permission denied/);
   });
 });

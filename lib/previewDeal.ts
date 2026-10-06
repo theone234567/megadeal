@@ -105,7 +105,7 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     // from the preview.
     businessSlug:
       merchant?.businessName && merchant?._id
-        ? businessSlug(merchant.businessName, merchant._id)
+        ? merchant.slug || businessSlug(merchant.businessName, merchant._id)
         : null,
     businessBio: merchant?.bio ?? null,
     businessHours: merchant?.businessHours ?? null,

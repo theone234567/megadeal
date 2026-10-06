@@ -22,7 +22,7 @@ const CATEGORY_NAME_BY_SLUG: Record<string, string> = Object.fromEntries(CATEGOR
 
 // Public business columns, prefixed b_ so they sit beside a deal's.
 const BUSINESS_COLUMNS = `
-  m.id as b_id, m.slug_id as b_slug_id, m.business_name as b_name, m.logo_url as b_logo_url,
+  m.id as b_id, m.slug_id as b_slug_id, m.slug as b_slug, m.business_name as b_name, m.logo_url as b_logo_url,
   m.photos as b_photos, m.website as b_website, m.phone as b_phone, m.address as b_address,
   m.city as b_city, m.suburb as b_suburb, m.bio as b_bio, m.business_hours as b_hours,
   m.facebook_url as b_facebook_url, m.instagram_url as b_instagram_url,
@@ -68,7 +68,7 @@ export function rowToBusiness(r: Row): PublicBusiness {
     address: blankToNull(r.b_address),
     city: blankToNull(r.b_city),
     suburb: businessSuburb(r.b_suburb, r.b_address, r.b_city),
-    slug: businessSlug(r.b_name, r.b_slug_id),
+    slug: r.b_slug ?? businessSlug(r.b_name, r.b_slug_id),
     bio: blankToNull(r.b_bio),
     businessHours: blankToNull(r.b_hours),
     facebookUrl: blankToNull(r.b_facebook_url),
@@ -190,28 +190,60 @@ export async function readDealBySlug(db: Sql, slug: string, now: number = Date.n
   return { deal, live, wasPublished };
 }
 
-/**
- * An approved business by the id prefix at the end of its page address
- * (lib/slug.ts), or null.
- */
-export async function readBusinessBySlugId(db: Sql, slugId: string): Promise<(PublicBusiness & { id: string }) | null> {
-  if (!/^[0-9a-f]{8}$/.test(slugId)) return null;
-  const [row] = await db.query(
-    `select ${BUSINESS_COLUMNS} from public.merchants m where m.slug_id = $1 and m.status = 'Approved'`,
-    [slugId]
-  );
+/** An approved business by its page address, or null. */
+export async function readBusinessBySlug(db: Sql, slug: string): Promise<(PublicBusiness & { id: string }) | null> {
+  const [row] = await db.query(`select ${BUSINESS_COLUMNS} from public.merchants m where m.slug = $1 and m.status = 'Approved'`, [slug]);
   return row ? { id: row.b_id, ...rowToBusiness(row) } : null;
+}
+
+/**
+ * Where an old business address now lives, or null (then it's "not
+ * found"). Two kinds of old address: one the business had before a
+ * rename (slug_redirects), and the address format from Wix days,
+ * <name>-<8 hex digits of its Wix id>. Only ever an approved business:
+ * an old address must not reveal one that's pending or suspended.
+ */
+export async function resolveBusinessRedirect(db: Sql, slug: string): Promise<string | null> {
+  const idPrefix = slug.match(/-([0-9a-f]{8})$/)?.[1] ?? null;
+  const [row] = await db.query<{ slug: string }>(
+    `select m.slug from public.merchants m
+      where m.status = 'Approved' and m.slug <> $1
+        and (m.id in (select merchant_id from public.slug_redirects where kind = 'business' and old_slug = $1)
+             or ($2::text is not null and m.slug_id = $2 and not exists (select 1 from public.merchants c where c.slug = $1)))
+      limit 1`,
+    [slug, idPrefix]
+  );
+  return row?.slug ?? null;
+}
+
+/**
+ * Where an old deal address now lives, or null. Only a deal that has a
+ * public page (live, or ended after being published) from an approved
+ * business, never a test deal.
+ */
+export async function resolveDealRedirect(db: Sql, slug: string): Promise<string | null> {
+  const [row] = await db.query<{ slug: string }>(
+    `select d.slug from public.slug_redirects r
+       join public.deals d on d.id = r.deal_id
+       join public.merchants m on m.id = d.merchant_id
+      where r.kind = 'deal' and r.old_slug = $1 and d.slug is not null and d.slug <> $1
+        and not d.is_test and m.status = 'Approved'
+        and (d.status = 'Live' or d.first_published_at is not null or d.ever_live)
+        and not exists (select 1 from public.deals c where c.slug = $1)`,
+    [slug]
+  );
+  return row?.slug ?? null;
 }
 
 /** Every approved business's page, with when it last changed, for the
  *  sitemap. `email` is "" here: deals carry their business's slug. */
 export async function listBusinessesForSitemap(db: Sql): Promise<{ slug: string; email: string; updatedAt: string | null }[]> {
   const rows = await db.query(
-    `select m.business_name, m.slug_id, m.email, m.updated_at
+    `select m.business_name, m.slug_id, m.slug, m.email, m.updated_at
        from public.merchants m where m.status = 'Approved' order by m.created_at`
   );
   return rows.map((r) => ({
-    slug: businessSlug(r.business_name, r.slug_id),
+    slug: r.slug ?? businessSlug(r.business_name, r.slug_id),
     email: String(r.email || "").toLowerCase(),
     updatedAt: toIso(r.updated_at),
   }));

@@ -46,7 +46,8 @@ export function mapMerchantToBusiness(merchant: any): PublicBusiness {
     address: merchant.address || null,
     city: merchant.city || null,
     suburb: businessSuburb(merchant.suburb, merchant.address, merchant.city),
-    slug: businessSlug(merchant.businessName, merchant._id),
+    // Stored on MegaDeal's own database; made from the Wix id before.
+    slug: merchant.slug || businessSlug(merchant.businessName, merchant._id),
     bio: merchant.bio || null,
     businessHours: merchant.businessHours || null,
     facebookUrl: merchant.facebookUrl || null,

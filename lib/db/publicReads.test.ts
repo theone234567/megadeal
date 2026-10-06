@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { PGlite } from "@electric-sql/pglite";
 import { createTestDb } from "./testDb";
 import { mapDeal, mapMerchant } from "./wixToPostgres";
-import { listBusinessesForSitemap, listLiveDealsForSitemap, loadLiveDeals, readBusinessBySlugId, readDealBySlug, readDealForAdmin } from "./publicReads";
+import { listBusinessesForSitemap, listLiveDealsForSitemap, loadLiveDeals, readBusinessBySlug, readDealBySlug, readDealForAdmin, resolveBusinessRedirect } from "./publicReads";
 import { CATEGORIES } from "../categories";
 import type { Sql } from "./connection";
 import type { Deal } from "../types";
@@ -129,9 +129,11 @@ async function wixReads() {
 
 // Wix's own bookkeeping, which the new database doesn't have: the deal's
 // id is the Stores product's (the new one is the deal's own), and Wix
-// sends ready-formatted prices and a variant id.
+// sends ready-formatted prices and a variant id. The business address is
+// different on purpose (readable, no Wix id), and redirected: checked in
+// its own test below.
 function comparable(deal: Deal) {
-  const { id: _id, formattedNow: _fn, formattedWas: _fw, variantId: _v, ...rest } = deal;
+  const { id: _id, formattedNow: _fn, formattedWas: _fw, variantId: _v, businessSlug: _b, ...rest } = deal;
   return rest;
 }
 
@@ -192,20 +194,26 @@ describe("the new database shows the storefront exactly what Wix does", () => {
     expect(await readDealBySlug(db, "no-such-deal", NOW)).toBeNull();
   });
 
-  it("keeps the business page address, so shared and indexed links still work", async () => {
+  it("the same business page, at a readable address the old one redirects to", async () => {
     const wix = await (await wixReads()).fetchBusinessProfileBySlug("harbour-bistro-3f2a9c1e");
-    const pg = await readBusinessBySlugId(db, "3f2a9c1e");
-    const { id: _w, ...wixBusiness } = wix!.business;
-    const { id: _p, ...pgBusiness } = pg!;
+    // The fixture has no suburb saved, so it's the name alone.
+    const pg = await readBusinessBySlug(db, "harbour-bistro");
+    const { id: _w, slug: _ws, ...wixBusiness } = wix!.business;
+    const { id: _p, slug: _ps, ...pgBusiness } = pg!;
     expect(pgBusiness).toEqual(wixBusiness);
-    expect(pg!.slug).toBe("harbour-bistro-3f2a9c1e");
+    expect(await resolveBusinessRedirect(db, "harbour-bistro-3f2a9c1e")).toBe("harbour-bistro");
+    // Any name in front of the old id finds it too, as Wix's did.
+    expect(await resolveBusinessRedirect(db, "old-name-3f2a9c1e")).toBe("harbour-bistro");
+    expect(await resolveBusinessRedirect(db, "harbour-bistro")).toBeNull();
+    // Every deal card links to the new address.
+    expect((await loadLiveDeals(db, NOW)).every((d) => d.businessSlug === "harbour-bistro")).toBe(true);
   });
 
   it("gives the sitemap the same pages", async () => {
     const reads = await wixReads();
-    expect((await listBusinessesForSitemap(db)).map((b) => b.slug)).toEqual(
-      (await reads.fetchAllBusinessSlugsForSitemap()).map((b) => b.slug)
-    );
+    const pgBusinesses = (await listBusinessesForSitemap(db)).map((b) => b.slug);
+    const wixBusinesses = (await reads.fetchAllBusinessSlugsForSitemap()).map((b) => b.slug);
+    expect(await Promise.all(wixBusinesses.map((s) => resolveBusinessRedirect(db, s)))).toEqual(pgBusinesses);
     const pgDeals = await listLiveDealsForSitemap(db, NOW);
     const wixDeals = await reads.fetchAllLiveDealSlugsForSitemap();
     expect(pgDeals.map(({ slug, categories, merchantEmail }) => ({ slug, categories, merchantEmail })).sort((a, b) => a.slug.localeCompare(b.slug))).toEqual(
@@ -239,17 +247,18 @@ describe("what the public never gets", () => {
     expect((await loadLiveDeals(db, NOW)).map((d) => d.slug)).toEqual(["real-deal"]);
     expect(await readDealBySlug(db, "pending-business-deal", NOW)).toBeNull();
     expect(await readDealBySlug(db, "test-deal", NOW)).toBeNull();
-    expect(await readBusinessBySlugId(db, "aaaaaaaa")).toBeNull();
-    expect((await listBusinessesForSitemap(db)).map((b) => b.slug)).toEqual(["harbour-bistro-bbbbbbbb"]);
+    // A pending business has no page, and an old address doesn't reveal it.
+    expect(await resolveBusinessRedirect(db, "harbour-bistro-aaaaaaaa")).toBeNull();
+    const [{ slug: pendingSlug }] = await db.query<{ slug: string }>("select slug from public.merchants where email = 'p@x.nz'");
+    expect(await readBusinessBySlug(db, pendingSlug)).toBeNull();
+    // Two businesses with one name: the second gets -2.
+    expect((await listBusinessesForSitemap(db)).map((b) => b.slug)).toEqual(["harbour-bistro-2"]);
   });
 
-  it("a business brought over from Wix keeps its address; a new one gets its own", async () => {
-    const [created] = await db.query<{ id: string; slug_id: string }>(
-      "insert into public.merchants (email, business_name, status) values ('new@x.nz', 'New Place', 'Approved') returning id, slug_id"
-    );
-    expect(created.slug_id).toBe(created.id.split("-")[0]);
-    expect((await readBusinessBySlugId(db, created.slug_id))?.slug).toBe(`new-place-${created.slug_id}`);
-    expect(await readBusinessBySlugId(db, "not-hex!")).toBeNull();
+  it("a new business's address is its name and suburb, macrons and all", async () => {
+    await db.query("insert into public.merchants (email, business_name, suburb, status) values ('new@x.nz', 'Kai Café & Bar', 'Ōtāhuhu', 'Approved')");
+    expect((await readBusinessBySlug(db, "kai-cafe-bar-otahuhu"))?.businessName).toBe("Kai Café & Bar");
+    expect(await readBusinessBySlug(db, "not a slug")).toBeNull();
   });
 
   it("the admin preview opens any status but not a draft", async () => {

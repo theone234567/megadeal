@@ -32,7 +32,7 @@ export interface ImportReport {
   pausedDeals: { id: string; name: string; business: string }[];
 }
 
-const TABLES = ["merchant_activity", "deals", "email_signups", "contact_messages", "site_settings", "merchants"];
+const TABLES = ["slug_redirects", "merchant_activity", "deals", "email_signups", "contact_messages", "site_settings", "merchants"];
 
 class Rollback extends Error {}
 
@@ -90,7 +90,19 @@ export async function importWixExport(db: Sql, data: WixExport, opts: { commit: 
           row.paused_by = null;
           report.issues.push({ record: `deal ${item._id}`, field: "status", problem: "no Stores product, imported as Cancelled", value: item.status });
         }
+        // The new address format (deal, business, suburb) comes from the
+        // database; the Wix one is kept as a permanent redirect.
+        const wixSlug = typeof row.slug === "string" ? row.slug : null;
+        row.slug = null;
         const id = await insert("deals", row);
+        if (wixSlug) {
+          await tx.query(
+            `insert into public.slug_redirects (kind, old_slug, deal_id)
+             select 'deal', $1, id from public.deals where id = $2 and slug is distinct from $1
+             on conflict do nothing`,
+            [wixSlug, id]
+          );
+        }
         if (row.status === "Paused") report.pausedDeals.push({ id, name: String(row.name ?? ""), business: String(item.merchantEmail ?? "") });
         deals++;
       }

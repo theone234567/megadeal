@@ -1,6 +1,5 @@
 import { createHash, randomUUID } from "crypto";
 import { CATEGORIES } from "../categories";
-import { slugifyName } from "../slug";
 import type { Sql } from "./connection";
 
 /**
@@ -138,6 +137,8 @@ const MERCHANTS: Collection = {
     f("_owner", "wix_owner_id"),
     f("_createdDate", null, { expr: "t.created_at", read: asDate, readOnly: true }),
     f("_updatedDate", null, { expr: "t.updated_at", read: asDate, readOnly: true }),
+    // Its page address, made by the database from name and suburb.
+    f("slug", null, { expr: "t.slug", readOnly: true }),
     f("businessName", "business_name", { keepBlank: true }),
     f("legalBusinessName", "legal_business_name"),
     f("nzbn", "nzbn"),
@@ -256,10 +257,10 @@ const DEALS: Collection = {
       cols.merchant_id = m.id;
     }
     // A product made earlier in this request (deal submission) becomes
-    // this row's address, name, price and category.
+    // this row's name and category; the database gives it its address
+    // (deal, business, suburb) as it leaves Draft.
     const pending = item.productId ? ctx.pendingProducts.get(item.productId) : undefined;
     if (pending) {
-      cols.slug = pending.slug;
       cols.name ??= pending.name;
       if (pending.categorySlug) cols.category_slug = pending.categorySlug;
       if (!existing) cols.id = item.productId;
@@ -386,7 +387,6 @@ function filterValue(field: Field | null, value: any): any {
 // ---------------------------------------------------------------------------
 
 interface PendingProduct {
-  slug: string;
   name: string;
   categorySlug?: string;
 }
@@ -557,10 +557,9 @@ export function createPgAdminClient(run: Run, wix?: () => { fetchWithAuth: (url:
     }
     if (/\/stores\/v3\/products-with-inventory$/.test(url) && method === "POST") {
       const name = String(body?.product?.name ?? "").trim();
-      const slug = await run((db) => freeSlug(db, name, ctx));
       const id = randomUUID();
-      ctx.pendingProducts.set(id, { slug, name });
-      return json({ product: { id, slug, name } });
+      ctx.pendingProducts.set(id, { name });
+      return json({ product: { id, name } });
     }
     if (/\/categories\/v1\/bulk\/categories\/add-item$/.test(url) && method === "POST") {
       const pending = ctx.pendingProducts.get(body?.item?.catalogItemId);
@@ -665,18 +664,6 @@ async function patchProduct(db: Sql, id: string, product: Row): Promise<Response
   const rows = await db.query(`update public.deals t set ${sets.join(", ")} where (t.id::text = $1 or t.wix_product_id = $1) and t.slug is not null returning t.id`, params);
   if (!rows.length) return json({ message: "not found" }, 404);
   return json({ product: await readProduct(db, "t.id::text = $1", rows[0].id) });
-}
-
-/** A page address for a new deal, made from its name as Wix does
- *  ("two-course-dinner", then "two-course-dinner-1", …). */
-async function freeSlug(db: Sql, name: string, ctx: ShimContext): Promise<string> {
-  const base = slugifyName(name) || "deal";
-  const taken = new Set(
-    (await db.query<{ slug: string }>("select slug from public.deals where slug = $1 or slug like $1 || '-%'", [base])).map((r) => r.slug)
-  );
-  for (const p of ctx.pendingProducts.values()) taken.add(p.slug);
-  if (!taken.has(base)) return base;
-  for (let n = 1; ; n++) if (!taken.has(`${base}-${n}`)) return `${base}-${n}`;
 }
 
 // ---------------------------------------------------------------------------

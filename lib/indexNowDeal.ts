@@ -53,7 +53,7 @@ export function notifyDealChanged(
       }
       // Business pages only exist for approved businesses.
       if (owner?.businessName && owner?._id && owner.status === "Approved") {
-        urls.push(`${SITE_URL}/business/${businessSlug(owner.businessName, owner._id)}`);
+        urls.push(`${SITE_URL}/business/${owner.slug || businessSlug(owner.businessName, owner._id)}`);
       }
 
       await submitUrlsToIndexNow([...new Set(urls)]);
@@ -72,7 +72,7 @@ export function notifyDealChanged(
 /** Same, for a business's own page after its profile changes. */
 export function notifyBusinessChanged(merchant: Record<string, any> | null | undefined): void {
   if (!SITE_LAUNCHED || !merchant?.businessName || !merchant?._id || merchant.status !== "Approved") return;
-  const url = `${SITE_URL}/business/${businessSlug(merchant.businessName, merchant._id)}`;
+  const url = `${SITE_URL}/business/${merchant.slug || businessSlug(merchant.businessName, merchant._id)}`;
   try {
     after(() => submitUrlsToIndexNow([url]));
   } catch {

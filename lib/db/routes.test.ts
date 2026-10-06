@@ -148,7 +148,7 @@ describe("a business on the new database", () => {
     expect(approved.status).toBe(200);
     const live = await loadLiveDeals(db);
     expect(live.map((d) => ({ slug: d.slug, name: d.name, now: d.now, business: d.businessName }))).toEqual([
-      { slug: "two-course-dinner", name: "Two-course dinner", now: 49, business: "Harbour Bistro" },
+      { slug: "two-course-dinner-harbour-bistro-auckland-cbd", name: "Two-course dinner", now: 49, business: "Harbour Bistro" },
     ]);
     expect(live[0].expiresAt).not.toBeNull();
   });
@@ -391,7 +391,7 @@ describe("the AI review and housekeeping on the new database", () => {
     const create = await import("@/app/api/deals/create/route");
     const res = await call(create.POST, request("POST", DEAL));
     expect(res.body.outcome).toBe("live");
-    expect((await loadLiveDeals(db)).map((d) => d.slug)).toEqual(["two-course-dinner"]);
+    expect((await loadLiveDeals(db)).map((d) => d.slug)).toEqual(["two-course-dinner-harbour-bistro-auckland-cbd"]);
     const [row] = await db.query("select ai_review->>'verdict' as verdict, ever_live, first_published_at is not null as published from public.deals");
     expect(row).toEqual({ verdict: "approve", ever_live: true, published: true });
   });

@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PGlite } from "@electric-sql/pglite";
 import { createTestDb } from "./testDb";
 import { importWixExport, type WixExport } from "./importWix";
-import { loadLiveDeals, readBusinessBySlugId } from "./publicReads";
+import { loadLiveDeals, readBusinessBySlug, resolveBusinessRedirect, resolveDealRedirect } from "./publicReads";
 import { CATEGORIES } from "../categories";
 import type { Sql } from "./sql";
 
@@ -93,9 +93,14 @@ describe("importing the Wix export", () => {
   it("the real import puts the storefront back exactly", async () => {
     const report = await importWixExport(db, EXPORT, { commit: true });
     expect(report.committed).toBe(true);
-    expect((await loadLiveDeals(db)).map((d) => [d.slug, d.businessName, d.dealCode])).toEqual([["live-deal", "Bistro", "MEGA-AAAAA"]]);
-    // The business page keeps its address.
-    expect((await readBusinessBySlugId(db, "3f2a9c1e"))?.slug).toBe("bistro-3f2a9c1e");
+    // Readable addresses: the deal's from its name and business, and the
+    // Wix ones redirect to them.
+    expect((await loadLiveDeals(db)).map((d) => [d.slug, d.businessName, d.dealCode])).toEqual([["deal-live-deal-bistro", "Bistro", "MEGA-AAAAA"]]);
+    expect(await resolveDealRedirect(db, "live-deal")).toBe("deal-live-deal-bistro");
+    expect((await readBusinessBySlug(db, "bistro"))?.businessName).toBe("Bistro");
+    expect(await resolveBusinessRedirect(db, "bistro-3f2a9c1e")).toBe("bistro");
+    // A paused deal was public, so its old address still leads to it.
+    expect(await resolveDealRedirect(db, "paused-deal")).toBe("deal-paused-deal-bistro");
     expect(await db.query("select website, credits_balance, wix_owner_id from public.merchants where business_name = 'Bistro'")).toEqual([
       { website: "https://bistro.nz", credits_balance: 8, wix_owner_id: "member-1" },
     ]);

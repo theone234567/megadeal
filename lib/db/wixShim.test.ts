@@ -161,11 +161,12 @@ describe("deals", () => {
     const submitted = await submit(c, await draft());
     expect(submitted).toMatchObject({ status: "Pending Approval", category: "Food & Drink", productId: submitted._id, priceNow: 49 });
     expect("draftData" in submitted).toBe(false);
-    const { product } = await c.productsV3.getProductBySlug("two-course-dinner");
+    // Its address: deal and business (no suburb saved here).
+    const { product } = await c.productsV3.getProductBySlug("two-course-dinner-harbour-bistro");
     expect(product).toMatchObject({ id: submitted._id, name: "Two-course dinner", allCategoriesInfo: { categories: [{ id: FOOD.id }] } });
     // A second deal with the same name gets the next address.
     const second = await submit(c, await draft());
-    const { product: p2 } = await c.productsV3.getProductBySlug("two-course-dinner-1");
+    const { product: p2 } = await c.productsV3.getProductBySlug("two-course-dinner-harbour-bistro-2");
     expect(p2?.id).toBe(second._id);
   });
 
