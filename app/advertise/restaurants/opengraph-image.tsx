@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getLogoDataUri } from "@/lib/ogLogo";
+import { getLogoDataUri, ogLogoHeight } from "@/lib/ogLogo";
 import { getOgFonts } from "@/lib/ogFonts";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
 import { currentPromo } from "@/lib/promo";
@@ -14,10 +14,10 @@ const PROMO = currentPromo(SITE_LAUNCHED);
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// Real logo file is 2172x724 (≈3:1) — sized to its own ratio rather than a
-// fixed height, so it can't come out stretched or squashed.
+// Sized to the logo's own proportions (lib/ogLogo.ts), so it can't come
+// out stretched or squashed.
 const LOGO_WIDTH = 620;
-const LOGO_HEIGHT = Math.round((LOGO_WIDTH * 724) / 2172);
+const LOGO_HEIGHT = ogLogoHeight(LOGO_WIDTH);
 
 export default async function RestaurantsOpengraphImage() {
   let logoDataUri: string | null = null;

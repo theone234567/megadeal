@@ -11,10 +11,10 @@
  * To go back to the old logo and white headers, change "minimal" to
  * "classic" below.
  *
- * Not covered by this switch, because they need a raster file rather than
- * an SVG: the emailed logo (lib/emailTemplate.ts), the share images
- * (lib/ogLogo.ts) and the favicon (app/icon.png). They still use the
- * classic logo.
+ * The share images (lib/ogLogo.ts) follow it too, from a PNG rendered from
+ * the minimal SVG. Not covered, because they use their own raster file: the
+ * emailed logo (lib/emailTemplate.ts) and the favicon (app/icon.png). They
+ * still use the classic logo.
  */
 export const LOGO_STYLE: "classic" | "minimal" = "minimal";
 
