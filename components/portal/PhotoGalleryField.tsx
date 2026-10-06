@@ -11,15 +11,21 @@ interface PhotoGalleryFieldProps {
   onConfirm: (photos: string[]) => Promise<void>;
   /** Business name — used to give each upload a readable, SEO-friendly filename. */
   label?: string;
+  /** Save each change as soon as it's made, with no Confirm step: for a
+   *  business not yet approved, where a change has nothing to warn about.
+   *  Otherwise a photo added while finishing the listing waited for a
+   *  Confirm that was easy to miss, and was lost on "Submit". */
+  saveRightAway?: boolean;
 }
 
 /**
  * Multi-photo version of PhotoUploadField — up to MAX_BUSINESS_PHOTOS
  * photos, at least one required. Each add/remove is staged locally first;
  * nothing reaches the server (and nothing sends the listing back for
- * review) until Confirm, same as the single-logo field it replaced.
+ * review) until Confirm, same as the single-logo field it replaced, unless
+ * `saveRightAway`.
  */
-export default function PhotoGalleryField({ photos, warningText, onConfirm, label }: PhotoGalleryFieldProps) {
+export default function PhotoGalleryField({ photos, warningText, onConfirm, label, saveRightAway = false }: PhotoGalleryFieldProps) {
   // Staged working copy. null until the visitor makes a change, so
   // "nothing to confirm" is exactly "no local edits yet" rather than
   // needing a second dirty flag kept in sync with this array.
@@ -44,7 +50,9 @@ export default function PhotoGalleryField({ photos, warningText, onConfirm, labe
     setUploading(true);
     try {
       const { url } = await uploadPhoto(file, label);
-      setStaged([...current, url]);
+      const next = [...current, url];
+      setStaged(next);
+      if (saveRightAway) await save(next);
     } catch (err: any) {
       setError(err?.message || "Couldn't upload that photo. Please try again.");
     } finally {
@@ -53,7 +61,10 @@ export default function PhotoGalleryField({ photos, warningText, onConfirm, labe
   }
 
   function remove(index: number) {
-    setStaged(current.filter((_, i) => i !== index));
+    const next = current.filter((_, i) => i !== index);
+    setStaged(next);
+    // The last photo can't go on its own: one is required.
+    if (saveRightAway && next.length > 0) void save(next);
   }
 
   function cancel() {
@@ -61,18 +72,23 @@ export default function PhotoGalleryField({ photos, warningText, onConfirm, labe
     setError(null);
   }
 
-  async function confirm() {
-    if (!staged || staged.length === 0) return;
+  async function save(next: string[]) {
     setSaving(true);
     setError(null);
     try {
-      await onConfirm(staged);
+      await onConfirm(next);
       setStaged(null);
     } catch (err: any) {
+      // Kept staged, so Confirm (below) can try again.
       setError(err?.message || "Couldn't save those photos. Please try again.");
     } finally {
       setSaving(false);
     }
+  }
+
+  async function confirm() {
+    if (!staged || staged.length === 0) return;
+    await save(staged);
   }
 
   return (
@@ -115,13 +131,15 @@ export default function PhotoGalleryField({ photos, warningText, onConfirm, labe
         />
       </div>
 
-      <p className="mt-2 text-xs text-slate-500">
+      <p className="mt-2 text-xs text-slate-500" aria-live="polite">
         {current.length}/{MAX_BUSINESS_PHOTOS} photos · at least 1 required
+        {saveRightAway && saving && " · Saving…"}
       </p>
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
-      {dirty && (
+      {/* Saving straight away, the box only appears if a save failed or the last photo was removed. */}
+      {dirty && (!saveRightAway || (!saving && (error || staged?.length === 0))) && (
         <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
           <p className="text-sm text-amber-800">⚠️ {warningText}</p>
           {staged?.length === 0 && (

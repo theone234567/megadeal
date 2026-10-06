@@ -812,6 +812,7 @@ export default function MerchantProfileForm({
                     : "Save these photos?"
                 }
                 onConfirm={onPhotosConfirm}
+                saveRightAway={merchant.status !== "Approved"}
               />
               {photosError && <p className="mt-2 text-sm text-red-600">{photosError}</p>}
             </div>
