@@ -469,6 +469,11 @@ updated" date at the top of the page.
   subscription (except Wix Stores, while MegaShop is there).
 - Delete the `wix-export/` folders: they hold personal details.
 - Remove `WIX_API_KEY` and the other Wix secrets once nothing uses them.
+- Once logins have moved: remove the Wix sign-in code from the browser
+  (`lib/wixBrowserClient.ts`, `lib/wixAuth.ts`, `lib/recaptcha.ts` and
+  their use in `context/WixProvider.tsx` and the sign-up and sign-in
+  forms). It's about 100KB of JavaScript that the sign-up page (a page
+  that should be fast for search) still downloads but no longer uses.
 - Once every photo is copied: remove the `static.wixstatic.com`
   preconnect in `app/layout.tsx`, and the Wix entries in the security
   policy in `next.config.mjs` (keep them while MegaShop is on Wix).
