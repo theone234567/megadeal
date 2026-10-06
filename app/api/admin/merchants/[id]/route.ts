@@ -3,6 +3,7 @@ import { REFERRAL_BONUS_CREDITS, referralCreditsLabel, signupCodes } from "@/lib
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
+import { dataBackend } from "@/lib/db/connection";
 import { queryAllByEmail } from "@/lib/queryAll";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
@@ -676,7 +677,21 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
         // (a null status passes) — so deleting these rows here would
         // republish every one of them, cancelled ones included. The only
         // safe order is to remove the deal and its product together in the
-        // Wix dashboard, which is what this now says.
+        // Wix dashboard, which is what this now says. On the new database
+        // there's no separate product, but a submitted deal is a record of
+        // credits spent and of a page that was public, so it's kept (the
+        // database refuses to drop it): the business is suspended instead.
+        const n = `${submitted.length} submitted deal${submitted.length === 1 ? "" : "s"}`;
+        if (dataBackend() === "postgres") {
+          return NextResponse.json(
+            {
+              error:
+                `This business has ${n}. Submitted deals are kept as a record of credits spent and ` +
+                `pages that were public, so the business can't be deleted. Suspend it instead.`,
+            },
+            { status: 409 }
+          );
+        }
         return NextResponse.json(
           {
             error:

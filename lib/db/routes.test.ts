@@ -334,7 +334,11 @@ describe("admin work and the rest of the business portal", () => {
     const live = await liveDeal();
     admin = true;
     const route = await import("@/app/api/admin/merchants/[id]/route");
-    expect((await call(route.DELETE, request("DELETE"), params(m._id))).status).toBe(409);
+    vi.stubEnv("DATA_BACKEND", "postgres");
+    const refused = await call(route.DELETE, request("DELETE"), params(m._id));
+    vi.unstubAllEnvs();
+    expect(refused.status).toBe(409);
+    expect(refused.body.error).toMatch(/Suspend it instead/);
     await db.query("delete from public.deals where id = $1", [live._id]);
     admin = false;
     const draftRoute = await import("@/app/api/deals/draft/route");
