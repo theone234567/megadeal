@@ -20,6 +20,9 @@ export default function GlobalError({
 
   return (
     <html lang="en-NZ">
+      <head>
+        <meta name="robots" content="noindex" />
+      </head>
       <body
         style={{
           margin: 0,

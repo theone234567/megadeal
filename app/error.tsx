@@ -16,6 +16,10 @@ export default function ErrorPage({
 
   return (
     <main className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center px-4 text-center">
+      {/* A page that fails after it has started streaming can't change its
+          200 status, so search engines are told not to index this one in
+          its place (React puts the tag in <head>). */}
+      <meta name="robots" content="noindex" />
       <span className="text-4xl">🐘</span>
       <h1 className="mt-3 text-xl font-bold text-slate-900">
         Something went sideways
