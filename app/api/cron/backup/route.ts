@@ -11,7 +11,8 @@ export const dynamic = "force-dynamic";
  * MegaDeal's own database, gzipped JSON, into the private BACKUPS bucket
  * (lib/db/backup.ts, lib/backupStorage.ts). Put back with
  * scripts/restore-backup.ts. Only once the data lives there
- * (DATA_BACKEND=postgres); before that it's in Wix.
+ * (DATA_BACKEND=postgres); before that it's in Wix, and the job only
+ * keeps the new database from being paused for inactivity.
  *
  * Says only how much it saved, never what.
  */
@@ -19,7 +20,16 @@ export async function POST(req: NextRequest) {
   const caller = cronCaller(req);
   if (caller === "unset") return NextResponse.json({ error: "Not configured." }, { status: 503 });
   if (caller === "refused") return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  if (dataBackend() !== "postgres") return NextResponse.json({ skipped: "The data is still in Wix." });
+  if (dataBackend() !== "postgres") {
+    // Until the switch nothing else uses the new database, and Supabase's
+    // free plan pauses a project after a week without activity: one small
+    // query a night keeps it ready for switch day.
+    const awake = await Promise.race([
+      withDb((db) => db.query("select 1")).then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 10_000)),
+    ]).catch(() => false);
+    return NextResponse.json({ skipped: "The data is still in Wix.", database: awake ? "awake" : "didn't answer" });
+  }
 
   const bucket = await backupBucket();
   if (!bucket) {

@@ -48,7 +48,10 @@ describe("nightly backup route", () => {
   it("does nothing while the data is still in Wix", async () => {
     vi.stubEnv("CRON_SECRET", "the-real-secret");
     vi.stubEnv("DATA_BACKEND", "wix");
-    expect((await call("the-real-secret")).body.skipped).toBeTruthy();
+    const { body } = await call("the-real-secret");
+    expect(body.skipped).toBeTruthy();
+    // It still asks the new database something, so Supabase doesn't pause it.
+    expect(body.database).toBe("awake");
     expect(stored.size).toBe(0);
   });
 

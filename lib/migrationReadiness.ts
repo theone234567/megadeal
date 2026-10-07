@@ -162,7 +162,7 @@ async function databaseSection(): Promise<{ section: Section; facts: DatabaseFac
       checks.push(ok("Database answers", "The database is reachable."));
     } catch (err) {
       console.error("[migrationReadiness] database check failed", err);
-      checks.push(missing("Database answers", "The database didn't answer. Check the connection details and that the Supabase project is running."));
+      checks.push(missing("Database answers", "The database didn't answer. Check the connection details and that the Supabase project is running: a free project is paused after a week without use (Supabase > the project > Restore project wakes it, data intact)."));
     }
   }
 

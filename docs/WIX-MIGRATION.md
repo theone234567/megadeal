@@ -534,7 +534,11 @@ It answers "ok" or "down" and nothing more. On Supabase's free plan it
 also matters for another reason: a project with no activity for a week
 is paused, which would take the site down. The monitor's checks (and the
 nightly backup) keep it active; move to the Pro plan, which never
-pauses, before launch.
+pauses, before launch. Before the switch nothing else uses the database,
+so the nightly job asks it one small question each night to keep it
+awake (once `CRON_SECRET` is set). If it's paused anyway, Moving off Wix
+says the database didn't answer: Supabase > the project > **Restore
+project** wakes it, data intact.
 
 Also worth turning on:
 Supabase > Organization > Usage alerts, so you hear before the plan's

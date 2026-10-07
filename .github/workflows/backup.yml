@@ -1,6 +1,7 @@
 # Every night, asks the site to save a copy of MegaDeal's own database to
-# its private BACKUPS bucket in Cloudflare R2 (app/api/cron/backup). Only
-# does anything once the data has moved off Wix (DATA_BACKEND=postgres).
+# its private BACKUPS bucket in Cloudflare R2 (app/api/cron/backup), once
+# the data has moved off Wix (DATA_BACKEND=postgres). Before that it only
+# asks the new database one small question, so Supabase doesn't pause it.
 #
 # Uses the same CRON_SECRET as the hourly expired-deals job. Until it's set
 # in GitHub, this job does nothing. A failed backup fails this job, and
