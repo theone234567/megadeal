@@ -73,6 +73,14 @@ const nextConfig = {
       // to its new address from middleware.ts instead.
       { source: "/category/:slug(food-drink|beauty-spa|things-to-do|travel-getaways|health-fitness|home-car)", destination: "/auckland/:slug", permanent: true },
       { source: "/flash-deals", destination: "/auckland/flash-deals", permanent: true },
+      // Old addresses Google still asks for (Search Console, "Not found",
+      // Oct 2026): an older site's index page, an earlier name for the
+      // coming-soon page (the homepage shows it until launch), and Wix's
+      // members "My plans" page (businesses now use the portal).
+      { source: "/index.php", destination: "/", permanent: true },
+      { source: "/index.html", destination: "/", permanent: true },
+      { source: "/starting-soon", destination: "/", permanent: true },
+      { source: "/my-plans", destination: "/portal", permanent: true },
       // MegaShop was taken off the site in Oct 2026 (it never opened) and
       // will come back on Shopify, likely at shop.megadeal.co.nz. Not
       // permanent, so this can point there then.
