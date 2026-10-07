@@ -14,7 +14,16 @@ const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
  * quota (5,000 a month on Core), go out from Wix's own sending domain with
  * ours as the reply-to, and have no plain-text part.
  */
-export async function sendTransactionalEmail({
+/** Why an email wasn't sent, when it's worth telling apart: "quota" is
+ *  Resend's daily or monthly sending limit, which no retry today fixes. */
+export type SendResult = { ok: true } | { ok: false; reason?: "quota" };
+
+export async function sendTransactionalEmail(msg: Parameters<typeof sendEmail>[0]): Promise<boolean> {
+  return (await sendEmail(msg)).ok;
+}
+
+/** sendTransactionalEmail, saying why when it can (the subscriber email stops at the sending limit). */
+export async function sendEmail({
   to,
   subject,
   html,
@@ -33,7 +42,7 @@ export async function sendTransactionalEmail({
    *  the List-Unsubscribe header (Gmail and Yahoo require it of senders
    *  like us). Leave out for one-off messages (receipts, password resets). */
   unsubscribeUrl?: string;
-}): Promise<boolean> {
+}): Promise<SendResult> {
   // One address, or a few separated by commas (ADMIN_NOTIFY_EMAIL may
   // list several). Each must be a plain address: nothing that could add
   // recipients or headers of its own.
@@ -46,7 +55,7 @@ export async function sendTransactionalEmail({
   const safeReplyTo = replyTo ? headerSafe(replyTo, 320) : undefined;
   if (!recipients.length || !recipients.every((a) => EMAIL_RE.test(a)) || (safeReplyTo && !EMAIL_RE.test(safeReplyTo))) {
     console.error("[sendTransactionalEmail] refused: not an email address");
-    return false;
+    return { ok: false };
   }
   if (process.env.EMAIL_PROVIDER === "resend") {
     return sendWithResend({ to: recipients, subject: safeSubject, html, replyTo: safeReplyTo, unsubscribeUrl });
@@ -59,7 +68,7 @@ export async function sendTransactionalEmail({
     adminClient = createWixAdminClient();
   } catch (err) {
     console.error("[sendTransactionalEmail] Wix admin client not configured.", err);
-    return false;
+    return { ok: false };
   }
 
   const res = await adminClient.fetchWithAuth(
@@ -85,7 +94,7 @@ export async function sendTransactionalEmail({
   if (!res.ok) {
     console.error("[sendTransactionalEmail] failed", await res.text().catch(() => ""));
   }
-  return res.ok;
+  return { ok: res.ok };
 }
 
 /**
@@ -105,11 +114,11 @@ export function retryDelayMs(retryAfter: string | null): number {
   return Number.isFinite(seconds) && seconds > 0 ? Math.min(5000, Math.max(250, seconds * 1000)) : 1000;
 }
 
-async function sendWithResend(msg: { to: string[]; subject: string; html: string; replyTo?: string; unsubscribeUrl?: string }): Promise<boolean> {
+async function sendWithResend(msg: { to: string[]; subject: string; html: string; replyTo?: string; unsubscribeUrl?: string }): Promise<SendResult> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     console.error("[sendTransactionalEmail] EMAIL_PROVIDER=resend but RESEND_API_KEY isn't set");
-    return false;
+    return { ok: false };
   }
   const headers: Record<string, string> = {};
   if (msg.unsubscribeUrl) {
@@ -135,21 +144,22 @@ async function sendWithResend(msg: { to: string[]; subject: string; html: string
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
         body,
       });
-      if (res.ok) return true;
+      if (res.ok) return { ok: true };
       const answer = (await res.text().catch(() => "")).slice(0, 300);
+      const quota = res.status === 429 && /quota/i.test(answer);
       // Too many at once (the subscriber email and login invites send
       // batches): wait as long as Resend asks, briefly, and try again. A
       // daily or monthly sending limit isn't helped by waiting.
-      if (res.status === 429 && attempt < RESEND_RETRIES && !/quota/i.test(answer)) {
+      if (res.status === 429 && attempt < RESEND_RETRIES && !quota) {
         await sleep(retryDelayMs(res.headers.get("retry-after")));
         continue;
       }
       // The provider's answer, never the message or the address.
       console.error("[sendTransactionalEmail] Resend refused", res.status, answer);
-      return false;
+      return quota ? { ok: false, reason: "quota" } : { ok: false };
     }
   } catch (err) {
     console.error("[sendTransactionalEmail] Resend unreachable", err);
-    return false;
+    return { ok: false };
   }
 }

@@ -7,7 +7,7 @@ import { createDataClient } from "@/lib/dataClient";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { queryAllItems } from "@/lib/queryAll";
 import { getRateLimitKv } from "@/lib/rateLimit";
-import { sendTransactionalEmail } from "@/lib/sendEmail";
+import { sendEmail, sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
 import {
   AUDIENCES,
@@ -178,24 +178,31 @@ export async function POST(req: NextRequest) {
     const todo = notSent.filter((r) => !failedList.has(addressHash(r.email)));
     let sent = 0;
     let failed = 0;
+    // Resend's daily or monthly limit: stop here, and don't count it
+    // against anyone. Send again once the limit resets.
+    let quotaReached = false;
     // Written once at the end of the batch (Cloudflare allows about one
     // write a second to a key), and in `finally` so a batch that stops part
     // way still records who it reached.
     try {
       for (const r of todo.slice(0, BATCH)) {
         const unsub = await unsubscribeUrlFor(r);
-        const ok =
-          unsub !== null &&
-          (await sendTransactionalEmail({
-            to: r.email,
-            subject,
-            html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: unsub }),
-            unsubscribeUrl: unsub,
-            replyTo: process.env.ADMIN_NOTIFY_EMAIL?.split(",")[0]?.trim() || undefined,
-          }).catch(() => false));
-        if (ok) {
+        const result =
+          unsub === null
+            ? { ok: false as const }
+            : await sendEmail({
+                to: r.email,
+                subject,
+                html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: unsub }),
+                unsubscribeUrl: unsub,
+                replyTo: process.env.ADMIN_NOTIFY_EMAIL?.split(",")[0]?.trim() || undefined,
+              }).catch(() => ({ ok: false as const }));
+        if (result.ok) {
           sentList.add(addressHash(r.email));
           sent++;
+        } else if ("reason" in result && result.reason === "quota") {
+          quotaReached = true;
+          break;
         } else {
           failedList.set(addressHash(r.email), Date.now());
           failed++;
@@ -208,13 +215,13 @@ export async function POST(req: NextRequest) {
     const remaining = todo.length - sent - failed;
     // Not sent it yet but passed over for now, including this batch's failures.
     const waiting = notSent.length - sent - remaining;
-    if (sent || failed) {
+    if (sent || failed || quotaReached) {
       await logAdminAction({
         action: `Sent announcement "${campaign}" (${audience})`,
-        detail: `${sent} sent${failed ? `, ${failed} failed` : ""}, ${remaining} to go`,
+        detail: `${sent} sent${failed ? `, ${failed} failed` : ""}, ${remaining} to go${quotaReached ? " (stopped: Resend's sending limit)" : ""}`,
       });
     }
-    return json({ sent, failed, waiting, alreadySent: everyone.length - notSent.length + sent, remaining });
+    return json({ sent, failed, waiting, quotaReached, alreadySent: everyone.length - notSent.length + sent, remaining });
   } catch (err) {
     console.error("[admin/announcement] send failed", err);
     return json({ error: "Sending stopped. Please try again: nobody is sent it twice." }, 500);

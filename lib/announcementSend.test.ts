@@ -26,13 +26,16 @@ vi.mock("@/lib/rateLimit", () => ({ getRateLimitKv: async () => kv }));
 vi.mock("@/lib/dataClient", () => ({ createDataClient: () => ({ items: { query: () => ({ eq: () => ({}) }) } }) }));
 vi.mock("@/lib/queryAll", () => ({ queryAllItems: async () => rows }));
 vi.mock("@/lib/fetchDealServer", () => ({ fetchAllLiveDealsServer: async () => [] }));
-vi.mock("@/lib/sendEmail", () => ({
-  sendTransactionalEmail: async ({ to }: { to: string }) => {
-    if (down || to.startsWith("bad")) return false;
+let quotaAfter = Infinity;
+vi.mock("@/lib/sendEmail", () => {
+  const sendEmail = async ({ to }: { to: string }) => {
+    if (sentTo.length >= quotaAfter) return { ok: false as const, reason: "quota" as const };
+    if (down || to.startsWith("bad")) return { ok: false as const };
     sentTo.push(to);
-    return true;
-  },
-}));
+    return { ok: true as const };
+  };
+  return { sendEmail, sendTransactionalEmail: async (m: { to: string }) => (await sendEmail(m)).ok };
+});
 
 async function send() {
   const { POST } = await import("@/app/api/admin/announcement/route");
@@ -41,7 +44,7 @@ async function send() {
     headers: { "content-type": "application/json", origin: SITE },
     body: JSON.stringify({ action: "send", audience: "businesses", campaign: "launch", subject: "Hi", body: "We're live." }),
   });
-  return (await POST(req)).json() as Promise<{ sent: number; failed: number; waiting: number; remaining: number }>;
+  return (await POST(req)).json() as Promise<{ sent: number; failed: number; waiting: number; remaining: number; quotaReached: boolean }>;
 }
 
 /** The admin panel's loop (components/admin/AnnouncementPanel.tsx). */
@@ -91,5 +94,30 @@ describe("sending an announcement", () => {
     expect(await sendAll()).toEqual({ sent: 15, waiting: 25, remaining: 0 });
     expect(new Set(sentTo).size).toBe(20);
     expect(sentTo).toHaveLength(20);
+  });
+
+  it("stops at Resend's sending limit without counting it against anyone", async () => {
+    kvStore.clear();
+    sentTo.length = 0;
+    quotaAfter = 7;
+    let run = { sent: 0, failed: 0, quotaReached: false };
+    for (let i = 0; i < 10 && !run.quotaReached; i++) {
+      const data = await send();
+      run = { sent: run.sent + data.sent, failed: run.failed + data.failed, quotaReached: data.quotaReached };
+    }
+    // The 25 bad addresses failed on their own; the limit stopped it at 7.
+    expect(run).toEqual({ sent: 7, failed: 25, quotaReached: true });
+
+    // The next day: carries on where it stopped, nobody twice.
+    quotaAfter = Infinity;
+    let sent = 0;
+    for (let i = 0; i < 10; i++) {
+      const data = await send();
+      sent += data.sent;
+      if (data.remaining === 0) break;
+    }
+    expect(sent).toBe(13);
+    expect(sentTo).toHaveLength(20);
+    expect(new Set(sentTo).size).toBe(20);
   });
 });

@@ -118,6 +118,13 @@ export default function AnnouncementPanel() {
         sentTotal += data.sent;
         emptyBatches = data.sent === 0 ? emptyBatches + 1 : 0;
         setMessage({ tone: "ok", text: `Sending… ${sentTotal} sent so far.` });
+        if (data.quotaReached) {
+          setMessage({
+            tone: "error",
+            text: `${sentTotal} sent, then Resend's sending limit was reached. Press Send again tomorrow to carry on (nobody gets it twice), or move Resend to a bigger plan to send the rest today.`,
+          });
+          break;
+        }
         if (data.remaining === 0 || emptyBatches >= 2) {
           setMessage(
             data.remaining
