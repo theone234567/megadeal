@@ -26,6 +26,8 @@ export interface Check {
   label: string;
   state: CheckState;
   detail: string;
+  /** Step-by-step help the page shows under it. */
+  help?: "cron-secret";
 }
 
 export interface Section {
@@ -118,7 +120,9 @@ async function connectionKind(): Promise<"hyperdrive" | "url" | null> {
 async function backupCheck(): Promise<Check> {
   const bucket = await backupBucket();
   if (!bucket) return warning("Nightly backup", "No BACKUPS bucket. Create a private R2 bucket and add it to wrangler.toml as BACKUPS, so there's a copy of the data every night.");
-  if (!set("CRON_SECRET")) return warning("Nightly backup", "CRON_SECRET isn't set, so the nightly job can't run. Set the same value in GitHub and Cloudflare.");
+  if (!set("CRON_SECRET")) {
+    return { ...warning("Nightly backup", "CRON_SECRET isn't set, so the nightly job can't run. Set the same value in GitHub and Cloudflare."), help: "cron-secret" };
+  }
   try {
     const latest = await latestBackup(bucket);
     if (!latest) {

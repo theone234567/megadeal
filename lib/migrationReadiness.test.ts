@@ -219,6 +219,8 @@ describe("the nightly backup check", () => {
     allSet();
     vi.stubEnv("CRON_SECRET", "");
     cfEnv = { BACKUPS: bucketWith(3) };
-    expect(check(await checkReadiness(services().fetchFn), "database", "Nightly backup")?.detail).toContain("CRON_SECRET");
+    const c = check(await checkReadiness(services().fetchFn), "database", "Nightly backup");
+    expect(c?.detail).toContain("CRON_SECRET");
+    expect(c?.help).toBe("cron-secret");
   });
 });
