@@ -34,6 +34,20 @@ binding = "IMAGES"
 binding = "RATE_LIMIT_KV"
 id = "49bc14b529ac4f108051947967a39943"
 
+# MegaDeal's own photo storage (lib/photoStorage.ts): private, served by
+# the site at /media/. Only used once PHOTO_STORAGE = "r2" (with the new
+# database); until then photos stay on Wix.
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "megadeal-photos"
+
+# The nightly database backup (app/api/cron/backup): private, and a
+# lifecycle rule on the bucket deletes each backup after 30 days. It skips
+# itself while the data is still in Wix.
+[[r2_buckets]]
+binding = "BACKUPS"
+bucket_name = "megadeal-backups"
+
 # The moving-off-Wix switches (docs/WIX-MIGRATION.md, "Where settings go"):
 # kept here, in a commit, so each one is on record and turning it off is a
 # revert. Keys and passwords never go here: they're Secrets in the dashboard.
