@@ -13,8 +13,12 @@ export { inTransaction } from "./sql";
  *
  * On Cloudflare the connection goes through Hyperdrive (the HYPERDRIVE
  * binding in wrangler.toml), which keeps a pool of connections to the
- * database warm near it, so each request's connect is fast. Locally,
- * DATABASE_URL in .dev.vars. Either way the server connects as a role
+ * database warm near it, so each request's connect is fast. Running the
+ * site locally (next dev or start), Cloudflare's local stand-in supplies
+ * HYPERDRIVE too, pointing at wrangler.toml's localConnectionString: set
+ * CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE to use another
+ * database. Scripts (scripts/*.ts) use DATABASE_URL. Either way the
+ * server connects as a role
  * that bypasses row-level security and makes its own checks, as it does
  * with Wix today; row-level security guards everything else.
  */
