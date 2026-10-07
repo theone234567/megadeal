@@ -20,7 +20,12 @@ import type { Deal } from "@/lib/types";
  * sections, a few deals each, and a link to the full list.
  */
 
-export const revalidate = 60;
+// Rendered for each request, never at build time: the build can't see the
+// switches in wrangler.toml [vars] (DATA_BACKEND is runtime-only) or reach
+// the database, so a build-time copy would hold Wix's data, or none, until
+// it was next refreshed. The deal listing it reads keeps its own one-minute
+// cache (fetchAllLiveDealsServer), as the homepage does.
+export const dynamic = "force-dynamic";
 
 const CITY = DEFAULT_CITY.name;
 const PER_SECTION = 4;

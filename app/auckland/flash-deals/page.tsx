@@ -8,10 +8,12 @@ import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 
-// See app/page.tsx for why this is a short revalidate window rather than
-// force-dynamic. Flash deals are short-lived by nature, so this stays
-// tighter than the other browse pages.
-export const revalidate = 30;
+// Rendered for each request, never at build time: the build can't see the
+// switches in wrangler.toml [vars] (DATA_BACKEND is runtime-only) or reach
+// the database, so a build-time copy would hold Wix's data, or none, until
+// it was next refreshed. The deal listing it reads keeps its own one-minute
+// cache (fetchAllLiveDealsServer), as the homepage does.
+export const dynamic = "force-dynamic";
 
 // No "| SITE_NAME" suffix on `title` — the root layout's title.template
 // already appends "| MegaDeal". openGraph/twitter titles aren't run

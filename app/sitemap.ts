@@ -10,8 +10,13 @@ import { fetchMegaShopProductsForServer } from "@/lib/fetchMegaShopServer";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 
 // Deals are created/edited by merchants continuously, so a build-time-only
-// static sitemap would go stale between deploys. Regenerate hourly instead.
-export const revalidate = 3600;
+// static sitemap would go stale between deploys.
+// Rendered for each request, never at build time: the build can't see the
+// switches in wrangler.toml [vars] (DATA_BACKEND is runtime-only) or reach
+// the database, so a build-time copy would hold Wix's data, or none, until
+// it was next refreshed. Crawlers ask for it rarely,
+// so building it per request costs little.
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = ([
