@@ -75,6 +75,16 @@ export async function middleware(request: NextRequest) {
     );
   }
 
+  // An address with broken percent-encoding (/deal/%E0%A4%A, from a
+  // mangled link) can't be decoded, and Next answered it with a 500.
+  // Search engines read repeated 500s as an unhealthy site; it's simply
+  // not a page.
+  try {
+    decodeURIComponent(request.nextUrl.pathname);
+  } catch {
+    return new NextResponse("Not found", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8", "X-Robots-Tag": "noindex" } });
+  }
+
   // Category URLs moved from the percent-encoded display name
   // (/category/Food%20%26%20Drink) to a slug, now under the city
   // (/auckland/food-drink; next.config.mjs sends /category/* here). Done
