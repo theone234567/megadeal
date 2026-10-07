@@ -380,6 +380,14 @@ Set up (any time before):
    connection string (Supabase > Connect: the direct connection, or the
    session pooler on port 5432; not the transaction pooler on 6543,
    since Hyperdrive does its own pooling).
+   **Turn its query caching off** (Hyperdrive > the configuration >
+   Settings > Caching > Disable). With it on, a read can return a result
+   up to about a minute old, and much of the site reads a row, changes it
+   and writes it back (lib/db/wixShim.ts), so a stale read would undo a
+   recent change: a profile edit, a credit balance, or an unsubscribe
+   (which must be honoured at once). The site keeps its own short-lived
+   copies of public pages where that's safe; Hyperdrive's connection
+   pooling, the part that makes it fast, works with caching off.
    Add to `wrangler.toml`:
 
        [[hyperdrive]]
