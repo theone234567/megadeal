@@ -568,6 +568,36 @@ updated" date at the top of the page.
 
 - Keep Wix for a month, read-only, as a fallback; then end the
   subscription (except Wix Stores, while MegaShop is there).
+
+#### Before ending the Wix subscription
+
+Checked in the code (7 Oct 2026): with `DATA_BACKEND=postgres`,
+`PHOTO_STORAGE=r2`, `AUTH_BACKEND=supabase` and `EMAIL_PROVIDER=resend`
+all on, nothing the site does needs Wix. Every database and Stores call
+goes to MegaDeal's database (`lib/db/wixShim.ts`); the only direct Wix
+calls left are photo uploads, email and passwords, each behind its own
+switch. MegaShop is the exception: it reads Wix Stores, and without Wix
+`/megashop` shows its coming-soon page and product pages say not found.
+The export (`scripts/wix-export.mjs`) covers every collection the code
+uses (Merchants, Deals, MerchantActivity, EmailSignups, ContactMessages,
+ApiUsageCounters, SiteSettings) plus the deal products.
+
+What the code can't check, so check by hand first:
+
+- **The domain.** Find where megadeal.co.nz is registered (the
+  registrar on the .nz domain search, or Wix > Domains). If it was bought
+  through Wix, transfer it to another registrar (one that handles .nz;
+  the DNCL lists authorised ones) with its UDAI code *before* ending Wix,
+  or it lapses with the plan. Its DNS is already
+  on Cloudflare; keep those nameservers through the transfer.
+- **Mailboxes.** Email to @megadeal.co.nz arrives through Cloudflare
+  Email Routing. If any mailbox (Google Workspace or similar) was bought
+  through Wix, move its billing first.
+- **A final copy.** Run the export once more on the last day and keep
+  the folder somewhere private (it holds personal details), in case a
+  question about old data comes up later.
+- **Paid Wix apps** and anything else on the Wix bill: cancel them with
+  the plan, so nothing renews. (GitHub's workflows use no Wix secrets.)
 - Delete the `wix-export/` folders: they hold personal details.
 - Remove `WIX_API_KEY` and the other Wix secrets once nothing uses them.
 - Once logins have moved: remove the Wix sign-in code from the browser
