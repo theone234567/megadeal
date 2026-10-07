@@ -1,0 +1,27 @@
+# By hand (Actions > Live site check > Run workflow): loads the live
+# site's key pages from outside and says which build is serving them
+# (/api/version) and whether the database answers (/api/health). Fails if
+# any page doesn't load. Changes nothing; needs no secrets.
+
+name: Live site check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the live site
+        run: |
+          site=https://megadeal.co.nz
+          echo "Version: $(curl -fsS --max-time 20 $site/api/version)"
+          echo "Health:  $(curl -sS --max-time 20 $site/api/health)"
+          failed=0
+          for path in / /coming-soon /about /list-your-business /privacy /robots.txt /sitemap.xml /api/health; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$site$path")
+            echo "$code  $path"
+            case "$code" in 2??|3??) ;; *) failed=1 ;; esac
+          done
+          exit $failed
