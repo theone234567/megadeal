@@ -48,14 +48,6 @@ bucket_name = "megadeal-photos"
 binding = "BACKUPS"
 bucket_name = "megadeal-backups"
 
-# MegaDeal's own database (Supabase project megadeal, Sydney) through
-# Hyperdrive, which keeps connections ready so each request doesn't open
-# a new one. Its query caching is off on purpose (docs/WIX-MIGRATION.md).
-# Only used once DATA_BACKEND = "postgres"; until then the data is in Wix.
-[[hyperdrive]]
-binding = "HYPERDRIVE"
-id = "acdb74bed4044d03a2152af6d690f126"
-
 # The moving-off-Wix switches (docs/WIX-MIGRATION.md, "Where settings go"):
 # kept here, in a commit, so each one is on record and turning it off is a
 # revert. Keys and passwords never go here: they're Secrets in the dashboard.
