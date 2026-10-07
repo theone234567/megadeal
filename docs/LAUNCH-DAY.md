@@ -52,6 +52,12 @@ What then changes by itself:
 7. **Tell search engines.** Admin → **Submit all pages to Bing** (IndexNow, which also
    reaches Yandex and others).
    In Google Search Console, resubmit `https://megadeal.co.nz/sitemap.xml`.
+   Then check Google can actually see the site: Search Console → **URL Inspection** →
+   `https://megadeal.co.nz/` → **Test live URL** → View tested page. It should show the
+   deals homepage. If it shows "Just a moment..." or a 403, Cloudflare's bot protection is
+   stopping Google: look in Cloudflare → the domain → Security → Events for what challenged
+   it, and turn that rule or setting off. (Cloudflare challenges requests from data centres,
+   seen on 7 Oct 2026; verified search engines like Google are normally let through.)
 8. **Share a link to yourself** (Messenger, WhatsApp or similar) for the homepage and
    `/list-your-business`: the preview should show the new logo and, for the business page,
    up to 3 months. Facebook keeps old previews for a while; its Sharing Debugger refreshes one.
