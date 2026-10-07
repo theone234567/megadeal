@@ -30,7 +30,7 @@ const merchants: Record<string, any> = {};
 const increments = vi.fn(async (..._a: unknown[]) => true);
 vi.mock("./adminSession", () => ({ isAdminRequest: async () => true }));
 vi.mock("./adminAudit", () => ({ logAdminAction: vi.fn(), auditTarget: (n: string) => n }));
-vi.mock("./sendEmail", () => ({ sendTransactionalEmail: vi.fn() }));
+vi.mock("./sendEmail", () => ({ sendTransactionalEmail: vi.fn(async () => true) }));
 vi.mock("./merchantActivity", () => ({ logMerchantActivity: vi.fn() }));
 vi.mock("./creditsAtomic", () => ({ incrementCreditsAtomically: (...a: unknown[]) => increments(...a) }));
 vi.mock("./wixAdmin", () => ({
@@ -77,5 +77,28 @@ describe("approving a referred business", () => {
     // 2 intro + 24 (WELCOME6, before launch) + 4 referral.
     expect(byId.new).toBe(2 + 24 + REFERRAL_BONUS_CREDITS);
     expect(byId.ref).toBe(REFERRAL_BONUS_CREDITS);
+  });
+
+  it("tells the admin when an email didn't go, and not when it did", async () => {
+    const { sendTransactionalEmail } = await import("./sendEmail");
+    const { PATCH } = await import("@/app/api/admin/merchants/[id]/route");
+    const approve = async () =>
+      (await PATCH(new NextRequest("http://x/api/admin/merchants/new", { method: "PATCH", body: JSON.stringify({ status: "Approved" }) }), { params: Promise.resolve({ id: "new" }) })).json();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // A send that fails returns false rather than throwing.
+    vi.mocked(sendTransactionalEmail).mockResolvedValue(false);
+    const failed = await approve();
+    expect(failed.warnings).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("approved, but the notification email to new@example.com failed"),
+        expect.stringContaining("notification email to ref@example.com failed"),
+      ])
+    );
+
+    merchants.new = { ...merchants.new, status: "Pending" };
+    vi.mocked(sendTransactionalEmail).mockResolvedValue(true);
+    const fine = await approve();
+    expect(fine.warnings.join(" ")).not.toMatch(/failed to send/);
   });
 });

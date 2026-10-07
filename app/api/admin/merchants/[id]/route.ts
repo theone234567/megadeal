@@ -522,7 +522,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
           // both, not just the recipient's own.
           const safeReferrerName = escapeHtml(referrerFresh.businessName || "there");
           const safeReferredName = escapeHtml(existing.businessName || "a new business");
-                    await sendTransactionalEmail({
+          const sent = await sendTransactionalEmail({
             to: referrerFresh.email,
             subject: "You earned referral credits on MegaDeal!",
             html: brandedEmailHtml(`
@@ -532,6 +532,8 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
               <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6520B5;font-weight:700;">View your portal</a></p>
             `),
           });
+          // A send that fails says so by returning false, not by throwing.
+          if (!sent) throw new Error("not sent");
         } catch (err) {
           console.error("[admin/merchants] referral bonus email failed", err);
           warnings.push(`Referral bonus was credited, but the notification email to ${referrerFresh.email} failed to send.`);
@@ -543,7 +545,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   if (becomingApproved && !firstApproval && existing.email) {
     try {
       const safeName = escapeHtml(existing.businessName || "there");
-      await sendTransactionalEmail({
+      const sent = await sendTransactionalEmail({
         to: existing.email,
         subject: "You're back on MegaDeal",
         html: brandedEmailHtml(`
@@ -554,6 +556,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
           <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6520B5;font-weight:700;">Go to your portal</a></p>
         `),
       });
+      if (!sent) throw new Error("not sent");
     } catch (err) {
       console.error("[admin/merchants] re-approval email failed", err);
       warnings.push(`Merchant was approved again, but the notification email to ${existing.email} failed to send.`);
@@ -576,7 +579,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
                 : ""
             } so you can get started right away.`
           : "";
-      await sendTransactionalEmail({
+      const sent = await sendTransactionalEmail({
         to: existing.email,
         subject: "You're approved! Welcome to MegaDeal",
         html: brandedEmailHtml(`
@@ -590,6 +593,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
           ${creditsNote ? `<p style="margin:0;">${creditsNote}</p>` : ""}
         `),
       });
+      if (!sent) throw new Error("not sent");
     } catch (err) {
       console.error("[admin/merchants] approval email failed", err);
       warnings.push(`Merchant was approved, but the notification email to ${existing.email} failed to send.`);

@@ -93,11 +93,14 @@ export async function POST(req: NextRequest) {
       const token = await createPasswordResetToken(to);
       if (token) {
         const resetUrl = `${SITE_URL}/reset-password?token=${token}`;
-        await sendTransactionalEmail({
+        const sent = await sendTransactionalEmail({
           to,
           subject: "Reset your MegaDeal password",
           html: resetEmailHtml(merchant?.businessName ?? "", resetUrl),
         });
+        // The answer stays the same either way (it never says whether an
+        // account exists), but a failed send is logged.
+        if (!sent) console.error("[auth/request-password-reset] email not sent");
       }
     }
   } catch (err) {
