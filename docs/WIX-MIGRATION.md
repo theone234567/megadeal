@@ -663,8 +663,11 @@ updated" date at the top of the page.
 
 ### Stage 4: after the move
 
-- Keep Wix for a month, read-only, as a fallback; then end the
-  subscription.
+- Keep Wix for a couple of weeks, read-only, as a fallback (the data is
+  small: 12 businesses and 39 deals on 8 Oct 2026, so anything odd shows
+  quickly); then end the subscription. The Wix account also holds other
+  sites (MegaDeal, Megadeal 2, Megadeal.co.nz, MegaDeal NZ, Megadeal NZ):
+  check none of them has a paid plan or app still renewing.
 
 #### Before ending the Wix subscription
 
