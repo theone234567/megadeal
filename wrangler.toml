@@ -70,6 +70,9 @@ localConnectionString = "postgresql://postgres:postgres@localhost:5432/postgres"
 # Email through Resend from megadeal.co.nz (RESEND_API_KEY), not Wix.
 # Remove the line and deploy to go back to Wix at once.
 EMAIL_PROVIDER = "resend"
+# Switch-over (docs/WIX-MIGRATION.md, stage 2): saving paused while the
+# data is copied from Wix. Remove once the database is switched on.
+MAINTENANCE_MODE = "writes"
 
 [observability]
 enabled = true
