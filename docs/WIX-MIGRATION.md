@@ -532,8 +532,12 @@ Wix again; accounts created meanwhile would need to sign up on Wix.
 ### Monitoring
 
 Once the data is in the new database, an outage there takes pages down,
-and nobody would know until a business said so. Set up a free uptime
-monitor (UptimeRobot or Better Stack) when stage 2 goes live:
+and nobody would know until a business said so. The site checks for
+itself every hour (Cloudflare runs `app/api/cron/watch`, once
+`CRON_SECRET` is set): if the database stops answering it emails
+`ADMIN_NOTIFY_EMAIL`, once, and again when it's back. That can't see the
+whole site being down, so also set up a free uptime monitor (UptimeRobot
+or Better Stack) when stage 2 goes live:
 
 - Address: `https://megadeal.co.nz/api/health`, every 5 minutes.
 - Alert when it doesn't answer 200 (it says 503 when the database is

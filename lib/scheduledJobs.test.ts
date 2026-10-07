@@ -30,6 +30,15 @@ describe("scheduled jobs", () => {
 
   it("fails the run when the route fails, so Cloudflare records it", async () => {
     await expect(runScheduledJob("23 14 * * *", { CRON_SECRET: "s" }, async () => new Response("{}", { status: 500 }))).rejects.toThrow(/backup answered 500/);
+    // One failing doesn't stop the others in the same run.
+    const ran: string[] = [];
+    await expect(
+      runScheduledJob("17 * * * *", { CRON_SECRET: "s" }, async (req) => {
+        ran.push(new URL(req.url).pathname);
+        return new Response("{}", { status: ran.length === 1 ? 500 : 200 });
+      })
+    ).rejects.toThrow(/expired-deals answered 500/);
+    expect(ran).toEqual(["/api/cron/expired-deals", "/api/cron/watch"]);
     await expect(runScheduledJob("0 0 * * *", { CRON_SECRET: "s" }, async () => new Response())).rejects.toThrow(/No job/);
   });
 });
