@@ -55,8 +55,7 @@ function failure(res: Response, json: { error?: string }, fallback: string): str
 
 /**
  * Setting CRON_SECRET, step by step: a random value made here in the
- * browser (never sent anywhere or kept), to paste into Cloudflare (and
- * GitHub, for running the jobs by hand).
+ * browser (never sent anywhere or kept), to paste into Cloudflare.
  */
 function CronSecretHelp() {
   const [secret, setSecret] = useState<string | null>(null);
@@ -115,11 +114,6 @@ function CronSecretHelp() {
           <strong>Variables and Secrets</strong> &gt; <strong>Add</strong>. Type: <strong>Secret</strong>. Name:{" "}
           <code>CRON_SECRET</code>. Paste the secret, then <strong>Deploy</strong>. That&apos;s all the nightly backup needs:
           Cloudflare runs it.
-        </li>
-        <li>
-          Optional, to be able to run the jobs by hand from GitHub: the megadeal repository &gt; <strong>Settings</strong> &gt;{" "}
-          <strong>Secrets and variables</strong> &gt; <strong>Actions</strong> &gt; <strong>New repository secret</strong>. Name:{" "}
-          <code>CRON_SECRET</code>, the same secret, then <strong>Add secret</strong>.
         </li>
         <li>
           Come back here and press <strong>Check again</strong>.

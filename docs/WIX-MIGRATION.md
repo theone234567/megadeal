@@ -446,8 +446,7 @@ On the day:
 4. Add `DATA_BACKEND = "postgres"` and `PHOTO_STORAGE = "r2"` to
    `[vars]`, and remove `MAINTENANCE_MODE`, in one commit; deploy.
    Then take a first copy to keep: Moving off Wix > Database > **Save a
-   copy of the database** (or GitHub > Actions > Nightly database backup >
-   **Run workflow**, or `DATABASE_URL=… npx tsx scripts/take-backup.ts`).
+   copy of the database** (or `DATABASE_URL=… npx tsx scripts/take-backup.ts`).
 5. Moving off Wix > Database: press **Bring over unsubscribes from
    Wix**, so anyone who unsubscribed between the import and the switch
    stays unsubscribed. It only ever unsubscribes; press it again any
@@ -529,6 +528,15 @@ monitor (UptimeRobot or Better Stack) when stage 2 goes live:
 - Address: `https://megadeal.co.nz/api/health`, every 5 minutes.
 - Alert when it doesn't answer 200 (it says 503 when the database is
   down). Send alerts to your email and phone.
+- Cloudflare's bot protection challenges requests from data centres,
+  which is where monitors run (GitHub's servers got a 403 "Just a
+  moment..." page on 7 Oct 2026). If the monitor reports 403 while the
+  site works in your browser, let it through: Cloudflare > the domain >
+  Security > WAF > Custom rules > Create rule: "URI Path equals
+  /api/health", action **Skip** (all remaining custom rules, and the
+  bot and security-level checks it offers). If Bot Fight Mode is on, it
+  can't be skipped by a rule on the free plan: turn it off, or pick a
+  monitor Cloudflare lists as a verified bot.
 
 It answers "ok" or "down" and nothing more. On Supabase's free plan it
 also matters for another reason: a project with no activity for a week
@@ -558,10 +566,11 @@ Logins aren't in it (Supabase keeps those, and any business can set a
 new password from an emailed link).
 
 It needs `CRON_SECRET` as a secret on the Worker (Moving off Wix shows
-how to make and set one). Cloudflare runs the schedule, not GitHub,
-which turns schedules off in a public repository after 60 days without a
-commit; the GitHub jobs remain for running one by hand (they need the
-same `CRON_SECRET` in GitHub's repository secrets too).
+how to make and set one). Cloudflare runs the schedule itself. It used
+to be GitHub jobs, which couldn't have worked: Cloudflare's bot
+protection challenges requests from data centres such as GitHub's (a
+"Just a moment..." page, checked 7 Oct 2026), and GitHub also turns
+schedules off in a public repository after 60 days without a commit.
 
 A copy holds personal details: it never leaves the private bucket except
 to restore.

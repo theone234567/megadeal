@@ -3,10 +3,9 @@ import { createHash, timingSafeEqual } from "crypto";
 import type { NextRequest } from "next/server";
 
 /**
- * The scheduled jobs (Cloudflare Cron Triggers, lib/scheduledJobs.ts; or
- * by hand, .github/workflows/*.yml) call app/api/cron/* with CRON_SECRET,
- * a Cloudflare Worker secret (and the same value in GitHub's repository
- * secrets for the by-hand runs). "unset" when the Worker has no secret yet.
+ * The scheduled jobs (Cloudflare Cron Triggers, lib/scheduledJobs.ts) call
+ * app/api/cron/* with CRON_SECRET, a Cloudflare Worker secret. "unset"
+ * when the Worker has no secret yet.
  */
 export function cronCaller(req: NextRequest): "ok" | "unset" | "refused" {
   const expected = process.env.CRON_SECRET;

@@ -1,13 +1,13 @@
 /**
  * The site's scheduled jobs, run by Cloudflare itself (Cron Triggers in
- * wrangler.toml, handled in worker.mjs) rather than by GitHub, which
- * turns schedules off in a public repository after 60 days without a
- * commit and emails a failure to whoever last edited the schedule.
+ * wrangler.toml, handled in worker.mjs). They used to be GitHub jobs
+ * calling the site from outside, which Cloudflare's bot protection
+ * challenges (and GitHub turns schedules off in a public repository after
+ * 60 days without a commit).
  *
  * Each job is one of the site's own /api/cron routes, called inside the
- * Worker with CRON_SECRET, exactly as the GitHub jobs call them from
- * outside (they still can, by hand). Until CRON_SECRET is set in
- * Cloudflare they do nothing.
+ * Worker with CRON_SECRET, so it never meets the bot protection. Until
+ * CRON_SECRET is set in Cloudflare they do nothing.
  *
  * No imports: worker.mjs is bundled by wrangler, outside Next.
  */
