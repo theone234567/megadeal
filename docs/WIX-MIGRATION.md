@@ -126,7 +126,7 @@ a deal it's marked as theirs, and the business can no longer restart it;
 the portal says MegaDeal paused it. This works on Wix today too.
 
 Still on Wix after step 2: business logins and password resets (step 3),
-photo uploads (step 1), email (step 4), and MegaShop.
+photo uploads (step 1) and email (step 4).
 
 ## Page addresses (decided 7 Oct 2026, before launch)
 
@@ -241,7 +241,12 @@ Triggers in `wrangler.toml`, run from `worker.mjs`.
 | Photos | `PHOTO_STORAGE=r2` | the database switch, an R2 bucket |
 | Business logins | `AUTH_BACKEND=supabase` | the database switch, Supabase Auth settings, Turnstile |
 
-MegaShop stays on Wix Stores for now.
+MegaShop was taken off the site in Oct 2026 (it never opened); it's to
+come back on Shopify, likely at shop.megadeal.co.nz, so nothing here
+depends on Wix Stores. `/megashop` sends visitors to the homepage for
+now (`next.config.mjs`, a temporary redirect to point at the shop later).
+Its products still sit in Wix's catalog, filtered out of deals by
+category (`lib/categories.ts`); the import doesn't copy them.
 
 **Admin > Moving off Wix** (`/admin/move-off-wix`) checks all of this
 live and says in plain words what's done and what's missing. Use it at
@@ -648,8 +653,10 @@ for you to check (and have checked) before using:
 > Sydney, Australia), Cloudflare (hosting, security checks and photo
 > storage), Resend (transactional email), Google's Places API for
 > business-address autocomplete, Google Analytics for site traffic
-> reporting, and Meta (Facebook/Instagram) for ad measurement. While
-> MegaShop runs on Wix, Wix.com processes MegaShop orders.
+> reporting, and Meta (Facebook/Instagram) for ad measurement.
+
+(When the shop opens on Shopify, add Shopify, which processes shop
+orders.)
 
 Change it in the same deploy as the last switch, and update the "Last
 updated" date at the top of the page.
@@ -657,7 +664,7 @@ updated" date at the top of the page.
 ### Stage 4: after the move
 
 - Keep Wix for a month, read-only, as a fallback; then end the
-  subscription (except Wix Stores, while MegaShop is there).
+  subscription.
 
 #### Before ending the Wix subscription
 
@@ -666,8 +673,7 @@ Checked in the code (7 Oct 2026): with `DATA_BACKEND=postgres`,
 all on, nothing the site does needs Wix. Every database and Stores call
 goes to MegaDeal's database (`lib/db/wixShim.ts`); the only direct Wix
 calls left are photo uploads, email and passwords, each behind its own
-switch. MegaShop is the exception: it reads Wix Stores, and without Wix
-`/megashop` shows its coming-soon page and product pages say not found.
+switch. (MegaShop, which read Wix Stores, is no longer on the site.)
 The export (`scripts/wix-export.mjs`) covers every collection the code
 uses (Merchants, Deals, MerchantActivity, EmailSignups, ContactMessages,
 ApiUsageCounters, SiteSettings) plus the deal products.
@@ -702,5 +708,5 @@ What the code can't check, so check by hand first:
   downloads it.
 - Once every photo is copied: remove the `static.wixstatic.com`
   preconnect in `app/layout.tsx`, and the Wix entries in the security
-  policy in `next.config.mjs` (keep them while MegaShop is on Wix).
+  policy in `next.config.mjs`.
 - Supabase: turn on point-in-time recovery (Pro plan) before launch.

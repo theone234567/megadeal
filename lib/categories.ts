@@ -61,11 +61,14 @@ export const CATEGORY_ID_BY_NAME: Record<string, string> = Object.fromEntries(
 );
 
 /**
- * MegaShop.co.nz products live in the same Wix Stores catalog as MegaDeal's
- * deal-listing products, kept isolated only by category membership — a
+ * MegaShop's products (the shop was taken off the site in Oct 2026, to
+ * return on Shopify) are still in the same Wix Stores catalog as MegaDeal's
+ * deal-listing products, kept apart only by category membership: a
  * product in this category is never shown as a MegaDeal deal. Every
- * MegaDeal product-fetch path must request ALL_CATEGORIES_INFO and filter
- * through isMegaShopProduct() before mapping/displaying a product.
+ * MegaDeal product-fetch path from Wix must request ALL_CATEGORIES_INFO
+ * and filter through isMegaShopProduct() before mapping/displaying a
+ * product. (The move off Wix only copies products a deal points to, so
+ * they never reach MegaDeal's own database.)
  */
 export const MEGASHOP_CATEGORY_ID = "f97b5530-5218-4779-a221-20af6edc58a5";
 

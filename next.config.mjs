@@ -73,6 +73,10 @@ const nextConfig = {
       // to its new address from middleware.ts instead.
       { source: "/category/:slug(food-drink|beauty-spa|things-to-do|travel-getaways|health-fitness|home-car)", destination: "/auckland/:slug", permanent: true },
       { source: "/flash-deals", destination: "/auckland/flash-deals", permanent: true },
+      // MegaShop was taken off the site in Oct 2026 (it never opened) and
+      // will come back on Shopify, likely at shop.megadeal.co.nz. Not
+      // permanent, so this can point there then.
+      { source: "/megashop/:path*", destination: "/", permanent: false },
       { source: "/merchants", destination: "/list-your-business", permanent: true },
       { source: "/merchants/:path*", destination: "/list-your-business/:path*", permanent: true },
       { source: "/businesses", destination: "/list-your-business", permanent: true },

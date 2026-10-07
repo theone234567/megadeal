@@ -1,12 +1,11 @@
 import type { MetadataRoute } from "next";
 import { cityPath, flashDealsPath } from "@/lib/cities";
-import { SITE_URL, SITE_LAUNCHED, LAUNCHED_ON, MEGASHOP_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_URL, SITE_LAUNCHED, LAUNCHED_ON } from "@/lib/siteConfig";
 import { contentUpdated } from "@/lib/sitemapDates";
 import {
   fetchAllLiveDealSlugsForSitemap,
   fetchAllBusinessSlugsForSitemap,
 } from "@/lib/fetchDealServer";
-import { fetchMegaShopProductsForServer } from "@/lib/fetchMegaShopServer";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 
 // Deals are created/edited by merchants continuously, so a build-time-only
@@ -57,30 +56,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return updated ? { ...page, lastModified: updated } : page;
   });
 
-  // MegaShop is gated by its own separate flag, not SITE_LAUNCHED — same
-  // robots:{index:false} gate as its own generateMetadata while not
-  // launched (see app/megashop/page.tsx and app/megashop/[slug]/page.tsx),
-  // so only submit these once MEGASHOP_LAUNCHED is actually true.
-  const megaShopPages: MetadataRoute.Sitemap = [];
-  if (MEGASHOP_LAUNCHED) {
-    megaShopPages.push({ url: `${SITE_URL}/megashop`, changeFrequency: "daily", priority: 0.6 });
-    const products = await fetchMegaShopProductsForServer();
-    megaShopPages.push(
-      ...products.map((p) => ({
-        url: `${SITE_URL}/megashop/${p.slug}`,
-        changeFrequency: "daily" as const,
-        priority: 0.6,
-      }))
-    );
-  }
-
   // These pages carry a matching robots:{index:false} in their own
   // generateMetadata while !SITE_LAUNCHED (they're reachable directly
   // even though "/" redirects to /coming-soon), so don't hand crawlers a
   // sitemap full of URLs they're not allowed to index — submit them only
   // once the site has actually launched.
   if (!SITE_LAUNCHED) {
-    return [...staticPages, ...megaShopPages];
+    return staticPages;
   }
 
   const deals = await fetchAllLiveDealSlugsForSitemap();
@@ -143,6 +125,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...businessPages,
     ...cityPages,
     ...flashDealsPage,
-    ...megaShopPages,
   ];
 }

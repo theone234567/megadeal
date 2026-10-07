@@ -13,12 +13,9 @@ import "server-only";
  *  - the homepage, category pages and flash-deals list, which all render
  *    from one such call — deals past the first 100 products simply would
  *    not appear on the site at all;
- *  - the sitemap, which would stop telling Google about them;
- *  - the MegaShop catalogue, which filters that same page down to
- *    MegaShop products, so a handful of MegaShop items sitting behind 100
- *    deals would have left the shop looking empty.
+ *  - the sitemap, which would stop telling Google about them.
  *
- * Two of the three callers also had `cursorPaging` at the top level of the
+ * Two of the callers also had `cursorPaging` at the top level of the
  * request instead of inside `search`, where the API expects it — an `as
  * any` on the argument meant the compiler never mentioned it. That request
  * carried no paging options at all; it just happened to look like it did.

@@ -46,12 +46,10 @@ const OUT_DIR = process.env.SCREENSHOT_OUT_DIR || "screenshot-artifacts";
  * screenshot job write-capable-adjacent access to the live catalog is a
  * bigger decision than "add some screenshots"), so any real slug would
  * 404 here the same way every Wix-backed read already does in a
- * credential-less environment. /megashop stands in: a real, always-
- * reachable route that (like the deal/portal pages) still exercises the
- * "no live data available" rendering path, which is itself worth a human
- * glancing at.
+ * credential-less environment. /about stands in: a real, always-reachable
+ * page.
  */
-const ROUTES = ["/", "/coming-soon", "/list-your-business", "/portal", "/megashop"];
+const ROUTES = ["/", "/coming-soon", "/list-your-business", "/portal", "/about"];
 
 const VIEWPORTS = [
   { label: "1440x1200", width: 1440, height: 1200 },

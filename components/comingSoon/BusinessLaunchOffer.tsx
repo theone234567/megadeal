@@ -43,11 +43,7 @@ export default function BusinessLaunchOffer() {
             </ul>
             <p className="mt-6 text-xs text-slate-500">
               We&apos;re not currently set up for pure online/product
-              retailers (see{" "}
-              <Link href="/megashop" className="underline hover:text-slate-700">
-                MegaShop
-              </Link>{" "}
-              for that) or adult entertainment businesses.
+              retailers or adult entertainment businesses.
             </p>
           </div>
 
