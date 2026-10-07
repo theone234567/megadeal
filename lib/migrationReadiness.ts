@@ -6,7 +6,7 @@ import { MIGRATION_MARKERS } from "./db/migrationMarkers";
 import { photoBucket, photoResizer, photoStorage } from "./photoStorage";
 import { authBackend } from "./authSession";
 import { getRateLimitKv } from "./rateLimit";
-import { backupBucket, latestBackup } from "./backupStorage";
+import { LAST_RUN_KEY, backupBucket, latestBackup } from "./backupStorage";
 import { maintenanceOn } from "./maintenance";
 
 /**
@@ -124,9 +124,21 @@ async function backupCheck(): Promise<Check> {
     return { ...warning("Nightly backup", "CRON_SECRET isn't set, so the nightly job can't run. Set it as a secret on the Worker in Cloudflare."), help: "cron-secret" };
   }
   try {
+    if (dataBackend() !== "postgres") {
+      // Nothing to copy yet; the job only keeps the new database awake.
+      // Says whether it's running, so it's known to work by switch day.
+      const last = await (await getRateLimitKv())?.get(LAST_RUN_KEY).catch(() => null);
+      const run = last ? (JSON.parse(last) as { at: string; result: string }) : null;
+      if (!run) return info("Nightly backup", "The nightly job hasn't run yet: Cloudflare runs it each night at about 2:30am. Copies start once the database is switched on.");
+      const ago = (Date.now() - new Date(run.at).getTime()) / 3_600_000;
+      const said = run.result === "awake" ? "the new database answered" : "the new database didn't answer";
+      return ago <= 36
+        ? ok("Nightly backup", `The nightly job last ran ${ago < 1 ? "under an hour" : `${Math.round(ago)} hours`} ago (${said}). Copies start once the database is switched on.`)
+        : warning("Nightly backup", `The nightly job last ran ${Math.round(ago / 24)} days ago. Cloudflare > Workers & Pages > megadeal > Settings > Trigger events should list its schedule.`);
+    }
     const latest = await latestBackup(bucket);
     if (!latest) {
-      return (dataBackend() === "postgres" ? warning : info)("Nightly backup", "No backup yet. The first is taken the night after the database is switched on (or press Save a copy of the database below).");
+      return warning("Nightly backup", "No backup yet. The first is taken the night after the database is switched on (or press Save a copy of the database below).");
     }
     const hours = (Date.now() - new Date(latest.uploaded).getTime()) / 3_600_000;
     const when = hours < 1 ? "under an hour ago" : hours < 48 ? `${Math.round(hours)} hours ago` : `${Math.round(hours / 24)} days ago`;

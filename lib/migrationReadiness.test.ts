@@ -8,7 +8,8 @@ import type { Sql } from "./db/sql";
 vi.mock("server-only", () => ({}));
 let cfEnv: Record<string, unknown> = {};
 vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext: async () => ({ env: cfEnv }) }));
-vi.mock("./rateLimit", () => ({ getRateLimitKv: async () => ({ get: async () => null, put: async () => {} }) }));
+let lastBackupRun: string | null = null;
+vi.mock("./rateLimit", () => ({ getRateLimitKv: async () => ({ get: async (k: string) => (k === "cron:backup:last" ? lastBackupRun : null), put: async () => {} }) }));
 
 let pglite: PGlite;
 const sqlFor = (db: PGlite): Sql => ({ query: async (text, params) => (await db.query(text, params as any[])).rows as any[] });
@@ -201,6 +202,7 @@ describe("the nightly backup check", () => {
   it("is fine with a copy from last night, and says when", async () => {
     allSet();
     vi.stubEnv("CRON_SECRET", "s");
+    vi.stubEnv("DATA_BACKEND", "postgres");
     cfEnv = { BACKUPS: bucketWith(50, 26, 3) };
     const c = check(await checkReadiness(services().fetchFn), "database", "Nightly backup");
     expect(c).toMatchObject({ state: "ok", detail: "Latest copy taken 3 hours ago (20 KB)." });
@@ -209,6 +211,7 @@ describe("the nightly backup check", () => {
   it("warns when the latest copy is old: the job may be failing", async () => {
     allSet();
     vi.stubEnv("CRON_SECRET", "s");
+    vi.stubEnv("DATA_BACKEND", "postgres");
     cfEnv = { BACKUPS: bucketWith(80) };
     const c = check(await checkReadiness(services().fetchFn), "database", "Nightly backup");
     expect(c?.state).toBe("warning");
@@ -222,5 +225,24 @@ describe("the nightly backup check", () => {
     const c = check(await checkReadiness(services().fetchFn), "database", "Nightly backup");
     expect(c?.detail).toContain("CRON_SECRET");
     expect(c?.help).toBe("cron-secret");
+  });
+
+  it("before the switch, says whether the nightly job is running", async () => {
+    allSet();
+    vi.stubEnv("CRON_SECRET", "s");
+    vi.stubEnv("DATA_BACKEND", "wix");
+    cfEnv = { BACKUPS: bucketWith() };
+    lastBackupRun = null;
+    expect(check(await checkReadiness(services().fetchFn), "database", "Nightly backup")).toMatchObject({ state: "info", detail: expect.stringContaining("hasn't run yet") });
+
+    lastBackupRun = JSON.stringify({ at: new Date(Date.now() - 5 * 3_600_000).toISOString(), result: "awake" });
+    expect(check(await checkReadiness(services().fetchFn), "database", "Nightly backup")).toMatchObject({
+      state: "ok",
+      detail: expect.stringContaining("last ran 5 hours ago (the new database answered)"),
+    });
+
+    lastBackupRun = JSON.stringify({ at: new Date(Date.now() - 4 * 86_400_000).toISOString(), result: "awake" });
+    expect(check(await checkReadiness(services().fetchFn), "database", "Nightly backup")?.state).toBe("warning");
+    lastBackupRun = null;
   });
 });

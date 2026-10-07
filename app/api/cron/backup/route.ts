@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { cronCaller } from "@/lib/cronAuth";
 import { dataBackend, withDb } from "@/lib/db/connection";
 import { packBackup, takeBackup } from "@/lib/db/backup";
-import { backupBucket, backupKey } from "@/lib/backupStorage";
+import { LAST_RUN_KEY, backupBucket, backupKey } from "@/lib/backupStorage";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
+import { getRateLimitKv } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,11 @@ async function alertOwner(why: string): Promise<void> {
   if (!ok) console.error("[cron/backup] couldn't email the owner about it");
 }
 
+async function noteRun(result: "saved" | "awake" | "didn't answer" | "failed"): Promise<void> {
+  const kv = await getRateLimitKv();
+  await kv?.put(LAST_RUN_KEY, JSON.stringify({ at: new Date().toISOString(), result }), { expirationTtl: 60 * 60 * 24 * 30 }).catch(() => {});
+}
+
 export async function POST(req: NextRequest) {
   const caller = cronCaller(req);
   if (caller === "unset") return NextResponse.json({ error: "Not configured." }, { status: 503 });
@@ -48,6 +54,7 @@ export async function POST(req: NextRequest) {
       withDb((db) => db.query("select 1")).then(() => true),
       new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 10_000)),
     ]).catch(() => false);
+    await noteRun(awake ? "awake" : "didn't answer");
     return NextResponse.json({ skipped: "The data is still in Wix.", database: awake ? "awake" : "didn't answer" });
   }
 
@@ -63,10 +70,12 @@ export async function POST(req: NextRequest) {
     const bytes = await packBackup(backup);
     const key = backupKey(now);
     await bucket.put(key, bytes, { httpMetadata: { contentType: "application/gzip" } });
+    await noteRun("saved");
     const rows = Object.fromEntries(Object.entries(backup.tables).map(([t, r]) => [t, r.length]));
     return NextResponse.json({ saved: key, bytes: bytes.length, rows });
   } catch (err) {
     console.error("[cron/backup] failed", err);
+    await noteRun("failed");
     await alertOwner("the database or the backup storage didn't answer.");
     return NextResponse.json({ error: "The backup didn't complete." }, { status: 500 });
   }

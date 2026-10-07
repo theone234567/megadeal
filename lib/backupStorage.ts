@@ -44,6 +44,10 @@ export const backupKey = (now: Date) => `backups/${stamp(now)}Z.json.gz`;
  *  (app/api/admin/save-copy), kept apart from the database's copies. */
 export const wixCopyKey = (now: Date) => `wix-copies/${stamp(now)}Z.json.gz`;
 
+/** Where the nightly job notes its last run ({ at, result }, in RATE_LIMIT_KV),
+ *  so Moving off Wix can say it's running before there's anything to copy. */
+export const LAST_RUN_KEY = "cron:backup:last";
+
 /** A database copy's name, as backupKey makes it: nothing else is restored. */
 export const BACKUP_KEY = /^backups\/\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z\.json\.gz$/;
 
