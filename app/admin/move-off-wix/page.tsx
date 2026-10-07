@@ -39,6 +39,19 @@ function status(s: Section): { text: string; className: string } {
   return { text: "Not ready yet", className: "bg-slate-200 text-slate-700" };
 }
 
+/**
+ * What to say when a button's request fails. With no message from the site
+ * itself, Cloudflare cut the request off: usually it ran out of processing
+ * time (error 1102), which the free Workers plan allows little of.
+ */
+function failure(res: Response, json: { error?: string }, fallback: string): string {
+  if (json.error) return json.error;
+  if (res.status >= 500) {
+    return "Cloudflare stopped it before it finished, which usually means it needed more processing time than the free Workers plan allows. It's safe to run again; on Workers Paid it has the time it needs.";
+  }
+  return fallback;
+}
+
 /** Copies the photos still on Wix, a batch at a time (app/api/admin/copy-photos). */
 function CopyPhotos({ left, onDone }: { left: number; onDone: () => void }) {
   const [running, setRunning] = useState(false);
@@ -64,7 +77,7 @@ function CopyPhotos({ left, onDone }: { left: number; onDone: () => void }) {
           body: JSON.stringify({ skip }),
         });
         const json = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(json.error || "Copying stopped. Try again.");
+        if (!res.ok) throw new Error(failure(res, json, "Copying stopped. Try again."));
         copied += json.copied;
         failures.push(...json.failed);
         skip = json.skip;
@@ -144,7 +157,7 @@ function ImportFromWix({ onDone }: { onDone: () => void }) {
         body: JSON.stringify({ mode }),
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.error || "It stopped. Please try again.");
+      if (!res.ok) throw new Error(failure(res, json, "It stopped. Please try again."));
       setResult(json);
     } catch (err) {
       setError((err as Error).message);
@@ -252,7 +265,7 @@ function CarryUnsubscribes() {
     try {
       const res = await fetch("/api/admin/carry-unsubscribes", { method: "POST" });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.error || "It stopped. Please try again.");
+      if (!res.ok) throw new Error(failure(res, json, "It stopped. Please try again."));
       setMessage({
         ok: true,
         text: json.newlyUnsubscribed
@@ -303,7 +316,7 @@ function SaveCopy({ database }: { database: boolean }) {
         body: JSON.stringify({ what }),
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.error || "It stopped. Please try again.");
+      if (!res.ok) throw new Error(failure(res, json, "It stopped. Please try again."));
       setMessage({
         ok: true,
         text: `Saved as ${json.saved} (${Math.max(1, Math.round(json.bytes / 1024))} KB) in the backups bucket. Copies there are deleted after 30 days; to keep one longer, download it from Cloudflare > R2 and store it somewhere private.`,
