@@ -241,6 +241,53 @@ function ImportFromWix({ onDone }: { onDone: () => void }) {
   );
 }
 
+/** Marks unsubscribed anyone who unsubscribed in Wix after the import (app/api/admin/carry-unsubscribes). */
+function CarryUnsubscribes() {
+  const [running, setRunning] = useState(false);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function run() {
+    setRunning(true);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/admin/carry-unsubscribes", { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "It stopped. Please try again.");
+      setMessage({
+        ok: true,
+        text: json.newlyUnsubscribed
+          ? `${json.newlyUnsubscribed} unsubscribe${json.newlyUnsubscribed === 1 ? "" : "s"} brought over from Wix.`
+          : "Nothing to bring over: everyone who unsubscribed in Wix is unsubscribed here too.",
+      });
+    } catch (err) {
+      setMessage({ ok: false, text: (err as Error).message });
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <p className="text-sm text-slate-700">
+        Anyone who unsubscribed in Wix between the import and the switch is only recorded there. Press this once after switching
+        (and again any time while Wix is kept): it only ever unsubscribes people, never adds anyone.
+      </p>
+      <button
+        onClick={run}
+        disabled={running}
+        className="mt-3 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+      >
+        {running ? "Checking…" : "Bring over unsubscribes from Wix"}
+      </button>
+      {message && (
+        <p aria-live="polite" className={`mt-2 text-sm ${message.ok ? "text-slate-700" : "text-red-700"}`}>
+          {message.text}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /** Emails each business without a login yet a link to set its password (app/api/admin/login-invites). */
 function LoginInvites() {
   const [waiting, setWaiting] = useState<number | null>(null);
@@ -413,6 +460,7 @@ export default function MoveOffWixPage() {
                 {s.id === "database" && !s.on && s.checks.some((c) => c.label === "Database answers" && c.state === "ok") && (
                   <ImportFromWix onDone={load} />
                 )}
+                {s.id === "database" && s.on && <CarryUnsubscribes />}
                 {s.id === "logins" && s.on && <LoginInvites />}
               </li>
             );

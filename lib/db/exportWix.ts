@@ -29,7 +29,8 @@ export interface WixExportResult {
   failed: Record<string, string>;
 }
 
-async function readCollection(wix: WixReader, name: string): Promise<any[]> {
+/** Every record in one Wix collection, or an error if it can't be read whole. */
+export async function readCollection(wix: WixReader, name: string): Promise<any[]> {
   const all: any[] = [];
   for (let page = 0; page < MAX_PAGES; page++) {
     const rows = (await wix.items.query(name).limit(PAGE_SIZE).skip(page * PAGE_SIZE).find()).items ?? [];

@@ -434,9 +434,9 @@ On the day:
    working, but saving anything (sign-ups, profiles, deals, the mailing
    list) says "saving changes is paused for about an hour". A change
    made in Wix after the export wouldn't come across, so this stops any
-   being made. Unsubscribes still work (they must be honoured at once):
-   if anyone unsubscribes during the pause, mark them unsubscribed in
-   the new database after the switch. Don't approve anything meanwhile.
+   being made. Unsubscribes still work (they must be honoured at once);
+   any made after the import are brought over in step 5. Don't approve
+   anything meanwhile.
 2. Once the pause has deployed: Admin > Moving off Wix > Database >
    **Import for real**. It refuses until changes are paused, and if any
    part of Wix can't be read in full it imports nothing. Running it again
@@ -447,7 +447,11 @@ On the day:
    `[vars]`, and remove `MAINTENANCE_MODE`, in one commit; deploy.
    Then take a first copy to keep: GitHub > Actions > Nightly database backup >
    **Run workflow** (or `DATABASE_URL=… npx tsx scripts/take-backup.ts`).
-5. Moving off Wix > Photos: press **Copy photos from Wix** and let it
+5. Moving off Wix > Database: press **Bring over unsubscribes from
+   Wix**, so anyone who unsubscribed between the import and the switch
+   stays unsubscribed. It only ever unsubscribes; press it again any
+   time while Wix is kept.
+   Moving off Wix > Photos: press **Copy photos from Wix** and let it
    finish. Anything it can't copy is listed; those stay on Wix's address
    and keep working.
 6. Re-pause any deal an admin had paused: the import lists them (Wix
