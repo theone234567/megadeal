@@ -288,6 +288,69 @@ function CarryUnsubscribes() {
   );
 }
 
+/** Saves a copy of the database, or of everything in Wix, to the private backups bucket now (app/api/admin/save-copy). */
+function SaveCopy({ database }: { database: boolean }) {
+  const [running, setRunning] = useState<null | "database" | "wix">(null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function run(what: "database" | "wix") {
+    setRunning(what);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/admin/save-copy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ what }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "It stopped. Please try again.");
+      setMessage({
+        ok: true,
+        text: `Saved as ${json.saved} (${Math.max(1, Math.round(json.bytes / 1024))} KB) in the backups bucket. Copies there are deleted after 30 days; to keep one longer, download it from Cloudflare > R2 and store it somewhere private.`,
+      });
+    } catch (err) {
+      setMessage({ ok: false, text: (err as Error).message });
+    } finally {
+      setRunning(null);
+    }
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <p className="text-sm text-slate-700">
+        Save a copy to the private backups bucket now.{" "}
+        {database
+          ? "The database copy is the one the nightly backup takes: save one straight after switching. "
+          : ""}
+        Save a copy of Wix before ending the Wix subscription, in case a question about old data comes up later.
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {database && (
+          <button
+            onClick={() => run("database")}
+            disabled={running !== null}
+            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+          >
+            {running === "database" ? "Saving…" : "Save a copy of the database"}
+          </button>
+        )}
+        <button
+          onClick={() => run("wix")}
+          disabled={running !== null}
+          className="rounded-lg border border-brand-600 bg-white px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50 disabled:opacity-60"
+        >
+          {running === "wix" ? "Saving…" : "Save a copy of Wix"}
+        </button>
+      </div>
+      {message && (
+        <p aria-live="polite" className={`mt-2 break-words text-sm ${message.ok ? "text-slate-700" : "text-red-700"}`}>
+          {message.text}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /** Emails each business without a login yet a link to set its password (app/api/admin/login-invites). */
 function LoginInvites() {
   const [waiting, setWaiting] = useState<number | null>(null);
@@ -391,7 +454,7 @@ export default function MoveOffWixPage() {
       <h1 className="mt-3 text-2xl font-extrabold text-slate-900">Moving off Wix</h1>
       <p className="mt-1 max-w-2xl text-sm text-slate-600">
         Each part of the site that moves off Wix has its own switch, set in Cloudflare. This page checks, live, whether everything
-        each one needs is in place. Switch them on in this order. Nothing here changes anything except the copy buttons. The
+        each one needs is in place. Switch them on in this order. Nothing here changes anything except the copy and save buttons. The
         full plan is in docs/WIX-MIGRATION.md.
       </p>
 
@@ -461,6 +524,7 @@ export default function MoveOffWixPage() {
                   <ImportFromWix onDone={load} />
                 )}
                 {s.id === "database" && s.on && <CarryUnsubscribes />}
+                {s.id === "database" && <SaveCopy database={s.on} />}
                 {s.id === "logins" && s.on && <LoginInvites />}
               </li>
             );

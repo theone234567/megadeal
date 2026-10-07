@@ -143,11 +143,14 @@ export async function restoreBackup(db: Sql, backup: Backup, opts: { commit?: bo
   }
 }
 
-/** A copy as gzipped JSON, the way it's stored. */
-export async function packBackup(backup: Backup): Promise<Uint8Array> {
-  const stream = new Blob([JSON.stringify(backup)]).stream().pipeThrough(new CompressionStream("gzip"));
+/** Anything as gzipped JSON, the way copies are stored. */
+export async function gzipJson(value: unknown): Promise<Uint8Array> {
+  const stream = new Blob([JSON.stringify(value)]).stream().pipeThrough(new CompressionStream("gzip"));
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
+
+/** A copy as gzipped JSON, the way it's stored. */
+export const packBackup = (backup: Backup): Promise<Uint8Array> => gzipJson(backup);
 
 export async function unpackBackup(bytes: Uint8Array): Promise<Backup> {
   const stream = new Blob([bytes as Uint8Array<ArrayBuffer>]).stream().pipeThrough(new DecompressionStream("gzip"));

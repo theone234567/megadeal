@@ -445,8 +445,9 @@ On the day:
    what Wix has (the "Found" and "Copied" columns).
 4. Add `DATA_BACKEND = "postgres"` and `PHOTO_STORAGE = "r2"` to
    `[vars]`, and remove `MAINTENANCE_MODE`, in one commit; deploy.
-   Then take a first copy to keep: GitHub > Actions > Nightly database backup >
-   **Run workflow** (or `DATABASE_URL=… npx tsx scripts/take-backup.ts`).
+   Then take a first copy to keep: Moving off Wix > Database > **Save a
+   copy of the database** (or GitHub > Actions > Nightly database backup >
+   **Run workflow**, or `DATABASE_URL=… npx tsx scripts/take-backup.ts`).
 5. Moving off Wix > Database: press **Bring over unsubscribes from
    Wix**, so anyone who unsubscribed between the import and the switch
    stays unsubscribed. It only ever unsubscribes; press it again any
@@ -570,8 +571,9 @@ tables created (`scripts/migrate.ts --apply`) and no data:
 3. Point Hyperdrive at the restored database, then delete the downloaded
    file.
 
-`scripts/take-backup.ts` takes the same copy by hand, to a file, any
-time (e.g. before the final import).
+Moving off Wix > Database > **Save a copy of the database** takes the
+same copy any time, into the same bucket (`app/api/admin/save-copy`);
+`scripts/take-backup.ts` takes it to a file.
 
 ### Privacy policy: update with each switch
 
@@ -619,9 +621,15 @@ What the code can't check, so check by hand first:
 - **Mailboxes.** Email to @megadeal.co.nz arrives through Cloudflare
   Email Routing. If any mailbox (Google Workspace or similar) was bought
   through Wix, move its billing first.
-- **A final copy.** Run the export once more on the last day and keep
-  the folder somewhere private (it holds personal details), in case a
-  question about old data comes up later.
+- **A final copy.** On the last day, Moving off Wix > Database > **Save
+  a copy of Wix**: everything in Wix (every collection and the deal
+  products), gzipped JSON, saved to the private backups bucket as
+  `wix-copies/<time>.json.gz`, in case a question about old data comes up
+  later. The bucket's lifecycle rule deletes it after 30 days like the
+  nightly copies: to keep it, download it from Cloudflare > R2 and store
+  it somewhere private (it holds personal details), or limit the
+  lifecycle rule to the `backups/` prefix. (`node scripts/wix-export.mjs`
+  does the same to a folder.)
 - **Paid Wix apps** and anything else on the Wix bill: cancel them with
   the plan, so nothing renews. (GitHub's workflows use no Wix secrets.)
 - Delete the `wix-export/` folders: they hold personal details.

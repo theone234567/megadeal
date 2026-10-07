@@ -34,8 +34,14 @@ export async function backupBucket(): Promise<BackupBucket | null> {
   }
 }
 
+const stamp = (now: Date) => now.toISOString().slice(0, 19).replace(/:/g, "-");
+
 /** backups/2026-10-06T14-23-00Z.json.gz: sorts by when it was taken. */
-export const backupKey = (now: Date) => `backups/${now.toISOString().slice(0, 19).replace(/:/g, "-")}Z.json.gz`;
+export const backupKey = (now: Date) => `backups/${stamp(now)}Z.json.gz`;
+
+/** wix-copies/2026-10-06T14-23-00Z.json.gz: a copy of everything in Wix
+ *  (app/api/admin/save-copy), kept apart from the database's copies. */
+export const wixCopyKey = (now: Date) => `wix-copies/${stamp(now)}Z.json.gz`;
 
 /** The newest backup in the bucket, or null. */
 export async function latestBackup(bucket: BackupBucket): Promise<BackupObject | null> {

@@ -122,7 +122,7 @@ async function backupCheck(): Promise<Check> {
   try {
     const latest = await latestBackup(bucket);
     if (!latest) {
-      return (dataBackend() === "postgres" ? warning : info)("Nightly backup", "No backup yet. The first is taken the night after the database is switched on (or run the job by hand in GitHub Actions).");
+      return (dataBackend() === "postgres" ? warning : info)("Nightly backup", "No backup yet. The first is taken the night after the database is switched on (or press Save a copy of the database below).");
     }
     const hours = (Date.now() - new Date(latest.uploaded).getTime()) / 3_600_000;
     const when = hours < 1 ? "under an hour ago" : hours < 48 ? `${Math.round(hours)} hours ago` : `${Math.round(hours / 24)} days ago`;
