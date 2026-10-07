@@ -227,6 +227,17 @@ describe("the nightly backup check", () => {
     expect(c?.help).toBe("cron-secret");
   });
 
+  it("after the switch, reminds to keep a copy of Wix", async () => {
+    allSet();
+    vi.stubEnv("CRON_SECRET", "s");
+    vi.stubEnv("DATA_BACKEND", "postgres");
+    const objects: { key: string; uploaded: Date; size: number }[] = [];
+    cfEnv = { BACKUPS: { put: async () => {}, list: async ({ prefix }: { prefix: string }) => ({ objects: objects.filter((o) => o.key.startsWith(prefix)), truncated: false }) } };
+    expect(check(await checkReadiness(services().fetchFn), "database", "Copy of Wix kept")).toMatchObject({ state: "info", detail: expect.stringContaining("Save a copy of Wix") });
+    objects.push({ key: "wix-copies/2026-10-20T01-00-00Z.json.gz", uploaded: new Date("2026-10-20T01:00:00Z"), size: 50_000 });
+    expect(check(await checkReadiness(services().fetchFn), "database", "Copy of Wix kept")).toMatchObject({ state: "ok", detail: expect.stringContaining("20 Oct 2026") });
+  });
+
   it("before the switch, says whether the nightly job is running", async () => {
     allSet();
     vi.stubEnv("CRON_SECRET", "s");

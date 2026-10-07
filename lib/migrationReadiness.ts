@@ -6,7 +6,7 @@ import { MIGRATION_MARKERS } from "./db/migrationMarkers";
 import { photoBucket, photoResizer, photoStorage } from "./photoStorage";
 import { authBackend } from "./authSession";
 import { getRateLimitKv } from "./rateLimit";
-import { LAST_RUN_KEY, backupBucket, latestBackup } from "./backupStorage";
+import { LAST_RUN_KEY, backupBucket, latestBackup, latestWixCopy } from "./backupStorage";
 import { maintenanceOn } from "./maintenance";
 import { EMAIL_HOOK_REACHED_KEY } from "./kvMarkers";
 
@@ -152,6 +152,17 @@ async function backupCheck(): Promise<Check> {
   }
 }
 
+/** A last copy of Wix to keep, before its subscription ends: a reminder, never a blocker. */
+async function wixCopyCheck(): Promise<Check> {
+  const bucket = await backupBucket();
+  const copy = bucket ? await latestWixCopy(bucket).catch(() => null) : null;
+  if (!copy) {
+    return info("Copy of Wix kept", "No copy of Wix saved yet. Before ending the Wix subscription, press Save a copy of Wix below, then download it from Cloudflare > R2 to keep (the bucket deletes copies after 30 days).");
+  }
+  const when = new Date(copy.uploaded).toLocaleDateString("en-NZ", { timeZone: "Pacific/Auckland", dateStyle: "medium" });
+  return ok("Copy of Wix kept", `A copy of Wix was saved on ${when}. Download it from Cloudflare > R2 to keep it past 30 days.`);
+}
+
 async function databaseSection(): Promise<{ section: Section; facts: DatabaseFacts | null }> {
   const checks: Check[] = [];
   let facts: DatabaseFacts | null = null;
@@ -206,6 +217,7 @@ async function databaseSection(): Promise<{ section: Section; facts: DatabaseFac
   }
 
   checks.push(await backupCheck());
+  if (dataBackend() === "postgres") checks.push(await wixCopyCheck());
   if (maintenanceOn()) {
     checks.push(warning("Changes paused", "MAINTENANCE_MODE=writes is on: businesses can't save anything. Remove it from wrangler.toml once the switch is done."));
   }

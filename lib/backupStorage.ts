@@ -64,6 +64,12 @@ export async function listBackups(bucket: BackupBucket): Promise<BackupObject[]>
   return all.sort((a, b) => (a.key < b.key ? 1 : -1));
 }
 
+/** The newest copy of Wix (app/api/admin/save-copy), or null. */
+export async function latestWixCopy(bucket: BackupBucket): Promise<BackupObject | null> {
+  const res = await bucket.list({ prefix: "wix-copies/" });
+  return res.objects.reduce<BackupObject | null>((a, o) => (!a || o.key > a.key ? o : a), null);
+}
+
 /** The newest backup in the bucket, or null. */
 export async function latestBackup(bucket: BackupBucket): Promise<BackupObject | null> {
   let latest: BackupObject | null = null;
