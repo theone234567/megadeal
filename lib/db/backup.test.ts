@@ -82,4 +82,34 @@ describe("backups", () => {
     await expect(restoreBackup(dst, { format: "something-else" } as any)).rejects.toThrow(/isn't a MegaDeal backup/);
     await target.close();
   });
+
+  it("into a new Supabase project, businesses come back without their old logins, to be claimed again", async () => {
+    // Logins live in Supabase's auth schema, which a backup leaves out.
+    const owned = (await createTestDb()).db;
+    const o = sqlFor(owned);
+    const uid = "25d99d0d-11cf-474b-ac0e-34bc5f1fa56f";
+    await o.query("insert into auth.users (id) values ($1)", [uid]);
+    await o.query(
+      `insert into public.merchants (email, business_name, status, category_slug, owner_id)
+       values ('owner@harbourbistro.co.nz', 'Harbour Bistro', 'Approved', 'food-drink', $1),
+              ('new@example.nz', 'Not Yet Signed In', 'Pending', 'food-drink', null)`,
+      [uid]
+    );
+    const backup = await takeBackup(o);
+
+    // A new project: none of the old logins.
+    const fresh = (await createTestDb()).db;
+    const f = sqlFor(fresh);
+    const result = await restoreBackup(f, backup, { commit: true });
+    expect(result.loginsToRelink).toBe(1);
+    expect((await f.query<{ owner_id: string | null }>("select owner_id from public.merchants")).map((r) => r.owner_id)).toEqual([null, null]);
+
+    // The same project (the logins are still there): the link stays.
+    await o.query("delete from public.merchants");
+    const same = await restoreBackup(o, backup, { commit: true });
+    expect(same.loginsToRelink).toBe(0);
+    expect((await o.query<{ owner_id: string }>("select owner_id from public.merchants where owner_id is not null")).map((r) => r.owner_id)).toEqual([uid]);
+    await owned.close();
+    await fresh.close();
+  });
 });

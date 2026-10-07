@@ -33,9 +33,12 @@ async function main(connectionString: string) {
   const client = new Client({ connectionString });
   await client.connect();
   try {
-    const { counts } = await restoreBackup({ query: async (text, params) => (await client.query(text, params as any[])).rows }, backup, { commit });
+    const { counts, loginsToRelink } = await restoreBackup({ query: async (text, params) => (await client.query(text, params as any[])).rows }, backup, { commit });
     console.log(commit ? `Restored the backup taken ${backup.takenAt}.` : `Rehearsal only: nothing was saved. Add --commit to restore for real. (Backup taken ${backup.takenAt}.)`);
     for (const [table, n] of Object.entries(counts)) console.log(`  ${table}: ${n}`);
+    if (loginsToRelink) {
+      console.log(`${loginsToRelink} business login(s) aren't in this database: each owner sets a password again ("Forgot password", or Admin > Moving off Wix > Email them a set-password link) and is matched to their business by email.`);
+    }
   } finally {
     await client.end();
   }

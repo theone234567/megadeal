@@ -77,6 +77,19 @@ export async function takeBackup(db: Sql, now = new Date()): Promise<Backup> {
 
 export interface RestoreResult {
   counts: Record<string, number>;
+  /** Businesses whose login isn't in this database (a new Supabase
+   *  project): restored without one, each is claimed again by email when
+   *  its owner next signs in (lib/merchant.ts, getOrClaimMerchant). */
+  loginsToRelink: number;
+}
+
+/** Logins the backup's businesses point at that this database has. */
+async function knownLogins(db: Sql, rows: Record<string, unknown>[]): Promise<Set<string>> {
+  const ids = rows.map((r) => r.owner_id).filter((id): id is string => typeof id === "string" && id !== "");
+  if (!ids.length) return new Set();
+  const [{ present }] = await db.query<{ present: boolean }>("select to_regclass('auth.users') is not null as present");
+  if (!present) return new Set();
+  return new Set((await db.query<{ id: string }>("select id::text as id from auth.users where id = any($1::uuid[])", [ids])).map((r) => r.id));
 }
 
 /**
@@ -85,8 +98,11 @@ export interface RestoreResult {
  *
  * Rows go back exactly as saved: the database's own triggers (new page
  * addresses, "last changed" times) are paused while they load, so nothing
- * is renamed or re-dated. `commit: false` loads it all, checks it and then
- * undoes it (a rehearsal).
+ * is renamed or re-dated. The one exception is a business's link to its
+ * login: logins aren't in a backup, so in a new Supabase project the link
+ * is left empty and the business is claimed again at its owner's next
+ * sign-in (RestoreResult.loginsToRelink). `commit: false` loads it all,
+ * checks it and then undoes it (a rehearsal).
  */
 export async function restoreBackup(db: Sql, backup: Backup, opts: { commit?: boolean } = {}): Promise<RestoreResult> {
   if (backup?.format !== "megadeal-backup-1" || typeof backup.tables !== "object") throw new Error("That isn't a MegaDeal backup.");
@@ -94,6 +110,7 @@ export async function restoreBackup(db: Sql, backup: Backup, opts: { commit?: bo
   if (unknown.length) throw new Error(`The backup has tables this database doesn't: ${unknown.join(", ")}.`);
 
   const counts: Record<string, number> = {};
+  let loginsToRelink = 0;
   await db.query("begin");
   try {
     for (const table of BACKUP_TABLES) {
@@ -106,8 +123,16 @@ export async function restoreBackup(db: Sql, backup: Backup, opts: { commit?: bo
     for (const table of BACKUP_TABLES) await db.query(`alter table public.${ident(table)} disable trigger user`);
 
     for (const table of BACKUP_TABLES) {
-      const rows = backup.tables[table] ?? [];
+      let rows = backup.tables[table] ?? [];
       counts[table] = rows.length;
+      if (table === "merchants") {
+        const known = await knownLogins(db, rows);
+        rows = rows.map((r) => {
+          if (r.owner_id == null || known.has(String(r.owner_id))) return r;
+          loginsToRelink++;
+          return { ...r, owner_id: null };
+        });
+      }
       if (!rows.length) continue;
       const cols = await storedColumns(db, table);
       const missing = Object.keys(rows[0]).filter((c) => !cols.includes(c));
@@ -136,7 +161,7 @@ export async function restoreBackup(db: Sql, backup: Backup, opts: { commit?: bo
 
     for (const table of BACKUP_TABLES) await db.query(`alter table public.${ident(table)} enable trigger user`);
     await db.query(opts.commit ? "commit" : "rollback");
-    return { counts };
+    return { counts, loginsToRelink };
   } catch (err) {
     await db.query("rollback").catch(() => {});
     throw err;
