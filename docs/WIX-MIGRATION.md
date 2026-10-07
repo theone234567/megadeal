@@ -224,7 +224,15 @@ the site runs on Wix exactly as before. The new database exists (Supabase
 project `megadeal`, Sydney, organization MegaDeal; Data API off,
 automatic RLS on) and its tables were set up on 7 Oct 2026 with the
 paste-in script: 9 tables, all with row-level security, 7 migrations
-recorded. It's empty until the import.
+recorded. It's empty until the import. Hyperdrive and the R2 buckets
+(photos, backups) are connected.
+
+Owner steps still to do before the database switch: set `CRON_SECRET`
+on the Worker (Moving off Wix makes one), press **Rehearse** on Moving
+off Wix, and move to Workers Paid if the account isn't on it (a whole
+import is more processing than the free plan allows a request).
+Scheduled jobs (nightly backup, hourly checks) are Cloudflare Cron
+Triggers in `wrangler.toml`, run from `worker.mjs`.
 
 | Step | Switch | Needs |
 | --- | --- | --- |
@@ -237,7 +245,10 @@ MegaShop stays on Wix Stores for now.
 
 **Admin > Moving off Wix** (`/admin/move-off-wix`) checks all of this
 live and says in plain words what's done and what's missing. Use it at
-every stage below; it changes nothing.
+every stage below. Only its buttons change anything: copy from Wix
+(rehearse or import), bring over unsubscribes, copy photos, save a copy
+of the database or of Wix, restore a backup, and email set-password
+links.
 
 ### How long the rest takes (estimate, Oct 2026)
 
