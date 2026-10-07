@@ -584,12 +584,10 @@ ApiUsageCounters, SiteSettings) plus the deal products.
 
 What the code can't check, so check by hand first:
 
-- **The domain.** Find where megadeal.co.nz is registered (the
-  registrar on the .nz domain search, or Wix > Domains). If it was bought
-  through Wix, transfer it to another registrar (one that handles .nz;
-  the DNCL lists authorised ones) with its UDAI code *before* ending Wix,
-  or it lapses with the plan. Its DNS is already
-  on Cloudflare; keep those nameservers through the transfer.
+- **The domain.** megadeal.co.nz was bought separately and is registered
+  with Cloudflare (owner confirmed, 7 Oct 2026), so ending Wix doesn't
+  touch it. Keep auto-renew on and the card in Cloudflare > Billing
+  current.
 - **Mailboxes.** Email to @megadeal.co.nz arrives through Cloudflare
   Email Routing. If any mailbox (Google Workspace or similar) was bought
   through Wix, move its billing first.
