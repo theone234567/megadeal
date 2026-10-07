@@ -121,7 +121,7 @@ async function backupCheck(): Promise<Check> {
   const bucket = await backupBucket();
   if (!bucket) return warning("Nightly backup", "No BACKUPS bucket. Create a private R2 bucket and add it to wrangler.toml as BACKUPS, so there's a copy of the data every night.");
   if (!set("CRON_SECRET")) {
-    return { ...warning("Nightly backup", "CRON_SECRET isn't set, so the nightly job can't run. Set the same value in GitHub and Cloudflare."), help: "cron-secret" };
+    return { ...warning("Nightly backup", "CRON_SECRET isn't set, so the nightly job can't run. Set it as a secret on the Worker in Cloudflare."), help: "cron-secret" };
   }
   try {
     const latest = await latestBackup(bucket);
@@ -132,7 +132,7 @@ async function backupCheck(): Promise<Check> {
     const when = hours < 1 ? "under an hour ago" : hours < 48 ? `${Math.round(hours)} hours ago` : `${Math.round(hours / 24)} days ago`;
     return hours <= 36
       ? ok("Nightly backup", `Latest copy taken ${when} (${Math.round(latest.size / 1024)} KB).`)
-      : warning("Nightly backup", `The latest copy is from ${when}: the nightly job may be failing. Check GitHub Actions.`);
+      : warning("Nightly backup", `The latest copy is from ${when}: the nightly job may be failing. Cloudflare > Workers & Pages > megadeal > Logs shows its runs; meanwhile, save a copy below.`);
   } catch (err) {
     console.error("[migrationReadiness] backup check failed", err);
     return warning("Nightly backup", "Couldn't look in the backup bucket just now.");

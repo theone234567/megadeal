@@ -1,18 +1,14 @@
-# Every night, asks the site to save a copy of MegaDeal's own database to
-# its private BACKUPS bucket in Cloudflare R2 (app/api/cron/backup), once
-# the data has moved off Wix (DATA_BACKEND=postgres). Before that it only
-# asks the new database one small question, so Supabase doesn't pause it.
-#
-# Uses the same CRON_SECRET as the hourly expired-deals job. Until it's set
-# in GitHub, this job does nothing. A failed backup fails this job, and the
-# site emails ADMIN_NOTIFY_EMAIL (GitHub's own email goes to whoever last
-# edited this schedule).
+# By hand only (Actions > Nightly database backup > Run workflow): the
+# nightly copy itself is now run by Cloudflare (wrangler.toml [triggers],
+# lib/scheduledJobs.ts), since GitHub turns schedules off in a public
+# repository after 60 days without a commit. This asks the site to save a
+# copy of MegaDeal's own database to its private BACKUPS bucket
+# (app/api/cron/backup) now. Needs CRON_SECRET in GitHub too, the same
+# value as in Cloudflare.
 
 name: Nightly database backup
 
 on:
-  schedule:
-    - cron: "23 14 * * *" # 2:23am or 3:23am in Auckland
   workflow_dispatch:
 
 jobs:

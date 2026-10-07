@@ -415,8 +415,8 @@ Set up (any time before):
        binding = "BACKUPS"
        bucket_name = "megadeal-backups"
 
-   The nightly job uses the same `CRON_SECRET` as the hourly one (in
-   GitHub and in Cloudflare). See "Backups" below.
+   The nightly job uses the same `CRON_SECRET` as the hourly one (a
+   secret on the Worker in Cloudflare). See "Backups" below.
 7. Rehearse the import on the new database (it changes nothing):
    Admin > Moving off Wix > Database > **Rehearse (changes nothing)**.
    The site reads everything from Wix itself, runs the whole import,
@@ -546,22 +546,22 @@ limits are reached.
 
 ### Backups
 
-Every night at about 2:30am a GitHub job (`.github/workflows/backup.yml`)
-asks the site to save a copy of every table in the new database to the
+Every night at about 2:30am Cloudflare runs the site's backup job (a Cron
+Trigger in `wrangler.toml`, `lib/scheduledJobs.ts`), which saves a copy of every table in the new database to the
 private `BACKUPS` bucket (`app/api/cron/backup`, `lib/db/backup.ts`):
 businesses, deals, credits activity, the mailing list, messages,
 settings and old page addresses. Copies are gzipped JSON and kept for
 30 days by the bucket's lifecycle rule. If one fails, the site emails
-`ADMIN_NOTIFY_EMAIL` (GitHub's own failure emails go to whoever last
-edited the schedule, which isn't you), and Moving off Wix shows how old
-the latest copy is: check it now and then, since a job that never runs
-can't email. Logins aren't in it (Supabase keeps those, and any
-business can set a new password from an emailed link).
+`ADMIN_NOTIFY_EMAIL`, and Moving off Wix shows how old the latest copy
+is: check it now and then, since a job that never runs can't email.
+Logins aren't in it (Supabase keeps those, and any business can set a
+new password from an emailed link).
 
-GitHub turns off scheduled jobs in a public repository after 60 days
-without a commit. If Moving off Wix says the latest copy is old, look at
-GitHub > Actions > Nightly database backup: if it says it was disabled,
-press **Enable workflow**.
+It needs `CRON_SECRET` as a secret on the Worker (Moving off Wix shows
+how to make and set one). Cloudflare runs the schedule, not GitHub,
+which turns schedules off in a public repository after 60 days without a
+commit; the GitHub jobs remain for running one by hand (they need the
+same `CRON_SECRET` in GitHub's repository secrets too).
 
 A copy holds personal details: it never leaves the private bucket except
 to restore.

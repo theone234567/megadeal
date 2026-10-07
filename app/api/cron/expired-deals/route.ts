@@ -5,7 +5,7 @@ import { SITE_LAUNCHED } from "@/lib/siteConfig";
 import { cronCaller } from "@/lib/cronAuth";
 
 /**
- * Hourly (see .github/workflows/indexnow-expired.yml): tells Bing and the
+ * Hourly (Cloudflare's Cron Trigger, lib/scheduledJobs.ts): tells Bing and the
  * other IndexNow engines about deals whose run has just ended (and
  * scheduled deals that have just started), so an
  * expired offer drops out of their results instead of lingering until
@@ -13,8 +13,7 @@ import { cronCaller } from "@/lib/cronAuth";
  * happens (lib/indexNowDeal.ts); running out of time is the one with no
  * event behind it.
  *
- * Protected by CRON_SECRET, set in both the GitHub repository secrets and
- * the Cloudflare Worker. It only reads deals and sends public URLs to
+ * Protected by CRON_SECRET, a Cloudflare Worker secret. It only reads deals and sends public URLs to
  * IndexNow, but there's no reason to let anyone else trigger it.
  */
 

@@ -1,17 +1,14 @@
-# Once an hour, asks the site to tell Bing and the other IndexNow search
-# engines about deals whose run has just ended (app/api/cron/expired-deals),
-# so expired offers leave their results quickly.
-#
-# Setup, once: create a long random value and add it as CRON_SECRET in
-#   - GitHub: Settings -> Secrets and variables -> Actions -> New repository secret
-#   - Cloudflare: Workers -> megadeal -> Settings -> Variables and Secrets (type Secret)
-# Until both exist this job does nothing.
+# By hand only (Actions > Tell search engines about expired deals > Run
+# workflow): the hourly run is now Cloudflare's (wrangler.toml [triggers],
+# lib/scheduledJobs.ts), since GitHub turns schedules off in a public
+# repository after 60 days without a commit. Asks the site to tell Bing
+# and the other IndexNow search engines about deals whose run has just
+# ended (app/api/cron/expired-deals). Needs CRON_SECRET in GitHub too, the
+# same value as in Cloudflare.
 
 name: Tell search engines about expired deals
 
 on:
-  schedule:
-    - cron: "17 * * * *"
   workflow_dispatch:
 
 jobs:

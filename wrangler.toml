@@ -1,5 +1,6 @@
 name = "megadeal"
-main = ".open-next/worker.js"
+# OpenNext's worker (.open-next/worker.js) plus the scheduled jobs below.
+main = "worker.mjs"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
@@ -97,3 +98,10 @@ invocation_logs = true
 # here either — set it under this Worker's Settings -> Variables and
 # Secrets (runtime, encrypted) instead. It reuses NEXT_PUBLIC_META_PIXEL_ID
 # above for which pixel to report events against.
+
+# The scheduled jobs (lib/scheduledJobs.ts, run by worker.mjs): Cloudflare
+# runs them, not GitHub, which turns schedules off in a public repository
+# after 60 days without a commit. Times are UTC. They need CRON_SECRET set
+# as a Worker secret; until then they do nothing.
+[triggers]
+crons = ["23 14 * * *", "17 * * * *"]

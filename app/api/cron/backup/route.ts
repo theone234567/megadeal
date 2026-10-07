@@ -8,7 +8,7 @@ import { sendTransactionalEmail } from "@/lib/sendEmail";
 export const dynamic = "force-dynamic";
 
 /**
- * Nightly (.github/workflows/backup.yml): a copy of every table in
+ * Nightly (Cloudflare's Cron Trigger, lib/scheduledJobs.ts): a copy of every table in
  * MegaDeal's own database, gzipped JSON, into the private BACKUPS bucket
  * (lib/db/backup.ts, lib/backupStorage.ts). Put back with
  * scripts/restore-backup.ts. Only once the data lives there
@@ -18,10 +18,9 @@ export const dynamic = "force-dynamic";
  * Says only how much it saved, never what.
  */
 /**
- * Tells the owner a night's copy didn't complete. GitHub's own failure
- * emails go to whoever last edited the schedule, not the owner, so the
- * site says so itself. (If the site is down altogether, that's for the
- * uptime monitor.)
+ * Tells the owner a night's copy didn't complete: a scheduled run's
+ * failure otherwise shows only in Cloudflare's logs. (If the site is down
+ * altogether, that's for the uptime monitor.)
  */
 async function alertOwner(why: string): Promise<void> {
   const to = process.env.ADMIN_NOTIFY_EMAIL;
