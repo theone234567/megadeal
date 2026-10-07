@@ -393,6 +393,11 @@ Set up (any time before):
        [[hyperdrive]]
        binding = "HYPERDRIVE"
        id = "<the Hyperdrive id>"
+       localConnectionString = "postgresql://postgres:postgres@localhost:5432/postgres"
+
+   The last line is required: the deploy step builds a local stand-in and
+   fails without it ("no local hyperdrive connection string"). Cloudflare
+   itself never uses it. (Done 7 Oct 2026: id acdb74bed4044d03a2152af6d690f126.)
 
 5. Cloudflare > R2: create a bucket (e.g. `megadeal-photos`). Leave
    public access **off**: the site serves the photos itself, from
