@@ -551,10 +551,17 @@ asks the site to save a copy of every table in the new database to the
 private `BACKUPS` bucket (`app/api/cron/backup`, `lib/db/backup.ts`):
 businesses, deals, credits activity, the mailing list, messages,
 settings and old page addresses. Copies are gzipped JSON and kept for
-30 days by the bucket's lifecycle rule. If one fails, the GitHub job
-fails and GitHub emails you; Moving off Wix also shows how old the
-latest copy is. Logins aren't in it (Supabase keeps those, and any
+30 days by the bucket's lifecycle rule. If one fails, the site emails
+`ADMIN_NOTIFY_EMAIL` (GitHub's own failure emails go to whoever last
+edited the schedule, which isn't you), and Moving off Wix shows how old
+the latest copy is: check it now and then, since a job that never runs
+can't email. Logins aren't in it (Supabase keeps those, and any
 business can set a new password from an emailed link).
+
+GitHub turns off scheduled jobs in a public repository after 60 days
+without a commit. If Moving off Wix says the latest copy is old, look at
+GitHub > Actions > Nightly database backup: if it says it was disabled,
+press **Enable workflow**.
 
 A copy holds personal details: it never leaves the private bucket except
 to restore.

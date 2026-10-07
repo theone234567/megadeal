@@ -4,8 +4,9 @@
 # asks the new database one small question, so Supabase doesn't pause it.
 #
 # Uses the same CRON_SECRET as the hourly expired-deals job. Until it's set
-# in GitHub, this job does nothing. A failed backup fails this job, and
-# GitHub emails the repository owner.
+# in GitHub, this job does nothing. A failed backup fails this job, and the
+# site emails ADMIN_NOTIFY_EMAIL (GitHub's own email goes to whoever last
+# edited this schedule).
 
 name: Nightly database backup
 

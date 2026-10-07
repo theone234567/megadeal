@@ -3,6 +3,7 @@ import { cronCaller } from "@/lib/cronAuth";
 import { dataBackend, withDb } from "@/lib/db/connection";
 import { packBackup, takeBackup } from "@/lib/db/backup";
 import { backupBucket, backupKey } from "@/lib/backupStorage";
+import { sendTransactionalEmail } from "@/lib/sendEmail";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,26 @@ export const dynamic = "force-dynamic";
  *
  * Says only how much it saved, never what.
  */
+/**
+ * Tells the owner a night's copy didn't complete. GitHub's own failure
+ * emails go to whoever last edited the schedule, not the owner, so the
+ * site says so itself. (If the site is down altogether, that's for the
+ * uptime monitor.)
+ */
+async function alertOwner(why: string): Promise<void> {
+  const to = process.env.ADMIN_NOTIFY_EMAIL;
+  if (!to) return;
+  const ok = await sendTransactionalEmail({
+    to,
+    subject: "MegaDeal: last night's database backup didn't complete",
+    html: `<div style="font-family:'Segoe UI',ui-rounded,system-ui,sans-serif;font-size:15px;color:#211033;">
+      <p>Last night's copy of MegaDeal's database didn't complete: ${why}</p>
+      <p>The site itself may be fine. In Admin &gt; Moving off Wix, check "Nightly backup", and press "Save a copy of the database" to take one now. Cloudflare's logs for the megadeal Worker say more.</p>
+    </div>`,
+  }).catch(() => false);
+  if (!ok) console.error("[cron/backup] couldn't email the owner about it");
+}
+
 export async function POST(req: NextRequest) {
   const caller = cronCaller(req);
   if (caller === "unset") return NextResponse.json({ error: "Not configured." }, { status: 503 });
@@ -34,6 +55,7 @@ export async function POST(req: NextRequest) {
   const bucket = await backupBucket();
   if (!bucket) {
     console.error("[cron/backup] no BACKUPS bucket is bound");
+    await alertOwner("the site has no backup storage connected (the BACKUPS bucket in wrangler.toml).");
     return NextResponse.json({ error: "No backup storage connected." }, { status: 503 });
   }
   try {
@@ -46,6 +68,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ saved: key, bytes: bytes.length, rows });
   } catch (err) {
     console.error("[cron/backup] failed", err);
+    await alertOwner("the database or the backup storage didn't answer.");
     return NextResponse.json({ error: "The backup didn't complete." }, { status: 500 });
   }
 }

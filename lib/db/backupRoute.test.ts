@@ -15,10 +15,16 @@ const bucket = {
   list: async () => ({ objects: [], truncated: false }),
 };
 vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext: async () => ({ env: { BACKUPS: bucket } }) }));
+let dbDown = false;
 vi.mock("./connection", async (orig) => ({
   ...(await orig<typeof import("./connection")>()),
-  withDb: async (fn: (db: Sql) => unknown) => fn(sqlFor(pglite)),
+  withDb: async (fn: (db: Sql) => unknown) => {
+    if (dbDown) throw new Error("connect ECONNREFUSED db.internal:5432");
+    return fn(sqlFor(pglite));
+  },
 }));
+const emailed: { to: string; subject: string; html: string }[] = [];
+vi.mock("@/lib/sendEmail", () => ({ sendTransactionalEmail: async (m: { to: string; subject: string; html: string }) => (emailed.push(m), true) }));
 
 const call = async (secret?: string) => {
   const { POST } = await import("@/app/api/cron/backup/route");
@@ -65,5 +71,22 @@ describe("nightly backup route", () => {
     expect(JSON.stringify(body)).not.toContain("fan@example.nz");
     const backup = await unpackBackup(stored.get(body.saved)!);
     expect(backup.tables.email_signups[0]).toMatchObject({ email: "fan@example.nz" });
+    expect(emailed).toHaveLength(0);
+  });
+
+  it("emails the owner when a night's copy fails, without the details", async () => {
+    vi.stubEnv("CRON_SECRET", "the-real-secret");
+    vi.stubEnv("DATA_BACKEND", "postgres");
+    vi.stubEnv("ADMIN_NOTIFY_EMAIL", "nick@megadeal.co.nz");
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    dbDown = true;
+    stored.clear();
+    expect((await call("the-real-secret")).status).toBe(500);
+    dbDown = false;
+    expect(stored.size).toBe(0);
+    expect(emailed).toHaveLength(1);
+    expect(emailed[0].to).toBe("nick@megadeal.co.nz");
+    expect(emailed[0].subject).toMatch(/backup didn't complete/);
+    expect(emailed[0].html).not.toContain("db.internal");
   });
 });
