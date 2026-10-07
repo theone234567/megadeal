@@ -26,7 +26,8 @@ describe("sending", () => {
   beforeEach(() => {
     vi.stubGlobal("fetch", resend);
     vi.spyOn(console, "error").mockImplementation(() => {});
-    resend.mockClear();
+    resend.mockReset();
+    resend.mockImplementation(async () => new Response("{}"));
     wixFetch.mockClear();
   });
   afterEach(() => {
@@ -35,7 +36,7 @@ describe("sending", () => {
     vi.restoreAllMocks();
   });
 
-  it("on Wix by default, as today", async () => {
+  it("on Wix when the switch is off", async () => {
     const { sendTransactionalEmail } = await import("./sendEmail");
     expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "Hi", html: "<p>Hi</p>" })).toBe(true);
     expect(wixFetch).toHaveBeenCalledOnce();
@@ -75,5 +76,46 @@ describe("sending", () => {
     await sendTransactionalEmail({ to: "a@b.nz, c@d.nz", subject: "New message", html: "x" });
     const body = JSON.parse(String((wixFetch.mock.calls[0] as unknown[])[1] && ((wixFetch.mock.calls[0] as unknown[])[1] as RequestInit).body));
     expect(body.emailTransmission.toRecipients).toEqual([{ emailAddress: "a@b.nz" }, { emailAddress: "c@d.nz" }]);
+  });
+
+  describe("when Resend says too many at once", () => {
+    const tooMany = (body = '{"name":"rate_limit_exceeded"}') => new Response(body, { status: 429, headers: { "retry-after": "0.25" } });
+    beforeEach(() => {
+      vi.stubEnv("EMAIL_PROVIDER", "resend");
+      vi.stubEnv("RESEND_API_KEY", "re_test");
+    });
+
+    it("waits and tries again, with the same key so it's never sent twice", async () => {
+      resend.mockResolvedValueOnce(tooMany()).mockResolvedValueOnce(new Response("{}"));
+      const { sendTransactionalEmail } = await import("./sendEmail");
+      expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "Hi", html: "<p>Hi</p>" })).toBe(true);
+      expect(resend).toHaveBeenCalledTimes(2);
+      const keys = resend.mock.calls.map(([, init]) => (init.headers as Record<string, string>)["Idempotency-Key"]);
+      expect(keys[0]).toBeTruthy();
+      expect(keys[1]).toBe(keys[0]);
+    });
+
+    it("doesn't wait out a daily or monthly limit", async () => {
+      resend.mockResolvedValueOnce(tooMany('{"name":"daily_quota_exceeded"}'));
+      const { sendTransactionalEmail } = await import("./sendEmail");
+      expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "Hi", html: "<p>Hi</p>" })).toBe(false);
+      expect(resend).toHaveBeenCalledOnce();
+    });
+
+    it("gives up after a few tries", async () => {
+      resend.mockImplementation(async () => tooMany());
+      const { sendTransactionalEmail } = await import("./sendEmail");
+      expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "Hi", html: "<p>Hi</p>" })).toBe(false);
+      expect(resend).toHaveBeenCalledTimes(4);
+    });
+
+    it("waits as long as asked, within reason", async () => {
+      const { retryDelayMs } = await import("./sendEmail");
+      expect(retryDelayMs("2")).toBe(2000);
+      expect(retryDelayMs("600")).toBe(5000);
+      expect(retryDelayMs("0.01")).toBe(250);
+      expect(retryDelayMs(null)).toBe(1000);
+      expect(retryDelayMs("soon")).toBe(1000);
+    });
   });
 });

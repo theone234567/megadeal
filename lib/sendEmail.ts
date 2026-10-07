@@ -95,6 +95,16 @@ export async function sendTransactionalEmail({
  * record (docs/WIX-MIGRATION.md, Stage 1). A new sending domain starts
  * with no reputation, so volume should stay low for its first weeks.
  */
+const RESEND_RETRIES = 3;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** How long to wait after "too many requests": Resend's Retry-After (in
+ *  seconds), kept between a quarter of a second and five seconds. */
+export function retryDelayMs(retryAfter: string | null): number {
+  const seconds = Number(retryAfter);
+  return Number.isFinite(seconds) && seconds > 0 ? Math.min(5000, Math.max(250, seconds * 1000)) : 1000;
+}
+
 async function sendWithResend(msg: { to: string[]; subject: string; html: string; replyTo?: string; unsubscribeUrl?: string }): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
@@ -106,25 +116,38 @@ async function sendWithResend(msg: { to: string[]; subject: string; html: string
     headers["List-Unsubscribe"] = `<${msg.unsubscribeUrl}>`;
     headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
   }
+  // The same key on every try: if a try Resend refused did get through,
+  // a retry isn't sent twice.
+  const idempotencyKey = randomUUID();
+  const body = JSON.stringify({
+    from: process.env.EMAIL_FROM || "MegaDeal <no-reply@megadeal.co.nz>",
+    to: msg.to,
+    subject: msg.subject,
+    html: msg.html,
+    text: emailHtmlToText(msg.html),
+    reply_to: msg.replyTo || undefined,
+    headers: Object.keys(headers).length ? headers : undefined,
+  });
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Idempotency-Key": randomUUID() },
-      body: JSON.stringify({
-        from: process.env.EMAIL_FROM || "MegaDeal <no-reply@megadeal.co.nz>",
-        to: msg.to,
-        subject: msg.subject,
-        html: msg.html,
-        text: emailHtmlToText(msg.html),
-        reply_to: msg.replyTo || undefined,
-        headers: Object.keys(headers).length ? headers : undefined,
-      }),
-    });
-    if (!res.ok) {
+    for (let attempt = 0; ; attempt++) {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
+        body,
+      });
+      if (res.ok) return true;
+      const answer = (await res.text().catch(() => "")).slice(0, 300);
+      // Too many at once (the subscriber email and login invites send
+      // batches): wait as long as Resend asks, briefly, and try again. A
+      // daily or monthly sending limit isn't helped by waiting.
+      if (res.status === 429 && attempt < RESEND_RETRIES && !/quota/i.test(answer)) {
+        await sleep(retryDelayMs(res.headers.get("retry-after")));
+        continue;
+      }
       // The provider's answer, never the message or the address.
-      console.error("[sendTransactionalEmail] Resend refused", res.status, (await res.text().catch(() => "")).slice(0, 300));
+      console.error("[sendTransactionalEmail] Resend refused", res.status, answer);
+      return false;
     }
-    return res.ok;
   } catch (err) {
     console.error("[sendTransactionalEmail] Resend unreachable", err);
     return false;
