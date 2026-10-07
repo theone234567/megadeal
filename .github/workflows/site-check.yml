@@ -16,12 +16,15 @@ jobs:
       - name: Check the live site
         run: |
           site=https://megadeal.co.nz
-          echo "Version: $(curl -fsS --max-time 20 $site/api/version)"
-          echo "Health:  $(curl -sS --max-time 20 $site/api/health)"
+          # Each result is also an annotation, shown on the run's summary page.
+          echo "::notice title=Version::$(curl -sS --max-time 20 $site/api/version)"
+          echo "::notice title=Health::$(curl -sS --max-time 20 $site/api/health)"
           failed=0
           for path in / /coming-soon /about /list-your-business /privacy /robots.txt /sitemap.xml /api/health; do
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$site$path")
-            echo "$code  $path"
-            case "$code" in 2??|3??) ;; *) failed=1 ;; esac
+            case "$code" in
+              2??|3??) echo "::notice title=$path::$code" ;;
+              *) echo "::error title=$path::$code"; failed=1 ;;
+            esac
           done
           exit $failed
