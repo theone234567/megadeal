@@ -118,6 +118,129 @@ function CopyPhotos({ left, onDone }: { left: number; onDone: () => void }) {
   );
 }
 
+/** Copies everything from Wix into the new database, as a rehearsal or for real (app/api/admin/import-from-wix). */
+function ImportFromWix({ onDone }: { onDone: () => void }) {
+  type Result = {
+    mode: "rehearse" | "import";
+    committed: boolean;
+    failed: Record<string, string>;
+    counts: Record<string, { exported: number; imported: number }>;
+    issues: { record: string; field: string; problem: string }[];
+    pausedDeals: { id: string; name: string; business: string }[];
+  };
+  const [running, setRunning] = useState<null | "rehearse" | "import">(null);
+  const [result, setResult] = useState<Result | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function run(mode: "rehearse" | "import") {
+    if (mode === "import" && !window.confirm("Copy everything from Wix into the new database now? Anything an earlier run left there is replaced. Changes should be paused first.")) return;
+    setRunning(mode);
+    setError(null);
+    setResult(null);
+    try {
+      const res = await fetch("/api/admin/import-from-wix", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "It stopped. Please try again.");
+      setResult(json);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setRunning(null);
+      onDone();
+    }
+  }
+
+  const missing = result ? Object.entries(result.counts).filter(([, c]) => c.imported < c.exported) : [];
+
+  return (
+    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <p className="text-sm text-slate-700">
+        Copy the businesses, deals, subscribers and messages from Wix into the new database. Try a rehearsal first: it does the
+        whole copy, checks every record and then undoes it, so it changes nothing. Import for real once changes are paused
+        (switch-day step 1), then switch the database on.
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          onClick={() => run("rehearse")}
+          disabled={running !== null}
+          className="rounded-lg border border-brand-600 bg-white px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50 disabled:opacity-60"
+        >
+          {running === "rehearse" ? "Rehearsing…" : "Rehearse (changes nothing)"}
+        </button>
+        <button
+          onClick={() => run("import")}
+          disabled={running !== null}
+          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+        >
+          {running === "import" ? "Copying…" : "Import for real"}
+        </button>
+      </div>
+      <div aria-live="polite" className="mt-3 text-sm text-slate-700">
+        {error && <p className="text-red-700">{error}</p>}
+        {result && (
+          <>
+            <p className="font-semibold text-slate-900">
+              {result.committed ? "Copied into the new database." : "Rehearsal finished: nothing was kept."}
+              {missing.length === 0 && result.issues.length === 0 && " Every record came across."}
+            </p>
+            <table className="mt-2 w-full max-w-md text-left text-sm">
+              <thead>
+                <tr className="text-slate-500">
+                  <th className="py-1 font-semibold">In Wix</th>
+                  <th className="py-1 text-right font-semibold">Found</th>
+                  <th className="py-1 text-right font-semibold">Copied</th>
+                </tr>
+              </thead>
+              <tbody className="tabular-nums">
+                {Object.entries(result.counts).map(([name, c]) => (
+                  <tr key={name} className="border-t border-slate-200">
+                    <td className="py-1">{name}</td>
+                    <td className="py-1 text-right">{c.exported}</td>
+                    <td className={`py-1 text-right ${c.imported < c.exported ? "font-semibold text-amber-800" : ""}`}>{c.imported}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {Object.keys(result.failed).length > 0 && (
+              <p className="mt-2 text-red-700">Couldn&apos;t read in full: {Object.entries(result.failed).map(([k, v]) => `${k} (${v})`).join(", ")}.</p>
+            )}
+            {result.issues.length > 0 && (
+              <details className="mt-2">
+                <summary className="cursor-pointer font-semibold text-slate-800">{result.issues.length} record{result.issues.length === 1 ? "" : "s"} to check</summary>
+                <ul className="mt-2 space-y-1 text-slate-600">
+                  {result.issues.map((i, n) => (
+                    <li key={n}>
+                      {i.record}: {i.problem} ({i.field})
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+            {result.pausedDeals.length > 0 && (
+              <details className="mt-2">
+                <summary className="cursor-pointer font-semibold text-slate-800">
+                  {result.pausedDeals.length} paused deal{result.pausedDeals.length === 1 ? "" : "s"}: re-pause any an admin paused
+                </summary>
+                <ul className="mt-2 space-y-1 text-slate-600">
+                  {result.pausedDeals.map((d) => (
+                    <li key={d.id}>
+                      {d.name} ({d.business})
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /** Emails each business without a login yet a link to set its password (app/api/admin/login-invites). */
 function LoginInvites() {
   const [waiting, setWaiting] = useState<number | null>(null);
@@ -221,7 +344,7 @@ export default function MoveOffWixPage() {
       <h1 className="mt-3 text-2xl font-extrabold text-slate-900">Moving off Wix</h1>
       <p className="mt-1 max-w-2xl text-sm text-slate-600">
         Each part of the site that moves off Wix has its own switch, set in Cloudflare. This page checks, live, whether everything
-        each one needs is in place. Switch them on in this order. Nothing here changes anything except the photo copy button. The
+        each one needs is in place. Switch them on in this order. Nothing here changes anything except the copy buttons. The
         full plan is in docs/WIX-MIGRATION.md.
       </p>
 
@@ -286,6 +409,9 @@ export default function MoveOffWixPage() {
                 </ul>
                 {s.id === "photos" && s.on && data.wixPhotosLeft != null && data.wixPhotosLeft > 0 && (
                   <CopyPhotos left={data.wixPhotosLeft} onDone={load} />
+                )}
+                {s.id === "database" && !s.on && s.checks.some((c) => c.label === "Database answers" && c.state === "ok") && (
+                  <ImportFromWix onDone={load} />
                 )}
                 {s.id === "logins" && s.on && <LoginInvites />}
               </li>

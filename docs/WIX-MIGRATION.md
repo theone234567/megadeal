@@ -418,11 +418,14 @@ Set up (any time before):
    The nightly job uses the same `CRON_SECRET` as the hourly one (in
    GitHub and in Cloudflare). See "Backups" below.
 7. Rehearse the import on the new database (it changes nothing):
-
-       node scripts/wix-export.mjs
-       DATABASE_URL=… npx tsx scripts/wix-import.ts wix-export/<folder>
-
-   Read `import-report.json`. Every record it lists needs a decision.
+   Admin > Moving off Wix > Database > **Rehearse (changes nothing)**.
+   The site reads everything from Wix itself, runs the whole import,
+   checks every record and undoes it, then shows how many of each came
+   across and every record that needs a decision. (No terminal needed.
+   The scripts still work for the same job: `node scripts/wix-export.mjs`,
+   then `DATABASE_URL=… npx tsx scripts/wix-import.ts wix-export/<folder>`.)
+   Copying a whole site takes more processing than Cloudflare's free
+   Workers plan allows a request, so be on Workers Paid first.
 
 On the day:
 
@@ -434,17 +437,16 @@ On the day:
    being made. Unsubscribes still work (they must be honoured at once):
    if anyone unsubscribes during the pause, mark them unsubscribed in
    the new database after the switch. Don't approve anything meanwhile.
-2. Export again and import for real, then take a copy of the result
-   to keep:
-
-       node scripts/wix-export.mjs
-       DATABASE_URL=… npx tsx scripts/wix-import.ts wix-export/<folder> --commit
-       DATABASE_URL=… npx tsx scripts/take-backup.ts
-
-3. Moving off Wix: Database all ticks; the business, deal and
-   subscriber counts match `summary.json` in the export.
+2. Once the pause has deployed: Admin > Moving off Wix > Database >
+   **Import for real**. It refuses until changes are paused, and if any
+   part of Wix can't be read in full it imports nothing. Running it again
+   replaces the earlier copy. (Or the scripts, with `--commit`.)
+3. Moving off Wix: Database all ticks; the counts the import showed match
+   what Wix has (the "Found" and "Copied" columns).
 4. Add `DATA_BACKEND = "postgres"` and `PHOTO_STORAGE = "r2"` to
    `[vars]`, and remove `MAINTENANCE_MODE`, in one commit; deploy.
+   Then take a first copy to keep: GitHub > Actions > Nightly database backup >
+   **Run workflow** (or `DATABASE_URL=… npx tsx scripts/take-backup.ts`).
 5. Moving off Wix > Photos: press **Copy photos from Wix** and let it
    finish. Anything it can't copy is listed; those stay on Wix's address
    and keep working.
