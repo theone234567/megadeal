@@ -8,6 +8,7 @@ import { authBackend } from "./authSession";
 import { getRateLimitKv } from "./rateLimit";
 import { LAST_RUN_KEY, backupBucket, latestBackup } from "./backupStorage";
 import { maintenanceOn } from "./maintenance";
+import { EMAIL_HOOK_REACHED_KEY } from "./kvMarkers";
 
 /**
  * The admin "Moving off Wix" page (app/admin/move-off-wix): for each switch
@@ -370,6 +371,17 @@ async function loginsSection(dbReady: boolean, facts: DatabaseFacts | null, emai
           hook
             ? 'SEND_EMAIL_HOOK_SECRET doesn\'t look right: it starts "v1,whsec_". Copy it again from Supabase.'
             : "SEND_EMAIL_HOOK_SECRET isn't set. In Supabase: Authentication > Hooks > Send Email, URL https://megadeal.co.nz/api/auth/email-hook, then copy its secret."
+        )
+  );
+  // Supabase calls the hook from a data centre, which Cloudflare's bot
+  // protection challenges unless a rule lets it through: then no codes.
+  const reached = await (await getRateLimitKv())?.get(EMAIL_HOOK_REACHED_KEY).catch(() => null);
+  checks.push(
+    reached
+      ? ok("Supabase gets through", `Supabase last reached the email hook ${new Date(reached).toLocaleString("en-NZ", { timeZone: "Pacific/Auckland", dateStyle: "medium", timeStyle: "short" })}, so sign-up codes get through.`)
+      : info(
+          "Supabase gets through",
+          "Supabase hasn't reached the email hook yet. Cloudflare's bot protection stops it unless a rule lets it through: Security > WAF > Custom rules, URI Path equals /api/auth/email-hook, action Skip (guide, Stage 3). A test sign-up then shows it here."
         )
   );
 

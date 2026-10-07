@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
-import { checkRateLimit } from "@/lib/rateLimit";
+import { checkRateLimit, getRateLimitKv } from "@/lib/rateLimit";
+import { EMAIL_HOOK_REACHED_KEY } from "@/lib/kvMarkers";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
   if (body.length > 20_000 || !signatureValid(req, body)) {
     return NextResponse.json({ error: { http_code: 401, message: "Invalid signature" } }, { status: 401 });
   }
+  await (await getRateLimitKv())?.put(EMAIL_HOOK_REACHED_KEY, new Date().toISOString(), { expirationTtl: 60 * 60 * 24 * 90 }).catch(() => {});
   let payload: any;
   try {
     payload = JSON.parse(body);

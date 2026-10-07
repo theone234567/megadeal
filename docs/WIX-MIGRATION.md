@@ -499,17 +499,27 @@ hour or two; after that, fix forward.
      JWT secret needs it.
    Either kind of key works (lib/supabaseAuth.ts sends the newer ones in
    `apikey` only, as Supabase expects).
-3. Cloudflare > Turnstile: add a widget for `megadeal.co.nz`, managed
+3. Cloudflare > the domain > Security > WAF > Custom rules > Create
+   rule, so Supabase's servers can reach the email hook: Cloudflare's
+   bot protection challenges requests from data centres (seen 7 Oct
+   2026), and a challenged hook means no sign-up codes or reset emails.
+   "URI Path equals /api/auth/email-hook" (add "or URI Path equals
+   /api/health" for the uptime monitor), action **Skip**, ticking all
+   the checks it offers. Safe: the hook only acts on requests signed
+   with `SEND_EMAIL_HOOK_SECRET`. If Bot Fight Mode is on, a rule can't
+   skip it on the free plan: turn Bot Fight Mode off. Step 7 proves it:
+   the code email arrives.
+4. Cloudflare > Turnstile: add a widget for `megadeal.co.nz`, managed
    mode. The site key goes in build variables as
    `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, the secret as the secret
    `TURNSTILE_SECRET_KEY`. Make sure `TURNSTILE_DISABLED` is **not** set
    anywhere live.
-4. Moving off Wix: Business logins all ticks.
-5. Add `AUTH_BACKEND = "supabase"` to `[vars]`, commit, deploy.
-6. Check: sign up as a new test business (code arrives, portal opens),
+5. Moving off Wix: Business logins all ticks.
+6. Add `AUTH_BACKEND = "supabase"` to `[vars]`, commit, deploy.
+7. Check: sign up as a new test business (code arrives, portal opens),
    sign out, sign in, wrong password is refused, "Forgot password"
    email arrives and its link works once only.
-7. Moving off Wix > Business logins: press **Email them a set-password
+8. Moving off Wix > Business logins: press **Email them a set-password
    link**. Each business that hasn't set a password yet gets one email
    with a link to choose one (it works once, for 7 days; after that,
    "Forgot password" does the same). Their business, deals and credits

@@ -6,7 +6,11 @@ import { NextRequest } from "next/server";
 
 const sent: { to: string; subject: string }[] = [];
 vi.mock("@/lib/sendEmail", () => ({ sendTransactionalEmail: async (m: { to: string; subject: string }) => (sent.push(m), true) }));
-vi.mock("@/lib/rateLimit", () => ({ checkRateLimit: async () => ({ limited: false }) }));
+const kv = new Map<string, string>();
+vi.mock("@/lib/rateLimit", () => ({
+  checkRateLimit: async () => ({ limited: false }),
+  getRateLimitKv: async () => ({ get: async (k: string) => kv.get(k) ?? null, put: async (k: string, v: string) => void kv.set(k, v) }),
+}));
 
 const KEY = Buffer.from("a-test-secret-of-some-length!!").toString("base64");
 const { POST } = await import("@/app/api/auth/email-hook/route");
@@ -28,6 +32,7 @@ const signup = { user: { email: "owner@cafe.nz" }, email_data: { email_action_ty
 describe("email hook", () => {
   beforeEach(() => {
     sent.length = 0;
+    kv.clear();
     vi.stubEnv("SEND_EMAIL_HOOK_SECRET", `v1,whsec_${KEY}`);
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -39,6 +44,8 @@ describe("email hook", () => {
   it("sends the sign-up code from MegaDeal", async () => {
     expect((await POST(hook(signup))).status).toBe(200);
     expect(sent).toEqual([expect.objectContaining({ to: "owner@cafe.nz", subject: "123456 is your MegaDeal sign-up code" })]);
+    // Noted, so Moving off Wix can say Supabase gets through Cloudflare.
+    expect(kv.get("auth:email-hook:last")).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
   it("refuses a request not signed with our secret, or too old", async () => {
@@ -46,6 +53,7 @@ describe("email hook", () => {
     expect((await POST(hook(signup, { key: other }))).status).toBe(401);
     expect((await POST(hook(signup, { at: Math.floor(Date.now() / 1000) - 600 }))).status).toBe(401);
     expect(sent).toEqual([]);
+    expect(kv.size).toBe(0);
   });
 
   it("sends nothing the site doesn't offer: password codes, magic links, email changes", async () => {
