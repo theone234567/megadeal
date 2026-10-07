@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { phoneLink } from "@/lib/booking";
 import { NextRequest, NextResponse } from "next/server";
+import { afterResponse } from "@/lib/afterResponse";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
@@ -257,24 +258,35 @@ export async function POST(req: NextRequest) {
   // Best-effort, same reasoning as before: neither of these should block
   // the application itself if they hiccup.
   if (isNewApplication && member.email) {
-    sendTransactionalEmail({
-      to: member.email,
-      subject: `Welcome to MegaDeal, ${businessName}! 🎉`,
-      html: welcomeEmailHtml(businessName),
-      // The copy above says "hit reply" — without this, "from" is a
-      // fixed no-reply@ mailbox and any reply just bounces.
-      replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
-    }).catch((err) => console.error("[merchants/apply] welcome email failed", err));
+    // afterResponse(): finished once the reply has gone, without being cut off (a
+    // call started and not waited for was dropped when the Worker finished).
+    const welcomeTo = member.email;
+    afterResponse(() =>
+      sendTransactionalEmail({
+        to: welcomeTo,
+        subject: `Welcome to MegaDeal, ${businessName}! 🎉`,
+        html: welcomeEmailHtml(businessName),
+        // The copy above says "hit reply" — without this, "from" is a
+        // fixed no-reply@ mailbox and any reply just bounces.
+        replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
+      })
+        .then((ok) => {
+          if (!ok) console.error("[merchants/apply] welcome email failed");
+        })
+        .catch((err) => console.error("[merchants/apply] welcome email failed", err))
+    );
 
     // Verified true immediately — this email already belongs to a signed-in
     // Wix member with a verified account, unlike the anonymous customer
     // double-opt-in flow, so there's nothing left to confirm.
-    insertEmailSignup({
-      email: member.email,
-      audience: "merchant",
-      source: "merchant-signup",
-      verified: true,
-    }).catch((err) => console.error("[merchants/apply] EmailSignups sync failed", err));
+    afterResponse(() =>
+      insertEmailSignup({
+        email: welcomeTo,
+        audience: "merchant",
+        source: "merchant-signup",
+        verified: true,
+      }).catch((err) => console.error("[merchants/apply] EmailSignups sync failed", err))
+    );
   }
 
   // Only on a genuine first application — this route is also called when
@@ -289,7 +301,8 @@ export async function POST(req: NextRequest) {
   if (isNewApplication && member.email) {
     metaEventId = randomUUID();
     const attribution = body.attribution && typeof body.attribution === "object" ? body.attribution : {};
-    sendMetaCapiEvent({
+    // Built now (it reads the request), sent after the reply (afterResponse).
+    const event: Parameters<typeof sendMetaCapiEvent>[0] = {
       eventName: "CompleteRegistration",
       eventId: metaEventId,
       eventSourceUrl: cleanText(body.eventSourceUrl, 500) || `${SITE_URL}/list-your-business`,
@@ -308,7 +321,8 @@ export async function POST(req: NextRequest) {
         utm_campaign: cleanText(attribution.utm_campaign, 200) || undefined,
         utm_content: cleanText(attribution.utm_content, 200) || undefined,
       },
-    }).catch((err) => console.error("[merchants/apply] Meta CAPI event failed", err));
+    };
+    afterResponse(() => sendMetaCapiEvent(event).catch((err) => console.error("[merchants/apply] Meta CAPI event failed", err)));
   }
 
   return NextResponse.json({ item, metaEventId });

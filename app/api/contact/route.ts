@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { afterResponse } from "@/lib/afterResponse";
 import { createDataClient } from "@/lib/dataClient";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { escapeHtml } from "@/lib/escapeHtml";
@@ -55,23 +56,32 @@ export async function POST(req: NextRequest) {
 
   // Best-effort admin notification — the message is already saved above, so
   // a failure here shouldn't turn into an error for the person submitting.
+  // afterResponse(): sent once the reply has gone, without being cut off. A send
+  // started and not waited for was dropped when the Worker finished.
   const notifyTo = process.env.ADMIN_NOTIFY_EMAIL;
   if (notifyTo) {
-    sendTransactionalEmail({
-      to: notifyTo,
-      subject: `New contact message from ${name}`,
-      html: `
+    const html = `
         <div style="font-family:'Segoe UI',ui-rounded,system-ui,sans-serif;font-size:15px;color:#211033;">
           <p><strong>Name:</strong> ${escapeHtml(name)}</p>
           <p><strong>Email:</strong> ${escapeHtml(email)}</p>
           <p><strong>Message:</strong></p>
           <p style="white-space:pre-wrap;">${escapeHtml(message)}</p>
         </div>
-      `,
-      // So hitting reply on the notification goes straight to the person
-      // who contacted you, not into the no-reply@ mailbox.
-      replyTo: email,
-    }).catch((err) => console.error("[contact] admin notify failed", err));
+      `;
+    afterResponse(() =>
+      sendTransactionalEmail({
+        to: notifyTo,
+        subject: `New contact message from ${name}`,
+        html,
+        // So hitting reply on the notification goes straight to the person
+        // who contacted you, not into the no-reply@ mailbox.
+        replyTo: email,
+      })
+        .then((ok) => {
+          if (!ok) console.error("[contact] admin notify failed");
+        })
+        .catch((err) => console.error("[contact] admin notify failed", err))
+    );
   }
 
   return NextResponse.json({ ok: true });
