@@ -544,7 +544,7 @@ function RestoreBackup() {
 function LoginInvites() {
   const [waiting, setWaiting] = useState<number | null>(null);
   const [running, setRunning] = useState(false);
-  const [done, setDone] = useState<{ sent: number; alreadySent: number; failed: string[] } | null>(null);
+  const [done, setDone] = useState<{ sent: number; alreadySent: number; failed: string[]; waiting: number; quotaReached: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const count = useCallback(() => {
@@ -562,18 +562,22 @@ function LoginInvites() {
     if (!window.confirm(`Email ${waiting} business${waiting === 1 ? "" : "es"} a link to set a password for the new sign-in?`)) return;
     setRunning(true);
     setError(null);
-    const total = { sent: 0, alreadySent: 0, failed: [] as string[] };
+    const total = { sent: 0, alreadySent: 0, failed: [] as string[], waiting: 0, quotaReached: false };
     try {
-      // A batch at a time until none are left, or a batch sends nothing.
+      // A batch at a time until none are left to try, the email service's
+      // daily limit is reached, or a batch gets nowhere. Addresses that
+      // fail are passed over by the next batch, so they can't stop it.
       for (let i = 0; i < 100; i++) {
         const res = await fetch("/api/admin/login-invites", { method: "POST" });
         const json = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(json.error || "Sending stopped. Try again.");
+        if (!res.ok) throw new Error(failure(res, json, "Sending stopped. Try again."));
         total.sent += json.sent;
         total.alreadySent = json.alreadySent;
         total.failed = [...new Set([...total.failed, ...json.failed])];
+        total.waiting = json.waiting;
+        total.quotaReached = json.quotaReached;
         setDone({ ...total });
-        if (json.remaining === 0 || json.sent === 0) break;
+        if (json.remaining === 0 || json.quotaReached || (json.sent === 0 && json.failed.length === 0)) break;
       }
     } catch (err) {
       setError((err as Error).message);
@@ -605,7 +609,8 @@ function LoginInvites() {
         {done && (
           <p>
             {done.sent} emailed.{done.alreadySent > 0 && ` ${done.alreadySent} already emailed this week.`}
-            {done.failed.length > 0 && ` Couldn't email: ${done.failed.join(", ")}.`}
+            {done.failed.length > 0 && ` Couldn't email: ${done.failed.join(", ")} (tried again if you press this in an hour or more).`}
+            {done.quotaReached && " The email service's daily sending limit was reached: press this again tomorrow to email the rest. Nobody is emailed twice."}
           </p>
         )}
         {error && <p className="text-red-700">{error}</p>}
