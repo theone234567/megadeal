@@ -220,7 +220,11 @@ expects.
 Everything is built and tested. Email is switched over (7 Oct 2026:
 megadeal.co.nz verified in Resend, a sending-only key, DMARC with
 Cloudflare's reports); the other switches are still off, so the rest of
-the site runs on Wix exactly as before.
+the site runs on Wix exactly as before. The new database exists (Supabase
+project `megadeal`, Sydney, organization MegaDeal; Data API off,
+automatic RLS on) and its tables were set up on 7 Oct 2026 with the
+paste-in script: 9 tables, all with row-level security, 7 migrations
+recorded. It's empty until the import.
 
 | Step | Switch | Needs |
 | --- | --- | --- |
@@ -359,6 +363,9 @@ Set up (any time before):
        DATABASE_URL=… npx tsx scripts/migrate.ts            # shows what it will do
        DATABASE_URL=… npx tsx scripts/migrate.ts --apply
 
+   Or, without a terminal: `npx tsx scripts/setup-sql.ts megadeal-setup.sql`
+   writes the same as one file to paste into Supabase > SQL Editor and
+   Run (it applies whole or not at all, and migrate.ts sees it afterwards).
    Use the connection string from Supabase > Connect (direct, or the
    session pooler on port 5432). Each file applies whole or not at all,
    and running it again only applies what's new, so it's also how later
