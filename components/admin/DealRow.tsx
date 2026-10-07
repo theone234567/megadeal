@@ -99,6 +99,8 @@ export default function DealRow({
       deal.statusNote = note || null;
       setSaved(true);
       setTimeout(() => setSaved(false), 1500);
+      // Saved, but something alongside it didn't happen (the business's email).
+      if (Array.isArray(savedBody?.warnings) && savedBody.warnings.length) setError(savedBody.warnings.join(" "));
     } catch (err: any) {
       setError(err?.message || "Save failed.");
     } finally {

@@ -11,6 +11,8 @@ import { isScheduledFuture, parseScheduledStart } from "@/lib/dealSchedule";
 import { PRODUCT_FIELDS, buildProductUpdate, parseAdminContentEdit, withHistory } from "@/lib/dealAdminEdit";
 import { readRevision } from "@/lib/dealRevision";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
+import { dealLiveEmail, dealStoppedEmail, type DealEmail } from "@/lib/dealEmails";
+import { sendTransactionalEmail } from "@/lib/sendEmail";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
 
@@ -285,6 +287,31 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       (statusChanged && (wasLive || isLive)) ||
       (isLive && (changedFields.length > 0 || patch.expiresAt !== undefined));
     if (touchedPublicPage) notifyDealChanged(adminClient, updated);
+    // The business hears by email too: the first time a deal goes live,
+    // and when an admin pauses or cancels one that was live or waiting.
+    let email: DealEmail | null = null;
+    if (statusChanged && existing.merchantEmail) {
+      if (patch.status === "Live" && !existing.everLive) {
+        email = dealLiveEmail(dealName, { launched: SITE_LAUNCHED, siteUrl: SITE_URL });
+      } else if ((patch.status === "Paused" || patch.status === "Cancelled") && (existing.status === "Live" || existing.status === "Pending Approval")) {
+        email = dealStoppedEmail(dealName, patch.status, patch.statusNote ?? existing.statusNote, { siteUrl: SITE_URL });
+      }
+    }
+    let warning: string | undefined;
+    if (email) {
+      const sent = await sendTransactionalEmail({
+        to: existing.merchantEmail,
+        subject: email.subject,
+        html: email.html,
+        // "Just reply": to a person.
+        replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
+      }).catch(() => false);
+      if (!sent) {
+        console.error("[admin/deals/[id]] status email not sent");
+        warning = `Saved, but the email telling ${existing.merchantEmail} didn't send.`;
+      }
+    }
+
     if (statusChanged && existing.merchantEmail) {
       if (patch.status === "Live") {
         await logMerchantActivity(adminClient, {
@@ -306,7 +333,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       }
     }
 
-    return NextResponse.json({ item: updated });
+    return NextResponse.json({ item: updated, ...(warning ? { warnings: [warning] } : {}) });
   } catch (err) {
     console.error("[admin/deals/[id]] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
