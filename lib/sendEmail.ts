@@ -4,6 +4,10 @@ import { emailHtmlToText, headerSafe } from "./emailText";
 
 const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
 
+/** Why an email wasn't sent, when it's worth telling apart: "quota" is
+ *  Resend's daily or monthly sending limit, which no retry today fixes. */
+export type SendResult = { ok: true } | { ok: false; reason?: "quota" };
+
 /**
  * Sends one email: through Resend from megadeal.co.nz when
  * EMAIL_PROVIDER=resend (wrangler.toml; on since Oct 2026, see
@@ -14,10 +18,6 @@ const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
  * quota (5,000 a month on Core), go out from Wix's own sending domain with
  * ours as the reply-to, and have no plain-text part.
  */
-/** Why an email wasn't sent, when it's worth telling apart: "quota" is
- *  Resend's daily or monthly sending limit, which no retry today fixes. */
-export type SendResult = { ok: true } | { ok: false; reason?: "quota" };
-
 export async function sendTransactionalEmail(msg: Parameters<typeof sendEmail>[0]): Promise<boolean> {
   return (await sendEmail(msg)).ok;
 }
@@ -52,7 +52,9 @@ export async function sendEmail({
     .filter(Boolean)
     .slice(0, 10);
   const safeSubject = headerSafe(subject);
-  const safeReplyTo = replyTo ? headerSafe(replyTo, 320) : undefined;
+  // One reply-to address. Callers pass ADMIN_NOTIFY_EMAIL, which may list
+  // several for notifications; a reply goes to the first.
+  const safeReplyTo = replyTo ? headerSafe(replyTo, 320).split(",")[0].trim() || undefined : undefined;
   if (!recipients.length || !recipients.every((a) => EMAIL_RE.test(a)) || (safeReplyTo && !EMAIL_RE.test(safeReplyTo))) {
     console.error("[sendTransactionalEmail] refused: not an email address");
     return { ok: false };
