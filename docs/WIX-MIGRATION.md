@@ -560,7 +560,21 @@ A copy holds personal details: it never leaves the private bucket except
 to restore.
 
 To restore, into a new Supabase project (or any Postgres) with the
-tables created (`scripts/migrate.ts --apply`) and no data:
+tables created (the paste-in setup script, or `scripts/migrate.ts
+--apply`) and no data:
+
+Without a terminal: point Hyperdrive at the new database (Cloudflare >
+Hyperdrive > the configuration > Settings > the connection details),
+then Moving off Wix > Database > **Restore from a backup**: pick the
+copy, **Rehearse (changes nothing)**, then **Restore**. It refuses a
+database that already has data.
+
+Logins aren't in a backup, so in a new Supabase project each business
+comes back without its login: the restore says how many. Once logins are
+set up there, Business logins > **Email them a set-password link**; each
+owner sets a password and their business is matched to them by email.
+
+With a terminal:
 
 1. Download the copy you want from the `BACKUPS` bucket in Cloudflare
    R2.
@@ -642,8 +656,9 @@ What the code can't check, so check by hand first:
 - Once logins have moved: remove the Wix sign-in code from the browser
   (`lib/wixBrowserClient.ts`, `lib/wixAuth.ts`, `lib/recaptcha.ts` and
   their use in `context/WixProvider.tsx` and the sign-up and sign-in
-  forms). It's about 100KB of JavaScript that the sign-up page (a page
-  that should be fast for search) still downloads but no longer uses.
+  forms). It's tidying, not speed: that 100KB of JavaScript is only
+  fetched while Wix's logins are in use, so after the switch no page
+  downloads it.
 - Once every photo is copied: remove the `static.wixstatic.com`
   preconnect in `app/layout.tsx`, and the Wix entries in the security
   policy in `next.config.mjs` (keep them while MegaShop is on Wix).

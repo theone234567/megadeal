@@ -181,7 +181,12 @@ async function databaseSection(): Promise<{ section: Section; facts: DatabaseFac
       const { businesses, deals, subscribers } = facts.counts;
       checks.push(
         businesses === 0
-          ? missing("Data copied from Wix", "No businesses yet. Use Import for real below (or scripts/wix-import.ts) first.")
+          ? missing(
+              "Data copied from Wix",
+              dataBackend() === "postgres"
+                ? "The database has no businesses. If it was lost, restore the latest backup below."
+                : "No businesses yet. Use Import for real below (or scripts/wix-import.ts) first."
+            )
           : ok("Data copied from Wix", `${businesses} business${businesses === 1 ? "" : "es"}, ${deals} deal${deals === 1 ? "" : "s"}, ${subscribers} subscriber${subscribers === 1 ? "" : "s"}. Check they match what the import found in Wix before switching.`)
       );
     }

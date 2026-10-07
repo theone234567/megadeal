@@ -441,6 +441,111 @@ function SaveCopy({ database }: { database: boolean }) {
   );
 }
 
+/**
+ * Puts a nightly copy back into a new, empty database: for after a
+ * disaster (app/api/admin/restore-backup). It refuses a database that
+ * already has data, so it can't overwrite anything.
+ */
+function RestoreBackup() {
+  type Copy = { key: string; uploaded: string; size: number };
+  const [copies, setCopies] = useState<Copy[] | null>(null);
+  const [key, setKey] = useState("");
+  const [running, setRunning] = useState<null | "rehearse" | "restore">(null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const date = new Intl.DateTimeFormat("en-NZ", { timeZone: "Pacific/Auckland", dateStyle: "medium", timeStyle: "short" });
+
+  function load() {
+    if (copies) return;
+    fetch("/api/admin/restore-backup", { cache: "no-store" })
+      .then(async (res) => {
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(failure(res, json, "Couldn't list the backups."));
+        setCopies(json.backups);
+        setKey(json.backups[0]?.key ?? "");
+      })
+      .catch((err) => setMessage({ ok: false, text: err.message }));
+  }
+
+  async function run(mode: "rehearse" | "restore") {
+    if (mode === "restore" && !window.confirm("Restore this backup into the database? It only works on a new, empty database.")) return;
+    setRunning(mode);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/admin/restore-backup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, mode }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(failure(res, json, "It stopped. Please try again."));
+      const counts = Object.entries(json.counts as Record<string, number>)
+        .filter(([, n]) => n > 0)
+        .map(([t, n]) => `${t.replace(/_/g, " ")} ${n}`)
+        .join(", ");
+      const relink = json.loginsToRelink
+        ? ` ${json.loginsToRelink} business${json.loginsToRelink === 1 ? "'s login isn't" : "es' logins aren't"} in this database: each owner sets a password again (Business logins > Email them a set-password link) and their business is theirs when they sign in.`
+        : "";
+      setMessage({
+        ok: true,
+        text: `${json.restored ? "Restored" : "Rehearsal finished, nothing was kept"}: the copy from ${date.format(new Date(json.takenAt))} (${counts || "empty"}).${relink}`,
+      });
+    } catch (err) {
+      setMessage({ ok: false, text: (err as Error).message });
+    } finally {
+      setRunning(null);
+    }
+  }
+
+  return (
+    <details className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4" onToggle={(e) => e.currentTarget.open && load()}>
+      <summary className="cursor-pointer text-sm font-semibold text-slate-800">Restore from a backup (if the database is ever lost)</summary>
+      <p className="mt-2 text-sm text-slate-700">
+        Puts a nightly copy back into a new, empty database: set one up with the setup script, point Hyperdrive at it, then
+        restore here. It refuses a database that already has data, so it can&apos;t overwrite anything. Rehearse first.
+      </p>
+      {copies && copies.length === 0 && <p className="mt-2 text-sm text-slate-700">No backups yet.</p>}
+      {copies && copies.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <label className="text-sm text-slate-700" htmlFor="restore-copy">
+            Copy
+          </label>
+          <select
+            id="restore-copy"
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900"
+          >
+            {copies.map((c) => (
+              <option key={c.key} value={c.key}>
+                {date.format(new Date(c.uploaded))} ({Math.max(1, Math.round(c.size / 1024))} KB)
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => run("rehearse")}
+            disabled={running !== null || !key}
+            className="rounded-lg border border-brand-600 bg-white px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50 disabled:opacity-60"
+          >
+            {running === "rehearse" ? "Rehearsing…" : "Rehearse (changes nothing)"}
+          </button>
+          <button
+            onClick={() => run("restore")}
+            disabled={running !== null || !key}
+            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+          >
+            {running === "restore" ? "Restoring…" : "Restore"}
+          </button>
+        </div>
+      )}
+      {message && (
+        <p aria-live="polite" className={`mt-2 break-words text-sm ${message.ok ? "text-slate-700" : "text-red-700"}`}>
+          {message.text}
+        </p>
+      )}
+    </details>
+  );
+}
+
 /** Emails each business without a login yet a link to set its password (app/api/admin/login-invites). */
 function LoginInvites() {
   const [waiting, setWaiting] = useState<number | null>(null);
@@ -544,7 +649,7 @@ export default function MoveOffWixPage() {
       <h1 className="mt-3 text-2xl font-extrabold text-slate-900">Moving off Wix</h1>
       <p className="mt-1 max-w-2xl text-sm text-slate-600">
         Each part of the site that moves off Wix has its own switch, set in Cloudflare. This page checks, live, whether everything
-        each one needs is in place. Switch them on in this order. Nothing here changes anything except the copy and save buttons. The
+        each one needs is in place. Switch them on in this order. Nothing here changes anything except the copy, save and restore buttons. The
         full plan is in docs/WIX-MIGRATION.md.
       </p>
 
@@ -616,6 +721,7 @@ export default function MoveOffWixPage() {
                 )}
                 {s.id === "database" && s.on && <CarryUnsubscribes />}
                 {s.id === "database" && <SaveCopy database={s.on} />}
+                {s.id === "database" && s.on && <RestoreBackup />}
                 {s.id === "logins" && s.on && <LoginInvites />}
               </li>
             );
