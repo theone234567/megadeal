@@ -35,6 +35,11 @@ export function authBase(): string {
   return `${url.replace(/\/$/, "")}/auth/v1`;
 }
 
+/** Legacy Supabase keys are JWTs (three base64url parts, starting "eyJ"). */
+export function isJwtKey(key: string): boolean {
+  return /^eyJ[\w-]*\.[\w-]+\.[\w-]+$/.test(key);
+}
+
 async function call<T>(
   path: string,
   init: { method?: string; body?: unknown; bearer?: string; ip?: string; service?: boolean }
@@ -42,7 +47,12 @@ async function call<T>(
   const key = init.service ? process.env.SUPABASE_SERVICE_ROLE_KEY : process.env.SUPABASE_ANON_KEY;
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (key) headers.apikey = key;
-  const bearer = init.bearer ?? key;
+  // The key also goes in Authorization only when it's a legacy JWT key
+  // (anon / service_role, "eyJ…"). The newer publishable and secret keys
+  // (sb_publishable_…, sb_secret_…) aren't JWTs: Supabase reads them from
+  // `apikey` and supplies the role itself, and as a bearer token they'd be
+  // taken for a broken session.
+  const bearer = init.bearer ?? (key && isJwtKey(key) ? key : undefined);
   if (bearer) headers.Authorization = `Bearer ${bearer}`;
   // The visitor's address, for Supabase's own per-address limits (every
   // request comes from this server otherwise). Ours run first regardless.

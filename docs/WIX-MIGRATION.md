@@ -481,9 +481,18 @@ hour or two; after that, fix forward.
    - Rate limits: our server makes every request, so raise the
      per-address limits for sign-ins and code checks. Ours apply first,
      per visitor.
-2. Secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
-   `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_JWT_SECRET` (Settings >
-   API; leave it out if the project uses the newer signing keys).
+2. Secrets (Supabase > Project Settings > API Keys):
+   - `SUPABASE_URL`: `https://jddcekjejaooyvrnhhgu.supabase.co`
+   - `SUPABASE_ANON_KEY`: the **publishable** key (`sb_publishable_…`),
+     or on an older project the legacy `anon` key.
+   - `SUPABASE_SERVICE_ROLE_KEY`: a **secret** key (`sb_secret_…`; make
+     one named `megadeal-site`), or the legacy `service_role` key.
+   - `SUPABASE_JWT_SECRET`: leave it out. The megadeal project (created
+     Oct 2026) signs sign-ins with signing keys, which the site checks
+     itself (lib/authSession.ts). Only an older project using the legacy
+     JWT secret needs it.
+   Either kind of key works (lib/supabaseAuth.ts sends the newer ones in
+   `apikey` only, as Supabase expects).
 3. Cloudflare > Turnstile: add a widget for `megadeal.co.nz`, managed
    mode. The site key goes in build variables as
    `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, the secret as the secret
