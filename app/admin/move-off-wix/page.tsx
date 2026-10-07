@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { nextStep } from "@/lib/moveOffWixNextStep";
 
 type CheckState = "ok" | "missing" | "warning" | "info";
 interface Check {
@@ -670,6 +671,13 @@ export default function MoveOffWixPage() {
             Sign in
           </Link>
         </p>
+      )}
+
+      {data && nextStep(data) && (
+        <div className="mt-6 rounded-2xl border-2 border-brand-600 bg-brand-50 p-4" role="status">
+          <p className="text-xs font-bold uppercase tracking-wide text-brand-700">Your next step</p>
+          <p className="mt-1 text-sm text-slate-900">{nextStep(data)}</p>
+        </div>
       )}
 
       {data && (
