@@ -5,23 +5,14 @@ import { emailHtmlToText, headerSafe } from "./emailText";
 const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
 
 /**
- * Sends a transactional email via Wix's own Email Transmissions API —
- * genuine Wix-authored infrastructure (adminClient.fetchWithAuth, the same
- * elevated server-only client used everywhere else in this app), not a
- * third-party vendor. Previously switched to Resend because custom-code-
- * triggered Wix emails count against the site's Email Marketing quota
- * (5,000/mo on Core) even though they're transactional — that tradeoff is
- * back in exchange for riding Wix's own established sending domain, which
- * matters a lot for inbox placement: a brand-new custom domain (like the
- * mail.megadeal.co.nz one Resend used) has no sending reputation yet and is
- * far more likely to land in spam than Wix's own long-established infra.
+ * Sends one email: through Resend from megadeal.co.nz when
+ * EMAIL_PROVIDER=resend (wrangler.toml; on since Oct 2026, see
+ * sendWithResend below), otherwise through Wix's Email Transmissions API.
  *
- * The sender address doesn't need to be pre-verified — Wix falls back to
- * its own no-reply address and uses ours as reply-to instead, so this
- * works with no extra domain/DNS setup.
- *
- * Note: unlike Resend, this API has no separate plain-text part — HTML
- * content only.
+ * Wix is kept as the way back: removing the switch and deploying sends
+ * through it again at once. Its emails count against the site's Wix email
+ * quota (5,000 a month on Core), go out from Wix's own sending domain with
+ * ours as the reply-to, and have no plain-text part.
  */
 export async function sendTransactionalEmail({
   to,
@@ -100,10 +91,9 @@ export async function sendTransactionalEmail({
 /**
  * MegaDeal's own sending (EMAIL_PROVIDER=resend, RESEND_API_KEY), from
  * EMAIL_FROM (default "MegaDeal <no-reply@megadeal.co.nz>"). The domain
- * must be verified with Resend and carry its SPF and DKIM records, plus a
- * DMARC record, before this is switched on: docs/WIX-MIGRATION.md. A new
- * sending domain has no reputation yet, which is why the site moved to
- * Wix's sending before (see above), so the switch comes with a warm-up.
+ * is verified with Resend and carries its SPF and DKIM records and a DMARC
+ * record (docs/WIX-MIGRATION.md, Stage 1). A new sending domain starts
+ * with no reputation, so volume should stay low for its first weeks.
  */
 async function sendWithResend(msg: { to: string[]; subject: string; html: string; replyTo?: string; unsubscribeUrl?: string }): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;

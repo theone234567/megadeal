@@ -217,12 +217,14 @@ expects.
 
 ## Where each step stands
 
-Everything is built and tested, and every switch is off. The live site
-runs on Wix exactly as before until a switch is turned on.
+Everything is built and tested. Email is switched over (7 Oct 2026:
+megadeal.co.nz verified in Resend, a sending-only key, DMARC with
+Cloudflare's reports); the other switches are still off, so the rest of
+the site runs on Wix exactly as before.
 
 | Step | Switch | Needs |
 | --- | --- | --- |
-| Email | `EMAIL_PROVIDER=resend` | Resend, DNS records |
+| Email (on) | `EMAIL_PROVIDER=resend` | Resend, DNS records: done |
 | Database | `DATA_BACKEND=postgres` | Supabase, Hyperdrive, the import |
 | Photos | `PHOTO_STORAGE=r2` | the database switch, an R2 bucket |
 | Business logins | `AUTH_BACKEND=supabase` | the database switch, Supabase Auth settings, Turnstile |

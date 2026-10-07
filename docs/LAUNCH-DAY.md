@@ -66,12 +66,12 @@ What then changes by itself:
    an hour or more later. Sending only works once
    the site has launched.
 
-   Until email moves to MegaDeal's own sending (`EMAIL_PROVIDER=resend`,
-   `docs/WIX-MIGRATION.md`), these go out through Wix's email service, which is meant for
-   one-off messages and counts against the site's monthly Wix email allowance (5,000 on the
-   Core plan, per `lib/sendEmail.ts`). Fine for a launch list of a few hundred; for a big
-   list, move email to Resend first. Later emails (say, a monthly round-up of new deals) use
-   the same tool with a new email name, such as `deals-2026-12`.
+   These go out through Resend from megadeal.co.nz (`EMAIL_PROVIDER=resend`, switched on
+   7 Oct 2026). Check Resend's plan covers the list first: its free plan has a daily
+   sending limit, so for a launch list bigger than that, move to a paid plan for the
+   month. A new sending domain builds its reputation slowly, so send each group once,
+   not in quick repeats. Later emails (say, a monthly round-up of new deals) use the
+   same tool with a new email name, such as `deals-2026-12`.
 10. **Check the offer end to end** (`docs/LAUNCH-OFFER-CHECKLIST.md`, "After launch, check"):
     approve a test signup that used WELCOME3; it should get 12 credits and its email should
     name WELCOME3.
