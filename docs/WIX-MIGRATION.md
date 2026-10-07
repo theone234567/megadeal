@@ -578,8 +578,9 @@ same copy any time, into the same bucket (`app/api/admin/save-copy`);
 ### Privacy policy: update with each switch
 
 The privacy policy (`app/privacy/page.tsx`, "Service providers and
-overseas disclosure") names Wix as the provider of logins, data and
-email. That stays true until the switches; once they're on it isn't, and
+overseas disclosure") names Wix as the provider of logins and data
+(and, since email moved on 7 Oct 2026, Resend for email and Cloudflare
+for hosting). That stays true until the switches; once they're on it isn't, and
 the Privacy Act expects the policy to say who processes personal
 information. A suggested replacement for that paragraph's provider list,
 for you to check (and have checked) before using:

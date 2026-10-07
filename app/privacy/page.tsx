@@ -12,7 +12,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function PrivacyPage() {
   return (
-    <PageShell title="Privacy policy" subtitle="Last updated September 2026">
+    <PageShell title="Privacy policy" subtitle="Last updated October 2026">
       <p>
         MegaDeal is operated by {LEGAL_ENTITY_NAME} (NZBN {LEGAL_ENTITY_NZBN}),
         a company registered in New Zealand (&quot;MegaDeal&quot;,
@@ -81,8 +81,9 @@ export default function PrivacyPage() {
       <p>
         We use a small number of specialist providers to run the site, and
         some personal information is processed by them on our behalf. This
-        includes our headless commerce, member-login and transactional
-        email provider (Wix.com), Google&apos;s Places API
+        includes our headless commerce, member-login and data storage
+        provider (Wix.com), our email delivery provider (Resend), our
+        website hosting and security provider (Cloudflare), Google&apos;s Places API
         for business-address autocomplete, Google Analytics for site
         traffic reporting, and Meta (Facebook/Instagram) for ad measurement
         — see &quot;Cookies, analytics and advertising&quot; below.
