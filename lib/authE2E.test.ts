@@ -30,7 +30,10 @@ vi.mock("@/lib/rateLimit", async (orig) => ({
   }),
 }));
 const sent: { to: string; subject: string; html: string }[] = [];
-vi.mock("@/lib/sendEmail", () => ({ sendTransactionalEmail: async (m: { to: string; subject: string; html: string }) => (sent.push(m), true) }));
+vi.mock("@/lib/sendEmail", () => {
+  const sendEmail = async (m: { to: string; subject: string; html: string }) => (sent.push(m), { ok: true as const });
+  return { sendEmail, sendTransactionalEmail: async (m: { to: string; subject: string; html: string }) => (await sendEmail(m)).ok };
+});
 vi.mock("@/lib/metaCapi", () => ({ sendMetaCapiEvent: async () => {} }));
 
 function req(path: string, body?: unknown, cookies: Record<string, string> = {}, origin: string | null = SITE) {
