@@ -542,7 +542,13 @@ hour or two; after that, fix forward.
    mode. The site key goes in build variables as
    `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, the secret as the secret
    `TURNSTILE_SECRET_KEY`. Make sure `TURNSTILE_DISABLED` is **not** set
-   anywhere live.
+   anywhere live. From the next deploy with both keys, the deal-alert
+   sign-up and the contact form use the check too (they'd otherwise let
+   a bot use up the day's emails, which sign-up codes need), so check
+   them straight away: sign up for launch updates on the coming-soon page
+   with your own address and see the confirm email arrive. "The security
+   check didn't pass" means the widget's hostnames don't include
+   `megadeal.co.nz`.
 5. Moving off Wix: Business logins all ticks.
 6. Add `AUTH_BACKEND = "supabase"` to `[vars]`, commit, deploy.
 7. Check: sign up as a new test business (code arrives, portal opens),

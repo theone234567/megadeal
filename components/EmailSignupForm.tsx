@@ -2,6 +2,11 @@
 
 import { useId, useRef, useState } from "react";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
+import { getTurnstileToken, preloadTurnstile } from "@/lib/turnstileClient";
+
+// Cloudflare's robot check, once its keys are set (lib/turnstile.ts):
+// invisible to nearly everyone; a challenge, if shown, appears in the form.
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
 interface EmailSignupFormProps {
   audience: "customer" | "merchant";
@@ -54,6 +59,7 @@ export default function EmailSignupForm({
   const [consentMissing, setConsentMissing] = useState(false);
   const consentRef = useRef<HTMLInputElement>(null);
   const consentErrorId = useId();
+  const checkSlotRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -68,10 +74,13 @@ export default function EmailSignupForm({
     setState("saving");
     setErrorMessage(null);
     try {
+      const captchaToken = TURNSTILE_SITE_KEY
+        ? await getTurnstileToken(TURNSTILE_SITE_KEY, 30_000, checkSlotRef.current)
+        : undefined;
       const res = await fetch("/api/email-signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, audience, source, consent }),
+        body: JSON.stringify({ email, audience, source, consent, captchaToken }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -156,6 +165,8 @@ export default function EmailSignupForm({
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            // Loaded once someone starts, not on every page with a footer.
+            onFocus={() => TURNSTILE_SITE_KEY && preloadTurnstile()}
             placeholder={placeholder}
             // 16px on phones: iOS zooms the page into any smaller input.
             className={`w-full min-w-0 ${corners} px-4 py-3 text-base ${rounded ? "" : "sm:text-sm"} ${inputClass}`}
@@ -214,6 +225,7 @@ export default function EmailSignupForm({
             Please tick the box to agree to emails first.
           </p>
         )}
+        <div ref={checkSlotRef} className="empty:hidden" />
       </form>
       {state === "error" && (
         <p role="alert" className={`mt-2 ${rounded ? "text-sm" : "text-xs"} ${surface === "plain" ? "text-red-600" : "text-red-100"}`}>

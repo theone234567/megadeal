@@ -41,16 +41,18 @@ export function preloadTurnstile(): void {
  * A fresh single-use token, or null if the check couldn't run (blocked
  * script, timeout). The server refuses a missing token, so the form shows
  * its usual "security check didn't pass" message rather than failing
- * silently.
+ * silently. A challenge, when one is shown, goes in `slot` (the form's
+ * own, where a page has several forms), else the page's
+ * [data-turnstile-slot].
  */
-export async function getTurnstileToken(siteKey: string, timeoutMs = 30_000): Promise<string | null> {
+export async function getTurnstileToken(siteKey: string, timeoutMs = 30_000, slot?: HTMLElement | null): Promise<string | null> {
   if (!siteKey) return null;
   const t = await load();
   if (!t) return null;
   const host = document.createElement("div");
   host.className = "turnstile-host";
   host.style.margin = "12px 0";
-  (document.querySelector("[data-turnstile-slot]") ?? document.body).appendChild(host);
+  (slot ?? document.querySelector("[data-turnstile-slot]") ?? document.body).appendChild(host);
   return new Promise((resolve) => {
     let id = "";
     const done = (token: string | null) => {

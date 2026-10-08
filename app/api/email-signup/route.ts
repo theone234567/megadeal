@@ -4,13 +4,14 @@ import { insertEmailSignup, type EmailAudience } from "@/lib/emailSignups";
 import { SITE_URL } from "@/lib/siteConfig";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
+import { publicFormCheckOn, verifyTurnstile } from "@/lib/turnstile";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ALLOWED_AUDIENCES: EmailAudience[] = ["customer", "merchant"];
 
 /**
- * Deal-alert email signup — double opt-in, stored in Wix Data's
- * "EmailSignups" collection (see lib/emailSignups.ts). A row is created
+ * Deal-alert email signup — double opt-in, stored in the email_signups
+ * table (see lib/emailSignups.ts). A row is created
  * immediately with verified: false; only clicking the confirm link in the
  * email (verify/route.ts) flips it to true, so nobody's counted as
  * subscribed without proving they control the inbox.
@@ -41,17 +42,19 @@ export async function POST(req: NextRequest) {
   // send to it with no proof they control that inbox. Two limits, both
   // needed: per-IP stops a single bot looping this endpoint; per-email
   // stops the same victim being bombed via many different/rotating IPs.
+  //
+  // The robot check (once its keys are set, lib/turnstile.ts) between the
+  // two: after the per-IP limit, so a bot can't make us check thousands of
+  // tokens; before the per-email one, so junk sent for someone's address
+  // can't use up their three tries.
   const ip = getClientIp(req);
-  const [ipLimit, emailLimit] = await Promise.all([
-    checkRateLimit(`emailsignup-ip:${ip}`, 5, 60 * 60),
-    checkRateLimit(`emailsignup-email:${email}`, 3, 24 * 60 * 60),
-  ]);
-  if (ipLimit.limited || emailLimit.limited) {
-    return NextResponse.json(
-      { error: "Too many signup attempts. Please try again later." },
-      { status: 429 }
-    );
+  const tooMany = () =>
+    NextResponse.json({ error: "Too many signup attempts. Please try again later." }, { status: 429 });
+  if ((await checkRateLimit(`emailsignup-ip:${ip}`, 5, 60 * 60)).limited) return tooMany();
+  if (publicFormCheckOn() && !(await verifyTurnstile(body.captchaToken, ip))) {
+    return NextResponse.json({ error: "The security check didn't pass. Please try again." }, { status: 400 });
   }
+  if ((await checkRateLimit(`emailsignup-email:${email}`, 3, 24 * 60 * 60)).limited) return tooMany();
 
   const tokens = await insertEmailSignup({ email, audience, source, verified: false });
   if (!tokens) {

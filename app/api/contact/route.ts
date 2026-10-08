@@ -4,6 +4,7 @@ import { createDataClient } from "@/lib/dataClient";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { publicFormCheckOn, verifyTurnstile } from "@/lib/turnstile";
 
 // This route stores the message only — it must never add the sender to the
 // EmailSignups mailing list. There's no consent checkbox on the contact
@@ -36,14 +37,20 @@ export async function POST(req: NextRequest) {
   }
 
   // Unauthenticated by design (anyone should be able to reach out), but
-  // without a limit a bot could flood the ContactMessages collection and
+  // without a limit a bot could flood the saved contact messages and
   // trigger an admin-notification email on every single submission.
-  const { limited } = await checkRateLimit(`contact-ip:${getClientIp(req)}`, 5, 60 * 60);
+  const ip = getClientIp(req);
+  const { limited } = await checkRateLimit(`contact-ip:${ip}`, 5, 60 * 60);
   if (limited) {
     return NextResponse.json(
       { error: "Too many messages sent. Please try again later." },
       { status: 429 }
     );
+  }
+  // From many addresses at once the limit above doesn't stop a bot, and
+  // every message emails the admin: the robot check, once its keys are set.
+  if (publicFormCheckOn() && !(await verifyTurnstile(body.captchaToken, ip))) {
+    return NextResponse.json({ error: "The security check didn't pass. Please try again." }, { status: 400 });
   }
 
   try {

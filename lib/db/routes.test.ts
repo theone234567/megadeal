@@ -370,6 +370,32 @@ describe("admin work and the rest of the business portal", () => {
     expect(await db.query("select name, email, message from public.contact_messages")).toEqual([{ name: "Pat", email: "pat@example.nz", message: "Hello" }]);
   });
 
+  it("once the robot check's keys are set, the contact form and deal alerts need it; before, they don't", async () => {
+    const contact = await import("@/app/api/contact/route");
+    const signup = await import("@/app/api/email-signup/route");
+    const message = { name: "Robin", email: "robin@example.nz", message: "Hello" };
+    const alerts = { email: "fan@example.nz", audience: "customer", source: "coming-soon", consent: true };
+    // Only one key: still as before.
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "secret");
+    expect((await call(contact.POST, request("POST", message))).status).toBe(200);
+    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "site");
+    vi.stubGlobal("fetch", async (_url: string, init: { body: URLSearchParams }) =>
+      Response.json({ success: init.body.get("response") === "solved", hostname: "megadeal.co.nz" })
+    );
+    try {
+      for (const [route, body] of [[contact, message], [signup, alerts]] as const) {
+        expect((await call(route.POST, request("POST", body))).body.error).toMatch(/security check/);
+        expect((await call(route.POST, request("POST", { ...body, captchaToken: "forged" }))).status).toBe(400);
+        expect((await call(route.POST, request("POST", { ...body, captchaToken: "solved" }))).status).toBe(200);
+      }
+      expect(await db.query("select count(*)::int as n from public.contact_messages where name = 'Robin'")).toEqual([{ n: 2 }]);
+      expect(await db.query("select count(*)::int as n from public.email_signups where email = 'fan@example.nz'")).toEqual([{ n: 1 }]);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("launch updates: sign up, confirm by link, unsubscribe by link", async () => {
     const { insertEmailSignup, verifyEmailSignupByToken, unsubscribeEmailSignupByToken } = await import("@/lib/emailSignups");
     const first = await insertEmailSignup({ email: "Fan@Example.nz", audience: "customer", source: "coming-soon", verified: false });

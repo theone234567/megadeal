@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { getTurnstileToken, preloadTurnstile } from "@/lib/turnstileClient";
+
+// Cloudflare's robot check, once its keys are set (lib/turnstile.ts).
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
 /**
  * Composes the opening of a "this deal wasn't honoured" report from the
@@ -33,6 +37,7 @@ export default function ContactForm() {
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const checkSlotRef = useRef<HTMLDivElement>(null);
 
   if (sent) {
     return (
@@ -50,6 +55,9 @@ export default function ContactForm() {
         setSubmitting(true);
         try {
           const formData = new FormData(e.currentTarget);
+          const captchaToken = TURNSTILE_SITE_KEY
+            ? await getTurnstileToken(TURNSTILE_SITE_KEY, 30_000, checkSlotRef.current)
+            : undefined;
           const res = await fetch("/api/contact", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -57,6 +65,7 @@ export default function ContactForm() {
               name: String(formData.get("name") ?? ""),
               email: String(formData.get("email") ?? ""),
               message: String(formData.get("message") ?? ""),
+              captchaToken,
             }),
           });
           if (!res.ok) {
@@ -70,6 +79,7 @@ export default function ContactForm() {
           setSubmitting(false);
         }
       }}
+      onFocus={() => TURNSTILE_SITE_KEY && preloadTurnstile()}
       className="space-y-4"
     >
       <div>
@@ -111,6 +121,7 @@ export default function ContactForm() {
           className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
         />
       </div>
+      <div ref={checkSlotRef} className="empty:hidden" />
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
       <button
         type="submit"

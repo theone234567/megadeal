@@ -4,12 +4,26 @@ import { SITE_URL } from "./siteConfig";
 /**
  * Cloudflare Turnstile, the robot check on business sign-up, sign-in and
  * password reset once logins move off Wix (Wix's own reCAPTCHA only works
- * with Wix). Checked on the server with TURNSTILE_SECRET_KEY; the page
+ * with Wix), and on the public deal-alert and contact forms: each of those
+ * sends an email, and a bot sending thousands could use up the day's
+ * email allowance that sign-up codes and password resets need. Checked on
+ * the server with TURNSTILE_SECRET_KEY; the page
  * shows the widget with NEXT_PUBLIC_TURNSTILE_SITE_KEY.
  *
  * Fails closed: with no secret configured every check fails, unless
  * TURNSTILE_DISABLED=1 is set on purpose (local development only).
  */
+/**
+ * Whether the public forms (deal-alert sign-up, contact) ask for the check.
+ * Only once both keys are in place: the site key is built into the page,
+ * the secret checks it here. Until then they rely on their rate limits, so
+ * adding one key without the other can't stop anyone signing up.
+ */
+export function publicFormCheckOn(): boolean {
+  if (process.env.TURNSTILE_DISABLED === "1" && process.env.NODE_ENV !== "production") return false;
+  return Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY);
+}
+
 export async function verifyTurnstile(token: unknown, ip?: string): Promise<boolean> {
   if (process.env.TURNSTILE_DISABLED === "1" && process.env.NODE_ENV !== "production") return true;
   const secret = process.env.TURNSTILE_SECRET_KEY;
