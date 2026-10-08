@@ -239,7 +239,9 @@ export default function DealRow({
           {saving ? "Saving…" : saved ? "Saved ✓" : "Save"}
         </button>
         {error && (
-          <p className="mt-1 max-w-[9rem] text-xs text-red-600">
+          // break-words: the note can carry a long email address, which
+          // otherwise runs out past the card's edge.
+          <p role="alert" className="mt-1 max-w-[9rem] break-words text-xs text-red-600">
             {error}
             {error.includes("sign in") && (
               <>
