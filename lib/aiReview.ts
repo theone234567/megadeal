@@ -197,6 +197,27 @@ export function parseReviewResponse(json: any, at: string = new Date().toISOStri
   };
 }
 
+/** Why a review didn't come back, in words for the admin dashboard. */
+export function aiProblem(status: number): string {
+  if (status === 401 || status === 403) return "Anthropic refused the API key (ANTHROPIC_API_KEY)";
+  if (status === 404) return `the model ${AI_REVIEW_MODEL} isn't available any more`;
+  if (status === 400) return "Anthropic refused the request (often: no credit left on the account)";
+  if (status === 429 || status === 529) return "Anthropic was too busy, or the account's limit was reached";
+  return `Anthropic answered ${status}`;
+}
+
+/** Notes how the last review went (lib/kvMarkers.ts), for admin. */
+async function noteOutcome(ok: boolean, problem?: string): Promise<void> {
+  try {
+    const { getRateLimitKv } = await import("./rateLimit");
+    const { AI_REVIEW_LAST_KEY } = await import("./kvMarkers");
+    const kv = await getRateLimitKv();
+    await kv?.put(AI_REVIEW_LAST_KEY, JSON.stringify({ at: new Date().toISOString(), ok, ...(problem ? { problem } : {}) }), { expirationTtl: 60 * 60 * 24 * 30 });
+  } catch {
+    // A note that can't be kept mustn't affect the review.
+  }
+}
+
 export async function reviewWithAi(input: AiReviewInput): Promise<AiReview | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
@@ -215,13 +236,16 @@ export async function reviewWithAi(input: AiReviewInput): Promise<AiReview | nul
     });
     if (!res.ok) {
       console.error("[aiReview] request failed", res.status, (await res.text().catch(() => "")).slice(0, 500));
+      await noteOutcome(false, aiProblem(res.status));
       return null;
     }
     const review = parseReviewResponse(await res.json());
     if (!review) console.error("[aiReview] response had no usable review");
+    await noteOutcome(Boolean(review), review ? undefined : "the answer couldn't be read");
     return review;
   } catch (err) {
     console.error("[aiReview] failed", err);
+    await noteOutcome(false, controller.signal.aborted ? `no answer within ${TIMEOUT_MS / 1000} seconds` : "Anthropic couldn't be reached");
     return null;
   } finally {
     clearTimeout(timer);

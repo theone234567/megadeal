@@ -3,14 +3,27 @@ import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
 import { getSiteRudenessCheck, setSiteRudenessCheck } from "@/lib/rudenessSetting";
+import { getRateLimitKv } from "@/lib/rateLimit";
+import { AI_REVIEW_LAST_KEY } from "@/lib/kvMarkers";
 
-/** Site-wide admin settings. Currently just the rudeness check. */
+/** How the AI deal check last went, or null if it hasn't run (lib/aiReview.ts). */
+async function aiReviewStatus(): Promise<{ configured: boolean; last: { at: string; ok: boolean; problem?: string } | null }> {
+  const configured = Boolean(process.env.ANTHROPIC_API_KEY?.trim());
+  try {
+    const raw = await (await getRateLimitKv())?.get(AI_REVIEW_LAST_KEY);
+    return { configured, last: raw ? JSON.parse(raw) : null };
+  } catch {
+    return { configured, last: null };
+  }
+}
+
+/** Site-wide admin settings (the rudeness check), and how the AI deal check is doing. */
 export async function GET(req: NextRequest) {
   if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
   const adminClient = createDataClient();
-  return NextResponse.json({ rudenessCheck: await getSiteRudenessCheck(adminClient) });
+  return NextResponse.json({ rudenessCheck: await getSiteRudenessCheck(adminClient), aiReview: await aiReviewStatus() });
 }
 
 export async function PATCH(req: NextRequest) {

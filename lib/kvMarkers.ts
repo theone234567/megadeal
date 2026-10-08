@@ -15,3 +15,7 @@ export const DATABASE_WATCH_KEY = "cron:watch:database";
 /** When the hourly jobs (app/api/cron/watch) last ran, and whether the
  *  database answered ({ at, database: "up" | "down" }). */
 export const HOURLY_RUN_KEY = "cron:hourly:last";
+
+/** How the AI deal check last went ({ at, ok, problem? }), so admin can
+ *  say when it has stopped working (deals then wait for a person). */
+export const AI_REVIEW_LAST_KEY = "ai:review:last";

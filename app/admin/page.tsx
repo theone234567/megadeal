@@ -33,6 +33,8 @@ export default function AdminDashboardPage() {
   const [bulkApproving, setBulkApproving] = useState(false);
   // null until loaded; the switch is hidden rather than shown in a guessed state.
   const [rudenessCheck, setRudenessCheck] = useState<boolean | null>(null);
+  // Set when the AI deal check is off or failing: deals then wait for a person.
+  const [aiNote, setAiNote] = useState<string | null>(null);
   const [rudenessError, setRudenessError] = useState<string | null>(null);
   const [aiChecking, setAiChecking] = useState<{ done: number; total: number; error: string | null } | null>(null);
   const [dealsRefreshKey, setDealsRefreshKey] = useState(0);
@@ -72,6 +74,14 @@ export default function AdminDashboardPage() {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (!cancelled && d && typeof d.rudenessCheck === "boolean") setRudenessCheck(d.rudenessCheck);
+        const ai = d?.aiReview;
+        if (!cancelled && ai) {
+          if (!ai.configured) setAiNote("The AI deal check is off (ANTHROPIC_API_KEY isn't set), so every deal waits for you to approve it.");
+          else if (ai.last && !ai.last.ok) {
+            const when = new Date(ai.last.at).toLocaleString("en-NZ", { timeZone: "Pacific/Auckland", dateStyle: "medium", timeStyle: "short" });
+            setAiNote(`The AI deal check isn't working: ${ai.last.problem ?? "it failed"} (last tried ${when}). Until it's fixed, deals wait for you to approve them.`);
+          }
+        }
       })
       .catch(() => {});
     return () => {
@@ -314,8 +324,13 @@ export default function AdminDashboardPage() {
           <h2 id="needs-attention" className="text-sm font-bold text-slate-900">
             Needs attention
           </h2>
+          {aiNote && (
+            <p role="status" className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">
+              {aiNote}
+            </p>
+          )}
           {attention.length === 0 ? (
-            <p className="mt-1 text-sm text-slate-500">Nothing is waiting on you.</p>
+            <p className="mt-1 text-sm text-slate-500">{aiNote ? "Nothing else is waiting on you." : "Nothing is waiting on you."}</p>
           ) : (
             <ul className="mt-2 flex flex-wrap gap-2">
               {attention.map((a) => (
