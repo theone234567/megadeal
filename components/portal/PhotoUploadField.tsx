@@ -104,7 +104,7 @@ export default function PhotoUploadField({
         />
       </div>
 
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="mt-2 text-sm text-red-600">{error}</p>}
 
       {pendingFile && (
         <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">

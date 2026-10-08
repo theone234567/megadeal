@@ -814,7 +814,7 @@ export default function MerchantProfileForm({
                 onConfirm={onPhotosConfirm}
                 saveRightAway={merchant.status !== "Approved"}
               />
-              {photosError && <p className="mt-2 text-sm text-red-600">{photosError}</p>}
+              {photosError && <p role="alert" className="mt-2 text-sm text-red-600">{photosError}</p>}
             </div>
           )}
         </section>
@@ -845,7 +845,7 @@ export default function MerchantProfileForm({
           </div>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
         <div className="flex gap-2">
           <button

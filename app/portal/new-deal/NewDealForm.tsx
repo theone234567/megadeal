@@ -931,7 +931,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           )}
         </dl>
 
-        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+        {error && <p role="alert" className="mt-4 text-sm text-red-600">{error}</p>}
 
         {isTest ? (
           <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
@@ -1737,7 +1737,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           )}
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
         {/* Saving is available here, not only from the preview. The preview
             demands a complete, valid deal — which is the wrong bar for

@@ -136,7 +136,7 @@ export default function PhotoGalleryField({ photos, warningText, onConfirm, labe
         {saveRightAway && saving && " · Saving…"}
       </p>
 
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="mt-2 text-sm text-red-600">{error}</p>}
 
       {/* Saving straight away, the box only appears if a save failed or the last photo was removed. */}
       {dirty && (!saveRightAway || (!saving && (error || staged?.length === 0))) && (

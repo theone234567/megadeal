@@ -268,7 +268,7 @@ export default function DealManageCard({
                 Pausing doesn&apos;t stop the clock.
               </p>
             )}
-            {actionError &&<p className="mt-2 text-sm text-red-600">{actionError}</p>}
+            {actionError &&<p role="alert" className="mt-2 text-sm text-red-600">{actionError}</p>}
           </div>
 
           {/* Finished deals get it as the main action: it's the one thing
