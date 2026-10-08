@@ -558,6 +558,51 @@ hour or two; after that, fix forward.
 Turning it off: remove the line and deploy. Businesses sign in with
 Wix again; accounts created meanwhile would need to sign up on Wix.
 
+#### Taking Wix out of the code (after the subscription ends)
+
+Inventory taken 9 Oct 2026, so the clean-up is a list to work through
+rather than a search. Do it only once Wix is cancelled: until then each
+switch below is also the way back.
+
+1. **Switches become the only path.** `DATA_BACKEND`, `PHOTO_STORAGE`,
+   `AUTH_BACKEND` and `EMAIL_PROVIDER`: delete each one's Wix branch and
+   the switch itself (`lib/db/connection.ts` `dataBackend()`,
+   `lib/photoStorage.ts`, `lib/authSession.ts` `authBackend()`,
+   `lib/sendEmail.ts`), then the lines in `wrangler.toml`.
+2. **Modules** (the only files importing `@wix/*`, plus their helpers):
+   `lib/wixAdmin.ts`, `lib/wixClient.ts`, `lib/wixBrowserClient.ts`,
+   `lib/wixAuth.ts`, `lib/wixPassword.ts`, `lib/memberSession.ts`,
+   `lib/recaptcha.ts` (Wix's captcha), `context/WixProvider.tsx`,
+   `components/RecaptchaCheckbox.tsx`; and the Wix branches of
+   `lib/memberAuth.ts`, `lib/siteAuth.ts`, `lib/fetchDealServer.ts`,
+   `lib/dataClient.ts`, `lib/placesUsageLimiter.ts`,
+   `app/api/upload-photo/route.ts`,
+   `app/api/admin/merchants/[id]/reset-password/route.ts`,
+   `app/api/auth/confirm-password-reset/route.ts`, and the sign-up and
+   sign-in forms (`app/list-your-business/MerchantSignupForm.tsx`,
+   `components/portal/MerchantLoginForm.tsx`).
+3. **Wix-only routes and pages:** `app/login-callback`, `app/api/auth/session`
+   (Wix token exchange), `app/api/admin/import-from-wix`,
+   `app/api/admin/carry-unsubscribes`, and the "Save a copy of Wix" half of
+   `app/api/admin/save-copy` (with its buttons on Moving off Wix).
+4. **The move's own tools**, once the final Wix copy is downloaded and kept:
+   `scripts/wix-export.mjs`, `scripts/wix-import.ts`, `lib/db/exportWix.ts`,
+   `lib/db/importWix.ts`, `lib/db/wixToPostgres.ts` and their tests.
+   `lib/db/wixShim.ts` stays: it's how the site's code talks to the new
+   database in the shape it used for Wix. Replacing it with direct queries
+   is a separate, larger job, not needed to end Wix.
+5. **Packages:** `@wix/data`, `@wix/ecom`, `@wix/members`,
+   `@wix/redirects`, `@wix/sdk`, `@wix/stores` in `package.json`
+   (`app/api/deals/create/route.ts` names `@wix/stores` only as a category
+   tree label for the shim: keep the string, drop the package).
+6. **Settings:** Cloudflare secrets `WIX_API_KEY`, `WIX_SITE_ID`; build
+   variable `NEXT_PUBLIC_WIX_CLIENT_ID`; in `next.config.mjs` the
+   `wixstatic.com` image patterns, and the security policy's Wix entries
+   (`img-src` wixstatic, `connect-src` wixapis, `frame-src` wixsite/wix.com/
+   editorx). Check first that no deal's history still shows a Wix photo.
+7. Run the type check, the tests and the sign-in rehearsal
+   (`lib/authE2E.test.ts`); then deploy.
+
 ### Monitoring
 
 Once the data is in the new database, an outage there takes pages down,
