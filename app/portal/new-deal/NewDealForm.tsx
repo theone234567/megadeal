@@ -218,6 +218,9 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         }
       })
       .catch(() => setMerchant(null));
+    // isTest, openedDraftId and duplicateId come from the page address and
+    // stay the same while it's open: only the sign-in can change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [member, isLoggedIn]);
 
   // Editing a test deal: fill the form from it, as a reopened draft would.

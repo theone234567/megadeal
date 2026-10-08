@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cityPath, flashDealsPath } from "@/lib/cities";
-import { auditTarget, logAdminAction } from "@/lib/adminAudit";
+import { logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { submitUrlsToIndexNow } from "@/lib/indexNow";
 import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";

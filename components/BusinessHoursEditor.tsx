@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  DAYS,
   TIME_OPTIONS,
   MAX_HOURS_EXCEPTIONS,
   emptySchedule,

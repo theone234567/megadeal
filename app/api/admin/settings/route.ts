@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auditTarget, logAdminAction } from "@/lib/adminAudit";
+import { logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
 import { getSiteRudenessCheck, setSiteRudenessCheck } from "@/lib/rudenessSetting";
