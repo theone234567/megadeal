@@ -10,4 +10,5 @@ export const MIGRATION_MARKERS: { file: string; sql: string }[] = [
   { file: "20261010000000_slug_priority.sql", sql: "to_regprocedure('public.free_merchant_slug(text,uuid,integer)') is not null" },
   { file: "20261011000000_unsubscribe_links.sql", sql: "exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'email_signups' and column_name = 'old_unsubscribe_token_hashes')" },
   { file: "20261012000000_function_grants.sql", sql: "not has_function_privilege('anon', 'public.free_merchant_slug(text,uuid,integer)', 'execute')" },
+  { file: "20261013000000_slug_apostrophes.sql", sql: "public.slugify('Joe''s') = 'joes'" },
 ];

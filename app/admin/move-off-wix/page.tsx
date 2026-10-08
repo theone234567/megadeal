@@ -255,6 +255,50 @@ function ImportFromWix({ onDone }: { onDone: () => void }) {
   );
 }
 
+/** Applies database updates the site ships with (app/api/admin/apply-migrations). */
+function ApplyUpdates({ onDone }: { onDone: () => void }) {
+  const [running, setRunning] = useState(false);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function run() {
+    setRunning(true);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/admin/apply-migrations", { method: "POST" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(failure(res, json, "It didn't apply. Nothing was changed; please try again."));
+      const n = (json.applied ?? []).length;
+      setMessage({ ok: true, text: n ? `Applied ${n} update${n === 1 ? "" : "s"}. The database is up to date.` : "Nothing to apply: the database is up to date." });
+      onDone();
+    } catch (err) {
+      setMessage({ ok: false, text: (err as Error).message });
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 rounded-xl border border-brand-100 bg-brand-50 p-4">
+      <p className="text-sm text-slate-700">
+        The site has a database update waiting. Applying it is safe at any time: each update applies whole or not at all, and
+        your businesses, deals and subscribers are kept.
+      </p>
+      <button
+        onClick={run}
+        disabled={running}
+        className="mt-3 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+      >
+        {running ? "Applying…" : "Apply database updates"}
+      </button>
+      {message && (
+        <p aria-live="polite" className={`mt-2 text-sm ${message.ok ? "text-slate-700" : "text-red-700"}`}>
+          {message.text}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /** Marks unsubscribed anyone who unsubscribed in Wix after the import (app/api/admin/carry-unsubscribes). */
 function CarryUnsubscribes() {
   const [running, setRunning] = useState(false);
@@ -653,6 +697,9 @@ export default function MoveOffWixPage() {
                 )}
                 {s.id === "database" && !s.on && s.checks.some((c) => c.label === "Database answers" && c.state === "ok") && (
                   <ImportFromWix onDone={load} />
+                )}
+                {s.id === "database" && s.checks.some((c) => c.label === "Tables up to date" && c.state === "missing") && (
+                  <ApplyUpdates onDone={load} />
                 )}
                 {s.id === "database" && s.on && <CarryUnsubscribes />}
                 {s.id === "database" && <SaveCopy database={s.on} />}

@@ -309,6 +309,9 @@ describe("page addresses", () => {
     expect((await business("Kai Café & Bar", "Ōtāhuhu", "b@x.nz")).slug).toBe("kai-cafe-bar-otahuhu-2");
     expect((await business("!!!", null, "c@x.nz")).slug).toBe("business");
     expect((await business("x".repeat(200), "Ponsonby", "d@x.nz")).slug).toHaveLength(80);
+    // Apostrophes, straight or curly, just go: not "joe-s".
+    expect((await business("Joe's Pizza", "Mt Eden", "apostrophe1@x.nz")).slug).toBe("joes-pizza-mt-eden");
+    expect((await business("Mum’s Kitchen", null, "apostrophe2@x.nz")).slug).toBe("mums-kitchen");
   });
 
   it("a rename moves the address and keeps the old one as a redirect, never reused by anyone else", async () => {

@@ -209,7 +209,7 @@ async function databaseSection(): Promise<{ section: Section; facts: DatabaseFac
   if (facts) {
     checks.push(
       facts.missingMigrations.length
-        ? missing("Tables up to date", `${facts.missingMigrations.length} update${facts.missingMigrations.length === 1 ? " hasn't" : "s haven't"} been applied: ${facts.missingMigrations.join(", ")}. Run: npx tsx scripts/migrate.ts --apply (docs/WIX-MIGRATION.md).`)
+        ? missing("Tables up to date", `${facts.missingMigrations.length} update${facts.missingMigrations.length === 1 ? " hasn't" : "s haven't"} been applied: ${facts.missingMigrations.join(", ")}. Press Apply database updates below.`)
         : ok("Tables up to date", `All ${MIGRATION_MARKERS.length} updates in supabase/migrations are applied.`)
     );
     checks.push(

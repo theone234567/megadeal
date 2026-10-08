@@ -14,6 +14,11 @@ describe("the next step", () => {
     expect(nextStep(page([section("database", false, [{ label: "Changes paused", state: "warning", detail: "" }])]))).toMatch(/press Import for real/);
   });
 
+  it("after the switch, a waiting database update comes first", () => {
+    const db = section("database", true, [{ label: "Tables up to date", state: "missing", detail: "1 update hasn't been applied" }]);
+    expect(nextStep(page([db, section("photos", true), section("logins", false)]))).toMatch(/Apply database updates/);
+  });
+
   it("after the switch: photos, then logins, then ending Wix", () => {
     expect(nextStep(page([section("database", true), section("photos", false), section("logins", false)]))).toMatch(/photo storage on/);
     expect(nextStep(page([section("database", true), section("photos", true), section("logins", false)], 4))).toMatch(/Copy photos/);

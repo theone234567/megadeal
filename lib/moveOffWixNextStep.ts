@@ -23,6 +23,7 @@ export function nextStep(d: Readiness): string {
   }
   if (db?.on) {
     if (paused) return "Changes are still paused: tell Claude the switch is done, to turn saving back on.";
+    if (db.checks.some((c) => c.label === "Tables up to date" && c.state === "missing")) return "Press Apply database updates in Database below.";
     if (photos && !photos.on) return "Tell Claude to switch photo storage on.";
     if ((d.wixPhotosLeft ?? 0) > 0) return "Press Copy photos from Wix in Photos below.";
   }

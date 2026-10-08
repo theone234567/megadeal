@@ -215,6 +215,17 @@ Unsubscribe button works in one click. Every unsubscribe link a person
 was sent keeps working, as the Unsolicited Electronic Messages Act
 expects.
 
+## Database updates
+
+A new file in `supabase/migrations` reaches the live database from
+**Admin > Moving off Wix > Database > Apply database updates** (it shows,
+and "Your next step" points to it, whenever one is waiting). The site
+applies only the files bundled with it (`lib/db/migrationFiles.ts`,
+written by `node scripts/bundle-migrations.mjs`; a test fails until it's
+rerun after adding a migration), each whole or not at all, recorded
+where the Supabase CLI records them. `scripts/migrate.ts` does the same
+from a terminal.
+
 ## Where each step stands
 
 Everything is built and tested. Email is switched over (7 Oct 2026:
