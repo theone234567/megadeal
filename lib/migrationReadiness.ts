@@ -129,7 +129,7 @@ async function backupCheck(): Promise<Check> {
       // Says whether it's running, so it's known to work by switch day.
       const last = await (await getRateLimitKv())?.get(LAST_RUN_KEY).catch(() => null);
       const run = last ? (JSON.parse(last) as { at: string; result: string }) : null;
-      if (!run) return info("Nightly backup", "The nightly job hasn't run yet: Cloudflare runs it each night at about 2:30am. Copies start once the database is switched on.");
+      if (!run) return info("Nightly backup", "The nightly job hasn't run yet: Cloudflare runs it each night at about 3:20am (2:20am in winter). Copies start once the database is switched on.");
       const ago = (Date.now() - new Date(run.at).getTime()) / 3_600_000;
       const said = run.result === "awake" ? "the new database answered" : "the new database didn't answer";
       return ago <= 36

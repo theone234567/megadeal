@@ -641,7 +641,7 @@ limits are reached.
 
 ### Backups
 
-Every night at about 2:30am Cloudflare runs the site's backup job (a Cron
+Every night at about 3:20am (2:20am in winter) Cloudflare runs the site's backup job (a Cron
 Trigger in `wrangler.toml`, `lib/scheduledJobs.ts`), which saves a copy of every table in the new database to the
 private `BACKUPS` bucket (`app/api/cron/backup`, `lib/db/backup.ts`):
 businesses, deals, credits activity, the mailing list, messages,

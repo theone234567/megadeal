@@ -47,7 +47,7 @@ answering (and again when it's back).
 
 ## Data was deleted or changed by mistake
 
-The site saves a full copy of the database every night (about 2:30am),
+The site saves a full copy of the database every night (about 3:20am in summer, 2:20am in winter),
 kept for 30 days, in Cloudflare R2 (`megadeal-backups`, folder `backups/`).
 
 - **One business, deal or setting wrong:** fix it in admin if you can (deal
