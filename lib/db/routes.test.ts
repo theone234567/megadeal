@@ -413,6 +413,45 @@ describe("the AI review and housekeeping on the new database", () => {
     expect(await db.query("select status from public.deals")).toEqual([{ status: "Cancelled" }]);
   });
 
+  it("a deal withdrawn while the AI was still reviewing it isn't refunded twice when the review turns it down", async () => {
+    await signUpApprovedWithCredits(10);
+    aiReview = null; // review unavailable: the deal waits for a person
+    const create = await import("@/app/api/deals/create/route");
+    const { body } = await call(create.POST, request("POST", DEAL));
+    const client = createPgAdminClient((fn) => fn(db));
+    // What the review started with: the deal as it was, still waiting.
+    const stale = (await client.items.get("Deals", body.item._id))!;
+    const [merchant] = (await client.items.query("Merchants").find()).items;
+    expect(stale.status).toBe("Pending Approval");
+
+    // Meanwhile the business withdraws it and gets its credits back.
+    const status = await import("@/app/api/deals/[id]/status/route");
+    await call(status.POST, request("POST", { status: "Cancelled" }), params(body.item._id));
+    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 10 }]);
+
+    // Then the review comes back: turned down.
+    aiReview = review("reject", { offensive: true });
+    const { reviewSubmittedDeal } = await import("@/lib/aiReviewApply");
+    const result = await reviewSubmittedDeal(client, stale, merchant, { apply: true });
+    expect(result.creditsReturned ?? 0).toBe(0);
+    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 10 }]);
+    expect(await db.query("select status, credit_refunded from public.deals")).toEqual([{ status: "Cancelled", credit_refunded: true }]);
+  });
+
+  it("a review that fails leaves the deal as it was, waiting for a person", async () => {
+    await signUpApprovedWithCredits(10);
+    const create = await import("@/app/api/deals/create/route");
+    const { body } = await call(create.POST, request("POST", DEAL));
+    const client = createPgAdminClient((fn) => fn(db));
+    const deal = (await client.items.get("Deals", body.item._id))!;
+    const [merchant] = (await client.items.query("Merchants").find()).items;
+    aiReview = null;
+    const { reviewSubmittedDeal } = await import("@/lib/aiReviewApply");
+    const result = await reviewSubmittedDeal(client, deal, merchant, { apply: true });
+    expect(result.outcome).toBe("hold");
+    expect(await db.query("select status from public.deals")).toEqual([{ status: "Pending Approval" }]);
+  });
+
   it("the hourly job finds deals that have just ended", async () => {
     await signUpApprovedWithCredits(10);
     aiReview = review("approve");
