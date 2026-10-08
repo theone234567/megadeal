@@ -4,6 +4,12 @@ import { categoryByLegacySegment, categoryBySlug, categoryPath } from "@/lib/cat
 import { ADMIN_COOKIE_NAME, hasValidAdminSignature } from "@/lib/adminCookie";
 import { blockedForMaintenance, MAINTENANCE_MESSAGE } from "@/lib/maintenance";
 
+// Next 16 renames this file to proxy.ts (middleware is deprecated, a
+// build warning only). Not done on purpose: a proxy always runs as
+// Node.js, which OpenNext's Cloudflare adapter (1.20) calls experimental
+// and unmaintained, and this file is the site's front door (redirects,
+// the coming-soon gate, maintenance). Revisit when OpenNext supports it.
+
 const CANONICAL_HOST = new URL(SITE_URL).hostname;
 
 /**
