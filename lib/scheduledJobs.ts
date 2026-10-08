@@ -1,3 +1,5 @@
+import { internalCallToken } from "./internalCall";
+
 /**
  * The site's scheduled jobs, run by Cloudflare itself (Cron Triggers in
  * wrangler.toml, handled in worker.mjs). They used to be GitHub jobs
@@ -6,10 +8,12 @@
  * 60 days without a commit).
  *
  * Each job is one of the site's own /api/cron routes, called inside the
- * Worker with CRON_SECRET, so it never meets the bot protection. Until
- * CRON_SECRET is set in Cloudflare they do nothing.
+ * Worker, so it never meets the bot protection: with CRON_SECRET if it's
+ * set, else with the site's own password (lib/internalCall.ts), so they
+ * run without anyone setting anything.
  *
- * No imports: worker.mjs is bundled by wrangler, outside Next.
+ * Only plain imports (lib/internalCall.ts): worker.mjs is bundled by
+ * wrangler, outside Next.
  */
 
 /** Cron expression (UTC, as in wrangler.toml) → the routes it runs, in order. */
@@ -32,8 +36,9 @@ type FetchSite = (req: Request) => Promise<Response>;
 export async function runScheduledJob(cron: string, env: { CRON_SECRET?: string }, fetchSite: FetchSite, origin = "https://megadeal.co.nz"): Promise<string> {
   const paths = SCHEDULED_JOBS[cron];
   if (!paths) throw new Error(`No job for the schedule "${cron}": add it to lib/scheduledJobs.ts.`);
-  const secret = env.CRON_SECRET?.trim();
-  if (!secret) return `${paths.join(", ")}: CRON_SECRET isn't set, nothing to do`;
+  // CRON_SECRET if set, else the site's own password (lib/internalCall.ts),
+  // so the jobs run whether or not anyone has set the secret.
+  const secret = env.CRON_SECRET?.trim() || internalCallToken();
   const results: string[] = [];
   const failed: string[] = [];
   for (const path of paths) {

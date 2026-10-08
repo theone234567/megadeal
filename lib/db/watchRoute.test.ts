@@ -53,6 +53,23 @@ describe("the hourly database check", () => {
     expect(emailed).toHaveLength(0);
   });
 
+  it("answers the site's own scheduler without CRON_SECRET, and no one else", async () => {
+    vi.stubEnv("CRON_SECRET", "");
+    expect((await run("a-guess")).status).toBe(503);
+    const { internalCallToken } = await import("@/lib/internalCall");
+    const own = internalCallToken();
+    expect((await run("a-guess")).status).toBe(503);
+    const p = run(own);
+    await vi.runAllTimersAsync();
+    expect((await p).body).toEqual({ database: "up" });
+    // With CRON_SECRET set, both it and the site's own password work.
+    vi.stubEnv("CRON_SECRET", "s3cret");
+    expect((await run("a-guess")).status).toBe(401);
+    const q = run(own);
+    await vi.runAllTimersAsync();
+    expect((await q).status).toBe(200);
+  });
+
   it("emails once when the database stops answering, and once when it's back", async () => {
     expect((await runNow()).body).toEqual({ database: "up" });
     expect(emailed).toHaveLength(0);

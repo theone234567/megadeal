@@ -9,7 +9,6 @@ interface Check {
   label: string;
   state: CheckState;
   detail: string;
-  help?: "cron-secret";
 }
 interface Section {
   id: string;
@@ -52,76 +51,6 @@ function failure(res: Response, json: { error?: string }, fallback: string): str
     return "Cloudflare stopped it before it finished, which usually means it needed more processing time than the free Workers plan allows. It's safe to run again; on Workers Paid it has the time it needs.";
   }
   return fallback;
-}
-
-/**
- * Setting CRON_SECRET, step by step: a random value made here in the
- * browser (never sent anywhere or kept), to paste into Cloudflare.
- */
-function CronSecretHelp() {
-  const [secret, setSecret] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  function make() {
-    const bytes = crypto.getRandomValues(new Uint8Array(32));
-    setSecret(btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""));
-    setCopied(false);
-  }
-
-  async function copy() {
-    if (!secret) return;
-    try {
-      await navigator.clipboard.writeText(secret);
-      setCopied(true);
-    } catch {
-      setCopied(false);
-    }
-  }
-
-  return (
-    <details className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-      <summary className="cursor-pointer font-semibold text-brand-700">How to set it</summary>
-      <ol className="mt-2 list-decimal space-y-2 pl-5">
-        <li>
-          <button
-            type="button"
-            onClick={make}
-            className="rounded-lg border border-brand-600 bg-white px-3 py-1.5 font-semibold text-brand-700 hover:bg-brand-50"
-          >
-            {secret ? "Make another" : "Make a secret"}
-          </button>{" "}
-          It&apos;s made here in your browser and isn&apos;t sent or saved anywhere. Don&apos;t send it to anyone.
-          {secret && (
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <input
-                readOnly
-                value={secret}
-                aria-label="Your new CRON_SECRET"
-                onFocus={(e) => e.currentTarget.select()}
-                className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-2 py-1 font-mono text-xs text-slate-900"
-              />
-              <button
-                type="button"
-                onClick={copy}
-                className="rounded-lg bg-brand-600 px-3 py-1.5 font-semibold text-white hover:bg-brand-700"
-              >
-                {copied ? "Copied" : "Copy"}
-              </button>
-            </div>
-          )}
-        </li>
-        <li>
-          Cloudflare: <strong>Workers &amp; Pages</strong> &gt; <strong>megadeal</strong> &gt; <strong>Settings</strong> &gt;{" "}
-          <strong>Variables and Secrets</strong> &gt; <strong>Add</strong>. Type: <strong>Secret</strong>. Name:{" "}
-          <code>CRON_SECRET</code>. Paste the secret, then <strong>Deploy</strong>. That&apos;s all the nightly backup needs:
-          Cloudflare runs it.
-        </li>
-        <li>
-          Come back here and press <strong>Check again</strong>.
-        </li>
-      </ol>
-    </details>
-  );
 }
 
 /** Copies the photos still on Wix, a batch at a time (app/api/admin/copy-photos). */
@@ -714,7 +643,6 @@ export default function MoveOffWixPage() {
                             {c.label}
                           </p>
                           <p className="break-words text-slate-600">{c.detail}</p>
-                          {c.help === "cron-secret" && <CronSecretHelp />}
                         </div>
                       </li>
                     );

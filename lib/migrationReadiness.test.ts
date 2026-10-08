@@ -218,13 +218,12 @@ describe("the nightly backup check", () => {
     expect(c?.detail).toContain("3 days ago");
   });
 
-  it("warns when the job can't run", async () => {
+  it("doesn't need CRON_SECRET: the site's scheduler has its own password", async () => {
     allSet();
     vi.stubEnv("CRON_SECRET", "");
     cfEnv = { BACKUPS: bucketWith(3) };
     const c = check(await checkReadiness(services().fetchFn), "database", "Nightly backup");
-    expect(c?.detail).toContain("CRON_SECRET");
-    expect(c?.help).toBe("cron-secret");
+    expect(c?.detail).not.toContain("CRON_SECRET");
   });
 
   it("after the switch, reminds to keep a copy of Wix", async () => {

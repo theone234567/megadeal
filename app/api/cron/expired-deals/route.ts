@@ -13,8 +13,9 @@ import { cronCaller } from "@/lib/cronAuth";
  * happens (lib/indexNowDeal.ts); running out of time is the one with no
  * event behind it.
  *
- * Protected by CRON_SECRET, a Cloudflare Worker secret. It only reads deals and sends public URLs to
- * IndexNow, but there's no reason to let anyone else trigger it.
+ * Only the site's own scheduler, or CRON_SECRET, can call it (lib/cronAuth.ts).
+ * It only reads deals and sends public URLs to IndexNow, but there's no
+ * reason to let anyone else trigger it.
  */
 
 // Wider than the hour between runs, so a delayed or skipped run still

@@ -432,8 +432,8 @@ Set up (any time before):
        binding = "BACKUPS"
        bucket_name = "megadeal-backups"
 
-   The nightly job uses the same `CRON_SECRET` as the hourly one (a
-   secret on the Worker in Cloudflare). See "Backups" below.
+   The nightly job runs by itself (see "Backups" below): no secret to
+   set.
 7. Rehearse the import on the new database (it changes nothing):
    Admin > Moving off Wix > Database > **Rehearse (changes nothing)**.
    The site reads everything from Wix itself, runs the whole import,
@@ -550,8 +550,7 @@ Wix again; accounts created meanwhile would need to sign up on Wix.
 
 Once the data is in the new database, an outage there takes pages down,
 and nobody would know until a business said so. The site checks for
-itself every hour (Cloudflare runs `app/api/cron/watch`, once
-`CRON_SECRET` is set): if the database stops answering it emails
+itself every hour (Cloudflare runs `app/api/cron/watch`): if the database stops answering it emails
 `ADMIN_NOTIFY_EMAIL`, once, and again when it's back. That can't see the
 whole site being down, so also set up a free uptime monitor (UptimeRobot
 or Better Stack) when stage 2 goes live:
@@ -575,7 +574,7 @@ is paused, which would take the site down. The monitor's checks (and the
 nightly backup) keep it active; move to the Pro plan, which never
 pauses, before launch. Before the switch nothing else uses the database,
 so the nightly job asks it one small question each night to keep it
-awake (once `CRON_SECRET` is set). If it's paused anyway, Moving off Wix
+awake. If it's paused anyway, Moving off Wix
 says the database didn't answer: Supabase > the project > **Restore
 project** wakes it, data intact.
 
@@ -596,8 +595,11 @@ is: check it now and then, since a job that never runs can't email.
 Logins aren't in it (Supabase keeps those, and any business can set a
 new password from an emailed link).
 
-It needs `CRON_SECRET` as a secret on the Worker (Moving off Wix shows
-how to make and set one). Cloudflare runs the schedule itself. It used
+It needs nothing set (since 8 Oct 2026): Cloudflare runs the schedule
+inside the Worker, which calls its own /api/cron routes with a random
+password it makes for itself and keeps in memory (`lib/internalCall.ts`).
+`CRON_SECRET`, if set as a Worker secret, also works, for running a job
+from outside. It used
 to be GitHub jobs, which couldn't have worked: Cloudflare's bot
 protection challenges requests from data centres such as GitHub's (a
 "Just a moment..." page, checked 7 Oct 2026), and GitHub also turns

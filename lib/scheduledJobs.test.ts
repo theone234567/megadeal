@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { SCHEDULED_JOBS, runScheduledJob } from "./scheduledJobs";
+import { internalCallToken } from "./internalCall";
 
 /** Cloudflare's Cron Triggers (wrangler.toml) run the site's /api/cron routes (worker.mjs). */
 
@@ -21,11 +22,15 @@ describe("scheduled jobs", () => {
     expect(seen[0].headers.get("authorization")).toBe("Bearer s3cret");
   });
 
-  it("does nothing until CRON_SECRET is set", async () => {
-    let called = false;
-    const result = await runScheduledJob("17 * * * *", {}, async () => ((called = true), new Response()));
-    expect(called).toBe(false);
-    expect(result).toMatch(/CRON_SECRET isn't set/);
+  it("runs without CRON_SECRET, with the site's own password, which the routes accept", async () => {
+    const seen: Request[] = [];
+    const result = await runScheduledJob("17 * * * *", {}, async (req) => (seen.push(req), new Response("{}")));
+    expect(result).toBe("/api/cron/expired-deals: 200, /api/cron/watch: 200");
+    const bearer = seen[0].headers.get("authorization") ?? "";
+    expect(bearer).toBe(`Bearer ${internalCallToken()}`);
+    expect(internalCallToken()).toMatch(/^[0-9a-f]{64}$/);
+    // The same password each time within this running copy.
+    expect(seen[1].headers.get("authorization")).toBe(bearer);
   });
 
   it("fails the run when the route fails, so Cloudflare records it", async () => {

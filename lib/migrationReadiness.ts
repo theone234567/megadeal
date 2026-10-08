@@ -28,7 +28,6 @@ export interface Check {
   state: CheckState;
   detail: string;
   /** Step-by-step help the page shows under it. */
-  help?: "cron-secret";
 }
 
 export interface Section {
@@ -121,9 +120,8 @@ async function connectionKind(): Promise<"hyperdrive" | "url" | null> {
 async function backupCheck(): Promise<Check> {
   const bucket = await backupBucket();
   if (!bucket) return warning("Nightly backup", "No BACKUPS bucket. Create a private R2 bucket and add it to wrangler.toml as BACKUPS, so there's a copy of the data every night.");
-  if (!set("CRON_SECRET")) {
-    return { ...warning("Nightly backup", "CRON_SECRET isn't set, so the nightly job can't run. Set it as a secret on the Worker in Cloudflare."), help: "cron-secret" };
-  }
+  // No CRON_SECRET needed: the site's scheduler uses its own password
+  // (lib/internalCall.ts).
   try {
     if (dataBackend() !== "postgres") {
       // Nothing to copy yet; the job only keeps the new database awake.
