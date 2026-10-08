@@ -521,7 +521,7 @@ hour or two; after that, fix forward.
    - `SUPABASE_ANON_KEY`: the **publishable** key (`sb_publishable_…`),
      or on an older project the legacy `anon` key.
    - `SUPABASE_SERVICE_ROLE_KEY`: a **secret** key (`sb_secret_…`; make
-     one named `megadeal-site`), or the legacy `service_role` key.
+     one named `megadeal_site`: Supabase allows only lower case, digits and underscores), or the legacy `service_role` key.
    - `SUPABASE_JWT_SECRET`: leave it out. The megadeal project (created
      Oct 2026) signs sign-ins with signing keys, which the site checks
      itself (lib/authSession.ts). Only an older project using the legacy
