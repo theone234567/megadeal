@@ -710,7 +710,9 @@ What the code can't check, so check by hand first:
   forms). It's tidying, not speed: that 100KB of JavaScript is only
   fetched while Wix's logins are in use, so after the switch no page
   downloads it.
-- Once every photo is copied: remove the `static.wixstatic.com`
-  preconnect in `app/layout.tsx`, and the Wix entries in the security
-  policy in `next.config.mjs`.
+- Every photo is copied (8 Oct 2026) and the `static.wixstatic.com`
+  preconnect is gone from `app/layout.tsx`. At the end, remove the Wix
+  image entries in `next.config.mjs` (`images.remotePatterns` and the
+  security policy's `img-src`): kept until then because older versions
+  in a deal's history (Admin) can still show Wix photos.
 - Supabase: turn on point-in-time recovery (Pro plan) before launch.
