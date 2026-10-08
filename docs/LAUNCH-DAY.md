@@ -16,6 +16,30 @@ switches by itself when `LAUNCHED` turns on; this is the short list of what does
    deal goes live once an admin approves it. So the homepage starts empty until approved
    businesses submit. Agree a time with them, and keep an admin free to approve that morning.
 
+### Also the week before: the systems behind the site
+
+Since 8 Oct 2026 the site runs on its own database (Supabase), photo storage and email,
+not Wix (`docs/WIX-MIGRATION.md`). Before opening it to the public:
+
+- **Admin → Moving off Wix: every box green or blue.** In particular **Nightly backup**
+  shows a copy from last night, **Hourly checks** ran within the hour, and **Tables up to
+  date** has a tick (if not, press **Apply database updates** there).
+- **Business sign-in moved off Wix** (stage 3), so new businesses sign up on MegaDeal's
+  own sign-in. Not strictly needed to launch, but it's better done before businesses
+  arrive than after.
+- **An uptime monitor** (UptimeRobot or Better Stack, free): watch
+  `https://megadeal.co.nz/api/health` every 5 minutes and email you. The site emails you
+  itself if the database stops answering, but only an outside monitor notices the whole
+  site being down. Cloudflare challenges monitors unless the WAF rule from stage 3 step 3
+  lets `/api/health` through.
+- **Plans for real traffic.** Check Cloudflare > Workers & Pages > Plans: on the free plan,
+  Workers Paid ($5 a month) lifts the daily limits (100,000 requests; 1,000 writes to the
+  store the rate limits use), which a busy launch day could reach. Past the request limit
+  the site answers with an error until midnight UTC; past the write limit it carries on,
+  but rate limits stop counting. Supabase Pro (about US$25 a month)
+  adds point-in-time recovery (rewind to any minute, rather than last night's copy) and
+  blocks breached passwords on its side too (the site already does).
+
 ## Launching
 
 4. In `lib/siteConfig.ts` set:
