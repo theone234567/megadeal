@@ -19,7 +19,9 @@ const PRODUCT_FIELDS = ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO", "
 /** The few Wix calls used: the admin client (lib/wixAdmin.ts) has them. */
 export interface WixReader {
   items: { query(name: string): { limit(n: number): { skip(n: number): { find(): Promise<{ items?: any[] }> } } } };
-  productsV3: { searchProducts(opts: any): Promise<{ products?: any[]; pagingMetadata?: { hasNext?: boolean; cursors?: { next?: string | null } } }> };
+  // The SDK takes the search and the extra product details separately:
+  // details passed inside the search are silently dropped.
+  productsV3: { searchProducts(search: any, options: { fields: string[] }): Promise<{ products?: any[]; pagingMetadata?: { hasNext?: boolean; cursors?: { next?: string | null } } }> };
 }
 
 export interface WixExportResult {
@@ -44,8 +46,7 @@ async function readProducts(wix: WixReader): Promise<any[]> {
   const all: any[] = [];
   let cursor: string | null = null;
   for (let page = 0; page < MAX_PAGES; page++) {
-    const res = await wix.productsV3.searchProducts({
-      search: cursor ? { cursorPaging: { cursor } } : { cursorPaging: { limit: PAGE_SIZE } },
+    const res = await wix.productsV3.searchProducts(cursor ? { cursorPaging: { cursor } } : { cursorPaging: { limit: PAGE_SIZE } }, {
       fields: PRODUCT_FIELDS,
     });
     all.push(...(res?.products ?? []).filter(Boolean));

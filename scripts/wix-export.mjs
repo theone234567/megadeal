@@ -59,8 +59,8 @@ async function exportProducts() {
   const all = [];
   let cursor = null;
   for (let page = 0; page < MAX_PAGES; page++) {
-    const res = await client.productsV3.searchProducts({
-      search: cursor ? { cursorPaging: { cursor } } : { cursorPaging: { limit: PAGE_SIZE } },
+    // The search and the extra details are separate arguments to the SDK.
+    const res = await client.productsV3.searchProducts(cursor ? { cursorPaging: { cursor } } : { cursorPaging: { limit: PAGE_SIZE } }, {
       fields: ["MEDIA_ITEMS_INFO", "CURRENCY", "ALL_CATEGORIES_INFO", "PLAIN_DESCRIPTION"],
     });
     all.push(...(res?.products ?? []).filter(Boolean));

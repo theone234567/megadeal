@@ -34,8 +34,11 @@ function fakeWix(collections: Record<string, any[]>, products: any[], opts: { fa
       }),
     },
     productsV3: {
-      searchProducts: async (o: any) => {
-        const start = o.search.cursorPaging.cursor ? Number(o.search.cursorPaging.cursor) : 0;
+      // The real SDK's shape: search first, then the extra details, which
+      // are left out (as Wix does) unless asked for there.
+      searchProducts: async (search: any, options: { fields?: string[] }) => {
+        if (!options?.fields?.includes("ALL_CATEGORIES_INFO")) products = products.map(({ allCategoriesInfo: _, ...p }: any) => p);
+        const start = search.cursorPaging.cursor ? Number(search.cursorPaging.cursor) : 0;
         const page = products.slice(start, start + 100);
         const next = start + 100 < products.length ? String(start + 100) : null;
         return { products: page, pagingMetadata: { hasNext: Boolean(next), cursors: { next } } };
@@ -82,6 +85,13 @@ describe("reading Wix", () => {
     const r = await exportWix(fakeWix({ Merchants: merchants, Deals: [{ _id: "d1" }] }, products));
     expect(r.counts).toMatchObject({ Merchants: 150, Deals: 1, EmailSignups: 0, StoresProducts: 230 });
     expect(r.failed).toEqual({});
+  });
+
+  it("asks Wix for each product's categories, which live deals need", async () => {
+    // The real import (8 Oct 2026) refused every live deal: the details were
+    // asked for in the wrong place, so Wix sent products without categories.
+    const r = await exportWix(fakeWix({}, [{ id: "p1", allCategoriesInfo: { categories: [{ id: "food" }] } }]));
+    expect(r.data.StoresProducts?.[0].allCategoriesInfo).toEqual({ categories: [{ id: "food" }] });
   });
 
   it("says which part it couldn't read, rather than carrying on without it", async () => {
