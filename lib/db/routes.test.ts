@@ -452,6 +452,60 @@ describe("the AI review and housekeeping on the new database", () => {
     expect(await db.query("select status from public.deals")).toEqual([{ status: "Pending Approval" }]);
   });
 
+  it("a replacement photo on a live deal: approved swaps it in (old kept in history), turned down leaves the old one", async () => {
+    await signUpApprovedWithCredits(10);
+    aiReview = review("approve");
+    const create = await import("@/app/api/deals/create/route");
+    const { body } = await call(create.POST, request("POST", DEAL));
+    const client = createPgAdminClient((fn) => fn(db));
+    const [merchant] = (await client.items.query("Merchants").find()).items;
+    const [{ photo_url: original }] = await db.query<{ photo_url: string }>("select photo_url from public.deals");
+    const { reviewPendingPhoto } = await import("@/lib/aiReviewApply");
+    const pending = async (url: string) => {
+      await db.query("update public.deals set pending_photo_url = $1", [url]);
+      return (await client.items.get("Deals", body.item._id))!;
+    };
+
+    // Turned down: the old photo stays, the new one is dropped, and the business is told why.
+    aiReview = review("reject", { sexual: true });
+    const no = await reviewPendingPhoto(client, await pending("https://megadeal.co.nz/photos/bad.webp"), merchant);
+    expect(no.outcome).toBe("reject");
+    expect(no.message).toBe("Please change the wording.");
+    expect(await db.query("select photo_url, pending_photo_url from public.deals")).toEqual([{ photo_url: original, pending_photo_url: null }]);
+
+    // Review unavailable: nothing changes, it waits for a person.
+    aiReview = null;
+    const wait = await reviewPendingPhoto(client, await pending("https://megadeal.co.nz/photos/new.webp"), merchant);
+    expect(wait.outcome).toBe("hold");
+    expect(await db.query("select photo_url, pending_photo_url from public.deals")).toEqual([{ photo_url: original, pending_photo_url: "https://megadeal.co.nz/photos/new.webp" }]);
+
+    // Approved: swapped in, and the old photo is in the deal's history.
+    aiReview = review("approve");
+    const yes = await reviewPendingPhoto(client, await pending("https://megadeal.co.nz/photos/new.webp"), merchant);
+    expect(yes.outcome).toBe("publish");
+    const [row] = await db.query<{ photo_url: string; pending_photo_url: string | null; history: string }>(
+      "select photo_url, pending_photo_url, content_history::text as history from public.deals"
+    );
+    expect(row.photo_url).toBe("https://megadeal.co.nz/photos/new.webp");
+    expect(row.pending_photo_url).toBeNull();
+    if (original) expect(row.history).toContain(original);
+    expect(await db.query("select count(*)::int as n from public.merchant_activity where description like 'New photo for%'")).toEqual([{ n: 2 }]);
+  });
+
+  it("a replacement photo from a business that isn't approved waits for a person, even if the AI likes it", async () => {
+    await signUpApprovedWithCredits(10);
+    aiReview = review("approve");
+    const create = await import("@/app/api/deals/create/route");
+    const { body } = await call(create.POST, request("POST", DEAL));
+    await db.query("update public.deals set pending_photo_url = 'https://megadeal.co.nz/photos/new.webp'");
+    const client = createPgAdminClient((fn) => fn(db));
+    const [merchant] = (await client.items.query("Merchants").find()).items;
+    const { reviewPendingPhoto } = await import("@/lib/aiReviewApply");
+    const result = await reviewPendingPhoto(client, (await client.items.get("Deals", body.item._id))!, { ...merchant, status: "Pending" });
+    expect(result.outcome).toBe("hold");
+    expect(await db.query("select pending_photo_url from public.deals")).toEqual([{ pending_photo_url: "https://megadeal.co.nz/photos/new.webp" }]);
+  });
+
   it("the hourly job finds deals that have just ended", async () => {
     await signUpApprovedWithCredits(10);
     aiReview = review("approve");
