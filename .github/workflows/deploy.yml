@@ -1,23 +1,18 @@
-# Deploys the site to Cloudflare Workers on every push to the default
-# branch, and on demand from the Actions tab.
+# Checks every push: typecheck, unit tests, a production build and
+# screenshots. It does NOT publish the site.
 #
-# Why this exists: the repo had no CI at all, so shipping anything meant
-# being at a computer with Cloudflare credentials and remembering to run
-# `npm run cf:deploy` by hand. A fix for a production outage — nobody
-# could complete a business signup — sat committed and deployable for
-# hours because of that gap, and the live site served a stale build in
-# the meantime.
+# The live site is built and published by Cloudflare Workers Builds (the
+# "Workers Builds: megadeal" check on each commit, and Cloudflare >
+# Workers & Pages > megadeal > Deployments). That's the one to watch
+# after a push: it goes live within a few minutes of it succeeding.
 #
-# Setup, once: add two repository secrets under
-# Settings -> Secrets and variables -> Actions
-#
-#   CLOUDFLARE_API_TOKEN   a token with the "Edit Cloudflare Workers"
-#                          template permissions
-#   CLOUDFLARE_ACCOUNT_ID  from the Cloudflare dashboard URL, or
-#                          `npx wrangler whoami`
-#
-# Until both exist the deploy step is skipped, so merging this changes
-# nothing on its own.
+# The Deploy step below only runs if the repository secrets
+# CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID exist. They're
+# deliberately not set: with Workers Builds publishing too, two deploys
+# of the same push would race. (It was written when the repo had no CI
+# and no automatic deploys at all; kept for the checks, and as a way to
+# deploy from GitHub if Workers Builds is ever switched off: add the two
+# secrets then.)
 
 name: Deploy to Cloudflare
 
