@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authPreflight, PASSWORD_RULE, passwordOk } from "@/lib/authRoutes";
 import { signUp } from "@/lib/supabaseAuth";
+import { BREACHED_PASSWORD_MESSAGE, passwordSeenInBreaches } from "@/lib/pwnedPassword";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ export async function POST(req: NextRequest) {
   const pre = await authPreflight(req, { limitKey: "register", perIp: 10, captcha: true });
   if ("stop" in pre) return pre.stop;
   if (!passwordOk(pre.body.password)) return NextResponse.json({ error: PASSWORD_RULE }, { status: 400 });
+  if (await passwordSeenInBreaches(pre.body.password)) return NextResponse.json({ error: BREACHED_PASSWORD_MESSAGE }, { status: 400 });
   const res = await signUp(pre.email, pre.body.password, pre.ip);
   if (!res.ok && res.code === "weak_password") return NextResponse.json({ error: "Choose a stronger password: longer, and not a common one." }, { status: 400 });
   if (!res.ok && !["user_already_exists", "email_exists", "over_email_send_rate_limit"].includes(res.code)) {

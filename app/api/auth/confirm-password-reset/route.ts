@@ -3,6 +3,7 @@ import { consumePasswordResetToken } from "@/lib/passwordResetTokens";
 import { setMemberPassword } from "@/lib/wixPassword";
 import { accountIdForEmail, authBackend, endAllSessions } from "@/lib/authSession";
 import { adminSetPassword } from "@/lib/supabaseAuth";
+import { BREACHED_PASSWORD_MESSAGE, passwordSeenInBreaches } from "@/lib/pwnedPassword";
 
 // Wix's rule; MegaDeal's own logins ask for 10 (lib/authRoutes.ts).
 const minPasswordLength = () => (authBackend() === "supabase" ? 10 : 8);
@@ -23,6 +24,11 @@ export async function POST(req: NextRequest) {
       { error: `Password must be at least ${minPasswordLength()} characters.` },
       { status: 400 }
     );
+  }
+
+  // Before the link is used up, so choosing another password still works.
+  if (await passwordSeenInBreaches(newPassword)) {
+    return NextResponse.json({ error: BREACHED_PASSWORD_MESSAGE }, { status: 400 });
   }
 
   // Consumed (deleted) up front regardless of what happens next — a token

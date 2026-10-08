@@ -496,8 +496,9 @@ hour or two; after that, fix forward.
 1. Supabase > Authentication:
    - Providers > Email: on, "Confirm email" on, OTP length 6, OTP
      expiry 600 seconds.
-   - Passwords: minimum length 10; leaked-password protection on (Pro
-     plan).
+   - Passwords: minimum length 10; leaked-password protection on if the
+     plan allows (Pro). The site checks this itself anyway, on sign-up and
+     reset (`lib/pwnedPassword.ts`, Have I Been Pwned, free).
    - Hooks > Send Email: HTTPS, `https://megadeal.co.nz/api/auth/email-hook`.
      Generate its secret and save it as the secret
      `SEND_EMAIL_HOOK_SECRET` (it starts `v1,whsec_`).
