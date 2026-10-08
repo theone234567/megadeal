@@ -116,6 +116,26 @@ describe("sending", () => {
       expect(resend).toHaveBeenCalledTimes(4);
     });
 
+    it("doesn't wait past the time allowed", async () => {
+      resend.mockResolvedValueOnce(new Response("{}", { status: 429, headers: { "retry-after": "3" } }));
+      const { sendTransactionalEmail } = await import("./sendEmail");
+      const started = Date.now();
+      expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "Hi", html: "<p>Hi</p>", withinMs: 1000 })).toBe(false);
+      expect(resend).toHaveBeenCalledOnce();
+      expect(Date.now() - started).toBeLessThan(500);
+    });
+
+    it("gives up on a Resend that doesn't answer, in time for Supabase's hook", async () => {
+      // A fetch that only ends when its time limit aborts it.
+      resend.mockImplementation(
+        (_url, init) => new Promise((_, reject) => init.signal?.addEventListener("abort", () => reject(init.signal?.reason)))
+      );
+      const { sendTransactionalEmail } = await import("./sendEmail");
+      const started = Date.now();
+      expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "Hi", html: "<p>Hi</p>", withinMs: 300 })).toBe(false);
+      expect(Date.now() - started).toBeLessThan(2000);
+    });
+
     it("waits as long as asked, within reason", async () => {
       const { retryDelayMs } = await import("./sendEmail");
       expect(retryDelayMs("2")).toBe(2000);

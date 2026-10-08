@@ -29,6 +29,7 @@ export async function sendEmail({
   html,
   replyTo,
   unsubscribeUrl,
+  withinMs = 15_000,
 }: {
   to: string;
   subject: string;
@@ -42,6 +43,9 @@ export async function sendEmail({
    *  the List-Unsubscribe header (Gmail and Yahoo require it of senders
    *  like us). Leave out for one-off messages (receipts, password resets). */
   unsubscribeUrl?: string;
+  /** How long sending may take in all, retries included (default 15 s).
+   *  Supabase's email hook gets an answer within its 5-second limit. */
+  withinMs?: number;
 }): Promise<SendResult> {
   // One address, or a few separated by commas (ADMIN_NOTIFY_EMAIL may
   // list several). Each must be a plain address: nothing that could add
@@ -60,7 +64,7 @@ export async function sendEmail({
     return { ok: false };
   }
   if (process.env.EMAIL_PROVIDER === "resend") {
-    return sendWithResend({ to: recipients, subject: safeSubject, html, replyTo: safeReplyTo, unsubscribeUrl });
+    return sendWithResend({ to: recipients, subject: safeSubject, html, replyTo: safeReplyTo, unsubscribeUrl }, withinMs);
   }
   subject = safeSubject;
   replyTo = safeReplyTo;
@@ -116,7 +120,10 @@ export function retryDelayMs(retryAfter: string | null): number {
   return Number.isFinite(seconds) && seconds > 0 ? Math.min(5000, Math.max(250, seconds * 1000)) : 1000;
 }
 
-async function sendWithResend(msg: { to: string[]; subject: string; html: string; replyTo?: string; unsubscribeUrl?: string }): Promise<SendResult> {
+async function sendWithResend(msg: { to: string[]; subject: string; html: string; replyTo?: string; unsubscribeUrl?: string }, withinMs: number): Promise<SendResult> {
+  // A slow answer from Resend mustn't hold the page (or Supabase's hook)
+  // indefinitely: each try gets what's left of the time allowed.
+  const deadline = Date.now() + withinMs;
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     console.error("[sendTransactionalEmail] EMAIL_PROVIDER=resend but RESEND_API_KEY isn't set");
@@ -145,6 +152,7 @@ async function sendWithResend(msg: { to: string[]; subject: string; html: string
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
         body,
+        signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())),
       });
       if (res.ok) return { ok: true };
       const answer = (await res.text().catch(() => "")).slice(0, 300);
@@ -152,8 +160,9 @@ async function sendWithResend(msg: { to: string[]; subject: string; html: string
       // Too many at once (the subscriber email and login invites send
       // batches): wait as long as Resend asks, briefly, and try again. A
       // daily or monthly sending limit isn't helped by waiting.
-      if (res.status === 429 && attempt < RESEND_RETRIES && !quota) {
-        await sleep(retryDelayMs(res.headers.get("retry-after")));
+      const wait = retryDelayMs(res.headers.get("retry-after"));
+      if (res.status === 429 && attempt < RESEND_RETRIES && !quota && Date.now() + wait < deadline) {
+        await sleep(wait);
         continue;
       }
       // The provider's answer, never the message or the address.

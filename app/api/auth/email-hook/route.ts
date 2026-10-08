@@ -85,7 +85,8 @@ export async function POST(req: NextRequest) {
     // change stops the change itself.
     return NextResponse.json({ error: { http_code: 400, message: `Unsupported email: ${action}` } }, { status: 400 });
   }
-  const sent = await sendTransactionalEmail({ to: email, subject: message.subject, html: message.html });
+  // Supabase waits 5 seconds for this hook: answer within 4.
+  const sent = await sendTransactionalEmail({ to: email, subject: message.subject, html: message.html, withinMs: 4000 });
   if (!sent) return NextResponse.json({ error: { http_code: 500, message: "Couldn't send" } }, { status: 500 });
   return NextResponse.json({});
 }
