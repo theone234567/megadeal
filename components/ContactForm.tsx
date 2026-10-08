@@ -36,7 +36,7 @@ export default function ContactForm() {
 
   if (sent) {
     return (
-      <p className="rounded-2xl bg-brand-50 p-4 font-medium text-brand-700">
+      <p role="status" className="rounded-2xl bg-brand-50 p-4 font-medium text-brand-700">
         Thanks — we&apos;ve got your message and will get back to you soon.
       </p>
     );
@@ -111,7 +111,7 @@ export default function ContactForm() {
           className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
         />
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
       <button
         type="submit"
         disabled={submitting}
