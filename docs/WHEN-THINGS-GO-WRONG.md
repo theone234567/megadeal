@@ -45,6 +45,9 @@ answering (and again when it's back).
 3. If a domain problem is shown, check Resend > **Domains**: megadeal.co.nz
    should say **Verified**.
 
+Messages from the contact form are kept whether or not their email reached
+you: Admin > **Messages**.
+
 ## Data was deleted or changed by mistake
 
 The site saves a full copy of the database every night (about 3:20am in summer, 2:20am in winter),

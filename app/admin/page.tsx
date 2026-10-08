@@ -9,6 +9,7 @@ import SubscriberRow, { type AdminSubscriber } from "@/components/admin/Subscrib
 import PlatformSettingsPanel from "@/components/admin/PlatformSettingsPanel";
 import TestDealsPanel from "@/components/admin/TestDealsPanel";
 import AnnouncementPanel from "@/components/admin/AnnouncementPanel";
+import ContactMessagesPanel from "@/components/admin/ContactMessagesPanel";
 import { missedScheduledStart } from "@/lib/dealSchedule";
 import { readRevision } from "@/lib/dealRevision";
 import { useWix } from "@/context/WixProvider";
@@ -17,7 +18,7 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const { isLoggedIn: businessAlsoActive, member: businessMember, logout: logoutBusiness } = useWix();
   const [signingOutBusiness, setSigningOutBusiness] = useState(false);
-  const [tab, setTab] = useState<"merchants" | "deals" | "subscribers" | "tests" | "settings">("merchants");
+  const [tab, setTab] = useState<"merchants" | "deals" | "subscribers" | "messages" | "tests" | "settings">("merchants");
 
   // ?tab=tests opens Test deals (the link back from a test deal's page).
   useEffect(() => {
@@ -376,6 +377,14 @@ export default function AdminDashboardPage() {
           Subscribers
         </button>
         <button
+          onClick={() => setTab("messages")}
+          className={`rounded-full px-4 py-2 text-sm font-bold ${
+            tab === "messages" ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"
+          }`}
+        >
+          Messages
+        </button>
+        <button
           onClick={() => setTab("tests")}
           className={`rounded-full px-4 py-2 text-sm font-bold ${
             tab === "tests" ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"
@@ -588,6 +597,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
+      {tab === "messages" && <ContactMessagesPanel />}
       {tab === "tests" && <TestDealsPanel merchants={merchants} />}
       {tab === "settings" && <PlatformSettingsPanel />}
     </main>
