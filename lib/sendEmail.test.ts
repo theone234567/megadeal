@@ -136,6 +136,17 @@ describe("sending", () => {
       expect(Date.now() - started).toBeLessThan(2000);
     });
 
+    it("logs why Resend refused, without the address", async () => {
+      const logged: unknown[][] = [];
+      vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => void logged.push(a));
+      resend.mockResolvedValueOnce(new Response('{"name":"validation_error","message":"Invalid `to` field: someone@example.nz"}', { status: 422 }));
+      const { sendTransactionalEmail } = await import("./sendEmail");
+      expect(await sendTransactionalEmail({ to: "someone@example.nz", subject: "Hi", html: "<p>Hi</p>" })).toBe(false);
+      const text = JSON.stringify(logged);
+      expect(text).toContain("validation_error");
+      expect(text).not.toContain("someone@example.nz");
+    });
+
     it("waits as long as asked, within reason", async () => {
       const { retryDelayMs } = await import("./sendEmail");
       expect(retryDelayMs("2")).toBe(2000);

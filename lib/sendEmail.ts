@@ -155,7 +155,9 @@ async function sendWithResend(msg: { to: string[]; subject: string; html: string
         signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())),
       });
       if (res.ok) return { ok: true };
-      const answer = (await res.text().catch(() => "")).slice(0, 300);
+      // Resend's error can quote the address it refused: masked, so the
+      // log says what went wrong without who it was for.
+      const answer = (await res.text().catch(() => "")).slice(0, 300).replace(/[^\s"'<>@,;:]+@[^\s"'<>@,;:]+/g, "[address]");
       const quota = res.status === 429 && /quota/i.test(answer);
       // Too many at once (the subscriber email and login invites send
       // batches): wait as long as Resend asks, briefly, and try again. A
