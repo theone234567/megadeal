@@ -62,9 +62,31 @@ export async function withDb<T>(fn: (db: Sql) => Promise<T>): Promise<T> {
   await client.connect();
   try {
     return await fn({
-      query: async <R,>(text: string, params?: unknown[]) => (await client.query(text, params as any[])).rows as R[],
+      query: async <R,>(text: string, params?: unknown[]) => {
+        try {
+          return (await client.query(text, params as any[])).rows as R[];
+        } catch (err) {
+          throw withoutValues(err);
+        }
+      },
     });
   } finally {
     client.end().catch(() => {});
   }
+}
+
+/**
+ * A database error without the parts that quote the data: Postgres adds a
+ * "detail" naming the values a rule refused ("Key (lower(email))=(…)
+ * already exists"), and callers log errors whole, so it would put people's
+ * addresses in Cloudflare's logs. The message (which names the rule, not
+ * the values), the error code and the constraint are kept.
+ */
+export function withoutValues(err: unknown): unknown {
+  if (err && typeof err === "object") {
+    for (const key of ["detail", "where", "internalQuery", "hint"]) {
+      if (key in err) (err as Record<string, unknown>)[key] = undefined;
+    }
+  }
+  return err;
 }
