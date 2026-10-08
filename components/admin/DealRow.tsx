@@ -40,10 +40,13 @@ function toDateInputValue(iso?: string) {
 export default function DealRow({
   deal: initialDeal,
   business = null,
+  onSaved,
 }: {
   deal: AdminDeal;
   /** The business this deal belongs to, when one matches its email. */
   business?: { id: string; name: string } | null;
+  /** Called with the deal as saved, so the page's counts (Needs attention) update. */
+  onSaved?: (deal: AdminDeal) => void;
 }) {
   const [deal, setDeal] = useState(initialDeal);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -92,11 +95,16 @@ export default function DealRow({
       // Approval can set the end date server-side (the run starts when a
       // deal first goes live), so take it from the saved record.
       const savedBody = await res.json().catch(() => ({}));
-      deal.status = status;
-      deal.expiresAt = savedBody?.item?.expiresAt ?? (expiresAt ? new Date(expiresAt).toISOString() : undefined);
-      setExpiresAt(toDateInputValue(deal.expiresAt));
-      deal.merchantEmail = merchantEmail;
-      deal.statusNote = note || null;
+      const savedDeal: AdminDeal = {
+        ...deal,
+        status,
+        expiresAt: savedBody?.item?.expiresAt ?? (expiresAt ? new Date(expiresAt).toISOString() : undefined),
+        merchantEmail,
+        statusNote: note || null,
+      };
+      setDeal(savedDeal);
+      setExpiresAt(toDateInputValue(savedDeal.expiresAt));
+      onSaved?.(savedDeal);
       setSaved(true);
       setTimeout(() => setSaved(false), 1500);
       // Saved, but something alongside it didn't happen (the business's email).

@@ -486,6 +486,9 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   // Saves a few seconds after the last change, on the form step only.
   useEffect(() => {
     if (isTest || !unsaved || !draftLoaded || conflict || step !== "form" || submitting || submitted) return;
+    // saveDraft is declared below; the timer only runs after render, by
+    // which time it is.
+    // eslint-disable-next-line react-hooks/immutability
     const t = setTimeout(() => saveDraft(true), 3000);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps

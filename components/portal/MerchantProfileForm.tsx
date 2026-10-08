@@ -237,7 +237,9 @@ export default function MerchantProfileForm({
       : "border-slate-200 focus:border-brand-400";
   }
 
-  function FieldError({ name }: { name: string }) {
+  // A plain call, not a component: one defined inside this one would be
+  // remade on every keystroke.
+  function fieldError(name: string) {
     return fieldErrors[name] ? <p className="mt-1 text-xs text-red-600">{fieldErrors[name]}</p> : null;
   }
 
@@ -400,7 +402,7 @@ export default function MerchantProfileForm({
                 onChange={(e) => setBusinessName(e.target.value)}
                 className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("businessName")}`}
               />
-              <FieldError name="businessName" />
+              {fieldError("businessName")}
             </div>
             <div>
               <label htmlFor="profile-website" className="mb-1 block text-sm font-medium text-slate-700">
@@ -414,7 +416,7 @@ export default function MerchantProfileForm({
                 onChange={(e) => setWebsite(e.target.value)}
                 className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("website")}`}
               />
-              <FieldError name="website" />
+              {fieldError("website")}
             </div>
           </div>
 
@@ -439,7 +441,7 @@ export default function MerchantProfileForm({
                   onChange={(e) => setLegalBusinessName(e.target.value)}
                   className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("legalBusinessName")}`}
                 />
-                <FieldError name="legalBusinessName" />
+                {fieldError("legalBusinessName")}
               </div>
               <div>
                 <label htmlFor="profile-nzbn" className="mb-1 block text-sm font-medium text-slate-700">
@@ -456,7 +458,7 @@ export default function MerchantProfileForm({
                   placeholder="13-digit NZBN, if you have one"
                   className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("nzbn")}`}
                 />
-                <FieldError name="nzbn" />
+                {fieldError("nzbn")}
               </div>
             </div>
           )}
@@ -530,7 +532,7 @@ export default function MerchantProfileForm({
                   </option>
                 ))}
               </select>
-              <FieldError name="city" />
+              {fieldError("city")}
             </div>
             <div>
               <label htmlFor="profile-postcode" className="mb-1 block text-sm font-medium text-slate-700">
@@ -608,7 +610,7 @@ export default function MerchantProfileForm({
                   onChange={(e) => setContactName(e.target.value)}
                   className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("contactName")}`}
                 />
-                <FieldError name="contactName" />
+                {fieldError("contactName")}
               </div>
               <div>
                 <label htmlFor="profile-contactPhone" className="mb-1 block text-sm font-medium text-slate-700">
@@ -625,7 +627,7 @@ export default function MerchantProfileForm({
                   type="tel"
                   className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("contactPhone")}`}
                 />
-                <FieldError name="contactPhone" />
+                {fieldError("contactPhone")}
               </div>
             </div>
           )}
@@ -650,7 +652,7 @@ export default function MerchantProfileForm({
                 placeholder="The number customers should call to book"
                 className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("phone")}`}
               />
-              <FieldError name="phone" />
+              {fieldError("phone")}
             </div>
             <div>
               <label htmlFor="profile-bookingUrl" className="mb-1 block text-sm font-medium text-slate-700">
@@ -665,7 +667,7 @@ export default function MerchantProfileForm({
                 placeholder="Your booking/reservation page, if you have one"
                 className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bookingUrl")}`}
               />
-              <FieldError name="bookingUrl" />
+              {fieldError("bookingUrl")}
             </div>
             <div>
               <label htmlFor="profile-bookingEmail" className="mb-1 block text-sm font-medium text-slate-700">
@@ -681,7 +683,7 @@ export default function MerchantProfileForm({
                 placeholder="bookings@yourbusiness.co.nz"
                 className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bookingEmail")}`}
               />
-              <FieldError name="bookingEmail" />
+              {fieldError("bookingEmail")}
             </div>
           </div>
 
@@ -741,7 +743,7 @@ export default function MerchantProfileForm({
                   placeholder="https://facebook.com/yourbusiness"
                   className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("facebookUrl")}`}
                 />
-                <FieldError name="facebookUrl" />
+                {fieldError("facebookUrl")}
               </div>
               <div>
                 <label htmlFor="profile-instagramUrl" className="mb-1 block text-sm font-medium text-slate-700">
@@ -756,7 +758,7 @@ export default function MerchantProfileForm({
                   placeholder="https://instagram.com/yourbusiness"
                   className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("instagramUrl")}`}
                 />
-                <FieldError name="instagramUrl" />
+                {fieldError("instagramUrl")}
               </div>
             </div>
           </div>
@@ -786,7 +788,7 @@ export default function MerchantProfileForm({
               placeholder="A couple of sentences customers will see on your listing — what you do and what makes you worth choosing."
               className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bio")}`}
             />
-            <FieldError name="bio" />
+            {fieldError("bio")}
             <p className="mt-1 text-xs text-slate-500">
               {bio.length < MIN_BIO_LENGTH
                 ? `At least ${MIN_BIO_LENGTH} characters (${MIN_BIO_LENGTH - bio.length} to go)`
@@ -841,7 +843,7 @@ export default function MerchantProfileForm({
                 .
               </span>
             </label>
-            <FieldError name="agreedToTerms" />
+            {fieldError("agreedToTerms")}
           </div>
         )}
 

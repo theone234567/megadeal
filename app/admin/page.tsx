@@ -518,7 +518,12 @@ export default function AdminDashboardPage() {
                   </thead>
                   <tbody>
                     {filteredDeals?.map((d) => (
-                      <DealRow key={`${d._id}-${dealsRefreshKey}`} deal={d} business={businessFor(d)} />
+                      <DealRow
+                        key={`${d._id}-${dealsRefreshKey}`}
+                        deal={d}
+                        business={businessFor(d)}
+                        onSaved={(u) => setDeals((all) => all?.map((x) => (x._id === u._id ? u : x)) ?? all)}
+                      />
                     ))}
                   </tbody>
                 </table>
