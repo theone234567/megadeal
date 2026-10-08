@@ -46,17 +46,69 @@ export async function importWixExport(db: Sql, data: WixExport, opts: { commit: 
       if (n > 0 && !opts.replace) throw new Error("The new database already has businesses in it. Import into an empty database, or use --replace to clear it first.");
       if (opts.replace) for (const t of TABLES) await tx.query(`delete from public.${t}`);
 
-      const insert = async (table: string, row: Row): Promise<string> => {
+      // A record the database refuses (a rule the checks above missed) is
+      // left out and listed, rather than stopping the whole import: the
+      // savepoint undoes just that one record.
+      const insert = async (table: string, row: Row, record: string): Promise<string | null> => {
         const keys = Object.keys(row).filter((k) => row[k] !== undefined);
         const values = keys.map((k) => {
           const v = row[k];
           return v !== null && typeof v === "object" && !(Array.isArray(v) && k === "amenities") ? JSON.stringify(v) : v;
         });
-        const [r] = await tx.query<{ id: string }>(
-          `insert into public.${table} (${keys.join(", ")}) values (${keys.map((_, i) => `$${i + 1}`).join(", ")}) returning id::text as id`,
-          values
-        );
-        return r.id;
+        await tx.query("savepoint import_record");
+        try {
+          const [r] = await tx.query<{ id: string }>(
+            `insert into public.${table} (${keys.join(", ")}) values (${keys.map((_, i) => `$${i + 1}`).join(", ")}) returning id::text as id`,
+            values
+          );
+          await tx.query("release savepoint import_record");
+          return r.id;
+        } catch (err) {
+          await tx.query("rollback to savepoint import_record");
+          // The database's own words, which name the rule but not the values.
+          const reason = err instanceof Error ? err.message : String(err);
+          report.issues.push({ record, field: "(whole record)", problem: `the database refused it (${reason}), not imported` });
+          return null;
+        }
+      };
+
+      // One Wix login can own several business records (test businesses
+      // made from one account, say), but a login has one business here.
+      // The link stays with the one the portal should show: an approved
+      // business first, then the most recently changed. The others come
+      // across without it, and can be claimed again by email.
+      const ownerKeeps = new Map<string, Row>();
+      // Wix's SDK gives dates as Date objects, its REST API as { $date }.
+      const when = (v: unknown) => {
+        const raw = v && typeof v === "object" && "$date" in v ? (v as { $date: unknown }).$date : v;
+        const t = raw ? new Date(raw as string).getTime() : NaN;
+        return Number.isNaN(t) ? 0 : t;
+      };
+      const ownerRank = (m: Row) => [m.status === "Approved" ? 1 : 0, when(m._updatedDate ?? m._createdDate)] as const;
+      for (const item of data.Merchants ?? []) {
+        const owner = item._owner ? String(item._owner) : "";
+        // A record with no email isn't imported, so it can't keep the link.
+        if (!owner || !String(item.email ?? "").trim()) continue;
+        const kept = ownerKeeps.get(owner);
+        const [a1, a2] = ownerRank(item);
+        const [b1, b2] = kept ? ownerRank(kept) : [-1, -1];
+        if (!kept || a1 > b1 || (a1 === b1 && a2 > b2)) ownerKeeps.set(owner, item);
+      }
+
+      // Values the database allows once only: a repeat keeps its record but
+      // loses that value, and is listed, rather than stopping the import.
+      const taken = new Map<string, Set<string>>();
+      const keepOnce = (table: string, row: Row, record: string, fields: string[]) => {
+        for (const field of fields) {
+          const v = row[field];
+          if (v == null) continue;
+          const seen = taken.get(`${table}.${field}`) ?? new Set<string>();
+          taken.set(`${table}.${field}`, seen);
+          if (seen.has(String(v))) {
+            report.issues.push({ record, field, problem: "the same as on an earlier record, left out", value: v });
+            row[field] = null;
+          } else seen.add(String(v));
+        }
       };
 
       // Businesses first: everything else points at them by email.
@@ -64,12 +116,25 @@ export async function importWixExport(db: Sql, data: WixExport, opts: { commit: 
       let merchants = 0;
       for (const item of data.Merchants ?? []) {
         const row = mapMerchant(item, report.issues);
+        if (row.wix_owner_id && ownerKeeps.get(String(row.wix_owner_id)) !== item) {
+          report.issues.push({
+            record: `merchant ${item._id} (${item.businessName ?? ""})`,
+            field: "_owner",
+            problem: "its Wix login also owns another business, so it was imported without that link (it can be claimed again by email)",
+            value: item._owner,
+          });
+          row.wix_owner_id = null;
+        }
         const email = String(row.email ?? "");
         if (!email || merchantIdByEmail.has(email)) {
           report.issues.push({ record: `merchant ${item._id}`, field: "email", problem: email ? "a second business with this email, not imported" : "no email, not imported", value: item.email });
           continue;
         }
-        merchantIdByEmail.set(email, await insert("merchants", row));
+        const record = `merchant ${item._id} (${item.businessName ?? ""})`;
+        keepOnce("merchants", row, record, ["wix_id", "referral_code"]);
+        const id = await insert("merchants", row, record);
+        if (!id) continue;
+        merchantIdByEmail.set(email, id);
         merchants++;
       }
       count("Merchants", data.Merchants?.length ?? 0, merchants);
@@ -84,6 +149,8 @@ export async function importWixExport(db: Sql, data: WixExport, opts: { commit: 
         }
         const row = mapDeal(item, product, merchantIdByEmail, report.issues);
         if (!row) continue;
+        const record = `deal ${item._id} (${item.dealName ?? ""})`;
+        keepOnce("deals", row, record, ["wix_id", "wix_product_id"]);
         // A deal whose product is gone can't be on the site.
         if (!product && row.status !== "Draft" && row.status !== "Cancelled") {
           row.status = "Cancelled";
@@ -94,7 +161,8 @@ export async function importWixExport(db: Sql, data: WixExport, opts: { commit: 
         // database; the Wix one is kept as a permanent redirect.
         const wixSlug = typeof row.slug === "string" ? row.slug : null;
         row.slug = null;
-        const id = await insert("deals", row);
+        const id = await insert("deals", row, record);
+        if (!id) continue;
         if (wixSlug) {
           await tx.query(
             `insert into public.slug_redirects (kind, old_slug, deal_id)
@@ -112,7 +180,7 @@ export async function importWixExport(db: Sql, data: WixExport, opts: { commit: 
       for (const item of data.MerchantActivity ?? []) {
         const row = mapActivity(item, merchantIdByEmail, report.issues);
         if (!row) continue;
-        await insert("merchant_activity", row);
+        if (!(await insert("merchant_activity", row, `activity ${item._id}`))) continue;
         activity++;
       }
       count("MerchantActivity", data.MerchantActivity?.length ?? 0, activity);
@@ -133,7 +201,8 @@ export async function importWixExport(db: Sql, data: WixExport, opts: { commit: 
       for (const item of best.values()) {
         const row = mapEmailSignup(item, report.issues);
         if (!row) continue;
-        await insert("email_signups", row);
+        keepOnce("email_signups", row, `email signup ${item._id}`, ["wix_id", "verify_token_hash", "unsubscribe_token_hash"]);
+        if (!(await insert("email_signups", row, `email signup ${item._id}`))) continue;
         signups++;
       }
       count("EmailSignups", data.EmailSignups?.length ?? 0, signups);
