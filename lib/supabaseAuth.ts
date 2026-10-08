@@ -63,6 +63,8 @@ async function call<T>(
       method: init.method ?? "POST",
       headers,
       body: init.body === undefined ? undefined : JSON.stringify(init.body),
+      // Generous: a sign-up waits on Supabase's email hook (up to 5 s).
+      signal: AbortSignal.timeout(15_000),
     });
   } catch (err) {
     console.error("[supabaseAuth] unreachable", path, err);

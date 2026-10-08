@@ -39,6 +39,7 @@ export async function GET(req: NextRequest) {
     const res = await fetch(
       `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}?sessionToken=${encodeURIComponent(sessionToken)}`,
       {
+        signal: AbortSignal.timeout(8000),
         headers: {
           "X-Goog-Api-Key": apiKey,
           "X-Goog-FieldMask": "addressComponents,formattedAddress,location",

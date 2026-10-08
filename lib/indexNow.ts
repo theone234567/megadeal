@@ -27,6 +27,7 @@ export async function submitUrlsToIndexNow(urls: string[]): Promise<void> {
     const host = new URL(SITE_URL).host;
     const res = await fetch("https://api.indexnow.org/indexnow", {
       method: "POST",
+      signal: AbortSignal.timeout(10_000),
       headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({
         host,

@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
   try {
     const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
       method: "POST",
+      signal: AbortSignal.timeout(8000),
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": apiKey,

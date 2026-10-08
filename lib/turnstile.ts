@@ -21,7 +21,7 @@ export async function verifyTurnstile(token: unknown, ip?: string): Promise<bool
   const form = new URLSearchParams({ secret, response: token });
   if (ip && ip !== "unknown") form.set("remoteip", ip);
   try {
-    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form, signal: AbortSignal.timeout(8000) });
     const out = (await res.json().catch(() => ({}))) as { success?: boolean; hostname?: string };
     if (!out.success) return false;
     // A token solved on another site isn't ours. (Cloudflare's test keys
