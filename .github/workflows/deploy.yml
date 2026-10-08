@@ -46,6 +46,11 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      # Next's own rules (eslint.config.mjs): errors fail the check,
+      # warnings are only listed.
+      - name: Lint
+        run: npm run lint
+
       # Between typecheck and build for the same reason: these cover the
       # logic a type error can't reach — terms being rewritten behind a
       # merchant's back, a draft losing fields, a deal publishing itself,
