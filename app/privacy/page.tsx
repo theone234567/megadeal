@@ -81,9 +81,10 @@ export default function PrivacyPage() {
       <p>
         We use a small number of specialist providers to run the site, and
         some personal information is processed by them on our behalf. This
-        includes our headless commerce, member-login and data storage
-        provider (Wix.com), our email delivery provider (Resend), our
-        website hosting and security provider (Cloudflare), Google&apos;s Places API
+        includes our database provider (Supabase, which stores our data in
+        Sydney, Australia), our business-login provider (Wix.com), our email
+        delivery provider (Resend), our website hosting, security and photo
+        storage provider (Cloudflare), Google&apos;s Places API
         for business-address autocomplete, Google Analytics for site
         traffic reporting, and Meta (Facebook/Instagram) for ad measurement
         — see &quot;Cookies, analytics and advertising&quot; below.
