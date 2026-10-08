@@ -361,7 +361,7 @@ describe("admin work and the rest of the business portal", () => {
     }
     const settings = await import("@/app/api/admin/settings/route");
     expect((await call(settings.PATCH, request("PATCH", { rudenessCheck: false }))).status).toBe(200);
-    expect((await call(settings.GET, request("GET"))).body).toEqual({ rudenessCheck: false });
+    expect((await call(settings.GET, request("GET"))).body).toMatchObject({ rudenessCheck: false, aiReview: { configured: false, last: null } });
   });
 
   it("the contact form saves the message", async () => {

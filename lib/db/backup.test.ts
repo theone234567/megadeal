@@ -111,5 +111,6 @@ describe("backups", () => {
     expect((await o.query<{ owner_id: string }>("select owner_id from public.merchants where owner_id is not null")).map((r) => r.owner_id)).toEqual([uid]);
     await owned.close();
     await fresh.close();
-  });
+    // Builds a second database of its own, which alone takes ~5s.
+  }, 30_000);
 });
