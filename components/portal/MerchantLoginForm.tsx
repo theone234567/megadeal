@@ -284,7 +284,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
           </p>
         )}
         {error && (
-          <p className="rounded-xl bg-red-50 px-3 py-2.5 text-center text-sm font-medium text-red-700">
+          <p role="alert" className="rounded-xl bg-red-50 px-3 py-2.5 text-center text-sm font-medium text-red-700">
             {error}
           </p>
         )}
@@ -355,7 +355,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         />
       )}
       {error && (
-        <p className="rounded-xl bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
+        <p role="alert" className="rounded-xl bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
           {error}
         </p>
       )}
