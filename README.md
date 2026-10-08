@@ -42,6 +42,7 @@ its guide is in `node_modules/next/dist/docs/`.
 
 | Guide | For |
 | --- | --- |
+| `WHEN-THINGS-GO-WRONG.md` | Plain steps for outages, sign-in trouble, missing emails, lost data, leaked keys |
 | `WIX-MIGRATION.md` | Moving off Wix: what's switched, how, and how to go back |
 | `LAUNCH-DAY.md` | Opening the site to the public |
 | `LAUNCH-OFFER-CHECKLIST.md` | The launch offer's wording and credits |
