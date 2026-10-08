@@ -333,12 +333,15 @@ export default function MerchantSignupForm({
   const [resendNotice, setResendNotice] = useState<string | null>(null);
   const [code, setCode] = useState("");
 
-  // Warm reCAPTCHA while the visitor is still filling the form, so
-  // obtaining the token adds nothing to the wait after they submit.
+  // Warm the robot check while the visitor is still filling the form, so
+  // obtaining the token adds nothing to the wait after they submit. Not
+  // before the page knows whose logins are in use: it assumes Wix's until
+  // then, and would fetch Google's reCAPTCHA for nothing.
   useEffect(() => {
+    if (!authResolved) return;
     if (authBackend === "supabase") preloadTurnstile();
     else preloadCaptcha();
-  }, [authBackend]);
+  }, [authResolved, authBackend]);
 
   /** The background robot check's token: Turnstile on MegaDeal's own
    *  logins (it only interrupts someone it finds suspicious), Wix's

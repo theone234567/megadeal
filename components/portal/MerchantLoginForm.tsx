@@ -28,15 +28,21 @@ const INPUT_CLASS =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-200";
 
 export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirectTo?: string }) {
-  // Warm reCAPTCHA while the visitor types, so obtaining the token adds
-  // nothing to the wait after they press sign in.
-  const { client, getClient, loginClient, authBackend } = useWix();
+  const { client, getClient, loginClient, authBackend, member } = useWix();
   // Whose logins: Wix's (today) or MegaDeal's own (lib/siteAuth.ts).
+  // Known once the page's first check with the server answers (member is
+  // undefined until then); before that it reads as Wix's.
+  const authResolved = member !== undefined;
   const auth = authBackend === "supabase" ? siteAuth : wixAuth;
+  // Warm the robot check while the visitor types, so obtaining the token
+  // adds nothing to the wait after they press sign in. Not before the
+  // page knows whose logins are in use, or it fetches Google's reCAPTCHA
+  // for nothing.
   useEffect(() => {
+    if (!authResolved) return;
     if (authBackend === "supabase") preloadTurnstile();
     else preloadCaptcha();
-  }, [authBackend]);
+  }, [authResolved, authBackend]);
 
   /** The background robot check: Turnstile on MegaDeal's own logins,
    *  Wix's invisible reCAPTCHA otherwise. */
@@ -75,6 +81,12 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    // A password manager can fill and submit before the page knows whose
+    // logins to use; sent now, it would go to the wrong ones.
+    if (!authResolved) {
+      setError("Just a moment — try again in a second.");
+      return;
+    }
     if (needsVisibleCaptcha && !visibleCaptchaToken) {
       setError("Please tick the \u201cI'm not a robot\u201d box below to continue.");
       return;

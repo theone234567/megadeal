@@ -93,18 +93,23 @@ export function WixProvider({ children }: { children: React.ReactNode }) {
     // to ask Wix directly using tokens read out of document.cookie, and
     // that requirement is precisely what forced the tokens to be
     // script-readable in the first place.
-    try {
-      const res = await fetch("/api/auth/me");
-      if (!res.ok) {
-        setMember(null);
+    //
+    // Tried three times before giving up: until this answers, the forms
+    // don't know whose logins to use, and giving up falls back to Wix's.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt) await new Promise((r) => setTimeout(r, attempt * 1000));
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) continue;
+        const { member: current, authBackend: backend } = await res.json();
+        setAuthBackend(backend === "supabase" ? "supabase" : "wix");
+        setMember(current ?? null);
         return;
+      } catch {
+        // offline for a moment, or a cut-off answer: try again
       }
-      const { member: current, authBackend: backend } = await res.json();
-      setAuthBackend(backend === "supabase" ? "supabase" : "wix");
-      setMember(current ?? null);
-    } catch {
-      setMember(null);
     }
+    setMember(null);
   }, []);
 
   useEffect(() => {
