@@ -154,6 +154,18 @@ describe("importing the Wix export", () => {
     expect(await db.query("select business_name from public.merchants where wix_owner_id is not null")).toEqual([{ business_name: "A" }]);
   });
 
+  it("reads categories in the shape the Wix SDK returns them (_id, not id)", async () => {
+    // The real import (8 Oct 2026) refused every live deal for this.
+    const sdkShaped: WixExport = {
+      Merchants: [{ _id: "11111111-1111-4222-8333-944455556666", email: "a@example.nz", businessName: "A", status: "Approved" }],
+      StoresProducts: [{ ...product("p1", "sdk-deal"), id: undefined, _id: "p1", allCategoriesInfo: { categories: [{ _id: "not-ours" }, { _id: FOOD.id }] } }],
+      Deals: [{ _id: "d1", productId: "p1", merchantEmail: "a@example.nz", status: "Live", firstPublishedAt: earlier, expiresAt: later }],
+    };
+    const report = await importWixExport(db, sdkShaped, { commit: true, replace: true });
+    expect(report.counts.Deals.imported).toBe(1);
+    expect(await db.query("select category_slug, status from public.deals")).toEqual([{ category_slug: "food-drink", status: "Live" }]);
+  });
+
   it("values the database allows once only don't stop the import", async () => {
     const dupes: WixExport = {
       Merchants: [

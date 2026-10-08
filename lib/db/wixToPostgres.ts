@@ -236,7 +236,8 @@ export function mapDeal(item: Row, product: Row | null, merchantIdByEmail: Map<s
   }
 
   // Category: the product's (a Wix category id), else the deal's own field.
-  const productCategories: unknown[] = (product as any)?.allCategoriesInfo?.categories?.map((c: any) => c?.id ?? c?.name) ?? [];
+  // The Wix SDK renames `id` to `_id` in what it returns, categories too.
+  const productCategories: unknown[] = (product as any)?.allCategoriesInfo?.categories?.map((c: any) => c?._id ?? c?.id ?? c?.name) ?? [];
   const category =
     productCategories.map(categorySlug).find((s): s is string => Boolean(s)) ?? categorySlug(item.category) ?? null;
   if (status !== "Draft" && !category) issues.push({ record, field: "category", problem: "no known category on a submitted deal" });
