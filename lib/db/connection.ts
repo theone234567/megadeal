@@ -55,7 +55,10 @@ async function connectionString(): Promise<string> {
 export async function withDb<T>(fn: (db: Sql) => Promise<T>): Promise<T> {
   // Loaded here, not at the top, so nothing changes for a site still on Wix.
   const { Client } = await import("pg");
-  const client = new Client({ connectionString: await connectionString() });
+  // Time limits, so a database that stops answering fails the page rather
+  // than holding it: 10 s to connect, 20 s for any one query (they take
+  // milliseconds; the longest, in an import or a restore, a few seconds).
+  const client = new Client({ connectionString: await connectionString(), connectionTimeoutMillis: 10_000, query_timeout: 20_000 });
   await client.connect();
   try {
     return await fn({
