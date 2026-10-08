@@ -9,7 +9,13 @@ vi.mock("server-only", () => ({}));
 let cfEnv: Record<string, unknown> = {};
 vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext: async () => ({ env: cfEnv }) }));
 let lastBackupRun: string | null = null;
-vi.mock("./rateLimit", () => ({ getRateLimitKv: async () => ({ get: async (k: string) => (k === "cron:backup:last" ? lastBackupRun : null), put: async () => {} }) }));
+let lastHourlyRun: string | null = null;
+vi.mock("./rateLimit", () => ({
+  getRateLimitKv: async () => ({
+    get: async (k: string) => (k === "cron:backup:last" ? lastBackupRun : k === "cron:hourly:last" ? lastHourlyRun : null),
+    put: async () => {},
+  }),
+}));
 
 let pglite: PGlite;
 const sqlFor = (db: PGlite): Sql => ({ query: async (text, params) => (await db.query(text, params as any[])).rows as any[] });
@@ -235,6 +241,20 @@ describe("the nightly backup check", () => {
     expect(check(await checkReadiness(services().fetchFn), "database", "Copy of Wix kept")).toMatchObject({ state: "info", detail: expect.stringContaining("Save a copy of Wix") });
     objects.push({ key: "wix-copies/2026-10-20T01-00-00Z.json.gz", uploaded: new Date("2026-10-20T01:00:00Z"), size: 50_000 });
     expect(check(await checkReadiness(services().fetchFn), "database", "Copy of Wix kept")).toMatchObject({ state: "ok", detail: expect.stringContaining("20 Oct 2026") });
+  });
+
+  it("after the switch, says when the hourly checks last ran", async () => {
+    allSet();
+    vi.stubEnv("DATA_BACKEND", "postgres");
+    lastHourlyRun = null;
+    expect(check(await checkReadiness(services().fetchFn), "database", "Hourly checks")).toMatchObject({ state: "info", detail: expect.stringContaining("haven't run yet") });
+    lastHourlyRun = JSON.stringify({ at: new Date(Date.now() - 20 * 60_000).toISOString(), database: "up" });
+    expect(check(await checkReadiness(services().fetchFn), "database", "Hourly checks")).toMatchObject({ state: "ok", detail: expect.stringContaining("20 minutes ago") });
+    lastHourlyRun = JSON.stringify({ at: new Date(Date.now() - 5 * 3_600_000).toISOString(), database: "up" });
+    expect(check(await checkReadiness(services().fetchFn), "database", "Hourly checks")).toMatchObject({ state: "warning", detail: expect.stringContaining("5 hours ago") });
+    lastHourlyRun = "not json";
+    expect(check(await checkReadiness(services().fetchFn), "database", "Hourly checks")?.state).toBe("info");
+    lastHourlyRun = null;
   });
 
   it("before the switch, says whether the nightly job is running", async () => {

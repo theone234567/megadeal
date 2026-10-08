@@ -73,6 +73,8 @@ describe("the hourly database check", () => {
   it("emails once when the database stops answering, and once when it's back", async () => {
     expect((await runNow()).body).toEqual({ database: "up" });
     expect(emailed).toHaveLength(0);
+    // Each run is noted, for Moving off Wix to show.
+    expect(JSON.parse(kv.get("cron:hourly:last")!)).toMatchObject({ database: "up" });
 
     dbUp = false;
     expect((await runNow()).status).toBe(503);

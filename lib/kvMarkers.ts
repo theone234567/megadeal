@@ -11,3 +11,7 @@ export const EMAIL_HOOK_REACHED_KEY = "auth:email-hook:last";
 /** Whether the hourly check (app/api/cron/watch) last found the database
  *  answering, and since when ({ state: "up" | "down", since }). */
 export const DATABASE_WATCH_KEY = "cron:watch:database";
+
+/** When the hourly jobs (app/api/cron/watch) last ran, and whether the
+ *  database answered ({ at, database: "up" | "down" }). */
+export const HOURLY_RUN_KEY = "cron:hourly:last";

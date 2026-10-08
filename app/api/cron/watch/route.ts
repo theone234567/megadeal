@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cronCaller } from "@/lib/cronAuth";
 import { dataBackend, withDb } from "@/lib/db/connection";
-import { DATABASE_WATCH_KEY } from "@/lib/kvMarkers";
+import { DATABASE_WATCH_KEY, HOURLY_RUN_KEY } from "@/lib/kvMarkers";
 import { getRateLimitKv } from "@/lib/rateLimit";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 
@@ -57,6 +57,8 @@ export async function POST(req: NextRequest) {
     .catch(() => null);
   const now = new Date().toISOString();
   const up = await answers();
+  // Every run, so Moving off Wix can show the schedule is running.
+  await kv?.put(HOURLY_RUN_KEY, JSON.stringify({ at: now, database: up ? "up" : "down" }), { expirationTtl: 60 * 60 * 24 * 7 }).catch(() => {});
 
   if (!up) {
     console.error("[cron/watch] the database didn't answer");

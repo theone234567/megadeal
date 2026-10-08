@@ -8,7 +8,7 @@ import { authBackend } from "./authSession";
 import { getRateLimitKv } from "./rateLimit";
 import { LAST_RUN_KEY, backupBucket, latestBackup, latestWixCopy } from "./backupStorage";
 import { maintenanceOn } from "./maintenance";
-import { EMAIL_HOOK_REACHED_KEY } from "./kvMarkers";
+import { EMAIL_HOOK_REACHED_KEY, HOURLY_RUN_KEY } from "./kvMarkers";
 
 /**
  * The admin "Moving off Wix" page (app/admin/move-off-wix): for each switch
@@ -161,6 +161,24 @@ async function wixCopyCheck(): Promise<Check> {
   return ok("Copy of Wix kept", `A copy of Wix was saved on ${when}. Download it from Cloudflare > R2 to keep it past 30 days.`);
 }
 
+/** The hourly jobs (database watch, expired deals): that Cloudflare runs them. */
+async function hourlyCheck(): Promise<Check> {
+  const last = await (await getRateLimitKv())?.get(HOURLY_RUN_KEY).catch(() => null);
+  let run: { at: string; database: string } | null = null;
+  try {
+    run = last ? JSON.parse(last) : null;
+  } catch {
+    run = null;
+  }
+  if (!run) return info("Hourly checks", "They haven't run yet: Cloudflare runs them at 17 minutes past each hour, then this shows when.");
+  const minutes = Math.round((Date.now() - new Date(run.at).getTime()) / 60_000);
+  const ago = minutes < 2 ? "a minute ago" : minutes < 120 ? `${minutes} minutes ago` : `${Math.round(minutes / 60)} hours ago`;
+  if (minutes > 150) {
+    return warning("Hourly checks", `They last ran ${ago}. Cloudflare > Workers & Pages > megadeal > Settings > Trigger events should list the schedule, and Logs shows each run.`);
+  }
+  return ok("Hourly checks", `Last ran ${ago}; the database ${run.database === "up" ? "answered" : "didn't answer (you'll have had an email)"}.`);
+}
+
 async function databaseSection(): Promise<{ section: Section; facts: DatabaseFacts | null }> {
   const checks: Check[] = [];
   let facts: DatabaseFacts | null = null;
@@ -215,6 +233,7 @@ async function databaseSection(): Promise<{ section: Section; facts: DatabaseFac
   }
 
   checks.push(await backupCheck());
+  if (dataBackend() === "postgres") checks.push(await hourlyCheck());
   if (dataBackend() === "postgres") checks.push(await wixCopyCheck());
   if (maintenanceOn()) {
     checks.push(warning("Changes paused", "MAINTENANCE_MODE=writes is on: businesses can't save anything. Remove it from wrangler.toml once the switch is done."));
