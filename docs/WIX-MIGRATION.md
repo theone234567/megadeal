@@ -219,26 +219,27 @@ expects.
 
 Everything is built and tested. Email is switched over (7 Oct 2026:
 megadeal.co.nz verified in Resend, a sending-only key, DMARC with
-Cloudflare's reports); the other switches are still off, so the rest of
-the site runs on Wix exactly as before. The new database exists (Supabase
-project `megadeal`, Sydney, organization MegaDeal; Data API off,
-automatic RLS on) and its tables were set up on 7 Oct 2026 with the
-paste-in script: 9 tables, all with row-level security, 7 migrations
-recorded. It's empty until the import. Hyperdrive and the R2 buckets
-(photos, backups) are connected.
+Cloudflare's reports). The database and photos are switched over (8 Oct
+2026): the site reads and saves in Supabase (project `megadeal`, Sydney,
+organization MegaDeal; Data API off, automatic RLS on), through
+Hyperdrive, with photos in the R2 bucket. Business logins still use Wix
+until stage 3.
 
-Owner steps still to do before the database switch: set `CRON_SECRET`
-on the Worker (Moving off Wix makes one), press **Rehearse** on Moving
-off Wix, and move to Workers Paid if the account isn't on it (a whole
-import is more processing than the free plan allows a request).
-Scheduled jobs (nightly backup, hourly checks) are Cloudflare Cron
-Triggers in `wrangler.toml`, run from `worker.mjs`.
+The import (8 Oct 2026) brought over 8 of 12 businesses (the other 4
+were test sign-ups with no email), 26 of 39 deals (the other 13 belonged
+to a business no longer in Wix, all cancelled tests), and everything else
+in full. Three things it taught the importer, all now handled and
+tested: one Wix login owned eight (demo) businesses, so only one keeps
+the link and the rest show as unclaimed; the Wix SDK takes a search's
+extra details (categories, photos) as a separate argument; and it returns
+nested ids as `_id`. Scheduled jobs (nightly backup, hourly checks) are
+Cloudflare Cron Triggers in `wrangler.toml`, run from `worker.mjs`.
 
 | Step | Switch | Needs |
 | --- | --- | --- |
 | Email (on) | `EMAIL_PROVIDER=resend` | Resend, DNS records: done |
-| Database | `DATA_BACKEND=postgres` | Supabase, Hyperdrive, the import |
-| Photos | `PHOTO_STORAGE=r2` | the database switch, an R2 bucket |
+| Database (on) | `DATA_BACKEND=postgres` | Supabase, Hyperdrive, the import: done |
+| Photos (on) | `PHOTO_STORAGE=r2` | the database switch, an R2 bucket: done |
 | Business logins | `AUTH_BACKEND=supabase` | the database switch, Supabase Auth settings, Turnstile |
 
 MegaShop was taken off the site in Oct 2026 (it never opened); it's to
