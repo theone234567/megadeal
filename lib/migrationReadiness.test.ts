@@ -72,11 +72,12 @@ describe("fromDomain", () => {
 });
 
 /** Answers the outside services the checks call. */
-function services(over: Partial<Record<"resend" | "settings" | "turnstile" | "dns", (url: string) => Response>> = {}) {
+function services(over: Partial<Record<"resend" | "settings" | "turnstile" | "dns" | "admin", (url: string, init?: RequestInit) => Response>> = {}) {
   const calls: string[] = [];
-  const fetchFn = (async (input: string | URL | Request) => {
+  const fetchFn = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = String(input);
     calls.push(url);
+    if (url.includes("/admin/users")) return over.admin?.(url, init) ?? Response.json({ users: [] });
     if (url.startsWith("https://api.resend.com/")) return over.resend?.(url) ?? Response.json({ name: "restricted_api_key" }, { status: 401 });
     if (url.endsWith("/settings")) return over.settings?.(url) ?? Response.json({ external: { email: true }, disable_signup: false, mailer_autoconfirm: false });
     if (url.includes("turnstile")) return over.turnstile?.(url) ?? Response.json({ success: false, "error-codes": ["invalid-input-response"] });
@@ -222,6 +223,19 @@ describe("the nightly backup check", () => {
     const c = check(await checkReadiness(services().fetchFn), "database", "Nightly backup");
     expect(c?.state).toBe("warning");
     expect(c?.detail).toContain("3 days ago");
+  });
+
+  it("checks Supabase accepts the service key, without showing any account", async () => {
+    allSet();
+    let sent: Record<string, string> = {};
+    const good = services({ admin: (_u, init) => ((sent = init?.headers as Record<string, string>), Response.json({ users: [{ email: "x@y.nz" }] })) });
+    const c = check(await checkReadiness(good.fetchFn), "logins", "Service key works");
+    expect(c).toMatchObject({ state: "ok" });
+    expect(c?.detail).not.toContain("x@y.nz");
+    expect(sent.apikey).toBe("service_secret_value");
+    expect(good.calls.find((u) => u.includes("/admin/users"))).toBe("https://abc.supabase.co/auth/v1/admin/users?page=1&per_page=1");
+    const refused = services({ admin: () => Response.json({ msg: "Invalid API key" }, { status: 401 }) });
+    expect(check(await checkReadiness(refused.fetchFn), "logins", "Service key works")).toMatchObject({ state: "missing", detail: expect.stringContaining("refused") });
   });
 
   it("doesn't need CRON_SECRET: the site's scheduler has its own password", async () => {

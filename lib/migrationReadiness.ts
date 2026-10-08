@@ -5,6 +5,7 @@ import { countWixPhotos } from "./db/copyPhotos";
 import { MIGRATION_MARKERS } from "./db/migrationMarkers";
 import { photoBucket, photoResizer, photoStorage } from "./photoStorage";
 import { authBackend } from "./authSession";
+import { isJwtKey } from "./supabaseAuth";
 import { getRateLimitKv } from "./rateLimit";
 import { LAST_RUN_KEY, backupBucket, latestBackup, latestWixCopy } from "./backupStorage";
 import { maintenanceOn } from "./maintenance";
@@ -443,6 +444,28 @@ async function loginsSection(dbReady: boolean, facts: DatabaseFacts | null, emai
       } catch (err) {
         console.error("[migrationReadiness] supabase check failed", err);
         checks.push(missing("Supabase answers", "The login service didn't answer, or refused the public key. Check SUPABASE_URL and SUPABASE_ANON_KEY."));
+      }
+
+      // The service key is only used when a business sets a password, so a
+      // mis-pasted one would otherwise first show then. Asks for one
+      // account (read, never shown): Supabase only answers the real key.
+      const service = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+      if (service) {
+        try {
+          const headers: Record<string, string> = { apikey: service };
+          if (isJwtKey(service)) headers.Authorization = `Bearer ${service}`;
+          const res = await fetchFn(`${base}/admin/users?page=1&per_page=1`, { headers, signal: AbortSignal.timeout(5000) });
+          checks.push(
+            res.ok
+              ? ok("Service key works", "Supabase accepts SUPABASE_SERVICE_ROLE_KEY.")
+              : res.status === 401 || res.status === 403
+                ? missing("Service key works", "Supabase refused SUPABASE_SERVICE_ROLE_KEY. Copy the secret key again (Supabase > Project Settings > API Keys) and replace it in Cloudflare.")
+                : warning("Service key works", `Supabase answered ${res.status} when checking SUPABASE_SERVICE_ROLE_KEY. Try again shortly.`)
+          );
+        } catch (err) {
+          console.error("[migrationReadiness] service key check failed", err);
+          checks.push(warning("Service key works", "Couldn't reach Supabase to check SUPABASE_SERVICE_ROLE_KEY. Try again shortly."));
+        }
       }
 
       if (set("SUPABASE_JWT_SECRET")) {
