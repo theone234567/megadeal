@@ -102,6 +102,17 @@ describe("uploading to MegaDeal's own storage", () => {
     expect(stored.size).toBe(0);
   });
 
+  it("turns away a body far bigger than any photo, before reading it", async () => {
+    const { POST } = await import("@/app/api/upload-photo/route");
+    const big = new NextRequest(`${SITE}/api/upload-photo`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "content-length": String(50_000_000) },
+      body: "{}",
+    });
+    expect((await POST(big)).status).toBe(413);
+    expect(stored.size).toBe(0);
+  });
+
   it("serves nothing outside the photos folder", async () => {
     const { GET } = await import("@/app/media/[...key]/route");
     for (const key of [["photos", "2026-10", "missing.jpg"], ["secrets.txt"], ["photos", "..", "x.jpg"]]) {

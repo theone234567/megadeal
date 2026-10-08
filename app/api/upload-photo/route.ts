@@ -91,6 +91,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Refused before reading: a 3MB photo is about 4MB as base64 text, so a
+  // much bigger body isn't a photo, and shouldn't be held in memory first.
+  if (Number(req.headers.get("content-length") ?? 0) > Math.ceil(MAX_BYTES * 1.4) + 10_000) {
+    return NextResponse.json({ error: "That image is too large." }, { status: 413 });
+  }
   const body = await req.json().catch(() => null);
   const dataUrl = body?.dataUrl;
   const label = typeof body?.label === "string" ? body.label : "";
