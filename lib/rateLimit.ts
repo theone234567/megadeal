@@ -68,7 +68,17 @@ export async function checkRateLimit(
   let count = 0;
   let resetAt = now + windowSeconds * 1000;
 
-  const raw = await kv.get(key);
+  // The limits guard against abuse; their bookkeeping failing (Cloudflare
+  // KV down, or its daily write allowance used up on the free plan) must
+  // not turn every sign-up, save and deal view into an error. So a failed
+  // read or write lets the request through, once logged.
+  let raw: string | null;
+  try {
+    raw = await kv.get(key);
+  } catch (err) {
+    console.error("[rateLimit] couldn't read the count, letting it through", key.split(":")[0], err);
+    return { limited: false };
+  }
   if (raw) {
     try {
       const parsed = JSON.parse(raw);
@@ -88,6 +98,10 @@ export async function checkRateLimit(
   // TTL tracks the real remaining window, so the key disappears when the
   // window actually ends rather than being kept alive by traffic.
   const ttl = Math.max(1, Math.ceil((resetAt - now) / 1000));
-  await kv.put(key, JSON.stringify({ c: count, r: resetAt }), { expirationTtl: ttl });
+  try {
+    await kv.put(key, JSON.stringify({ c: count, r: resetAt }), { expirationTtl: ttl });
+  } catch (err) {
+    console.error("[rateLimit] couldn't save the count, letting it through", key.split(":")[0], err);
+  }
   return { limited: false };
 }
