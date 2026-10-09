@@ -38,7 +38,7 @@ describe("the launch checklist", () => {
   });
 
   it("names the businesses that look like tests, and links to the first", () => {
-    const t = item(facts({ testBusinesses: [{ id: "a1", name: "test 3", email: "nick+test3@x.nz" }] }), "test-businesses");
+    const t = item(facts({ testBusinesses: [{ id: "a1", name: "test 3", email: "owner+test3@x.nz" }] }), "test-businesses");
     expect(t).toMatchObject({ state: "todo", link: { href: "/admin/businesses/a1" } });
     expect(t.detail).toMatch(/test 3/);
   });
@@ -53,7 +53,7 @@ describe("the launch checklist", () => {
   });
 
   it("spots test businesses by name or email, not real ones", () => {
-    expect(looksLikeTest("test 3", "nicholaswhite+test3@hotmail.co.nz")).toBe(true);
+    expect(looksLikeTest("test 3", "someone+test3@example.nz")).toBe(true);
     expect(looksLikeTest("Browser Bistro", "browser+1@bistro.test")).toBe(true);
     expect(looksLikeTest("Testarossa Cafe", "hello@testarossa.co.nz")).toBe(false);
     expect(looksLikeTest("Harbour Bistro", "owner@harbourbistro.co.nz")).toBe(false);

@@ -16,7 +16,7 @@ const { codeDidNotGoOut, noteSignupCodeProblem, noteSignupCodeSent, signupCodePr
 beforeEach(() => {
   kv.clear();
   sent.length = 0;
-  vi.stubEnv("ADMIN_NOTIFY_EMAIL", "owner@megadeal.co.nz");
+  vi.stubEnv("ADMIN_NOTIFY_EMAIL", "admin@example.nz");
 });
 
 describe("sign-up codes that can't be sent", () => {
@@ -37,7 +37,7 @@ describe("sign-up codes that can't be sent", () => {
     await noteSignupCodeProblem("hook_timeout");
     await noteSignupCodeProblem("hook_timeout");
     expect(sent).toHaveLength(1);
-    expect(sent[0].to).toBe("owner@megadeal.co.nz");
+    expect(sent[0].to).toBe("admin@example.nz");
     expect(sent[0].html).toMatch(/Bot fight mode/);
     expect(await signupCodeProblem()).toMatchObject({ code: "hook_timeout" });
     await new Promise((r) => setTimeout(r, 5));

@@ -73,9 +73,9 @@ describe("sending", () => {
 
   it("replies go to the first of several notification addresses", async () => {
     const { sendTransactionalEmail } = await import("./sendEmail");
-    expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "Welcome", html: "x", replyTo: "nick@megadeal.co.nz, help@megadeal.co.nz" })).toBe(true);
+    expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "Welcome", html: "x", replyTo: "owner@example.nz, help@megadeal.co.nz" })).toBe(true);
     const body = JSON.parse(String(((wixFetch.mock.calls[0] as unknown[])[1] as RequestInit).body));
-    expect(body.emailTransmission.replyTo).toEqual({ emailAddress: "nick@megadeal.co.nz" });
+    expect(body.emailTransmission.replyTo).toEqual({ emailAddress: "owner@example.nz" });
   });
 
   it("sends to each of several notification addresses", async () => {

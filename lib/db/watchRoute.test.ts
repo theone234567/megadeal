@@ -28,7 +28,7 @@ beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout"] });
   vi.stubEnv("CRON_SECRET", "s3cret");
   vi.stubEnv("DATA_BACKEND", "postgres");
-  vi.stubEnv("ADMIN_NOTIFY_EMAIL", "nick@megadeal.co.nz");
+  vi.stubEnv("ADMIN_NOTIFY_EMAIL", "owner@example.nz");
   vi.spyOn(console, "error").mockImplementation(() => {});
   dbUp = true;
   kv.clear();
@@ -80,7 +80,7 @@ describe("the hourly database check", () => {
     expect((await runNow()).status).toBe(503);
     expect((await runNow()).status).toBe(503); // still down: no second email
     expect(emailed.map((e) => e.subject)).toEqual(["MegaDeal: the database isn't answering"]);
-    expect(emailed[0].to).toBe("nick@megadeal.co.nz");
+    expect(emailed[0].to).toBe("owner@example.nz");
     expect(emailed[0].html).not.toContain("db.internal");
 
     dbUp = true;

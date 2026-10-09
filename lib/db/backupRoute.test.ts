@@ -77,7 +77,7 @@ describe("nightly backup route", () => {
   it("emails the owner when a night's copy fails, without the details", async () => {
     vi.stubEnv("CRON_SECRET", "the-real-secret");
     vi.stubEnv("DATA_BACKEND", "postgres");
-    vi.stubEnv("ADMIN_NOTIFY_EMAIL", "nick@megadeal.co.nz");
+    vi.stubEnv("ADMIN_NOTIFY_EMAIL", "owner@example.nz");
     vi.spyOn(console, "error").mockImplementation(() => {});
     dbDown = true;
     stored.clear();
@@ -85,7 +85,7 @@ describe("nightly backup route", () => {
     dbDown = false;
     expect(stored.size).toBe(0);
     expect(emailed).toHaveLength(1);
-    expect(emailed[0].to).toBe("nick@megadeal.co.nz");
+    expect(emailed[0].to).toBe("owner@example.nz");
     expect(emailed[0].subject).toMatch(/backup didn't complete/);
     expect(emailed[0].html).not.toContain("db.internal");
   });

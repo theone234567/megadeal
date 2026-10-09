@@ -52,7 +52,11 @@ export default function LoginCheckPage() {
     setError(null);
     setInfo(null);
     try {
-      const res = await fetch(`/api/admin/login-check?email=${encodeURIComponent(email.trim())}`, { cache: "no-store" });
+      const res = await fetch("/api/admin/login-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
       const json = await res.json().catch(() => ({}));
       if (res.status === 401) throw new Error("Sign in to the admin dashboard first.");
       if (!res.ok) throw new Error(json.error || "Couldn't check that. Please try again.");

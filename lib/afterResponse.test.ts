@@ -28,7 +28,7 @@ describe("contact form notification", () => {
   beforeEach(() => {
     scheduled.length = 0;
     sent.length = 0;
-    vi.stubEnv("ADMIN_NOTIFY_EMAIL", "nick@megadeal.co.nz");
+    vi.stubEnv("ADMIN_NOTIFY_EMAIL", "owner@example.nz");
   });
 
   it("is handed to after(), so it's sent once the reply has gone", async () => {
@@ -46,7 +46,7 @@ describe("contact form notification", () => {
     expect(scheduled).toHaveLength(1);
     // …but by the task after() keeps alive.
     await scheduled[0]();
-    expect(sent).toEqual([expect.objectContaining({ to: "nick@megadeal.co.nz", subject: "New contact message from Ana", replyTo: "ana@example.nz" })]);
+    expect(sent).toEqual([expect.objectContaining({ to: "owner@example.nz", subject: "New contact message from Ana", replyTo: "ana@example.nz" })]);
   });
 });
 
