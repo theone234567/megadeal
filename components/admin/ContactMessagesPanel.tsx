@@ -18,7 +18,7 @@ const when = (iso: string) =>
  * first. Each one is emailed too; this is the copy that's there even when
  * that email didn't arrive.
  */
-export default function ContactMessagesPanel() {
+export default function ContactMessagesPanel({ onSeen }: { onSeen?: () => void }) {
   const [items, setItems] = useState<ContactMessage[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,12 +28,26 @@ export default function ContactMessagesPanel() {
       .then(async (res) => {
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(res.status === 401 ? "Your admin session has expired — sign in again." : data.error || "Couldn't load the messages.");
-        if (live) setItems(data.items ?? []);
+        if (!live) return;
+        const list: ContactMessage[] = data.items ?? [];
+        setItems(list);
+        // On screen now: mark them read (up to the newest shown), so Needs
+        // attention stops counting them, on every device.
+        if (list.length && data.unseen > 0) {
+          const res = await fetch("/api/admin/contact-messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: list[0].id }),
+          }).catch(() => null);
+          if (res?.ok && live) onSeen?.();
+        }
       })
       .catch((err) => live && setError(err.message));
     return () => {
       live = false;
     };
+    // onSeen only tells the dashboard; reloading for a new one isn't wanted.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

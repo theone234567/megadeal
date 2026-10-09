@@ -19,3 +19,7 @@ export const HOURLY_RUN_KEY = "cron:hourly:last";
 /** How the AI deal check last went ({ at, ok, problem? }), so admin can
  *  say when it has stopped working (deals then wait for a person). */
 export const AI_REVIEW_LAST_KEY = "ai:review:last";
+
+/** The newest contact message an admin has had on screen (its created_at),
+ *  so Needs attention can count the ones that came in since. */
+export const MESSAGES_SEEN_KEY = "admin:messages:seen";

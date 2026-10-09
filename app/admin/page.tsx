@@ -39,6 +39,14 @@ export default function AdminDashboardPage() {
   const [rudenessError, setRudenessError] = useState<string | null>(null);
   const [aiChecking, setAiChecking] = useState<{ done: number; total: number; error: string | null } | null>(null);
   const [dealsRefreshKey, setDealsRefreshKey] = useState(0);
+  // Contact messages that came in since an admin last opened Messages.
+  const [unseenMessages, setUnseenMessages] = useState(0);
+  useEffect(() => {
+    fetch("/api/admin/contact-messages?summary=1")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setUnseenMessages(Number(d?.unseen) || 0))
+      .catch(() => {});
+  }, []);
   const [indexNowStatus, setIndexNowStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
 
   useEffect(() => {
@@ -139,6 +147,7 @@ export default function AdminDashboardPage() {
     { count: missedStarts, label: missedStarts === 1 ? "deal whose start time passed before review" : "deals whose start time passed before review", tab: "deals" as const },
     { count: changeRequests, label: changeRequests === 1 ? "change request from a business" : "change requests from businesses", tab: "deals" as const },
     { count: pendingPhotos, label: pendingPhotos === 1 ? "new photo to approve" : "new photos to approve", tab: "deals" as const },
+    { count: unseenMessages, label: unseenMessages === 1 ? "new contact message" : "new contact messages", tab: "messages" as const },
   ].filter((a) => a.count > 0);
 
   const merchantQuery = merchantSearch.toLowerCase().trim();
@@ -597,7 +606,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {tab === "messages" && <ContactMessagesPanel />}
+      {tab === "messages" && <ContactMessagesPanel onSeen={() => setUnseenMessages(0)} />}
       {tab === "tests" && <TestDealsPanel merchants={merchants} />}
       {tab === "settings" && <PlatformSettingsPanel />}
     </main>
