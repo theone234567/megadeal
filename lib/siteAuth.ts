@@ -1,4 +1,5 @@
 import type { AuthOutcome } from "./wixAuth";
+import { turnstileProblemMessage } from "./turnstileClient";
 
 /**
  * The browser side of MegaDeal's own business logins (app/api/auth/*):
@@ -43,12 +44,20 @@ const toOutcome = (r: Answer, email: string): AuthOutcome =>
       ? { status: "verify", pendingState: { email }, email }
       : { status: "error", message: typeof r.json.error === "string" && r.json.error ? r.json.error : fallbackMessage(r.status) };
 
+/** With the robot check on, no token means it didn't run in this browser:
+ *  say why there and then, rather than sending the form to be refused
+ *  with a vaguer "didn't pass". */
+function checkDidNotRun(captcha?: Captcha): AuthOutcome | null {
+  if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || captchaOf(captcha)) return null;
+  return { status: "error", message: turnstileProblemMessage() };
+}
+
 export async function registerMember(_client: unknown, email: string, password: string, _nickname: string, captcha?: Captcha): Promise<AuthOutcome> {
-  return toOutcome(await post("/api/auth/register", { email, password, captchaToken: captchaOf(captcha) }), email);
+  return checkDidNotRun(captcha) ?? toOutcome(await post("/api/auth/register", { email, password, captchaToken: captchaOf(captcha) }), email);
 }
 
 export async function loginMember(_client: unknown, email: string, password: string, captcha?: Captcha): Promise<AuthOutcome> {
-  return toOutcome(await post("/api/auth/login", { email, password, captchaToken: captchaOf(captcha) }), email);
+  return checkDidNotRun(captcha) ?? toOutcome(await post("/api/auth/login", { email, password, captchaToken: captchaOf(captcha) }), email);
 }
 
 export async function submitVerificationCode(_client: unknown, code: string, pendingState: unknown): Promise<AuthOutcome> {

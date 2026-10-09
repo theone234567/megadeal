@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { getTurnstileToken, preloadTurnstile } from "@/lib/turnstileClient";
+import { getTurnstileToken, preloadTurnstile, turnstileProblemMessage } from "@/lib/turnstileClient";
 
 // Cloudflare's robot check, once its keys are set (lib/turnstile.ts).
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
@@ -58,6 +58,8 @@ export default function ContactForm() {
           const captchaToken = TURNSTILE_SITE_KEY
             ? await getTurnstileToken(TURNSTILE_SITE_KEY, 30_000, checkSlotRef.current)
             : undefined;
+          // The check didn't run in this browser: say why, not "didn't pass".
+          if (TURNSTILE_SITE_KEY && !captchaToken) throw new Error(turnstileProblemMessage());
           const res = await fetch("/api/contact", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

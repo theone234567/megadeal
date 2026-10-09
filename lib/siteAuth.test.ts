@@ -29,3 +29,15 @@ describe("sign-in and sign-up messages", () => {
     expect(out.status === "error" && out.message).toMatch(/couldn't reach our sign-in service/);
   });
 });
+
+describe("when the robot check didn't run in the browser", () => {
+  it("says so before sending anything", async () => {
+    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "site");
+    let sent = false;
+    vi.stubGlobal("fetch", async () => ((sent = true), new Response("{}")));
+    const out = await registerMember(null, "a@b.nz", "pw", "Bistro", { invisibleRecaptchaToken: null });
+    expect(out.status === "error" && out.message).toMatch(/security check/);
+    expect(sent).toBe(false);
+    vi.unstubAllEnvs();
+  });
+});

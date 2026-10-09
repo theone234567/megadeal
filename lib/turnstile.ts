@@ -31,17 +31,31 @@ export async function verifyTurnstile(token: unknown, ip?: string): Promise<bool
     console.error("[turnstile] TURNSTILE_SECRET_KEY isn't set; refusing");
     return false;
   }
-  if (typeof token !== "string" || !token || token.length > 2048) return false;
+  if (typeof token !== "string" || !token || token.length > 2048) {
+    console.error("[turnstile] no token from the page");
+    return false;
+  }
+  // Not sending the visitor's address (Cloudflare's optional remoteip): a
+  // home connection with both IPv4 and IPv6 can solve the check on one and
+  // send the form on the other, and Cloudflare may then refuse a solved
+  // check (suspected when the sign-up form failed live, 9 Oct 2026). The
+  // token is single-use, expires in five minutes and must come from our
+  // own hostname, checked below.
+  void ip;
   const form = new URLSearchParams({ secret, response: token });
-  if (ip && ip !== "unknown") form.set("remoteip", ip);
   try {
     const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form, signal: AbortSignal.timeout(8000) });
-    const out = (await res.json().catch(() => ({}))) as { success?: boolean; hostname?: string };
-    if (!out.success) return false;
+    const out = (await res.json().catch(() => ({}))) as { success?: boolean; hostname?: string; "error-codes"?: string[] };
+    if (!out.success) {
+      console.error("[turnstile] refused", JSON.stringify(out["error-codes"] ?? []));
+      return false;
+    }
     // A token solved on another site isn't ours. (Cloudflare's test keys
     // answer "example.com", accepted only away from production.)
     const host = new URL(SITE_URL).hostname;
-    return out.hostname === host || (process.env.NODE_ENV !== "production" && out.hostname === "example.com");
+    const ours = out.hostname === host || (process.env.NODE_ENV !== "production" && out.hostname === "example.com");
+    if (!ours) console.error("[turnstile] solved on another hostname", out.hostname);
+    return ours;
   } catch (err) {
     console.error("[turnstile] verification unreachable", err);
     return false;

@@ -45,10 +45,40 @@ export function preloadTurnstile(): void {
  * own, where a page has several forms), else the page's
  * [data-turnstile-slot].
  */
+/** Why the last check gave no token, for the form to say: "blocked" (the
+ *  script didn't load), "error" (Cloudflare's widget reported one, with
+ *  its code) or "timeout" (a challenge was shown and not completed). */
+export let lastTurnstileProblem: { kind: "blocked" | "error" | "timeout"; code?: string } | null = null;
+
+/** What to tell someone whose robot check couldn't run. */
+export function turnstileProblemMessage(): string {
+  const p = lastTurnstileProblem;
+  if (p?.kind === "timeout") return "Please complete the security check below the form, then press the button again.";
+  if (p?.kind === "blocked") {
+    return "The security check couldn't load in your browser. If you use an ad or script blocker, allow megadeal.co.nz (and challenges.cloudflare.com), then try again.";
+  }
+  return `The security check couldn't run in your browser${p?.code ? ` (code ${p.code})` : ""}. Please refresh the page and try again; if it keeps happening, try another browser.`;
+}
+
+/**
+ * A token, trying once more if the first check fails outright (a blip in
+ * Cloudflare's widget). Null if neither worked: lastTurnstileProblem says
+ * why.
+ */
 export async function getTurnstileToken(siteKey: string, timeoutMs = 30_000, slot?: HTMLElement | null): Promise<string | null> {
+  const first = await turnstileTokenOnce(siteKey, timeoutMs, slot);
+  if (first || !siteKey || lastTurnstileProblem?.kind !== "error") return first;
+  return turnstileTokenOnce(siteKey, timeoutMs, slot);
+}
+
+async function turnstileTokenOnce(siteKey: string, timeoutMs: number, slot?: HTMLElement | null): Promise<string | null> {
+  lastTurnstileProblem = null;
   if (!siteKey) return null;
   const t = await load();
-  if (!t) return null;
+  if (!t) {
+    lastTurnstileProblem = { kind: "blocked" };
+    return null;
+  }
   const host = document.createElement("div");
   host.className = "turnstile-host";
   host.style.margin = "12px 0";
@@ -65,14 +95,23 @@ export async function getTurnstileToken(siteKey: string, timeoutMs = 30_000, slo
       host.remove();
       resolve(token);
     };
-    const timer = setTimeout(() => done(null), timeoutMs);
+    const timer = setTimeout(() => {
+      lastTurnstileProblem = { kind: "timeout" };
+      done(null);
+    }, timeoutMs);
     id = t.render(host, {
       sitekey: siteKey,
       appearance: "interaction-only",
       execution: "render",
       callback: (token: string) => done(token),
-      "error-callback": () => done(null),
-      "expired-callback": () => done(null),
+      "error-callback": (code?: string | number) => {
+        lastTurnstileProblem = { kind: "error", code: code === undefined ? undefined : String(code).slice(0, 12) };
+        done(null);
+      },
+      "expired-callback": () => {
+        lastTurnstileProblem = { kind: "timeout" };
+        done(null);
+      },
     });
   });
 }

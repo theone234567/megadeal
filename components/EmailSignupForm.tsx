@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
-import { getTurnstileToken, preloadTurnstile } from "@/lib/turnstileClient";
+import { getTurnstileToken, preloadTurnstile, turnstileProblemMessage } from "@/lib/turnstileClient";
 
 // Cloudflare's robot check, once its keys are set (lib/turnstile.ts):
 // invisible to nearly everyone; a challenge, if shown, appears in the form.
@@ -77,6 +77,8 @@ export default function EmailSignupForm({
       const captchaToken = TURNSTILE_SITE_KEY
         ? await getTurnstileToken(TURNSTILE_SITE_KEY, 30_000, checkSlotRef.current)
         : undefined;
+      // The check didn't run in this browser: say why, not "didn't pass".
+      if (TURNSTILE_SITE_KEY && !captchaToken) throw new Error(turnstileProblemMessage());
       const res = await fetch("/api/email-signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
