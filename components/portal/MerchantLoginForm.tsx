@@ -262,10 +262,14 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        // The route's own sentence (too many tries, say) when it gave one.
+        const data = await res.json().catch(() => ({}));
+        throw new Error(typeof data.error === "string" && data.error ? data.error : "Couldn't send a reset email. Please try again.");
+      }
       setResetSent(true);
-    } catch {
-      setError("Couldn't send a reset email. Please try again.");
+    } catch (err: any) {
+      setError(err?.message || "Couldn't send a reset email. Please try again.");
     }
   }
 

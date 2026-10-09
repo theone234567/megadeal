@@ -14,17 +14,34 @@ import type { AuthOutcome } from "./wixAuth";
 type Captcha = { recaptchaToken?: string | null; invisibleRecaptchaToken?: string | null } | undefined;
 const captchaOf = (c: Captcha) => c?.recaptchaToken || c?.invisibleRecaptchaToken || "";
 
-async function post(path: string, body: unknown): Promise<{ ok: boolean; json: Record<string, any> }> {
+type Answer = { ok: boolean; status: number; json: Record<string, any> };
+
+async function post(path: string, body: unknown): Promise<Answer> {
   const res = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  return { ok: res.ok, json: await res.json().catch(() => ({})) };
+  return { ok: res.ok, status: res.status, json: await res.json().catch(() => ({})) };
 }
 
-const toOutcome = (r: { ok: boolean; json: Record<string, any> }, email: string): AuthOutcome =>
+/**
+ * What to say when the answer isn't one of our routes' own (they always
+ * give a sentence in `error`). A 403 or 429 then comes from Cloudflare in
+ * front of the site: its leaked-password rule (a password seen in a data
+ * breach) or its bot protection. A 5xx is the site or the login service
+ * failing for a moment.
+ */
+export function fallbackMessage(status: number): string {
+  if (status === 403 || status === 429) {
+    return "Our security check stopped this attempt. If you've used this password on another site, it may have appeared in a data breach: use \u201cForgot password\u201d to choose a new one. Otherwise wait a minute and try again, with any VPN turned off.";
+  }
+  if (status >= 500) return "We couldn't reach our sign-in service just now. Please try again in a minute.";
+  return "Something went wrong. Please try again.";
+}
+
+const toOutcome = (r: Answer, email: string): AuthOutcome =>
   r.json.status === "success"
     ? { status: "success" }
     : r.json.status === "verify"
       ? { status: "verify", pendingState: { email }, email }
-      : { status: "error", message: r.json.error || "Something went wrong. Please try again." };
+      : { status: "error", message: typeof r.json.error === "string" && r.json.error ? r.json.error : fallbackMessage(r.status) };
 
 export async function registerMember(_client: unknown, email: string, password: string, _nickname: string, captcha?: Captcha): Promise<AuthOutcome> {
   return toOutcome(await post("/api/auth/register", { email, password, captchaToken: captchaOf(captcha) }), email);

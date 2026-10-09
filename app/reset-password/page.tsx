@@ -43,7 +43,16 @@ function ResetPasswordForm() {
         body: JSON.stringify({ token, newPassword: password }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Couldn't reset your password.");
+      if (!res.ok) {
+        // No sentence of ours: Cloudflare stopped it in front of the site,
+        // most likely its leaked-password rule.
+        throw new Error(
+          data.error ||
+            (res.status === 403 || res.status === 429
+              ? "Our security check stopped this. That password may have appeared in a data breach elsewhere: please choose a different one."
+              : "Couldn't reset your password. Please try again.")
+        );
+      }
       setDone(true);
     } catch (err: any) {
       setError(err?.message || "Couldn't reset your password. Please try again.");
