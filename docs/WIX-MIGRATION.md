@@ -507,7 +507,8 @@ hour or two; after that, fix forward.
 Progress: steps 1 to 4 done by 9 Oct 2026 (the WAF rule is "Let
 Supabase reach email hook"; Bot Fight Mode is off; the Turnstile widget
 is "MegaDeal", with its secret rotated once after it was shown on
-screen). Next: the readiness page all ticks, then step 6.
+screen). Step 6 done 9 Oct 2026 (`AUTH_BACKEND = "supabase"`). Next: the
+step 7 test on the live site, then step 8.
 
 1. Supabase > Authentication:
    - Providers > Email: on, "Confirm email" on, OTP length 6, OTP
@@ -713,24 +714,16 @@ same copy any time, into the same bucket (`app/api/admin/save-copy`);
 ### Privacy policy: update with each switch
 
 The privacy policy (`app/privacy/page.tsx`, "Service providers and
-overseas disclosure") names Wix as the provider of logins and data
-(and, since email moved on 7 Oct 2026, Resend for email and Cloudflare
-for hosting). That stays true until the switches; once they're on it isn't, and
-the Privacy Act expects the policy to say who processes personal
-information. A suggested replacement for that paragraph's provider list,
-for you to check (and have checked) before using:
+overseas disclosure") says who processes personal information, as the
+Privacy Act expects. Updated with the login switch (9 Oct 2026): Supabase
+for the database and business logins, Cloudflare for hosting, security
+checks and photos, Resend for email, and Wix only as the previous provider
+still holding a copy of earlier records.
 
-> This includes Supabase (our database and business logins, hosted in
-> Sydney, Australia), Cloudflare (hosting, security checks and photo
-> storage), Resend (transactional email), Google's Places API for
-> business-address autocomplete, Google Analytics for site traffic
-> reporting, and Meta (Facebook/Instagram) for ad measurement.
-
-(When the shop opens on Shopify, add Shopify, which processes shop
-orders.)
-
-Change it in the same deploy as the last switch, and update the "Last
-updated" date at the top of the page.
+When the Wix account closes, delete the Wix sentence ("Wix.com (our
+previous provider ... until our account with it closes),") and update the
+"Last updated" date at the top of the page. When the shop opens on
+Shopify, add Shopify, which processes shop orders.
 
 ### Stage 4: after the move
 

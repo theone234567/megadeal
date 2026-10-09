@@ -18,8 +18,8 @@ find them and contact or book the business directly. Live at
   applied from Admin > Moving off Wix > "Apply database updates".
 - **Photos:** Cloudflare R2 (`PHOTOS`), resized by Cloudflare Images.
 - **Email:** Resend, from megadeal.co.nz (`lib/sendEmail.ts`).
-- **Business sign-in:** moving from Wix to Supabase Auth
-  (`AUTH_BACKEND`, `lib/authSession.ts`); see the migration guide.
+- **Business sign-in:** Supabase Auth with Cloudflare Turnstile
+  (`AUTH_BACKEND`, `lib/authSession.ts`), since 9 Oct 2026.
 - **Backups:** nightly to R2 (`BACKUPS`), restorable from admin.
 
 Bindings and switches are in `wrangler.toml`; secrets live in Cloudflare

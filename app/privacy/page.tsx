@@ -81,9 +81,11 @@ export default function PrivacyPage() {
       <p>
         We use a small number of specialist providers to run the site, and
         some personal information is processed by them on our behalf. This
-        includes our database provider (Supabase, which stores our data in
-        Sydney, Australia), our business-login provider (Wix.com), our email
-        delivery provider (Resend), our website hosting, security and photo
+        includes our database and business-login provider (Supabase, which
+        stores our data in Sydney, Australia), Wix.com (our previous
+        provider, which keeps a copy of our earlier records until our account
+        with it closes), our email delivery provider (Resend), our website
+        hosting, security and photo
         storage provider (Cloudflare), Google&apos;s Places API
         for business-address autocomplete, Google Analytics for site
         traffic reporting, and Meta (Facebook/Instagram) for ad measurement
