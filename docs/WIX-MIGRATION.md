@@ -504,6 +504,11 @@ hour or two; after that, fix forward.
 
 ### Stage 3: business logins (the same day or soon after)
 
+Progress: steps 1 to 4 done by 9 Oct 2026 (the WAF rule is "Let
+Supabase reach email hook"; Bot Fight Mode is off; the Turnstile widget
+is "MegaDeal", with its secret rotated once after it was shown on
+screen). Next: the readiness page all ticks, then step 6.
+
 1. Supabase > Authentication:
    - Providers > Email: on, "Confirm email" on, OTP length 6, OTP
      expiry 600 seconds.
