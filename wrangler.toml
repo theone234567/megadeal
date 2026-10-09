@@ -76,6 +76,11 @@ EMAIL_PROVIDER = "resend"
 # since stays only in the new database: docs/WIX-MIGRATION.md).
 DATA_BACKEND = "postgres"
 PHOTO_STORAGE = "r2"
+# Business logins on Supabase Auth with Cloudflare Turnstile, not Wix:
+# switched on 9 Oct 2026 once the readiness page was all ticks. Remove the
+# line and deploy to go back to Wix's logins (accounts made meanwhile
+# would need to sign up on Wix: docs/WIX-MIGRATION.md, stage 3).
+AUTH_BACKEND = "supabase"
 
 [observability]
 enabled = true
