@@ -52,6 +52,10 @@ goes out again; you get at most one email about it every 6 hours.
 4. Try a sign-up yourself in a private window. When the code arrives, the
    warning in admin clears by itself.
 
+The same warning appears as "Password reset emails aren't going out" when a
+"Forgot password" email couldn't be sent: that one is a sending problem,
+so start at step 3.
+
 ## Emails aren't arriving
 
 1. Go to **resend.com** > **Emails**: each one says delivered, bounced or

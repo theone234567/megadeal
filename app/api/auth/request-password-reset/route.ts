@@ -8,6 +8,7 @@ import { escapeHtml } from "@/lib/escapeHtml";
 import { SITE_URL } from "@/lib/siteConfig";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { accountIdForEmail, authBackend } from "@/lib/authSession";
+import { noteSignupCodeProblem, noteSignupCodeSent } from "@/lib/signupHealth";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // The found/not-found paths below cost very different amounts of real
@@ -100,7 +101,13 @@ export async function POST(req: NextRequest) {
         });
         // The answer stays the same either way (it never says whether an
         // account exists), but a failed send is logged.
-        if (!sent) console.error("[auth/request-password-reset] email not sent");
+        if (!sent) {
+          console.error("[auth/request-password-reset] email not sent");
+          // Nobody would know otherwise: Needs attention, and an email.
+          await noteSignupCodeProblem("email_not_sent", "password reset");
+        } else {
+          await noteSignupCodeSent();
+        }
       }
     }
   } catch (err) {

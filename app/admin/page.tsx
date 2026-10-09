@@ -89,7 +89,9 @@ export default function AdminDashboardPage() {
         if (!cancelled && sp?.at) {
           const when = new Date(sp.at).toLocaleString("en-NZ", { timeZone: "Pacific/Auckland", dateStyle: "medium", timeStyle: "short" });
           setSignupNote(
-            `New businesses can't get their sign-up code (last failed ${when}). Check Cloudflare > Security: Bot fight mode off, and the rule "Let Supabase reach email hook" active; then resend.com > Emails. This clears when a code next goes out.`
+            sp.kind === "password reset"
+              ? `Password reset emails aren't going out (last failed ${when}), so "Forgot password" doesn't work. Check resend.com > Emails for why. This clears when an account email next goes out.`
+              : `New businesses can't get their sign-up code (last failed ${when}). Check Cloudflare > Security: Bot fight mode off, and the rule "Let Supabase reach email hook" active; then resend.com > Emails. This clears when a code next goes out.`
           );
         }
         const ai = d?.aiReview;

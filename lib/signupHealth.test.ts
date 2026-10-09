@@ -43,6 +43,14 @@ describe("sign-up codes that can't be sent", () => {
     expect(await signupCodeProblem()).toBeNull();
   });
 
+  it("says what to check for a reset email that couldn't be sent", async () => {
+    await noteSignupCodeProblem("email_not_sent", "password reset");
+    expect(sent[0].subject).toMatch(/password reset emails/);
+    expect(sent[0].html).toMatch(/resend\.com/);
+    expect(sent[0].html).not.toMatch(/Bot fight mode/);
+    expect(await signupCodeProblem()).toMatchObject({ kind: "password reset" });
+  });
+
   it("keeps what it puts in the email to plain words", async () => {
     await noteSignupCodeProblem('<img src=x onerror="alert(1)">');
     expect(sent[0].html).not.toMatch(/<img src=x|onerror=/);
