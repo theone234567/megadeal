@@ -97,9 +97,7 @@ export default function BusinessHoursEditor({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-slate-700">
-          Opening hours <span className="font-normal text-slate-500">(optional)</span>
-        </span>
+        <span className="text-sm font-bold text-slate-900">Opening hours</span>
         <button
           type="button"
           onClick={copyMondayToWeekdays}
@@ -109,9 +107,11 @@ export default function BusinessHoursEditor({
         </button>
       </div>
 
-      <div className="mt-2 space-y-2">
+      {/* Two columns from tablet width: seven full-width rows made the
+          form far longer than it needed to be. */}
+      <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
         {data.schedule.map((day, i) => (
-          <div key={day.day} className="rounded-xl border border-slate-200 bg-white p-2.5">
+          <div key={day.day} className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5">
             <div className="flex items-center justify-between">
               <span className="w-10 text-sm font-semibold text-slate-700">{day.day}</span>
               {/* An "Open" switch, off by default, rather than a "Closed"
@@ -205,9 +205,7 @@ export default function BusinessHoursEditor({
       </div>
 
       <label className="mt-3 block text-sm">
-        <span className="mb-1 block font-medium text-slate-700">
-          Notes <span className="font-normal text-slate-500">(optional)</span>
-        </span>
+        <span className="mb-1 block font-medium text-slate-700">Notes</span>
         <input
           type="text"
           value={data.notes || ""}
@@ -218,13 +216,8 @@ export default function BusinessHoursEditor({
       </label>
 
       <div className="mt-4">
-        <p className="text-sm font-medium text-slate-700">
-          Holiday &amp; special hours <span className="font-normal text-slate-500">(optional)</span>
-        </p>
-        <p className="text-xs text-slate-500">
-          Dates that differ from the week above. Customers see the ones coming up in the next two months, and
-          &ldquo;Open now&rdquo; follows them.
-        </p>
+        <p className="text-sm font-medium text-slate-700">Holiday &amp; special hours</p>
+        <p className="text-xs text-slate-500">Dates that differ from the week above.</p>
         <div className="mt-2 space-y-2">
           {exceptions.map((e, i) => (
             <div key={i} className="rounded-xl border border-slate-200 bg-white p-2.5">

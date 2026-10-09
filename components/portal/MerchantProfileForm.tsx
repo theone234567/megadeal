@@ -16,12 +16,20 @@ const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilto
 const MIN_BIO_LENGTH = 50;
 const MAX_BIO_LENGTH = 600;
 
+/** Required fields carry a star (the form says "* required" once at the
+ *  top): most fields are optional, so marking each of those "(optional)"
+ *  made every label longer. */
 function RequiredTag() {
-  return <span className="ml-1 font-normal text-ember-600">Required</span>;
+  return (
+    <>
+      <span aria-hidden="true" className="ml-0.5 font-bold text-ember-600">*</span>
+      <span className="sr-only"> (required)</span>
+    </>
+  );
 }
 
 function OptionalTag() {
-  return <span className="ml-1 font-normal text-slate-500">(optional)</span>;
+  return null;
 }
 
 /** Marks a field that's never shown on the public site: legal name, NZBN,
@@ -30,7 +38,7 @@ function OptionalTag() {
  *  (mapMerchantToBusiness in lib/business.ts is the public set). */
 function PrivateTag() {
   return (
-    <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-slate-100 px-1.5 py-0.5 align-middle text-[11px] font-semibold text-slate-600">
+    <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-slate-100 px-1.5 align-middle text-[11px] font-semibold leading-4 text-slate-600">
       <EyeOffIcon className="h-3 w-3" />
       Private
     </span>
@@ -307,39 +315,9 @@ export default function MerchantProfileForm({
 
         <PublicHeading className="mt-4" />
         <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-          <SummaryItem label="Business name" value={merchant.businessName} />
-          <SummaryItem label="Website" value={merchant.website} />
-          <SummaryItem label="Booking phone number" value={merchant.phone} />
-          <SummaryItem label="Booking link" value={merchant.bookingUrl} />
-          <SummaryItem label="Booking email" value={merchant.bookingEmail} />
-          {merchant.hideAddress ? (
-            <>
-              <SummaryItem
-                label="Location shown"
-                value={`${[merchant.suburb, merchant.city].filter(Boolean).join(", ") || "—"} (street address kept private)`}
-              />
-              <SummaryItem label="Customers see" value={locationNotes(true, merchant.serviceArea).join(" ")} />
-            </>
-          ) : (
-            <>
-              <SummaryItem wide label="Address" value={[merchant.address, merchant.suburb, merchant.city].filter(Boolean).join(", ")} />
-              {merchant.serviceArea && <SummaryItem label="Areas you cover" value={merchant.serviceArea} />}
-            </>
-          )}
-          <SummaryItem label="Opening hours" value={hours} />
-          <SummaryItem
-            label="Socials"
-            value={
-              merchant.facebookUrl || merchant.instagramUrl ? (
-                <>
-                  {merchant.facebookUrl && <p className="break-all">Facebook: {merchant.facebookUrl}</p>}
-                  {merchant.instagramUrl && <p className="break-all">Instagram: {merchant.instagramUrl}</p>}
-                </>
-              ) : null
-            }
-          />
-          <SummaryItem label="Price range" value={merchant.priceRange} />
-          <SummaryItem label="Features & amenities" value={merchant.amenities} />
+          {/* Same order as the form: name, about and photos, location,
+              contact details, hours, extras. */}
+          <SummaryItem wide label="Business name" value={merchant.businessName} />
           <SummaryItem wide label="About" value={merchant.bio} />
           <div className="sm:col-span-2">
             <dt className="text-slate-500">Photos</dt>
@@ -354,6 +332,38 @@ export default function MerchantProfileForm({
               )}
             </dd>
           </div>
+          {merchant.hideAddress ? (
+            <>
+              <SummaryItem
+                label="Location shown"
+                value={`${[merchant.suburb, merchant.city].filter(Boolean).join(", ") || "—"} (street address kept private)`}
+              />
+              <SummaryItem label="Customers see" value={locationNotes(true, merchant.serviceArea).join(" ")} />
+            </>
+          ) : (
+            <>
+              <SummaryItem wide label="Address" value={[merchant.address, merchant.suburb, merchant.city].filter(Boolean).join(", ")} />
+              {merchant.serviceArea && <SummaryItem label="Areas you cover" value={merchant.serviceArea} />}
+            </>
+          )}
+          <SummaryItem label="Booking phone number" value={merchant.phone} />
+          <SummaryItem label="Website" value={merchant.website} />
+          <SummaryItem label="Booking link" value={merchant.bookingUrl} />
+          <SummaryItem label="Booking email" value={merchant.bookingEmail} />
+          <SummaryItem
+            label="Socials"
+            value={
+              merchant.facebookUrl || merchant.instagramUrl ? (
+                <>
+                  {merchant.facebookUrl && <p className="break-all">Facebook: {merchant.facebookUrl}</p>}
+                  {merchant.instagramUrl && <p className="break-all">Instagram: {merchant.instagramUrl}</p>}
+                </>
+              ) : null
+            }
+          />
+          <SummaryItem label="Opening hours" value={hours} />
+          <SummaryItem label="Price range" value={merchant.priceRange} />
+          <SummaryItem label="Features & amenities" value={merchant.amenities} />
         </dl>
 
         <PrivateHeading className="mt-6" />
@@ -375,8 +385,8 @@ export default function MerchantProfileForm({
         {startEditing ? "Your business details" : "Edit business details"}
       </h2>
       <p className="mt-1 text-sm text-slate-500">
-        Two parts: what deal hunters see on your listing, and private details only MegaDeal sees,
-        used to contact you and check your business.
+        What deal hunters see on your listing, then private details only MegaDeal sees.{" "}
+        <span className="font-bold text-ember-600">*</span> required.
       </p>
       {/* Only once there's a live listing for a re-review to take down.
           Before approval this warned about a consequence that can't
@@ -393,16 +403,16 @@ export default function MerchantProfileForm({
         </p>
       )}
 
-      <form onSubmit={handleSave} className="mt-5 space-y-6">
+      <form onSubmit={handleSave} className="mt-4 space-y-4">
         {/* The public set is mapMerchantToBusiness in lib/business.ts
             (lib/businessPrivacy.test.ts); everything in the private part
             stays off the site. */}
-        <section aria-labelledby="profile-public-heading" className="space-y-6 rounded-2xl border border-emerald-200 bg-white p-4 sm:p-5">
+        <section aria-labelledby="profile-public-heading" className="space-y-4 rounded-2xl border border-emerald-200 bg-white p-4 sm:p-5">
           <PublicHeading id="profile-public-heading" />
 
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-slate-900">Name and website</h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <h3 className="text-sm font-bold text-slate-900">About your business</h3>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label htmlFor="profile-businessName" className={labelClass}>
                   Business name (trading as)
@@ -414,29 +424,62 @@ export default function MerchantProfileForm({
                   maxLength={300}
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
+                  placeholder="The name customers know, e.g. Harbourside Bistro"
                   className={inputClass("businessName")}
                 />
                 {fieldError("businessName")}
-                <p className="mt-1 text-xs text-slate-500">The name customers know you by, e.g. Harbourside Bistro.</p>
-              </div>
-              <div>
-                <label htmlFor="profile-website" className={labelClass}>
-                  Website
-                  <OptionalTag />
-                </label>
-                <input
-                  id="profile-website"
-                  maxLength={300}
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                  className={inputClass("website")}
-                />
-                {fieldError("website")}
               </div>
             </div>
+            <div>
+              <label htmlFor="profile-bio" className={labelClass}>
+                Description
+                <RequiredTag />
+              </label>
+              <textarea
+                id="profile-bio"
+                required
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                minLength={MIN_BIO_LENGTH}
+                maxLength={MAX_BIO_LENGTH}
+                rows={3}
+                placeholder="A couple of sentences customers will see on your listing — what you do and what makes you worth choosing."
+                className={inputClass("bio")}
+              />
+              {fieldError("bio")}
+              <p className="mt-1 text-xs text-slate-500">
+                {bio.length < MIN_BIO_LENGTH
+                  ? `At least ${MIN_BIO_LENGTH} characters (${MIN_BIO_LENGTH - bio.length} to go)`
+                  : `${bio.length}/${MAX_BIO_LENGTH} characters`}
+              </p>
+            </div>
+
+            {/* Saves on its own (its own save route, and a photo change sends
+                the listing back for review), which is why it keeps its own
+                confirm step rather than riding along with the main Save. */}
+            {onPhotosConfirm && (
+              <div>
+                <p className={labelClass}>
+                  Business photo
+                  <RequiredTag />
+                </p>
+                <PhotoGalleryField
+                  photos={parseBusinessPhotos(merchant.photos)}
+                  label={merchant.businessName}
+                  warningText={
+                    merchant.status === "Approved"
+                      ? "Changing your photos sends your listing back for review, so it comes off the site until we've had a look. Continue?"
+                      : "Save these photos?"
+                  }
+                  onConfirm={onPhotosConfirm}
+                  saveRightAway={merchant.status !== "Approved"}
+                />
+                {photosError && <p role="alert" className="mt-2 text-sm text-red-600">{photosError}</p>}
+              </div>
+            )}
           </div>
 
-          <div className="space-y-4 border-t border-slate-100 pt-5">
+          <div className="space-y-3 border-t border-slate-100 pt-4">
             <h3 className="text-sm font-bold text-slate-900">Location</h3>
             <AddressAutocompleteField
               id="profile-address"
@@ -467,11 +510,9 @@ export default function MerchantProfileForm({
               helperText={
                 [
                   hideAddress
-                    ? "Kept private: customers see only your suburb. We use it to check your business and to place you roughly on the map."
+                    ? "Kept private: customers see only your suburb."
                     : "",
-                  lat === null
-                    ? "Pick your address from the list as you type. If it isn't there, fill in the suburb and city and we'll find it on the map."
-                    : "",
+                  lat === null ? "Pick it from the list as you type, so the map's right." : "",
                 ]
                   .filter(Boolean)
                   .join(" ") || undefined
@@ -479,7 +520,7 @@ export default function MerchantProfileForm({
               errorText={fieldErrors.address}
             />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div>
                 <label htmlFor="profile-suburb" className={labelClass}>
                   Suburb
@@ -550,48 +591,42 @@ export default function MerchantProfileForm({
             {/* Google's "service-area business": the address is still given
                 (to check the business, and for "near me" with a pin moved
                 about a kilometre), just not published. */}
-            <label
-              className={`flex cursor-pointer items-start gap-2.5 rounded-xl border-2 p-3 text-sm transition focus-within:ring-2 focus-within:ring-brand-400 ${
-                hideAddress ? "border-brand-600 bg-brand-50" : "border-slate-200 bg-white hover:border-brand-300"
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={hideAddress}
-                onChange={(e) => setHideAddress(e.target.checked)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
-              />
-              <span>
-                <span className="block font-bold text-slate-900">Hide my street address</span>
-                <span className="text-slate-600">
-                  For a home-based business, or if you&apos;d rather not show it. Customers see your suburb and
-                  &ldquo;Address provided by the business when you book&rdquo;. The map shows you roughly, never your exact spot.
+            {/* Side by side: the private-address tick and the areas a
+                business that goes to its customers covers. */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className="flex cursor-pointer items-start gap-2 self-end rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-brand-400">
+                <input
+                  type="checkbox"
+                  checked={hideAddress}
+                  onChange={(e) => setHideAddress(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
+                />
+                <span>
+                  <span className="block font-semibold text-slate-900">Hide my street address</span>
+                  <span className="text-xs text-slate-600">
+                    Home-based? Customers see your suburb, and you give the address when they book.
+                  </span>
                 </span>
-              </span>
-            </label>
-
-            <div>
-              <label htmlFor="profile-serviceArea" className={labelClass}>
-                Areas you cover
-                <OptionalTag />
               </label>
-              <input
-                id="profile-serviceArea"
-                maxLength={200}
-                value={serviceArea}
-                onChange={(e) => setServiceArea(e.target.value)}
-                placeholder="e.g. North Shore and West Auckland"
-                className={plainInputClass}
-              />
-              <p className="mt-1 text-xs text-slate-500">
-                If you go to your customers. Shown on your listing as &ldquo;Comes to you: covers …&rdquo;.
-              </p>
+              <div>
+                <label htmlFor="profile-serviceArea" className={labelClass}>
+                  Areas you cover, if you go to customers
+                </label>
+                <input
+                  id="profile-serviceArea"
+                  maxLength={200}
+                  value={serviceArea}
+                  onChange={(e) => setServiceArea(e.target.value)}
+                  placeholder="e.g. North Shore and West Auckland"
+                  className={plainInputClass}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="space-y-4 border-t border-slate-100 pt-5">
-            <h3 className="text-sm font-bold text-slate-900">How customers book</h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="space-y-3 border-t border-slate-100 pt-4">
+            <h3 className="text-sm font-bold text-slate-900">Contact details</h3>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label htmlFor="profile-phone" className={labelClass}>
                   Booking phone number
@@ -609,7 +644,7 @@ export default function MerchantProfileForm({
                 />
                 {fieldError("phone")}
                 <p className="mt-1 text-xs text-slate-500">
-                  The number customers call to book, shown on your listing.
+                  Shown on your listing.
                   {/* One tap when it's the same number, without making a
                       private mobile public unless they choose to. */}
                   {contactPhone.trim() && phone.trim() !== contactPhone.trim() && (
@@ -621,6 +656,20 @@ export default function MerchantProfileForm({
                     </>
                   )}
                 </p>
+              </div>
+              <div>
+                <label htmlFor="profile-website" className={labelClass}>
+                  Website
+                  <OptionalTag />
+                </label>
+                <input
+                  id="profile-website"
+                  maxLength={300}
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  className={inputClass("website")}
+                />
+                {fieldError("website")}
               </div>
               <div>
                 <label htmlFor="profile-bookingUrl" className={labelClass}>
@@ -653,70 +702,48 @@ export default function MerchantProfileForm({
                 />
                 {fieldError("bookingEmail")}
               </div>
+              <div>
+                <label htmlFor="profile-facebookUrl" className={labelClass}>
+                  Facebook
+                  <OptionalTag />
+                </label>
+                <input
+                  id="profile-facebookUrl"
+                  maxLength={300}
+                  value={facebookUrl}
+                  onChange={(e) => setFacebookUrl(e.target.value)}
+                  placeholder="https://facebook.com/yourbusiness"
+                  className={inputClass("facebookUrl")}
+                />
+                {fieldError("facebookUrl")}
+              </div>
+              <div>
+                <label htmlFor="profile-instagramUrl" className={labelClass}>
+                  Instagram
+                  <OptionalTag />
+                </label>
+                <input
+                  id="profile-instagramUrl"
+                  maxLength={300}
+                  value={instagramUrl}
+                  onChange={(e) => setInstagramUrl(e.target.value)}
+                  placeholder="https://instagram.com/yourbusiness"
+                  className={inputClass("instagramUrl")}
+                />
+                {fieldError("instagramUrl")}
+              </div>
             </div>
           </div>
 
-          <div className="space-y-4 border-t border-slate-100 pt-5">
-            <h3 className="text-sm font-bold text-slate-900">Opening hours</h3>
+          <div className="space-y-3 border-t border-slate-100 pt-4">
             <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
           </div>
 
-          <div className="space-y-4 border-t border-slate-100 pt-5">
-            <h3 className="text-sm font-bold text-slate-900">Description and photos</h3>
-            <div>
-              <label htmlFor="profile-bio" className={labelClass}>
-                About your business
-                <RequiredTag />
-              </label>
-              <textarea
-                id="profile-bio"
-                required
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                minLength={MIN_BIO_LENGTH}
-                maxLength={MAX_BIO_LENGTH}
-                rows={3}
-                placeholder="A couple of sentences customers will see on your listing — what you do and what makes you worth choosing."
-                className={inputClass("bio")}
-              />
-              {fieldError("bio")}
-              <p className="mt-1 text-xs text-slate-500">
-                {bio.length < MIN_BIO_LENGTH
-                  ? `At least ${MIN_BIO_LENGTH} characters (${MIN_BIO_LENGTH - bio.length} to go)`
-                  : `${bio.length}/${MAX_BIO_LENGTH} characters`}
-              </p>
-            </div>
-
-            {/* Saves on its own (its own save route, and a photo change sends
-                the listing back for review), which is why it keeps its own
-                confirm step rather than riding along with the main Save. */}
-            {onPhotosConfirm && (
-              <div>
-                <p className={labelClass}>
-                  Business photo
-                  <RequiredTag />
-                </p>
-                <PhotoGalleryField
-                  photos={parseBusinessPhotos(merchant.photos)}
-                  label={merchant.businessName}
-                  warningText={
-                    merchant.status === "Approved"
-                      ? "Changing your photos sends your listing back for review, so it comes off the site until we've had a look. Continue?"
-                      : "Save these photos?"
-                  }
-                  onConfirm={onPhotosConfirm}
-                  saveRightAway={merchant.status !== "Approved"}
-                />
-                {photosError && <p role="alert" className="mt-2 text-sm text-red-600">{photosError}</p>}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-4 border-t border-slate-100 pt-5">
+          <div className="space-y-3 border-t border-slate-100 pt-4">
             <h3 className="text-sm font-bold text-slate-900">
-              Extras <span className="font-normal text-slate-500">(all optional)</span>
+              Extras
             </h3>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label htmlFor="profile-priceRange" className={labelClass}>
                   Price range
@@ -747,34 +774,6 @@ export default function MerchantProfileForm({
                   className={plainInputClass}
                 />
               </div>
-              <div>
-                <label htmlFor="profile-facebookUrl" className={labelClass}>
-                  Facebook
-                </label>
-                <input
-                  id="profile-facebookUrl"
-                  maxLength={300}
-                  value={facebookUrl}
-                  onChange={(e) => setFacebookUrl(e.target.value)}
-                  placeholder="https://facebook.com/yourbusiness"
-                  className={inputClass("facebookUrl")}
-                />
-                {fieldError("facebookUrl")}
-              </div>
-              <div>
-                <label htmlFor="profile-instagramUrl" className={labelClass}>
-                  Instagram
-                </label>
-                <input
-                  id="profile-instagramUrl"
-                  maxLength={300}
-                  value={instagramUrl}
-                  onChange={(e) => setInstagramUrl(e.target.value)}
-                  placeholder="https://instagram.com/yourbusiness"
-                  className={inputClass("instagramUrl")}
-                />
-                {fieldError("instagramUrl")}
-              </div>
             </div>
           </div>
         </section>
@@ -784,10 +783,12 @@ export default function MerchantProfileForm({
             the sign-up, so they're already filled in. */}
         <section aria-labelledby="profile-private-heading" className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
           <PrivateHeading id="profile-private-heading" />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
+              {/* Short enough to stay on one line beside NZBN, so the two
+                  boxes line up. */}
               <label htmlFor="profile-legalBusinessName" className={labelClass}>
-                Legal / registered company name
+                Legal company name
                 <RequiredTag />
               </label>
               <input
@@ -819,6 +820,7 @@ export default function MerchantProfileForm({
                 className={`bg-white ${inputClass("nzbn")}`}
               />
               {fieldError("nzbn")}
+              <p className="mt-1 text-xs text-slate-500">Your New Zealand Business Number, from nzbn.govt.nz.</p>
             </div>
             <div>
               <label htmlFor="profile-contactName" className={labelClass}>

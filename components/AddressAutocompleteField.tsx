@@ -164,7 +164,12 @@ export default function AddressAutocompleteField({
     <div ref={boxRef} className="relative">
       <label htmlFor={id} className="mb-1 block text-sm font-medium text-slate-700">
         {label}
-        {required && <span className="ml-1 font-normal text-ember-600">Required</span>}
+        {required && (
+          <>
+            <span aria-hidden="true" className="ml-0.5 font-bold text-ember-600">*</span>
+            <span className="sr-only"> (required)</span>
+          </>
+        )}
       </label>
       <input
         id={id}
