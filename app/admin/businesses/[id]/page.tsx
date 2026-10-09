@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { referralCreditsLabel } from "@/lib/referralBonus";
 import { useParams, useRouter } from "next/navigation";
 import { RUDENESS_OVERRIDES, parseRudenessOverride, type RudenessOverride } from "@/lib/rudenessSetting";
 import type { AdminMerchant } from "@/components/admin/MerchantRow";
@@ -67,6 +69,9 @@ export default function AdminBusinessDetailPage() {
   const [deleteLogin, setDeleteLogin] = useState(true);
 
   const [merchant, setMerchant] = useState<AdminMerchant | null>(null);
+  /** The business whose referral code this one signed up with (null: no
+   *  business has that code). */
+  const [referralMatch, setReferralMatch] = useState<{ id: string; name: string } | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activity, setActivity] = useState<ActivityItem[] | null>(null);
@@ -161,6 +166,7 @@ export default function AdminBusinessDetailPage() {
       if (cancelled) return;
       const item: AdminMerchant = data.item;
       setMerchant(item);
+      setReferralMatch(data.referralMatch ?? null);
       seedFrom(item);
 
       fetch(`/api/admin/merchants/${params.id}/activity`)
@@ -552,6 +558,23 @@ export default function AdminBusinessDetailPage() {
             <div>
               <dt className="text-slate-500">Referral code at signup</dt>
               <dd className="font-medium text-slate-800">{merchant.referredByCode || "—"}</dd>
+              {/* Checked before approving: approval pays the bonus to
+                  whoever the code belongs to. */}
+              {merchant.referredByCode && !merchant.referralRewarded && (
+                referralMatch ? (
+                  <dd className="mt-0.5 text-xs font-semibold text-emerald-700">
+                    ✓ Belongs to{" "}
+                    <Link href={`/admin/businesses/${referralMatch.id}`} className="underline">
+                      {referralMatch.name}
+                    </Link>
+                    : approving gives each business {referralCreditsLabel}. Check it isn&apos;t one owner referring their own second business.
+                  </dd>
+                ) : (
+                  <dd className="mt-0.5 text-xs font-semibold text-amber-700">
+                    ⚠ No business has this code, so no referral bonus will be paid.
+                  </dd>
+                )
+              )}
             </div>
             <div>
               <dt className="text-slate-500">Their code to share (generated)</dt>

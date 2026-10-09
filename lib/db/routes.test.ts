@@ -125,6 +125,28 @@ describe("a business on the new database", () => {
     expect((await call(apply.POST, request("POST", { businessName: "New Cafe", contactName: "Jo", phone: "12", agreedToTerms: true }))).status).toBe(400);
   });
 
+  it("checks a referral code while signing up, and shows admin whose it is", async () => {
+    const apply = await import("@/app/api/merchants/apply/route");
+    const first = (await call(apply.POST, request("POST", SIGNUP))).body.item;
+    const check = await import("@/app/api/merchants/referral-check/route");
+    const ask = async (code: string) => {
+      const res = await check.GET(new NextRequest(`https://megadeal.co.nz/api/merchants/referral-check?code=${encodeURIComponent(code)}`));
+      return res.json();
+    };
+    expect(await ask(first.referralCode.toLowerCase())).toEqual({ valid: true });
+    expect(await ask("MD000000")).toEqual({ valid: false });
+    expect(await ask("'; drop table")).toEqual({ valid: false });
+
+    signedIn = { ...member, id: "wix-member-2", email: "new@cafe.nz" };
+    const second = (await call(apply.POST, request("POST", { businessName: "New Cafe", contactName: "Jo", referredByCode: first.referralCode, agreedToTerms: true }))).body.item;
+    signedIn = { ...member, id: "wix-member-3", email: "typo@cafe.nz" };
+    const third = (await call(apply.POST, request("POST", { businessName: "Typo Cafe", contactName: "Al", referredByCode: "MD999999", agreedToTerms: true }))).body.item;
+    admin = true;
+    const route = await import("@/app/api/admin/merchants/[id]/route");
+    expect((await call(route.GET, request("GET"), params(second._id))).body.referralMatch).toEqual({ id: first._id, name: "Harbour Bistro" });
+    expect((await call(route.GET, request("GET"), params(third._id))).body.referralMatch).toBeNull();
+  });
+
   it("signing up claims a business an admin set up for that email, and keeps its details", async () => {
     const apply = await import("@/app/api/merchants/apply/route");
     await call(apply.POST, request("POST", { ...SIGNUP, bio: "Fresh seafood by the water, with views across the harbour." }));

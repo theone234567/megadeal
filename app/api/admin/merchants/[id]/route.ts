@@ -115,7 +115,19 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
     if (!item) {
       return NextResponse.json({ error: "Business not found." }, { status: 404 });
     }
-    return NextResponse.json({ item });
+    // Whose referral code they signed up with, so it can be checked before
+    // approving (approval pays the bonus to that business). Null when no
+    // other business has the code.
+    let referralMatch: { id: string; name: string } | null = null;
+    const referred = String(item.referredByCode ?? "").trim().toUpperCase();
+    if (referred) {
+      const found = await adminClient.items.query("Merchants").eq("referralCode", referred).find();
+      const other = (found.items ?? []).find((m: any) => m._id !== item._id);
+      if (other) {
+        referralMatch = { id: other._id, name: other.businessName || other.email || "a business" };
+      }
+    }
+    return NextResponse.json({ item, referralMatch });
   } catch (err) {
     console.error("[admin/merchants/[id]] GET failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

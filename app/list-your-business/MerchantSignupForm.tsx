@@ -268,6 +268,41 @@ export default function MerchantSignupForm({
   /** The code boxes, folded away behind "Have a code?": the offer is
    *  already applied and a referral link fills its own. */
   const [showCodes, setShowCodes] = useState(false);
+  /** Whether the referral code belongs to a business, checked as it's
+   *  typed (or from the ?ref= link), so the bonus is only promised for a
+   *  real one. "unknown" when the check couldn't run: the code is still
+   *  sent, and approval checks it again either way. */
+  const [referralCheck, setReferralCheck] = useState<{ code: string; status: "valid" | "invalid" | "unknown" } | null>(null);
+  const trimmedReferral = referredByCode.trim();
+  // The answer is for the code it was asked about; while a newer code is
+  // waiting for its answer, it's "checking".
+  const referralStatus = referralCheck?.code === trimmedReferral ? referralCheck.status : "checking";
+  useEffect(() => {
+    if (!trimmedReferral) return;
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      const done = (status: "valid" | "invalid" | "unknown") => {
+        if (!cancelled) setReferralCheck({ code: trimmedReferral, status });
+      };
+      fetch(`/api/merchants/referral-check?code=${encodeURIComponent(trimmedReferral)}`, { cache: "no-store" })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => done(data ? (data.valid ? "valid" : "invalid") : "unknown"))
+        .catch(() => done("unknown"));
+    }, 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [trimmedReferral]);
+  const referralNote = !trimmedReferral
+    ? null
+    : referralStatus === "valid"
+      ? `Referral ${trimmedReferral} found: when you're approved, you and the business that referred you each get ${referralCreditsLabel}.`
+      : referralStatus === "invalid"
+        ? `We can't find referral code ${trimmedReferral}. Check it with the business that gave it to you.`
+        : referralStatus === "unknown"
+          ? `Referral ${trimmedReferral} added. We'll check it when we review your application.`
+          : `Checking referral ${trimmedReferral}…`;
 
   // Which of the three things the promo field currently holds, so the help
   // text under it can say what will actually happen rather than always
@@ -995,10 +1030,10 @@ export default function MerchantSignupForm({
               for up to {promo.months} months free advertising{beforeLaunch}.
             </p>
           )}
-          {referredByCode.trim() && !showCodes && (
-            <p className="mt-1">
-              🤝 Referral <strong>{referredByCode.trim()}</strong> applied: when you&apos;re approved, you and the
-              business that referred you each get {referralCreditsLabel}.
+          {referralNote && !showCodes && (
+            <p className={`mt-1 ${referralStatus === "invalid" ? "font-medium text-red-700" : ""}`} aria-live="polite">
+              {referralStatus === "valid" ? "🤝 " : ""}
+              {referralNote}
             </p>
           )}
           {!showCodes && (
@@ -1046,10 +1081,8 @@ export default function MerchantSignupForm({
                   placeholder="e.g. MD1A2B3C"
                   className={inputClass}
                 />
-                <p className={hintClass}>
-                  {referredByCode.trim()
-                    ? `When you're approved, you and the business that referred you each get ${referralCreditsLabel}.`
-                    : "Referred by another business? Enter their code."}
+                <p className={`${hintClass} ${referralStatus === "invalid" ? "font-medium !text-red-700" : ""}`} aria-live="polite">
+                  {referralNote ?? "Referred by another business? Enter their code."}
                 </p>
               </div>
             </div>
