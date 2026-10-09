@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { fetchBusinessProfileBySlug } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
-import { placeLabel, visitNote } from "@/lib/location";
+import { locationNotes, placeLabel } from "@/lib/location";
 import { truncateForMeta } from "@/lib/format";
 import DealGrid from "@/components/DealGrid";
 import HowToUseStrip from "@/components/HowToUseStrip";
@@ -350,11 +350,13 @@ export default async function BusinessProfilePage(
                         <MapPinIcon className="h-4 w-4 shrink-0" /> {placeLabel(business.suburb, business.city)}
                       </p>
                     )}
-                    <p className="mt-1 pl-6 text-xs text-slate-600">
-                      {visitNote(business.visitType, business.serviceArea)}
-                    </p>
                   </div>
                 )}
+                {locationNotes(business.addressHidden, business.serviceArea).map((note) => (
+                  <p key={note} className="pl-6 text-xs text-slate-600">
+                    {note}
+                  </p>
+                ))}
               </div>
             )}
 

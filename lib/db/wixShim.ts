@@ -218,12 +218,6 @@ const MERCHANTS: Collection = {
       newColumn: true,
     }),
     f("serviceArea", "service_area", { expr: "(to_jsonb(t)->>'service_area')", newColumn: true }),
-    // How customers reach it: premises, appointment, mobile or online
-    // (20261015). Before that update, a hidden address reads as appointment.
-    f("visitType", "visit_type", {
-      expr: "coalesce(to_jsonb(t)->>'visit_type', case when coalesce((to_jsonb(t)->>'hide_address')::boolean, false) then 'appointment' else 'premises' end)",
-      newColumn: true,
-    }),
   ],
 };
 

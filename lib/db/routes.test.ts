@@ -373,18 +373,16 @@ describe("admin work and the rest of the business portal", () => {
     const item = await signUpApprovedWithCredits();
     const profile = await import("@/app/api/merchants/profile/route");
     const bio = "Mobile seafood catering, we come to you across the city.";
-    const res = await call(profile.POST, request("POST", { ...SIGNUP, bio, lat: -36.781234, lng: 174.712345, visitType: "mobile", serviceArea: "Central Auckland" }));
+    const res = await call(profile.POST, request("POST", { ...SIGNUP, bio, lat: -36.781234, lng: 174.712345, hideAddress: true, serviceArea: "Central Auckland" }));
     expect(res.status).toBe(200);
-    expect(res.body.item).toMatchObject({ hideAddress: true, visitType: "mobile", serviceArea: "Central Auckland", address: SIGNUP.address });
+    expect(res.body.item).toMatchObject({ hideAddress: true, serviceArea: "Central Auckland", address: SIGNUP.address });
     const { readBusinessBySlug } = await import("./publicReads");
     const [{ slug }] = await db.query("select slug from public.merchants");
     const pub = await readBusinessBySlug(db, slug);
-    expect(pub).toMatchObject({ address: null, addressHidden: true, visitType: "mobile", serviceArea: "Central Auckland", suburb: "Auckland CBD", lat: -36.78, lng: 174.71 });
-    // Switching to online keeps it private; back to premises shows it again.
-    await call(profile.POST, request("POST", { ...SIGNUP, bio, visitType: "online" }));
-    expect(await readBusinessBySlug(db, slug)).toMatchObject({ address: null, visitType: "online", serviceArea: null });
-    await call(profile.POST, request("POST", { ...SIGNUP, bio, visitType: "premises" }));
-    expect(await readBusinessBySlug(db, slug)).toMatchObject({ address: SIGNUP.address, addressHidden: false, visitType: "premises" });
+    expect(pub).toMatchObject({ address: null, addressHidden: true, serviceArea: "Central Auckland", suburb: "Auckland CBD", lat: -36.78, lng: 174.71 });
+    // Unticked: the address and exact pin are back.
+    await call(profile.POST, request("POST", { ...SIGNUP, bio, lat: -36.781234, lng: 174.712345, hideAddress: false }));
+    expect(await readBusinessBySlug(db, slug)).toMatchObject({ address: SIGNUP.address, addressHidden: false, lat: -36.781234, serviceArea: null });
     expect(JSON.stringify(pub)).not.toContain("Quay Street");
     void item;
   });

@@ -1526,6 +1526,14 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
               {BOOKING_CHOICES.find((c) => c.value === bookingRequirement)?.hint}.
             </p>
           )}
+          {/* A reminder, not a rule: with the address hidden nobody can just
+              turn up, but a deal used online needs no booking. */}
+          {merchant?.hideAddress === true && bookingRequirement === "not_required" && (
+            <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              Your street address is hidden, so customers can&apos;t just turn up. Fine for a deal used online;
+              otherwise customers will need to book or contact you first.
+            </p>
+          )}
           {/* Walk-ins are only ever offered when the business says so, and
               only with "recommended" (a required booking rules them out).
               Stays visible if ticked, so a conflict is never hidden. */}

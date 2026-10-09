@@ -18,7 +18,7 @@ import type { DealAction } from "@/lib/dealEvents";
 import { parseBusinessHours, formatBusinessHoursLines, hoursKnown, isOpenNow } from "@/lib/businessHours";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
-import { placeLabel, visitNote } from "@/lib/location";
+import { locationNotes, placeLabel } from "@/lib/location";
 import { keyRestrictions, splitTermsForDisplay } from "@/lib/dealTerms";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { bookingPlan, effectiveBookingRequirement, type BookingAction } from "@/lib/booking";
@@ -462,11 +462,11 @@ export default function DealDetail({
                 <p className="flex items-start gap-1.5 text-[0.8125rem] font-bold text-brand-700">
                   <MapPinIcon className="mt-0.5 h-4 w-4 shrink-0" /> {locationLine}
                 </p>
-                {deal.businessAddressHidden && (
-                  <p className="mt-1 pl-6 text-xs text-slate-600">
-                    {visitNote(deal.businessVisitType ?? "appointment", deal.businessServiceArea)}
+                {locationNotes(deal.businessAddressHidden === true, deal.businessServiceArea).map((note) => (
+                  <p key={note} className="mt-1 pl-6 text-xs text-slate-600">
+                    {note}
                   </p>
-                )}
+                ))}
                 {(mapUrl || directionsUrl) && (
                   <p className="mt-1 flex items-center gap-3 pl-6 text-xs font-semibold text-brand-700">
                     {mapUrl && (

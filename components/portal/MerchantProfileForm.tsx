@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { EyeOffIcon, GlobeIcon } from "@/components/icons";
 import AddressAutocompleteField, { findAddressPin } from "@/components/AddressAutocompleteField";
-import { publicVisitType, visitNote, type VisitType } from "@/lib/location";
+import { locationNotes } from "@/lib/location";
 import PhotoGalleryField from "./PhotoGalleryField";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
@@ -123,10 +123,9 @@ export default function MerchantProfileForm({
   const [address, setAddress] = useState(merchant.address || "");
   const [city, setCity] = useState(merchant.city || "");
   const [suburb, setSuburb] = useState(merchant.suburb || "");
-  /** How customers reach them (lib/location.ts VisitType). Anything but
-   *  premises keeps the street private; the public pages say which. */
-  const [visitType, setVisitType] = useState<VisitType>(publicVisitType(merchant.hideAddress === true, merchant.visitType));
-  const hideAddress = visitType !== "premises";
+  /** "Hide my address": the public sees the suburb, never the street or
+   *  the exact pin (lib/location.ts publicLocation). */
+  const [hideAddress, setHideAddress] = useState(merchant.hideAddress === true);
   const [serviceArea, setServiceArea] = useState(merchant.serviceArea || "");
   const [postcode, setPostcode] = useState(merchant.postcode || "");
   const [lat, setLat] = useState<number | null>(merchant.lat ?? null);
@@ -203,8 +202,8 @@ export default function MerchantProfileForm({
           address,
           city,
           suburb,
-          visitType,
-          serviceArea: visitType === "mobile" ? serviceArea : "",
+          hideAddress,
+          serviceArea,
           postcode,
           lat,
           lng: lon,
@@ -319,13 +318,13 @@ export default function MerchantProfileForm({
                 label="Location shown"
                 value={`${[merchant.suburb, merchant.city].filter(Boolean).join(", ") || "—"} (street address kept private)`}
               />
-              <SummaryItem
-                label="Customers see"
-                value={visitNote(publicVisitType(true, merchant.visitType), merchant.serviceArea)}
-              />
+              <SummaryItem label="Customers see" value={locationNotes(true, merchant.serviceArea).join(" ")} />
             </>
           ) : (
-            <SummaryItem wide label="Address" value={[merchant.address, merchant.suburb, merchant.city].filter(Boolean).join(", ")} />
+            <>
+              <SummaryItem wide label="Address" value={[merchant.address, merchant.suburb, merchant.city].filter(Boolean).join(", ")} />
+              {merchant.serviceArea && <SummaryItem label="Areas you cover" value={merchant.serviceArea} />}
+            </>
           )}
           <SummaryItem label="Opening hours" value={hours} />
           <SummaryItem
@@ -439,60 +438,6 @@ export default function MerchantProfileForm({
 
           <div className="space-y-4 border-t border-slate-100 pt-5">
             <h3 className="text-sm font-bold text-slate-900">Location</h3>
-            {/* Google's "service-area business": the address is still
-                given (to check the business, and to place it roughly for
-                "near me"), but a home or a mobile business's base isn't
-                published. */}
-            <fieldset>
-              <legend className={labelClass}>How do customers reach you?</legend>
-              <p className="mb-2 text-xs text-slate-500">Pick the one that fits. Anything but the first keeps your street address private.</p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {(
-                  [
-                    { value: "premises", title: "They come to my premises", text: "A shop, salon, venue, clinic or office. Your address is shown, with directions." },
-                    { value: "appointment", title: "By appointment at my place", text: "e.g. a home studio. Customers see: “Address provided by the business when you book.”" },
-                    { value: "mobile", title: "I go to my customers", text: "A mobile service. Customers see “Comes to you” and the areas you cover." },
-                    { value: "online", title: "Online", text: "Customers use your deals online. Customers see “Online business.”" },
-                  ] as const
-                ).map((o) => (
-                  <label
-                    key={o.value}
-                    className={`flex cursor-pointer items-start gap-2.5 rounded-xl border-2 p-3 text-sm transition focus-within:ring-2 focus-within:ring-brand-400 ${
-                      visitType === o.value ? "border-brand-600 bg-brand-50" : "border-slate-200 bg-white hover:border-brand-300"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="visitType"
-                      checked={visitType === o.value}
-                      onChange={() => setVisitType(o.value)}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
-                    />
-                    <span>
-                      <span className="block font-bold text-slate-900">{o.title}</span>
-                      <span className="text-slate-600">{o.text}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            {visitType === "mobile" && (
-              <div>
-                <label htmlFor="profile-serviceArea" className={labelClass}>
-                  Areas you cover
-                  <OptionalTag />
-                </label>
-                <input
-                  id="profile-serviceArea"
-                  maxLength={200}
-                  value={serviceArea}
-                  onChange={(e) => setServiceArea(e.target.value)}
-                  placeholder="e.g. North Shore and West Auckland"
-                  className={plainInputClass}
-                />
-                <p className="mt-1 text-xs text-slate-500">Shown on your listing, so customers know if you&apos;ll come to them.</p>
-              </div>
-            )}
             <AddressAutocompleteField
               id="profile-address"
               address={address}
@@ -600,6 +545,47 @@ export default function MerchantProfileForm({
                   className={plainInputClass}
                 />
               </div>
+            </div>
+
+            {/* Google's "service-area business": the address is still given
+                (to check the business, and for "near me" with a pin moved
+                about a kilometre), just not published. */}
+            <label
+              className={`flex cursor-pointer items-start gap-2.5 rounded-xl border-2 p-3 text-sm transition focus-within:ring-2 focus-within:ring-brand-400 ${
+                hideAddress ? "border-brand-600 bg-brand-50" : "border-slate-200 bg-white hover:border-brand-300"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={hideAddress}
+                onChange={(e) => setHideAddress(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
+              />
+              <span>
+                <span className="block font-bold text-slate-900">Hide my street address</span>
+                <span className="text-slate-600">
+                  For a home-based business, or if you&apos;d rather not show it. Customers see your suburb and
+                  &ldquo;Address provided by the business when you book&rdquo;. The map shows you roughly, never your exact spot.
+                </span>
+              </span>
+            </label>
+
+            <div>
+              <label htmlFor="profile-serviceArea" className={labelClass}>
+                Areas you cover
+                <OptionalTag />
+              </label>
+              <input
+                id="profile-serviceArea"
+                maxLength={200}
+                value={serviceArea}
+                onChange={(e) => setServiceArea(e.target.value)}
+                placeholder="e.g. North Shore and West Auckland"
+                className={plainInputClass}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                If you go to your customers. Shown on your listing as &ldquo;Comes to you: covers …&rdquo;.
+              </p>
             </div>
           </div>
 

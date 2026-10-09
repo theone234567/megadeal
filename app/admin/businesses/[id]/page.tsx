@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { parseVisitType, publicVisitType, type VisitType } from "@/lib/location";
 import { referralCreditsLabel } from "@/lib/referralBonus";
 import { useParams, useRouter } from "next/navigation";
 import { RUDENESS_OVERRIDES, parseRudenessOverride, type RudenessOverride } from "@/lib/rudenessSetting";
@@ -95,7 +94,7 @@ export default function AdminBusinessDetailPage() {
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [suburb, setSuburb] = useState("");
-  const [visitType, setVisitType] = useState<VisitType>("premises");
+  const [hideAddress, setHideAddress] = useState(false);
   const [serviceArea, setServiceArea] = useState("");
   const [postcode, setPostcode] = useState("");
   const [website, setWebsite] = useState("");
@@ -136,7 +135,7 @@ export default function AdminBusinessDetailPage() {
     setAddress(item.address || "");
     setCity(item.city || "");
     setSuburb(item.suburb || "");
-    setVisitType(publicVisitType(item.hideAddress === true, item.visitType));
+    setHideAddress(item.hideAddress === true);
     setServiceArea(item.serviceArea || "");
     setPostcode(item.postcode || "");
     setWebsite(item.website || "");
@@ -207,7 +206,7 @@ export default function AdminBusinessDetailPage() {
       address !== (merchant.address || "") ||
       city !== (merchant.city || "") ||
       suburb !== (merchant.suburb || "") ||
-      visitType !== publicVisitType(merchant.hideAddress === true, merchant.visitType) ||
+      hideAddress !== (merchant.hideAddress === true) ||
       serviceArea !== (merchant.serviceArea || "") ||
       postcode !== (merchant.postcode || "") ||
       website !== (merchant.website || "") ||
@@ -289,8 +288,8 @@ export default function AdminBusinessDetailPage() {
           address,
           city,
           suburb,
-          visitType,
-          serviceArea: visitType === "mobile" ? serviceArea : "",
+          hideAddress,
+          serviceArea,
           postcode,
           website,
           bio,
@@ -480,23 +479,17 @@ export default function AdminBusinessDetailPage() {
             <Field label="Public phone" value={phone} onChange={setPhone} required />
             <Field label="Address" value={address} onChange={setAddress} required />
             <Field label="Suburb" value={suburb} onChange={setSuburb} placeholder="e.g. Takapuna" />
-            {/* Anything but premises keeps the address above off the site. */}
-            <label className="block text-sm sm:col-span-2">
-              <span className="mb-1 block font-medium text-slate-700">How customers reach them</span>
-              <select
-                value={visitType}
-                onChange={(e) => setVisitType(parseVisitType(e.target.value))}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
-              >
-                <option value="premises">They come to the premises (address shown, with directions)</option>
-                <option value="appointment">By appointment (address private, given when they book)</option>
-                <option value="mobile">Goes to customers (address private, areas covered shown)</option>
-                <option value="online">Online (address private)</option>
-              </select>
+            <label className="flex items-start gap-2 text-sm sm:col-span-2">
+              <input type="checkbox" checked={hideAddress} onChange={(e) => setHideAddress(e.target.checked)} className="mt-0.5 h-4 w-4" />
+              <span>
+                <span className="font-medium text-slate-700">Hide street address</span>
+                <span className="block text-xs text-slate-500">
+                  Only the suburb is shown, with &ldquo;Address provided by the business when you book&rdquo;; no directions,
+                  and the map pin is moved about a kilometre.
+                </span>
+              </span>
             </label>
-            {visitType === "mobile" && (
-              <Field label="Areas covered" value={serviceArea} onChange={setServiceArea} placeholder="e.g. North Shore and West Auckland" />
-            )}
+            <Field label="Areas covered" value={serviceArea} onChange={setServiceArea} placeholder="e.g. North Shore and West Auckland" />
             <label className="block text-sm">
               <span className="mb-1 block font-medium text-slate-700">
                 City

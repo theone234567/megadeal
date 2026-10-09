@@ -46,8 +46,6 @@ export interface Deal {
   /** Home-based or mobile: the street is private (businessAddress is
    *  null), there are no directions, and the pin is approximate. */
   businessAddressHidden?: boolean;
-  /** How customers reach the business (lib/location.ts VisitType). */
-  businessVisitType?: "premises" | "appointment" | "mobile" | "online";
   /** The area a mobile business covers. */
   businessServiceArea?: string | null;
   /** The city filter ("All areas") matches on this, so it stays the city. */

@@ -1,6 +1,6 @@
 import { businessSlug } from "./slug";
 import { parseBusinessPhotos } from "./businessPhotos";
-import { businessSuburb, publicLocation, publicVisitType, type VisitType } from "./location";
+import { businessSuburb, publicLocation } from "./location";
 import type { Deal } from "./types";
 
 /**
@@ -20,8 +20,6 @@ export interface PublicBusiness {
   /** Home-based or mobile: no street, no directions, and lat/lng are
    *  rounded to about a kilometre (lib/location.ts publicLocation). */
   addressHidden: boolean;
-  /** How customers reach it (lib/location.ts VisitType). */
-  visitType: VisitType;
   /** The area a mobile business covers, in its own words. */
   serviceArea: string | null;
   city: string | null;
@@ -54,8 +52,7 @@ export function mapMerchantToBusiness(merchant: any): PublicBusiness {
     phone: merchant.phone || null,
     address: place.address,
     addressHidden: place.addressHidden,
-    visitType: publicVisitType(place.addressHidden, merchant.visitType),
-    serviceArea: publicVisitType(place.addressHidden, merchant.visitType) === "mobile" ? merchant.serviceArea || null : null,
+    serviceArea: merchant.serviceArea || null,
     city: merchant.city || null,
     suburb: businessSuburb(merchant.suburb, merchant.address, merchant.city),
     // Stored on MegaDeal's own database; made from the Wix id before.
@@ -88,7 +85,6 @@ export function applyBusinessToDeal<T extends Deal>(deal: T, business: PublicBus
     businessPhone: business.phone,
     businessAddress: business.address,
     businessAddressHidden: business.addressHidden,
-    businessVisitType: business.visitType,
     businessServiceArea: business.serviceArea,
     businessCity: business.city,
     businessSuburb: business.suburb,

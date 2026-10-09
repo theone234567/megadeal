@@ -1,5 +1,5 @@
 import { businessSlug } from "../slug";
-import { businessSuburb, publicLocation, publicVisitType } from "../location";
+import { businessSuburb, publicLocation } from "../location";
 import { MAX_BUSINESS_PHOTOS } from "../businessPhotos";
 import { parseBookingRequirement } from "../booking";
 import { CATEGORIES } from "../categories";
@@ -30,8 +30,7 @@ const BUSINESS_COLUMNS = `
   m.booking_email as b_booking_email, m.lat as b_lat, m.lng as b_lng,
   m.rating as b_rating, m.review_count as b_review_count,
   coalesce((to_jsonb(m)->>'hide_address')::boolean, false) as b_hide_address,
-  to_jsonb(m)->>'service_area' as b_service_area,
-  to_jsonb(m)->>'visit_type' as b_visit_type`;
+  to_jsonb(m)->>'service_area' as b_service_area`;
 
 const DEAL_COLUMNS = `
   d.id, d.slug, d.name, d.description, d.category_slug, d.photo_url, d.price_now, d.price_was,
@@ -71,8 +70,7 @@ export function rowToBusiness(r: Row): PublicBusiness {
     phone: blankToNull(r.b_phone),
     address: place.address,
     addressHidden: place.addressHidden,
-    visitType: publicVisitType(place.addressHidden, r.b_visit_type),
-    serviceArea: publicVisitType(place.addressHidden, r.b_visit_type) === "mobile" ? blankToNull(r.b_service_area) : null,
+    serviceArea: blankToNull(r.b_service_area),
     city: blankToNull(r.b_city),
     suburb: businessSuburb(r.b_suburb, r.b_address, r.b_city),
     slug: r.b_slug ?? businessSlug(r.b_name, r.b_slug_id),
@@ -126,7 +124,6 @@ export function rowToDeal(r: Row): Deal {
     businessPhone: b.phone,
     businessAddress: b.address,
     businessAddressHidden: b.addressHidden,
-    businessVisitType: b.visitType,
     businessServiceArea: b.serviceArea,
     businessCity: b.city,
     businessSuburb: b.suburb,

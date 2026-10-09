@@ -75,35 +75,15 @@ export function publicLocation(m: {
   return { address: m.address || null, lat, lng, addressHidden: false };
 }
 
-/** How customers reach a business, chosen on its listing page
- *  (supabase/migrations/20261015000000_visit_type.sql). Anything but
- *  "premises" keeps the street address private. */
-export type VisitType = "premises" | "appointment" | "mobile" | "online";
-export const VISIT_TYPES: readonly VisitType[] = ["premises", "appointment", "mobile", "online"];
-export function parseVisitType(value: unknown): VisitType {
-  return VISIT_TYPES.includes(value as VisitType) ? (value as VisitType) : "premises";
-}
-
-/** What the public pages say for a business that keeps its address
- *  private, by how customers reach it. Null for premises. */
-export function visitNote(visitType: VisitType | undefined, serviceArea: string | null | undefined): string | null {
-  switch (visitType) {
-    case "appointment":
-      return "By appointment: address provided by the business when you book.";
-    case "mobile":
-      return `Comes to you${serviceArea ? `: covers ${serviceArea}` : ""}.`;
-    case "online":
-      return "Online business.";
-    default:
-      return null;
-  }
-}
-
-/** The visit type the public sees: premises for a business showing its
- *  address, otherwise what it chose (appointment when an address was
- *  hidden before the visit type existed). */
-export function publicVisitType(addressHidden: boolean, saved: unknown): VisitType {
-  if (!addressHidden) return "premises";
-  const v = parseVisitType(saved);
-  return v === "premises" ? "appointment" : v;
+/**
+ * What the public pages say beside a business's location: a hidden
+ * address ("Hide my address" on its listing page) is provided by the
+ * business when they book, and a business that lists the areas it
+ * covers comes to its customers. Nothing for a business that shows its
+ * address and lists no areas.
+ */
+export function locationNotes(addressHidden: boolean, serviceArea: string | null | undefined): string[] {
+  const area = (serviceArea ?? "").trim();
+  if (area) return [`${addressHidden ? "Comes to you" : "Also comes to you"}: covers ${area}.`];
+  return addressHidden ? ["Address provided by the business when you book."] : [];
 }

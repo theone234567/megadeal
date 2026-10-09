@@ -1,4 +1,3 @@
-import { parseVisitType } from "@/lib/location";
 import { NextRequest, NextResponse } from "next/server";
 import { isBookingChoice } from "@/lib/booking";
 import { phoneLink } from "@/lib/booking";
@@ -95,11 +94,11 @@ export async function POST(req: NextRequest) {
   // customers rely on it to know what the business actually does.
   // Home-based or mobile: the address above stays private, and the
   // listing shows the suburb and the area they cover instead.
-  // How customers reach them; anything but premises keeps the street
-  // private (the areas covered are for a mobile business).
-  const visitType = parseVisitType(body.visitType);
-  const hideAddress = visitType !== "premises";
-  const serviceArea = visitType === "mobile" ? cleanText(body.serviceArea, 200) : "";
+  // "Hide my address" (home-based, or doesn't want it shown): the public
+  // sees the suburb and "address provided when you book". Areas covered,
+  // for a business that goes to its customers, are shown if given.
+  const hideAddress = body.hideAddress === true;
+  const serviceArea = cleanText(body.serviceArea, 200);
 
   const bio = cleanText(body.bio, MAX_BIO_LENGTH);
   if (bio.length < MIN_BIO_LENGTH) {
@@ -185,7 +184,6 @@ export async function POST(req: NextRequest) {
     // clobber whatever a merchant had from before it was removed.
     category: category || merchant.category || "",
     suburb,
-    visitType,
     hideAddress,
     serviceArea,
     postcode: cleanText(body.postcode, 20),

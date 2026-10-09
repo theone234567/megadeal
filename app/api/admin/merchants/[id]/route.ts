@@ -1,4 +1,3 @@
-import { parseVisitType } from "@/lib/location";
 import { NextRequest, NextResponse } from "next/server";
 import { REFERRAL_BONUS_CREDITS, referralCreditsLabel, signupCodes } from "@/lib/referralBonus";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
@@ -236,10 +235,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     patch.city = v;
   }
   if (body.suburb !== undefined) patch.suburb = cleanText(body.suburb, 40);
-  if (body.visitType !== undefined) {
-    patch.visitType = parseVisitType(body.visitType);
-    patch.hideAddress = patch.visitType !== "premises";
-  }
+  if (body.hideAddress !== undefined) patch.hideAddress = body.hideAddress === true;
   if (body.serviceArea !== undefined) patch.serviceArea = cleanText(body.serviceArea, 200);
   if (body.postcode !== undefined) patch.postcode = cleanText(body.postcode, 20);
   if (body.website !== undefined) {
