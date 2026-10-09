@@ -1,6 +1,6 @@
 import { businessSlug } from "./slug";
 import { parseBusinessPhotos } from "./businessPhotos";
-import { businessSuburb } from "./location";
+import { businessSuburb, publicLocation } from "./location";
 import type { Deal } from "./types";
 
 /**
@@ -15,7 +15,13 @@ export interface PublicBusiness {
   photos: string[];
   website: string | null;
   phone: string | null;
+  /** Null when the business keeps it private (addressHidden). */
   address: string | null;
+  /** Home-based or mobile: no street, no directions, and lat/lng are
+   *  rounded to about a kilometre (lib/location.ts publicLocation). */
+  addressHidden: boolean;
+  /** The area a mobile business covers, in its own words. */
+  serviceArea: string | null;
   city: string | null;
   /** Saved with the address, or read out of it (lib/location.ts). */
   suburb: string | null;
@@ -37,13 +43,16 @@ export interface PublicBusiness {
 /** Maps a raw Wix "Merchants" data item to the public-safe shape. Caller
  * must have already checked `merchant.businessName` and `merchant._id`. */
 export function mapMerchantToBusiness(merchant: any): PublicBusiness {
+  const place = publicLocation(merchant);
   return {
     businessName: merchant.businessName,
     logoUrl: merchant.logoUrl || null,
     photos: parseBusinessPhotos(merchant.photos),
     website: merchant.website || null,
     phone: merchant.phone || null,
-    address: merchant.address || null,
+    address: place.address,
+    addressHidden: place.addressHidden,
+    serviceArea: merchant.serviceArea || null,
     city: merchant.city || null,
     suburb: businessSuburb(merchant.suburb, merchant.address, merchant.city),
     // Stored on MegaDeal's own database; made from the Wix id before.
@@ -59,8 +68,8 @@ export function mapMerchantToBusiness(merchant: any): PublicBusiness {
       .filter(Boolean),
     bookingUrl: merchant.bookingUrl || null,
     bookingEmail: merchant.bookingEmail || null,
-    lat: typeof merchant.lat === "number" ? merchant.lat : null,
-    lng: typeof merchant.lng === "number" ? merchant.lng : null,
+    lat: place.lat,
+    lng: place.lng,
     rating: typeof merchant.rating === "number" ? merchant.rating : null,
     reviewCount: typeof merchant.reviewCount === "number" ? merchant.reviewCount : null,
   };
@@ -75,6 +84,8 @@ export function applyBusinessToDeal<T extends Deal>(deal: T, business: PublicBus
     businessWebsite: business.website,
     businessPhone: business.phone,
     businessAddress: business.address,
+    businessAddressHidden: business.addressHidden,
+    businessServiceArea: business.serviceArea,
     businessCity: business.city,
     businessSuburb: business.suburb,
     businessSlug: business.slug,

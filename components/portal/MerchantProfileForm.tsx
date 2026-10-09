@@ -7,7 +7,6 @@ import PhotoGalleryField from "./PhotoGalleryField";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
-import { BOOKING_CHOICES, isBookingChoice } from "@/lib/booking";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
 import { getAttribution, getFbc, getFbp } from "@/lib/attribution";
@@ -123,6 +122,9 @@ export default function MerchantProfileForm({
   const [address, setAddress] = useState(merchant.address || "");
   const [city, setCity] = useState(merchant.city || "");
   const [suburb, setSuburb] = useState(merchant.suburb || "");
+  /** Home-based or mobile: the street stays private (lib/location.ts). */
+  const [hideAddress, setHideAddress] = useState(merchant.hideAddress === true);
+  const [serviceArea, setServiceArea] = useState(merchant.serviceArea || "");
   const [postcode, setPostcode] = useState(merchant.postcode || "");
   const [lat, setLat] = useState<number | null>(merchant.lat ?? null);
   const [lon, setLon] = useState<number | null>(merchant.lng ?? null);
@@ -130,9 +132,6 @@ export default function MerchantProfileForm({
   const [businessHours, setBusinessHours] = useState(merchant.businessHours || "");
   const [bookingUrl, setBookingUrl] = useState(merchant.bookingUrl || "");
   const [bookingEmail, setBookingEmail] = useState(merchant.bookingEmail || "");
-  const [defaultBookingRequirement, setDefaultBookingRequirement] = useState<string>(
-    isBookingChoice(merchant.defaultBookingRequirement) ? merchant.defaultBookingRequirement : "",
-  );
   const [facebookUrl, setFacebookUrl] = useState(merchant.facebookUrl || "");
   const [instagramUrl, setInstagramUrl] = useState(merchant.instagramUrl || "");
   const [priceRange, setPriceRange] = useState(merchant.priceRange || "");
@@ -201,6 +200,8 @@ export default function MerchantProfileForm({
           address,
           city,
           suburb,
+          hideAddress,
+          serviceArea: hideAddress ? serviceArea : "",
           postcode,
           lat,
           lng: lon,
@@ -208,7 +209,6 @@ export default function MerchantProfileForm({
           businessHours,
           bookingUrl,
           bookingEmail,
-          defaultBookingRequirement,
           facebookUrl,
           instagramUrl,
           priceRange,
@@ -310,11 +310,17 @@ export default function MerchantProfileForm({
           <SummaryItem label="Booking phone number" value={merchant.phone} />
           <SummaryItem label="Booking link" value={merchant.bookingUrl} />
           <SummaryItem label="Booking email" value={merchant.bookingEmail} />
-          <SummaryItem
-            label="New deals start with"
-            value={BOOKING_CHOICES.find((c) => c.value === merchant.defaultBookingRequirement)?.label ?? "Ask me each time"}
-          />
-          <SummaryItem wide label="Address" value={[merchant.address, merchant.suburb, merchant.city].filter(Boolean).join(", ")} />
+          {merchant.hideAddress ? (
+            <>
+              <SummaryItem
+                label="Location shown"
+                value={`${[merchant.suburb, merchant.city].filter(Boolean).join(", ") || "—"} (home-based or mobile: street address kept private)`}
+              />
+              <SummaryItem label="Areas you cover" value={merchant.serviceArea} />
+            </>
+          ) : (
+            <SummaryItem wide label="Address" value={[merchant.address, merchant.suburb, merchant.city].filter(Boolean).join(", ")} />
+          )}
           <SummaryItem label="Opening hours" value={hours} />
           <SummaryItem
             label="Socials"
@@ -427,6 +433,55 @@ export default function MerchantProfileForm({
 
           <div className="space-y-4 border-t border-slate-100 pt-5">
             <h3 className="text-sm font-bold text-slate-900">Location</h3>
+            {/* Google's "service-area business": the address is still
+                given (to check the business, and to place it roughly for
+                "near me"), but a home or a mobile business's base isn't
+                published. */}
+            <fieldset>
+              <legend className={labelClass}>Do customers come to you at your address?</legend>
+              <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {[
+                  { value: false, title: "Yes", text: "A shop, salon, venue, clinic or office customers visit." },
+                  { value: true, title: "No", text: "I work from home, or I go to my customers." },
+                ].map((o) => (
+                  <label
+                    key={String(o.value)}
+                    className={`flex cursor-pointer items-start gap-2.5 rounded-xl border-2 p-3 text-sm transition focus-within:ring-2 focus-within:ring-brand-400 ${
+                      hideAddress === o.value ? "border-brand-600 bg-brand-50" : "border-slate-200 bg-white hover:border-brand-300"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="hideAddress"
+                      checked={hideAddress === o.value}
+                      onChange={() => setHideAddress(o.value)}
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
+                    />
+                    <span>
+                      <span className="block font-bold text-slate-900">{o.title}</span>
+                      <span className="text-slate-600">{o.text}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            {hideAddress && (
+              <div>
+                <label htmlFor="profile-serviceArea" className={labelClass}>
+                  Areas you cover
+                  <OptionalTag />
+                </label>
+                <input
+                  id="profile-serviceArea"
+                  maxLength={200}
+                  value={serviceArea}
+                  onChange={(e) => setServiceArea(e.target.value)}
+                  placeholder="e.g. North Shore and West Auckland"
+                  className={plainInputClass}
+                />
+                <p className="mt-1 text-xs text-slate-500">Shown on your listing, so customers know if you&apos;ll come to them.</p>
+              </div>
+            )}
             <AddressAutocompleteField
               id="profile-address"
               address={address}
@@ -454,9 +509,16 @@ export default function MerchantProfileForm({
                 setLon(newLng);
               }}
               helperText={
-                lat === null
-                  ? "Pick your address from the list as you type. If it isn't there, fill in the suburb and city and we'll find it on the map."
-                  : undefined
+                [
+                  hideAddress
+                    ? "Kept private: customers see only your suburb. We use it to check your business and to place you roughly on the map."
+                    : "",
+                  lat === null
+                    ? "Pick your address from the list as you type. If it isn't there, fill in the suburb and city and we'll find it on the map."
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ") || undefined
               }
               errorText={fieldErrors.address}
             />
@@ -595,46 +657,6 @@ export default function MerchantProfileForm({
                 {fieldError("bookingEmail")}
               </div>
             </div>
-
-            {/* Saves answering the same question on every deal; each deal
-                can still change it. Never assumed: "Ask me each time" leaves
-                the deal form blank until they choose. */}
-            {!createMode && (
-              <fieldset>
-                <legend className={labelClass}>
-                  Do customers usually need to book?
-                  <OptionalTag />
-                </legend>
-                <p className="mb-2 text-xs text-slate-500">New deals start with this answer. You can change it on any deal.</p>
-                <div className="flex flex-wrap gap-2">
-                  {[...BOOKING_CHOICES.map((c) => ({ value: c.value as string, label: c.label })), { value: "", label: "Ask me each time" }].map(
-                    (c) => {
-                      const on = defaultBookingRequirement === c.value;
-                      return (
-                        <label
-                          key={c.value || "ask"}
-                          className={`cursor-pointer rounded-full border-2 px-3.5 py-1.5 text-sm font-bold transition focus-within:ring-2 focus-within:ring-brand-400 focus-within:ring-offset-1 ${
-                            on
-                              ? "border-brand-600 bg-brand-600 text-white"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-brand-300"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="defaultBookingRequirement"
-                            value={c.value}
-                            checked={on}
-                            onChange={() => setDefaultBookingRequirement(c.value)}
-                            className="sr-only"
-                          />
-                          {c.label}
-                        </label>
-                      );
-                    },
-                  )}
-                </div>
-              </fieldset>
-            )}
           </div>
 
           <div className="space-y-4 border-t border-slate-100 pt-5">

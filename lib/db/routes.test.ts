@@ -369,6 +369,21 @@ describe("admin work and the rest of the business portal", () => {
     expect((await call(profile.POST, request("POST", { ...SIGNUP, bio, suburb: "Glenfield" }))).status).toBe(200);
   });
 
+  it("a home-based business: the public page has its suburb and area covered, never its street", async () => {
+    const item = await signUpApprovedWithCredits();
+    const profile = await import("@/app/api/merchants/profile/route");
+    const bio = "Mobile seafood catering, we come to you across the city.";
+    const res = await call(profile.POST, request("POST", { ...SIGNUP, bio, lat: -36.781234, lng: 174.712345, hideAddress: true, serviceArea: "Central Auckland" }));
+    expect(res.status).toBe(200);
+    expect(res.body.item).toMatchObject({ hideAddress: true, serviceArea: "Central Auckland", address: SIGNUP.address });
+    const { readBusinessBySlug } = await import("./publicReads");
+    const [{ slug }] = await db.query("select slug from public.merchants");
+    const pub = await readBusinessBySlug(db, slug);
+    expect(pub).toMatchObject({ address: null, addressHidden: true, serviceArea: "Central Auckland", suburb: "Auckland CBD", lat: -36.78, lng: 174.71 });
+    expect(JSON.stringify(pub)).not.toContain("Quay Street");
+    void item;
+  });
+
   it("asks for a change to a live deal, and an admin approves it", async () => {
     await signUpApprovedWithCredits(10);
     const deal = await liveDeal();

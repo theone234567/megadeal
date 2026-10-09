@@ -92,6 +92,11 @@ export async function POST(req: NextRequest) {
   // short first-touch form never collects it). By the time a merchant is
   // back in the portal editing their profile, the field is on screen and
   // customers rely on it to know what the business actually does.
+  // Home-based or mobile: the address above stays private, and the
+  // listing shows the suburb and the area they cover instead.
+  const hideAddress = body.hideAddress === true;
+  const serviceArea = cleanText(body.serviceArea, 200);
+
   const bio = cleanText(body.bio, MAX_BIO_LENGTH);
   if (bio.length < MIN_BIO_LENGTH) {
     fieldErrors.bio = `At least ${MIN_BIO_LENGTH} characters needed (currently ${bio.length}).`;
@@ -176,6 +181,8 @@ export async function POST(req: NextRequest) {
     // clobber whatever a merchant had from before it was removed.
     category: category || merchant.category || "",
     suburb,
+    hideAddress,
+    serviceArea,
     postcode: cleanText(body.postcode, 20),
     bio,
     businessHours: cleanText(body.businessHours, MAX_BUSINESS_HOURS_LENGTH),

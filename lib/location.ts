@@ -51,3 +51,26 @@ export function placeLabel(suburb: string | null | undefined, city: string | nul
   if (s && c) return s.toLowerCase().includes(c.toLowerCase()) ? s : `${s}, ${c}`;
   return s || c || null;
 }
+
+/**
+ * The address and map pin the public may see. A home-based or mobile
+ * business (hideAddress, chosen on its listing page) keeps its street
+ * private: no street, and a pin rounded to two decimal places (about a
+ * kilometre), close enough for "near me" and the deals map but not the
+ * door. The same rounding as the public_businesses view
+ * (supabase/migrations/20261014000000_hidden_address.sql).
+ */
+export function publicLocation(m: {
+  address?: string | null;
+  lat?: unknown;
+  lng?: unknown;
+  hideAddress?: unknown;
+}): { address: string | null; lat: number | null; lng: number | null; addressHidden: boolean } {
+  const lat = typeof m.lat === "number" && Number.isFinite(m.lat) ? m.lat : null;
+  const lng = typeof m.lng === "number" && Number.isFinite(m.lng) ? m.lng : null;
+  if (m.hideAddress === true) {
+    const round = (n: number | null) => (n === null ? null : Math.round(n * 100) / 100);
+    return { address: null, lat: round(lat), lng: round(lng), addressHidden: true };
+  }
+  return { address: m.address || null, lat, lng, addressHidden: false };
+}

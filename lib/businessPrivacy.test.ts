@@ -50,3 +50,19 @@ describe("business privacy", () => {
     }
   });
 });
+
+describe("a home-based or mobile business", () => {
+  const home = { ...merchant, address: "5A Camelot Place", suburb: "Glenfield", lat: -36.781234, lng: 174.712345, hideAddress: true, serviceArea: "North Shore" };
+
+  it("never shows its street or exact pin: suburb, city, area covered and a pin to about a kilometre", () => {
+    const b = mapMerchantToBusiness(home);
+    expect(b).toMatchObject({ address: null, addressHidden: true, suburb: "Glenfield", city: "Auckland", serviceArea: "North Shore", lat: -36.78, lng: 174.71 });
+    expect(JSON.stringify(b)).not.toContain("Camelot");
+    const deal = applyBusinessToDeal({} as Deal, b);
+    expect(deal).toMatchObject({ businessAddress: null, businessAddressHidden: true, businessServiceArea: "North Shore", businessLat: -36.78 });
+  });
+
+  it("a business customers visit shows its address and exact pin as before", () => {
+    expect(mapMerchantToBusiness({ ...home, hideAddress: false })).toMatchObject({ address: "5A Camelot Place", addressHidden: false, lat: -36.781234 });
+  });
+});

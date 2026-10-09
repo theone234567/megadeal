@@ -94,6 +94,8 @@ export default function AdminBusinessDetailPage() {
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [suburb, setSuburb] = useState("");
+  const [hideAddress, setHideAddress] = useState(false);
+  const [serviceArea, setServiceArea] = useState("");
   const [postcode, setPostcode] = useState("");
   const [website, setWebsite] = useState("");
   const [bio, setBio] = useState("");
@@ -133,6 +135,8 @@ export default function AdminBusinessDetailPage() {
     setAddress(item.address || "");
     setCity(item.city || "");
     setSuburb(item.suburb || "");
+    setHideAddress(item.hideAddress === true);
+    setServiceArea(item.serviceArea || "");
     setPostcode(item.postcode || "");
     setWebsite(item.website || "");
     setBio(item.bio || "");
@@ -202,6 +206,8 @@ export default function AdminBusinessDetailPage() {
       address !== (merchant.address || "") ||
       city !== (merchant.city || "") ||
       suburb !== (merchant.suburb || "") ||
+      hideAddress !== (merchant.hideAddress === true) ||
+      serviceArea !== (merchant.serviceArea || "") ||
       postcode !== (merchant.postcode || "") ||
       website !== (merchant.website || "") ||
       bio !== (merchant.bio || "") ||
@@ -282,6 +288,8 @@ export default function AdminBusinessDetailPage() {
           address,
           city,
           suburb,
+          hideAddress,
+          serviceArea,
           postcode,
           website,
           bio,
@@ -471,6 +479,19 @@ export default function AdminBusinessDetailPage() {
             <Field label="Public phone" value={phone} onChange={setPhone} required />
             <Field label="Address" value={address} onChange={setAddress} required />
             <Field label="Suburb" value={suburb} onChange={setSuburb} placeholder="e.g. Takapuna" />
+            {/* Home-based or mobile: the address above stays off the site. */}
+            <label className="flex items-start gap-2 text-sm sm:col-span-2">
+              <input type="checkbox" checked={hideAddress} onChange={(e) => setHideAddress(e.target.checked)} className="mt-0.5 h-4 w-4" />
+              <span>
+                <span className="font-medium text-slate-700">Home-based or mobile</span>
+                <span className="block text-xs text-slate-500">
+                  The street address isn&apos;t shown on the site: only the suburb, city and areas covered, and no directions.
+                </span>
+              </span>
+            </label>
+            {hideAddress && (
+              <Field label="Areas covered" value={serviceArea} onChange={setServiceArea} placeholder="e.g. North Shore and West Auckland" />
+            )}
             <label className="block text-sm">
               <span className="mb-1 block font-medium text-slate-700">
                 City

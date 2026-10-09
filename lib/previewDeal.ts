@@ -1,4 +1,4 @@
-import { businessSuburb } from "./location";
+import { businessSuburb, publicLocation } from "./location";
 import type { Deal } from "./types";
 import { businessSlug } from "./slug";
 import { parseBookingRequirement } from "./booking";
@@ -97,7 +97,10 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     businessLogoUrl: merchant?.logoUrl ?? null,
     businessWebsite: merchant?.website ?? null,
     businessPhone: merchant?.phone ?? null,
-    businessAddress: merchant?.address ?? null,
+    // Exactly as the live page will show it: a private address stays off.
+    businessAddress: publicLocation(merchant ?? {}).address,
+    businessAddressHidden: publicLocation(merchant ?? {}).addressHidden,
+    businessServiceArea: merchant?.serviceArea || null,
     businessCity: merchant?.city ?? null,
     businessSuburb: businessSuburb(merchant?.suburb, merchant?.address, merchant?.city),
     // Derived the same way the live page does, so the "more from this
@@ -115,8 +118,8 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     businessAmenities: splitAmenities(merchant?.amenities),
     businessBookingUrl: merchant?.bookingUrl ?? null,
     businessBookingEmail: merchant?.bookingEmail ?? null,
-    businessLat: typeof merchant?.lat === "number" ? merchant.lat : null,
-    businessLng: typeof merchant?.lng === "number" ? merchant.lng : null,
+    businessLat: publicLocation(merchant ?? {}).lat,
+    businessLng: publicLocation(merchant ?? {}).lng,
     // Genuinely absent rather than omitted: ratings are set by us after a
     // business has been reviewed, so a deal being written has none, and
     // showing a made-up one here would be the worst kind of preview.

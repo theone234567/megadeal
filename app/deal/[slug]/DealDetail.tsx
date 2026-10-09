@@ -163,7 +163,9 @@ export default function DealDetail({
   };
   // A city alone isn't a place to navigate to — only link a map or
   // directions for a street address or pinned coordinates.
-  const hasPlace = Boolean(deal.businessAddress || (deal.businessLat != null && deal.businessLng != null));
+  // Never for a home-based or mobile business: its pin is only
+  // approximate (lib/location.ts publicLocation), and its street private.
+  const hasPlace = !deal.businessAddressHidden && Boolean(deal.businessAddress || (deal.businessLat != null && deal.businessLng != null));
   const mapUrl = hasPlace ? getMapUrl(location) : null;
   const directionsUrl = hasPlace ? getDirectionsUrl(location) : null;
   const websiteHref = safeWebHref(deal.businessWebsite);
@@ -460,6 +462,12 @@ export default function DealDetail({
                 <p className="flex items-start gap-1.5 text-[0.8125rem] font-bold text-brand-700">
                   <MapPinIcon className="mt-0.5 h-4 w-4 shrink-0" /> {locationLine}
                 </p>
+                {deal.businessAddressHidden && (
+                  <p className="mt-1 pl-6 text-xs text-slate-600">
+                    {deal.businessServiceArea ? `Covers ${deal.businessServiceArea}. ` : ""}
+                    Home-based or mobile: the exact location is given when you book.
+                  </p>
+                )}
                 {(mapUrl || directionsUrl) && (
                   <p className="mt-1 flex items-center gap-3 pl-6 text-xs font-semibold text-brand-700">
                     {mapUrl && (

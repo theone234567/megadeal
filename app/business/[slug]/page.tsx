@@ -106,7 +106,7 @@ export default async function BusinessProfilePage(
   const { business, deals } = result;
 
   const hasContactInfo = Boolean(
-    business.website || business.phone || business.address || business.bookingUrl || business.bookingEmail
+    business.website || business.phone || business.address || business.addressHidden || business.bookingUrl || business.bookingEmail
   );
   const hasSocial = Boolean(business.facebookUrl || business.instagramUrl);
   // The saved address plus the suburb and city it doesn't already include,
@@ -115,8 +115,10 @@ export default async function BusinessProfilePage(
   const missing = (v: string | null) => (v && !addressText.includes(v.toLowerCase()) ? v : null);
   const fullAddress = [business.address, missing(business.suburb), missing(business.city)].filter(Boolean).join(", ");
   const mapTarget = { ...business, address: [business.address, missing(business.suburb)].filter(Boolean).join(", ") || null };
-  const mapUrl = getMapUrl(mapTarget);
-  const directionsUrl = getDirectionsUrl(mapTarget);
+  // None for a home-based or mobile business (its street is private and
+  // its pin only approximate, lib/location.ts publicLocation).
+  const mapUrl = business.addressHidden ? null : getMapUrl(mapTarget);
+  const directionsUrl = business.addressHidden ? null : getDirectionsUrl(mapTarget);
   const parsedHours = parseBusinessHours(business.businessHours);
   const hoursLines = parsedHours ? formatBusinessHoursLines(parsedHours) : null;
   // "Closed now" only when real hours say so, never because none were given.
@@ -147,10 +149,12 @@ export default async function BusinessProfilePage(
             url: `${SITE_URL}/business/${business.slug}`,
             telephone: business.phone || undefined,
             priceRange: business.priceRange || undefined,
-            address: business.address
+            // A home-based or mobile business: its suburb and city, no
+            // street, no pin, and the area it covers.
+            address: business.address || business.addressHidden
               ? {
                   "@type": "PostalAddress",
-                  streetAddress: business.address,
+                  streetAddress: business.address || undefined,
                   // Suburb as the locality, city as the region, when both
                   // are known.
                   addressLocality: business.suburb || business.city || undefined,
@@ -159,9 +163,10 @@ export default async function BusinessProfilePage(
                 }
               : undefined,
             geo:
-              business.lat !== null && business.lng !== null
+              !business.addressHidden && business.lat !== null && business.lng !== null
                 ? { "@type": "GeoCoordinates", latitude: business.lat, longitude: business.lng }
                 : undefined,
+            areaServed: business.serviceArea || undefined,
             openingHoursSpecification: parsedHours && known ? toOpeningHoursSpecification(parsedHours) : undefined,
             specialOpeningHoursSpecification: specialHours.length > 0 ? specialHours : undefined,
             // No aggregateRating here: this rating is a plain number an
@@ -336,6 +341,17 @@ export default async function BusinessProfilePage(
                         )}
                       </p>
                     )}
+                  </div>
+                )}
+                {business.addressHidden && (
+                  <div>
+                    <p className="flex items-center gap-2 text-slate-600">
+                      <MapPinIcon className="h-4 w-4 shrink-0" /> {placeLabel(business.suburb, business.city) || "Location given when you book"}
+                    </p>
+                    <p className="mt-1 pl-6 text-xs text-slate-600">
+                      {business.serviceArea ? `Covers ${business.serviceArea}. ` : ""}
+                      Home-based or mobile: the exact location is given when you book.
+                    </p>
                   </div>
                 )}
               </div>

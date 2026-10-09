@@ -196,6 +196,9 @@ export async function POST(req: NextRequest) {
       city,
       category,
       suburb: cleanText(body.suburb, 40),
+      // Left as it is unless the form says (the short sign-up doesn't ask).
+      hideAddress: body.hideAddress === undefined ? undefined : body.hideAddress === true,
+      serviceArea: cleanText(body.serviceArea, 200),
       postcode: cleanText(body.postcode, 20),
       website,
       bio: cleanText(body.bio, MAX_BIO_LENGTH),

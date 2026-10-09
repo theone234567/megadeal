@@ -43,6 +43,11 @@ export interface Deal {
   businessWebsite: string | null;
   businessPhone: string | null;
   businessAddress: string | null;
+  /** Home-based or mobile: the street is private (businessAddress is
+   *  null), there are no directions, and the pin is approximate. */
+  businessAddressHidden?: boolean;
+  /** The area a mobile business covers. */
+  businessServiceArea?: string | null;
   /** The city filter ("All areas") matches on this, so it stays the city. */
   businessCity: string | null;
   /** Suburb, when known (lib/location.ts). */

@@ -235,6 +235,8 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     patch.city = v;
   }
   if (body.suburb !== undefined) patch.suburb = cleanText(body.suburb, 40);
+  if (body.hideAddress !== undefined) patch.hideAddress = body.hideAddress === true;
+  if (body.serviceArea !== undefined) patch.serviceArea = cleanText(body.serviceArea, 200);
   if (body.postcode !== undefined) patch.postcode = cleanText(body.postcode, 20);
   if (body.website !== undefined) {
     const v = cleanText(body.website, MAX_TEXT_LENGTH);

@@ -171,11 +171,13 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
                 addressCountry: "NZ",
               }
             : undefined,
-        // The pin the business set on its map, when it has one.
+        // The pin the business set on its map, when it has one; never the
+        // approximate one of a home-based or mobile business.
         geo:
-          typeof deal.businessLat === "number" && typeof deal.businessLng === "number"
+          !deal.businessAddressHidden && typeof deal.businessLat === "number" && typeof deal.businessLng === "number"
             ? { "@type": "GeoCoordinates", latitude: deal.businessLat, longitude: deal.businessLng }
             : undefined,
+        areaServed: deal.businessServiceArea || undefined,
       }
     : undefined;
 

@@ -1,11 +1,12 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { PGlite } from "@electric-sql/pglite";
 import { createTestDb } from "./testDb";
-import { createPgAdminClient, type Run } from "./wixShim";
+import { createPgAdminClient, forgetColumnChecks, type Run } from "./wixShim";
 import type { Sql } from "./connection";
 import { debitCreditsIfAvailable, incrementCreditsAtomically, incrementFieldAtomically, setFieldsIf } from "../creditsAtomic";
 import { queryAllByEmail, queryAllItems } from "../queryAll";
 import { CATEGORIES } from "../categories";
+import { MIGRATION_FILES } from "./migrationFiles";
 
 /**
  * The site's own server code, unchanged, running on the new database
@@ -62,6 +63,30 @@ describe("businesses", () => {
     // Empty fields are left out, as Wix does.
     expect("website" in m).toBe(false);
     expect(await client().items.get("Merchants", m._id)).toEqual(m);
+  });
+
+  it("keeps a home-based business's address private setting, and works before that database update is applied", async () => {
+    const saved = await business({ hideAddress: true, serviceArea: "North Shore", status: "Approved", address: "5A Camelot Place", lat: -36.781234, lng: 174.712345 });
+    expect(saved).toMatchObject({ hideAddress: true, serviceArea: "North Shore" });
+    expect((await business({ _owner: "wix-member-2", email: "two@cafe.nz", referralCode: "MDTWO" })).hideAddress).toBe(false);
+    // The public view: no street, and a pin rounded to about a kilometre.
+    expect(await db.query("select address, lat, lng, service_area from public.public_businesses where hide_address")).toEqual([
+      { address: null, lat: -36.78, lng: 174.71, service_area: "North Shore" },
+    ]);
+
+    // A database without the columns yet (the site is published first).
+    await pglite.exec("drop view public.public_businesses; alter table public.merchants drop column hide_address, drop column service_area;");
+    forgetColumnChecks();
+    try {
+      const fresh = createPgAdminClient(run);
+      const item = await fresh.items.insert("Merchants", { businessName: "Old Db Cafe", email: "old@cafe.nz", status: "Pending", hideAddress: true, serviceArea: "West" });
+      expect(item).toMatchObject({ businessName: "Old Db Cafe", hideAddress: false });
+      expect(item.serviceArea).toBeUndefined();
+      expect((await fresh.items.update("Merchants", { ...item, hideAddress: true })).hideAddress).toBe(false);
+    } finally {
+      const migration = MIGRATION_FILES.find((m) => m.file === "20261014000000_hidden_address.sql")!.sql;
+      await pglite.exec(migration);
+    }
   });
 
   it("finds a business by its owner, and by email whatever the capitals", async () => {

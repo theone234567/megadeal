@@ -48,6 +48,11 @@ interface Field {
   /** Keep "" as "" (the column is NOT NULL); otherwise "" is stored as null. */
   keepBlank?: boolean;
   readOnly?: boolean;
+  /** A column a later migration adds, which a database may not have yet:
+   *  the site is published before "Apply database updates" is pressed.
+   *  Read through the row as JSON (so a missing column reads as empty),
+   *  and left out of a write until it exists. */
+  newColumn?: boolean;
 }
 
 const SLUG_BY_NAME = new Map(CATEGORIES.map((c) => [c.name.toLowerCase(), c.slug]));
@@ -205,6 +210,14 @@ const MERCHANTS: Collection = {
     f("status", "status"),
     timestamp("firstApprovedAt", "first_approved_at"),
     f("defaultBookingRequirement", "default_booking_requirement"),
+    // Home-based or mobile: the street address stays private
+    // (supabase/migrations/20261014000000_hidden_address.sql).
+    f("hideAddress", "hide_address", {
+      expr: "coalesce((to_jsonb(t)->>'hide_address')::boolean, false)",
+      write: (v: any) => Boolean(v),
+      newColumn: true,
+    }),
+    f("serviceArea", "service_area", { expr: "(to_jsonb(t)->>'service_area')", newColumn: true }),
   ],
 };
 
@@ -504,9 +517,38 @@ function columnsFor(c: Collection, item: Row): Row {
   return cols;
 }
 
+/** Tables known to have all their newColumn fields (they don't go away). */
+const tablesUpToDate = new Set<string>();
+/** For tests that take a column away again. */
+export const forgetColumnChecks = () => tablesUpToDate.clear();
+
+/** Leaves out of a write any newColumn the database doesn't have yet. */
+async function dropColumnsNotThereYet(db: Sql, c: Collection, cols: Row): Promise<void> {
+  if (tablesUpToDate.has(c.table)) return;
+  const fresh = c.fields.filter((x) => x.newColumn && x.col);
+  if (!fresh.length) return;
+  const rows = await db.query<{ column_name: string }>(
+    "select column_name from information_schema.columns where table_schema = 'public' and table_name = $1",
+    [c.table]
+  );
+  const there = new Set(rows.map((r) => r.column_name));
+  const missing = fresh.filter((x) => !there.has(x.col!));
+  if (!missing.length) {
+    tablesUpToDate.add(c.table);
+    return;
+  }
+  for (const x of missing) {
+    if (x.col! in cols) {
+      console.error(`[db] ${c.table}.${x.col} isn't in the database yet (Admin > Moving off Wix > Apply database updates), so it wasn't saved`);
+      delete cols[x.col!];
+    }
+  }
+}
+
 /** Converts a Wix-style error-free write into SQL and runs it. */
 async function writeRow(db: Sql, c: Collection, ctx: ShimContext, item: Row, existing: Row | null, existingId: string | null): Promise<string> {
   const cols = columnsFor(c, item);
+  await dropColumnsNotThereYet(db, c, cols);
   await c.beforeWrite?.(cols, item, db, ctx, existing);
   const keys = Object.keys(cols);
   if (existingId === null) {

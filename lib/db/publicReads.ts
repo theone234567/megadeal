@@ -1,5 +1,5 @@
 import { businessSlug } from "../slug";
-import { businessSuburb } from "../location";
+import { businessSuburb, publicLocation } from "../location";
 import { MAX_BUSINESS_PHOTOS } from "../businessPhotos";
 import { parseBookingRequirement } from "../booking";
 import { CATEGORIES } from "../categories";
@@ -28,7 +28,9 @@ const BUSINESS_COLUMNS = `
   m.facebook_url as b_facebook_url, m.instagram_url as b_instagram_url,
   m.price_range as b_price_range, m.amenities as b_amenities, m.booking_url as b_booking_url,
   m.booking_email as b_booking_email, m.lat as b_lat, m.lng as b_lng,
-  m.rating as b_rating, m.review_count as b_review_count`;
+  m.rating as b_rating, m.review_count as b_review_count,
+  coalesce((to_jsonb(m)->>'hide_address')::boolean, false) as b_hide_address,
+  to_jsonb(m)->>'service_area' as b_service_area`;
 
 const DEAL_COLUMNS = `
   d.id, d.slug, d.name, d.description, d.category_slug, d.photo_url, d.price_now, d.price_was,
@@ -58,6 +60,7 @@ function blankToNull(value: unknown): string | null {
 
 /** The business's public fields, from a row selected with BUSINESS_COLUMNS. */
 export function rowToBusiness(r: Row): PublicBusiness {
+  const place = publicLocation({ address: blankToNull(r.b_address), lat: toNumber(r.b_lat), lng: toNumber(r.b_lng), hideAddress: r.b_hide_address === true });
   const photos = Array.isArray(r.b_photos) ? r.b_photos : typeof r.b_photos === "string" ? JSON.parse(r.b_photos) : [];
   return {
     businessName: r.b_name,
@@ -65,7 +68,9 @@ export function rowToBusiness(r: Row): PublicBusiness {
     photos: photos.filter((p: unknown): p is string => typeof p === "string" && p.length > 0).slice(0, MAX_BUSINESS_PHOTOS),
     website: blankToNull(r.b_website),
     phone: blankToNull(r.b_phone),
-    address: blankToNull(r.b_address),
+    address: place.address,
+    addressHidden: place.addressHidden,
+    serviceArea: blankToNull(r.b_service_area),
     city: blankToNull(r.b_city),
     suburb: businessSuburb(r.b_suburb, r.b_address, r.b_city),
     slug: r.b_slug ?? businessSlug(r.b_name, r.b_slug_id),
@@ -77,8 +82,8 @@ export function rowToBusiness(r: Row): PublicBusiness {
     amenities: Array.isArray(r.b_amenities) ? r.b_amenities : [],
     bookingUrl: blankToNull(r.b_booking_url),
     bookingEmail: blankToNull(r.b_booking_email),
-    lat: toNumber(r.b_lat),
-    lng: toNumber(r.b_lng),
+    lat: place.lat,
+    lng: place.lng,
     rating: toNumber(r.b_rating),
     reviewCount: toNumber(r.b_review_count),
   };
@@ -118,6 +123,8 @@ export function rowToDeal(r: Row): Deal {
     businessWebsite: b.website,
     businessPhone: b.phone,
     businessAddress: b.address,
+    businessAddressHidden: b.addressHidden,
+    businessServiceArea: b.serviceArea,
     businessCity: b.city,
     businessSuburb: b.suburb,
     businessSlug: b.slug,
