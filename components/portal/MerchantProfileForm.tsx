@@ -420,12 +420,10 @@ export default function MerchantProfileForm({
             </div>
           </div>
 
-          {/* Legal name and NZBN are collected once at signup and don't
-              need re-asking here — this block only exists for the
-              createMode recovery form (an account whose signup dropped
-              before that first save ever happened), where nothing has
-              been given yet. */}
-          {createMode && (
+          {/* Private: the legal name and NZBN let an admin check the
+              business is a registered company. Asked here, not at sign-up,
+              so the public name above stays the one customers know. */}
+          {(
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="profile-legalBusinessName" className="mb-1 block text-sm font-medium text-slate-700">
@@ -442,6 +440,10 @@ export default function MerchantProfileForm({
                   className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("legalBusinessName")}`}
                 />
                 {fieldError("legalBusinessName")}
+                <p className="mt-1 text-xs text-slate-500">
+                  As registered with the Companies Office (a New Zealand Limited company). Only we
+                  see it.
+                </p>
               </div>
               <div>
                 <label htmlFor="profile-nzbn" className="mb-1 block text-sm font-medium text-slate-700">
@@ -653,6 +655,10 @@ export default function MerchantProfileForm({
                 className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("phone")}`}
               />
               {fieldError("phone")}
+              <p className="mt-1 text-xs text-slate-500">
+                Shown on your listing. Starts as the number you gave at sign-up: change it if
+                customers should call a different one.
+              </p>
             </div>
             <div>
               <label htmlFor="profile-bookingUrl" className="mb-1 block text-sm font-medium text-slate-700">

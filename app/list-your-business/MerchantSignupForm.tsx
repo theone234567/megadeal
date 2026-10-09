@@ -55,9 +55,8 @@ const FIELD_MESSAGES: Record<string, { missing: string; invalid?: string }> = {
   "signup-email": { missing: "Enter your email address.", invalid: "Enter a valid email address, like you@business.co.nz." },
   "signup-password": { missing: "Create a password." },
   "signup-confirmPassword": { missing: "Confirm your password." },
-  "signup-legalBusinessName": { missing: "Enter your registered business name." },
+  "signup-businessName": { missing: "Enter your business name." },
   "signup-contactPhone": { missing: "Enter a contact phone number." },
-  "signup-businessPhone": { missing: "Enter a business phone number, or tick “Same as my contact phone”." },
   "signup-agreedToTerms": { missing: "Tick the box to agree to the terms and privacy policy." },
 };
 
@@ -118,8 +117,9 @@ type ApplicationValues = {
   businessName: string;
   contactName: string;
   contactPhone: string;
-  /** The public number customers see (MerchantRecord.phone): its own
-   *  field, or the contact phone when "Same as my contact phone" is ticked. */
+  /** The public number customers see (MerchantRecord.phone): the contact
+   *  phone to start with, shown as the booking number on the listing page
+   *  (the next step), where it can be changed before anything is public. */
   businessPhone: string;
   legalBusinessName: string;
   couponCode: string;
@@ -129,20 +129,17 @@ type ApplicationValues = {
 };
 
 function readApplicationValues(formData: FormData): ApplicationValues {
-  // No separate "Business name" field on this form anymore — the legal
-  // name doubles as the trading name until the merchant sets a different
-  // public one in the portal (see MerchantProfileForm's own "Business
-  // name" field, which /api/merchants/apply also accepts on later edits).
-  const legalBusinessName = String(formData.get("legalBusinessName") ?? "");
+  // The name customers know the business by: it's the public listing's
+  // name. The legal / registered name is asked privately on the listing
+  // page (MerchantProfileForm), where it's required before the listing
+  // goes for approval; asking for it here put "Limited" on listings.
+  const contactPhone = String(formData.get("contactPhone") ?? "");
   return {
-    businessName: legalBusinessName,
+    businessName: String(formData.get("businessName") ?? ""),
     contactName: String(formData.get("contactName") ?? ""),
-    contactPhone: String(formData.get("contactPhone") ?? ""),
-    businessPhone:
-      formData.get("samePhone") === "on"
-        ? String(formData.get("contactPhone") ?? "")
-        : String(formData.get("businessPhone") ?? ""),
-    legalBusinessName,
+    contactPhone,
+    businessPhone: contactPhone,
+    legalBusinessName: "",
     couponCode: String(formData.get("couponCode") ?? ""),
     referredByCode: String(formData.get("referredByCode") ?? ""),
     honeypot: String(formData.get(HONEYPOT_FIELD) ?? ""),
@@ -317,7 +314,6 @@ export default function MerchantSignupForm({
   const [confirmPassword, setConfirmPassword] = useState("");
   // Business phone (public) is the contact phone (private) too. Off by
   // default, so a personal mobile is only made public by choice.
-  const [samePhone, setSamePhone] = useState(false);
 
   // Set once Wix comes back with EMAIL_VERIFICATION_REQUIRED — the rest of
   // the form stays filled in underneath while this is shown, nothing is
@@ -516,31 +512,18 @@ export default function MerchantSignupForm({
     }
 
     const email = String(formData.get("email") ?? "").trim();
-    // No separate "Business name" field — the legal name (below) is what
-    // Wix's member nickname and the application both use, same as
-    // readApplicationValues.
-    const businessName = String(formData.get("legalBusinessName") ?? "").trim();
+    const businessName = String(formData.get("businessName") ?? "").trim();
 
-    // The business phone is shown to customers as a tap-to-call number, so
-    // the server only accepts a full one (phoneLink, /api/merchants/apply).
+    // The phone starts as the booking number customers tap to call, so the
+    // server only accepts a full one (phoneLink, /api/merchants/apply).
     // Checked here, before the account is created, so a typo gets a clear
     // message on the right field rather than failing after sign-up.
-    const sameNumber = formData.get("samePhone") === "on";
-    const publicPhone = String(formData.get(sameNumber ? "contactPhone" : "businessPhone") ?? "");
-    if (!phoneLink(publicPhone)) {
+    if (!phoneLink(String(formData.get("contactPhone") ?? ""))) {
       if (twoStep) {
-        const id = sameNumber ? "signup-contactPhone" : "signup-businessPhone";
-        showFieldErrors(
-          { [id]: sameNumber ? "This is your business phone too, so enter it in full, including the area code." : "Enter the number in full, including the area code." },
-          step2Ref.current
-        );
+        showFieldErrors({ "signup-contactPhone": "Enter the number in full, including the area code." }, step2Ref.current);
         return;
       }
-      setSubmitError(
-        sameNumber
-          ? "Your contact phone is also your business phone, so enter it in full, including the area code."
-          : "Enter your business phone in full, including the area code."
-      );
+      setSubmitError("Enter your phone number in full, including the area code.");
       return;
     }
 
@@ -946,25 +929,26 @@ export default function MerchantSignupForm({
 
   const legalNameField = (
           <div>
-            <label htmlFor="signup-legalBusinessName" className={labelClass}>
-              Legal / registered business name
+            <label htmlFor="signup-businessName" className={labelClass}>
+              Business name
               {!twoStep && <RequiredTag />}
             </label>
             <input
-              id="signup-legalBusinessName"
+              id="signup-businessName"
               required
-              name="legalBusinessName"
+              name="businessName"
               autoComplete="organization"
               type="text"
               maxLength={300}
-              placeholder="e.g. Harbourside Bistro Limited"
+              placeholder="e.g. Harbourside Bistro"
               className={inputClass}
-              {...errorProps("signup-legalBusinessName")}
+              {...errorProps("signup-businessName")}
             />
-            {fieldError("signup-legalBusinessName")}
+            {fieldError("signup-businessName")}
             <p className={hintClass}>
-              Must be a New Zealand registered Limited company — we
-              don&apos;t currently accept sole traders or partnerships.
+              The name customers know you by, as it&apos;ll appear on your listing. MegaDeal is
+              for New Zealand registered Limited companies; you&apos;ll add your registered
+              company name privately in the next step.
             </p>
           </div>
   );
@@ -1132,15 +1116,14 @@ export default function MerchantSignupForm({
         <div ref={step2Ref} hidden={twoStep && step !== 2} className="space-y-4">
         {twoStep && legalNameField}
 
-        {/* Two numbers: a private one for us to reach them, and the public
-            one customers see on the listing. Often the same number, hence
-            the tick box, but a personal mobile shouldn't become public
-            just because it was the number given at signup. */}
+        {/* One number here. It's also suggested as the booking number on
+            the listing page next, labelled and changeable there before
+            anything is public, so a personal mobile only goes on the
+            listing if they leave it. */}
         <div>
           <label htmlFor="signup-contactPhone" className={labelClass}>
-            Contact phone
+            Phone number
             {!twoStep && <RequiredTag />}
-            {!twoStep && <PrivateTag />}
           </label>
           <input
             id="signup-contactPhone"
@@ -1155,43 +1138,8 @@ export default function MerchantSignupForm({
           />
           {fieldError("signup-contactPhone")}
           <p className={hintClass}>
-            Your mobile or business number, so we can reach you about your application.
-            Never shown on MegaDeal.
-          </p>
-        </div>
-
-        <div>
-          <label htmlFor="signup-businessPhone" className={labelClass}>
-            Business phone for customers
-            {!twoStep && <RequiredTag />}
-          </label>
-          <label className="mb-2 flex items-center gap-2 text-sm text-slate-700">
-            <input
-              type="checkbox"
-              name="samePhone"
-              checked={samePhone}
-              onChange={(e) => setSamePhone(e.target.checked)}
-              className="h-5 w-5 shrink-0 rounded border-slate-300"
-            />
-            Same as my contact phone
-          </label>
-          {!samePhone && (
-            <input
-              id="signup-businessPhone"
-              required
-              name="businessPhone"
-              autoComplete="off"
-              type="tel"
-              maxLength={300}
-              placeholder="09 123 4567"
-              className={inputClass}
-              {...errorProps("signup-businessPhone")}
-            />
-          )}
-          {!samePhone && fieldError("signup-businessPhone")}
-          <p className={hintClass}>
-            Shown on your listing so customers can call you to book. You can change it later in
-            your portal.
+            So we can reach you about your application. On the next step you choose the
+            number customers call to book: this one, or another.
           </p>
         </div>
 

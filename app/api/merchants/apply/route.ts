@@ -103,8 +103,10 @@ export async function POST(req: NextRequest) {
   if (!contactName) fieldErrors.contactName = "Contact name is required.";
   const contactPhone = cleanText(body.contactPhone, MAX_TEXT_LENGTH);
   if (!contactPhone) fieldErrors.contactPhone = "Contact phone is required.";
+  // Asked privately on the listing page, not at sign-up (it was putting
+  // "Limited" on public listings): required there, by the profile route,
+  // before the listing goes for approval.
   const legalBusinessName = cleanText(body.legalBusinessName, MAX_TEXT_LENGTH);
-  if (!legalBusinessName) fieldErrors.legalBusinessName = "Legal business name is required.";
   const phone = cleanText(body.phone, MAX_TEXT_LENGTH);
   if (!phone) fieldErrors.phone = "Phone is required.";
   // It's shown to customers as a tap-to-call booking number, so it has to
