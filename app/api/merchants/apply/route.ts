@@ -1,3 +1,4 @@
+import { parseVisitType } from "@/lib/location";
 import { randomUUID } from "crypto";
 import { phoneLink } from "@/lib/booking";
 import { NextRequest, NextResponse } from "next/server";
@@ -197,8 +198,9 @@ export async function POST(req: NextRequest) {
       category,
       suburb: cleanText(body.suburb, 40),
       // Left as it is unless the form says (the short sign-up doesn't ask).
-      hideAddress: body.hideAddress === undefined ? undefined : body.hideAddress === true,
-      serviceArea: cleanText(body.serviceArea, 200),
+      visitType: body.visitType === undefined ? undefined : parseVisitType(body.visitType),
+      hideAddress: body.visitType === undefined ? undefined : parseVisitType(body.visitType) !== "premises",
+      serviceArea: parseVisitType(body.visitType) === "mobile" ? cleanText(body.serviceArea, 200) : "",
       postcode: cleanText(body.postcode, 20),
       website,
       bio: cleanText(body.bio, MAX_BIO_LENGTH),

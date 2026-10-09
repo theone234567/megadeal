@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { fetchBusinessProfileBySlug } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
-import { placeLabel } from "@/lib/location";
+import { placeLabel, visitNote } from "@/lib/location";
 import { truncateForMeta } from "@/lib/format";
 import DealGrid from "@/components/DealGrid";
 import HowToUseStrip from "@/components/HowToUseStrip";
@@ -345,12 +345,13 @@ export default async function BusinessProfilePage(
                 )}
                 {business.addressHidden && (
                   <div>
-                    <p className="flex items-center gap-2 text-slate-600">
-                      <MapPinIcon className="h-4 w-4 shrink-0" /> {placeLabel(business.suburb, business.city) || "Location given when you book"}
-                    </p>
+                    {placeLabel(business.suburb, business.city) && (
+                      <p className="flex items-center gap-2 text-slate-600">
+                        <MapPinIcon className="h-4 w-4 shrink-0" /> {placeLabel(business.suburb, business.city)}
+                      </p>
+                    )}
                     <p className="mt-1 pl-6 text-xs text-slate-600">
-                      {business.serviceArea ? `Covers ${business.serviceArea}. ` : ""}
-                      Home-based or mobile: the exact location is given when you book.
+                      {visitNote(business.visitType, business.serviceArea)}
                     </p>
                   </div>
                 )}

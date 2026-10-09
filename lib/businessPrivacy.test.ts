@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { applyBusinessToDeal, mapMerchantToBusiness } from "./business";
+import { visitNote } from "./location";
 import type { Deal } from "./types";
 
 // A Merchants record carrying every private field a business gives us.
@@ -52,17 +53,26 @@ describe("business privacy", () => {
 });
 
 describe("a home-based or mobile business", () => {
-  const home = { ...merchant, address: "5A Camelot Place", suburb: "Glenfield", lat: -36.781234, lng: 174.712345, hideAddress: true, serviceArea: "North Shore" };
+  const home = { ...merchant, address: "5A Camelot Place", suburb: "Glenfield", lat: -36.781234, lng: 174.712345, hideAddress: true, visitType: "mobile", serviceArea: "North Shore" };
 
   it("never shows its street or exact pin: suburb, city, area covered and a pin to about a kilometre", () => {
     const b = mapMerchantToBusiness(home);
-    expect(b).toMatchObject({ address: null, addressHidden: true, suburb: "Glenfield", city: "Auckland", serviceArea: "North Shore", lat: -36.78, lng: 174.71 });
+    expect(b).toMatchObject({ address: null, addressHidden: true, visitType: "mobile", suburb: "Glenfield", city: "Auckland", serviceArea: "North Shore", lat: -36.78, lng: 174.71 });
     expect(JSON.stringify(b)).not.toContain("Camelot");
     const deal = applyBusinessToDeal({} as Deal, b);
-    expect(deal).toMatchObject({ businessAddress: null, businessAddressHidden: true, businessServiceArea: "North Shore", businessLat: -36.78 });
+    expect(deal).toMatchObject({ businessAddress: null, businessAddressHidden: true, businessVisitType: "mobile", businessServiceArea: "North Shore", businessLat: -36.78 });
   });
 
   it("a business customers visit shows its address and exact pin as before", () => {
-    expect(mapMerchantToBusiness({ ...home, hideAddress: false })).toMatchObject({ address: "5A Camelot Place", addressHidden: false, lat: -36.781234 });
+    expect(mapMerchantToBusiness({ ...home, hideAddress: false, visitType: "premises" })).toMatchObject({ address: "5A Camelot Place", addressHidden: false, visitType: "premises", lat: -36.781234 });
+  });
+
+  it("says what it chose: by appointment, mobile or online", () => {
+    expect(visitNote("appointment", null)).toBe("By appointment: address provided by the business when you book.");
+    expect(visitNote("mobile", "North Shore")).toBe("Comes to you: covers North Shore.");
+    expect(visitNote("online", "North Shore")).toBe("Online business.");
+    expect(visitNote("premises", null)).toBeNull();
+    // An address hidden before the choice existed reads as by appointment.
+    expect(mapMerchantToBusiness({ ...home, visitType: undefined })).toMatchObject({ visitType: "appointment", serviceArea: null });
   });
 });

@@ -18,7 +18,7 @@ import type { DealAction } from "@/lib/dealEvents";
 import { parseBusinessHours, formatBusinessHoursLines, hoursKnown, isOpenNow } from "@/lib/businessHours";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
-import { placeLabel } from "@/lib/location";
+import { placeLabel, visitNote } from "@/lib/location";
 import { keyRestrictions, splitTermsForDisplay } from "@/lib/dealTerms";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { bookingPlan, effectiveBookingRequirement, type BookingAction } from "@/lib/booking";
@@ -464,8 +464,7 @@ export default function DealDetail({
                 </p>
                 {deal.businessAddressHidden && (
                   <p className="mt-1 pl-6 text-xs text-slate-600">
-                    {deal.businessServiceArea ? `Covers ${deal.businessServiceArea}. ` : ""}
-                    Home-based or mobile: the exact location is given when you book.
+                    {visitNote(deal.businessVisitType ?? "appointment", deal.businessServiceArea)}
                   </p>
                 )}
                 {(mapUrl || directionsUrl) && (

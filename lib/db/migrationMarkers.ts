@@ -12,4 +12,5 @@ export const MIGRATION_MARKERS: { file: string; sql: string }[] = [
   { file: "20261012000000_function_grants.sql", sql: "not has_function_privilege('anon', 'public.free_merchant_slug(text,uuid,integer)', 'execute')" },
   { file: "20261013000000_slug_apostrophes.sql", sql: "public.slugify('Joe''s') = 'joes'" },
   { file: "20261014000000_hidden_address.sql", sql: "exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'merchants' and column_name = 'hide_address')" },
+  { file: "20261015000000_visit_type.sql", sql: "exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'merchants' and column_name = 'visit_type')" },
 ];

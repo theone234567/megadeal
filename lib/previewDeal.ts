@@ -1,4 +1,4 @@
-import { businessSuburb, publicLocation } from "./location";
+import { businessSuburb, publicLocation, publicVisitType } from "./location";
 import type { Deal } from "./types";
 import { businessSlug } from "./slug";
 import { parseBookingRequirement } from "./booking";
@@ -100,7 +100,8 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     // Exactly as the live page will show it: a private address stays off.
     businessAddress: publicLocation(merchant ?? {}).address,
     businessAddressHidden: publicLocation(merchant ?? {}).addressHidden,
-    businessServiceArea: merchant?.serviceArea || null,
+    businessVisitType: publicVisitType(publicLocation(merchant ?? {}).addressHidden, merchant?.visitType),
+    businessServiceArea: publicVisitType(publicLocation(merchant ?? {}).addressHidden, merchant?.visitType) === "mobile" ? merchant?.serviceArea || null : null,
     businessCity: merchant?.city ?? null,
     businessSuburb: businessSuburb(merchant?.suburb, merchant?.address, merchant?.city),
     // Derived the same way the live page does, so the "more from this
