@@ -290,3 +290,15 @@ describe("the nightly backup check", () => {
     lastBackupRun = null;
   });
 });
+
+describe("build settings on the readiness page", () => {
+  it("reads every NEXT_PUBLIC_ value written out in full, never by name", async () => {
+    // A NEXT_PUBLIC_ value exists only where it's written out
+    // (process.env.NEXT_PUBLIC_X), copied in by the build: looked up by
+    // name on the live site it always reads as missing.
+    const { readFileSync } = await import("fs");
+    const source = readFileSync(join(__dirname, "migrationReadiness.ts"), "utf8");
+    expect(source).not.toMatch(/set\(\s*["'`]NEXT_PUBLIC_/);
+    expect(source).not.toMatch(/process\.env\[\s*["'`]NEXT_PUBLIC_/);
+  });
+});

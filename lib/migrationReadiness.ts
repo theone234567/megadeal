@@ -488,7 +488,11 @@ async function loginsSection(dbReady: boolean, facts: DatabaseFacts | null, emai
 
   // The robot check: Cloudflare says whether the secret is real when
   // given a token that isn't, without counting it as a check.
-  const siteKey = set("NEXT_PUBLIC_TURNSTILE_SITE_KEY");
+  // Written out in full, not looked up by name with set(): a NEXT_PUBLIC_
+  // value is a build setting, copied into the code where it's written
+  // out, and isn't among the settings the running site can look up. By
+  // name it read as missing although the pages had it.
+  const siteKey = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim());
   const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
   if (!siteKey || !secret) {
     checks.push(missing("Robot check", `${!siteKey ? "NEXT_PUBLIC_TURNSTILE_SITE_KEY" : "TURNSTILE_SECRET_KEY"} isn't set. Create a Turnstile widget for megadeal.co.nz in Cloudflare.`));
