@@ -273,6 +273,9 @@ export default function AdminDashboardPage() {
           <Link href="/admin/two-factor" className="text-sm font-medium text-slate-500 hover:text-brand-700">
             Two-factor sign-in
           </Link>
+          <Link href="/admin/launch" className="text-sm font-medium text-slate-500 hover:text-brand-700">
+            Launch checklist
+          </Link>
           <Link href="/admin/move-off-wix" className="text-sm font-medium text-slate-500 hover:text-brand-700">
             Moving off Wix
           </Link>

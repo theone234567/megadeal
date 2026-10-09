@@ -3,6 +3,10 @@
 Everything that has to happen to open MegaDeal to the public, in order. Most of the site
 switches by itself when `LAUNCHED` turns on; this is the short list of what doesn't.
 
+**Admin > Launch checklist** is this guide as a page: what the site can check ticks
+itself (the Wix move, backups, account emails, test businesses left, businesses without a
+password), and the rest are ticked there by hand.
+
 ## The week before
 
 1. **Terms.** Update the offer paragraph in `app/terms/page.tsx` (proposed wording in

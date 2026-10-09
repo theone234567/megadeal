@@ -35,3 +35,6 @@ export const SIGNUP_CODE_SENT_KEY = "auth:signup:code-sent";
 /** Set for a few hours after the admin is emailed about failing sign-up
  *  codes, so one outage sends one email, not one per attempt. */
 export const SIGNUP_ALERT_SENT_KEY = "auth:signup:alerted";
+
+/** Admin > Launch checklist: the items ticked by hand ({ id: when }). */
+export const LAUNCH_TICKS_KEY = "launch:checklist:ticks";
