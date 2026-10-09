@@ -5,6 +5,7 @@ import { createDataClient } from "@/lib/dataClient";
 import { getSiteRudenessCheck, setSiteRudenessCheck } from "@/lib/rudenessSetting";
 import { getRateLimitKv } from "@/lib/rateLimit";
 import { AI_REVIEW_LAST_KEY } from "@/lib/kvMarkers";
+import { signupCodeProblem } from "@/lib/signupHealth";
 
 /** How the AI deal check last went, or null if it hasn't run (lib/aiReview.ts). */
 async function aiReviewStatus(): Promise<{ configured: boolean; last: { at: string; ok: boolean; problem?: string } | null }> {
@@ -17,13 +18,19 @@ async function aiReviewStatus(): Promise<{ configured: boolean; last: { at: stri
   }
 }
 
-/** Site-wide admin settings (the rudeness check), and how the AI deal check is doing. */
+/** Site-wide admin settings (the rudeness check), how the AI deal check is
+ *  doing, and whether new businesses can get their sign-up code. */
 export async function GET(req: NextRequest) {
   if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
   const adminClient = createDataClient();
-  return NextResponse.json({ rudenessCheck: await getSiteRudenessCheck(adminClient), aiReview: await aiReviewStatus() });
+  return NextResponse.json({
+    rudenessCheck: await getSiteRudenessCheck(adminClient),
+    aiReview: await aiReviewStatus(),
+    // A sign-up code that couldn't be sent, until one next goes out.
+    signupProblem: await signupCodeProblem(),
+  });
 }
 
 export async function PATCH(req: NextRequest) {

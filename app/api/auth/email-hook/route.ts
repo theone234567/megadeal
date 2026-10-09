@@ -4,6 +4,7 @@ import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { checkRateLimit, getRateLimitKv } from "@/lib/rateLimit";
 import { EMAIL_HOOK_REACHED_KEY } from "@/lib/kvMarkers";
+import { noteSignupCodeSent } from "@/lib/signupHealth";
 
 export const dynamic = "force-dynamic";
 
@@ -88,5 +89,7 @@ export async function POST(req: NextRequest) {
   // Supabase waits 5 seconds for this hook: answer within 4.
   const sent = await sendTransactionalEmail({ to: email, subject: message.subject, html: message.html, withinMs: 4000 });
   if (!sent) return NextResponse.json({ error: { http_code: 500, message: "Couldn't send" } }, { status: 500 });
+  // Clears Needs attention's "can't get their sign-up code", if it's up.
+  await noteSignupCodeSent();
   return NextResponse.json({});
 }

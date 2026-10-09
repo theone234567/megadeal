@@ -23,3 +23,15 @@ export const AI_REVIEW_LAST_KEY = "ai:review:last";
 /** The newest contact message an admin has had on screen (its created_at),
  *  so Needs attention can count the ones that came in since. */
 export const MESSAGES_SEEN_KEY = "admin:messages:seen";
+
+/** When a sign-up code last failed to go out ({ at, code }: Supabase's
+ *  error), noted by the sign-up routes; shown in Needs attention until a
+ *  code next goes out (SIGNUP_CODE_SENT_KEY). */
+export const SIGNUP_PROBLEM_KEY = "auth:signup:problem";
+
+/** When the email hook last sent a sign-up code successfully. */
+export const SIGNUP_CODE_SENT_KEY = "auth:signup:code-sent";
+
+/** Set for a few hours after the admin is emailed about failing sign-up
+ *  codes, so one outage sends one email, not one per attempt. */
+export const SIGNUP_ALERT_SENT_KEY = "auth:signup:alerted";

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authPreflight } from "@/lib/authRoutes";
 import { setSessionCookies } from "@/lib/authSession";
 import { resendSignupCode, signInWithPassword } from "@/lib/supabaseAuth";
+import { codeDidNotGoOut, noteSignupCodeProblem } from "@/lib/signupHealth";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,8 @@ export async function POST(req: NextRequest) {
     return out;
   }
   if (res.code === "email_not_confirmed") {
-    await resendSignupCode(pre.email, pre.ip);
+    const sent = await resendSignupCode(pre.email, pre.ip);
+    if (!sent.ok && codeDidNotGoOut(sent)) await noteSignupCodeProblem(sent.code);
     return NextResponse.json({ status: "verify" });
   }
   if (res.code === "invalid_credentials") {

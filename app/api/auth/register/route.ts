@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authPreflight, PASSWORD_RULE, passwordOk } from "@/lib/authRoutes";
 import { signUp } from "@/lib/supabaseAuth";
 import { BREACHED_PASSWORD_MESSAGE, passwordSeenInBreaches } from "@/lib/pwnedPassword";
+import { codeDidNotGoOut, noteSignupCodeProblem } from "@/lib/signupHealth";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,8 @@ export async function POST(req: NextRequest) {
   if (!res.ok && res.code === "weak_password") return NextResponse.json({ error: "Choose a stronger password: longer, and not a common one." }, { status: 400 });
   if (!res.ok && !["user_already_exists", "email_exists", "over_email_send_rate_limit"].includes(res.code)) {
     console.error("[auth/register] refused", res.status, res.code);
+    // Everyone's sign-up stops on this: Needs attention, and an email.
+    if (codeDidNotGoOut(res)) await noteSignupCodeProblem(res.code);
     return NextResponse.json({ error: "We couldn't create your account just now. Please try again." }, { status: 502 });
   }
   return NextResponse.json({ status: "verify" });
