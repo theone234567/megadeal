@@ -144,3 +144,45 @@ export function fromOwnSite(req: NextRequest, siteUrl: string): boolean {
     return false;
   }
 }
+
+/** What admin's "Check a login" shows: whether an email has a login,
+ *  whether it was confirmed with the emailed code, whether a password has
+ *  been set, and when. Never the password itself (it's stored hashed and
+ *  can't be read back). */
+export interface LoginInfo {
+  email: string;
+  exists: boolean;
+  confirmed: boolean;
+  hasPassword: boolean;
+  createdAt: string | null;
+  confirmedAt: string | null;
+  lastSignInAt: string | null;
+  /** Sessions still open (signed in somewhere). */
+  openSessions: number;
+}
+
+export async function loginInfo(email: string): Promise<LoginInfo> {
+  const [row] = await withDb((db) =>
+    db.query<{ confirmed_at: Date | null; has_password: boolean; created_at: Date | null; last_sign_in_at: Date | null; sessions: number }>(
+      `select u.email_confirmed_at as confirmed_at,
+              coalesce(u.encrypted_password, '') <> '' as has_password,
+              u.created_at, u.last_sign_in_at,
+              (select count(*)::int from auth.sessions s where s.user_id = u.id and (s.not_after is null or s.not_after > now())) as sessions
+         from auth.users u
+        where lower(u.email) = lower($1) and u.deleted_at is null
+        limit 1`,
+      [email]
+    )
+  );
+  const iso = (d: Date | null | undefined) => (d ? new Date(d).toISOString() : null);
+  return {
+    email,
+    exists: Boolean(row),
+    confirmed: Boolean(row?.confirmed_at),
+    hasPassword: Boolean(row?.has_password),
+    createdAt: iso(row?.created_at),
+    confirmedAt: iso(row?.confirmed_at),
+    lastSignInAt: iso(row?.last_sign_in_at),
+    openSessions: row?.sessions ?? 0,
+  };
+}
