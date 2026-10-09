@@ -26,6 +26,8 @@ describe("sign-up codes that can't be sent", () => {
     expect(codeDidNotGoOut({ ok: false, status: 503, code: "unavailable" })).toBe(true);
     expect(codeDidNotGoOut({ ok: false, status: 422, code: "user_already_exists" })).toBe(false);
     expect(codeDidNotGoOut({ ok: false, status: 429, code: "over_email_send_rate_limit" })).toBe(false);
+    // The hook's own per-address limit: one address asked too often.
+    expect(codeDidNotGoOut({ ok: false, status: 429, code: "hook_response_error" })).toBe(false);
     expect(codeDidNotGoOut({ ok: false, status: 422, code: "weak_password" })).toBe(false);
     expect(codeDidNotGoOut({ ok: true })).toBe(false);
   });

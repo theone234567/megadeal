@@ -20,9 +20,12 @@ const KEEP_SECONDS = 30 * 24 * 60 * 60;
 
 /** A failure that stops the code going out: the login service or its
  *  email hook failing. Not a refusal about this person (already signed
- *  up, too many tries, a weak password), which are answers, not faults. */
+ *  up, too many tries, a weak password), which are answers, not faults:
+ *  so nothing with 429, which includes the hook's own per-address limit
+ *  (otherwise asking for one address's code over and over would raise
+ *  the alarm). */
 export function codeDidNotGoOut(res: { ok: boolean; status?: number; code?: string }): boolean {
-  if (res.ok) return false;
+  if (res.ok || res.status === 429) return false;
   return (res.status ?? 0) >= 500 || String(res.code ?? "").startsWith("hook");
 }
 

@@ -18,9 +18,16 @@ export const dynamic = "force-dynamic";
  * anything beyond that is contact data with no reason to be in a page.
  */
 export async function GET(req: NextRequest) {
-  const member = await getVerifiedMember(req);
-  // Which logins the forms should use (context/WixProvider.tsx).
+  // Which logins the forms should use (context/WixProvider.tsx). Given
+  // even when who's signed in can't be checked (the database not
+  // answering): without it the forms would guess Wix's.
   const backend = authBackend();
+  let member: Awaited<ReturnType<typeof getVerifiedMember>> = null;
+  try {
+    member = await getVerifiedMember(req);
+  } catch (err) {
+    console.error("[auth/me] couldn't check the session", err);
+  }
   if (!member) {
     return NextResponse.json({ member: null, authBackend: backend });
   }
