@@ -36,6 +36,22 @@ answering (and again when it's back).
   **Businesses** > the business > **Generate new password**. It's shown once;
   give it to them by phone or text, and ask them to change it.
 
+## "New businesses can't get their sign-up code" (email, or red in admin)
+
+The 6-digit code a new business needs couldn't be sent, so nobody new can
+finish signing up. The admin page's Needs attention shows it until a code
+goes out again; you get at most one email about it every 6 hours.
+
+1. Cloudflare > **megadeal.co.nz** > **Security** > **Settings**: **Bot
+   fight mode** must be **off** (it blocks Supabase, which sends the
+   request for the code).
+2. Cloudflare > megadeal.co.nz > **Security** > **Security rules**: the
+   rule **"Let Supabase reach email hook"** must be **Active**.
+3. **resend.com** > **Emails**: look for failed sends or a sending limit
+   (see "Emails aren't arriving" below).
+4. Try a sign-up yourself in a private window. When the code arrives, the
+   warning in admin clears by itself.
+
 ## Emails aren't arriving
 
 1. Go to **resend.com** > **Emails**: each one says delivered, bounced or
