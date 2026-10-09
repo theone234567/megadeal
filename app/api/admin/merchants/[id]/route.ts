@@ -3,7 +3,10 @@ import { REFERRAL_BONUS_CREDITS, referralCreditsLabel, signupCodes } from "@/lib
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
-import { dataBackend } from "@/lib/db/connection";
+import { dataBackend, withDb } from "@/lib/db/connection";
+import { deleteBusinessCompletely } from "@/lib/db/deleteBusiness";
+import { accountIdForEmail, fromOwnSite } from "@/lib/authSession";
+import { adminDeleteUser } from "@/lib/supabaseAuth";
 import { queryAllByEmail } from "@/lib/queryAll";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
@@ -652,6 +655,10 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
+  // "Delete with all its deals" (test businesses): lib/db/deleteBusiness.ts.
+  const body = await req.json().catch(() => null);
+  if (body?.everything === true) return deleteEverything(req, params.id, body);
+
   try {
     const adminClient = createDataClient();
     const merchant = await adminClient.items.get("Merchants", params.id);
@@ -754,3 +761,59 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
     );
   }
 }
+
+/**
+ * Deletes a business with every deal it has, submitted ones too, and its
+ * credit history, in one go: for test businesses, which the delete above
+ * keeps once they've submitted a deal. On MegaDeal's own database only.
+ * The business's name has to be typed, and is checked here too; after
+ * launch it refuses while any of its deals is live. With `login: true`
+ * its login goes as well, so the address can sign up afresh.
+ */
+async function deleteEverything(req: NextRequest, id: string, body: { confirm?: unknown; login?: unknown }) {
+  if (!fromOwnSite(req, SITE_URL)) return NextResponse.json({ error: "Use the admin page." }, { status: 403 });
+  if (dataBackend() !== "postgres") {
+    return NextResponse.json({ error: "Only on MegaDeal's own database." }, { status: 409 });
+  }
+  try {
+    const typed = typeof body.confirm === "string" ? body.confirm.trim() : "";
+    const [m] = await withDb((db) =>
+      db.query<{ business_name: string | null }>("select business_name from public.merchants where id::text = $1", [id])
+    );
+    if (!m) return NextResponse.json({ error: "Business not found." }, { status: 404 });
+    if (!typed || typed !== ((m.business_name ?? "").trim() || id)) {
+      return NextResponse.json({ error: "Type the business's name exactly to confirm." }, { status: 400 });
+    }
+    const out = await withDb((db) => deleteBusinessCompletely(db, id, { launched: SITE_LAUNCHED }));
+    if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status });
+
+    let loginNote = "login kept";
+    if (body.login === true) {
+      const loginId = out.ownerId ?? (out.email ? await accountIdForEmail(out.email) : null);
+      if (loginId) {
+        const gone = await adminDeleteUser(loginId);
+        loginNote = gone.ok ? "login deleted" : "login NOT deleted";
+        if (!gone.ok) console.error("[admin/merchants/[id]] login delete failed", gone.status, gone.code);
+      } else {
+        loginNote = "no login";
+      }
+    }
+    await logAdminAction({
+      action: "Business deleted with its deals",
+      target: auditTarget(out.name || out.email, id),
+      detail: `${out.email || "no email"}; ${out.deals} deal${out.deals === 1 ? "" : "s"} removed; ${loginNote}`,
+    });
+    return NextResponse.json({
+      ok: true,
+      deletedDeals: out.deals,
+      ...(loginNote === "login NOT deleted"
+        ? { warning: "The business and its deals are deleted, but its login couldn't be. Delete it in Supabase > Authentication > Users (search for the email)." }
+        : {}),
+    });
+  } catch (err) {
+    console.error("[admin/merchants/[id]] DELETE everything failed", err);
+    // One transaction: a failure leaves everything as it was.
+    return NextResponse.json({ error: "Couldn't delete that business. Nothing was changed; try again." }, { status: 500 });
+  }
+}
+

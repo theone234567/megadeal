@@ -113,3 +113,11 @@ export async function adminSetPassword(email: string, password: string, userId: 
     ? call<{ id: string }>(`/admin/users/${encodeURIComponent(userId)}`, { method: "PUT", service: true, body: { password, email_confirm: true } })
     : call<{ id: string }>("/admin/users", { service: true, body: { email, password, email_confirm: true } });
 }
+
+/** Deletes a login outright (Admin > a business > Delete, for test
+ *  businesses), ending its sessions with it. A login already gone counts
+ *  as done. */
+export async function adminDeleteUser(userId: string): Promise<AuthOutcome<object>> {
+  const res = await call<object>(`/admin/users/${encodeURIComponent(userId)}`, { method: "DELETE", service: true });
+  return !res.ok && res.status === 404 ? { ok: true, data: {} } : res;
+}

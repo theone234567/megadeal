@@ -62,6 +62,9 @@ export default function AdminBusinessDetailPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  // On by default: deleting is mostly for test businesses, whose address
+  // should be free to sign up again.
+  const [deleteLogin, setDeleteLogin] = useState(true);
 
   const [merchant, setMerchant] = useState<AdminMerchant | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -208,10 +211,18 @@ export default function AdminBusinessDetailPage() {
     setDeleting(true);
     setDeleteError(null);
     try {
-      const res = await fetch(`/api/admin/merchants/${params.id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Couldn't delete that business.");
+      const res = await fetch(`/api/admin/merchants/${params.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ everything: true, confirm: deleteConfirmText.trim(), login: deleteLogin }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Couldn't delete that business.");
+      // Deleted, but its login wasn't: say so rather than leave quietly.
+      if (data.warning) {
+        setDeleteError(data.warning);
+        setDeleting(false);
+        return;
       }
       router.push("/admin");
     } catch (err: any) {
@@ -718,13 +729,10 @@ export default function AdminBusinessDetailPage() {
       <section className="mt-8 rounded-2xl border-2 border-dashed border-red-200 bg-red-50/50 p-5">
         <h2 className="font-display text-base font-bold text-red-900">Delete this business</h2>
         <p className="mt-1 max-w-xl text-sm text-red-800/80">
-          Removes the business record, its drafts and its credit history. Submitted
-          deals block the delete — cancel those first. This can&apos;t be undone.
-        </p>
-        <p className="mt-2 max-w-xl text-xs text-red-800/70">
-          Their login isn&apos;t deleted — logins are kept separately from businesses. They
-          can still sign in, and will be asked to start a new application, which is
-          what frees the email up for testing again.
+          Removes the business with all its deals (submitted ones too), its credit
+          history and its old page addresses, all at once. Meant for test businesses.
+          After launch, any live deal has to be paused or cancelled first. This
+          can&apos;t be undone here; the nightly backup keeps a copy for 30 days.
         </p>
         {!confirmingDelete ? (
           <button
@@ -744,6 +752,15 @@ export default function AdminBusinessDetailPage() {
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               className="mt-1 w-full rounded-xl border-2 border-red-200 px-3 py-2 text-sm outline-none focus:border-red-400"
             />
+            <label className="mt-3 flex items-start gap-2 text-sm text-red-900">
+              <input
+                type="checkbox"
+                checked={deleteLogin}
+                onChange={(e) => setDeleteLogin(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-red-300"
+              />
+              <span>Also delete its login, so the email address can sign up again from scratch</span>
+            </label>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 onClick={remove}
@@ -772,7 +789,11 @@ export default function AdminBusinessDetailPage() {
                 Cancel
               </button>
             </div>
-            {deleteError && <p className="mt-2 text-sm text-red-700">{deleteError}</p>}
+            {deleteError && (
+              <p role="alert" className="mt-2 text-sm text-red-700">
+                {deleteError}
+              </p>
+            )}
           </div>
         )}
       </section>
