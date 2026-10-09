@@ -125,6 +125,15 @@ describe("a business on the new database", () => {
     expect((await call(apply.POST, request("POST", { businessName: "New Cafe", contactName: "Jo", phone: "12", agreedToTerms: true }))).status).toBe(400);
   });
 
+  it("one business per email: a second login with the same address can't make another", async () => {
+    const apply = await import("@/app/api/merchants/apply/route");
+    expect((await call(apply.POST, request("POST", SIGNUP))).status).toBe(200);
+    signedIn = { ...member, id: "wix-member-5", email: "OWNER@harbourbistro.co.nz" };
+    const second = await call(apply.POST, request("POST", { businessName: "Second Bistro", contactName: "Sam", agreedToTerms: true }));
+    expect(second).toMatchObject({ status: 409, body: { error: expect.stringMatching(/already a MegaDeal business with this email/) } });
+    expect(await db.query("select count(*)::int as n from public.merchants")).toEqual([{ n: 1 }]);
+  });
+
   it("checks a referral code while signing up, and shows admin whose it is", async () => {
     const apply = await import("@/app/api/merchants/apply/route");
     const first = (await call(apply.POST, request("POST", SIGNUP))).body.item;

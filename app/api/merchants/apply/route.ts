@@ -253,6 +253,16 @@ export async function POST(req: NextRequest) {
       });
     }
   } catch (err) {
+    // One business per email (the database's merchants_email_key). Only
+    // reachable when the address's business belongs to another login,
+    // which signing in normally rules out; said plainly rather than as a
+    // generic failure.
+    if (String((err as { message?: string })?.message ?? err).includes("merchants_email_key")) {
+      return NextResponse.json(
+        { error: "There's already a MegaDeal business with this email address. Please contact us and we'll sort it out." },
+        { status: 409 }
+      );
+    }
     console.error("[merchants/apply] failed to save application", err);
     return NextResponse.json(
       { error: "Something went wrong submitting your application. Please try again." },

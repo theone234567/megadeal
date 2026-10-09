@@ -99,6 +99,14 @@ describe.skipIf(!ENABLED)("business logins on Supabase, end to end", () => {
     expect(who.member).toMatchObject({ email, loginEmailVerified: true });
   });
 
+  it("one account per email: signing up again emails 'you already have an account', and says nothing different on screen", async () => {
+    const register = await import("@/app/api/auth/register/route");
+    const before = sent.length;
+    const again = await register.POST(req("/api/auth/register", { email: email.toUpperCase(), password: "another long password 9" }));
+    expect(await again.json()).toEqual({ status: "verify" });
+    await vi.waitFor(() => expect(sent.slice(before).map((m) => m.subject)).toEqual(["You already have a MegaDeal business account"]));
+  });
+
   it("the signed-in business applies, and the application is linked to its login", async () => {
     const apply = await import("@/app/api/merchants/apply/route");
     const res = await apply.POST(

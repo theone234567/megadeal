@@ -777,6 +777,16 @@ export default function MerchantSignupForm({
           <p className="text-center text-xs text-slate-500">
             Check your spam folder too — it sometimes lands there.
           </p>
+          {/* One business per email: an address that already has an
+              account gets a "sign in instead" email, not a code
+              (app/api/auth/register). */}
+          <p className="text-center text-xs text-slate-500">
+            Already have an account with this email? We&apos;ll have emailed you how to{" "}
+            <a href="/portal" className="font-semibold text-brand-700 underline">
+              sign in
+            </a>{" "}
+            instead.
+          </p>
         </form>
       </div>
     );

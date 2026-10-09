@@ -82,7 +82,13 @@ const session = (s: AuthOutcome<AuthSession>): AuthOutcome<AuthSession> =>
 
 /** A new account; Supabase emails a 6-digit code (our email hook sends it). */
 export const signUp = (email: string, password: string, ip?: string) =>
-  call<{ id?: string }>("/signup", { body: { email, password }, ip });
+  call<{ id?: string; identities?: unknown[] }>("/signup", { body: { email, password }, ip });
+
+/** Supabase's answer to signing up with an address that already has a
+ *  confirmed account: a made-up user with no identities, and no email sent
+ *  (so the reply can't reveal who has an account). */
+export const signUpHitExistingAccount = (data: { identities?: unknown[] } | undefined) =>
+  Array.isArray(data?.identities) && data.identities.length === 0;
 
 /** Sends the sign-up code again. */
 export const resendSignupCode = (email: string, ip?: string) => call<object>("/resend", { body: { type: "signup", email }, ip });
