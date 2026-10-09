@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   const email = await consumePasswordResetToken(token);
   if (!email) {
     return NextResponse.json(
-      { error: "This reset link has expired or already been used. Request a new one." },
+      { error: "This link has expired or has already been used. Get a new one with \u201cForgot password\u201d on the sign-in page." },
       { status: 400 }
     );
   }

@@ -130,7 +130,19 @@ function ResetPasswordForm() {
             inputClassName={INPUT_CLASS}
           />
         </div>
-        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-red-600">
+            {error}
+            {/expired|already been used/.test(error) && (
+              <>
+                {" "}
+                <a href="/portal" className="font-semibold underline">
+                  Go to sign in
+                </a>
+              </>
+            )}
+          </p>
+        )}
         <button
           type="submit"
           disabled={submitting}
