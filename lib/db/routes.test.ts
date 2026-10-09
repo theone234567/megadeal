@@ -113,6 +113,38 @@ describe("a business on the new database", () => {
     await vi.waitFor(async () => expect(await db.query("select audience, verified from public.email_signups")).toEqual([{ audience: "merchant", verified: true }]));
   });
 
+  it("the short sign-up (names only) is saved; phones and legal name come later, in the portal", async () => {
+    const apply = await import("@/app/api/merchants/apply/route");
+    const res = await call(apply.POST, request("POST", { businessName: "Harbour Bistro", contactName: "Sam", couponCode: "WELCOME6", agreedToTerms: true }));
+    expect(res.status).toBe(200);
+    expect(await db.query("select business_name, contact_name, phone, legal_business_name, status from public.merchants")).toEqual([
+      { business_name: "Harbour Bistro", contact_name: "Sam", phone: null, legal_business_name: null, status: "Pending" },
+    ]);
+    // A phone, when one is given, still has to be a real one.
+    signedIn = { ...member, id: "wix-member-2", email: "new@cafe.nz" };
+    expect((await call(apply.POST, request("POST", { businessName: "New Cafe", contactName: "Jo", phone: "12", agreedToTerms: true }))).status).toBe(400);
+  });
+
+  it("signing up claims a business an admin set up for that email, and keeps its details", async () => {
+    const apply = await import("@/app/api/merchants/apply/route");
+    await call(apply.POST, request("POST", { ...SIGNUP, bio: "Fresh seafood by the water, with views across the harbour." }));
+    await db.query("update public.merchants set wix_owner_id = null, owner_id = null");
+    signedIn = { ...member, id: "wix-member-9" };
+    const res = await call(apply.POST, request("POST", { businessName: "Harbour Bistro", contactName: "Sam Lee", agreedToTerms: true }));
+    expect(res.status).toBe(200);
+    expect(await db.query("select contact_name, phone, contact_phone, legal_business_name, address, bio, website from public.merchants")).toEqual([
+      {
+        contact_name: "Sam Lee",
+        phone: "09 123 4567",
+        contact_phone: "021 123 4567",
+        legal_business_name: "Harbour Bistro Limited",
+        address: "1 Quay Street, Auckland CBD, Auckland 1010",
+        bio: "Fresh seafood by the water, with views across the harbour.",
+        website: "https://harbourbistro.co.nz",
+      },
+    ]);
+  });
+
   it("opens the portal (who am I)", async () => {
     await signUpApprovedWithCredits();
     const me = await import("@/app/api/merchants/me/route");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { EyeOffIcon } from "@/components/icons";
+import { EyeOffIcon, GlobeIcon } from "@/components/icons";
 import AddressAutocompleteField from "@/components/AddressAutocompleteField";
 import PhotoGalleryField from "./PhotoGalleryField";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
@@ -243,7 +243,17 @@ export default function MerchantProfileForm({
     return fieldErrors[name] ? <p className="mt-1 text-xs text-red-600">{fieldErrors[name]}</p> : null;
   }
 
+  const inputClass = (name: string) => `w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass(name)}`;
+  const plainInputClass = "w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400";
+  const labelClass = "mb-1 block text-sm font-medium text-slate-700";
+
   if (!editing) {
+    const hours = (() => {
+      const parsed = parseBusinessHours(merchant.businessHours);
+      if (parsed) return formatBusinessHoursLines(parsed).map((line, i) => <p key={i}>{line}</p>);
+      return merchant.businessHours || "—";
+    })();
+    const photos = parseBusinessPhotos(merchant.photos);
     return (
       <div>
         <div className="flex items-center justify-between">
@@ -255,105 +265,57 @@ export default function MerchantProfileForm({
             Edit
           </button>
         </div>
-        <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-          <div>
-            <dt className="text-slate-500">Business name</dt>
-            <dd className="font-medium text-slate-800">{merchant.businessName || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Website</dt>
-            <dd className="font-medium text-slate-800">{merchant.website || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">
-              Email
-              <PrivateTag />
-            </dt>
-            <dd className="font-medium text-slate-800">{merchant.email || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Booking phone number</dt>
-            <dd className="font-medium text-slate-800">{merchant.phone || "—"}</dd>
-          </div>
-          <div className="sm:col-span-2">
-            <dt className="text-slate-500">Address</dt>
-            <dd className="font-medium text-slate-800">
-              {[merchant.address, merchant.city, merchant.postcode].filter(Boolean).join(", ") || "—"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Opening hours</dt>
-            <dd className="font-medium text-slate-800">
-              {(() => {
-                const parsed = parseBusinessHours(merchant.businessHours);
-                if (parsed) {
-                  return formatBusinessHoursLines(parsed).map((line, i) => <p key={i}>{line}</p>);
-                }
-                return merchant.businessHours || "—";
-              })()}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Booking link</dt>
-            <dd className="font-medium text-slate-800">{merchant.bookingUrl || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Booking email</dt>
-            <dd className="font-medium text-slate-800">{merchant.bookingEmail || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">New deals start with</dt>
-            <dd className="font-medium text-slate-800">
-              {BOOKING_CHOICES.find((c) => c.value === merchant.defaultBookingRequirement)?.label ?? "Ask me each time"}
-            </dd>
-          </div>
-          <div className="sm:col-span-2">
-            <dt className="text-slate-500">Socials</dt>
-            <dd className="font-medium text-slate-800">
-              {merchant.facebookUrl || merchant.instagramUrl ? (
+
+        <PublicHeading className="mt-4" />
+        <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+          <SummaryItem label="Business name" value={merchant.businessName} />
+          <SummaryItem label="Website" value={merchant.website} />
+          <SummaryItem label="Booking phone number" value={merchant.phone} />
+          <SummaryItem label="Booking link" value={merchant.bookingUrl} />
+          <SummaryItem label="Booking email" value={merchant.bookingEmail} />
+          <SummaryItem
+            label="New deals start with"
+            value={BOOKING_CHOICES.find((c) => c.value === merchant.defaultBookingRequirement)?.label ?? "Ask me each time"}
+          />
+          <SummaryItem wide label="Address" value={[merchant.address, merchant.suburb, merchant.city].filter(Boolean).join(", ")} />
+          <SummaryItem label="Opening hours" value={hours} />
+          <SummaryItem
+            label="Socials"
+            value={
+              merchant.facebookUrl || merchant.instagramUrl ? (
                 <>
-                  {merchant.facebookUrl && (
-                    <p className="break-all">Facebook: {merchant.facebookUrl}</p>
-                  )}
-                  {merchant.instagramUrl && (
-                    <p className="break-all">Instagram: {merchant.instagramUrl}</p>
-                  )}
+                  {merchant.facebookUrl && <p className="break-all">Facebook: {merchant.facebookUrl}</p>}
+                  {merchant.instagramUrl && <p className="break-all">Instagram: {merchant.instagramUrl}</p>}
                 </>
-              ) : (
-                "—"
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Price range</dt>
-            <dd className="font-medium text-slate-800">{merchant.priceRange || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-slate-500">Features &amp; amenities</dt>
-            <dd className="font-medium text-slate-800">{merchant.amenities || "—"}</dd>
-          </div>
-          <div className="sm:col-span-2">
-            <dt className="text-slate-500">About</dt>
-            <dd className="font-medium text-slate-800">{merchant.bio || "—"}</dd>
-          </div>
+              ) : null
+            }
+          />
+          <SummaryItem label="Price range" value={merchant.priceRange} />
+          <SummaryItem label="Features & amenities" value={merchant.amenities} />
+          <SummaryItem wide label="About" value={merchant.bio} />
           <div className="sm:col-span-2">
             <dt className="text-slate-500">Photos</dt>
             <dd className="mt-1 flex flex-wrap gap-2">
-              {parseBusinessPhotos(merchant.photos).length > 0 ? (
-                parseBusinessPhotos(merchant.photos).map((url, i) => (
+              {photos.length > 0 ? (
+                photos.map((url, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={url + i}
-                    src={url}
-                    alt=""
-                    className="h-14 w-14 rounded-lg border border-slate-200 object-cover"
-                  />
+                  <img key={url + i} src={url} alt="" className="h-14 w-14 rounded-lg border border-slate-200 object-cover" />
                 ))
               ) : (
                 <span className="font-medium text-slate-800">—</span>
               )}
             </dd>
           </div>
+        </dl>
+
+        <PrivateHeading className="mt-6" />
+        <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+          <SummaryItem label="Legal / registered company name" value={merchant.legalBusinessName} />
+          <SummaryItem label="NZBN" value={merchant.nzbn} />
+          <SummaryItem label="Your name" value={merchant.contactName} />
+          <SummaryItem label="Your phone" value={merchant.contactPhone} />
+          <SummaryItem label="Sign-in email" value={merchant.email} />
+          <SummaryItem label="Postcode" value={merchant.postcode} />
         </dl>
       </div>
     );
@@ -365,9 +327,8 @@ export default function MerchantProfileForm({
         {startEditing ? "Your business details" : "Edit business details"}
       </h2>
       <p className="mt-1 text-sm text-slate-500">
-        Everything you fill in below shows on your public listing, except the fields marked{" "}
-        <span className="font-semibold text-slate-600">Private</span>. We keep those to ourselves
-        and only use them to contact you or check your business.
+        Two parts: what deal hunters see on your listing, and private details only MegaDeal sees,
+        used to contact you and check your business.
       </p>
       {/* Only once there's a live listing for a re-review to take down.
           Before approval this warned about a consequence that can't
@@ -384,362 +345,340 @@ export default function MerchantProfileForm({
         </p>
       )}
 
-      <form onSubmit={handleSave} className="mt-4 space-y-8">
-        <section className="space-y-4">
-          <h2 className="text-base font-bold text-slate-900">Business information</h2>
+      <form onSubmit={handleSave} className="mt-5 space-y-6">
+        {/* The public set is mapMerchantToBusiness in lib/business.ts
+            (lib/businessPrivacy.test.ts); everything in the private part
+            stays off the site. */}
+        <section aria-labelledby="profile-public-heading" className="space-y-6 rounded-2xl border border-emerald-200 bg-white p-4 sm:p-5">
+          <PublicHeading id="profile-public-heading" />
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="profile-businessName" className="mb-1 block text-sm font-medium text-slate-700">
-                Business name
-                <RequiredTag />
-              </label>
-              <input
-                id="profile-businessName"
-                required
-                maxLength={300}
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("businessName")}`}
-              />
-              {fieldError("businessName")}
-            </div>
-            <div>
-              <label htmlFor="profile-website" className="mb-1 block text-sm font-medium text-slate-700">
-                Website
-                <OptionalTag />
-              </label>
-              <input
-                id="profile-website"
-                maxLength={300}
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("website")}`}
-              />
-              {fieldError("website")}
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-slate-900">Name and website</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="profile-businessName" className={labelClass}>
+                  Business name (trading as)
+                  <RequiredTag />
+                </label>
+                <input
+                  id="profile-businessName"
+                  required
+                  maxLength={300}
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  className={inputClass("businessName")}
+                />
+                {fieldError("businessName")}
+                <p className="mt-1 text-xs text-slate-500">The name customers know you by, e.g. Harbourside Bistro.</p>
+              </div>
+              <div>
+                <label htmlFor="profile-website" className={labelClass}>
+                  Website
+                  <OptionalTag />
+                </label>
+                <input
+                  id="profile-website"
+                  maxLength={300}
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  className={inputClass("website")}
+                />
+                {fieldError("website")}
+              </div>
             </div>
           </div>
 
-          {/* Private: the legal name and NZBN let an admin check the
-              business is a registered company. Asked here, not at sign-up,
-              so the public name above stays the one customers know. */}
-          {(
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="space-y-4 border-t border-slate-100 pt-5">
+            <h3 className="text-sm font-bold text-slate-900">Location</h3>
+            <AddressAutocompleteField
+              id="profile-address"
+              address={address}
+              onAddressChange={(value) => {
+                setAddress(value);
+                setLat(null);
+                setLon(null);
+              }}
+              onSelect={(s: AddressSuggestion) => {
+                setAddress(s.label || s.street);
+                if (s.postcode) setPostcode(s.postcode);
+                // Replaced, not kept: a new address may be in another suburb.
+                setSuburb(s.suburb ?? "");
+                if (s.city) {
+                  const match = CITIES.find((c) => c.toLowerCase() === s.city!.toLowerCase());
+                  setCity(match ?? "Other");
+                }
+                setLat(s.lat ?? null);
+                setLon(s.lon ?? null);
+              }}
+              lat={lat}
+              lon={lon}
+              onPinMove={(newLat, newLng) => {
+                setLat(newLat);
+                setLon(newLng);
+              }}
+              helperText="Pick a suggestion to keep your map location accurate."
+              errorText={fieldErrors.address}
+            />
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <label htmlFor="profile-legalBusinessName" className="mb-1 block text-sm font-medium text-slate-700">
-                  Legal / registered business name
+                <label htmlFor="profile-suburb" className={labelClass}>
+                  Suburb
+                  <OptionalTag />
+                </label>
+                {/* Filled in from the address suggestion when there is one.
+                    Shown to customers ("Takapuna, Auckland") and used in your
+                    deal pages' titles, so people searching your area find you. */}
+                <input
+                  id="profile-suburb"
+                  maxLength={40}
+                  value={suburb}
+                  onChange={(e) => setSuburb(e.target.value)}
+                  placeholder="e.g. Takapuna"
+                  className={plainInputClass}
+                />
+              </div>
+              <div>
+                <label htmlFor="profile-city" className={labelClass}>
+                  City
                   <RequiredTag />
+                </label>
+                <select
+                  id="profile-city"
+                  required
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${errorBorderClass("city")}`}
+                >
+                  <option value="" disabled>
+                    Select a city
+                  </option>
+                  {CITIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                {fieldError("city")}
+              </div>
+              <div>
+                <label htmlFor="profile-postcode" className={labelClass}>
+                  Postcode
+                  <OptionalTag />
                   <PrivateTag />
                 </label>
                 <input
-                  id="profile-legalBusinessName"
-                  required
-                  maxLength={300}
-                  value={legalBusinessName}
-                  onChange={(e) => setLegalBusinessName(e.target.value)}
-                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("legalBusinessName")}`}
+                  id="profile-postcode"
+                  maxLength={20}
+                  value={postcode}
+                  onChange={(e) => setPostcode(e.target.value)}
+                  className={plainInputClass}
                 />
-                {fieldError("legalBusinessName")}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 border-t border-slate-100 pt-5">
+            <h3 className="text-sm font-bold text-slate-900">How customers book</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="profile-phone" className={labelClass}>
+                  Booking phone number
+                  <RequiredTag />
+                </label>
+                <input
+                  id="profile-phone"
+                  required
+                  type="tel"
+                  maxLength={300}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g. 09 123 4567"
+                  className={inputClass("phone")}
+                />
+                {fieldError("phone")}
                 <p className="mt-1 text-xs text-slate-500">
-                  As registered with the Companies Office (a New Zealand Limited company). Only we
-                  see it.
+                  The number customers call to book, shown on your listing.
+                  {/* One tap when it's the same number, without making a
+                      private mobile public unless they choose to. */}
+                  {contactPhone.trim() && phone.trim() !== contactPhone.trim() && (
+                    <>
+                      {" "}
+                      <button type="button" onClick={() => setPhone(contactPhone)} className="font-semibold text-brand-700 underline hover:no-underline">
+                        Use my phone ({contactPhone.trim()})
+                      </button>
+                    </>
+                  )}
                 </p>
               </div>
               <div>
-                <label htmlFor="profile-nzbn" className="mb-1 block text-sm font-medium text-slate-700">
-                  NZBN
+                <label htmlFor="profile-bookingUrl" className={labelClass}>
+                  Booking link
                   <OptionalTag />
-                  <PrivateTag />
                 </label>
                 <input
-                  id="profile-nzbn"
-                  value={nzbn}
-                  onChange={(e) => setNzbn(e.target.value)}
-                  inputMode="numeric"
-                  maxLength={13}
-                  placeholder="13-digit NZBN, if you have one"
-                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("nzbn")}`}
-                />
-                {fieldError("nzbn")}
-              </div>
-            </div>
-          )}
-
-          <AddressAutocompleteField
-            id="profile-address"
-            address={address}
-            onAddressChange={(value) => {
-              setAddress(value);
-              setLat(null);
-              setLon(null);
-            }}
-            onSelect={(s: AddressSuggestion) => {
-              setAddress(s.label || s.street);
-              if (s.postcode) setPostcode(s.postcode);
-              // Replaced, not kept: a new address may be in another suburb.
-              setSuburb(s.suburb ?? "");
-              if (s.city) {
-                const match = CITIES.find((c) => c.toLowerCase() === s.city!.toLowerCase());
-                setCity(match ?? "Other");
-              }
-              setLat(s.lat ?? null);
-              setLon(s.lon ?? null);
-            }}
-            lat={lat}
-            lon={lon}
-            onPinMove={(newLat, newLng) => {
-              setLat(newLat);
-              setLon(newLng);
-            }}
-            helperText="Pick a suggestion to keep your map location accurate."
-            errorText={fieldErrors.address}
-          />
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div>
-              <label htmlFor="profile-suburb" className="mb-1 block text-sm font-medium text-slate-700">
-                Suburb
-                <OptionalTag />
-              </label>
-              {/* Filled in from the address suggestion when there is one.
-                  Shown to customers ("Takapuna, Auckland") and used in your
-                  deal pages' titles, so people searching your area find you. */}
-              <input
-                id="profile-suburb"
-                maxLength={40}
-                value={suburb}
-                onChange={(e) => setSuburb(e.target.value)}
-                placeholder="e.g. Takapuna"
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-              />
-            </div>
-            <div>
-              <label htmlFor="profile-city" className="mb-1 block text-sm font-medium text-slate-700">
-                City
-                <RequiredTag />
-              </label>
-              <select
-                id="profile-city"
-                required
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${errorBorderClass("city")}`}
-              >
-                <option value="" disabled>
-                  Select a city
-                </option>
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-              {fieldError("city")}
-            </div>
-            <div>
-              <label htmlFor="profile-postcode" className="mb-1 block text-sm font-medium text-slate-700">
-                Postcode
-                <OptionalTag />
-                <PrivateTag />
-              </label>
-              <input
-                id="profile-postcode"
-                maxLength={20}
-                value={postcode}
-                onChange={(e) => setPostcode(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="profile-priceRange" className="mb-1 block text-sm font-medium text-slate-700">
-                Price range
-                <OptionalTag />
-              </label>
-              <select
-                id="profile-priceRange"
-                value={priceRange}
-                onChange={(e) => setPriceRange(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
-              >
-                <option value="">Not applicable</option>
-                <option value="$">$ — Budget-friendly</option>
-                <option value="$$">$$ — Moderate</option>
-                <option value="$$$">$$$ — Upmarket</option>
-                <option value="$$$$">$$$$ — Premium</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="profile-amenities" className="mb-1 block text-sm font-medium text-slate-700">
-                Features &amp; amenities
-                <OptionalTag />
-              </label>
-              <input
-                id="profile-amenities"
-                maxLength={300}
-                value={amenities}
-                onChange={(e) => setAmenities(e.target.value)}
-                placeholder="e.g. Vegan options, Free parking"
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-4 border-t border-slate-100 pt-6">
-          <h2 className="text-base font-bold text-slate-900">Contact and booking details</h2>
-
-          {/* Contact name/phone are collected once at signup and don't
-              need re-asking here — this block only exists for the
-              createMode recovery form (an account whose signup dropped
-              before that first save ever happened), where nothing has
-              been given yet. */}
-          {createMode && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="profile-contactName" className="mb-1 block text-sm font-medium text-slate-700">
-                  Contact name
-                  <RequiredTag />
-                  <PrivateTag />
-                </label>
-                <input
-                  id="profile-contactName"
-                  required
+                  id="profile-bookingUrl"
                   maxLength={300}
-                  value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
-                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("contactName")}`}
+                  value={bookingUrl}
+                  onChange={(e) => setBookingUrl(e.target.value)}
+                  placeholder="Your booking/reservation page, if you have one"
+                  className={inputClass("bookingUrl")}
                 />
-                {fieldError("contactName")}
+                {fieldError("bookingUrl")}
               </div>
               <div>
-                <label htmlFor="profile-contactPhone" className="mb-1 block text-sm font-medium text-slate-700">
-                  Contact phone
-                  <RequiredTag />
-                  <PrivateTag />
+                <label htmlFor="profile-bookingEmail" className={labelClass}>
+                  Booking email
+                  <OptionalTag />
                 </label>
                 <input
-                  id="profile-contactPhone"
-                  required
+                  id="profile-bookingEmail"
+                  type="email"
                   maxLength={300}
-                  value={contactPhone}
-                  onChange={(e) => setContactPhone(e.target.value)}
-                  type="tel"
-                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("contactPhone")}`}
+                  value={bookingEmail}
+                  onChange={(e) => setBookingEmail(e.target.value)}
+                  placeholder="bookings@yourbusiness.co.nz"
+                  className={inputClass("bookingEmail")}
                 />
-                {fieldError("contactPhone")}
+                {fieldError("bookingEmail")}
               </div>
             </div>
-          )}
 
-          {/* Grouped with the other two ways a customer gets in touch, and
-              named for what it's for. On its own above, labelled "Phone", it
-              sat directly under "Contact phone" — two phone fields in a row,
-              one private and one published, distinguished by a single word. */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* Saves answering the same question on every deal; each deal
+                can still change it. Never assumed: "Ask me each time" leaves
+                the deal form blank until they choose. */}
+            {!createMode && (
+              <fieldset>
+                <legend className={labelClass}>
+                  Do customers usually need to book?
+                  <OptionalTag />
+                </legend>
+                <p className="mb-2 text-xs text-slate-500">New deals start with this answer. You can change it on any deal.</p>
+                <div className="flex flex-wrap gap-2">
+                  {[...BOOKING_CHOICES.map((c) => ({ value: c.value as string, label: c.label })), { value: "", label: "Ask me each time" }].map(
+                    (c) => {
+                      const on = defaultBookingRequirement === c.value;
+                      return (
+                        <label
+                          key={c.value || "ask"}
+                          className={`cursor-pointer rounded-full border-2 px-3.5 py-1.5 text-sm font-bold transition focus-within:ring-2 focus-within:ring-brand-400 focus-within:ring-offset-1 ${
+                            on
+                              ? "border-brand-600 bg-brand-600 text-white"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-brand-300"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="defaultBookingRequirement"
+                            value={c.value}
+                            checked={on}
+                            onChange={() => setDefaultBookingRequirement(c.value)}
+                            className="sr-only"
+                          />
+                          {c.label}
+                        </label>
+                      );
+                    },
+                  )}
+                </div>
+              </fieldset>
+            )}
+          </div>
+
+          <div className="space-y-4 border-t border-slate-100 pt-5">
+            <h3 className="text-sm font-bold text-slate-900">Opening hours</h3>
+            <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
+          </div>
+
+          <div className="space-y-4 border-t border-slate-100 pt-5">
+            <h3 className="text-sm font-bold text-slate-900">Description and photos</h3>
             <div>
-              <label htmlFor="profile-phone" className="mb-1 block text-sm font-medium text-slate-700">
-                Booking phone number
+              <label htmlFor="profile-bio" className={labelClass}>
+                About your business
                 <RequiredTag />
               </label>
-              <input
-                id="profile-phone"
+              <textarea
+                id="profile-bio"
                 required
-                type="tel"
-                maxLength={300}
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="The number customers should call to book"
-                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("phone")}`}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                minLength={MIN_BIO_LENGTH}
+                maxLength={MAX_BIO_LENGTH}
+                rows={3}
+                placeholder="A couple of sentences customers will see on your listing — what you do and what makes you worth choosing."
+                className={inputClass("bio")}
               />
-              {fieldError("phone")}
+              {fieldError("bio")}
               <p className="mt-1 text-xs text-slate-500">
-                Shown on your listing. Starts as the number you gave at sign-up: change it if
-                customers should call a different one.
+                {bio.length < MIN_BIO_LENGTH
+                  ? `At least ${MIN_BIO_LENGTH} characters (${MIN_BIO_LENGTH - bio.length} to go)`
+                  : `${bio.length}/${MAX_BIO_LENGTH} characters`}
               </p>
             </div>
-            <div>
-              <label htmlFor="profile-bookingUrl" className="mb-1 block text-sm font-medium text-slate-700">
-                Booking link
-                <OptionalTag />
-              </label>
-              <input
-                id="profile-bookingUrl"
-                maxLength={300}
-                value={bookingUrl}
-                onChange={(e) => setBookingUrl(e.target.value)}
-                placeholder="Your booking/reservation page, if you have one"
-                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bookingUrl")}`}
-              />
-              {fieldError("bookingUrl")}
-            </div>
-            <div>
-              <label htmlFor="profile-bookingEmail" className="mb-1 block text-sm font-medium text-slate-700">
-                Booking email
-                <OptionalTag />
-              </label>
-              <input
-                id="profile-bookingEmail"
-                type="email"
-                maxLength={300}
-                value={bookingEmail}
-                onChange={(e) => setBookingEmail(e.target.value)}
-                placeholder="bookings@yourbusiness.co.nz"
-                className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bookingEmail")}`}
-              />
-              {fieldError("bookingEmail")}
-            </div>
+
+            {/* Saves on its own (its own save route, and a photo change sends
+                the listing back for review), which is why it keeps its own
+                confirm step rather than riding along with the main Save. */}
+            {onPhotosConfirm && (
+              <div>
+                <p className={labelClass}>
+                  Business photo
+                  <RequiredTag />
+                </p>
+                <PhotoGalleryField
+                  photos={parseBusinessPhotos(merchant.photos)}
+                  label={merchant.businessName}
+                  warningText={
+                    merchant.status === "Approved"
+                      ? "Changing your photos sends your listing back for review, so it comes off the site until we've had a look. Continue?"
+                      : "Save these photos?"
+                  }
+                  onConfirm={onPhotosConfirm}
+                  saveRightAway={merchant.status !== "Approved"}
+                />
+                {photosError && <p role="alert" className="mt-2 text-sm text-red-600">{photosError}</p>}
+              </div>
+            )}
           </div>
 
-          {/* Saves answering the same question on every deal; each deal
-              can still change it. Never assumed: "Ask me each time" leaves
-              the deal form blank until they choose. */}
-          {!createMode && (
-            <fieldset>
-              <legend className="mb-1 block text-sm font-medium text-slate-700">
-                Do customers usually need to book?
-                <OptionalTag />
-              </legend>
-              <p className="mb-2 text-xs text-slate-500">New deals start with this answer. You can change it on any deal.</p>
-              <div className="flex flex-wrap gap-2">
-                {[...BOOKING_CHOICES.map((c) => ({ value: c.value as string, label: c.label })), { value: "", label: "Ask me each time" }].map(
-                  (c) => {
-                    const on = defaultBookingRequirement === c.value;
-                    return (
-                      <label
-                        key={c.value || "ask"}
-                        className={`cursor-pointer rounded-full border-2 px-3.5 py-1.5 text-sm font-bold transition focus-within:ring-2 focus-within:ring-brand-400 focus-within:ring-offset-1 ${
-                          on
-                            ? "border-brand-600 bg-brand-600 text-white"
-                            : "border-slate-200 bg-white text-slate-600 hover:border-brand-300"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="defaultBookingRequirement"
-                          value={c.value}
-                          checked={on}
-                          onChange={() => setDefaultBookingRequirement(c.value)}
-                          className="sr-only"
-                        />
-                        {c.label}
-                      </label>
-                    );
-                  },
-                )}
-              </div>
-            </fieldset>
-          )}
-
-          <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Socials</p>
+          <div className="space-y-4 border-t border-slate-100 pt-5">
+            <h3 className="text-sm font-bold text-slate-900">
+              Extras <span className="font-normal text-slate-500">(all optional)</span>
+            </h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="profile-facebookUrl" className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="profile-priceRange" className={labelClass}>
+                  Price range
+                </label>
+                <select
+                  id="profile-priceRange"
+                  value={priceRange}
+                  onChange={(e) => setPriceRange(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                >
+                  <option value="">Not applicable</option>
+                  <option value="$">$ — Budget-friendly</option>
+                  <option value="$$">$$ — Moderate</option>
+                  <option value="$$$">$$$ — Upmarket</option>
+                  <option value="$$$$">$$$$ — Premium</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="profile-amenities" className={labelClass}>
+                  Features &amp; amenities
+                </label>
+                <input
+                  id="profile-amenities"
+                  maxLength={300}
+                  value={amenities}
+                  onChange={(e) => setAmenities(e.target.value)}
+                  placeholder="e.g. Vegan options, Free parking"
+                  className={plainInputClass}
+                />
+              </div>
+              <div>
+                <label htmlFor="profile-facebookUrl" className={labelClass}>
                   Facebook
-                  <OptionalTag />
                 </label>
                 <input
                   id="profile-facebookUrl"
@@ -747,14 +686,13 @@ export default function MerchantProfileForm({
                   value={facebookUrl}
                   onChange={(e) => setFacebookUrl(e.target.value)}
                   placeholder="https://facebook.com/yourbusiness"
-                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("facebookUrl")}`}
+                  className={inputClass("facebookUrl")}
                 />
                 {fieldError("facebookUrl")}
               </div>
               <div>
-                <label htmlFor="profile-instagramUrl" className="mb-1 block text-sm font-medium text-slate-700">
+                <label htmlFor="profile-instagramUrl" className={labelClass}>
                   Instagram
-                  <OptionalTag />
                 </label>
                 <input
                   id="profile-instagramUrl"
@@ -762,7 +700,7 @@ export default function MerchantProfileForm({
                   value={instagramUrl}
                   onChange={(e) => setInstagramUrl(e.target.value)}
                   placeholder="https://instagram.com/yourbusiness"
-                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("instagramUrl")}`}
+                  className={inputClass("instagramUrl")}
                 />
                 {fieldError("instagramUrl")}
               </div>
@@ -770,61 +708,89 @@ export default function MerchantProfileForm({
           </div>
         </section>
 
-        <section className="space-y-4 border-t border-slate-100 pt-6">
-          <h2 className="text-base font-bold text-slate-900">Opening hours</h2>
-          <BusinessHoursEditor value={businessHours} onChange={setBusinessHours} />
-        </section>
-
-        <section className="space-y-4 border-t border-slate-100 pt-6">
-          <h2 className="text-base font-bold text-slate-900">Description and photos</h2>
-
-          <div>
-            <label htmlFor="profile-bio" className="mb-1 block text-sm font-medium text-slate-700">
-              About your business
-              <RequiredTag />
-            </label>
-            <textarea
-              id="profile-bio"
-              required
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              minLength={MIN_BIO_LENGTH}
-              maxLength={MAX_BIO_LENGTH}
-              rows={3}
-              placeholder="A couple of sentences customers will see on your listing — what you do and what makes you worth choosing."
-              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errorBorderClass("bio")}`}
-            />
-            {fieldError("bio")}
-            <p className="mt-1 text-xs text-slate-500">
-              {bio.length < MIN_BIO_LENGTH
-                ? `At least ${MIN_BIO_LENGTH} characters (${MIN_BIO_LENGTH - bio.length} to go)`
-                : `${bio.length}/${MAX_BIO_LENGTH} characters`}
-            </p>
-          </div>
-
-          {/* Saves on its own (its own save route, and a photo change sends
-              the listing back for review), which is why it keeps its own
-              confirm step rather than riding along with the main Save. */}
-          {onPhotosConfirm && (
+        {/* Private: who to contact, and the legal details that let an admin
+            check it's a registered company. The names and email come from
+            the sign-up, so they're already filled in. */}
+        <section aria-labelledby="profile-private-heading" className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+          <PrivateHeading id="profile-private-heading" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <p className="mb-2 block text-sm font-medium text-slate-700">
-                Business photo
+              <label htmlFor="profile-legalBusinessName" className={labelClass}>
+                Legal / registered company name
                 <RequiredTag />
-              </p>
-              <PhotoGalleryField
-                photos={parseBusinessPhotos(merchant.photos)}
-                label={merchant.businessName}
-                warningText={
-                  merchant.status === "Approved"
-                    ? "Changing your photos sends your listing back for review, so it comes off the site until we've had a look. Continue?"
-                    : "Save these photos?"
-                }
-                onConfirm={onPhotosConfirm}
-                saveRightAway={merchant.status !== "Approved"}
+              </label>
+              <input
+                id="profile-legalBusinessName"
+                required
+                maxLength={300}
+                value={legalBusinessName}
+                onChange={(e) => setLegalBusinessName(e.target.value)}
+                placeholder="e.g. Harbourside Hospitality Limited"
+                className={`bg-white ${inputClass("legalBusinessName")}`}
               />
-              {photosError && <p role="alert" className="mt-2 text-sm text-red-600">{photosError}</p>}
+              {fieldError("legalBusinessName")}
+              <p className="mt-1 text-xs text-slate-500">
+                As registered with the Companies Office (a New Zealand Limited company).
+              </p>
             </div>
-          )}
+            <div>
+              <label htmlFor="profile-nzbn" className={labelClass}>
+                NZBN
+                <OptionalTag />
+              </label>
+              <input
+                id="profile-nzbn"
+                value={nzbn}
+                onChange={(e) => setNzbn(e.target.value)}
+                inputMode="numeric"
+                maxLength={13}
+                placeholder="13-digit NZBN, if you have one"
+                className={`bg-white ${inputClass("nzbn")}`}
+              />
+              {fieldError("nzbn")}
+            </div>
+            <div>
+              <label htmlFor="profile-contactName" className={labelClass}>
+                Your name
+                <RequiredTag />
+              </label>
+              <input
+                id="profile-contactName"
+                required
+                maxLength={300}
+                autoComplete="name"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                className={`bg-white ${inputClass("contactName")}`}
+              />
+              {fieldError("contactName")}
+            </div>
+            <div>
+              <label htmlFor="profile-contactPhone" className={labelClass}>
+                Your phone
+                <RequiredTag />
+              </label>
+              <input
+                id="profile-contactPhone"
+                required
+                maxLength={300}
+                autoComplete="tel"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                type="tel"
+                placeholder="e.g. 021 234 5678"
+                className={`bg-white ${inputClass("contactPhone")}`}
+              />
+              {fieldError("contactPhone")}
+              <p className="mt-1 text-xs text-slate-500">So we can reach you about your listing.</p>
+            </div>
+            {merchant.email && (
+              <div className="sm:col-span-2">
+                <p className={labelClass}>Sign-in email</p>
+                <p className="text-sm font-medium text-slate-800">{merchant.email}</p>
+              </div>
+            )}
+          </div>
         </section>
 
         {createMode && (
@@ -879,6 +845,43 @@ export default function MerchantProfileForm({
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+/** The two halves of the listing, named the same in the form and the
+ *  summary (and like admin's business page). */
+function PublicHeading({ id, className = "" }: { id?: string; className?: string }) {
+  return (
+    <div className={`flex flex-wrap items-center gap-2 ${className}`}>
+      <h3 id={id} className="text-base font-bold text-slate-900">
+        Your listing
+      </h3>
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+        <GlobeIcon className="h-3.5 w-3.5" /> What deal hunters see
+      </span>
+    </div>
+  );
+}
+
+function PrivateHeading({ id, className = "" }: { id?: string; className?: string }) {
+  return (
+    <div className={`flex flex-wrap items-center gap-2 ${className}`}>
+      <h3 id={id} className="text-base font-bold text-slate-900">
+        Private details
+      </h3>
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700">
+        <EyeOffIcon className="h-3.5 w-3.5" /> Only MegaDeal sees these
+      </span>
+    </div>
+  );
+}
+
+function SummaryItem({ label, value, wide = false }: { label: string; value: React.ReactNode; wide?: boolean }) {
+  return (
+    <div className={wide ? "sm:col-span-2" : undefined}>
+      <dt className="text-slate-500">{label}</dt>
+      <dd className="font-medium text-slate-800">{value || "—"}</dd>
     </div>
   );
 }

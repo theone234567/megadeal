@@ -101,17 +101,17 @@ export async function POST(req: NextRequest) {
   if (!businessName) fieldErrors.businessName = "Business name is required.";
   const contactName = cleanText(body.contactName, MAX_TEXT_LENGTH);
   if (!contactName) fieldErrors.contactName = "Contact name is required.";
+  // The phones and the legal name are asked on the listing page in the
+  // portal, not at sign-up (which is only business name, your name, email
+  // and password): required there, by the profile route, before the
+  // listing goes for approval. Checked here only when given (the portal's
+  // "finish your signup" form sends them).
   const contactPhone = cleanText(body.contactPhone, MAX_TEXT_LENGTH);
-  if (!contactPhone) fieldErrors.contactPhone = "Contact phone is required.";
-  // Asked privately on the listing page, not at sign-up (it was putting
-  // "Limited" on public listings): required there, by the profile route,
-  // before the listing goes for approval.
   const legalBusinessName = cleanText(body.legalBusinessName, MAX_TEXT_LENGTH);
   const phone = cleanText(body.phone, MAX_TEXT_LENGTH);
-  if (!phone) fieldErrors.phone = "Phone is required.";
   // It's shown to customers as a tap-to-call booking number, so it has to
   // be a real one — "12" used to be accepted and then silently hidden.
-  else if (!phoneLink(phone)) fieldErrors.phone = "Enter a full phone number, including the area code.";
+  if (phone && !phoneLink(phone)) fieldErrors.phone = "Enter a full phone number, including the area code.";
 
   // Address and city are deferred to the portal's "complete your profile"
   // step (same pattern as bio/hours/website/social below) — the initial
@@ -217,22 +217,25 @@ export async function POST(req: NextRequest) {
 
     if (existing) {
       isNewApplication = false;
+      // A blank here never means "clear it": the short sign-up sends only
+      // the names, and a business an admin set up for this email (claimed
+      // just above) already has its address, phones, description and the
+      // rest, which spreading the blanks over it used to wipe. So what's
+      // given is updated and what isn't is kept.
+      const merged: typeof fields = { ...fields };
+      for (const key of Object.keys(fields) as (keyof typeof fields)[]) {
+        const value = fields[key];
+        if ((value === "" || value == null) && existing[key] != null && existing[key] !== "") {
+          (merged as Record<string, unknown>)[key] = existing[key];
+        }
+      }
       item = await adminClient.items.update("Merchants", {
         ...existing,
-        ...fields,
-        // Since category is optional above, a submission that omits it
-        // must not blank out one already on the record — this route
-        // spreads fields over the whole existing item, so an empty string
-        // would otherwise overwrite a good value and knock the listing
-        // back to incomplete.
-        category: category || existing.category || "",
+        ...merged,
         // Same rule as /api/merchants/profile: an approved business only goes
         // back for review when its name, legal name, NZBN or category
         // changes, and a suspension always stays in place.
-        status: statusAfterMerchantEdit(existing, {
-          ...fields,
-          category: category || existing.category || "",
-        }),
+        status: statusAfterMerchantEdit(existing, merged),
       });
     } else {
       item = await adminClient.items.insert("Merchants", {
@@ -310,7 +313,7 @@ export async function POST(req: NextRequest) {
       eventSourceUrl: cleanText(body.eventSourceUrl, 500) || `${SITE_URL}/list-your-business`,
       userData: {
         email: member.email,
-        phone: contactPhone || phone,
+        phone: contactPhone || phone || undefined,
         clientIp: getClientIp(req),
         userAgent: req.headers.get("user-agent") || undefined,
         fbp: cleanText(body.fbp, 200) || undefined,

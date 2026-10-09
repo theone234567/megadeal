@@ -338,9 +338,11 @@ export default function PortalPage() {
   // customer would trust enough to click. Category isn't part of this:
   // it's chosen per deal (see app/portal/new-deal/NewDealForm.tsx), not
   // once for the whole business, so the profile form no longer collects
-  // it at all.
+  // it at all. The booking phone too, now that the sign-up doesn't ask
+  // for one: the listing form is the first place it's given (and the
+  // profile route won't save that form without it, or the legal name).
   const profileComplete = Boolean(
-    merchant?.address && parseBusinessPhotos(merchant?.photos).length > 0
+    merchant?.address && merchant?.phone && parseBusinessPhotos(merchant?.photos).length > 0
   );
 
   // A draft has never been reviewed, never been public and never cost a
@@ -456,8 +458,9 @@ export default function PortalPage() {
             Almost there — finish your listing
           </h2>
           <p className="mt-1 text-sm text-slate-600">
-            We&apos;ve kept everything you gave us at signup. Add your address and photos so
-            customers can find and trust you.
+            Your account&apos;s ready and we&apos;ve kept what you gave us at sign-up. Add the rest
+            below: your listing (what deal hunters see) and a few private details for us. Then
+            submit it and we&apos;ll check it, usually within 12 hours.
           </p>
           <div className="mt-5 rounded-2xl bg-white p-5">
             <MerchantProfileForm

@@ -29,7 +29,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
  * admins at /list-your-business?design=v2. The site's own header and
  * footer come from the root layout, so they appear exactly once.
  *
- * The signup is the existing form (MerchantSignupForm) in its two-step
+ * The signup is the existing form (MerchantSignupForm) in its redesigned
  * layout: same fields, same checks, same account and application flow.
  */
 
@@ -212,7 +212,7 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
           <div className="min-w-0 lg:col-start-2 lg:row-span-4 lg:row-start-1">
             {/* useSearchParams (?ref=) inside needs a Suspense boundary. */}
             <Suspense fallback={null}>
-              <MerchantSignupForm launched={launched} twoStep />
+              <MerchantSignupForm launched={launched} redesign />
             </Suspense>
           </div>
           <div className="space-y-3 border-t border-[#E4E2E8] pt-5 text-base text-[#625D6B] lg:col-start-1 lg:row-start-2 lg:mt-6 lg:pt-6">

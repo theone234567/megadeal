@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { parseBusinessPhotos } from "@/lib/businessPhotos";
 
 export interface AdminMerchant {
   _id: string;
@@ -45,6 +46,19 @@ const STATUS_STYLES: Record<string, string> = {
   Suspended: "bg-red-50 text-red-700",
 };
 
+/** What a business still has to add in its portal before its listing can
+ *  be approved (the portal asks for all of these; the sign-up asks for
+ *  none). */
+export function listingMissing(m: AdminMerchant): string[] {
+  const photos = Array.isArray(m.photos) ? m.photos.length : parseBusinessPhotos(m.photos).length;
+  return [
+    !m.address && "address",
+    !m.phone && "phone",
+    !m.legalBusinessName && "legal name",
+    !photos && "photo",
+  ].filter((x): x is string => Boolean(x));
+}
+
 /**
  * Compact summary row — the full detail (every field, plus the
  * approve/pending/suspend controls) lives on its own page now
@@ -85,6 +99,14 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
             {!merchant.emailVerified && (
               <p className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
                 ⏳ Email pending verification
+              </p>
+            )}
+            {/* Signed up (the short form: names and email) but hasn't
+                finished the listing in the portal yet, so there's nothing
+                to approve. */}
+            {listingMissing(merchant).length > 0 && (
+              <p className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                📝 Listing not finished: no {listingMissing(merchant).join(", ")}
               </p>
             )}
             {!merchant._owner && (
