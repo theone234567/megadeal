@@ -43,6 +43,22 @@ async function fetchPhotonSuggestions(query: string): Promise<AddressSuggestion[
 }
 
 /**
+ * Where an address typed (or filled in by the browser) without picking a
+ * suggestion is: the free geocoder's best match, if it's in New Zealand.
+ * Null when there's no confident answer, so nothing wrong gets pinned.
+ */
+export async function findAddressPin(query: string): Promise<AddressSuggestion | null> {
+  try {
+    const results = await fetchPhotonSuggestions(query);
+    const top = results[0];
+    const inNz = top && typeof top.lat === "number" && typeof top.lon === "number" && top.lat < -33 && top.lat > -48 && top.lon > 165 && top.lon < 179;
+    return inNz ? top : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Address input with live suggestions (Google Places, falling back to the
  * free geocoder) plus a draggable pin map once coordinates are known.
  * Shared by the merchant signup form and the portal profile-edit form —
@@ -154,7 +170,10 @@ export default function AddressAutocompleteField({
         id={id}
         required={required}
         type="text"
-        autoComplete="off"
+        // The browser fills this in from its saved addresses whatever
+        // "off" says (Chrome does), so name it properly: the street goes
+        // here, and the suburb, city and postcode into their own boxes.
+        autoComplete="address-line1"
         value={address}
         onChange={(e) => {
           onAddressChange(e.target.value);

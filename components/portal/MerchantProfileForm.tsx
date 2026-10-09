@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EyeOffIcon, GlobeIcon } from "@/components/icons";
-import AddressAutocompleteField from "@/components/AddressAutocompleteField";
+import AddressAutocompleteField, { findAddressPin } from "@/components/AddressAutocompleteField";
 import PhotoGalleryField from "./PhotoGalleryField";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
@@ -138,8 +138,45 @@ export default function MerchantProfileForm({
   const [priceRange, setPriceRange] = useState(merchant.priceRange || "");
   const [amenities, setAmenities] = useState(merchant.amenities || "");
 
+  // No pin yet (the address was typed or filled in by the browser, not
+  // picked from the list): look it up once the street and suburb or city
+  // are in, so the map shows for checking before saving. "Near me" and the
+  // map need it. A pick from the list, or a dragged pin, always wins.
+  const latRef = useRef(lat);
+  useEffect(() => {
+    latRef.current = lat;
+  }, [lat]);
+  useEffect(() => {
+    if (lat !== null || address.trim().length < 5 || !(suburb.trim() || city)) return;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      const place = [address, suburb, city === "Other" ? "" : city, "New Zealand"].map((p) => p.trim()).filter(Boolean).join(", ");
+      const pin = await findAddressPin(place);
+      if (cancelled || !pin || latRef.current !== null) return;
+      setLat(pin.lat ?? null);
+      setLon(pin.lon ?? null);
+      // Only fills a suburb that's missing or is really the city.
+      if (pin.suburb && (!suburb.trim() || suburb.trim().toLowerCase() === city.toLowerCase())) setSuburb(pin.suburb);
+      if (pin.postcode && !postcode.trim()) setPostcode(pin.postcode);
+    }, 1200);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [address, suburb, city, postcode, lat]);
+
+  /** The suburb is what customers and searches see ("Glenfield,
+   *  Auckland"); the city on its own there says nothing. */
+  const suburbIsCity = Boolean(suburb.trim()) && city !== "Other" && suburb.trim().toLowerCase() === city.toLowerCase();
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    if (suburbIsCity) {
+      setFieldErrors({ suburb: `Enter your suburb (e.g. Glenfield), not the city.` });
+      setError(null);
+      document.getElementById("profile-suburb")?.focus();
+      return;
+    }
     // Checked here as well as server-side so the visitor is told which
     // box is missing, rather than getting a generic 400 back.
     if (createMode && !agreedToTerms) {
@@ -416,7 +453,11 @@ export default function MerchantProfileForm({
                 setLat(newLat);
                 setLon(newLng);
               }}
-              helperText="Pick a suggestion to keep your map location accurate."
+              helperText={
+                lat === null
+                  ? "Pick your address from the list as you type. If it isn't there, fill in the suburb and city and we'll find it on the map."
+                  : undefined
+              }
               errorText={fieldErrors.address}
             />
 
@@ -424,19 +465,27 @@ export default function MerchantProfileForm({
               <div>
                 <label htmlFor="profile-suburb" className={labelClass}>
                   Suburb
-                  <OptionalTag />
+                  <RequiredTag />
                 </label>
-                {/* Filled in from the address suggestion when there is one.
-                    Shown to customers ("Takapuna, Auckland") and used in your
-                    deal pages' titles, so people searching your area find you. */}
+                {/* Shown to customers ("Glenfield, Auckland") and used in your
+                    deal pages' titles, so people searching your area find
+                    you. Filled in from the address when it can be. */}
                 <input
                   id="profile-suburb"
+                  required
                   maxLength={40}
+                  autoComplete="address-level3"
                   value={suburb}
                   onChange={(e) => setSuburb(e.target.value)}
-                  placeholder="e.g. Takapuna"
-                  className={plainInputClass}
+                  placeholder="e.g. Glenfield"
+                  aria-invalid={Boolean(fieldErrors.suburb || suburbIsCity) || undefined}
+                  className={suburbIsCity ? "w-full rounded-xl border border-red-400 px-3 py-2 text-sm outline-none focus:border-red-500" : inputClass("suburb")}
                 />
+                {suburbIsCity ? (
+                  <p className="mt-1 text-xs text-red-600">That&apos;s the city: enter your suburb, e.g. Glenfield.</p>
+                ) : (
+                  fieldError("suburb")
+                )}
               </div>
               <div>
                 <label htmlFor="profile-city" className={labelClass}>
@@ -446,6 +495,7 @@ export default function MerchantProfileForm({
                 <select
                   id="profile-city"
                   required
+                  autoComplete="address-level2"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${errorBorderClass("city")}`}
@@ -464,14 +514,16 @@ export default function MerchantProfileForm({
               <div>
                 <label htmlFor="profile-postcode" className={labelClass}>
                   Postcode
-                  <OptionalTag />
                   <PrivateTag />
                 </label>
                 <input
                   id="profile-postcode"
                   maxLength={20}
+                  inputMode="numeric"
+                  autoComplete="postal-code"
                   value={postcode}
                   onChange={(e) => setPostcode(e.target.value)}
+                  placeholder="Optional"
                   className={plainInputClass}
                 />
               </div>

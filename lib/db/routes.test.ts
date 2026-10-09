@@ -359,6 +359,16 @@ describe("admin work and the rest of the business portal", () => {
     expect(await db.query("select photos from public.merchants")).toEqual([{ photos: ["https://static.wixstatic.com/media/a.jpg"] }]);
   });
 
+  it("the listing needs a real suburb, not the city again", async () => {
+    await signUpApprovedWithCredits();
+    const profile = await import("@/app/api/merchants/profile/route");
+    const bio = "Fresh seafood by the water, with views across the harbour.";
+    const asCity = await call(profile.POST, request("POST", { ...SIGNUP, bio, suburb: "auckland" }));
+    expect(asCity).toMatchObject({ status: 400, body: { fields: { suburb: expect.stringMatching(/not the city/) } } });
+    expect((await call(profile.POST, request("POST", { ...SIGNUP, bio, suburb: "" }))).body.fields).toHaveProperty("suburb");
+    expect((await call(profile.POST, request("POST", { ...SIGNUP, bio, suburb: "Glenfield" }))).status).toBe(200);
+  });
+
   it("asks for a change to a live deal, and an admin approves it", async () => {
     await signUpApprovedWithCredits(10);
     const deal = await liveDeal();

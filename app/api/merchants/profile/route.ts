@@ -79,6 +79,14 @@ export async function POST(req: NextRequest) {
   if (!address) fieldErrors.address = "Address is required.";
   const city = cleanText(body.city, MAX_TEXT_LENGTH);
   if (!city) fieldErrors.city = "City is required.";
+  // What customers and searches see ("Glenfield, Auckland"), and in the
+  // deal pages' titles. The city again there says nothing (a browser's
+  // autofill put "Auckland" in it).
+  const suburb = cleanText(body.suburb, 40);
+  if (!suburb) fieldErrors.suburb = "Suburb is required.";
+  else if (city && city !== "Other" && suburb.toLowerCase() === city.toLowerCase()) {
+    fieldErrors.suburb = "Enter your suburb (e.g. Glenfield), not the city.";
+  }
 
   // Required here (not at initial signup — see apply/route.ts, where the
   // short first-touch form never collects it). By the time a merchant is
@@ -167,7 +175,7 @@ export async function POST(req: NextRequest) {
     // The form no longer sends this, so an empty client value must not
     // clobber whatever a merchant had from before it was removed.
     category: category || merchant.category || "",
-    suburb: cleanText(body.suburb, 40),
+    suburb,
     postcode: cleanText(body.postcode, 20),
     bio,
     businessHours: cleanText(body.businessHours, MAX_BUSINESS_HOURS_LENGTH),
