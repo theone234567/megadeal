@@ -1610,14 +1610,19 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
               );
             })}
           </div>
+          {/* A real label, not just the placeholder: that vanishes as soon
+              as someone types, and screen readers had nothing to read. */}
+          <label htmlFor="deal-custom-terms" className="mb-1 mt-4 block text-sm font-bold text-slate-900">
+            Other conditions <span className="font-normal text-slate-500">(optional)</span>
+          </label>
           <textarea
             id="deal-custom-terms"
             rows={2}
             maxLength={MAX_DRAFT_TEXT}
             value={customTerms}
             onChange={(e) => setCustomTerms(e.target.value)}
-            placeholder="Anything else specific to your deal — e.g. maximum 6 people per booking"
-            className="mt-3 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            placeholder="Anything else specific to your deal, e.g. maximum 6 people per booking"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
           />
           {bookingTermsConflict && !selectedTerms.includes("walk-ins") && (
             <p className="mt-3 text-sm text-red-600">{bookingTermsConflict}</p>
