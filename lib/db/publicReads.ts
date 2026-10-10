@@ -30,7 +30,7 @@ const BUSINESS_COLUMNS = `
   m.booking_email as b_booking_email, m.lat as b_lat, m.lng as b_lng,
   m.rating as b_rating, m.review_count as b_review_count,
   coalesce((to_jsonb(m)->>'hide_address')::boolean, false) as b_hide_address,
-  to_jsonb(m)->>'service_area' as b_service_area`;
+  to_jsonb(m)->>'service_area' as b_service_area, m.postcode as b_postcode`;
 
 const DEAL_COLUMNS = `
   d.id, d.slug, d.name, d.description, d.category_slug, d.photo_url, d.price_now, d.price_was,
@@ -69,6 +69,7 @@ export function rowToBusiness(r: Row): PublicBusiness {
     website: blankToNull(r.b_website),
     phone: blankToNull(r.b_phone),
     address: place.address,
+    postcode: place.addressHidden ? null : blankToNull(r.b_postcode),
     addressHidden: place.addressHidden,
     serviceArea: blankToNull(r.b_service_area),
     city: blankToNull(r.b_city),

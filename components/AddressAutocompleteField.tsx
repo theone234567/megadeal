@@ -74,6 +74,7 @@ export default function AddressAutocompleteField({
   lat = null,
   lon = null,
   onPinMove,
+  showMap = false,
   label = "Business address",
   required = true,
   helperText = "Pick a suggestion so we can show customers a map/directions link.",
@@ -85,7 +86,12 @@ export default function AddressAutocompleteField({
   onSelect: (suggestion: AddressSuggestion) => void;
   lat?: number | null;
   lon?: number | null;
-  onPinMove: (lat: number, lng: number) => void;
+  onPinMove?: (lat: number, lng: number) => void;
+  /** The draggable pin map under the box. Off on the business's own
+   *  listing form (owner's decision, 10 Oct 2026): the map is for deal
+   *  hunters, on the deal and business pages; the location is still found
+   *  from the address. */
+  showMap?: boolean;
   label?: string;
   required?: boolean;
   helperText?: string;
@@ -212,8 +218,8 @@ export default function AddressAutocompleteField({
         </ul>
       )}
 
-      {typeof lat === "number" && typeof lon === "number" && (
-        <AddressPinMap lat={lat} lng={lon} onMove={onPinMove} />
+      {showMap && typeof lat === "number" && typeof lon === "number" && (
+        <AddressPinMap lat={lat} lng={lon} onMove={onPinMove ?? (() => {})} />
       )}
     </div>
   );

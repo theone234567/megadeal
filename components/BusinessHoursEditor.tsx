@@ -96,12 +96,12 @@ export default function BusinessHoursEditor({
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-x-3">
         <span className="text-sm font-bold text-slate-900">Opening hours</span>
         <button
           type="button"
           onClick={copyMondayToWeekdays}
-          className="text-xs font-semibold text-brand-600 hover:underline"
+          className="whitespace-nowrap text-xs font-semibold text-brand-600 hover:underline"
         >
           Copy Monday to Tue–Fri
         </button>

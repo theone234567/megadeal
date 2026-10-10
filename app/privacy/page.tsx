@@ -68,13 +68,19 @@ export default function PrivacyPage() {
 
       <h2>What&apos;s shown publicly</h2>
       <p>
-        A business&apos;s trading name, logo, address, phone number,
-        opening hours and website are shown publicly on their deal
-        listings so customers can contact them — that information is
-        meant to be public. Their account email, legal/registered
-        business name, NZBN, and private contact person&apos;s name and
-        phone number are collected for our own verification and
-        record-keeping and are never shown publicly.
+        What a business puts in the &ldquo;Your listing&rdquo; part of its
+        listing page is shown publicly on its MegaDeal listing and deals, so
+        customers can find and contact it, and search engines can show it
+        too: its trading name, description, logo and photos, address,
+        suburb and city, booking phone number, website, booking link and
+        booking email, social media links, the areas it covers, opening
+        hours, price range and features. A business can choose to hide its
+        street address: then only its suburb and city are shown, with no
+        directions, and its place on our map is approximate (to about a
+        kilometre). Its account email, legal or registered business name,
+        NZBN, and contact person&apos;s name and phone number are collected
+        for our own verification and record-keeping and are never shown
+        publicly.
       </p>
 
       <h2>Service providers and overseas disclosure</h2>

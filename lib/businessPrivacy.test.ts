@@ -13,7 +13,6 @@ const PRIVATE = {
   nzbn: "9429099999999",
   contactName: "Private Person",
   contactPhone: "021 999 9999",
-  postcode: "9999",
   couponCode: "WELCOME6",
   referralCode: "REF-PRIVATE",
   referredByCode: "MDREFPRIV",
@@ -63,8 +62,10 @@ describe("a business that hides its street address", () => {
     expect(deal).toMatchObject({ businessAddress: null, businessAddressHidden: true, businessServiceArea: "North Shore", businessLat: -36.78 });
   });
 
-  it("a business that shows its address keeps it and its exact pin", () => {
-    expect(mapMerchantToBusiness({ ...home, hideAddress: false })).toMatchObject({ address: "5A Camelot Place", addressHidden: false, lat: -36.781234, serviceArea: "North Shore" });
+  it("a business that shows its address keeps it, its postcode and its exact pin", () => {
+    expect(mapMerchantToBusiness({ ...home, postcode: "0629", hideAddress: false })).toMatchObject({ address: "5A Camelot Place", postcode: "0629", addressHidden: false, lat: -36.781234, serviceArea: "North Shore" });
+    // Hidden: the postcode goes with the street.
+    expect(mapMerchantToBusiness({ ...home, postcode: "0629" })).toMatchObject({ address: null, postcode: null });
   });
 
   it("says where to find it", () => {

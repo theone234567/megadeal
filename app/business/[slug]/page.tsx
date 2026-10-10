@@ -113,7 +113,9 @@ export default async function BusinessProfilePage(
   // for the address line and the map search.
   const addressText = (business.address ?? "").toLowerCase();
   const missing = (v: string | null) => (v && !addressText.includes(v.toLowerCase()) ? v : null);
-  const fullAddress = [business.address, missing(business.suburb), missing(business.city)].filter(Boolean).join(", ");
+  // New Zealand style: "5A Camelot Place, Glenfield, Auckland 0629".
+  const cityLine = [missing(business.city), missing(business.postcode)].filter(Boolean).join(" ");
+  const fullAddress = [business.address, missing(business.suburb), cityLine].filter(Boolean).join(", ");
   const mapTarget = { ...business, address: [business.address, missing(business.suburb)].filter(Boolean).join(", ") || null };
   // None for a home-based or mobile business (its street is private and
   // its pin only approximate, lib/location.ts publicLocation).
@@ -159,6 +161,7 @@ export default async function BusinessProfilePage(
                   // are known.
                   addressLocality: business.suburb || business.city || undefined,
                   addressRegion: business.suburb ? business.city || undefined : undefined,
+                  postalCode: business.postcode || undefined,
                   addressCountry: "NZ",
                 }
               : undefined,

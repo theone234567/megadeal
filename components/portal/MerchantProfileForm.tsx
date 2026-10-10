@@ -32,18 +32,6 @@ function OptionalTag() {
   return null;
 }
 
-/** Marks a field that's never shown on the public site: legal name, NZBN,
- *  contact name and phone, postcode and the account email. Everything
- *  else in this form is on the business's public listing
- *  (mapMerchantToBusiness in lib/business.ts is the public set). */
-function PrivateTag() {
-  return (
-    <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full bg-slate-100 px-1.5 align-middle text-[11px] font-semibold leading-4 text-slate-600">
-      <EyeOffIcon className="h-3 w-3" />
-      Private
-    </span>
-  );
-}
 
 interface MerchantRecord {
   _id: string;
@@ -149,8 +137,8 @@ export default function MerchantProfileForm({
 
   // No pin yet (the address was typed or filled in by the browser, not
   // picked from the list): look it up once the street and suburb or city
-  // are in, so the map shows for checking before saving. "Near me" and the
-  // map need it. A pick from the list, or a dragged pin, always wins.
+  // are in. "Near me" and the deal hunters' maps need it; this form shows
+  // no map. A pick from the list always wins.
   const latRef = useRef(lat);
   useEffect(() => {
     latRef.current = lat;
@@ -342,7 +330,7 @@ export default function MerchantProfileForm({
             </>
           ) : (
             <>
-              <SummaryItem wide label="Address" value={[merchant.address, merchant.suburb, merchant.city].filter(Boolean).join(", ")} />
+              <SummaryItem wide label="Address" value={[merchant.address, merchant.suburb, merchant.city, merchant.postcode].filter(Boolean).join(", ")} />
               {merchant.serviceArea && <SummaryItem label="Areas you cover" value={merchant.serviceArea} />}
             </>
           )}
@@ -373,7 +361,6 @@ export default function MerchantProfileForm({
           <SummaryItem label="Your name" value={merchant.contactName} />
           <SummaryItem label="Your phone" value={merchant.contactPhone} />
           <SummaryItem label="Sign-in email" value={merchant.email} />
-          <SummaryItem label="Postcode" value={merchant.postcode} />
         </dl>
       </div>
     );
@@ -503,16 +490,12 @@ export default function MerchantProfileForm({
               }}
               lat={lat}
               lon={lon}
-              onPinMove={(newLat, newLng) => {
-                setLat(newLat);
-                setLon(newLng);
-              }}
               helperText={
                 [
                   hideAddress
                     ? "Kept private: customers see only your suburb."
                     : "",
-                  lat === null ? "Pick it from the list as you type, so the map's right." : "",
+                  lat === null ? "Pick it from the list as you type." : "✓ Location found.",
                 ]
                   .filter(Boolean)
                   .join(" ") || undefined
@@ -520,7 +503,7 @@ export default function MerchantProfileForm({
               errorText={fieldErrors.address}
             />
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:grid-cols-3">
               <div>
                 <label htmlFor="profile-suburb" className={labelClass}>
                   Suburb
@@ -560,7 +543,7 @@ export default function MerchantProfileForm({
                   className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${errorBorderClass("city")}`}
                 >
                   <option value="" disabled>
-                    Select a city
+                    Choose…
                   </option>
                   {CITIES.map((c) => (
                     <option key={c} value={c}>
@@ -573,7 +556,7 @@ export default function MerchantProfileForm({
               <div>
                 <label htmlFor="profile-postcode" className={labelClass}>
                   Postcode
-                  <PrivateTag />
+                  
                 </label>
                 <input
                   id="profile-postcode"
@@ -898,7 +881,7 @@ export default function MerchantProfileForm({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-full bg-brand-600 px-5 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
+            className="whitespace-nowrap rounded-full bg-brand-600 px-5 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
           >
             {saving
               ? createMode || startEditing
@@ -924,28 +907,47 @@ export default function MerchantProfileForm({
 
 /** The two halves of the listing, named the same in the form and the
  *  summary (and like admin's business page). */
+/* What each half says has to be true: the public set is
+   mapMerchantToBusiness in lib/business.ts (lib/businessPrivacy.test.ts),
+   business pages are in the sitemap for search engines, and app/privacy
+   says the same. */
 function PublicHeading({ id, className = "" }: { id?: string; className?: string }) {
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${className}`}>
-      <h3 id={id} className="text-base font-bold text-slate-900">
-        Your listing
-      </h3>
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-        <GlobeIcon className="h-3.5 w-3.5" /> What deal hunters see
-      </span>
+    <div className={className}>
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 id={id} className="text-base font-bold text-slate-900">
+          Your listing
+        </h3>
+        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+          <GlobeIcon className="h-3.5 w-3.5" /> Public
+        </span>
+      </div>
+      <p className="mt-1 text-xs text-slate-600">
+        Shown to anyone on your MegaDeal listing and deals (your street address and postcode only if you don&apos;t
+        hide them), and search engines such as Google can show it too. Please keep it accurate and up to date.
+      </p>
     </div>
   );
 }
 
 function PrivateHeading({ id, className = "" }: { id?: string; className?: string }) {
   return (
-    <div className={`flex flex-wrap items-center gap-2 ${className}`}>
-      <h3 id={id} className="text-base font-bold text-slate-900">
-        Private details
-      </h3>
-      <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700">
-        <EyeOffIcon className="h-3.5 w-3.5" /> Only MegaDeal sees these
-      </span>
+    <div className={className}>
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 id={id} className="text-base font-bold text-slate-900">
+          Private details
+        </h3>
+        <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-700">
+          <EyeOffIcon className="h-3.5 w-3.5" /> Only you and MegaDeal
+        </span>
+      </div>
+      <p className="mt-1 text-xs text-slate-600">
+        Never shown on MegaDeal. We use these to contact you and to check your business, as our{" "}
+        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+          Privacy Policy
+        </a>{" "}
+        explains.
+      </p>
     </div>
   );
 }

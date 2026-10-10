@@ -17,6 +17,8 @@ export interface PublicBusiness {
   phone: string | null;
   /** Null when the business keeps it private (addressHidden). */
   address: string | null;
+  /** Part of the shown address; null with it (addressHidden). */
+  postcode: string | null;
   /** Home-based or mobile: no street, no directions, and lat/lng are
    *  rounded to about a kilometre (lib/location.ts publicLocation). */
   addressHidden: boolean;
@@ -51,6 +53,7 @@ export function mapMerchantToBusiness(merchant: any): PublicBusiness {
     website: merchant.website || null,
     phone: merchant.phone || null,
     address: place.address,
+    postcode: place.addressHidden ? null : merchant.postcode || null,
     addressHidden: place.addressHidden,
     serviceArea: merchant.serviceArea || null,
     city: merchant.city || null,
