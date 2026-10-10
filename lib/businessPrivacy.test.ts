@@ -75,3 +75,15 @@ describe("a business that hides its street address", () => {
     expect(locationNotes(false, "  ")).toEqual([]);
   });
 });
+
+describe("areas a business covers", () => {
+  it("ticks Auckland's areas and saves them as plain words", async () => {
+    const { areasText, tickedAreas } = await import("./location");
+    expect(areasText(["West Auckland", "North Shore"])).toBe("North Shore, West Auckland");
+    expect(tickedAreas("North Shore, West Auckland")).toEqual(["North Shore", "West Auckland"]);
+    expect(areasText(tickedAreas("All of Auckland")!)).toBe("All of Auckland");
+    // Typed text (outside Auckland, or from before) stays as typed.
+    expect(tickedAreas("Hamilton and Cambridge")).toBeNull();
+    expect(locationNotes(true, "All of Auckland")).toEqual(["Comes to you: covers all of Auckland."]);
+  });
+});

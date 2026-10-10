@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { EyeOffIcon, GlobeIcon } from "@/components/icons";
 import AddressAutocompleteField, { findAddressPin } from "@/components/AddressAutocompleteField";
 import { locationNotes } from "@/lib/location";
+import ServiceAreaPicker from "@/components/ServiceAreaPicker";
 import PhotoGalleryField from "./PhotoGalleryField";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
@@ -574,37 +575,30 @@ export default function MerchantProfileForm({
             {/* Google's "service-area business": the address is still given
                 (to check the business, and for "near me" with a pin moved
                 about a kilometre), just not published. */}
-            {/* Side by side: the private-address tick and the areas a
-                business that goes to its customers covers. */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className="flex cursor-pointer items-start gap-2 self-end rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-brand-400">
-                <input
-                  type="checkbox"
-                  checked={hideAddress}
-                  onChange={(e) => setHideAddress(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
-                />
-                <span>
-                  <span className="block font-semibold text-slate-900">Hide my street address</span>
-                  <span className="text-xs text-slate-600">
-                    Home-based? Customers see your suburb, and you give the address when they book.
-                  </span>
+            <label className="flex cursor-pointer items-start gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-brand-400">
+              <input
+                type="checkbox"
+                checked={hideAddress}
+                onChange={(e) => setHideAddress(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
+              />
+              <span>
+                <span className="block font-semibold text-slate-900">Hide my street address</span>
+                <span className="text-xs text-slate-600">
+                  Home-based? Customers see your suburb, and you give the address when they book.
                 </span>
-              </label>
-              <div>
-                <label htmlFor="profile-serviceArea" className={labelClass}>
-                  Areas you cover, if you go to customers
-                </label>
-                <input
-                  id="profile-serviceArea"
-                  maxLength={200}
-                  value={serviceArea}
-                  onChange={(e) => setServiceArea(e.target.value)}
-                  placeholder="e.g. North Shore and West Auckland"
-                  className={plainInputClass}
-                />
-              </div>
-            </div>
+              </span>
+            </label>
+
+            <ServiceAreaPicker
+              id="profile-serviceArea"
+              value={serviceArea}
+              onChange={setServiceArea}
+              city={city}
+              label="Areas you cover, if you go to customers"
+              labelClass={labelClass}
+              inputClass={plainInputClass}
+            />
           </div>
 
           <div className="space-y-3 border-t border-slate-100 pt-4">

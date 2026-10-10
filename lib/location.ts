@@ -84,6 +84,37 @@ export function publicLocation(m: {
  */
 export function locationNotes(addressHidden: boolean, serviceArea: string | null | undefined): string[] {
   const area = (serviceArea ?? "").trim();
-  if (area) return [`${addressHidden ? "Comes to you" : "Also comes to you"}: covers ${area}.`];
+  if (area) return [`${addressHidden ? "Comes to you" : "Also comes to you"}: covers ${area === "All of Auckland" ? "all of Auckland" : area}.`];
   return addressHidden ? ["Address provided by the business when you book."] : [];
+}
+
+/** The areas a business that goes to its customers can tick (Auckland
+ *  only for now). Saved as plain text in service_area ("North Shore, West
+ *  Auckland"), so what the public pages say needs no translating. */
+export const AUCKLAND_AREAS = [
+  "Central Auckland",
+  "North Shore",
+  "West Auckland",
+  "East Auckland",
+  "South Auckland",
+  "Rodney",
+  "Franklin",
+  "Waiheke & islands",
+] as const;
+export const ALL_OF_AUCKLAND = "All of Auckland";
+
+/** The ticked areas in a saved service_area, in list order; null when the
+ *  text isn't made of them (typed for a business outside Auckland). */
+export function tickedAreas(saved: string | null | undefined): string[] | null {
+  const text = (saved ?? "").trim();
+  if (!text) return [];
+  if (text === ALL_OF_AUCKLAND) return [...AUCKLAND_AREAS];
+  const parts = text.split(/\s*,\s*/);
+  return parts.every((p) => (AUCKLAND_AREAS as readonly string[]).includes(p)) ? AUCKLAND_AREAS.filter((a) => parts.includes(a)) : null;
+}
+
+/** Ticked areas as saved: every one is "All of Auckland". */
+export function areasText(areas: string[]): string {
+  const picked = AUCKLAND_AREAS.filter((a) => areas.includes(a));
+  return picked.length === AUCKLAND_AREAS.length ? ALL_OF_AUCKLAND : picked.join(", ");
 }

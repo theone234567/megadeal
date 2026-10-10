@@ -103,7 +103,7 @@ export default function BusinessHoursEditor({
           onClick={copyMondayToWeekdays}
           className="whitespace-nowrap text-xs font-semibold text-brand-600 hover:underline"
         >
-          Copy Monday to Tue–Fri
+          Use Monday&apos;s hours for Tue–Fri
         </button>
       </div>
 

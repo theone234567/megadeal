@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import ServiceAreaPicker from "@/components/ServiceAreaPicker";
 import { referralCreditsLabel } from "@/lib/referralBonus";
 import { useParams, useRouter } from "next/navigation";
 import { RUDENESS_OVERRIDES, parseRudenessOverride, type RudenessOverride } from "@/lib/rudenessSetting";
@@ -489,7 +490,17 @@ export default function AdminBusinessDetailPage() {
                 </span>
               </span>
             </label>
-            <Field label="Areas covered" value={serviceArea} onChange={setServiceArea} placeholder="e.g. North Shore and West Auckland" />
+            <div className="text-sm sm:col-span-2">
+              <ServiceAreaPicker
+                id="admin-serviceArea"
+                value={serviceArea}
+                onChange={setServiceArea}
+                city={city}
+                label="Areas covered (if they go to customers)"
+                labelClass="mb-1 block font-medium text-slate-700"
+                inputClass="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+              />
+            </div>
             <label className="block text-sm">
               <span className="mb-1 block font-medium text-slate-700">
                 City
