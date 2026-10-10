@@ -132,6 +132,15 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   const [codeOnWebsite, setCodeOnWebsite] = useState(false);
   const [codeWebsiteUrl, setCodeWebsiteUrl] = useState("");
   const [codeTested, setCodeTested] = useState(false);
+  // "Use my own code instead" was chosen. The box also shows whenever a
+  // code is already there (a reopened draft or a copied deal).
+  const [ownCodeChosen, setOwnCodeChosen] = useState(false);
+  const codeInputRef = useRef<HTMLInputElement>(null);
+  // Set once "Preview deal" has been pressed with something missing: from
+  // then on every problem shows at once, in red by its field, and clears
+  // as it's fixed.
+  const [showProblems, setShowProblems] = useState(false);
+  const problemSummaryRef = useRef<HTMLDivElement>(null);
   // When it starts (lib/dealSchedule.ts): on approval, or at a set NZ
   // date and time — offered while scheduling is on in Platform settings.
   const [startMode, setStartMode] = useState<StartMode>("on_approval");
@@ -391,65 +400,86 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
     return () => URL.revokeObjectURL(url);
   }, [photo, uploaded]);
 
-  function handleContinueToPreview(e: React.FormEvent) {
-    e.preventDefault();
-    // Caught before the preview rather than on submit. The preview exists to
-    // show the merchant their deal as customers will see it, and the photo
-    // is most of that — previewing a card with an empty image well would
-    // misrepresent the thing they're being asked to approve.
-    // Either a file just picked, or one already uploaded with a reopened
-    // draft — a restored draft has a photo but no File, and rejecting it
-    // would demand the merchant re-pick an image already on screen.
-    if (!photo && !uploaded) {
-      setError("Add a photo before you preview — it's the main image customers see.");
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-      return;
+  /** Everything stopping this deal going to the preview, in the order the
+   *  fields appear, each tied to the field it's about. The server checks
+   *  the same things again (lib/dealSubmission.ts); this is so the
+   *  business sees every problem at once rather than one per attempt.
+   *  `inline: false` means the field already shows that message itself. */
+  function formProblems(): { id: string; message: string; inline?: false }[] {
+    const list: { id: string; message: string; inline?: false }[] = [];
+    if (isTest && !testBusiness.trim()) list.push({ id: "test-business", message: "Enter the business name to show." });
+    if (!dealName.trim()) list.push({ id: "deal-name", message: "Enter a deal name." });
+    if (!category) list.push({ id: "deal-category", message: "Choose a category." });
+    if (!description.trim()) list.push({ id: "deal-description", message: "Describe what customers get." });
+    const now = Number(priceNow);
+    if (!priceNow.trim() || !Number.isFinite(now) || now <= 0) {
+      list.push({ id: "deal-price", message: "Enter the deal price." });
+    } else if (priceWas.trim() && !(Number(priceWas) >= now)) {
+      list.push({ id: "deal-price-was", message: "The original price must be at least the deal price." });
     }
-    // The textarea is no longer `required` — most deals are now described
-    // entirely by tick-boxes and never touch it — so nothing native is
-    // left enforcing that terms exist at all.
-    if (!terms) {
-      setError("Tick at least one condition, or write your own terms.");
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-      return;
-    }
-    const bookingProblem = !isBookingChoice(bookingRequirement)
-      ? "Choose whether customers need to book."
-      : bookingConflict(bookingRequirement, terms) ||
-        (bookingRequirement === "required" && !merchantCanTakeBookings
-          ? "This deal needs a booking, but your profile has no booking link, phone number or booking email. Add one in your profile first."
-          : null);
-    if (bookingProblem) {
-      setError(bookingProblem);
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-      return;
-    }
-    const codeProblem = dealCode ? dealCodeError(normaliseDealCode(dealCode)) : null;
-    if (codeProblem) {
-      setDealCodeTouched(true);
-      setError(`Deal code: ${codeProblem}`);
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-      return;
-    }
-    const websiteProblem = websiteCodeError({
-      code: normaliseDealCode(dealCode),
-      onWebsite: codeOnWebsite && Boolean(dealCode),
-      url: codeWebsiteUrl,
-      tested: codeTested,
-    });
-    if (websiteProblem) {
-      setError(websiteProblem);
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-      return;
+    if (quantityAvailable.trim() && !(Number.isInteger(Number(quantityAvailable)) && Number(quantityAvailable) >= 1)) {
+      list.push({ id: "deal-quantity", message: "Quantity available must be a whole number, 1 or more." });
     }
     if (startMode === "scheduled" && !isTest) {
       const start = parseScheduledStart(startDate, startTime);
       if (start.error !== undefined) {
-        setError(start.error);
-        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-        return;
+        // Once both are filled in, the box under them already says what's wrong.
+        list.push(
+          startDate && startTime
+            ? { id: "deal-start-date", message: start.error, inline: false }
+            : { id: "deal-start-date", message: start.error }
+        );
       }
     }
+    // Either a file just picked, or one already uploaded with a reopened
+    // draft — a restored draft has a photo but no File.
+    if (!photo && !uploaded) list.push({ id: "deal-photo-field", message: "Add a photo. It's the main image customers see." });
+    if (!isBookingChoice(bookingRequirement)) {
+      list.push({ id: "deal-booking", message: "Choose whether customers need to book." });
+    } else {
+      const bookingProblem =
+        bookingConflict(bookingRequirement, terms) ||
+        (bookingRequirement === "required" && !merchantCanTakeBookings
+          ? "This deal needs a booking, but your profile has no booking link, phone number or booking email. Add one in your profile first."
+          : null);
+      if (bookingProblem) list.push({ id: "deal-booking", message: bookingProblem, inline: false });
+    }
+    // The textarea isn't `required` — most deals are described entirely
+    // by tick-boxes — so this is what makes sure terms exist at all.
+    if (!terms) list.push({ id: "deal-terms", message: "Tick at least one condition, or write your own." });
+    const codeProblem = dealCode ? dealCodeError(normaliseDealCode(dealCode)) : null;
+    if (codeProblem) {
+      list.push({ id: "deal-code", message: `Deal code: ${codeProblem}`, inline: false });
+    } else {
+      const websiteProblem = websiteCodeError({
+        code: normaliseDealCode(dealCode),
+        onWebsite: codeOnWebsite && Boolean(dealCode),
+        url: codeWebsiteUrl,
+        tested: codeTested,
+      });
+      if (websiteProblem) {
+        const id = !safeWebHref(codeWebsiteUrl) ? "deal-code-url" : !codeTested ? "deal-code-tested" : "deal-code";
+        list.push({ id, message: websiteProblem });
+      }
+    }
+    return list;
+  }
+
+  function handleContinueToPreview(e: React.FormEvent) {
+    e.preventDefault();
+    // Caught before the preview rather than on submit: the preview exists
+    // to show the deal as customers will see it, so it has to be complete.
+    if (formProblems().length > 0) {
+      setShowProblems(true);
+      setDealCodeTouched(true);
+      setError(null);
+      requestAnimationFrame(() => {
+        problemSummaryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        problemSummaryRef.current?.focus({ preventScroll: true });
+      });
+      return;
+    }
+    setShowProblems(false);
     setError(null);
     setStep("preview");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -793,6 +823,34 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
     (dealCodeTouched || !(dealCodeProblem.startsWith("Too short") || dealCode.endsWith("-")))
       ? dealCodeProblem
       : null;
+  const showOwnCode = ownCodeChosen || dealCode !== "";
+  const problems = showProblems ? formProblems() : [];
+  const problemFor = (id: string) => problems.find((p) => p.id === id && p.inline !== false)?.message;
+  // Red outline for a field with a problem, the usual one otherwise.
+  const borderFor = (id: string) =>
+    problemFor(id) ? "border-red-400 bg-red-50/40 focus:border-red-500" : "border-slate-200 focus:border-brand-400";
+  // Ties a field to its red message, for screen readers.
+  const errorProps = (id: string) =>
+    problemFor(id) ? { "aria-invalid": true, "aria-describedby": `${id}-error` } : {};
+  const fieldError = (id: string) => {
+    const message = problemFor(id);
+    return message ? (
+      <p id={`${id}-error`} className="mt-1 text-sm font-semibold text-red-600">
+        {message}
+      </p>
+    ) : null;
+  };
+  const requiredTag = <span className="ml-1 text-xs font-normal text-ember-600">Required</span>;
+  /** Takes the business to the field a problem is about. */
+  function goToField(id: string) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    const target = el.matches("input, select, textarea, button")
+      ? el
+      : el.querySelector<HTMLElement>("input:not([disabled]), select, textarea, button");
+    target?.focus({ preventScroll: true });
+  }
 
   if (!isTest && credits < cheapest) {
     return (
@@ -1073,7 +1131,37 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
       </>
       )}
 
-      <form onSubmit={handleContinueToPreview} className="mt-6 space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+      {/* noValidate: the browser's own bubbles show one problem at a time;
+          formProblems() lists them all, by their fields. */}
+      <form noValidate onSubmit={handleContinueToPreview} className="mt-6 space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+        {problems.length > 0 && (
+          <div
+            ref={problemSummaryRef}
+            tabIndex={-1}
+            aria-labelledby="deal-problems-title"
+            className="scroll-mt-24 rounded-xl border-2 border-red-300 bg-red-50 p-4 outline-none focus:ring-2 focus:ring-red-400"
+          >
+            <h2 id="deal-problems-title" className="font-display text-base font-bold text-red-800">
+              {problems.length === 1 ? "1 thing to fix" : `${problems.length} things to fix`} before you can preview
+            </h2>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-red-700">
+              {problems.map((p) => (
+                <li key={`${p.id}:${p.message}`}>
+                  <a
+                    href={`#${p.id}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      goToField(p.id);
+                    }}
+                    className="font-semibold underline underline-offset-2 hover:text-red-900"
+                  >
+                    {p.message}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {isTest && (
           <fieldset className="rounded-xl border border-amber-200 bg-amber-50 p-3.5">
             <legend className="px-1 text-sm font-bold text-amber-900">Test deal only</legend>
@@ -1088,8 +1176,10 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
                   maxLength={120}
                   onChange={(e) => setTestBusiness(e.target.value)}
                   placeholder="e.g. Test Day Spa"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+                  {...errorProps("test-business")}
+                  className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${borderFor("test-business")}`}
                 />
+                {fieldError("test-business")}
               </div>
               <div>
                 <label htmlFor="test-suburb" className="mb-1 block text-sm font-medium text-slate-700">
@@ -1187,7 +1277,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           )}
         </fieldset>
         <div>
-          <label htmlFor="deal-name" className="mb-1 block text-sm font-medium text-slate-700">Deal name</label>
+          <label htmlFor="deal-name" className="mb-1 block text-sm font-medium text-slate-700">Deal name{requiredTag}</label>
           <input
             id="deal-name"
             required
@@ -1195,18 +1285,21 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             maxLength={80}
             onChange={(e) => setDealName(e.target.value)}
             placeholder="e.g. 60-Minute Massage + Facial"
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            {...errorProps("deal-name")}
+            className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-name")}`}
           />
+          {fieldError("deal-name")}
         </div>
 
         <div>
-          <label htmlFor="deal-category" className="mb-1 block text-sm font-medium text-slate-700">Category</label>
+          <label htmlFor="deal-category" className="mb-1 block text-sm font-medium text-slate-700">Category{requiredTag}</label>
           <select
             id="deal-category"
             required
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400"
+            {...errorProps("deal-category")}
+            className={`w-full rounded-xl border bg-white px-3 py-2 text-sm outline-none ${borderFor("deal-category")} ${category ? "" : "text-slate-500"}`}
           >
             <option value="" disabled>
               Choose a category…
@@ -1217,10 +1310,11 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
               </option>
             ))}
           </select>
+          {fieldError("deal-category")}
         </div>
 
         <div>
-          <label htmlFor="deal-description" className="mb-1 block text-sm font-medium text-slate-700">Description</label>
+          <label htmlFor="deal-description" className="mb-1 block text-sm font-medium text-slate-700">Description{requiredTag}</label>
           <textarea
             id="deal-description"
             required
@@ -1229,8 +1323,10 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="e.g. Unwind with a full-body deep tissue massage using warm oils, finished with a relaxing foot scrub. Includes a herbal tea on arrival. Book at least 24 hours ahead — walk-ins subject to availability."
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            {...errorProps("deal-description")}
+            className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-description")}`}
           />
+          {fieldError("deal-description")}
           {description.length > 0 && description.length < 60 && (
             <p className="mt-1 text-xs text-amber-600">
               💡 A bit more detail helps customers know exactly what they&apos;re
@@ -1242,7 +1338,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="deal-price" className="mb-1 block text-sm font-medium text-slate-700">Deal price ($)</label>
+            <label htmlFor="deal-price" className="mb-1 block text-sm font-medium text-slate-700">Deal price ($){requiredTag}</label>
             <input
               id="deal-price"
               required
@@ -1251,8 +1347,10 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
               step="0.01"
               value={priceNow}
               onChange={(e) => setPriceNow(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              {...errorProps("deal-price")}
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-price")}`}
             />
+            {fieldError("deal-price")}
           </div>
           <div>
             <label htmlFor="deal-price-was" className="mb-1 block text-sm font-medium text-slate-700">
@@ -1266,8 +1364,10 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
               value={priceWas}
               onChange={(e) => setPriceWas(e.target.value)}
               placeholder="Shown crossed out"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              {...errorProps("deal-price-was")}
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-price-was")}`}
             />
+            {fieldError("deal-price-was")}
           </div>
         </div>
 
@@ -1322,8 +1422,10 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
               value={quantityAvailable}
               onChange={(e) => setQuantityAvailable(e.target.value)}
               placeholder="e.g. 50"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+              {...errorProps("deal-quantity")}
+              className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-quantity")}`}
             />
+            {fieldError("deal-quantity")}
             <p className="mt-1 text-xs text-slate-500">
               How many you&apos;re offering. It isn&apos;t counted down automatically or shown to customers as
               stock left.
@@ -1389,7 +1491,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
                         max={last}
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                        {...errorProps("deal-start-date")}
+                        className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-start-date")}`}
                       />
                     </div>
                     <div>
@@ -1402,10 +1505,11 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
                         step={900}
                         value={startTime}
                         onChange={(e) => setStartTime(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                        className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-start-date")}`}
                       />
                     </div>
                   </div>
+                  {fieldError("deal-start-date")}
                   <p role="status" className={`mt-2 text-xs ${start?.error ? "text-red-600" : "text-slate-600"}`}>
                     {start?.error
                       ? start.error
@@ -1425,7 +1529,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           </fieldset>
         )}
 
-        <div>
+        <div id="deal-photo-field" className="scroll-mt-24">
           <label id="deal-photo-label" htmlFor="deal-photo" className="mb-1 block font-display text-base font-bold text-slate-900">
             Photo
             <span className="ml-1 font-sans text-sm font-normal text-ember-600">Required</span>
@@ -1460,7 +1564,11 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             </div>
           ) : (
           <div className="flex items-center gap-4">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-300">
+            <div
+              className={`flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed text-slate-300 ${
+                problemFor("deal-photo-field") ? "border-2 border-red-400 bg-red-50" : "border-slate-300 bg-slate-50"
+              }`}
+            >
               {photoPreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photoPreview} alt="" className="h-full w-full object-cover" />
@@ -1484,16 +1592,18 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
                 // knows it has something new to send.
                 if (file) setUploaded(null);
               }}
+              {...errorProps("deal-photo-field")}
               className="block w-full min-w-0 text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100"
             />
           </div>
           )}
+          {fieldError("deal-photo-field")}
         </div>
 
         {/* Asked outright rather than inferred: the public deal page shows
             different next steps for each answer (lib/booking.ts), and a
             missing booking link must never read as "no booking needed". */}
-        <fieldset>
+        <fieldset id="deal-booking" className="scroll-mt-24">
           <legend id="booking-requirement-label" className="mb-1 block font-display text-base font-bold text-slate-900">
             Do customers need to book?
             <span className="ml-1 font-sans text-sm font-normal text-ember-600">Required</span>
@@ -1512,7 +1622,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
                   className={`rounded-full border-2 px-3.5 py-2 text-sm font-bold transition active:scale-95 ${
                     on
                       ? "border-brand-600 bg-brand-600 text-white shadow-card"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700"
+                      : `${problemFor("deal-booking") ? "border-red-400" : "border-slate-200"} bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700`
                   }`}
                 >
                   {on ? "✓ " : ""}
@@ -1521,6 +1631,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
               );
             })}
           </div>
+          {fieldError("deal-booking")}
           {bookingRequirement && (
             <p className="mt-2 text-xs text-slate-500">
               {BOOKING_CHOICES.find((c) => c.value === bookingRequirement)?.hint}.
@@ -1572,7 +1683,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           )}
         </fieldset>
 
-        <div>
+        <div id="deal-terms" className="scroll-mt-24">
           <label className="mb-1 block font-display text-base font-bold text-slate-900">
             The fine print
             <span className="ml-1 font-sans text-sm font-normal text-ember-600">Required</span>
@@ -1601,7 +1712,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
                   className={`rounded-full border-2 px-3.5 py-2 text-sm font-bold transition active:scale-95 ${
                     on
                       ? "border-brand-600 bg-brand-600 text-white shadow-card"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700"
+                      : `${problemFor("deal-terms") ? "border-red-400" : "border-slate-200"} bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700`
                   }`}
                 >
                   {on ? "✓ " : ""}
@@ -1622,8 +1733,9 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             value={customTerms}
             onChange={(e) => setCustomTerms(e.target.value)}
             placeholder="Anything else specific to your deal, e.g. maximum 6 people per booking"
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+            className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-terms")}`}
           />
+          {fieldError("deal-terms")}
           {bookingTermsConflict && !selectedTerms.includes("walk-ins") && (
             <p className="mt-3 text-sm text-red-600">{bookingTermsConflict}</p>
           )}
@@ -1635,31 +1747,60 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           )}
         </div>
 
-        <div>
-          <label htmlFor="deal-code" className="mb-1 block text-base font-bold text-slate-900">
-            Your deal code <span className="font-sans text-sm font-normal text-slate-500">(optional)</span>
+        {/* Every deal has a code customers show or quote. MegaDeal makes one
+            unless the business would rather use its own (lib/dealCode.ts):
+            the made one is the default, their own is a deliberate switch. */}
+        <div id="deal-code-field" className="scroll-mt-24">
+          <h2 className="mb-1 font-display text-base font-bold text-slate-900">Deal code</h2>
+          <p className="mb-2 text-xs leading-relaxed text-slate-600">
+            Customers show or quote this code when they use the deal, so you know they came from MegaDeal. It
+            can&apos;t be changed once your deal is submitted.
+          </p>
+          {!showOwnCode ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:max-w-md">
+              <p className="text-sm text-slate-700">
+                {savedCode ? (
+                  <>
+                    Your code is{" "}
+                    <span className="rounded-md bg-white px-2 py-0.5 font-mono font-bold tracking-wider text-slate-900 ring-1 ring-slate-200">
+                      {savedCode}
+                    </span>
+                    . We made it for you, and it&apos;s only for this deal.
+                  </>
+                ) : (
+                  <>
+                    We&apos;ll make your code automatically when this deal is first saved, like{" "}
+                    <span className="font-mono font-bold tracking-wider text-slate-900">MEGA-7K2QD</span>. It&apos;s
+                    only for this deal.
+                  </>
+                )}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setOwnCodeChosen(true);
+                  requestAnimationFrame(() => codeInputRef.current?.focus());
+                }}
+                className="mt-2 text-sm font-bold text-brand-700 underline underline-offset-2 hover:text-brand-800"
+              >
+                Use my own code instead
+              </button>
+              <p className="mt-1 text-xs text-slate-500">
+                Handy if your website or booking system already takes a discount code for this offer.
+              </p>
+            </div>
+          ) : (
+          <div className="rounded-xl border border-slate-200 p-3 sm:max-w-md">
+          <label htmlFor="deal-code" className="mb-1 block text-sm font-bold text-slate-900">
+            Your own code
           </label>
           <p id="deal-code-help" className="mb-2 text-xs leading-relaxed text-slate-600">
-            <strong className="font-semibold text-slate-800">Use your own promo code.</strong> If your
-            website or booking system takes discount codes, set one up there, enter the same code here
-            and tick &ldquo;Customers enter this code on my website&rdquo;. Customers also quote it by
-            phone or show it in person, so you can spot MegaDeal customers.
-            <br />
-            No code of your own? Leave this blank and we&apos;ll create one
-            {savedCode ? (
-              <>
-                {" "}
-                (this deal&apos;s is <span className="font-mono font-semibold text-slate-800">{savedCode}</span>)
-              </>
-            ) : (
-              " when you first save it"
-            )}
-            . Letters, numbers and
-            hyphens, up to {DEAL_CODE_MAX} characters (e.g. SUMMER-20). It can&apos;t be changed once
-            your deal is submitted.
+            If your website or booking system takes discount codes, set one up there and enter the same code
+            here. Letters, numbers and hyphens, up to {DEAL_CODE_MAX} characters (e.g. SUMMER-20).
           </p>
           <input
             id="deal-code"
+            ref={codeInputRef}
             value={dealCode}
             // Room to type past the limit, so "too long" can be shown
             // rather than the box silently refusing keys.
@@ -1669,9 +1810,11 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             aria-describedby={dealCodeMessage ? "deal-code-help deal-code-error" : "deal-code-help"}
             aria-invalid={Boolean(dealCodeMessage)}
             // Shown the way it will be saved (capitals, hyphens for spaces).
-            onChange={(e) =>
-              setDealCode(e.target.value.normalize("NFKC").toUpperCase().replace(/\s/g, "-").slice(0, 40))
-            }
+            onChange={(e) => {
+              // Keeps the box open if they clear it to retype.
+              setOwnCodeChosen(true);
+              setDealCode(e.target.value.normalize("NFKC").toUpperCase().replace(/\s/g, "-").slice(0, 40));
+            }}
             onBlur={() => setDealCodeTouched(true)}
             placeholder="e.g. SUMMER-20"
             className={`w-full rounded-xl border px-3 py-2 font-mono text-sm uppercase tracking-wider outline-none sm:max-w-xs ${
@@ -1692,7 +1835,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
               to enter at checkout when the business says their website
               takes it, says where, and has tried it. */}
           {dealCode && !dealCodeProblem && (
-            <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3 sm:max-w-md">
+            <div className="mt-3 rounded-lg bg-slate-50 p-3">
               <label className="flex cursor-pointer items-start gap-2">
                 <input
                   type="checkbox"
@@ -1725,13 +1868,17 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
                       value={codeWebsiteUrl}
                       onChange={(e) => setCodeWebsiteUrl(e.target.value)}
                       placeholder="https://yourbusiness.co.nz/book"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+                      {...errorProps("deal-code-url")}
+                      className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-code-url")}`}
                     />
+                    {fieldError("deal-code-url")}
                   </div>
                   <label className="flex cursor-pointer items-start gap-2">
                     <input
+                      id="deal-code-tested"
                       type="checkbox"
                       checked={codeTested}
+                      {...errorProps("deal-code-tested")}
                       onChange={(e) => setCodeTested(e.target.checked)}
                       className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
                     />
@@ -1741,13 +1888,35 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
                       on my website and it gives this deal&apos;s discount.
                     </span>
                   </label>
+                  {fieldError("deal-code-tested")}
                 </div>
               )}
             </div>
           )}
+          <button
+            type="button"
+            onClick={() => {
+              setOwnCodeChosen(false);
+              setDealCode("");
+              setDealCodeTouched(false);
+              setCodeOnWebsite(false);
+              setCodeTested(false);
+            }}
+            className="mt-3 text-sm font-bold text-brand-700 underline underline-offset-2 hover:text-brand-800"
+          >
+            {savedCode ? `Use ${savedCode} instead` : "Let MegaDeal make my code instead"}
+          </button>
+          </div>
+          )}
         </div>
 
         {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+        {problems.length > 0 && (
+          <p className="text-sm font-semibold text-red-600">
+            {problems.length === 1 ? "1 thing needs fixing" : `${problems.length} things need fixing`}: see the
+            red boxes above.
+          </p>
+        )}
 
         {/* Saving is available here, not only from the preview. The preview
             demands a complete, valid deal — which is the wrong bar for
