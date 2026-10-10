@@ -102,6 +102,14 @@ describe("splitTermsForDisplay", () => {
     expect(splitTermsForDisplay("Valid weekdays only")).toEqual(["Valid weekdays only"]);
   });
 
+  it("treats each line a business typed as its own condition", () => {
+    expect(splitTermsForDisplay("Bookings essential. Room only\nCheck-in from 2pm.")).toEqual([
+      "Bookings essential",
+      "Room only",
+      "Check-in from 2pm",
+    ]);
+  });
+
   it("is empty for an empty string", () => {
     expect(splitTermsForDisplay("")).toEqual([]);
   });

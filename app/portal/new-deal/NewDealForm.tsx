@@ -18,6 +18,7 @@ import {
   websiteCodeError,
 } from "@/lib/booking";
 import DealCard from "@/components/DealCard";
+import DealConditions from "@/components/DealConditions";
 import DealDetail from "@/app/deal/[slug]/DealDetail";
 import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
 import { CalendarIcon, CheckIcon, ZapIcon } from "@/components/icons";
@@ -1740,10 +1741,10 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             <p className="mt-3 text-sm text-red-600">{bookingTermsConflict}</p>
           )}
           {terms && (
-            <p className="mt-3 rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-900">
-              <span className="font-display font-bold">Customers will see: </span>
-              {terms}
-            </p>
+            <div className="mt-3 rounded-2xl border-2 border-dashed border-brand-200 bg-brand-50 px-4 py-3 text-brand-900">
+              <p className="mb-2 font-display text-sm font-bold">Customers will see:</p>
+              <DealConditions terms={terms} />
+            </div>
           )}
         </div>
 

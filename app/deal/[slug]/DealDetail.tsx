@@ -20,6 +20,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 import { locationNotes, placeLabel } from "@/lib/location";
 import { keyRestrictions, splitTermsForDisplay } from "@/lib/dealTerms";
+import DealConditions from "@/components/DealConditions";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { bookingPlan, effectiveBookingRequirement, type BookingAction } from "@/lib/booking";
 import { safeWebHref } from "@/lib/socialLinks";
@@ -409,9 +410,12 @@ export default function DealDetail({
           <p className="mt-2 whitespace-pre-line text-[0.9375rem] leading-relaxed text-slate-600">{deal.description}</p>
 
           {conditions.length > 0 && (
+            // Open from the start: conditions are part of the offer, so
+            // they're there to read without a click.
             <details
               ref={conditionsRef}
               id="conditions"
+              open
               className="group mt-6 scroll-mt-24 border-y border-slate-200/80 py-4"
             >
               <summary className="cursor-pointer list-none text-[0.9375rem] font-bold text-slate-900 marker:hidden [&::-webkit-details-marker]:hidden">
@@ -421,11 +425,7 @@ export default function DealDetail({
               {/* Every condition exactly as the business wrote it — the
                   summary above only ever shortens standard checkbox
                   conditions, so anything custom is read here. */}
-              <ul className="mt-3 list-disc space-y-1.5 pl-5 text-[0.9375rem] leading-relaxed text-slate-700">
-                {conditions.map((line, i) => (
-                  <li key={i}>{line}</li>
-                ))}
-              </ul>
+              <DealConditions terms={deal.terms} className="mt-3 text-slate-700" />
             </details>
           )}
 

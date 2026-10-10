@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import DealResults from "@/components/DealResults";
+import DealConditions from "@/components/DealConditions";
 import type { DealStatus } from "@/lib/types";
 import Link from "next/link";
 import DealContentEditor from "./DealContentEditor";
@@ -274,7 +275,12 @@ export default function DealRow({
             </p>
           )}
           {deal.description && <p className="mt-1">{deal.description}</p>}
-          {deal.terms && <p className="mt-1 text-xs italic text-slate-500">Terms: {deal.terms}</p>}
+          {deal.terms && (
+            <div className="mt-2">
+              <p className="mb-1 text-xs font-semibold text-slate-700">Conditions</p>
+              <DealConditions terms={deal.terms} size="sm" className="text-slate-600" />
+            </div>
+          )}
           {deal.dealCode && (
             <p className="mt-1 text-xs text-slate-500">
               Code: <span className="font-mono font-semibold text-slate-700">{deal.dealCode}</span>

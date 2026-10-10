@@ -99,7 +99,9 @@ export function parseTerms(rendered: string): { selectedIds: string[]; custom: s
  */
 export function splitTermsForDisplay(rendered: string): string[] {
   return rendered
-    .split(". ")
+    // Line breaks a business typed into its own conditions count as
+    // separate conditions too.
+    .split(/\.\s+|\s*\n+\s*/)
     .map((piece) => piece.replace(/\.$/, "").trim())
     .filter(Boolean);
 }

@@ -10,6 +10,7 @@ import { creditsLabel, creditsToRefund } from "@/lib/platformSettingsRules";
 import PhotoUploadField from "./PhotoUploadField";
 import DealChangeRequest from "./DealChangeRequest";
 import DealResults from "@/components/DealResults";
+import DealConditions from "@/components/DealConditions";
 
 export interface DealRecord {
   _id: string;
@@ -152,7 +153,10 @@ export default function DealManageCard({
               )}
               {deal.description && <p className="mt-1">{deal.description}</p>}
               {deal.terms && (
-                <p className="mt-1 text-xs italic text-slate-500">{deal.terms}</p>
+                <div className="mt-2">
+                  <p className="mb-1 text-xs font-semibold text-slate-700">Conditions</p>
+                  <DealConditions terms={deal.terms} size="sm" className="text-slate-600" />
+                </div>
               )}
               {deal.dealCode && (
                 <p className="mt-2 text-xs text-slate-500">
