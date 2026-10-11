@@ -2,7 +2,7 @@ import { dealActionCounts } from "@/lib/dealEvents";
 
 /**
  * A deal's results for its business (and admin): views, visits that used
- * "Get this deal", and each action separately. Taps and copies, never
+ * the deal code or "Contact business", and each action separately. Taps and copies, never
  * bookings or sales, and nothing shown until there is something to show.
  */
 export default function DealResults({ deal }: { deal: Record<string, unknown> }) {
@@ -20,7 +20,7 @@ export default function DealResults({ deal }: { deal: Record<string, unknown> })
         <span className="font-semibold text-slate-800">
           {interested} visit{interested === 1 ? "" : "s"}
         </span>{" "}
-        used &quot;Get this deal&quot;
+        copied the code or contacted you
       </p>
       {actions.length > 0 && (
         <ul className="mt-1 flex flex-wrap gap-1.5" aria-label="What customers did">

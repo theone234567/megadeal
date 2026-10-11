@@ -395,3 +395,38 @@ export function WheelIcon({ className = "h-4 w-4" }: IconProps) {
     </svg>
   );
 }
+
+export function ChevronRightIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
+
+export function CopyIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="9" y="9" width="12" height="12" rx="2" />
+      <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+    </svg>
+  );
+}
+
+export function InstagramIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function FacebookIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8.5a.5.5 0 0 1 .5-.5Z" />
+    </svg>
+  );
+}

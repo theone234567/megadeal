@@ -22,6 +22,7 @@ export function toListingDeal(deal: Deal): Deal {
     businessPhone: null,
     businessAddress: null,
     businessBio: null,
+    businessPhotos: [],
     businessHours: null,
     businessFacebookUrl: null,
     businessInstagramUrl: null,

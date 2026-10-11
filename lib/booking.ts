@@ -141,191 +141,6 @@ export function hasUsableBookingRoute(contacts: BookingContactInput): boolean {
   );
 }
 
-export type BookingActionKind = "book_online" | "call" | "email";
-
-export interface BookingAction {
-  kind: BookingActionKind;
-  label: string;
-  href: string;
-  external: boolean;
-}
-
-export interface BookingPlan {
-  requirement: BookingRequirement;
-  /** "Before you book" for booking offers, "Before you go" otherwise. */
-  conditionsHeading: string;
-  /** Heading and sentence shown with the revealed code. */
-  nextStepHeading: string;
-  instruction: string;
-  /** Deal-specific next actions, most direct first. */
-  actions: BookingAction[];
-  phone: Phone | null;
-  /** The "a code isn't a reservation" note, when booking applies. */
-  reservationNote: string | null;
-  /** The middle step of the 1-2-3 list. */
-  howToStep: string;
-  /** "Bookings & contact" or "Contact & visit" in About the business. */
-  contactHeading: string;
-  /** Neutrally labelled general business contacts for About. */
-  aboutActions: BookingAction[];
-}
-
-export function bookingPlan(
-  requirement: BookingRequirement,
-  contacts: BookingContactInput,
-  businessName: string | null,
-  dealName: string,
-  /** False for a deal with no code: the wording then asks customers to
-   *  mention MegaDeal instead of quoting a code that doesn't exist. */
-  hasCode = true,
-): BookingPlan {
-  const business = businessName || "the business";
-  const quote = hasCode ? "Quote this deal code" : "Mention this MegaDeal offer";
-  const quoteStep = hasCode ? "quote the code" : "mention MegaDeal";
-  const bookingHref = safeWebHref(contacts.bookingUrl);
-  const phone = phoneLink(contacts.phone);
-  const emailHref = emailLink(contacts.bookingEmail, `MegaDeal: ${dealName}`);
-  const booking = requirement === "required" || requirement === "recommended";
-
-  const bookOnline: BookingAction | null = bookingHref
-    ? {
-        kind: "book_online",
-        label: "Book online",
-        href: bookingHref,
-        external: true,
-      }
-    : null;
-
-  let actions: BookingAction[] = [];
-  let nextStepHeading: string;
-  let instruction: string;
-  let howToStep: string;
-
-  if (booking) {
-    const call: BookingAction | null = phone
-      ? {
-          kind: "call",
-          label: "Call to book",
-          href: phone.href,
-          external: false,
-        }
-      : null;
-    const email: BookingAction | null = emailHref
-      ? {
-          kind: "email",
-          label: "Email to book",
-          href: emailHref,
-          external: false,
-        }
-      : null;
-    actions = [bookOnline, call, email].filter((a): a is BookingAction => a !== null);
-    const primary = actions[0]?.kind;
-    const verb =
-      primary === "book_online"
-        ? "book online"
-        : primary === "call"
-          ? "call to book"
-          : primary === "email"
-            ? "email to book"
-            : "contact the business";
-    nextStepHeading = requirement === "recommended" ? "Booking recommended" : `Your next step: ${verb}`;
-    instruction =
-      primary === "book_online"
-        ? hasCode
-          ? // Many businesses use their own promo code here, so say where it goes.
-            `When you book online with ${business}, enter this code in the promo or discount code box. Mention it if you book by phone instead.`
-          : `${quote} when you book with ${business}.`
-        : primary === "call"
-          ? `${quote} when you call ${business}.`
-          : primary === "email"
-            ? `${quote} when you email ${business}.`
-            : `${quote} when you contact ${business}. Check the conditions for how to book.`;
-    if (requirement === "recommended") {
-      instruction = `Booking ahead is advised. ${instruction}`;
-    }
-    howToStep =
-      primary === "book_online"
-        ? hasCode
-          ? "Book online and enter the code as your promo code"
-          : `Book online and ${quoteStep}`
-        : primary === "call"
-          ? `Call ${business} and ${quoteStep}`
-          : primary === "email"
-            ? `Email ${business} and ${quoteStep}`
-            : `Contact ${business} and ${quoteStep}`;
-  } else if (requirement === "not_required") {
-    // Deliberately no "Book online", even when the business has a booking
-    // link: that link is for their other services, and offering it here
-    // would contradict "no booking needed".
-    nextStepHeading = "No booking needed";
-    instruction = hasCode
-      ? `Show your code when you visit ${business}.`
-      : `Mention this MegaDeal offer when you visit ${business}.`;
-    howToStep = `Visit ${business} and ${hasCode ? "show the code" : "mention MegaDeal"}`;
-  } else {
-    // Unknown (legacy): neutral contact routes, no promise either way.
-    const call: BookingAction | null = phone
-      ? {
-          kind: "call",
-          label: "Call the business",
-          href: phone.href,
-          external: false,
-        }
-      : null;
-    const email: BookingAction | null = emailHref
-      ? {
-          kind: "email",
-          label: "Email the business",
-          href: emailHref,
-          external: false,
-        }
-      : null;
-    actions = [call, email].filter((a): a is BookingAction => a !== null);
-    nextStepHeading = "Contact the business";
-    instruction = `${quote} when you contact ${business}. Check the conditions for when and how to use it.`;
-    howToStep = `Contact ${business} and ${quoteStep}`;
-  }
-
-  // About the business repeats the booking actions for booking offers;
-  // otherwise it lists general contacts under neutral labels.
-  const aboutActions: BookingAction[] = booking
-    ? actions
-    : (
-        [
-          bookOnline ? { ...bookOnline, label: "Online booking" } : null,
-          phone
-            ? {
-                kind: "call" as const,
-                label: "Call the business",
-                href: phone.href,
-                external: false,
-              }
-            : null,
-          emailHref
-            ? {
-                kind: "email" as const,
-                label: "Email the business",
-                href: emailHref,
-                external: false,
-              }
-            : null,
-        ] as (BookingAction | null)[]
-      ).filter((a): a is BookingAction => a !== null);
-
-  return {
-    requirement,
-    conditionsHeading: booking ? "Before you book" : "Before you go",
-    nextStepHeading,
-    instruction,
-    actions,
-    phone,
-    reservationNote: booking ? `A code doesn’t reserve a booking — ${business} confirms it directly.` : null,
-    howToStep,
-    contactHeading: booking ? "Bookings & contact" : "Contact & visit",
-    aboutActions,
-  };
-}
-
 /**
  * "Customers enter this code on my website": the business's own code,
  * confirmed tested, with the link where it's used. Checked by the form and
@@ -347,17 +162,15 @@ export function websiteCodeError(input: {
   return null;
 }
 
-/** The deal's own "enter the code here" link, as the main action, when the
- *  business has set one up; null otherwise. */
-export function websiteCodeAction(
-  deal: { dealCode?: string | null; codeOnWebsite?: boolean | null; codeWebsiteUrl?: string | null },
-  requirement: BookingRequirement,
-): BookingAction | null {
+/** The deal's own "enter the code here" link, when the business has set
+ *  one up (its own code, confirmed working on its website); null otherwise. */
+export function websiteCodeHref(deal: {
+  dealCode?: string | null;
+  codeOnWebsite?: boolean | null;
+  codeWebsiteUrl?: string | null;
+}): string | null {
   if (deal.codeOnWebsite !== true || !deal.dealCode || isMegaDealCode(deal.dealCode)) return null;
-  const href = safeWebHref(deal.codeWebsiteUrl);
-  if (!href) return null;
-  const booking = requirement === "required" || requirement === "recommended";
-  return { kind: "book_online", label: booking ? "Book online" : "Shop this offer", href, external: true };
+  return safeWebHref(deal.codeWebsiteUrl);
 }
 
 /** MegaDeal-generated codes start with "MEGA-" (lib/dealCode.ts); a
@@ -367,85 +180,134 @@ export function isMegaDealCode(code: string | null | undefined): boolean {
   return Boolean(code && code.startsWith("MEGA-"));
 }
 
-export interface GetDealCopy {
-  /** "Booking required", "Booking recommended", "No booking needed"… */
-  heading: string;
-  /** One short, accurate sentence on how to use the code. */
-  instruction: string;
-  /** The one availability note, or null when none applies. */
-  availability: string | null;
+export type ContactKind = "phone" | "email" | "website" | "directions";
+
+export interface ContactOption {
+  kind: ContactKind;
+  /** "Phone", "Email", "Website", "Booking website", "Directions". */
+  label: string;
+  /** What the row shows: the number, address, site or street. */
+  detail: string;
+  href: string;
+  external: boolean;
+  /** A short extra line, e.g. where the code goes on a website. */
+  note?: string;
+}
+
+/** "www.cafe.co.nz/book" from "https://www.cafe.co.nz/book/". */
+function displayUrl(href: string): string {
+  return href.replace(/^https?:\/\//, "").replace(/\/$/, "");
 }
 
 /**
- * The words in the deal page's "Get this deal" panel, from the booking
- * requirement and the main action (bookingPlan's first action). Nothing
- * here may imply that copying a code books, reserves or pays for anything.
+ * Every way to contact the business about a deal, for the deal page's one
+ * "Contact business" button. Only what really exists is listed, in a fixed
+ * order: phone, email, website, directions. The business profile is the
+ * source of truth; nothing here is chosen per deal, except the deal's own
+ * "enter your code here" link when the business set one up.
  *
- * Online booking says to enter the code at checkout only when it's the
- * business's own code (they were asked to set it up in their booking
- * system). A MEGA- code isn't known to work there, so it's shown on
- * arrival instead.
+ * The website row is the deal's code link if there is one, otherwise the
+ * booking link for an offer that's booked (never on a "no booking needed"
+ * offer: that link is for the business's other services), otherwise the
+ * general website.
+ *
+ * `directionsUrl` must already respect a hidden address (callers pass null
+ * for a home-based or mobile business), and `addressText` likewise.
  */
-export function getThisDealCopy(
+export function contactOptions(input: {
+  requirement: BookingRequirement;
+  businessName: string | null;
+  dealName: string;
+  dealCode: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  bookingUrl: string | null;
+  codeWebsiteUrl: string | null;
+  directionsUrl: string | null;
+  addressText: string | null;
+}): ContactOption[] {
+  const options: ContactOption[] = [];
+  const phone = phoneLink(input.phone);
+  if (phone) options.push({ kind: "phone", label: "Phone", detail: phone.display, href: phone.href, external: false });
+
+  const greeting = input.businessName ? `Hi ${input.businessName},` : "Hi,";
+  const body = [
+    greeting,
+    "",
+    "I'm interested in your MegaDeal offer:",
+    input.dealName,
+    ...(input.dealCode ? ["", `Deal code: ${input.dealCode}`] : []),
+    "",
+    "Thanks.",
+  ].join("\n");
+  const mail = emailLink(input.email, `MegaDeal enquiry — ${input.dealName}`, body);
+  if (mail && input.email) {
+    options.push({ kind: "email", label: "Email", detail: input.email.trim(), href: mail, external: false });
+  }
+
+  const booked = input.requirement === "required" || input.requirement === "recommended";
+  const codeLink = safeWebHref(input.codeWebsiteUrl);
+  const bookingLink = booked ? safeWebHref(input.bookingUrl) : null;
+  const site = safeWebHref(input.website);
+  if (codeLink) {
+    options.push({
+      kind: "website",
+      label: "Website",
+      detail: displayUrl(codeLink),
+      href: codeLink,
+      external: true,
+      note: "Enter your code at checkout",
+    });
+  } else if (bookingLink) {
+    options.push({ kind: "website", label: "Booking website", detail: displayUrl(bookingLink), href: bookingLink, external: true });
+  } else if (site) {
+    options.push({ kind: "website", label: "Website", detail: displayUrl(site), href: site, external: true });
+  }
+
+  if (input.directionsUrl) {
+    options.push({
+      kind: "directions",
+      label: "Directions",
+      detail: input.addressText || "Open in maps",
+      href: input.directionsUrl,
+      external: true,
+    });
+  }
+  return options;
+}
+
+/**
+ * The short line under the "Contact business" button, from the deal's
+ * booking requirement. Nothing here may imply that a code books, reserves
+ * or pays for anything.
+ */
+export function contactInstruction(
   requirement: BookingRequirement,
-  primary: BookingActionKind | null,
   code: string | null,
-  /** From the deal's terms: walk-ins accepted, and limited stock.
-   *  websiteCode: the business confirmed the code works on its website
-   *  (undefined for older deals, which keep the old rule: their own code
-   *  was described to them as one customers enter online). */
-  extras: { walkIns?: boolean; limitedStock?: boolean; websiteCode?: boolean } = {},
-): GetDealCopy {
-  const quote = code ? "quote your code" : "mention this MegaDeal offer";
-  const Quote = code ? "Quote your code" : "Mention this MegaDeal offer";
-  const availability = `${extras.limitedStock ? "While stocks last. " : ""}Subject to availability. Your code does not confirm a booking.`;
-
-  const enterOnline = Boolean(code) && (extras.websiteCode ?? (code !== null && !isMegaDealCode(code)));
-
+  /** walkIns: the business said walk-ins are welcome (its terms).
+   *  websiteCode: the business confirmed its own code works on its site. */
+  extras: { walkIns?: boolean; websiteCode?: boolean } = {},
+): { heading: string; text: string } {
+  const quote = code ? "Quote your deal code" : "Mention this MegaDeal offer";
   if (requirement === "not_required") {
-    if (primary === "book_online" && enterOnline) {
-      return {
-        heading: "No booking needed",
-        instruction: "Enter this code at checkout on the business's website, and check the discount applies before paying.",
-        availability: extras.limitedStock ? "While stocks last. Copying a code does not reserve an item." : null,
-      };
-    }
     return {
-      heading: "No booking needed",
-      instruction: code
-        ? "Show this code before ordering or paying."
-        : "Mention this MegaDeal offer before ordering or paying.",
-      availability: extras.limitedStock
-        ? `While stocks last. ${code ? "Copying a code" : "This offer"} does not reserve an item.`
-        : null,
+      heading: "No booking required",
+      text: extras.websiteCode
+        ? "Enter your deal code at checkout on the business's website, or show it when you visit."
+        : code
+          ? "Show or quote your deal code when you visit."
+          : "Mention this MegaDeal offer when you visit.",
     };
   }
-
   if (requirement === "unknown") {
-    return {
-      heading: "Contact the business",
-      instruction: `${Quote} when you contact the business. Check the conditions for when and how to use it.`,
-      availability,
-    };
+    return { heading: "Contact the business", text: `${quote} when contacting the business. Check the conditions for how to use it.` };
   }
-
-  const heading = requirement === "required" ? "Booking required" : "Booking recommended";
-  let instruction: string;
-  if (primary === "book_online" && enterOnline) {
-    instruction = "Book online and enter this code at checkout. Check the discount applies before paying.";
-  } else if (primary === "book_online") {
-    instruction = `Book online, then ${code ? "show this code" : "mention this MegaDeal offer"} when you visit. Confirm the offer with the business.`;
-  } else if (primary === "email") {
-    instruction = `${code ? "Include this code in" : "Mention this MegaDeal offer in"} your booking enquiry. Wait for the business to confirm.`;
-  } else if (requirement === "required") {
-    instruction = `Book with the business and ${quote}.`;
-  } else {
-    instruction = `We recommend booking ahead. ${Quote} when contacting the business.`;
-  }
+  let text = extras.websiteCode
+    ? "Enter your deal code at checkout on the business's website, or quote it when contacting the business."
+    : `${quote} when contacting the business.`;
   // Only when the business has said so, and never on a booking-required
   // offer (bookingConflict stops that combination being saved).
-  if (requirement === "recommended" && extras.walkIns) {
-    instruction += ` Walk-ins are welcome too: ${code ? "show your code" : "mention this MegaDeal offer"} when you arrive.`;
-  }
-  return { heading, instruction, availability };
+  if (requirement === "recommended" && extras.walkIns) text += " Walk-ins welcome too.";
+  return { heading: requirement === "required" ? "Booking required" : "Booking recommended", text };
 }

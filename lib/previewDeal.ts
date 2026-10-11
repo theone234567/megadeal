@@ -2,6 +2,7 @@ import { businessSuburb, publicLocation } from "./location";
 import type { Deal } from "./types";
 import { businessSlug } from "./slug";
 import { parseBookingRequirement } from "./booking";
+import { parseBusinessPhotos } from "./businessPhotos";
 
 /**
  * Builds a Deal from the new-deal form so the merchant can be shown the
@@ -111,6 +112,7 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
         ? merchant.slug || businessSlug(merchant.businessName, merchant._id)
         : null,
     businessBio: merchant?.bio ?? null,
+    businessPhotos: parseBusinessPhotos(merchant?.photos),
     businessHours: merchant?.businessHours ?? null,
     businessFacebookUrl: merchant?.facebookUrl ?? null,
     businessInstagramUrl: merchant?.instagramUrl ?? null,

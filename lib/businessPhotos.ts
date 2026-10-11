@@ -6,10 +6,11 @@ export const MAX_BUSINESS_PHOTOS = 6;
  * Merchants text field, the same "structured data in a text field" pattern
  * businessHours already uses — no new Wix Data field type needed.
  */
-export function parseBusinessPhotos(raw: string | null | undefined): string[] {
+export function parseBusinessPhotos(raw: unknown): string[] {
   if (!raw) return [];
   try {
-    const parsed = JSON.parse(raw);
+    // Text from Wix; already an array from MegaDeal's own database.
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
     if (!Array.isArray(parsed)) return [];
     return parsed.filter((p): p is string => typeof p === "string" && p.length > 0).slice(0, MAX_BUSINESS_PHOTOS);
   } catch {

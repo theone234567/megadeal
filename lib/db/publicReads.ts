@@ -130,6 +130,7 @@ export function rowToDeal(r: Row): Deal {
     businessSuburb: b.suburb,
     businessSlug: b.slug,
     businessBio: b.bio,
+    businessPhotos: b.photos,
     businessHours: b.businessHours,
     businessFacebookUrl: b.facebookUrl,
     businessInstagramUrl: b.instagramUrl,

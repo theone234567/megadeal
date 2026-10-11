@@ -27,7 +27,7 @@ describe("walk-ins and limited stock in the terms", () => {
   });
 });
 
-import { getThisDealCopy, websiteCodeAction, websiteCodeError } from "./booking";
+import { isMegaDealCode, websiteCodeHref, websiteCodeError } from "./booking";
 
 describe("customers enter this code on my website", () => {
   const ok = { code: "SUMMER-20", onWebsite: true, url: "https://cafe.co.nz/book", tested: true };
@@ -41,26 +41,19 @@ describe("customers enter this code on my website", () => {
     expect(websiteCodeError({ ...ok, tested: false })).toMatch(/tried this exact code/);
   });
 
-  it("makes the deal's link the main action, labelled for the offer", () => {
+  it("gives the deal's own code link only when it's set up properly", () => {
     const deal = { dealCode: "SUMMER-20", codeOnWebsite: true, codeWebsiteUrl: "https://cafe.co.nz/shop" };
-    expect(websiteCodeAction(deal, "not_required")).toMatchObject({ label: "Shop this offer", href: "https://cafe.co.nz/shop" });
-    expect(websiteCodeAction(deal, "required")).toMatchObject({ label: "Book online" });
-    expect(websiteCodeAction({ ...deal, codeOnWebsite: false }, "required")).toBeNull();
-    expect(websiteCodeAction({ ...deal, codeOnWebsite: null }, "required")).toBeNull();
-    expect(websiteCodeAction({ ...deal, dealCode: "MEGA-ABCDE" }, "required")).toBeNull();
-    expect(websiteCodeAction({ ...deal, codeWebsiteUrl: "not a link" }, "required")).toBeNull();
-    expect(websiteCodeAction({ ...deal, codeWebsiteUrl: "javascript:alert(1)" }, "required")).toBeNull();
+    expect(websiteCodeHref(deal)).toBe("https://cafe.co.nz/shop");
+    expect(websiteCodeHref({ ...deal, codeOnWebsite: false })).toBeNull();
+    expect(websiteCodeHref({ ...deal, codeOnWebsite: null })).toBeNull();
+    expect(websiteCodeHref({ ...deal, dealCode: "MEGA-ABCDE" })).toBeNull();
+    expect(websiteCodeHref({ ...deal, codeWebsiteUrl: "not a link" })).toBeNull();
+    expect(websiteCodeHref({ ...deal, codeWebsiteUrl: "javascript:alert(1)" })).toBeNull();
   });
 
-  it("only says 'enter at checkout' when the business confirmed it (older deals keep the old rule)", () => {
-    expect(getThisDealCopy("required", "book_online", "SUMMER-20", { websiteCode: true }).instruction).toMatch(/enter this code at checkout/);
-    expect(getThisDealCopy("required", "book_online", "SUMMER-20", { websiteCode: false }).instruction).not.toMatch(/checkout/);
-    expect(getThisDealCopy("required", "book_online", "SUMMER-20").instruction).toMatch(/enter this code at checkout/);
-    expect(getThisDealCopy("not_required", "book_online", "SUMMER-20", { websiteCode: true }).instruction).toBe(
-      "Enter this code at checkout on the business's website, and check the discount applies before paying.",
-    );
-    expect(getThisDealCopy("not_required", null, "SUMMER-20", { websiteCode: false }).instruction).toBe(
-      "Show this code before ordering or paying.",
-    );
+  it("knows MegaDeal's own codes", () => {
+    expect(isMegaDealCode("MEGA-ABCDE")).toBe(true);
+    expect(isMegaDealCode("SUMMER-20")).toBe(false);
+    expect(isMegaDealCode(null)).toBe(false);
   });
 });

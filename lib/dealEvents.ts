@@ -1,6 +1,6 @@
 /**
  * What a customer did with a deal, as counted for the business: each
- * action on "Get this deal" separately, plus one "interest" per visit
+ * action on the deal page (code copy, Contact business) separately, plus one "interest" per visit
  * (clickCount, the original counter — withdrawal refunds also read it).
  * Interest, never a sale, booking or redemption.
  */

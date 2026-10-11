@@ -93,6 +93,7 @@ export function applyBusinessToDeal<T extends Deal>(deal: T, business: PublicBus
     businessSuburb: business.suburb,
     businessSlug: business.slug,
     businessBio: business.bio,
+    businessPhotos: business.photos,
     businessHours: business.businessHours,
     businessFacebookUrl: business.facebookUrl,
     businessInstagramUrl: business.instagramUrl,

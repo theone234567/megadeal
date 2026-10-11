@@ -54,6 +54,9 @@ export interface Deal {
   businessSuburb: string | null;
   businessSlug: string | null;
   businessBio: string | null;
+  /** The business's profile photos (lib/businessPhotos.ts), shown on its
+   *  deal pages. Left off listings (lib/listingDeal.ts). */
+  businessPhotos?: string[];
   businessHours: string | null;
   businessFacebookUrl: string | null;
   businessInstagramUrl: string | null;

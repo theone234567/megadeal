@@ -10,7 +10,7 @@ const COLUMNS: { header: string; get: (d: DealRecord) => string | number }[] = [
   { header: "Price was", get: (d) => (d.priceWas ?? "") as string | number },
   { header: "Quantity available", get: (d) => (d.quantityAvailable ?? "") as string | number },
   { header: "Views", get: (d) => d.viewCount || 0 },
-  { header: "Visits that used Get this deal", get: (d) => d.clickCount || 0 },
+  { header: "Visits that copied the code or contacted you", get: (d) => d.clickCount || 0 },
   { header: "Codes copied or shown", get: (d) => d.codeCopyCount || 0 },
   { header: "Website or booking clicks", get: (d) => d.websiteClickCount || 0 },
   { header: "Call taps", get: (d) => d.callClickCount || 0 },

@@ -19,7 +19,7 @@ const FAQ_JSONLD = [
   { q: "Do I pay MegaDeal for a deal?", a: "No — MegaDeal never charges customers anything, and there's no voucher to buy. Deals are redeemed and paid for directly with the business, at the discounted price shown on the deal page." },
   { q: "Do I need an account to use MegaDeal?", a: "No — browsing and redeeming deals needs no signup or account at all. Only businesses need to create an account, to list and manage their own deals." },
   { q: "Is my payment information safe?", a: "There's nothing to keep safe — MegaDeal never asks for or stores your card details. You pay the business directly, however they normally take payment, the same as any other in-person or phone purchase." },
-  { q: "How do I redeem a deal?", a: "Open the deal page: the deal code and the business's contact details are under \"Get this deal\". Copy the code, get in touch or visit the business directly, quote that code, and pay them at the discounted price." },
+  { q: "How do I redeem a deal?", a: "Open the deal page and copy the deal code. Tap \"Contact business\" for the business's phone, email, website and directions, get in touch or visit, quote that code, and pay them at the discounted price." },
   { q: "Do I need to book before using a deal?", a: "It depends on the deal. Each deal page says whether booking is required, recommended or not needed, along with the business's contact details. If booking is required, book ahead and quote your deal code when you do." },
   { q: "How long do I have to use a deal?", a: "Every deal shows its own validity window on the deal page. Once it expires, the business is under no obligation to honour the discounted price." },
   { q: "Can I redeem the same deal more than once?", a: "Deals are for genuine personal use — unless a listing says otherwise, that's one redemption per person. A business can decline to honour a deal it reasonably believes is being reused or resold." },
@@ -52,10 +52,9 @@ const FAQS: Faq[] = [
     q: "How do I redeem a deal?",
     a: (
       <>
-        Open the deal page: the deal code (like{" "}
-        <span className="font-mono font-semibold">MEGA-7K4XQ</span>) and the
-        business&apos;s contact details are under &quot;Get this deal&quot;.
-        Copy the code, get in touch or visit the business directly, quote it
+        Open the deal page and copy the deal code (like{" "}
+        <span className="font-mono font-semibold">MEGA-7K4XQ</span>). &quot;Contact business&quot; has the
+        business&apos;s phone, email, website and directions. Get in touch or visit the business directly, quote it
         so they know it&apos;s a MegaDeal offer, and pay them at the
         discounted price. See our{" "}
         <Link href="/redeem" className="font-semibold text-brand-600 hover:underline">
