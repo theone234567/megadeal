@@ -61,7 +61,6 @@ export default function RedeemPage() {
           /how-it-works. */}
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",

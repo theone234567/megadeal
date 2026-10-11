@@ -59,7 +59,6 @@ export default async function FlashDealsPage() {
       {flashDeals.length > 0 && (
         <script
           type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: safeJsonLd({
               "@context": "https://schema.org",

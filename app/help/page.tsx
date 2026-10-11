@@ -147,7 +147,6 @@ export default function HelpPage() {
     <main className={plusJakartaSans.className}>
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",

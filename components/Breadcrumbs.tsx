@@ -23,7 +23,6 @@ export default function Breadcrumbs({ items }: { items: Crumb[] }) {
     <>
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",

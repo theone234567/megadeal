@@ -88,7 +88,6 @@ export default function RootLayout({
         <StaleBuildRecovery />
         <script
           type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: safeJsonLd({
               "@context": "https://schema.org",
@@ -124,7 +123,6 @@ export default function RootLayout({
             it is added only once SITE_LAUNCHED is true. */}
         <script
           type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: safeJsonLd({
               "@context": "https://schema.org",

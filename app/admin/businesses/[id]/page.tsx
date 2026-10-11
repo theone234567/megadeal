@@ -188,7 +188,6 @@ export default function AdminBusinessDetailPage() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id, router]);
 
   const dirty =

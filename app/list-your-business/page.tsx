@@ -317,7 +317,6 @@ export default async function MerchantsPage() {
       <ViewContentTracker contentName="list_your_business" />
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",
@@ -738,7 +737,6 @@ export default async function MerchantsPage() {
         </div>
         <script
           type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: safeJsonLd({
               "@context": "https://schema.org",

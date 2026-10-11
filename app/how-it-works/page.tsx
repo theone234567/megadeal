@@ -180,7 +180,6 @@ export default function HowItWorksPage() {
           answer engine, which can otherwise only pull from the prose. */}
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd(
             howToJsonLd(
@@ -193,7 +192,6 @@ export default function HowItWorksPage() {
       />
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd(
             howToJsonLd(

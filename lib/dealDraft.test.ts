@@ -74,7 +74,7 @@ describe("draftToRow / parseDraft", () => {
     // persist. Everything must come back from real columns plus the
     // statusNote supplement.
     const row = draftToRow(FULL, "merchant@example.co.nz") as any;
-    const { draftData, ...withoutDraftData } = row;
+    const { draftData: _dropped, ...withoutDraftData } = row;
     const parsed = parseDraft(withoutDraftData);
 
     expect(parsed.dealName).toBe(FULL.dealName);

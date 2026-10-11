@@ -89,7 +89,6 @@ async function persistSession(tokens: Tokens) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function resolveState(
   client: AuthClient,
   state: any,
@@ -217,7 +216,6 @@ export async function submitVerificationCode(
   verificationCode: string,
   pendingState: unknown
 ): Promise<AuthOutcome> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const state = await client.auth.processVerification({ verificationCode }, pendingState as any);
   return resolveState(client, state);
 }

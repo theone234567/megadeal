@@ -14,6 +14,12 @@ export default defineConfig([
       // shim that stands in for it are untyped, and JSX text has apostrophes.
       "@typescript-eslint/no-explicit-any": "off",
       "react/no-unescaped-entities": "off",
+      // A leading underscore marks a value left out on purpose
+      // (const { _id, ...rest } = row).
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", destructuredArrayIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
+      ],
       // Worth seeing, but each was looked at (Oct 2026): reading the clock
       // or syncing state in an effect is intended where they appear.
       "react-hooks/purity": "warn",

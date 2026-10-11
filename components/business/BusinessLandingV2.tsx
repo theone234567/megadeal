@@ -53,7 +53,6 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
       {/* Only what's on the page: the service, and the FAQ exactly as shown. */}
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",
@@ -69,7 +68,6 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
       />
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",

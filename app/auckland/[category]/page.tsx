@@ -109,7 +109,6 @@ export default async function CategoryPage(
         {categoryDeals.length > 0 && (
           <script
             type="application/ld+json"
-            // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{
               __html: safeJsonLd({
                 "@context": "https://schema.org",

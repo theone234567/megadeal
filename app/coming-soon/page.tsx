@@ -284,7 +284,6 @@ async function LegacyComingSoonPage() {
     <main className={`${plusJakartaSans.className} overflow-x-hidden bg-white text-slate-900`}>
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",
@@ -865,7 +864,6 @@ async function LegacyComingSoonPage() {
       <section id="faq" className={`${shell} pb-12 lg:pb-16`}>
         <script
           type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: safeJsonLd({
               "@context": "https://schema.org",

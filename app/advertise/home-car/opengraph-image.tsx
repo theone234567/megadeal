@@ -42,7 +42,6 @@ export default async function HomeCarOpengraphImage() {
         }}
       >
         {logoDataUri ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={logoDataUri} width={LOGO_WIDTH} height={LOGO_HEIGHT} alt="" />
         ) : (
           <span style={{ fontSize: 64, fontWeight: 700, fontFamily: "Fredoka", color: "#6519C7" }}>

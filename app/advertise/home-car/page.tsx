@@ -269,7 +269,6 @@ export default function HomeCarAdvertisingPage() {
           feeds ChatGPT search and Copilot) and AI crawlers still read it. */}
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",
@@ -285,7 +284,6 @@ export default function HomeCarAdvertisingPage() {
       />
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",
@@ -300,7 +298,6 @@ export default function HomeCarAdvertisingPage() {
       />
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",

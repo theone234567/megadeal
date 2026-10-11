@@ -359,7 +359,6 @@ export default function BeautySpaAdvertisingPage() {
           block on /advertise/restaurants. */}
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",
@@ -917,7 +916,6 @@ export default function BeautySpaAdvertisingPage() {
 
             <script
               type="application/ld+json"
-              // eslint-disable-next-line react/no-danger
               dangerouslySetInnerHTML={{
                 __html: safeJsonLd({
                   "@context": "https://schema.org",

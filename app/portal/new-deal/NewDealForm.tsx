@@ -306,7 +306,6 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
       .catch(() => {
         // Not fatal — the merchant just starts from a blank form instead.
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [duplicateId, merchant]);
 
   // Reopen a saved draft, arriving as ?draft=<id> from the portal. Never
@@ -384,7 +383,6 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openedDraftId, duplicateId]);
 
   useEffect(() => {

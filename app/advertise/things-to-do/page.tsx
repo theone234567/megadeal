@@ -251,7 +251,6 @@ export default function ThingsToDoAdvertisingPage() {
       {/* The service this page offers; no offer markup or prices. */}
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",
@@ -603,7 +602,6 @@ export default function ThingsToDoAdvertisingPage() {
 
             <script
               type="application/ld+json"
-              // eslint-disable-next-line react/no-danger
               dangerouslySetInnerHTML={{
                 __html: safeJsonLd({
                   "@context": "https://schema.org",

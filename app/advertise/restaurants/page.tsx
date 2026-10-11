@@ -268,7 +268,6 @@ export default function RestaurantAdvertisingPage() {
           Auckland" to MegaDeal specifically. */}
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",
@@ -772,7 +771,6 @@ export default function RestaurantAdvertisingPage() {
 
             <script
               type="application/ld+json"
-              // eslint-disable-next-line react/no-danger
               dangerouslySetInnerHTML={{
                 __html: safeJsonLd({
                   "@context": "https://schema.org",

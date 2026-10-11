@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { readFileSync, existsSync } from "fs";
-import { NextRequest, NextResponse } from "next/server";
+import { readFileSync } from "fs";
+import { NextRequest } from "next/server";
 import { SignJWT } from "jose";
 import { createHmac } from "crypto";
 
