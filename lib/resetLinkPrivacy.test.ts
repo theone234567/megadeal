@@ -40,9 +40,19 @@ describe("opening a reset link", () => {
   });
 });
 
+describe("the business unsubscribe page", () => {
+  it("is never cached, indexed or passed on as a Referer", async () => {
+    const { middleware } = await import("@/middleware");
+    const res = (await middleware(new NextRequest("https://megadeal.co.nz/stop-emails?m=x&s=y")))!;
+    expect(res.headers.get("cache-control")).toBe("private, no-store");
+    expect(res.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(res.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+  });
+});
+
 describe("pages without tracking", () => {
-  it("covers the reset page, sign-in callback and admin, and nothing public", () => {
-    for (const p of ["/reset-password", "/login-callback", "/admin", "/admin/businesses/1"]) expect(isTrackingFreePath(p), p).toBe(true);
+  it("covers the reset page, sign-in callback, business unsubscribe and admin, and nothing public", () => {
+    for (const p of ["/reset-password", "/login-callback", "/stop-emails", "/admin", "/admin/businesses/1"]) expect(isTrackingFreePath(p), p).toBe(true);
     for (const p of ["/", "/deal/x", "/reset-passwords", "/administrator"]) expect(isTrackingFreePath(p), p).toBe(false);
   });
 

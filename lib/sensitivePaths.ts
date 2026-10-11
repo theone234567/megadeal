@@ -1,11 +1,12 @@
 /**
  * Pages that carry, or lead to, a secret (a password-reset link, a sign-in
- * callback) or are private (admin). No analytics, advertising or
+ * callback, a signed "unsubscribe from business emails" link) or are
+ * private (admin). No analytics, advertising or
  * attribution script runs on them (components/Trackers.tsx), so nothing a
  * third party loads can read their address.
  */
 export function isTrackingFreePath(pathname: string | null | undefined): boolean {
-  return /^\/(?:reset-password|login-callback|admin)(?:\/|$)/.test(pathname ?? "");
+  return /^\/(?:reset-password|login-callback|stop-emails|admin)(?:\/|$)/.test(pathname ?? "");
 }
 
 /** The password-reset link's token, moved out of the address into this

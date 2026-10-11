@@ -129,6 +129,17 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
+  // The business "unsubscribe" page carries its signed link in the
+  // address (lib/businessEmailOptOut.ts): never cached, indexed or sent
+  // on as a Referer (and no tracking script runs there, Trackers.tsx).
+  if (request.nextUrl.pathname === "/stop-emails") {
+    const res = NextResponse.next();
+    res.headers.set("Cache-Control", "private, no-store");
+    res.headers.set("Referrer-Policy", "no-referrer");
+    res.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return res;
+  }
+
   // An address with broken percent-encoding (/deal/%E0%A4%A, from a
   // mangled link) can't be decoded, and Next answered it with a 500.
   // Search engines read repeated 500s as an unhealthy site; it's simply
