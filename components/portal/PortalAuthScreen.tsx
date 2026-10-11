@@ -131,7 +131,7 @@ export default function PortalAuthScreen({
                 <button
                   onClick={signOutAdmin}
                   disabled={signingOutAdmin}
-                  className="mt-3 rounded-full bg-amber-600 px-5 py-2 text-sm font-bold text-white hover:bg-amber-700 disabled:opacity-60"
+                  className="mt-3 rounded-full bg-amber-700 px-5 py-2 text-sm font-bold text-white hover:bg-amber-800 disabled:opacity-60"
                 >
                   {signingOutAdmin ? "Signing out…" : "Sign out of admin"}
                 </button>

@@ -372,7 +372,7 @@ export default async function BusinessProfilePage(
                       {openNow !== null && (
                         <p
                           className={`mb-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
-                            openNow ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-500"
+                            openNow ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-600"
                           }`}
                         >
                           {openNow ? "● Open now" : "Closed now"}

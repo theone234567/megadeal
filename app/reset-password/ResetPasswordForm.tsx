@@ -66,7 +66,8 @@ export default function ResetPasswordForm({ hasLink }: { hasLink: boolean }) {
   if (!hasLink) {
     return (
       <main className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 text-center">
-        <p className="text-sm text-slate-600">
+        <h1 className="text-xl font-extrabold text-slate-900">This link can&apos;t be used</h1>
+        <p className="mt-2 text-sm text-slate-600">
           This reset link is missing its code, or it was opened more than 30 minutes ago. Open the
           link in your email again, or request a new one from the{" "}
           <a href="/portal" className="font-semibold text-brand-600 hover:underline">

@@ -78,7 +78,7 @@ export default function ListingRemindersPanel() {
             type="button"
             onClick={send}
             disabled={sending}
-            className="mt-3 rounded-full bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700 disabled:opacity-60"
+            className="mt-3 rounded-full bg-amber-700 px-4 py-2 text-sm font-bold text-white hover:bg-amber-800 disabled:opacity-60"
           >
             {sending ? "Sending…" : `Email ${list.length === 1 ? "them" : `all ${list.length}`} a reminder`}
           </button>

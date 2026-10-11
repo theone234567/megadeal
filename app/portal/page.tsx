@@ -423,9 +423,9 @@ export default function PortalPage() {
                 application on file" states the system's problem and reads as
                 "begin again", which is discouraging and wrong: nothing they
                 did was lost, there is simply one step left. */}
-            <h2 className="text-xl font-extrabold text-slate-900">
+            <h1 className="text-xl font-extrabold text-slate-900">
               One step left — finish your signup
-            </h2>
+            </h1>
             <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
               Your account is all set up. We just need your business details to get your listing
               ready — it only takes a minute, and you won&apos;t need to create another password.
@@ -455,9 +455,9 @@ export default function PortalPage() {
            trustworthy enough to click, so the dashboard below (deals,
            credits) sits behind this rather than above a dead end. */
         <section id="overview" className="rounded-2xl border-2 border-ember-200 bg-ember-50/50 p-6 shadow-card">
-          <h2 className="text-xl font-extrabold text-slate-900">
+          <h1 className="text-xl font-extrabold text-slate-900">
             Almost there — finish your listing
-          </h2>
+          </h1>
           <p className="mt-1 text-sm text-slate-600">
             Your account&apos;s ready and we&apos;ve kept what you gave us at sign-up. Add the rest
             below: your listing (what deal hunters see) and a few private details for us. Then
