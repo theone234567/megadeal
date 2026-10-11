@@ -1,3 +1,4 @@
+import { imageSizeAcceptable } from "@/lib/imageDimensions";
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createWixAdminClient } from "@/lib/wixAdmin";
@@ -121,6 +122,15 @@ export async function POST(req: NextRequest) {
   // images is ever stored or served back from the site.
   if (!looksLike(mimeType, bytes)) {
     return NextResponse.json({ error: "Please upload a JPEG, PNG, WebP or GIF image." }, { status: 400 });
+  }
+  // And a sensible size in pixels: a small file can claim to be an
+  // enormous image, which would choke the resizer (security audit of
+  // 10 Oct 2026).
+  if (!imageSizeAcceptable(bytes)) {
+    return NextResponse.json(
+      { error: "That image's dimensions are too large or couldn't be read. Please use a normal photo (up to 10,000 pixels a side)." },
+      { status: 400 }
+    );
   }
 
   // MegaDeal's own storage, once switched on (lib/photoStorage.ts). The

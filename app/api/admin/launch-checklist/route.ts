@@ -1,3 +1,4 @@
+import { emailDnsFacts } from "@/lib/dnsCheck";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { logAdminAction } from "@/lib/adminAudit";
@@ -30,11 +31,12 @@ async function readTicks(): Promise<Record<string, string>> {
 
 async function gatherFacts(): Promise<LaunchFacts> {
   const kv = await getRateLimitKv();
-  const [readiness, ticks, problem, lastSentAt] = await Promise.all([
+  const [readiness, ticks, problem, lastSentAt, emailDns] = await Promise.all([
     checkReadiness().catch((err) => (console.error("[admin/launch-checklist] readiness failed", err), null)),
     readTicks(),
     signupCodeProblem(),
     kv?.get(SIGNUP_CODE_SENT_KEY).catch(() => null) ?? null,
+    emailDnsFacts(new URL(SITE_URL).hostname),
   ]);
   const backupCheck = readiness?.sections.flatMap((s) => s.checks).find((c) => c.label === "Nightly backup");
   // Once everything's on, nextStep's advice is about ending Wix, not a
@@ -68,6 +70,7 @@ async function gatherFacts(): Promise<LaunchFacts> {
     },
     turnstile: Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() && process.env.TURNSTILE_SECRET_KEY?.trim()),
     twoFactor: Boolean(process.env.ADMIN_TOTP_SECRET?.trim()),
+    emailDns,
     aiReview: Boolean(process.env.ANTHROPIC_API_KEY?.trim()),
     notifyEmail: Boolean(process.env.ADMIN_NOTIFY_EMAIL?.trim()),
     withoutLogin: businesses.filter((b) => b.status !== "Suspended" && !b.owner_id).length,

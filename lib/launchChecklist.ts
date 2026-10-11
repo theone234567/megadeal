@@ -34,6 +34,8 @@ export interface LaunchFacts {
   accountEmails: { problem: string | null; lastSentAt: string | null };
   turnstile: boolean;
   twoFactor: boolean;
+  /** The live DMARC policy and SPF (lib/dnsCheck.ts); null if DNS couldn't be read. */
+  emailDns?: { dmarcPolicy: "none" | "quarantine" | "reject" | null; spf: boolean } | null;
   aiReview: boolean;
   notifyEmail: boolean;
   /** Businesses (not suspended) with no login on the new sign-in yet. */
@@ -192,6 +194,26 @@ export function buildChecklist(f: LaunchFacts): ChecklistSection[] {
       "Offer wording in the terms updated",
       "The one launch wording that doesn't switch by itself (a legal page). Ask Claude to apply the wording in docs/LAUNCH-OFFER-CHECKLIST.md, then read it.",
       { href: "/terms", label: "Terms" }
+    ),
+    auto(
+      "email-policy",
+      "Others can't send email as megadeal.co.nz",
+      !f.emailDns
+        ? "info"
+        : !f.emailDns.spf || !f.emailDns.dmarcPolicy
+          ? "todo"
+          : f.emailDns.dmarcPolicy === "none"
+            ? "warning"
+            : "done",
+      !f.emailDns
+        ? "Couldn't read the domain's DNS just now."
+        : !f.emailDns.spf
+          ? "No SPF record: mail servers can't tell which senders are allowed to use megadeal.co.nz."
+          : !f.emailDns.dmarcPolicy
+            ? "No DMARC record: anyone can send email pretending to be megadeal.co.nz."
+            : f.emailDns.dmarcPolicy === "none"
+              ? "DMARC is set to report only (p=none): fake megadeal.co.nz emails still get delivered. Once its reports show Google Workspace and Resend mail passing, change it to p=quarantine (then p=reject)."
+              : `DMARC is enforced (p=${f.emailDns.dmarcPolicy}): email failing the checks is ${f.emailDns.dmarcPolicy === "reject" ? "refused" : "sent to spam"}.`,
     ),
     manual(
       "dmarc",
