@@ -71,9 +71,23 @@ export async function POST(req: NextRequest) {
     const step = verifyTotp(totpSecret, code);
     // Each code works once: a code seen over someone's shoulder, or replayed
     // from a captured request, is refused.
+    // Claimed in one database statement where there is one, so the same
+    // code sent twice at once can't sign in twice; KV otherwise.
     const kv = await getRateLimitKv();
-    const lastStep = Number((await kv?.get(TOTP_LAST_STEP_KEY)) ?? NaN);
-    if (step === null || (Number.isFinite(lastStep) && step <= lastStep)) {
+    let fresh: boolean;
+    if (step === null) {
+      fresh = false;
+    } else {
+      const claimed =
+        process.env.DATA_BACKEND === "postgres" ? await (await import("@/lib/securityStore")).claimTotpStep(step) : "unavailable";
+      if (claimed !== "unavailable") {
+        fresh = claimed;
+      } else {
+        const lastStep = Number((await kv?.get(TOTP_LAST_STEP_KEY)) ?? NaN);
+        fresh = !(Number.isFinite(lastStep) && step <= lastStep);
+      }
+    }
+    if (step === null || !fresh) {
       const result = await recordFailedIpAttempt(ip);
       await logAdminAction({ action: "Failed sign-in", detail: result.locked ? "Right password, wrong or reused code; locked out" : "Right password, wrong or reused code", ip });
       if (result.locked) {

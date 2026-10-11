@@ -61,6 +61,13 @@ export async function verifyAdminSessionToken(token: string | undefined | null):
   const b = Buffer.from(expected);
   if (a.length !== b.length || !timingSafeEqual(a, b)) return false;
 
+  // Ended by a log-out: the database (one place, read straight back) and
+  // KV, where log-outs were recorded before (it can take a while to reach
+  // every Cloudflare location).
+  if (process.env.DATA_BACKEND === "postgres") {
+    const revokedBefore = await (await import("./securityStore")).adminSessionsRevokedBefore();
+    if (typeof revokedBefore === "number" && issuedAt < revokedBefore) return false;
+  }
   const kv = await getRateLimitKv();
   if (kv) {
     const revokedBefore = Number(await kv.get(REVOKED_BEFORE_KEY));
@@ -81,6 +88,7 @@ export async function isAdminRequest(req: NextRequest): Promise<boolean> {
  * rest of this file's KV usage — logout still clears the cookie either way.
  */
 export async function revokeAllAdminSessions(): Promise<void> {
+  if (process.env.DATA_BACKEND === "postgres") await (await import("./securityStore")).revokeAdminSessionsNow();
   const kv = await getRateLimitKv();
   if (!kv) return;
   await kv.put(REVOKED_BEFORE_KEY, String(Date.now()), {

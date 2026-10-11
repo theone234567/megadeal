@@ -22,9 +22,20 @@ export interface IpLockoutStatus {
   minutesLeft: number;
 }
 
+/** The database side (lib/securityStore.ts), when there is a database:
+ *  one statement per step, so parallel guesses can't share one count. */
+async function store() {
+  return process.env.DATA_BACKEND === "postgres" ? await import("./securityStore") : null;
+}
+
 export async function checkIpLockout(ip: string): Promise<IpLockoutStatus> {
+  if (ip === "unknown") return { locked: false, minutesLeft: 0 };
+  const left = await (await store())?.adminLockSecondsLeft(ip);
+  if (typeof left === "number") {
+    return left > 0 ? { locked: true, minutesLeft: Math.max(1, Math.ceil(left / 60)) } : { locked: false, minutesLeft: 0 };
+  }
   const kv = await getRateLimitKv();
-  if (!kv || ip === "unknown") return { locked: false, minutesLeft: 0 };
+  if (!kv) return { locked: false, minutesLeft: 0 };
 
   const raw = await kv.get(`admin-lock:${ip}`);
   if (!raw) return { locked: false, minutesLeft: 0 };
@@ -43,6 +54,14 @@ export interface AdminLoginAttemptResult {
 }
 
 export async function recordFailedIpAttempt(ip: string): Promise<AdminLoginAttemptResult> {
+  if (ip !== "unknown") {
+    const r = await (await store())?.recordAdminFailure(ip, ADMIN_MAX_LOGIN_ATTEMPTS, ATTEMPTS_WINDOW_SECONDS, LOCKOUT_SECONDS);
+    if (r && r !== "unavailable") {
+      return r.locked
+        ? { locked: true, minutesLeft: Math.ceil(LOCKOUT_SECONDS / 60), remaining: 0 }
+        : { locked: false, minutesLeft: 0, remaining: ADMIN_MAX_LOGIN_ATTEMPTS - r.count };
+    }
+  }
   const kv = await getRateLimitKv();
   if (!kv || ip === "unknown") {
     return { locked: false, minutesLeft: 0, remaining: ADMIN_MAX_LOGIN_ATTEMPTS - 1 };
@@ -63,6 +82,7 @@ export async function recordFailedIpAttempt(ip: string): Promise<AdminLoginAttem
 }
 
 export async function clearIpAttempts(ip: string): Promise<void> {
+  if (ip !== "unknown") await (await store())?.clearAdminFailures(ip);
   const kv = await getRateLimitKv();
   if (!kv || ip === "unknown") return;
   await Promise.all([kv.delete(`admin-attempts:${ip}`), kv.delete(`admin-lock:${ip}`)]);

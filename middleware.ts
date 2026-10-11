@@ -4,6 +4,7 @@ import { categoryByLegacySegment, categoryBySlug, categoryPath } from "@/lib/cat
 import { ADMIN_COOKIE_NAME, hasValidAdminSignature } from "@/lib/adminCookie";
 import { blockedForMaintenance, MAINTENANCE_MESSAGE } from "@/lib/maintenance";
 import { RESET_COOKIE, RESET_TOKEN_RE } from "@/lib/sensitivePaths";
+import { isCrossSiteWrite } from "@/lib/crossSiteWrite";
 
 // Next 16 renames this file to proxy.ts (middleware is deprecated, a
 // build warning only). Not done on purpose: a proxy always runs as
@@ -68,7 +69,20 @@ export async function middleware(request: NextRequest) {
   // API requests come here only for the switch-over pause
   // (lib/maintenance.ts); otherwise they go straight on, untouched.
   if (request.nextUrl.pathname.startsWith("/api/")) {
-    if (!blockedForMaintenance(request.method, request.nextUrl.pathname)) return NextResponse.next();
+    if (isCrossSiteWrite(request, CANONICAL_HOST)) {
+      return NextResponse.json(
+        { error: "Please use the form on megadeal.co.nz." },
+        { status: 403, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+    if (!blockedForMaintenance(request.method, request.nextUrl.pathname)) {
+      // Signed-in and personal answers (admin, the business portal,
+      // sign-in, a business's deals, uploads) are never kept by a browser
+      // or any shared cache.
+      const res = NextResponse.next();
+      if (PRIVATE_API.test(request.nextUrl.pathname)) res.headers.set("Cache-Control", "private, no-store");
+      return res;
+    }
     return NextResponse.json(
       { error: MAINTENANCE_MESSAGE },
       { status: 503, headers: { "Retry-After": "1800", "Cache-Control": "no-store" } }
@@ -227,6 +241,9 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 }
+
+/** API routes whose answers are personal or signed-in only. */
+const PRIVATE_API = /^\/api\/(?:admin|auth|merchants|deals\/(?!track(?:\/|$))[^/]+|upload-photo|platform-settings)(?:\/|$)/;
 
 /** The customer-facing routes that stay admin-only until launch. */
 const PRELAUNCH_PRIVATE = /^\/(?:auckland|deal|business)(?:\/|$)/;

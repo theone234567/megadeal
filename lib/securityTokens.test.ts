@@ -108,3 +108,31 @@ describe("password-reset links (finding 2)", () => {
     expect(await tokens.consumePasswordResetToken(raw)).toBeNull();
   });
 });
+
+describe("admin sign-in protections", () => {
+  it("each authenticator code works once, even sent twice at the same moment", async () => {
+    const store = await import("./securityStore");
+    await db.exec("delete from public.site_settings where key like 'security:%'");
+    const both = await Promise.all([store.claimTotpStep(59_700_000), store.claimTotpStep(59_700_000)]);
+    expect(both.filter((x) => x === true)).toHaveLength(1);
+    expect(await store.claimTotpStep(59_699_999)).toBe(false); // an older code
+    expect(await store.claimTotpStep(59_700_001)).toBe(true); // the next one
+  });
+
+  it("locks an IP out after three failures, however fast they arrive, and a correct sign-in clears it", async () => {
+    const { recordFailedIpAttempt, checkIpLockout, clearIpAttempts } = await import("./adminRateLimit");
+    const results = await Promise.all(Array.from({ length: 6 }, () => recordFailedIpAttempt("9.9.9.9")));
+    expect(results.some((r) => r.locked)).toBe(true);
+    expect((await checkIpLockout("9.9.9.9")).locked).toBe(true);
+    await clearIpAttempts("9.9.9.9");
+    expect((await checkIpLockout("9.9.9.9")).locked).toBe(false);
+  });
+
+  it("logging out ends sessions issued before it", async () => {
+    const store = await import("./securityStore");
+    expect(await store.revokeAdminSessionsNow()).toBe(true);
+    const before = await store.adminSessionsRevokedBefore();
+    expect(typeof before).toBe("number");
+    expect(Math.abs((before as number) - Date.now())).toBeLessThan(5000);
+  });
+});
