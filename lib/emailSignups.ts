@@ -20,6 +20,9 @@ import { queryAllByEmail } from "./queryAll";
 
 export type EmailAudience = "customer" | "merchant";
 
+/** How long a deal-alert confirmation link works. */
+export const VERIFY_LINK_DAYS = 14;
+
 export interface EmailSignupResult {
   verifyToken: string;
   unsubscribeToken: string;
@@ -102,6 +105,7 @@ export async function insertEmailSignup({
         ...existing,
         source,
         verifyToken,
+        verifySentAt: verifyToken ? new Date().toISOString() : existing.verifySentAt ?? null,
         unsubscribeToken,
         // A trusted flow (a signed-in, verified member) confirms on the
         // spot, including undoing an earlier unsubscribe, because the
@@ -120,6 +124,7 @@ export async function insertEmailSignup({
       source,
       verified,
       verifyToken,
+      verifySentAt: verifyToken ? new Date().toISOString() : null,
       unsubscribed: false,
       unsubscribeToken,
     });
@@ -136,6 +141,10 @@ export async function verifyEmailSignupByToken(token: string): Promise<boolean> 
     const result = await adminClient.items.query("EmailSignups").eq("verifyToken", token).find();
     const signup = result.items?.[0];
     if (!signup) return false;
+    // A confirmation link lasts two weeks from when it was sent. (Links
+    // sent before that was recorded have no date, and still work.)
+    const issued = signup.verifySentAt ? new Date(signup.verifySentAt).getTime() : NaN;
+    if (Number.isFinite(issued) && Date.now() - issued > VERIFY_LINK_DAYS * 86_400_000) return false;
     // unsubscribed is cleared too: this link only reaches the inbox that
     // owns the address, so clicking it is that person opting back in. A row
     // left verified-but-unsubscribed would otherwise show "you're on the
@@ -177,17 +186,24 @@ export async function unsubscribeEmailSignupByToken(token: string): Promise<bool
         )
       : [signup];
 
+    // Every row is tried, each twice, and success is only reported if all
+    // of them were saved (security audit of 10 Oct 2026, finding 7): a
+    // person told "you're unsubscribed" must really be.
+    let allSaved = true;
     for (const row of rows.length ? rows : [signup]) {
       if (row.unsubscribed) continue;
-      try {
-        await adminClient.items.update("EmailSignups", { ...row, unsubscribed: true });
-      } catch (err) {
-        // Keep going: a failure on one duplicate must not leave the rest
-        // subscribed. The click still counts as an opt-out.
-        console.error("[emailSignups] unsubscribe failed for one row", err);
+      let saved = false;
+      for (let attempt = 0; attempt < 2 && !saved; attempt++) {
+        try {
+          await adminClient.items.update("EmailSignups", { ...row, unsubscribed: true });
+          saved = true;
+        } catch (err) {
+          console.error("[emailSignups] unsubscribe failed for one row", err);
+        }
       }
+      allSaved &&= saved;
     }
-    return true;
+    return allSaved;
   } catch (err) {
     console.error("[emailSignups] unsubscribeEmailSignupByToken failed", err);
     return false;

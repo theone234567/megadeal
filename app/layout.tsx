@@ -1,12 +1,9 @@
+import Trackers from "@/components/Trackers";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import MetaPixel from "@/components/MetaPixel";
-import GoogleAnalytics from "@/components/GoogleAnalytics";
-import ScrollDepthTracker from "@/components/ScrollDepthTracker";
-import AttributionCapture from "@/components/AttributionCapture";
 import StaleBuildRecovery from "@/components/StaleBuildRecovery";
 import PreviewBanner from "@/components/PreviewBanner";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
@@ -147,10 +144,7 @@ export default function RootLayout({
           }}
         />
         <Suspense fallback={null}>
-          <MetaPixel />
-          <GoogleAnalytics />
-          <ScrollDepthTracker />
-          <AttributionCapture />
+          <Trackers />
         </Suspense>
         <MegadealArtProvider art={megadealArt}>
           {/* No WixProvider here: only the portal, admin and signup pages

@@ -209,7 +209,7 @@ export function aiProblem(status: number): string {
 /** Notes how the last review went (lib/kvMarkers.ts), for admin. */
 async function noteOutcome(ok: boolean, problem?: string): Promise<void> {
   try {
-    const { getRateLimitKv } = await import("./rateLimit");
+    const { getRateLimitKv } = await import("./kvStore");
     const { AI_REVIEW_LAST_KEY } = await import("./kvMarkers");
     const kv = await getRateLimitKv();
     await kv?.put(AI_REVIEW_LAST_KEY, JSON.stringify({ at: new Date().toISOString(), ok, ...(problem ? { problem } : {}) }), { expirationTtl: 60 * 60 * 24 * 30 });

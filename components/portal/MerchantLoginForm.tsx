@@ -260,7 +260,11 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
       const res = await fetch("/api/auth/request-password-reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        // The robot check, on MegaDeal's own logins (as sign-in uses).
+        body: JSON.stringify({
+          email,
+          ...(authBackend === "supabase" ? { captchaToken: await invisibleCaptchaToken() } : {}),
+        }),
       });
       if (!res.ok) {
         // The route's own sentence (too many tries, say) when it gave one.

@@ -24,7 +24,9 @@ export async function POST(req: NextRequest) {
 
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase().slice(0, 300) : "";
   const audience: EmailAudience = ALLOWED_AUDIENCES.includes(body.audience) ? body.audience : "customer";
-  const source = typeof body.source === "string" ? body.source.trim().slice(0, 100) : "unknown";
+  // Our forms send a short name ("coming-soon", "footer"); anything else
+  // is stored as "unknown", so nothing a visitor types reaches the export.
+  const source = typeof body.source === "string" && /^[a-z0-9-]{1,40}$/.test(body.source) ? body.source : "unknown";
   const consent = body.consent === true;
 
   if (!EMAIL_RE.test(email)) {
@@ -50,11 +52,11 @@ export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
   const tooMany = () =>
     NextResponse.json({ error: "Too many signup attempts. Please try again later." }, { status: 429 });
-  if ((await checkRateLimit(`emailsignup-ip:${ip}`, 5, 60 * 60)).limited) return tooMany();
+  if ((await checkRateLimit(`emailsignup-ip:${ip}`, 5, 60 * 60, { failClosed: true })).limited) return tooMany();
   if (publicFormCheckOn() && !(await verifyTurnstile(body.captchaToken, ip))) {
     return NextResponse.json({ error: "The security check didn't pass. Please try again." }, { status: 400 });
   }
-  if ((await checkRateLimit(`emailsignup-email:${email}`, 3, 24 * 60 * 60)).limited) return tooMany();
+  if ((await checkRateLimit(`emailsignup-email:${email}`, 3, 24 * 60 * 60, { failClosed: true })).limited) return tooMany();
 
   const tokens = await insertEmailSignup({ email, audience, source, verified: false });
   if (!tokens) {

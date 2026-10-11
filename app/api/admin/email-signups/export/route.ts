@@ -2,14 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
 import { queryAllItems } from "@/lib/queryAll";
+import { csvCell } from "@/lib/csv";
 
-function csvCell(value: unknown): string {
-  const str = value === undefined || value === null ? "" : String(value);
-  if (/[",\n]/.test(str)) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
 
 export async function GET(req: NextRequest) {
   if (!(await isAdminRequest(req))) {
@@ -47,6 +41,7 @@ export async function GET(req: NextRequest) {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition": `attachment; filename="${filename}"`,
+        "Cache-Control": "private, no-store",
       },
     });
   } catch (err) {

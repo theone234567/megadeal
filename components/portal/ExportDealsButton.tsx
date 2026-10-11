@@ -2,6 +2,7 @@
 
 import type { DealRecord } from "./DealManageCard";
 import { dealDisplayStatus } from "@/lib/dealStatus";
+import { csvCell } from "@/lib/csv";
 
 const COLUMNS: { header: string; get: (d: DealRecord) => string | number }[] = [
   { header: "Deal name", get: (d) => d.dealName || "" },
@@ -19,16 +20,12 @@ const COLUMNS: { header: string; get: (d: DealRecord) => string | number }[] = [
   { header: "Expires", get: (d) => (d.expiresAt ? new Date(d.expiresAt).toLocaleDateString() : "") },
 ];
 
-function csvEscape(value: string | number): string {
-  const str = String(value);
-  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-}
 
 export default function ExportDealsButton({ deals }: { deals: DealRecord[] }) {
   function handleExport() {
     const rows = [
       COLUMNS.map((c) => c.header),
-      ...deals.map((d) => COLUMNS.map((c) => csvEscape(c.get(d)))),
+      ...deals.map((d) => COLUMNS.map((c) => csvCell(c.get(d)))),
     ];
     const csv = rows.map((row) => row.join(",")).join("\r\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

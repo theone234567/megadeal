@@ -335,6 +335,8 @@ const EMAIL_SIGNUPS: Collection = {
     // Stored hashed: found by the token, never read back.
     f("verifyToken", "verify_token_hash", { expr: "null::text", write: hashed }),
     f("unsubscribeToken", "unsubscribe_token_hash", { expr: "null::text", write: hashed }),
+    // When the confirmation link was sent (20261016000000_security_tokens).
+    f("verifySentAt", "verify_sent_at", { expr: "(to_jsonb(t)->>'verify_sent_at')", read: asDate, newColumn: true }),
   ],
   // A new unsubscribe link doesn't retire the earlier ones: they're still
   // in the person's inbox, and must keep working.

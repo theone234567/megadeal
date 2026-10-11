@@ -48,13 +48,20 @@ async function storedColumns(db: Sql, table: string): Promise<string[]> {
   return rows.map((r) => r.column_name);
 }
 
-/** Every public table that isn't in BACKUP_TABLES (its test fails then). */
+/** Left out on purpose: short-lived security records (password-reset
+ *  links, rate-limit counts), worthless after a restore and better never
+ *  copied anywhere. */
+export const NOT_BACKED_UP = ["password_reset_tokens", "rate_limits"] as const;
+
+/** Every public table that isn't in BACKUP_TABLES or NOT_BACKED_UP (its
+ *  test fails then). */
 export async function tablesNotBackedUp(db: Sql): Promise<string[]> {
   const rows = await db.query<{ name: string }>(
     `select c.relname as name from pg_class c join pg_namespace n on n.oid = c.relnamespace
       where n.nspname = 'public' and c.relkind in ('r', 'p') order by 1`
   );
-  return rows.map((r) => r.name).filter((t) => !(BACKUP_TABLES as readonly string[]).includes(t));
+  const covered: readonly string[] = [...BACKUP_TABLES, ...NOT_BACKED_UP];
+  return rows.map((r) => r.name).filter((t) => !covered.includes(t));
 }
 
 /** A copy of every table, as it is now (read in one snapshot). */

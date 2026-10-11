@@ -3,6 +3,7 @@ import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
 import { categoryByLegacySegment, categoryBySlug, categoryPath } from "@/lib/categories";
 import { ADMIN_COOKIE_NAME, hasValidAdminSignature } from "@/lib/adminCookie";
 import { blockedForMaintenance, MAINTENANCE_MESSAGE } from "@/lib/maintenance";
+import { RESET_COOKIE, RESET_TOKEN_RE } from "@/lib/sensitivePaths";
 
 // Next 16 renames this file to proxy.ts (middleware is deprecated, a
 // build warning only). Not done on purpose: a proxy always runs as
@@ -79,6 +80,39 @@ export async function middleware(request: NextRequest) {
       new URL(request.nextUrl.pathname + request.nextUrl.search, SITE_URL),
       308
     );
+  }
+
+  // A password-reset link (/reset-password?token=…): the token moves into
+  // an HttpOnly cookie and the browser is sent on to the plain address,
+  // before any page or script loads. So the token never sits in the
+  // address bar, where analytics, advertising or browser extensions could
+  // read it, nor in history or a Referer (security audit 10 Oct 2026,
+  // finding 1). The page itself is never cached or indexed.
+  if (request.nextUrl.pathname === "/reset-password") {
+    const token = request.nextUrl.searchParams.get("token");
+    const res =
+      token === null
+        ? NextResponse.next()
+        : NextResponse.redirect(new URL("/reset-password", request.url), 303);
+    if (token !== null) {
+      if (RESET_TOKEN_RE.test(token)) {
+        res.cookies.set(RESET_COOKIE, token, {
+          httpOnly: true,
+          secure: request.nextUrl.protocol === "https:",
+          // Lax, not Strict: the link is opened from an email, a
+          // cross-site visit, and the page needs the cookie on arrival.
+          sameSite: "lax",
+          path: "/",
+          maxAge: 30 * 60,
+        });
+      } else {
+        res.cookies.delete(RESET_COOKIE);
+      }
+    }
+    res.headers.set("Cache-Control", "private, no-store");
+    res.headers.set("Referrer-Policy", "no-referrer");
+    res.headers.set("X-Robots-Tag", "noindex, nofollow");
+    return res;
   }
 
   // An address with broken percent-encoding (/deal/%E0%A4%A, from a

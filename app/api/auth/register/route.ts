@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   if (res.ok && signUpHitExistingAccount(res.data)) {
     const to = pre.email;
     afterResponse(async () => {
-      if ((await checkRateLimit(`register-exists:${to.toLowerCase()}`, 2, 24 * 60 * 60)).limited) return;
+      if ((await checkRateLimit(`register-exists:${to.toLowerCase()}`, 2, 24 * 60 * 60, { failClosed: true })).limited) return;
       const ok = await sendTransactionalEmail({ to, subject: "You already have a MegaDeal business account", html: alreadyHaveAccountHtml() });
       if (!ok) console.error("[auth/register] 'already have an account' email failed");
     });

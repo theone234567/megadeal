@@ -1,3 +1,4 @@
+import { urlWithoutQuery } from "@/lib/sensitivePaths";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -69,8 +70,10 @@ export async function POST(request: NextRequest) {
     // carry query strings a visitor typed.
     console.warn("[csp]", {
       directive: truncate(report["violated-directive"] ?? report["effectiveDirective"], 80),
-      blocked: truncate(report["blocked-uri"] ?? report["blockedURL"], 200),
-      document: truncate(report["document-uri"] ?? report["documentURL"], 200),
+      // Never the query or fragment: a page's address can carry a token
+      // (security audit 10 Oct 2026, finding 1).
+      blocked: truncate(urlWithoutQuery(report["blocked-uri"] ?? report["blockedURL"]), 200),
+      document: truncate(urlWithoutQuery(report["document-uri"] ?? report["documentURL"]), 200),
     });
   } catch {
     // Malformed report — nothing to do.

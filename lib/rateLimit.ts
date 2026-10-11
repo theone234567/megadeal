@@ -1,36 +1,7 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { NextRequest } from "next/server";
+import { getRateLimitKv } from "./kvStore";
 
-// Minimal shape of the one KV method set this module needs, so we don't
-// have to pull in @cloudflare/workers-types just for the ambient global.
-export interface MinimalKVNamespace {
-  get(key: string): Promise<string | null>;
-  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
-  delete(key: string): Promise<void>;
-}
-
-declare global {
-  interface CloudflareEnv {
-    // Shared namespace for every KV-backed rate limit in the app (admin
-    // login lockout, public-endpoint abuse limits) — one binding, distinct
-    // key prefixes per use, so a single namespace covers all of them.
-    RATE_LIMIT_KV?: MinimalKVNamespace;
-  }
-}
-
-/**
- * If the KV binding isn't configured yet (local dev, or before the
- * namespace id is set in wrangler.toml), every check fails open — the
- * request goes through unlimited rather than the feature breaking.
- */
-export async function getRateLimitKv(): Promise<MinimalKVNamespace | null> {
-  try {
-    const { env } = await getCloudflareContext({ async: true });
-    return env.RATE_LIMIT_KV ?? null;
-  } catch {
-    return null;
-  }
-}
+export { getRateLimitKv, type MinimalKVNamespace } from "./kvStore";
 
 export function getClientIp(req: NextRequest): string {
   return (
@@ -38,6 +9,14 @@ export function getClientIp(req: NextRequest): string {
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "unknown"
   );
+}
+
+/** The count in MegaDeal's own database (lib/securityStore.ts), or
+ *  "unavailable" without one. Loaded only when needed, so the database
+ *  module is never pulled in where there's no database. */
+async function countInDatabase(key: string, windowSeconds: number): Promise<number | "unavailable"> {
+  if (process.env.DATA_BACKEND !== "postgres") return "unavailable";
+  return (await import("./securityStore")).countInDatabase(key, windowSeconds);
 }
 
 /**
@@ -52,8 +31,20 @@ export function getClientIp(req: NextRequest): string {
 export async function checkRateLimit(
   key: string,
   max: number,
-  windowSeconds: number
+  windowSeconds: number,
+  /** For sign-in, sign-up and anything that sends email: when no count can
+   *  be kept at all (database and KV both failing), refuse rather than let
+   *  everything through. Without a KV binding (local development) it still
+   *  lets requests through. */
+  options: { failClosed?: boolean } = {},
 ): Promise<{ limited: boolean }> {
+  const counted = await countInDatabase(key, windowSeconds);
+  if (counted !== "unavailable") return { limited: counted > max };
+
+  // Before the database update is applied, or if the database is
+  // unreachable: Cloudflare KV, as before. It can't count in one step, so
+  // it's the fallback, not the main store.
+  const failed = { limited: options.failClosed === true };
   const kv = await getRateLimitKv();
   if (!kv) return { limited: false };
 
@@ -76,8 +67,8 @@ export async function checkRateLimit(
   try {
     raw = await kv.get(key);
   } catch (err) {
-    console.error("[rateLimit] couldn't read the count, letting it through", key.split(":")[0], err);
-    return { limited: false };
+    console.error("[rateLimit] couldn't read the count", key.split(":")[0], err);
+    return failed;
   }
   if (raw) {
     try {
@@ -96,12 +87,15 @@ export async function checkRateLimit(
   if (count > max) return { limited: true };
 
   // TTL tracks the real remaining window, so the key disappears when the
-  // window actually ends rather than being kept alive by traffic.
-  const ttl = Math.max(1, Math.ceil((resetAt - now) / 1000));
+  // window actually ends rather than being kept alive by traffic. At least
+  // 60 seconds, KV's minimum (a shorter one made the write fail in a
+  // window's last minute); the stored resetAt still ends it on time.
+  const ttl = Math.max(60, Math.ceil((resetAt - now) / 1000));
   try {
     await kv.put(key, JSON.stringify({ c: count, r: resetAt }), { expirationTtl: ttl });
   } catch (err) {
-    console.error("[rateLimit] couldn't save the count, letting it through", key.split(":")[0], err);
+    console.error("[rateLimit] couldn't save the count", key.split(":")[0], err);
+    return failed;
   }
   return { limited: false };
 }

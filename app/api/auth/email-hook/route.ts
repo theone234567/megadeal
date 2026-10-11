@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: { http_code: 400, message: "Nothing to send" } }, { status: 400 });
   }
   // Supabase limits these too; this caps what any one address can get.
-  if ((await checkRateLimit(`auth-email:${email.toLowerCase()}`, 10, 60 * 60)).limited) {
+  if ((await checkRateLimit(`auth-email:${email.toLowerCase()}`, 10, 60 * 60, { failClosed: true })).limited) {
     return NextResponse.json({ error: { http_code: 429, message: "Too many emails to this address" } }, { status: 429 });
   }
 

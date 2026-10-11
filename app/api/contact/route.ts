@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   // without a limit a bot could flood the saved contact messages and
   // trigger an admin-notification email on every single submission.
   const ip = getClientIp(req);
-  const { limited } = await checkRateLimit(`contact-ip:${ip}`, 5, 60 * 60);
+  const { limited } = await checkRateLimit(`contact-ip:${ip}`, 5, 60 * 60, { failClosed: true });
   if (limited) {
     return NextResponse.json(
       { error: "Too many messages sent. Please try again later." },

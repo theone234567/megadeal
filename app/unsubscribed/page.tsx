@@ -29,11 +29,11 @@ export default async function UnsubscribedPage(
         <>
           <span className="text-4xl">⚠️</span>
           <h1 className="mt-3 text-xl font-bold text-slate-900">
-            That link isn&apos;t valid
+            We couldn&apos;t unsubscribe you
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            It may have been copied incorrectly. Contact us if you&apos;re
-            still receiving emails you want to stop.
+            The link may have been copied incorrectly, or something went wrong on our side. Open the
+            unsubscribe link in the email again, or contact us and we&apos;ll stop the emails.
           </p>
         </>
       )}

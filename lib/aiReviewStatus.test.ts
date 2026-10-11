@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 /** The AI deal check notes how it last went, so admin can say when it stops working. */
 
 const kv = new Map<string, string>();
-vi.mock("./rateLimit", () => ({ getRateLimitKv: async () => ({ get: async (k: string) => kv.get(k) ?? null, put: async (k: string, v: string) => void kv.set(k, v) }) }));
+vi.mock("./kvStore", () => ({ getRateLimitKv: async () => ({ get: async (k: string) => kv.get(k) ?? null, put: async (k: string, v: string) => void kv.set(k, v) }) }));
 const { reviewWithAi } = await import("./aiReview");
 
 const input = { kind: "deal" as const, dealName: "Pizza for two", description: "Two pizzas", priceNow: 20, priceWas: 40, allowRudeLanguage: false };
