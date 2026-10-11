@@ -10,6 +10,7 @@ import PlatformSettingsPanel from "@/components/admin/PlatformSettingsPanel";
 import TestDealsPanel from "@/components/admin/TestDealsPanel";
 import AnnouncementPanel from "@/components/admin/AnnouncementPanel";
 import ContactMessagesPanel from "@/components/admin/ContactMessagesPanel";
+import ListingRemindersPanel from "@/components/admin/ListingRemindersPanel";
 import { missedScheduledStart } from "@/lib/dealSchedule";
 import { readRevision } from "@/lib/dealRevision";
 import { useWix } from "@/context/WixProvider";
@@ -437,6 +438,7 @@ export default function AdminDashboardPage() {
 
       {tab === "merchants" && (
         <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-100 bg-white p-6 shadow-card">
+          <ListingRemindersPanel />
           {merchants === null ? (
             error ? null : <p className="text-sm text-slate-500">Loading…</p>
           ) : merchants.length === 0 ? (
