@@ -10,6 +10,7 @@ import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
 import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
 import ReferralCard from "@/components/portal/ReferralCard";
 import ActivityFeed from "@/components/portal/ActivityFeed";
+import EmailPreferences from "@/components/portal/EmailPreferences";
 import ExportDealsButton from "@/components/portal/ExportDealsButton";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
 import { usePlatformSettings } from "@/lib/usePlatformSettings";
@@ -471,6 +472,9 @@ export default function PortalPage() {
               photosError={photosError}
             />
           </div>
+          <div className="mt-6">
+            <EmailPreferences />
+          </div>
         </section>
       ) : (
         <>
@@ -808,6 +812,7 @@ export default function PortalPage() {
             </div>
 
             <ReferralCard referralCode={merchant.referralCode} />
+            <EmailPreferences />
           </section>
         </>
       )}

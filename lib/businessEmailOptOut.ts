@@ -58,6 +58,19 @@ export async function optOutBusiness(id: string): Promise<boolean> {
   }
 }
 
+/** Turns business emails back on (the business's own choice, in the portal). */
+export async function optInBusiness(id: string): Promise<boolean> {
+  const kv = await getRateLimitKv();
+  if (!kv) return false;
+  try {
+    await kv.delete(OPT_OUT_PREFIX + id);
+    return true;
+  } catch (err) {
+    console.error("[businessEmailOptOut] couldn't save", err);
+    return false;
+  }
+}
+
 /** The ids of businesses that have opted out, among `ids`. */
 export async function optedOutBusinesses(ids: string[]): Promise<Set<string>> {
   const kv = await getRateLimitKv();
