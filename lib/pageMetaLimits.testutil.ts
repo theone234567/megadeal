@@ -40,7 +40,7 @@ export function checkPageMetadata() {
       } catch (err) {
         // Server-only pages (React's cache() and the like) don't load
         // outside Next; their titles come from shared helpers tested elsewhere.
-        if (/cache is not a function/.test(String(err))) return;
+        if (/\bcache\b\)? is not a function/.test(String(err))) return;
         throw err;
       }
       const { title, description, robots } = mod.metadata;
