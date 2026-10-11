@@ -112,6 +112,8 @@ type ApplicationValues = {
   referredByCode: string;
   honeypot: string;
   agreedToTerms: boolean;
+  /** Ticked "Email me MegaDeal business news" (unticked to start). */
+  marketingOptIn: boolean;
 };
 
 function readApplicationValues(formData: FormData): ApplicationValues {
@@ -127,6 +129,7 @@ function readApplicationValues(formData: FormData): ApplicationValues {
     referredByCode: String(formData.get("referredByCode") ?? ""),
     honeypot: String(formData.get(HONEYPOT_FIELD) ?? ""),
     agreedToTerms: formData.get("agreedToTerms") === "on",
+    marketingOptIn: formData.get("marketingOptIn") === "on",
   };
 }
 
@@ -147,6 +150,7 @@ async function submitApplication(values: ApplicationValues): Promise<string | un
       referredByCode: values.referredByCode,
       mg_contact_ref: values.honeypot,
       agreedToTerms: values.agreedToTerms,
+      marketingOptIn: values.marketingOptIn,
       // First-touch ad attribution (see lib/attribution.ts) — carried
       // through to Meta's Conversions API as this conversion's custom_data
       // so ad campaigns can eventually be judged on actual registrations,
@@ -1128,6 +1132,21 @@ export default function MerchantSignupForm({
           </label>
           {fieldError("signup-agreedToTerms")}
         </div>
+
+        {/* Asked, never assumed (NZ's Unsolicited Electronic Messages Act):
+            only a tick here puts the business on the business-news list.
+            Emails about its account and deals are sent either way. */}
+        <label className={`flex items-start gap-2 text-base ${redesign ? "text-[#37343D]" : "text-slate-600"}`}>
+          <input
+            id="signup-marketingOptIn"
+            type="checkbox"
+            name="marketingOptIn"
+            className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
+          />
+          <span>
+            Email me business news and tips from MegaDeal (optional, unsubscribe any time).
+          </span>
+        </label>
 
         {/* Where Turnstile shows a challenge, if it ever needs one. */}
         {authBackend === "supabase" && <div data-turnstile-slot />}

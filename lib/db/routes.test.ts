@@ -109,7 +109,15 @@ describe("a business on the new database", () => {
     const [row] = await db.query("select website, email, nzbn, referral_code from public.merchants");
     expect(row).toMatchObject({ website: "https://harbourbistro.co.nz", email: "owner@harbourbistro.co.nz", nzbn: "9429000000001" });
     expect(row.referral_code).toMatch(/^MD/);
-    // The sign-up also joined the business mailing list.
+    // Not on the business mailing list: they didn't tick "Email me
+    // MegaDeal business news".
+    await new Promise((r) => setTimeout(r, 50));
+    expect(await db.query("select audience from public.email_signups")).toEqual([]);
+  });
+
+  it("joins the business mailing list only when they tick the box", async () => {
+    const apply = await import("@/app/api/merchants/apply/route");
+    expect((await call(apply.POST, request("POST", { ...SIGNUP, marketingOptIn: true }))).status).toBe(200);
     await vi.waitFor(async () => expect(await db.query("select audience, verified from public.email_signups")).toEqual([{ audience: "merchant", verified: true }]));
   });
 

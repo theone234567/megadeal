@@ -294,10 +294,12 @@ export async function POST(req: NextRequest) {
         .catch((err) => console.error("[merchants/apply] welcome email failed", err))
     );
 
-    // Verified true immediately — this email already belongs to a signed-in
-    // Wix member with a verified account, unlike the anonymous customer
-    // double-opt-in flow, so there's nothing left to confirm.
-    afterResponse(() =>
+    // Only with the business's say-so: the "Email me MegaDeal business
+    // news" tick on sign-up (NZ's Unsolicited Electronic Messages Act needs
+    // consent, and agreeing to the terms isn't that). Verified true
+    // immediately: the address belongs to a signed-in account whose email
+    // is already confirmed, so there's nothing left to confirm.
+    if (body?.marketingOptIn === true) afterResponse(() =>
       insertEmailSignup({
         email: welcomeTo,
         audience: "merchant",
