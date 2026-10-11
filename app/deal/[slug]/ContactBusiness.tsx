@@ -118,6 +118,9 @@ export default function ContactBusiness({
   onOpen: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  // The pop-up's rows (with the business's email address) are only built
+  // once someone opens it, so they aren't in the page's HTML.
+  const [opened, setOpened] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const business = businessName || "the business";
@@ -149,6 +152,7 @@ export default function ContactBusiness({
             aria-haspopup="dialog"
             onClick={() => {
               onOpen();
+              setOpened(true);
               setOpen(true);
             }}
             className={buttonClass}
@@ -184,71 +188,73 @@ export default function ContactBusiness({
           }}
           className="m-auto w-[min(calc(100vw-2rem),440px)] rounded-[20px] p-0 text-slate-900 shadow-xl backdrop:bg-slate-900/50"
         >
-          <div className="p-5 sm:p-6">
-            <div className="flex items-start justify-between gap-3">
-              <h2 id="contact-business-title" className="font-display text-xl font-semibold leading-tight">
-                Contact {business}
-              </h2>
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Close"
-                className="-mr-1 -mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
-              >
-                <CloseIcon className="h-5 w-5" />
-              </button>
-            </div>
-            <p className="mt-1 text-sm text-slate-600">
-              {code ? "Quote your deal code when contacting the business." : "Mention this MegaDeal offer when contacting the business."}
-            </p>
-
-            {code && (
-              <div className="mt-4">
-                <CodeBox code={code} onCopy={() => onAction("copy")} compact />
+          {opened && (
+            <div className="p-5 sm:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <h2 id="contact-business-title" className="font-display text-xl font-semibold leading-tight">
+                  Contact {business}
+                </h2>
+                <button
+                  type="button"
+                  onClick={close}
+                  aria-label="Close"
+                  className="-mr-1 -mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+                >
+                  <CloseIcon className="h-5 w-5" />
+                </button>
               </div>
-            )}
+              <p className="mt-1 text-sm text-slate-600">
+                {code ? "Quote your deal code when contacting the business." : "Mention this MegaDeal offer when contacting the business."}
+              </p>
 
-            <ul className={`divide-y divide-slate-100 border-y border-slate-100 ${code ? "mt-1" : "mt-4"}`}>
-              {options.map((o) => {
-                const inner = (
-                  <>
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
-                      <OptionIcon kind={o.kind} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-xs font-semibold text-slate-500">{o.label}</span>
-                      <span className="block truncate text-[0.9375rem] font-semibold text-slate-900">{o.detail}</span>
-                      {o.note && <span className="block text-xs text-slate-600">{o.note}</span>}
-                    </span>
-                    <ChevronRightIcon className="h-4 w-4 shrink-0 text-slate-400" />
-                  </>
-                );
-                return (
-                  <li key={o.kind}>
-                    {preview ? (
-                      <div className="flex items-center gap-3 py-3 opacity-80">{inner}</div>
-                    ) : (
-                      <a
-                        href={o.href}
-                        onClick={() => onAction(ACTION_FOR[o.kind])}
-                        {...(o.external ? { target: "_blank", rel: "noopener noreferrer nofollow ugc" } : {})}
-                        className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
-                      >
-                        {inner}
-                        {o.external && <span className="sr-only"> (opens in a new tab)</span>}
-                      </a>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+              {code && (
+                <div className="mt-4">
+                  <CodeBox code={code} onCopy={() => onAction("copy")} compact />
+                </div>
+              )}
 
-            <p className="mt-3 text-xs leading-relaxed text-slate-500">
-              {preview
-                ? "Contact links are turned off in this preview."
-                : "Your code doesn't confirm a booking. The business confirms availability with you."}
-            </p>
-          </div>
+              <ul className={`divide-y divide-slate-100 border-y border-slate-100 ${code ? "mt-1" : "mt-4"}`}>
+                {options.map((o) => {
+                  const inner = (
+                    <>
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+                        <OptionIcon kind={o.kind} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-xs font-semibold text-slate-500">{o.label}</span>
+                        <span className="block truncate text-[0.9375rem] font-semibold text-slate-900">{o.detail}</span>
+                        {o.note && <span className="block text-xs text-slate-600">{o.note}</span>}
+                      </span>
+                      <ChevronRightIcon className="h-4 w-4 shrink-0 text-slate-400" />
+                    </>
+                  );
+                  return (
+                    <li key={o.kind}>
+                      {preview ? (
+                        <div className="flex items-center gap-3 py-3 opacity-80">{inner}</div>
+                      ) : (
+                        <a
+                          href={o.href}
+                          onClick={() => onAction(ACTION_FOR[o.kind])}
+                          {...(o.external ? { target: "_blank", rel: "noopener noreferrer nofollow ugc" } : {})}
+                          className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+                        >
+                          {inner}
+                          {o.external && <span className="sr-only"> (opens in a new tab)</span>}
+                        </a>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <p className="mt-3 text-xs leading-relaxed text-slate-500">
+                {preview
+                  ? "Contact links are turned off in this preview."
+                  : "Your code doesn't confirm a booking. The business confirms availability with you."}
+              </p>
+            </div>
+          )}
         </dialog>
       )}
     </div>

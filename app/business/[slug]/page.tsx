@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import BookingEmailLink from "@/components/BookingEmailLink";
+import { hideEmail } from "@/lib/hiddenEmail";
 import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +12,7 @@ import { locationNotes, placeLabel } from "@/lib/location";
 import { truncateForMeta } from "@/lib/format";
 import DealGrid from "@/components/DealGrid";
 import HowToUseStrip from "@/components/HowToUseStrip";
-import { PhoneIcon, MailIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
+import { PhoneIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
 import StarRating from "@/components/StarRating";
 import ShareButtons from "@/components/ShareButtons";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -302,12 +304,11 @@ export default async function BusinessProfilePage(
                   </a>
                 )}
                 {business.bookingEmail && (
-                  <a
-                    href={`mailto:${business.bookingEmail}`}
+                  // Encoded in the HTML, shown by the browser: no spam bots.
+                  <BookingEmailLink
+                    hidden={hideEmail(business.bookingEmail)!}
                     className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
-                  >
-                    <MailIcon className="h-4 w-4 shrink-0" /> {business.bookingEmail}
-                  </a>
+                  />
                 )}
                 {business.website && (
                   <a

@@ -8,6 +8,7 @@ import { formatMoney, formatOfferEndDate } from "@/lib/format";
 import { dealSaving, dealSavingPercent } from "@/lib/dealSaving";
 import { isDealLive } from "@/lib/dealVisibility";
 import { getDirectionsUrl } from "@/lib/mapLinks";
+import { revealEmail } from "@/lib/hiddenEmail";
 import CountdownBadge from "@/components/CountdownBadge";
 import ShareButtons from "@/components/ShareButtons";
 import ContactBusiness from "./ContactBusiness";
@@ -119,7 +120,7 @@ export default function DealDetail({
     dealName: deal.name,
     dealCode: deal.dealCode,
     phone: deal.businessPhone,
-    email: deal.businessBookingEmail,
+    email: revealEmail(deal.businessBookingEmail),
     website: deal.businessWebsite,
     bookingUrl: deal.businessBookingUrl,
     codeWebsiteUrl: codeLink,

@@ -8,6 +8,7 @@ import { fetchDealForSEO, fetchEndedDeal, fetchAllLiveDealsServer } from "@/lib/
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { formatMoney, truncateForMeta } from "@/lib/format";
 import { placeLabel } from "@/lib/location";
+import { hideEmail } from "@/lib/hiddenEmail";
 import { dealTitles } from "@/lib/dealTitle";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { dealOffer } from "@/lib/dealOffer";
@@ -199,7 +200,9 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
         }}
       />
       <DealDetail
-        deal={deal}
+        // The booking email goes to the browser encoded, so it isn't in
+        // the page's HTML for spam bots to find (lib/hiddenEmail.ts).
+        deal={{ ...deal, businessBookingEmail: hideEmail(deal.businessBookingEmail) }}
         moreDeals={
           // Its own boundary: the deal shows as soon as it's read, and the
           // lists of other deals follow when they're ready.
