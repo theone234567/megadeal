@@ -5,6 +5,7 @@ import { sendTransactionalEmail } from "./sendEmail";
 import { brandedEmailHtml } from "./emailTemplate";
 import { escapeHtml } from "./escapeHtml";
 import { looksLikeTest } from "./launchChecklist";
+import { businessOptOutLinks, optedOutBusinesses } from "./businessEmailOptOut";
 
 /**
  * "Finish your listing" reminders: a business that signed up and has a
@@ -51,8 +52,11 @@ export async function reminderCandidates(db: Sql): Promise<ReminderCandidate[]> 
       order by m.created_at`
   );
   const kv = await getRateLimitKv();
+  // Businesses that chose "Stop MegaDeal business emails" are never reminded.
+  const optedOut = await optedOutBusinesses(rows.map((r) => r.id));
   const out: ReminderCandidate[] = [];
   for (const r of rows) {
+    if (optedOut.has(r.id)) continue;
     const missing = listingGaps(r);
     // Nothing to finish, or a test sign-up (its address isn't a real business's).
     if (missing.length === 0 || looksLikeTest(r.business_name ?? "", r.email)) continue;
@@ -81,14 +85,15 @@ function joinList(items: string[]): string {
   return items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
-export function reminderEmailHtml(businessName: string, missing: string[], portalUrl: string): string {
+export function reminderEmailHtml(businessName: string, missing: string[], portalUrl: string, stopUrl: string): string {
   return brandedEmailHtml(`
     <p style="margin:0 0 16px;">Hi ${escapeHtml(businessName || "there")},</p>
     <p style="margin:0 0 16px;">Thanks for signing up to MegaDeal. Your listing is nearly ready: it just needs ${escapeHtml(joinList(missing))}. Once that's in, we can check and approve your business so you can start running deals.</p>
     <p style="margin:0 0 16px;text-align:center;">
       <a href="${portalUrl}" style="display:inline-block;background:#6520B5;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Finish my listing</a>
     </p>
-    <p style="margin:0;font-size:13px;color:#8b8494;">It takes a few minutes. Questions? Just reply to this email.</p>
+    <p style="margin:0 0 16px;font-size:13px;color:#8b8494;">It takes a few minutes. Questions? Just reply to this email.</p>
+    <p style="margin:0;font-size:12px;color:#8b8494;border-top:1px solid #f1f0f4;padding-top:12px;">You're getting this because you started a MegaDeal business account. Don't want emails like this? <a href="${stopUrl}" style="color:#8b8494;">Unsubscribe</a>.</p>
   `);
 }
 
@@ -101,11 +106,15 @@ export async function sendListingReminders(db: Sql, siteUrl: string, limit = 25)
   let sent = 0;
   const failed: string[] = [];
   for (const c of batch) {
+    // Never without a way to stop them.
+    const links = businessOptOutLinks(siteUrl, c.id);
+    if (!links) throw new Error("ADMIN_SESSION_SECRET isn't set, so reminder emails can't carry an unsubscribe link.");
     const ok = await sendTransactionalEmail({
       to: c.email,
       subject: "Your MegaDeal listing is nearly ready",
-      html: reminderEmailHtml(c.businessName, c.missing, portalUrl),
+      html: reminderEmailHtml(c.businessName, c.missing, portalUrl, links.page),
       replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
+      unsubscribeUrl: links.oneClick,
     }).catch(() => false);
     if (!ok) {
       failed.push(c.businessName || c.email);

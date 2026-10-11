@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { createTestDb } from "./db/testDb";
 import type { Sql } from "./db/connection";
 
+process.env.ADMIN_SESSION_SECRET = "test-secret-for-vitest";
 const kv = new Map<string, string>();
 const sent: { to: string; html: string }[] = [];
 vi.mock("./rateLimit", () => ({
@@ -73,5 +74,15 @@ describe("finish-your-listing reminders", () => {
     expect((await sendListingReminders(db, "https://megadeal.co.nz")).sent).toBe(1);
     kv.set(key, JSON.stringify({ count: 2, last: new Date(Date.now() - 30 * 86_400_000).toISOString() }));
     expect((await reminderCandidates(db))).toEqual([]);
+  });
+});
+
+describe("a business that unsubscribed", () => {
+  it("is never sent a reminder", async () => {
+    kv.clear();
+    const fresh = await reminderCandidates(db);
+    expect(fresh.length).toBeGreaterThan(0);
+    kv.set(`biz-email-opt-out:${fresh[0].id}`, new Date().toISOString());
+    expect((await reminderCandidates(db)).map((c) => c.id)).not.toContain(fresh[0].id);
   });
 });

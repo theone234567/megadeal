@@ -1,3 +1,4 @@
+import { businessOptOutLinks, optedOutBusinesses } from "@/lib/businessEmailOptOut";
 import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
@@ -62,7 +63,10 @@ async function recipients(audience: AnnouncementAudience): Promise<Recipient[]> 
   if (audience === "businesses" || audience === "pending") {
     const status = audience === "businesses" ? "Approved" : "Pending";
     const rows = await queryAllItems(() => client.items.query("Merchants").eq("status", status), "Merchants (announcement)");
-    return businessRecipients(rows, status);
+    // Businesses that unsubscribed from business emails aren't sent it.
+    const list = businessRecipients(rows, status);
+    const optedOut = await optedOutBusinesses(list.map((r) => r.businessId ?? "").filter(Boolean));
+    return list.filter((r) => !r.businessId || !optedOut.has(r.businessId));
   }
   const rows = await queryAllItems(() => client.items.query("EmailSignups"), "EmailSignups (announcement)");
   return subscriberRecipients(rows, audience === "customers" ? "customer" : "merchant");
@@ -72,10 +76,16 @@ async function recipients(audience: AnnouncementAudience): Promise<Recipient[]> 
  * The recipient's own unsubscribe link. A subscriber whose token can't be
  * read back (MegaDeal's own database keeps only a fingerprint) is given a
  * fresh one first; their earlier links keep working (lib/db/wixShim.ts).
- * A subscriber with no link at all isn't emailed. Businesses have none.
+ * A subscriber with no link at all isn't emailed. A business gets its
+ * signed "unsubscribe from business emails" link (lib/businessEmailOptOut.ts).
  */
-async function unsubscribeUrlFor(r: Recipient): Promise<string | undefined | null> {
-  if (!r.row) return undefined;
+async function unsubscribeUrlFor(r: Recipient): Promise<{ footer: string; header: string } | null> {
+  // A business: its signed link to stop business emails. One that can't
+  // be given a link isn't emailed.
+  if (!r.row) {
+    const links = r.businessId ? businessOptOutLinks(SITE_URL, r.businessId) : null;
+    return links ? { footer: links.page, header: links.oneClick } : null;
+  }
   let token = r.unsubscribeToken;
   if (!token) {
     token = randomBytes(32).toString("hex");
@@ -93,7 +103,8 @@ async function unsubscribeUrlFor(r: Recipient): Promise<string | undefined | nul
       return null;
     }
   }
-  return `${SITE_URL}/api/email-signup/unsubscribe?token=${encodeURIComponent(token)}`;
+  const url = `${SITE_URL}/api/email-signup/unsubscribe?token=${encodeURIComponent(token)}`;
+  return { footer: url, header: url };
 }
 
 export async function GET(req: NextRequest) {
@@ -145,7 +156,7 @@ export async function POST(req: NextRequest) {
   if (!body || body.length > BODY_MAX) return json({ error: `Write the message (up to ${BODY_MAX} characters).` }, 400);
 
   if (input.action === "preview") {
-    return json({ html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: audience === "businesses" || audience === "pending" ? undefined : `${SITE_URL}/unsubscribe` }) });
+    return json({ html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: audience === "businesses" || audience === "pending" ? `${SITE_URL}/stop-emails` : `${SITE_URL}/unsubscribe` }) });
   }
 
   if (input.action === "test") {
@@ -154,7 +165,7 @@ export async function POST(req: NextRequest) {
     const ok = await sendTransactionalEmail({
       to,
       subject: `[Test] ${subject}`,
-      html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: audience === "businesses" || audience === "pending" ? undefined : `${SITE_URL}/unsubscribe` }),
+      html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: audience === "businesses" || audience === "pending" ? `${SITE_URL}/stop-emails` : `${SITE_URL}/unsubscribe` }),
     }).catch(() => false);
     return ok ? json({ ok: true }) : json({ error: "The test didn't send. Please try again." }, 502);
   }
@@ -193,8 +204,8 @@ export async function POST(req: NextRequest) {
             : await sendEmail({
                 to: r.email,
                 subject,
-                html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: unsub }),
-                unsubscribeUrl: unsub,
+                html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: unsub.footer }),
+                unsubscribeUrl: unsub.header,
                 replyTo: process.env.ADMIN_NOTIFY_EMAIL?.split(",")[0]?.trim() || undefined,
               }).catch(() => ({ ok: false as const }));
         if (result.ok) {

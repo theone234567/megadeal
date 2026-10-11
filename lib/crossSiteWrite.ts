@@ -11,7 +11,7 @@
  * checked by their own signatures. A mail app's one-click unsubscribe is
  * also exempt: it's meant to work from anywhere, with its own token.
  */
-const EXEMPT = new Set(["/api/email-signup/unsubscribe", "/api/auth/email-hook", "/api/csp-report"]);
+const EXEMPT = new Set(["/api/email-signup/unsubscribe", "/api/business-emails/stop", "/api/auth/email-hook", "/api/csp-report"]);
 
 export function isCrossSiteWrite(req: Request, canonicalHost: string): boolean {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return false;

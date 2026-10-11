@@ -35,9 +35,13 @@ export interface Recipient {
    *  MegaDeal's own database keeps only a fingerprint of it, so there the
    *  sender gives the row a fresh one (earlier links keep working). */
   unsubscribeToken?: string;
-  /** The subscriber's row, to save a fresh token on. Businesses have none. */
+  /** The subscriber's row, to save a fresh token on. Businesses have none:
+   *  theirs is the signed link from businessId. */
   row?: Record<string, unknown>;
   name?: string;
+  /** A business's id, for its signed "unsubscribe from business emails"
+   *  link (lib/businessEmailOptOut.ts). */
+  businessId?: string;
 }
 
 const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
@@ -67,7 +71,13 @@ export function businessRecipients(rows: Record<string, unknown>[], status: "App
   for (const row of rows) {
     const email = String(row.email ?? "").trim().toLowerCase();
     if (!EMAIL_RE.test(email) || row.status !== status) continue;
-    if (!seen.has(email)) seen.set(email, { email, name: typeof row.businessName === "string" ? row.businessName : undefined });
+    if (!seen.has(email)) {
+      seen.set(email, {
+        email,
+        name: typeof row.businessName === "string" ? row.businessName : undefined,
+        businessId: typeof row._id === "string" ? row._id : undefined,
+      });
+    }
   }
   return [...seen.values()];
 }

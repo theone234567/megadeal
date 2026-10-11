@@ -14,7 +14,14 @@ const kv = { get: async (k: string) => kvStore.get(k) ?? null, put: async (k: st
 // 25 addresses that can never be sent to, ahead of 20 that can.
 const BAD = Array.from({ length: 25 }, (_, i) => `bad${i}@example.nz`);
 const GOOD = Array.from({ length: 20 }, (_, i) => `good${i}@example.nz`);
-const rows = [...BAD, ...GOOD].map((email, i) => ({ _id: `m${i}`, email, status: "Approved", businessName: `Biz ${i}` }));
+process.env.ADMIN_SESSION_SECRET = "test-secret-for-vitest";
+const rows = [...BAD, ...GOOD].map((email, i) => ({
+  _id: `00000000-0000-4000-8000-${String(i).padStart(12, "0")}`,
+  email,
+  status: "Approved",
+  businessName: `Biz ${i}`,
+}));
+const unsubHeaders: (string | undefined)[] = [];
 const sentTo: string[] = [];
 let down = false;
 
@@ -28,10 +35,11 @@ vi.mock("@/lib/queryAll", () => ({ queryAllItems: async () => rows }));
 vi.mock("@/lib/fetchDealServer", () => ({ fetchAllLiveDealsServer: async () => [] }));
 let quotaAfter = Infinity;
 vi.mock("@/lib/sendEmail", () => {
-  const sendEmail = async ({ to }: { to: string }) => {
+  const sendEmail = async ({ to, unsubscribeUrl }: { to: string; unsubscribeUrl?: string }) => {
     if (sentTo.length >= quotaAfter) return { ok: false as const, reason: "quota" as const };
     if (down || to.startsWith("bad")) return { ok: false as const };
     sentTo.push(to);
+    unsubHeaders.push(unsubscribeUrl);
     return { ok: true as const };
   };
   return { sendEmail, sendTransactionalEmail: async (m: { to: string }) => (await sendEmail(m)).ok };
@@ -119,5 +127,10 @@ describe("sending an announcement", () => {
     expect(sent).toBe(13);
     expect(sentTo).toHaveLength(20);
     expect(new Set(sentTo).size).toBe(20);
+  });
+
+  it("every business email carries its signed one-click unsubscribe", () => {
+    expect(unsubHeaders.length).toBeGreaterThan(0);
+    for (const u of unsubHeaders) expect(u).toMatch(/^https:\/\/[^/]+\/api\/business-emails\/stop\?m=[0-9a-f-]{36}&s=[0-9a-f]{32}$/);
   });
 });

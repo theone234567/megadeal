@@ -213,7 +213,9 @@ export default function AboutBusiness({
       {photos.length > 0 && (
         <ul
           aria-label={`Photos of ${name}`}
-          className="-mx-5 mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
+          // Focusable so a keyboard can scroll the swipe row on a phone.
+          tabIndex={0}
+          className="-mx-5 mt-6 flex rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-brand-600 snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
         >
           {photos.map((url, i) => (
             <li
