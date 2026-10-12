@@ -73,6 +73,7 @@ export default function AdminBusinessDetailPage() {
   /** The business whose referral code this one signed up with (null: no
    *  business has that code). */
   const [referralMatch, setReferralMatch] = useState<{ id: string; name: string } | null>(null);
+  const [emailChoices, setEmailChoices] = useState<{ news: boolean; announcements: boolean } | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activity, setActivity] = useState<ActivityItem[] | null>(null);
@@ -172,6 +173,7 @@ export default function AdminBusinessDetailPage() {
       const item: AdminMerchant = data.item;
       setMerchant(item);
       setReferralMatch(data.referralMatch ?? null);
+      setEmailChoices(data.emailChoices ?? null);
       seedFrom(item);
 
       fetch(`/api/admin/merchants/${params.id}/activity`)
@@ -417,8 +419,8 @@ export default function AdminBusinessDetailPage() {
       <section className="mt-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-card">
         <h2 className="text-sm font-bold text-slate-900">Account access</h2>
         <p className="mt-1 text-xs text-slate-500">
-          Stopgap while the site&apos;s own &quot;Forgot password&quot; email link is
-          broken. Sets a new password directly — nothing is emailed to the
+          For a business that can&apos;t use &quot;Forgot password&quot; (no access to its
+          email, say). Sets a new password directly — nothing is emailed to the
           business, so you&apos;ll need to pass it on to them yourself.
         </p>
         <button
@@ -443,6 +445,28 @@ export default function AdminBusinessDetailPage() {
         )}
         {resetPasswordError && (
           <p className="mt-2 text-sm text-red-600">{resetPasswordError}</p>
+        )}
+        {emailChoices && (
+          <div className="mt-4 border-t border-slate-100 pt-3">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Their email choices</p>
+            <ul className="mt-1.5 space-y-1 text-sm text-slate-700">
+              <li>
+                Business news and tips:{" "}
+                <span className={emailChoices.news ? "font-semibold text-emerald-700" : "font-semibold text-slate-600"}>
+                  {emailChoices.news ? "Subscribed" : "Not subscribed"}
+                </span>
+              </li>
+              <li>
+                Announcements and reminders:{" "}
+                <span className={emailChoices.announcements ? "font-semibold text-emerald-700" : "font-semibold text-amber-800"}>
+                  {emailChoices.announcements ? "On" : "Unsubscribed"}
+                </span>
+              </li>
+            </ul>
+            <p className="mt-1 text-xs text-slate-500">
+              Set by the business in its portal or an email&apos;s unsubscribe link. Account and deal emails always go.
+            </p>
+          </div>
         )}
       </section>
 

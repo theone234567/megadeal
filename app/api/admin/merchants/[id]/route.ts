@@ -8,6 +8,7 @@ import { deleteBusinessCompletely } from "@/lib/db/deleteBusiness";
 import { accountIdForEmail, fromOwnSite } from "@/lib/authSession";
 import { adminDeleteUser } from "@/lib/supabaseAuth";
 import { queryAllByEmail } from "@/lib/queryAll";
+import { businessEmailChoices } from "@/lib/businessEmailChoices";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { promoForCode } from "@/lib/promo";
@@ -127,7 +128,12 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
         referralMatch = { id: other._id, name: other.businessName || other.email || "a business" };
       }
     }
-    return NextResponse.json({ item, referralMatch });
+    // Their own email choices (portal > Emails from MegaDeal), so it's
+    // clear before contacting them what they've said yes or no to.
+    const emailChoices = item.email
+      ? await businessEmailChoices(adminClient, { _id: item._id, email: item.email }).catch(() => null)
+      : null;
+    return NextResponse.json({ item, referralMatch, emailChoices });
   } catch (err) {
     console.error("[admin/merchants/[id]] GET failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

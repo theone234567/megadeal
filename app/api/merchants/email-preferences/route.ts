@@ -3,9 +3,9 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
 import { getOrClaimMerchant } from "@/lib/merchant";
-import { queryAllByEmail } from "@/lib/queryAll";
 import { insertEmailSignup } from "@/lib/emailSignups";
-import { optedOutBusinesses, optInBusiness, optOutBusiness } from "@/lib/businessEmailOptOut";
+import { optInBusiness, optOutBusiness } from "@/lib/businessEmailOptOut";
+import { businessEmailChoices, businessNewsRows } from "@/lib/businessEmailChoices";
 
 export const dynamic = "force-dynamic";
 
@@ -32,23 +32,11 @@ async function load(req: NextRequest) {
   return { ok: true as const, member, client, merchant: merchant as { _id: string; email: string } };
 }
 
-async function newsRows(client: ReturnType<typeof createDataClient>, email: string) {
-  const rows = await queryAllByEmail((e) => client.items.query("EmailSignups").eq("email", e), email, "EmailSignups (preferences)");
-  return rows.filter((r: any) => r.audience === "merchant");
-}
-
-async function current(client: ReturnType<typeof createDataClient>, merchant: { _id: string; email: string }) {
-  const rows = await newsRows(client, merchant.email);
-  const news = rows.some((r: any) => r.verified === true) && !rows.some((r: any) => r.unsubscribed === true);
-  const announcements = !(await optedOutBusinesses([merchant._id])).has(merchant._id);
-  return { news, announcements };
-}
-
 export async function GET(req: NextRequest) {
   const ctx = await load(req);
   if (!ctx.ok) return ctx.error;
   try {
-    return NextResponse.json(await current(ctx.client, ctx.merchant), { headers });
+    return NextResponse.json(await businessEmailChoices(ctx.client, ctx.merchant), { headers });
   } catch (err) {
     console.error("[merchants/email-preferences] read failed", err);
     return NextResponse.json({ error: "Couldn't load your email settings." }, { status: 500, headers });
@@ -75,13 +63,13 @@ export async function POST(req: NextRequest) {
         if (!ok) throw new Error("couldn't subscribe");
         // An unsubscribe on any row counts for the whole address
         // (lib/announcement.ts), so every row is turned back on.
-        for (const row of await newsRows(client, merchant.email)) {
+        for (const row of await businessNewsRows(client, merchant.email)) {
           if (row.unsubscribed || row.verified !== true) {
             await client.items.update("EmailSignups", { ...row, unsubscribed: false, verified: true });
           }
         }
       } else {
-        for (const row of await newsRows(client, merchant.email)) {
+        for (const row of await businessNewsRows(client, merchant.email)) {
           if (!row.unsubscribed) await client.items.update("EmailSignups", { ...row, unsubscribed: true });
         }
       }
@@ -90,7 +78,7 @@ export async function POST(req: NextRequest) {
       const ok = body.announcements ? await optInBusiness(merchant._id) : await optOutBusiness(merchant._id);
       if (!ok) throw new Error("couldn't save the announcements choice");
     }
-    return NextResponse.json(await current(client, merchant), { headers });
+    return NextResponse.json(await businessEmailChoices(client, merchant), { headers });
   } catch (err) {
     console.error("[merchants/email-preferences] save failed", err);
     return NextResponse.json({ error: "Couldn't save that. Please try again." }, { status: 500, headers });
