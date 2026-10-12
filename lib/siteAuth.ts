@@ -1,19 +1,17 @@
-import type { AuthOutcome } from "./wixAuth";
 import { turnstileProblemMessage } from "./turnstileClient";
 
 /**
- * The browser side of MegaDeal's own business logins (app/api/auth/*):
- * the same three calls and outcomes as lib/wixAuth.ts, so the sign-up
- * and sign-in forms run unchanged on either. Nothing here talks to
- * Supabase; it only calls this site's routes, which set the session as
- * httpOnly cookies the page can't read.
- *
- * `captchaTokens` carries the Turnstile token (lib/turnstileClient.ts) in
- * whichever field the form fills.
+ * The browser side of MegaDeal's business logins (app/api/auth/*). Nothing
+ * here talks to Supabase; it only calls this site's routes, which set the
+ * session as httpOnly cookies the page can't read. `captchaToken` is the
+ * Turnstile token (lib/turnstileClient.ts).
  */
 
-type Captcha = { recaptchaToken?: string | null; invisibleRecaptchaToken?: string | null } | undefined;
-const captchaOf = (c: Captcha) => c?.recaptchaToken || c?.invisibleRecaptchaToken || "";
+export type AuthOutcome =
+  | { status: "success" }
+  /** An account whose email isn't confirmed yet: a code has been emailed. */
+  | { status: "verify"; pendingState: { email: string }; email: string }
+  | { status: "error"; message: string };
 
 type Answer = { ok: boolean; status: number; json: Record<string, any> };
 
@@ -47,26 +45,25 @@ const toOutcome = (r: Answer, email: string): AuthOutcome =>
 /** With the robot check on, no token means it didn't run in this browser:
  *  say why there and then, rather than sending the form to be refused
  *  with a vaguer "didn't pass". */
-function checkDidNotRun(captcha?: Captcha): AuthOutcome | null {
-  if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || captchaOf(captcha)) return null;
+function checkDidNotRun(captchaToken?: string | null): AuthOutcome | null {
+  if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || captchaToken) return null;
   return { status: "error", message: turnstileProblemMessage() };
 }
 
-export async function registerMember(_client: unknown, email: string, password: string, _nickname: string, captcha?: Captcha): Promise<AuthOutcome> {
-  return checkDidNotRun(captcha) ?? toOutcome(await post("/api/auth/register", { email, password, captchaToken: captchaOf(captcha) }), email);
+export async function registerMember(email: string, password: string, captchaToken?: string | null): Promise<AuthOutcome> {
+  return checkDidNotRun(captchaToken) ?? toOutcome(await post("/api/auth/register", { email, password, captchaToken: captchaToken ?? "" }), email);
 }
 
-export async function loginMember(_client: unknown, email: string, password: string, captcha?: Captcha): Promise<AuthOutcome> {
-  return checkDidNotRun(captcha) ?? toOutcome(await post("/api/auth/login", { email, password, captchaToken: captchaOf(captcha) }), email);
+export async function loginMember(email: string, password: string, captchaToken?: string | null): Promise<AuthOutcome> {
+  return checkDidNotRun(captchaToken) ?? toOutcome(await post("/api/auth/login", { email, password, captchaToken: captchaToken ?? "" }), email);
 }
 
-export async function submitVerificationCode(_client: unknown, code: string, pendingState: unknown): Promise<AuthOutcome> {
-  const email = String((pendingState as { email?: string } | null)?.email ?? "");
+export async function submitVerificationCode(code: string, pendingState: { email: string } | null): Promise<AuthOutcome> {
+  const email = String(pendingState?.email ?? "");
   return toOutcome(await post("/api/auth/verify", { email, code }), email);
 }
 
-/** Sends the sign-up code again (Wix had no resend; its forms signed in
- *  again to trigger one). */
+/** Sends the sign-up code again. */
 export async function resendCode(email: string): Promise<boolean> {
   return (await post("/api/auth/resend-code", { email })).ok;
 }

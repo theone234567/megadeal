@@ -2,19 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useWix } from "@/context/WixProvider";
+import { useSession } from "@/context/SessionProvider";
 import { currentPromo, promoForCode } from "@/lib/promo";
 import { referralCreditsLabel } from "@/lib/referralBonus";
-import * as wixAuth from "@/lib/wixAuth";
-import type { AuthOutcome } from "@/lib/wixAuth";
-import * as siteAuth from "@/lib/siteAuth";
+import { loginMember, registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/siteAuth";
 import { getTurnstileToken, preloadTurnstile } from "@/lib/turnstileClient";
 import PasswordField from "@/components/PasswordField";
 import { EyeOffIcon } from "@/components/icons";
 import { trackMetaPixelEvent, trackMetaCustomEvent } from "@/lib/metaPixel";
 import { getAttribution, getFbc, getFbp } from "@/lib/attribution";
-import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
-import RecaptchaCheckbox, { type RecaptchaCheckboxHandle } from "@/components/RecaptchaCheckbox";
 import { AUTH_TIMEOUT_MS, withTimeout } from "@/lib/withTimeout";
 
 function RequiredTag() {
@@ -77,8 +73,8 @@ function fieldKey(el: Element): string {
  * Turns a thrown value into something safe to put in front of a business
  * owner.
  *
- * The catch blocks here used to render `err.message` verbatim, so a Wix
- * SDK failure showed the visitor raw internals like "Cannot read
+ * The catch blocks here used to render `err.message` verbatim, so a
+ * failure showed the visitor raw internals like "Cannot read
  * properties of undefined (reading 'validationError')" — meaningless to
  * them, and it exposes how the integration is wired. Messages we wrote
  * ourselves still pass through unchanged; runtime/programming errors are
@@ -135,7 +131,7 @@ function readApplicationValues(formData: FormData): ApplicationValues {
 
 /** Submits everything the /list-your-business form collected to create (or claim)
  *  the business application — called only once the account itself exists
- *  and, if Wix required it, its email is verified. Returns the Meta event
+ *  and its email is verified. Returns the Meta event
  *  ID the server generated for this conversion (see /api/merchants/apply
  *  and lib/metaCapi.ts), so the caller's browser-side Pixel event can
  *  share it — undefined when this was a resubmission, not a first signup. */
@@ -183,12 +179,9 @@ export default function MerchantSignupForm({
   redesign?: boolean;
 }) {
   const promo = currentPromo(launched);
-  const { client, getClient, loginClient, member, isLoggedIn, logout, authBackend } = useWix();
-  // Whose logins: Wix's (today) or MegaDeal's own (lib/siteAuth.ts). Same
-  // calls and outcomes either way.
-  const auth = authBackend === "supabase" ? siteAuth : wixAuth;
-  // Wix's rule, or the longer one MegaDeal's own logins ask for (lib/authRoutes.ts).
-  const minPassword = authBackend === "supabase" ? 10 : 8;
+  const { member, isLoggedIn, logout } = useSession();
+  // The login service's rule (lib/authRoutes.ts).
+  const minPassword = 10;
   const searchParams = useSearchParams();
   const referralPrefill = searchParams.get("ref") || "";
   const startedRef = useRef(false);
@@ -199,10 +192,6 @@ export default function MerchantSignupForm({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  /** Token from the visible reCAPTCHA checkbox. Single-use and
-   *  expires after ~2 minutes, so it is cleared after every attempt. */
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const captchaRef = useRef<RecaptchaCheckboxHandle | null>(null);
   /** Redesigned layout: problems found on submit, by field. Empty until
    *  then, so untouched fields never look wrong; a field's message clears
    *  as soon as it's edited. */
@@ -222,7 +211,7 @@ export default function MerchantSignupForm({
     { businessName?: string } | null | undefined
   >(undefined);
 
-  // WixProvider starts with member === undefined and resolves it
+  // SessionProvider starts with member === undefined and resolves it
   // asynchronously, so isLoggedIn is false on the first render for a
   // signed-in visitor too. Acting on that was the whole bug: the effect
   // recorded "no business" before anyone had looked, the form rendered,
@@ -254,16 +243,6 @@ export default function MerchantSignupForm({
       cancelled = true;
     };
   }, [authResolved, isLoggedIn]);
-  /**
-   * Whether the visible checkbox has been revealed.
-   *
-   * Starts false and normally stays false: the invisible check runs
-   * silently on submit and only interrupts someone reCAPTCHA finds
-   * suspicious. The checkbox appears only if Wix rejects that token —
-   * which tells us this project requires the visible variant — and from
-   * then on this session uses it.
-   */
-  const [needsVisibleCaptcha, setNeedsVisibleCaptcha] = useState(false);
   // Pre-filled with the current offer's code. A referral (?ref= link, or
   // a code someone was given) has its own box: the two apply together
   // (lib/referralBonus.ts), so a referred business keeps its offer.
@@ -321,11 +300,11 @@ export default function MerchantSignupForm({
   // them check it, with half the typing.
   const [password, setPassword] = useState("");
 
-  // Set once Wix comes back with EMAIL_VERIFICATION_REQUIRED — the rest of
+  // Set once the account needs its emailed code — the rest of
   // the form stays filled in underneath while this is shown, nothing is
   // lost, the verification code just has to clear before the application
   // itself gets submitted.
-  const [pendingState, setPendingState] = useState<unknown>(null);
+  const [pendingState, setPendingState] = useState<{ email: string } | null>(null);
   const [pendingEmail, setPendingEmail] = useState("");
   /** Seconds left before another code can be requested. Sending email on
    *  demand needs a brake: without one an impatient visitor can fire off a
@@ -336,24 +315,14 @@ export default function MerchantSignupForm({
   const [code, setCode] = useState("");
 
   // Warm the robot check while the visitor is still filling the form, so
-  // obtaining the token adds nothing to the wait after they submit. Not
-  // before the page knows whose logins are in use: it assumes Wix's until
-  // then, and would fetch Google's reCAPTCHA for nothing.
+  // obtaining the token adds nothing to the wait after they submit.
   useEffect(() => {
-    if (!authResolved) return;
-    if (authBackend === "supabase") preloadTurnstile();
-    else preloadCaptcha();
-  }, [authResolved, authBackend]);
+    preloadTurnstile();
+  }, []);
 
-  /** The background robot check's token: Turnstile on MegaDeal's own
-   *  logins (it only interrupts someone it finds suspicious), Wix's
-   *  invisible reCAPTCHA otherwise. */
-  async function invisibleCaptchaToken(): Promise<string | null> {
-    if (authBackend === "supabase") return getTurnstileToken(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "");
-    const wix = await getClient();
-    return getInvisibleCaptchaToken((wix.auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? "");
-  }
-
+  /** The robot check's token (Turnstile: it only interrupts someone it
+   *  finds suspicious). */
+  const captchaToken = () => getTurnstileToken(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "");
 
   function trackFormStarted() {
     if (startedRef.current) return;
@@ -488,7 +457,6 @@ export default function MerchantSignupForm({
     }
 
     const email = String(formData.get("email") ?? "").trim();
-    const businessName = String(formData.get("businessName") ?? "").trim();
 
     // Only when an account is being created. A signed-in visitor has no
     // password field rendered, so `password` is "" and these would reject
@@ -505,19 +473,12 @@ export default function MerchantSignupForm({
       setSubmitError("You must agree to the Terms and Conditions to apply.");
       return;
     }
-    // Only once the checkbox is actually showing. Before that the
-    // invisible check runs inside the submit below and there is nothing
-    // for anyone to tick.
-    if (needsVisibleCaptcha && !captchaToken) {
-      setSubmitError("Please tick the \u201cI'm not a robot\u201d box below to continue.");
-      return;
-    }
 
     // Snapshot the form NOW, while it's still mounted — finishAfterAuth may
     // not run until after the verify-code screen has replaced it.
     applicationRef.current = readApplicationValues(formData);
 
-    // Already signed in: the Wix account exists, so there is nothing to
+    // Already signed in: the account exists, so there is nothing to
     // register and the application is all that's missing. Without this the
     // page is a loop — the portal tells someone with no application on
     // file to "Sign up your business", and registering again answers
@@ -550,63 +511,11 @@ export default function MerchantSignupForm({
 
     setSubmitting(true);
     try {
-      const wix = await loginClient();
-      // Invisible first, so a normal visitor never sees a challenge at
-      // all — reCAPTCHA only interrupts someone it finds suspicious,
-      // which is the whole point of the invisible variant on a page whose
-      // job is conversions.
-      const attempt = async (useVisible: boolean) =>
-        withTimeout(
-          auth.registerMember(
-            wix,
-            email,
-            password,
-            businessName,
-            useVisible
-              ? { recaptchaToken: captchaToken }
-              : {
-                  invisibleRecaptchaToken: await invisibleCaptchaToken(),
-                }
-          ),
-          AUTH_TIMEOUT_MS,
-          "That took too long. Please check your connection and try again — if your account was created, you can sign in to your portal instead."
-        );
-
-      let outcome = await attempt(needsVisibleCaptcha);
-
-      // SILENT_CAPTCHA_REQUIRED is Wix asking for another background
-      // check, not for a human. Answering it with a checkbox — as this
-      // did — puts a challenge in front of someone reCAPTCHA never found
-      // suspicious, which is the one thing this form is meant not to do.
-      // One silent retry with a fresh token first; the box is still there
-      // if that fails.
-      if (!needsVisibleCaptcha && outcome.status === "captcha" && outcome.kind === "silent") {
-        outcome = await attempt(false);
-      }
-
-      // Wix refused the invisible token. Rather than dead-end someone who
-      // filled the whole form in, reveal the checkbox and let them finish
-      // — their answers are all still on screen, and this is the one
-      // outcome that proves the visible variant is required here.
-      if (
-        !needsVisibleCaptcha &&
-        // Wix asking for a CAPTCHA outright is the same situation as it
-        // refusing our silent token: the checkbox is what resolves both.
-        // "user" specifically means Wix judged this attempt suspicious —
-        // which is exactly when a challenge should appear, and previously
-        // dead-ended with "try again in a moment", something no amount of
-        // retrying could clear.
-        (outcome.status === "captcha" ||
-          (outcome.status === "error" &&
-            (outcome.errorCode === "missingCaptchaToken" ||
-              outcome.errorCode === "invalidCaptchaToken")))
-      ) {
-        setNeedsVisibleCaptcha(true);
-        setSubmitError(
-          "One more step — please tick the \u201cI'm not a robot\u201d box below, then submit again."
-        );
-        return;
-      }
+      const outcome = await withTimeout(
+        (async () => registerMember(email, password, await captchaToken()))(),
+        AUTH_TIMEOUT_MS,
+        "That took too long. Please check your connection and try again — if your account was created, you can sign in to your portal instead."
+      );
 
       await handleOutcome(outcome);
     } catch (err: any) {
@@ -615,10 +524,6 @@ export default function MerchantSignupForm({
       );
     } finally {
       setSubmitting(false);
-      // reCAPTCHA tokens are single-use. Whatever happened above, this one
-      // is spent — leaving it in state would make the next attempt fail
-      // with a rejected token rather than a missing one.
-      captchaRef.current?.reset();
     }
   }
 
@@ -630,23 +535,8 @@ export default function MerchantSignupForm({
   }, [resendCooldown]);
 
   /**
-   * Sends a fresh verification code.
-   *
-   * There is no resend method in this SDK. Wix documents
-   * resendVerificationCodeEmail() only for the Velo / frontend members
-   * module, and @wix/auto_sdk_identity_verification exports just `start`
-   * and `verifyDuringAuthentication` — the /auth/resend path appears in
-   * its routing metadata but nothing wraps it.
-   *
-   * So this uses documented behaviour instead of an undocumented endpoint:
-   * Wix states that when authentication returns EMAIL_VERIFICATION_REQUIRED
-   * "an email with a verification code is sent automatically". Signing in
-   * with the credentials just used to register returns exactly that state
-   * for an account whose email is not yet verified — so the code arrives,
-   * and the fresh pendingState replaces the old one, which matters because
-   * the previous state token is what the new code is checked against.
-   *
-   * https://dev.wix.com/docs/go-headless/develop-your-project/self-managed-headless/authentication/members/custom-login-page/custom-login/custom-login-using-the-js-sdk
+   * Sends a fresh verification code: signing in again with the details
+   * just registered, while the email is unconfirmed, sends a new one.
    */
   async function handleResendCode() {
     if (resendCooldown > 0 || submitting) return;
@@ -655,30 +545,13 @@ export default function MerchantSignupForm({
     setResendNotice(null);
     setSubmitting(true);
     try {
-      // Always the invisible variant, whatever registration was refused
-      // for. This is a LOGIN call, and Wix documents login as taking the
-      // invisible token; needsVisibleCaptcha records a decision about the
-      // register endpoint, which is a different check.
-      //
-      // Carrying that flag here also could not work: the checkbox is only
-      // rendered in the main form, and its token is cleared after every
-      // attempt because tokens are single-use — so on this screen it was
-      // always null, every resend went out empty, and Wix refused every
-      // one. The resend could never succeed once the fallback was active.
-      const wix = await loginClient();
-      const captchaTokens = {
-        invisibleRecaptchaToken: await invisibleCaptchaToken(),
-      };
-
       const outcome = await withTimeout(
-        auth.loginMember(wix, pendingEmail, password, captchaTokens),
+        (async () => loginMember(pendingEmail, password, await captchaToken()))(),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try again."
       );
 
       if (outcome.status === "verify") {
-        // Swap in the new state token — the fresh code is checked against
-        // this one, so keeping the old would reject a perfectly good code.
         setPendingState(outcome.pendingState);
         setResendNotice(`New code sent to ${pendingEmail}. It can take a minute to arrive.`);
         setResendCooldown(30);
@@ -688,17 +561,12 @@ export default function MerchantSignupForm({
         // code screen that can no longer be satisfied.
         await finishAfterAuth();
       } else {
-        setSubmitError(
-          outcome.status === "error"
-            ? outcome.message
-            : "We couldn't send a new code just now. Please try again shortly."
-        );
+        setSubmitError(outcome.message);
       }
     } catch (err: any) {
       setSubmitError(friendlyError(err, "We couldn't send a new code. Please try again."));
     } finally {
       setSubmitting(false);
-      captchaRef.current?.reset();
     }
   }
 
@@ -708,7 +576,7 @@ export default function MerchantSignupForm({
     setSubmitting(true);
     try {
       const outcome = await withTimeout(
-        auth.submitVerificationCode(await loginClient(), code, pendingState),
+        submitVerificationCode(code, pendingState),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try entering your code again."
       );
@@ -1149,17 +1017,7 @@ export default function MerchantSignupForm({
         </label>
 
         {/* Where Turnstile shows a challenge, if it ever needs one. */}
-        {authBackend === "supabase" && <div data-turnstile-slot />}
-        {/* Hidden unless Wix has rejected an invisible token, so the usual
-            signup shows no challenge at all. Wix verifies the token, so the
-            site key must be Wix's own — it comes off the SDK client. */}
-        {needsVisibleCaptcha && authBackend !== "supabase" && (
-          <RecaptchaCheckbox
-            ref={captchaRef}
-            siteKey={(client?.auth as { captchaVisibleSiteKey?: string } | undefined)?.captchaVisibleSiteKey ?? ""}
-            onChange={setCaptchaToken}
-          />
-        )}
+        <div data-turnstile-slot />
 
         {submitError && (
           <p role="alert" className={redesign ? "text-sm font-medium text-red-700" : "text-sm text-ember-600"}>

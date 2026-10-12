@@ -1,15 +1,10 @@
 import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { dataBackend } from "./db/connection";
 
 /**
- * Where uploaded photos go: Wix Media today; MegaDeal's own Cloudflare R2
- * bucket (the PHOTOS binding in wrangler.toml) once PHOTO_STORAGE=r2.
- * Served back from this site at /media/<key> (app/media/[...key]).
- *
- * R2 only together with the new database (DATA_BACKEND=postgres): while
- * deals are still Wix Stores products, a product's photo has to be a Wix
- * Media file.
+ * Where uploaded photos go: MegaDeal's own Cloudflare R2 bucket (the
+ * PHOTOS binding in wrangler.toml), served back from this site at
+ * /media/<key> (app/media/[...key]).
  */
 
 /** The few R2 calls used here. */
@@ -25,10 +20,6 @@ declare global {
 }
 
 export const MEDIA_PATH = "/media/";
-
-export function photoStorage(): "wix" | "r2" {
-  return process.env.PHOTO_STORAGE === "r2" && dataBackend() === "postgres" ? "r2" : "wix";
-}
 
 export async function photoBucket(): Promise<PhotoBucket | null> {
   try {

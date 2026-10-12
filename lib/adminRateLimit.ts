@@ -22,10 +22,10 @@ export interface IpLockoutStatus {
   minutesLeft: number;
 }
 
-/** The database side (lib/securityStore.ts), when there is a database:
- *  one statement per step, so parallel guesses can't share one count. */
+/** The database side (lib/securityStore.ts): one statement per step, so
+ *  parallel guesses can't share one count. */
 async function store() {
-  return process.env.DATA_BACKEND === "postgres" ? await import("./securityStore") : null;
+  return import("./securityStore");
 }
 
 export async function checkIpLockout(ip: string): Promise<IpLockoutStatus> {

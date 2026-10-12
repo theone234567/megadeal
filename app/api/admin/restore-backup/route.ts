@@ -4,7 +4,7 @@ import { logAdminAction } from "@/lib/adminAudit";
 import { fromOwnSite } from "@/lib/authSession";
 import { BACKUP_KEY, backupBucket, listBackups } from "@/lib/backupStorage";
 import { restoreBackup, unpackBackup } from "@/lib/db/backup";
-import { dataBackend, withDb } from "@/lib/db/connection";
+import { withDb } from "@/lib/db/connection";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const dynamic = "force-dynamic";
@@ -46,7 +46,6 @@ export async function POST(req: NextRequest) {
   const mode = body?.mode === "restore" ? "restore" : body?.mode === "rehearse" ? "rehearse" : null;
   const key = typeof body?.key === "string" && BACKUP_KEY.test(body.key) ? body.key : null;
   if (!mode || !key) return json({ error: "Bad request." }, 400);
-  if (dataBackend() !== "postgres") return json({ error: "The site still reads Wix: a backup is restored into the new database once it's switched on." }, 409);
 
   const bucket = await backupBucket();
   if (!bucket) return json({ error: "No backup storage connected." }, 503);

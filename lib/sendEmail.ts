@@ -1,5 +1,4 @@
 import { randomUUID } from "crypto";
-import { createWixAdminClient } from "./wixAdmin";
 import { emailHtmlToText, headerSafe } from "./emailText";
 
 const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
@@ -8,16 +7,7 @@ const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
  *  Resend's daily or monthly sending limit, which no retry today fixes. */
 export type SendResult = { ok: true } | { ok: false; reason?: "quota" };
 
-/**
- * Sends one email: through Resend from megadeal.co.nz when
- * EMAIL_PROVIDER=resend (wrangler.toml; on since Oct 2026, see
- * sendWithResend below), otherwise through Wix's Email Transmissions API.
- *
- * Wix is kept as the way back: removing the switch and deploying sends
- * through it again at once. Its emails count against the site's Wix email
- * quota (5,000 a month on Core), go out from Wix's own sending domain with
- * ours as the reply-to, and have no plain-text part.
- */
+/** Sends one email, through Resend from megadeal.co.nz (sendWithResend below). */
 export async function sendTransactionalEmail(msg: Parameters<typeof sendEmail>[0]): Promise<boolean> {
   return (await sendEmail(msg)).ok;
 }
@@ -34,8 +24,8 @@ export async function sendEmail({
   to: string;
   subject: string;
   html: string;
-  // Defaults to no-reply@megadeal.co.nz (Wix requires a replyTo on every
-  // transmission). Pass this when the email itself invites a reply — e.g.
+  // Defaults to none (replies go to the sender, no-reply@). Pass this
+  // when the email itself invites a reply — e.g.
   // "hit reply, a real person reads every message" — so that reply
   // actually reaches someone instead of vanishing into a no-reply mailbox.
   replyTo?: string;
@@ -63,48 +53,11 @@ export async function sendEmail({
     console.error("[sendTransactionalEmail] refused: not an email address");
     return { ok: false };
   }
-  if (process.env.EMAIL_PROVIDER === "resend") {
-    return sendWithResend({ to: recipients, subject: safeSubject, html, replyTo: safeReplyTo, unsubscribeUrl }, withinMs);
-  }
-  subject = safeSubject;
-  replyTo = safeReplyTo;
-
-  let adminClient;
-  try {
-    adminClient = createWixAdminClient();
-  } catch (err) {
-    console.error("[sendTransactionalEmail] Wix admin client not configured.", err);
-    return { ok: false };
-  }
-
-  const res = await adminClient.fetchWithAuth(
-    "https://www.wixapis.com/email-transmissions/v1/email-transmissions/send",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        emailTransmission: {
-          emailSubject: subject,
-          emailHtmlContent: html,
-          senderName: "MegaDeal",
-          senderEmailAddress: "no-reply@megadeal.co.nz",
-          replyTo: { emailAddress: replyTo || "no-reply@megadeal.co.nz" },
-          toRecipients: recipients.map((emailAddress) => ({ emailAddress })),
-          type: "TRANSACTIONAL",
-        },
-        idempotencyKey: randomUUID(),
-      }),
-    }
-  );
-
-  if (!res.ok) {
-    console.error("[sendTransactionalEmail] failed", await res.text().catch(() => ""));
-  }
-  return { ok: res.ok };
+  return sendWithResend({ to: recipients, subject: safeSubject, html, replyTo: safeReplyTo, unsubscribeUrl }, withinMs);
 }
 
 /**
- * MegaDeal's own sending (EMAIL_PROVIDER=resend, RESEND_API_KEY), from
+ * MegaDeal's own sending (RESEND_API_KEY), from
  * EMAIL_FROM (default "MegaDeal <no-reply@megadeal.co.nz>"). The domain
  * is verified with Resend and carries its SPF and DKIM records and a DMARC
  * record (docs/WIX-MIGRATION.md, Stage 1). A new sending domain starts
@@ -126,7 +79,7 @@ async function sendWithResend(msg: { to: string[]; subject: string; html: string
   const deadline = Date.now() + withinMs;
   const key = process.env.RESEND_API_KEY;
   if (!key) {
-    console.error("[sendTransactionalEmail] EMAIL_PROVIDER=resend but RESEND_API_KEY isn't set");
+    console.error("[sendTransactionalEmail] RESEND_API_KEY isn't set");
     return { ok: false };
   }
   const headers: Record<string, string> = {};

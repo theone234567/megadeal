@@ -25,7 +25,7 @@ describe("signupCodes", () => {
   });
 });
 
-// Approval against a fake Wix: a referred business that also used WELCOME6.
+// Approval against a fake data client: a referred business that also used WELCOME6.
 const merchants: Record<string, any> = {};
 const increments = vi.fn(async (..._a: unknown[]) => true);
 vi.mock("./adminSession", () => ({ isAdminRequest: async () => true }));
@@ -33,8 +33,8 @@ vi.mock("./adminAudit", () => ({ logAdminAction: vi.fn(), auditTarget: (n: strin
 vi.mock("./sendEmail", () => ({ sendTransactionalEmail: vi.fn(async () => true) }));
 vi.mock("./merchantActivity", () => ({ logMerchantActivity: vi.fn() }));
 vi.mock("./creditsAtomic", () => ({ incrementCreditsAtomically: (...a: unknown[]) => increments(...a) }));
-vi.mock("./wixAdmin", () => ({
-  createWixAdminClient: () => ({
+vi.mock("./dataClient", () => ({
+  createDataClient: () => ({
     items: {
       get: async (_c: string, id: string) => merchants[id],
       update: async (_c: string, item: any) => item,

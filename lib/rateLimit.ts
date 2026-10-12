@@ -15,7 +15,6 @@ export function getClientIp(req: NextRequest): string {
  *  "unavailable" without one. Loaded only when needed, so the database
  *  module is never pulled in where there's no database. */
 async function countInDatabase(key: string, windowSeconds: number): Promise<number | "unavailable"> {
-  if (process.env.DATA_BACKEND !== "postgres") return "unavailable";
   return (await import("./securityStore")).countInDatabase(key, windowSeconds);
 }
 

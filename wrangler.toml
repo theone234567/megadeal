@@ -5,10 +5,9 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
 # Smart Placement: Cloudflare runs the site's server code near the services
-# it calls most, rather than near each visitor. A deal page makes several
-# Wix reads in a row (lib/fetchDealServer.ts), and from an Auckland data
-# centre each one crossed the Pacific; placed near Wix they're short hops,
-# and the finished page makes the one long trip back. Cloudflare only moves
+# it calls most (the database, in Sydney), rather than near each visitor,
+# so a page's reads are short hops and the finished page makes the one
+# longer trip back. Cloudflare only moves
 # the Worker when its own measurements say it's faster; static files are
 # still served from the data centre nearest the visitor either way.
 # Remove this block (or set mode = "off") to go back.
@@ -36,15 +35,13 @@ binding = "RATE_LIMIT_KV"
 id = "49bc14b529ac4f108051947967a39943"
 
 # MegaDeal's own photo storage (lib/photoStorage.ts): private, served by
-# the site at /media/. Only used once PHOTO_STORAGE = "r2" (with the new
-# database); until then photos stay on Wix.
+# the site at /media/.
 [[r2_buckets]]
 binding = "PHOTOS"
 bucket_name = "megadeal-photos"
 
 # The nightly database backup (app/api/cron/backup): private, and a
-# lifecycle rule on the bucket deletes each backup after 30 days. It skips
-# itself while the data is still in Wix.
+# lifecycle rule on the bucket deletes each backup after 30 days.
 [[r2_buckets]]
 binding = "BACKUPS"
 bucket_name = "megadeal-backups"
@@ -52,7 +49,6 @@ bucket_name = "megadeal-backups"
 # MegaDeal's own database (Supabase project megadeal, Sydney) through
 # Hyperdrive, which keeps connections ready so each request doesn't open
 # a new one. Its query caching is off on purpose (docs/WIX-MIGRATION.md).
-# Only used once DATA_BACKEND = "postgres"; until then the data is in Wix.
 #
 # localConnectionString is only for local stand-ins (wrangler dev, and the
 # deploy step, which builds one and refuses a Hyperdrive binding without
@@ -62,25 +58,6 @@ bucket_name = "megadeal-backups"
 binding = "HYPERDRIVE"
 id = "acdb74bed4044d03a2152af6d690f126"
 localConnectionString = "postgresql://postgres:postgres@localhost:5432/postgres"
-
-# The moving-off-Wix switches (docs/WIX-MIGRATION.md, "Where settings go"):
-# kept here, in a commit, so each one is on record and turning it off is a
-# revert. Keys and passwords never go here: they're Secrets in the dashboard.
-[vars]
-# Email through Resend from megadeal.co.nz (RESEND_API_KEY), not Wix.
-# Remove the line and deploy to go back to Wix at once.
-EMAIL_PROVIDER = "resend"
-# MegaDeal's own database (Supabase, through Hyperdrive) and photo
-# storage (the PHOTOS bucket), not Wix: switched on 8 Oct 2026 after the
-# import. Remove both lines and deploy to read Wix again (anything changed
-# since stays only in the new database: docs/WIX-MIGRATION.md).
-DATA_BACKEND = "postgres"
-PHOTO_STORAGE = "r2"
-# Business logins on Supabase Auth with Cloudflare Turnstile, not Wix:
-# switched on 9 Oct 2026 once the readiness page was all ticks. Remove the
-# line and deploy to go back to Wix's logins (accounts made meanwhile
-# would need to sign up on Wix: docs/WIX-MIGRATION.md, stage 3).
-AUTH_BACKEND = "supabase"
 
 [observability]
 enabled = true

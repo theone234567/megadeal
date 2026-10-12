@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import PortalShell from "@/components/portal/PortalShell";
-import { WixProvider } from "@/context/WixProvider";
+import { SessionProvider } from "@/context/SessionProvider";
 
 // The merchant portal shows a signed-in merchant's own private business
 // data (applications, deal drafts, credits) — never something to index.
@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
-  // Wix sign-in lives here, not in the root layout: see app/layout.tsx.
+  // The session lives here, not in the root layout: see app/layout.tsx.
   return (
-    <WixProvider>
+    <SessionProvider>
       <PortalShell>{children}</PortalShell>
-    </WixProvider>
+    </SessionProvider>
   );
 }

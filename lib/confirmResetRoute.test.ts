@@ -22,7 +22,6 @@ vi.mock("@/lib/authSession", () => ({
   endAllSessions: async () => {},
 }));
 vi.mock("@/lib/supabaseAuth", () => ({ adminSetPassword: async () => setResult }));
-vi.mock("@/lib/wixPassword", () => ({ setMemberPassword: async () => {} }));
 
 const { POST } = await import("@/app/api/auth/confirm-password-reset/route");
 const TOKEN = "cd".repeat(32);

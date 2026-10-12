@@ -15,14 +15,14 @@ find them and contact or book the business directly. Live at
   megadeal" check). The GitHub workflow only checks (types, tests, build).
 - **Data:** Supabase Postgres (Sydney), reached through Cloudflare
   Hyperdrive (`lib/db/`). Schema in `supabase/migrations`; updates are
-  applied from Admin > Moving off Wix > "Apply database updates".
+  applied from Admin > System checks > "Apply database updates".
 - **Photos:** Cloudflare R2 (`PHOTOS`), resized by Cloudflare Images.
 - **Email:** Resend, from megadeal.co.nz (`lib/sendEmail.ts`).
 - **Business sign-in:** Supabase Auth with Cloudflare Turnstile
-  (`AUTH_BACKEND`, `lib/authSession.ts`), since 9 Oct 2026.
+  (`lib/authSession.ts`), since 9 Oct 2026.
 - **Backups:** nightly to R2 (`BACKUPS`), restorable from admin.
 
-Bindings and switches are in `wrangler.toml`; secrets live in Cloudflare
+Bindings are in `wrangler.toml`; secrets live in Cloudflare
 (Workers & Pages > megadeal > Settings > Variables and Secrets), never in
 the repository.
 
@@ -43,7 +43,7 @@ its guide is in `node_modules/next/dist/docs/`.
 | Guide | For |
 | --- | --- |
 | `WHEN-THINGS-GO-WRONG.md` | Plain steps for outages, sign-in trouble, missing emails, lost data, leaked keys |
-| `WIX-MIGRATION.md` | Moving off Wix: what's switched, how, and how to go back |
+| `WIX-MIGRATION.md` | The move off Wix (finished Oct 2026): how it was done, kept for reference |
 | `LAUNCH-DAY.md` | Opening the site to the public |
 | `LAUNCH-OFFER-CHECKLIST.md` | The launch offer's wording and credits |
 | `TEST-DEALS.md` | Private test deals for checking the site before launch |

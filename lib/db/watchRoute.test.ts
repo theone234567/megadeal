@@ -7,7 +7,6 @@ let dbUp = true;
 const kv = new Map<string, string>();
 const emailed: { to: string; subject: string; html: string }[] = [];
 vi.mock("@/lib/db/connection", () => ({
-  dataBackend: () => process.env.DATA_BACKEND ?? "wix",
   withDb: async () => {
     if (!dbUp) throw new Error("connect ECONNREFUSED db.internal:5432 user=postgres");
     return [{ "?column?": 1 }];
@@ -27,7 +26,6 @@ async function run(secret = "s3cret") {
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout"] });
   vi.stubEnv("CRON_SECRET", "s3cret");
-  vi.stubEnv("DATA_BACKEND", "postgres");
   vi.stubEnv("ADMIN_NOTIFY_EMAIL", "owner@example.nz");
   vi.spyOn(console, "error").mockImplementation(() => {});
   dbUp = true;
@@ -46,10 +44,8 @@ const runNow = async () => {
 };
 
 describe("the hourly database check", () => {
-  it("only answers the scheduler, and does nothing while the data is in Wix", async () => {
+  it("only answers the scheduler", async () => {
     expect((await run("a-guess")).status).toBe(401);
-    vi.stubEnv("DATA_BACKEND", "wix");
-    expect((await run()).body.skipped).toBeTruthy();
     expect(emailed).toHaveLength(0);
   });
 
@@ -73,7 +69,7 @@ describe("the hourly database check", () => {
   it("emails once when the database stops answering, and once when it's back", async () => {
     expect((await runNow()).body).toEqual({ database: "up" });
     expect(emailed).toHaveLength(0);
-    // Each run is noted, for Moving off Wix to show.
+    // Each run is noted, for System checks to show.
     expect(JSON.parse(kv.get("cron:hourly:last")!)).toMatchObject({ database: "up" });
 
     dbUp = false;

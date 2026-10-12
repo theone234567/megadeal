@@ -46,9 +46,8 @@ export function validBusinessOptOut(id: unknown, sig: unknown): id is string {
 }
 
 /** MegaDeal's own database (site_settings, backed up nightly), or null
- *  without one, when only Cloudflare KV is used. */
+ *  when it can't be reached. */
 async function inDatabase<T>(fn: (db: Sql) => Promise<T>): Promise<T | null> {
-  if (process.env.DATA_BACKEND !== "postgres") return null;
   return (await import("./securityStore")).inDatabase(fn);
 }
 
@@ -85,7 +84,7 @@ export async function optInBusiness(id: string): Promise<boolean> {
     await db.query(`delete from public.site_settings where key = $1`, [OPT_OUT_PREFIX + id]);
     return true;
   });
-  if (db === null && process.env.DATA_BACKEND === "postgres") return false;
+  if (db === null) return false;
   const kv = await getRateLimitKv();
   if (!kv) return db === true;
   try {

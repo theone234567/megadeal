@@ -1,21 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useWix } from "@/context/WixProvider";
-import * as wixAuth from "@/lib/wixAuth";
-import * as siteAuth from "@/lib/siteAuth";
+import { useEffect, useState } from "react";
+import { loginMember, submitVerificationCode } from "@/lib/siteAuth";
 import { getTurnstileToken, preloadTurnstile } from "@/lib/turnstileClient";
-import { getInvisibleCaptchaToken, preloadCaptcha } from "@/lib/recaptcha";
 import PasswordField from "@/components/PasswordField";
-import RecaptchaCheckbox, { type RecaptchaCheckboxHandle } from "@/components/RecaptchaCheckbox";
 import { AUTH_TIMEOUT_MS, withTimeout } from "@/lib/withTimeout";
 
 /**
- * On-brand sign-in, right here on megadeal.co.nz — the previous flow
- * bounced merchants off to a generic Wix-hosted login page and back via
- * /login-callback, which works but breaks the visual flow at exactly the
- * moment a returning merchant needs to trust the site. This calls Wix's
- * Custom Login API (client.auth.login) directly instead.
+ * Business sign-in (lib/siteAuth.ts), with Cloudflare Turnstile as the
+ * robot check: it runs in the background and only shows a challenge when
+ * it needs one.
  */
 /**
  * Fields sized for what this form is: the gate to someone's business
@@ -28,50 +22,20 @@ const INPUT_CLASS =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-200";
 
 export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirectTo?: string }) {
-  const { client, getClient, loginClient, authBackend, member } = useWix();
-  // Whose logins: Wix's (today) or MegaDeal's own (lib/siteAuth.ts).
-  // Known once the page's first check with the server answers (member is
-  // undefined until then); before that it reads as Wix's.
-  const authResolved = member !== undefined;
-  const auth = authBackend === "supabase" ? siteAuth : wixAuth;
   // Warm the robot check while the visitor types, so obtaining the token
-  // adds nothing to the wait after they press sign in. Not before the
-  // page knows whose logins are in use, or it fetches Google's reCAPTCHA
-  // for nothing.
+  // adds nothing to the wait after they press sign in.
   useEffect(() => {
-    if (!authResolved) return;
-    if (authBackend === "supabase") preloadTurnstile();
-    else preloadCaptcha();
-  }, [authResolved, authBackend]);
+    preloadTurnstile();
+  }, []);
 
-  /** The background robot check: Turnstile on MegaDeal's own logins,
-   *  Wix's invisible reCAPTCHA otherwise. */
-  const invisibleCaptchaToken = async () =>
-    authBackend === "supabase"
-      ? getTurnstileToken(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "")
-      : getInvisibleCaptchaToken(((await getClient()).auth as { captchaInvisibleSiteKey?: string }).captchaInvisibleSiteKey ?? "");
+  const captchaToken = () => getTurnstileToken(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pendingState, setPendingState] = useState<unknown>(null);
+  const [pendingState, setPendingState] = useState<{ email: string } | null>(null);
   const [code, setCode] = useState("");
   const [resetSent, setResetSent] = useState(false);
-  /**
-   * Sign-in uses INVISIBLE reCAPTCHA, which is the whole point: it scores
-   * the attempt silently and only puts a challenge in front of someone it
-   * finds suspicious. A returning merchant signing in normally never sees
-   * anything — no checkbox, no interruption.
-   *
-   * The checkbox below appears only if Wix actually rejects the invisible
-   * token, which is the one signal that this project requires the visible
-   * variant here. Without that fallback a rejection is a dead end, and a
-   * merchant locked out of their own portal has no way forward at all —
-   * the same trap that made business signup impossible.
-   */
-  const [needsVisibleCaptcha, setNeedsVisibleCaptcha] = useState(false);
-  const [visibleCaptchaToken, setVisibleCaptchaToken] = useState<string | null>(null);
-  const captchaRef = useRef<RecaptchaCheckboxHandle | null>(null);
   /** Seconds until another code can be requested. Same brake as signup:
    *  unthrottled on-demand email is how a sending domain ends up in junk
    *  folders for everyone. */
@@ -81,70 +45,21 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    // A password manager can fill and submit before the page knows whose
-    // logins to use; sent now, it would go to the wrong ones.
-    if (!authResolved) {
-      setError("Just a moment — try again in a second.");
-      return;
-    }
-    if (needsVisibleCaptcha && !visibleCaptchaToken) {
-      setError("Please tick the \u201cI'm not a robot\u201d box below to continue.");
-      return;
-    }
     setSubmitting(true);
     try {
-      // Which field the token goes in matters: Wix reads the visible
-      // checkbox's token from `Recaptcha` and the silent one from
-      // `InvisibleRecaptcha`. Naming the variant here rather than relying
-      // on argument position is what stops them being swapped.
-      // Timed, like registration already was. Obtaining a token can take
-      // up to 8s to load the script plus 45s waiting on a challenge, and
-      // the Wix call after it was previously unbounded — so a stalled
-      // request could leave the button on "Signing in…" indefinitely with
-      // nothing on screen to explain it.
-      const wix = await loginClient();
-      const attempt = async (useVisible: boolean) =>
-        withTimeout(
-          auth.loginMember(
-            wix,
-            email,
-            password,
-            useVisible
-              ? { recaptchaToken: visibleCaptchaToken }
-              : {
-                  invisibleRecaptchaToken: await invisibleCaptchaToken(),
-                }
-          ),
-          AUTH_TIMEOUT_MS,
-          "That took too long. Please check your connection and try again."
-        );
-
-      let outcome = await attempt(needsVisibleCaptcha);
-
-      // A silent check asked for is a silent check answered — showing a
-      // returning merchant a checkbox because Wix wanted another
-      // background pass is friction for nothing. One retry first.
-      if (!needsVisibleCaptcha && outcome.status === "captcha" && outcome.kind === "silent") {
-        outcome = await attempt(false);
-      }
+      // Timed: obtaining a token can take a while if Turnstile shows a
+      // challenge, and a stalled request mustn't leave the button on
+      // "Signing in…" with nothing on screen to explain it.
+      const outcome = await withTimeout(
+        (async () => loginMember(email, password, await captchaToken()))(),
+        AUTH_TIMEOUT_MS,
+        "That took too long. Please check your connection and try again."
+      );
 
       if (outcome.status === "success") {
         window.location.href = redirectTo;
       } else if (outcome.status === "verify") {
         setPendingState(outcome.pendingState);
-      } else if (
-        // Wix asked for a CAPTCHA outright — "user" means it judged this
-        // attempt suspicious — or it refused the silent token we sent.
-        // Either way the checkbox is the only thing that resolves it, so
-        // show it rather than leave a merchant locked out of their portal.
-        !needsVisibleCaptcha &&
-        (outcome.status === "captcha" ||
-          (outcome.status === "error" &&
-            (outcome.errorCode === "missingCaptchaToken" ||
-              outcome.errorCode === "invalidCaptchaToken")))
-      ) {
-        setNeedsVisibleCaptcha(true);
-        setError("One more step — please tick the \u201cI'm not a robot\u201d box, then sign in again.");
       } else {
         setError(outcome.message);
       }
@@ -156,9 +71,6 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
       );
     } finally {
       setSubmitting(false);
-      // Tokens are single-use; a retry with a spent one fails as rejected
-      // rather than missing, which is a confusing second failure.
-      captchaRef.current?.reset();
     }
   }
 
@@ -169,13 +81,8 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
   }, [resendCooldown]);
 
   /**
-   * Sends a fresh verification code, the same way the signup form does.
-   *
-   * This SDK has no resend method, but Wix documents that authentication
-   * returning EMAIL_VERIFICATION_REQUIRED sends a code automatically — so
-   * signing in again while the email is unverified produces a new one
-   * through Wix's own flow. The new pendingState must replace the old,
-   * since the new code is validated against the new state token.
+   * Sends a fresh verification code: signing in again while the email is
+   * unconfirmed sends a new one.
    */
   async function handleResendCode() {
     if (resendCooldown > 0 || submitting) return;
@@ -184,22 +91,8 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     setResendNotice(null);
     setSubmitting(true);
     try {
-      // Always the invisible variant, whatever registration was refused
-      // for. This is a LOGIN call, and Wix documents login as taking the
-      // invisible token; needsVisibleCaptcha records a decision about the
-      // register endpoint, which is a different check.
-      //
-      // Carrying that flag here also could not work: the checkbox is only
-      // rendered in the main form, and its token is cleared after every
-      // attempt because tokens are single-use — so on this screen it was
-      // always null, every resend went out empty, and Wix refused every
-      // one. The resend could never succeed once the fallback was active.
-      const captchaTokens = {
-        invisibleRecaptchaToken: await invisibleCaptchaToken(),
-      };
-
       const outcome = await withTimeout(
-        auth.loginMember(await loginClient(), email, password, captchaTokens),
+        (async () => loginMember(email, password, await captchaToken()))(),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try again."
       );
@@ -212,17 +105,12 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         // Verified elsewhere in the meantime — just let them in.
         window.location.href = redirectTo;
       } else {
-        setError(
-          outcome.status === "error"
-            ? outcome.message
-            : "We couldn't send a new code just now. Please try again shortly."
-        );
+        setError(outcome.message);
       }
     } catch {
       setError("We couldn't send a new code. Please try again.");
     } finally {
       setSubmitting(false);
-      captchaRef.current?.reset();
     }
   }
 
@@ -231,7 +119,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     setError(null);
     setSubmitting(true);
     try {
-      const outcome = await auth.submitVerificationCode(await loginClient(), code, pendingState);
+      const outcome = await submitVerificationCode(code, pendingState);
       if (outcome.status === "success") {
         window.location.href = redirectTo;
       } else if (outcome.status === "error") {
@@ -253,18 +141,15 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     }
     setError(null);
     try {
-      // Our own reset flow (app/reset-password), not Wix's — see
-      // lib/passwordResetTokens.ts for why. Always resolves the same way
-      // regardless of whether the email matches an account, so this
-      // can't be used to find out which addresses have signed up.
+      // Our own reset flow (app/reset-password, lib/passwordResetTokens.ts).
+      // Always resolves the same way whether or not the email matches an
+      // account, so this can't be used to find out which addresses have
+      // signed up.
       const res = await fetch("/api/auth/request-password-reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // The robot check, on MegaDeal's own logins (as sign-in uses).
-        body: JSON.stringify({
-          email,
-          ...(authBackend === "supabase" ? { captchaToken: await invisibleCaptchaToken() } : {}),
-        }),
+        // The robot check, as sign-in uses.
+        body: JSON.stringify({ email, captchaToken: await captchaToken() }),
       });
       if (!res.ok) {
         // The route's own sentence (too many tries, say) when it gave one.
@@ -363,17 +248,8 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         autoComplete="current-password"
         inputClassName={INPUT_CLASS}
       />
-      {/* Hidden unless Wix has rejected an invisible token, so a normal
-          sign-in shows no challenge at all. */}
       {/* Where Turnstile shows a challenge, if it ever needs one. */}
-      {authBackend === "supabase" && <div data-turnstile-slot />}
-      {needsVisibleCaptcha && authBackend !== "supabase" && (
-        <RecaptchaCheckbox
-          ref={captchaRef}
-          siteKey={(client?.auth as { captchaVisibleSiteKey?: string } | undefined)?.captchaVisibleSiteKey ?? ""}
-          onChange={setVisibleCaptchaToken}
-        />
-      )}
+      <div data-turnstile-slot />
       {error && (
         <p role="alert" className="rounded-xl bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
           {error}

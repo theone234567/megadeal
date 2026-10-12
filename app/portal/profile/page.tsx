@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useWix } from "@/context/WixProvider";
+import { useSession } from "@/context/SessionProvider";
 import { fetchMerchantMe, SessionExpiredError } from "@/lib/fetchMerchantMe";
 import MerchantProfileForm from "@/components/portal/MerchantProfileForm";
 import PortalAuthScreen from "@/components/portal/PortalAuthScreen";
@@ -19,7 +19,7 @@ interface MerchantRecord {
 // sharing state across routes, matching how this codebase already does it
 // everywhere else in the portal.
 export default function PortalProfilePage() {
-  const { member, isLoggedIn, logout } = useWix();
+  const { member, isLoggedIn, logout } = useSession();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   const [loadError, setLoadError] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);

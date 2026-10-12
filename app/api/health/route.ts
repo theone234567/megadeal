@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { dataBackend, withDb } from "@/lib/db/connection";
+import { withDb } from "@/lib/db/connection";
 
 export const dynamic = "force-dynamic";
 
@@ -8,9 +8,8 @@ export const dynamic = "force-dynamic";
  * the site can serve pages, 503 when it can't, so the owner hears about an
  * outage from the monitor rather than from a business.
  *
- * Checks the database once the site uses it (DATA_BACKEND=postgres); on
- * Wix there's nothing of ours to check. Says only "ok" or "down", never
- * why: an error can name hosts and users.
+ * Checks the database answers. Says only "ok" or "down", never why: an
+ * error can name hosts and users.
  *
  * Each answer is kept for 30 seconds at the edge, so however often this is
  * requested, the database is asked at most twice a minute per data centre.
@@ -18,11 +17,10 @@ export const dynamic = "force-dynamic";
 
 const TTL_SECONDS = 30;
 
-type Health = { ok: boolean; database: "ok" | "down" | "not in use"; checkedAt: string };
+type Health = { ok: boolean; database: "ok" | "down"; checkedAt: string };
 
 async function check(): Promise<Health> {
   const checkedAt = new Date().toISOString();
-  if (dataBackend() !== "postgres") return { ok: true, database: "not in use", checkedAt };
   try {
     await Promise.race([
       withDb((db) => db.query("select 1")),

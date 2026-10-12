@@ -6,10 +6,7 @@ export type { Sql } from "./sql";
 export { inTransaction } from "./sql";
 
 /**
- * The connection to MegaDeal's own database (docs/WIX-MIGRATION.md).
- *
- * Off until DATA_BACKEND=postgres: until then every read and write goes to
- * Wix exactly as before, and nothing here is called.
+ * The connection to MegaDeal's own database (Supabase Postgres).
  *
  * On Cloudflare the connection goes through Hyperdrive (the HYPERDRIVE
  * binding in wrangler.toml), which keeps a pool of connections to the
@@ -19,20 +16,14 @@ export { inTransaction } from "./sql";
  * CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE to use another
  * database. Scripts (scripts/*.ts) use DATABASE_URL. Either way the
  * server connects as a role
- * that bypasses row-level security and makes its own checks, as it does
- * with Wix today; row-level security guards everything else.
+ * that bypasses row-level security and makes its own checks; row-level
+ * security guards everything else.
  */
 
 declare global {
   interface CloudflareEnv {
     HYPERDRIVE?: { connectionString: string };
   }
-}
-
-export type DataBackend = "wix" | "postgres";
-
-export function dataBackend(): DataBackend {
-  return process.env.DATA_BACKEND === "postgres" ? "postgres" : "wix";
 }
 
 async function connectionString(): Promise<string> {
@@ -53,7 +44,6 @@ async function connectionString(): Promise<string> {
  * Hyperdrive makes that cheap.
  */
 export async function withDb<T>(fn: (db: Sql) => Promise<T>): Promise<T> {
-  // Loaded here, not at the top, so nothing changes for a site still on Wix.
   const { Client } = await import("pg");
   // Time limits, so a database that stops answering fails the page rather
   // than holding it: 10 s to connect, 20 s for any one query (they take

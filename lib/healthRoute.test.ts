@@ -21,15 +21,7 @@ afterEach(() => {
 });
 
 describe("/api/health", () => {
-  it("is fine on Wix, with nothing of ours to check", async () => {
-    vi.stubEnv("DATA_BACKEND", "wix");
-    const res = await GET(req());
-    expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ ok: true, database: "not in use" });
-  });
-
-  it("checks the database once the site uses it", async () => {
-    vi.stubEnv("DATA_BACKEND", "postgres");
+  it("checks the database answers, without saying why when it doesn't", async () => {
     expect((await GET(req())).status).toBe(200);
     dbWorks = false;
     vi.spyOn(console, "error").mockImplementation(() => {});

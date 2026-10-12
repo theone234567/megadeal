@@ -10,10 +10,11 @@ import type { Sql } from "./connection";
 let pglite: PGlite;
 let db: Sql;
 const kv = new Map<string, string>();
-const member = { id: "wix-member-1", email: "owner@harbourbistro.co.nz", loginEmailVerified: true, nickname: null };
+const member = { id: "00000001-0000-4000-8000-000000000000", email: "owner@harbourbistro.co.nz", loginEmailVerified: true, nickname: null };
 
 vi.mock("@/lib/memberAuth", () => ({ getVerifiedMember: async () => member }));
 vi.mock("@/lib/dataClient", () => ({ createDataClient: () => createPgAdminClient((fn) => fn(db)) }));
+vi.mock("@/lib/db/connection", async (orig) => ({ ...(await orig<typeof import("./connection")>()), withDb: (fn: (d: Sql) => unknown) => fn(db) }));
 vi.mock("@/lib/sendEmail", () => ({ sendTransactionalEmail: async () => ({ ok: true }) }));
 vi.mock("@/lib/metaCapi", () => ({ sendMetaCapiEvent: async () => {} }));
 vi.mock("@/lib/rateLimit", async (orig) => ({
@@ -29,6 +30,7 @@ vi.mock("@/lib/rateLimit", async (orig) => ({
 beforeAll(async () => {
   pglite = (await createTestDb()).db;
   db = { query: async (text, params) => (await pglite.query<any>(text, params as any[])).rows };
+  await db.query("insert into auth.users (id) values ($1)", [member.id]);
   vi.spyOn(console, "error").mockImplementation(() => {});
   // A business that signed up without ticking "business news".
   const apply = await import("@/app/api/merchants/apply/route");

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { fromOwnSite } from "@/lib/authSession";
-import { dataBackend, withDb } from "@/lib/db/connection";
+import { withDb } from "@/lib/db/connection";
 import { MESSAGES_SEEN_KEY } from "@/lib/kvMarkers";
 import { getRateLimitKv } from "@/lib/rateLimit";
 import { SITE_URL } from "@/lib/siteConfig";
@@ -30,8 +30,6 @@ export async function GET(req: NextRequest) {
   if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
-  // Only kept in MegaDeal's own database; Wix kept its copy in Wix.
-  if (dataBackend() !== "postgres") return NextResponse.json({ items: [], unseen: 0 });
   const summary = req.nextUrl.searchParams.get("summary") === "1";
   try {
     const seen = await seenUpTo();
@@ -60,7 +58,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
   if (!fromOwnSite(req, SITE_URL)) return NextResponse.json({ error: "Use the admin page." }, { status: 403 });
-  if (dataBackend() !== "postgres") return NextResponse.json({ ok: true });
   try {
     // Up to the newest message the tab showed, named by its id, with its
     // time read here (never a time sent by the page): one that arrived

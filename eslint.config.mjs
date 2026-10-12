@@ -10,8 +10,8 @@ export default defineConfig([
   ...nextTs,
   {
     rules: {
-      // Style rather than bugs, and deliberate here: Wix's data and the
-      // shim that stands in for it are untyped, and JSX text has apostrophes.
+      // Style rather than bugs, and deliberate here: the data client
+      // (lib/db/wixShim.ts) is untyped, and JSX text has apostrophes.
       "@typescript-eslint/no-explicit-any": "off",
       "react/no-unescaped-entities": "off",
       // A leading underscore marks a value left out on purpose

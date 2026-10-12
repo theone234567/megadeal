@@ -3,7 +3,7 @@ import { REFERRAL_BONUS_CREDITS, referralCreditsLabel, signupCodes } from "@/lib
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
-import { dataBackend, withDb } from "@/lib/db/connection";
+import { withDb } from "@/lib/db/connection";
 import { deleteBusinessCompletely } from "@/lib/db/deleteBusiness";
 import { accountIdForEmail, fromOwnSite } from "@/lib/authSession";
 import { adminDeleteUser } from "@/lib/supabaseAuth";
@@ -702,36 +702,16 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
       );
       const submitted = all.filter((d: any) => d.status !== "Draft");
       if (submitted.length > 0) {
-        // Cancelling doesn't clear this, and that is deliberate. A
-        // submitted deal has a Wix Stores product behind it, and
-        // isDealLive treats a product whose Deals row is missing as live
-        // (a null status passes) — so deleting these rows here would
-        // republish every one of them, cancelled ones included. The only
-        // safe order is to remove the deal and its product together in the
-        // Wix dashboard, which is what this now says. On the new database
-        // there's no separate product, but a submitted deal is a record of
-        // credits spent and of a page that was public, so it's kept (the
-        // database refuses to drop it): the business is suspended instead.
+        // Cancelling doesn't clear this, and that is deliberate: a
+        // submitted deal is a record of credits spent and of a page that
+        // was public, so it's kept (the database refuses to drop it). The
+        // business is suspended instead.
         const n = `${submitted.length} submitted deal${submitted.length === 1 ? "" : "s"}`;
-        if (dataBackend() === "postgres") {
-          return NextResponse.json(
-            {
-              error:
-                `This business has ${n}. Submitted deals are kept as a record of credits spent and ` +
-                `pages that were public, so the business can't be deleted. Suspend it instead.`,
-            },
-            { status: 409 }
-          );
-        }
         return NextResponse.json(
           {
             error:
-              `This business has ${submitted.length} submitted deal${
-                submitted.length === 1 ? "" : "s"
-              }. Those have live Stores products behind them, and removing the deal ` +
-              `records alone would put the products back on the site. Delete them in ` +
-              `the Wix dashboard first — Content Manager → Deals, and Stores → Products ` +
-              `— then delete the business here.`,
+              `This business has ${n}. Submitted deals are kept as a record of credits spent and ` +
+              `pages that were public, so the business can't be deleted. Suspend it instead.`,
           },
           { status: 409 }
         );
@@ -792,9 +772,6 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
  */
 async function deleteEverything(req: NextRequest, id: string, body: { confirm?: unknown; login?: unknown }) {
   if (!fromOwnSite(req, SITE_URL)) return NextResponse.json({ error: "Use the admin page." }, { status: 403 });
-  if (dataBackend() !== "postgres") {
-    return NextResponse.json({ error: "Only on MegaDeal's own database." }, { status: 409 });
-  }
   try {
     const typed = typeof body.confirm === "string" ? body.confirm.trim() : "";
     const [m] = await withDb((db) =>

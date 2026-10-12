@@ -78,8 +78,7 @@ export async function POST(req: NextRequest) {
     if (step === null) {
       fresh = false;
     } else {
-      const claimed =
-        process.env.DATA_BACKEND === "postgres" ? await (await import("@/lib/securityStore")).claimTotpStep(step) : "unavailable";
+      const claimed = await (await import("@/lib/securityStore")).claimTotpStep(step);
       if (claimed !== "unavailable") {
         fresh = claimed;
       } else {

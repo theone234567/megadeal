@@ -37,6 +37,10 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "upload.wikimedia.org" },
+      // Photos from before the move off Wix that haven't been copied to
+      // MegaDeal's own storage yet (Admin > System checks > Photos), and
+      // older versions in a deal's history. Public files: no Wix account
+      // needed.
       { protocol: "https", hostname: "static.wixstatic.com" },
       { protocol: "https", hostname: "**.wixstatic.com" },
       { protocol: "https", hostname: "cdn.pixabay.com" },
@@ -81,6 +85,8 @@ const nextConfig = {
       { source: "/index.html", destination: "/", permanent: true },
       { source: "/starting-soon", destination: "/", permanent: true },
       { source: "/my-plans", destination: "/portal", permanent: true },
+      // The admin page that tracked the move off Wix is now System checks.
+      { source: "/admin/move-off-wix", destination: "/admin/system", permanent: true },
       // MegaShop was taken off the site in Oct 2026 (it never opened) and
       // will come back on Shopify, likely at shop.megadeal.co.nz. Not
       // permanent, so this can point there then.
@@ -101,12 +107,9 @@ const nextConfig = {
 
     // Content-Security-Policy.
     //
-    // This matters more here than on a typical marketing site: the Wix
-    // member session cookie has to stay readable from JavaScript, because
-    // the client SDK reads it directly to authenticate every browser-side
-    // Wix call the portal makes. That rules out httpOnly, so an injected
-    // script would be able to lift a live merchant session. A CSP is the
-    // main thing standing in the way of that.
+    // Business sessions are httpOnly cookies no script can read, but an
+    // injected script could still act as a signed-in business from its
+    // page. A CSP is the main thing standing in the way of that.
     //
     // Every origin below is one the app genuinely talks to from the
     // browser. Server-only callers (places.googleapis.com in
@@ -125,7 +128,6 @@ const nextConfig = {
       [
         "script-src 'self' 'unsafe-inline'",
         process.env.NODE_ENV === "development" ? "'unsafe-eval'" : "",
-        "https://www.google.com https://www.gstatic.com", // reCAPTCHA Enterprise
         "https://connect.facebook.net",                   // Meta Pixel
         "https://www.googletagmanager.com",               // GA4
         // Cloudflare injects its Web Analytics beacon into every response
@@ -133,7 +135,7 @@ const nextConfig = {
         // could have revealed it — only loading the live site with the
         // policy enforcing did.
         "https://static.cloudflareinsights.com",
-        "https://challenges.cloudflare.com",               // Turnstile (business logins off Wix)
+        "https://challenges.cloudflare.com",               // Turnstile (business logins)
       ].filter(Boolean).join(" "),
       // Tailwind ships as a stylesheet, but Next still injects inline
       // <style> during hydration, so this cannot be tightened either.
@@ -143,9 +145,9 @@ const nextConfig = {
       [
         "img-src 'self' data: blob:",
         "https://images.unsplash.com https://cdn.pixabay.com https://upload.wikimedia.org",
-        "https://static.wixstatic.com https://*.wixstatic.com",
+        "https://static.wixstatic.com https://*.wixstatic.com", // photos not yet copied off Wix (see images above)
         "https://www.facebook.com",                       // Pixel beacon
-        "https://www.google.com https://www.gstatic.com", // reCAPTCHA
+        "https://www.google.com",                         // GA4
         "https://www.google-analytics.com",
         // Leaflet tiles. Both maps — the deals map, and the address pin a
         // merchant drags during signup — load tiles as plain <img>.
@@ -157,32 +159,17 @@ const nextConfig = {
       ].join(" "),
       [
         "connect-src 'self'",
-        "https://www.wixapis.com https://*.wixapis.com",  // Wix SDK
         "https://photon.komoot.io",                       // keyless geocoder fallback
-        "https://www.google.com",                         // reCAPTCHA
+        "https://www.google.com",                         // GA4
         "https://www.facebook.com",
         "https://www.google-analytics.com https://*.analytics.google.com",
         "https://cloudflareinsights.com",                 // where the beacon reports to
       ].join(" "),
-      // Two different iframes, and missing the second would break auth.
-      //
-      // reCAPTCHA draws its challenge in one. The Wix SDK draws the other:
-      // getMemberTokensForDirectLogin completes login by loading the OAuth
-      // authorize URL in a hidden iframe on the Wix site and waiting for a
-      // postMessage back with the code. Block that frame and the promise
-      // never settles — every signup and sign-in hangs at the final step,
-      // with no error, because nothing failed, it just never answers.
-      //
-      // Caught from a live console: the report-only policy was already
-      // logging "Framing 'https://<site>.wixsite.com/' violates ...
-      // frame-src" during a real signup. Report-only meant it was logged
-      // and allowed; enforcing without this line would have turned that
-      // log into a total auth outage.
+      // Turnstile draws its challenge, when it shows one, in an iframe:
+      // block it and sign-up and sign-in can't finish.
       [
         "frame-src 'self'",
-        "https://www.google.com",                        // reCAPTCHA challenge
         "https://challenges.cloudflare.com",             // Turnstile challenge
-        "https://*.wixsite.com https://*.wix.com https://*.editorx.io", // Wix OAuth authorize
       ].join(" "),
       // No <object>/<embed>, and nothing may re-point relative URLs.
       "object-src 'none'",
@@ -214,15 +201,15 @@ const nextConfig = {
 
     // Report-Only by default. A CSP that blocks a third-party script the
     // site actually needs breaks things silently and in ways that are hard
-    // to attribute, and the externals here (Wix, reCAPTCHA, Meta, GA) each
+    // to attribute, and the externals here (Turnstile, Meta, GA) each
     // pull subresources that can't be enumerated from source alone. So it
     // ships observing first: violations are reported and nothing is
     // blocked. Once /api/csp-report has been quiet for a few days of real
     // traffic, set CSP_ENFORCE=1 (or flip the default here) to enforce.
     // Enforcing by default now. It shipped report-only to find out what a
     // real policy would break without breaking it first; that pass is done
-    // — the Wix login iframe and the OpenStreetMap tiles were the two gaps
-    // it found, and both are in the policy above.
+    // — a sign-in iframe and the OpenStreetMap tiles were the two gaps it
+    // found.
     //
     // CSP_ENFORCE=0 drops back to report-only without a code change, which
     // is the fastest way out if something does break. Read at build time,

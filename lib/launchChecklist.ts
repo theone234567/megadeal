@@ -27,9 +27,9 @@ export interface ChecklistSection {
 
 export interface LaunchFacts {
   launched: boolean;
-  /** Moving off Wix: every switch on, and the first thing missing if any. */
-  offWix: { allOn: boolean; problem: string | null } | null;
-  /** Moving off Wix's own "Nightly backup" check. */
+  /** System checks (lib/systemChecks.ts): the first thing missing, if any. */
+  system: { problem: string | null } | null;
+  /** System checks' own "Nightly backup" check. */
   backup: { ok: boolean; detail: string };
   accountEmails: { problem: string | null; lastSentAt: string | null };
   turnstile: boolean;
@@ -101,24 +101,22 @@ export function buildChecklist(f: LaunchFacts): ChecklistSection[] {
 
   const before: ChecklistItem[] = [
     auto(
-      "off-wix",
-      "Moving off Wix finished",
-      !f.offWix ? "warning" : f.offWix.allOn && !f.offWix.problem ? "done" : "todo",
-      !f.offWix
-        ? "The checks couldn't run just now. Open Moving off Wix to see why."
-        : f.offWix.problem
-          ? `Next on Moving off Wix: ${f.offWix.problem}`
-          : f.offWix.allOn
-            ? "Database, photos, email and business logins all run on MegaDeal's own services."
-            : "Not every part is switched over yet.",
-      { href: "/admin/move-off-wix", label: "Moving off Wix" }
+      "system",
+      "System checks all pass",
+      !f.system ? "warning" : f.system.problem ? "todo" : "done",
+      !f.system
+        ? "The checks couldn't run just now. Open System checks to see why."
+        : f.system.problem
+          ? `Needed: ${f.system.problem}`
+          : "Database, photos, email and business logins have everything they need.",
+      { href: "/admin/system", label: "System checks" }
     ),
     auto(
       "backup",
       "Nightly backup running",
       f.backup.ok ? "done" : "todo",
       f.backup.detail,
-      { href: "/admin/move-off-wix", label: "Moving off Wix" }
+      { href: "/admin/system", label: "System checks" }
     ),
     auto(
       "account-emails",
@@ -137,8 +135,8 @@ export function buildChecklist(f: LaunchFacts): ChecklistSection[] {
       f.withoutLogin === 0 ? "done" : "todo",
       f.withoutLogin === 0
         ? "Every business has a login on the new sign-in."
-        : `${n(f.withoutLogin, "business has", "businesses have")} no password on the new sign-in yet. Moving off Wix > Business logins > Email them a set-password link.`,
-      { href: "/admin/move-off-wix", label: "Moving off Wix" }
+        : `${n(f.withoutLogin, "business has", "businesses have")} no password on the new sign-in yet. System checks > Business logins > Email them a set-password link.`,
+      { href: "/admin/system", label: "System checks" }
     ),
     auto(
       "test-businesses",

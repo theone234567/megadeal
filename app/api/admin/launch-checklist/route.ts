@@ -3,11 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { logAdminAction } from "@/lib/adminAudit";
 import { fromOwnSite } from "@/lib/authSession";
-import { dataBackend, withDb } from "@/lib/db/connection";
+import { withDb } from "@/lib/db/connection";
 import { LAUNCH_TICKS_KEY, SIGNUP_CODE_SENT_KEY } from "@/lib/kvMarkers";
 import { buildChecklist, isManualItem, looksLikeTest, type LaunchFacts } from "@/lib/launchChecklist";
-import { checkReadiness } from "@/lib/migrationReadiness";
-import { nextStep } from "@/lib/moveOffWixNextStep";
+import { checkReadiness, firstProblem } from "@/lib/systemChecks";
 import { getRateLimitKv } from "@/lib/rateLimit";
 import { signupCodeProblem } from "@/lib/signupHealth";
 import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
@@ -39,30 +38,24 @@ async function gatherFacts(): Promise<LaunchFacts> {
     emailDnsFacts(new URL(SITE_URL).hostname),
   ]);
   const backupCheck = readiness?.sections.flatMap((s) => s.checks).find((c) => c.label === "Nightly backup");
-  // Once everything's on, nextStep's advice is about ending Wix, not a
-  // problem: the checklist counts that as done.
-  const next = readiness ? nextStep(readiness) : "";
-  const step = next && !next.startsWith("Everything runs off Wix") ? next : null;
 
   type Row = { id: string; business_name: string | null; email: string | null; status: string; owner_id: string | null };
   let businesses: Row[] = [];
   let counts = { drafts: 0, live: 0, subscribers: 0 };
-  if (dataBackend() === "postgres") {
-    [businesses, counts] = await withDb(async (db) => {
-      const rows = await db.query<Row>("select id::text, business_name, email, status, owner_id::text from public.merchants");
-      const [c] = await db.query<{ drafts: number; live: number; subscribers: number }>(
-        `select (select count(*) from public.deals where status = 'Draft')::int as drafts,
-                (select count(*) from public.deals where status = 'Live' and (expires_at is null or expires_at > now())
-                   and (first_published_at is null or first_published_at <= now()))::int as live,
-                (select count(*) from public.email_signups where verified and not unsubscribed)::int as subscribers`
-      );
-      return [rows, c ?? counts];
-    });
-  }
+  [businesses, counts] = await withDb(async (db) => {
+    const rows = await db.query<Row>("select id::text, business_name, email, status, owner_id::text from public.merchants");
+    const [c] = await db.query<{ drafts: number; live: number; subscribers: number }>(
+      `select (select count(*) from public.deals where status = 'Draft')::int as drafts,
+              (select count(*) from public.deals where status = 'Live' and (expires_at is null or expires_at > now())
+                 and (first_published_at is null or first_published_at <= now()))::int as live,
+              (select count(*) from public.email_signups where verified and not unsubscribed)::int as subscribers`
+    );
+    return [rows, c ?? counts];
+  });
 
   return {
     launched: SITE_LAUNCHED,
-    offWix: readiness ? { allOn: readiness.sections.every((s) => s.on), problem: step } : null,
+    system: readiness ? { problem: firstProblem(readiness) } : null,
     backup: { ok: backupCheck?.state === "ok", detail: backupCheck?.detail ?? "Couldn't check the backups just now." },
     accountEmails: {
       problem: problem ? `The last ${problem.kind ?? "sign-up code"} email couldn't be sent (${problem.code}). The red note in Needs attention says what to check.` : null,

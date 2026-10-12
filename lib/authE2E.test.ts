@@ -62,8 +62,6 @@ describe.skipIf(!ENABLED)("business logins on Supabase, end to end", () => {
   let session: Record<string, string> = {};
 
   beforeAll(async () => {
-    process.env.AUTH_BACKEND = "supabase";
-    process.env.DATA_BACKEND = "postgres";
     process.env.DATABASE_URL = "postgres://postgres:local-only@127.0.0.1:5432/megadeal_e2e";
     process.env.SUPABASE_AUTH_URL = "http://127.0.0.1:9999";
     process.env.SUPABASE_JWT_SECRET = JWT_SECRET;
@@ -75,7 +73,7 @@ describe.skipIf(!ENABLED)("business logins on Supabase, end to end", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterAll(() => {
-    for (const k of ["AUTH_BACKEND", "DATA_BACKEND", "DATABASE_URL", "SUPABASE_AUTH_URL", "SUPABASE_JWT_SECRET", "SUPABASE_SERVICE_ROLE_KEY", "TURNSTILE_DISABLED", "SEND_EMAIL_HOOK_SECRET"]) delete process.env[k];
+    for (const k of ["DATABASE_URL", "SUPABASE_AUTH_URL", "SUPABASE_JWT_SECRET", "SUPABASE_SERVICE_ROLE_KEY", "TURNSTILE_DISABLED", "SEND_EMAIL_HOOK_SECRET"]) delete process.env[k];
   });
 
   it("signs up with an emailed code, and is signed in", async () => {

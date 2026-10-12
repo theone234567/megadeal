@@ -20,16 +20,15 @@ export interface UsedResetToken {
   expiresAt: Date;
 }
 
-/** The database (lib/securityStore.ts), or null without one or before
- *  its update is applied, when Cloudflare KV is used as before. */
+/** The database (lib/securityStore.ts), or null when it can't be reached
+ *  or its update isn't applied, when Cloudflare KV is used as before. */
 async function inDatabase<T>(fn: (db: Sql) => Promise<T>): Promise<T | null> {
-  if (process.env.DATA_BACKEND !== "postgres") return null;
   return (await import("./securityStore")).inDatabase(fn);
 }
 
 /**
  * The self-service password-reset link (Wix's own "forgot password" email
- * 404s for this project, see lib/wixPassword.ts): a single-use, hashed,
+ * 404ed for this project): a single-use, hashed,
  * time-limited token, emailed as a link to our own /reset-password page.
  *
  * Only the SHA-256 hash is ever stored — the raw token exists only in the

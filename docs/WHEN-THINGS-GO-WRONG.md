@@ -15,7 +15,7 @@ answering (and again when it's back).
    use. The site's hourly check normally prevents that.)
 3. If it isn't paused, look at **status.supabase.com**: if Supabase itself is
    having problems, wait; the site recovers by itself when it's back.
-4. Admin > **Moving off Wix** > box 1 should go back to "Database answers".
+4. Admin > **System checks** > Database should go back to "Database answers".
 
 ## The whole site is down or showing errors
 
@@ -77,7 +77,7 @@ kept for 30 days, in Cloudflare R2 (`megadeal-backups`, folder `backups/`).
   version history keeps earlier wording and photos). Otherwise ask Claude: it
   can find the record in last night's copy and put back just that part.
 - **The whole database lost** (for example a new Supabase project): Admin >
-  **Moving off Wix** > box 1 > **Restore from a backup**. **Rehearse** first:
+  **System checks** > Database > **Restore from a backup**. **Rehearse** first:
   it shows what would come back and changes nothing. It only restores into an
   empty database, so it can never overwrite data that's there.
 
@@ -95,9 +95,7 @@ one goes.
 - **Resend:** resend.com > API Keys: create a new sending key, put it in
   Cloudflare as `RESEND_API_KEY`, delete the old one.
 
-## Going back to Wix (only while Wix is still paid for)
+## Going back to Wix
 
-Possible for a couple of weeks after the move: Claude removes the switches in
-`wrangler.toml` and the site reads Wix again. Anything changed on MegaDeal
-since the move stays only in the new database, so this is a last resort.
-See `docs/WIX-MIGRATION.md`.
+No longer possible: the Wix code was taken out of the site on 12 Oct 2026,
+and the Wix API keys deleted. Recovery is from the nightly backups above.

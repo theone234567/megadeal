@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useWix } from "@/context/WixProvider";
+import { useSession } from "@/context/SessionProvider";
 
 // 10 minutes of no mouse/keyboard/touch/scroll activity signs a merchant
 // out automatically — the portal shows real business data (credits,
@@ -17,7 +17,7 @@ const WARNING_LEAD_MS = 60 * 1000;
 const ACTIVITY_EVENTS = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"] as const;
 
 export default function IdlePortalSignOut() {
-  const { isLoggedIn, logout } = useWix();
+  const { isLoggedIn, logout } = useSession();
   const [showWarning, setShowWarning] = useState(false);
   const warnTimer = useRef<ReturnType<typeof setTimeout>>();
   const signOutTimer = useRef<ReturnType<typeof setTimeout>>();

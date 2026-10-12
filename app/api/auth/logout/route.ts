@@ -1,46 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createWixClient } from "@/lib/wixClient";
-import { MEMBER_COOKIE_NAME, parseTokens } from "@/lib/memberSession";
-import { ACCESS_COOKIE, authBackend, clearSessionCookies } from "@/lib/authSession";
+import { ACCESS_COOKIE, clearSessionCookies } from "@/lib/authSession";
 import { signOut } from "@/lib/supabaseAuth";
-import { readSmallJson } from "@/lib/readJsonBody";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Ends the session: clears the httpOnly cookie and returns the Wix logout
- * URL for the page to follow, so the member is signed out of Wix too and
- * not just of this site.
- *
- * Building that URL needs the member's tokens, which the browser can no
- * longer read — so it happens here. The cookie is cleared whatever Wix
- * says: if that call fails, the right outcome is still that this site
- * forgets them, and the caller falls back to a plain redirect.
+ * Ends the session: tells the login service (so the refresh token stops
+ * working) and clears the httpOnly cookies, whatever it says.
  */
 export async function POST(req: NextRequest) {
-  if (authBackend() === "supabase") {
-    const access = req.cookies.get(ACCESS_COOKIE)?.value;
-    if (access) await signOut(access).catch(() => null);
-    const res = NextResponse.json({ logoutUrl: null });
-    clearSessionCookies(res);
-    return res;
-  }
-  const tokens = parseTokens(req.cookies.get(MEMBER_COOKIE_NAME)?.value);
-  const body = await readSmallJson(req, 4096);
-  const returnTo = typeof body?.returnTo === "string" ? body.returnTo : undefined;
-
-  let logoutUrl: string | null = null;
-  if (tokens) {
-    try {
-      const client = createWixClient(tokens);
-      const result = await client.auth.logout(returnTo || "/");
-      logoutUrl = result?.logoutUrl ?? null;
-    } catch (err) {
-      console.error("[auth/logout] Wix logout failed", err);
-    }
-  }
-
-  const res = NextResponse.json({ logoutUrl });
-  res.cookies.delete(MEMBER_COOKIE_NAME);
+  const access = req.cookies.get(ACCESS_COOKIE)?.value;
+  if (access) await signOut(access).catch(() => null);
+  const res = NextResponse.json({ ok: true });
+  clearSessionCookies(res);
   return res;
 }

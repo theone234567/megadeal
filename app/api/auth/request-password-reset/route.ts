@@ -10,12 +10,12 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { afterResponse } from "@/lib/afterResponse";
 import { readJsonBody } from "@/lib/readJsonBody";
 import { verifyTurnstile } from "@/lib/turnstile";
-import { accountIdForEmail, authBackend } from "@/lib/authSession";
+import { accountIdForEmail } from "@/lib/authSession";
 import { noteSignupCodeProblem, noteSignupCodeSent } from "@/lib/signupHealth";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // The found/not-found paths below cost very different amounts of real
-// work (a Wix Data query either way, but only the found path also sends
+// work (a database lookup either way, but only the found path also sends
 // an email) — left alone, that's a timing side-channel an attacker could
 // use to find out which emails have accounts even though the response
 // body never says. Flooring every request to the same minimum wall-clock
@@ -40,8 +40,7 @@ function resetEmailHtml(businessName: string, resetUrl: string): string {
 
 /**
  * Public, unauthenticated by design — this is what "Forgot password"
- * actually calls now (see lib/passwordResetTokens.ts for why Wix's own
- * flow doesn't work here). Always answers the same way regardless of
+ * calls (lib/passwordResetTokens.ts). Always answers the same way regardless of
  * whether the email matches a real account, so a visitor can't use it to
  * find out which email addresses have signed up.
  */
@@ -57,7 +56,7 @@ export async function POST(req: NextRequest) {
   // finding 6): otherwise a script could send reset emails to address
   // after address. Before the per-address limit, so junk requests can't
   // use up a real business's resets.
-  if (authBackend() === "supabase" && !(await verifyTurnstile(fields.captchaToken, getClientIp(req)))) {
+  if (!(await verifyTurnstile(fields.captchaToken, getClientIp(req)))) {
     return NextResponse.json({ error: "The security check didn't pass. Please try again." }, { status: 400 });
   }
 
@@ -86,26 +85,12 @@ export async function POST(req: NextRequest) {
         "password-reset-lookup"
       );
       const merchant = rows[0];
-      // _owner is a Wix Data system field: it's only set once a real Wix
-      // Member has actually signed in and claimed this row (getOrClaimMerchant).
-      // Without it, this is an "Unclaimed account" (same flag the admin
-      // dashboard shows) — there's no member to reset a password for yet,
-      // and setMemberPassword's Sign On step would silently create one if
-      // we called it anyway. Treated the same as "email not found."
-      //
-      // On MegaDeal's own logins it's the other way round: a business
-      // brought over from Wix has no login yet (Wix passwords can't be
-      // moved), and this link is how it sets one, so any business on file
-      // qualifies. The link proves the address before anything is set.
-      //
-      // There, an account that hasn't finished its business application
-      // yet (so has no business on file) can reset its password too.
-      const to =
-        authBackend() === "supabase"
-          ? merchant?.email || ((await accountIdForEmail(email)) ? email.toLowerCase() : "")
-          : merchant?.email && merchant._owner
-            ? merchant.email
-            : "";
+      // Any business on file qualifies: one brought over from Wix has no
+      // login yet (Wix passwords couldn't be moved), and this link is how
+      // it sets one. The link proves the address before anything is set.
+      // An account that hasn't finished its business application yet (so
+      // has no business on file) can reset its password too.
+      const to = merchant?.email || ((await accountIdForEmail(email)) ? email.toLowerCase() : "");
       if (to) {
         const token = await createPasswordResetToken(to);
         if (token) {

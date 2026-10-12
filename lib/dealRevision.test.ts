@@ -37,7 +37,7 @@ describe("parseRevisionRequest", () => {
   });
 });
 
-// The business's request and the admin's decision, against a fake Wix.
+// The business's request and the admin's decision, against a fake data client.
 let row: Record<string, any> = {};
 let member: { id: string; email: string } | null = { id: "u1", email: "t@example.com" };
 const update = vi.fn(async (_c: string, item: Record<string, any>) => item);
@@ -45,11 +45,11 @@ const activity = vi.fn();
 vi.mock("./memberAuth", () => ({ getVerifiedMember: async () => member }));
 vi.mock("./memberRateLimit", () => ({ memberRateLimited: async () => false, HOUR: 3_600_000 }));
 vi.mock("./adminSession", () => ({ isAdminRequest: async () => true }));
-vi.mock("./wixAdmin", () => ({
-  createWixAdminClient: () => ({
+vi.mock("./dataClient", () => ({
+  createDataClient: () => ({
     items: { get: async () => row, update },
     productsV3: { updateProduct: vi.fn(async () => ({})), getProduct: vi.fn(async () => ({ product: { revision: "1", variantsInfo: { variants: [{ id: "v1" }] } } })) },
-    // The Wix Stores product, read then updated when name/description/prices change.
+    // The deal's page-facing half, read then updated when name/description/prices change.
     fetchWithAuth: vi.fn(async () =>
       new Response(JSON.stringify({ product: { id: "p1", revision: "1", name: "Two coffees", variantsInfo: { variants: [{ id: "v1", price: { actualPrice: { amount: "6" }, compareAtPrice: { amount: "10" } } }] } } }), { status: 200 })
     ),

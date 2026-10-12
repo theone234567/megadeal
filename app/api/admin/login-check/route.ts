@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { logAdminAction } from "@/lib/adminAudit";
-import { authBackend, fromOwnSite, loginInfo } from "@/lib/authSession";
+import { fromOwnSite, loginInfo } from "@/lib/authSession";
 import { SITE_URL } from "@/lib/siteConfig";
 
 export const dynamic = "force-dynamic";
@@ -19,9 +19,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export async function POST(req: NextRequest) {
   if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   if (!fromOwnSite(req, SITE_URL)) return NextResponse.json({ error: "Use the admin page." }, { status: 403 });
-  if (authBackend() !== "supabase") {
-    return NextResponse.json({ error: "Logins are still Wix's, so there's nothing to check here." }, { status: 409 });
-  }
   const body = await req.json().catch(() => null);
   const email = (typeof body?.email === "string" ? body.email : "").trim().slice(0, 254);
   if (!EMAIL_RE.test(email)) return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });

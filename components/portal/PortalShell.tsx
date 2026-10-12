@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useWix } from "@/context/WixProvider";
+import { useSession } from "@/context/SessionProvider";
 import { HomeIcon, ReceiptIcon, StoreIcon, CreditCardIcon } from "@/components/icons";
 import BrandLogo from "@/components/BrandLogo";
 import { PURPLE_HEADER } from "@/lib/brand";
@@ -45,7 +45,7 @@ const P = PURPLE_HEADER
 
 export default function PortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { member, isLoggedIn, logout } = useWix();
+  const { member, isLoggedIn, logout } = useSession();
 
   return (
     <div className="min-h-screen bg-brand-50">

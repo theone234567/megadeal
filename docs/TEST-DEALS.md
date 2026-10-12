@@ -22,7 +22,7 @@ Delete. Up to 20.
   After launch they're no longer added to listings; their own pages stay available from the tab.
 - **Timer:** runs from when the deal was added or last restarted. Restarting touches only that
   test deal. Editing keeps the timer running from the same start.
-- **Not real:** no Wix product or Deals row, no credits, no stock, no analytics (pages are in
+- **Not real:** no row in the deals table, no credits, no stock, no analytics (pages are in
   preview mode). Contact and booking links are off. They ignore the Everyday/Flash switches in
   Platform settings, so a type switched off for businesses can still be tried.
 - **Photos:** chosen from the site's own illustrations; nothing is uploaded.
@@ -31,7 +31,7 @@ Delete. Up to 20.
 
 ## Copy to real draft
 
-The one action that writes to Wix, and only when you click **Create draft** for a business you
+The one action that writes to the database, and only when you click **Create draft** for a business you
 pick. It creates an ordinary Deals row with status Draft for that business: a new id, a fresh
 MEGA code, the name, category, prices, duration, quantity, booking answer, description and
 conditions, and no photo, own code or dates. The business still adds a photo, checks it and submits it for approval; credits

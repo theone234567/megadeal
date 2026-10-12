@@ -51,19 +51,8 @@ describe("nightly backup route", () => {
     expect(stored.size).toBe(0);
   });
 
-  it("does nothing while the data is still in Wix", async () => {
-    vi.stubEnv("CRON_SECRET", "the-real-secret");
-    vi.stubEnv("DATA_BACKEND", "wix");
-    const { body } = await call("the-real-secret");
-    expect(body.skipped).toBeTruthy();
-    // It still asks the new database something, so Supabase doesn't pause it.
-    expect(body.database).toBe("awake");
-    expect(stored.size).toBe(0);
-  });
-
   it("stores a copy that unpacks to the data, and says only how much", async () => {
     vi.stubEnv("CRON_SECRET", "the-real-secret");
-    vi.stubEnv("DATA_BACKEND", "postgres");
     const { status, body } = await call("the-real-secret");
     expect(status).toBe(200);
     expect(body.saved).toMatch(/^backups\/\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z\.json\.gz$/);
@@ -76,7 +65,6 @@ describe("nightly backup route", () => {
 
   it("emails the owner when a night's copy fails, without the details", async () => {
     vi.stubEnv("CRON_SECRET", "the-real-secret");
-    vi.stubEnv("DATA_BACKEND", "postgres");
     vi.stubEnv("ADMIN_NOTIFY_EMAIL", "owner@example.nz");
     vi.spyOn(console, "error").mockImplementation(() => {});
     dbDown = true;

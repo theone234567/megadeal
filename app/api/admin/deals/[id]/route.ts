@@ -370,7 +370,7 @@ async function syncProduct(
     );
     if (!res.ok) {
       console.error("[admin/deals/[id]] product update failed", res.status, await res.text().catch(() => ""));
-      return "Wix didn't accept the change to this deal's product, so nothing was changed.";
+      return "The change to this deal couldn't be saved, so nothing was changed.";
     }
     return null;
   } catch (err: any) {

@@ -139,18 +139,8 @@ const MERCHANTS: Collection = {
   idWhere: "(t.wix_id = $1 or t.id::text = $1)",
   ignoreOnWrite: ["_id", "_createdDate", "_updatedDate"],
   fields: [
-    // The login that owns the business: a Wix member until logins move,
-    // then a MegaDeal (Supabase) account. Read when asked, so switching
-    // AUTH_BACKEND needs no restart of anything else.
-    {
-      wix: "_owner",
-      get col() {
-        return process.env.AUTH_BACKEND === "supabase" ? "owner_id" : "wix_owner_id";
-      },
-      get expr() {
-        return process.env.AUTH_BACKEND === "supabase" ? "t.owner_id::text" : "t.wix_owner_id";
-      },
-    } as Field,
+    // The login (a Supabase account) that owns the business.
+    f("_owner", "owner_id", { expr: "t.owner_id::text" }),
     f("_createdDate", null, { expr: "t.created_at", read: asDate, readOnly: true }),
     f("_updatedDate", null, { expr: "t.updated_at", read: asDate, readOnly: true }),
     // Its page address, made by the database from name and suburb.
@@ -570,12 +560,12 @@ async function writeRow(db: Sql, c: Collection, ctx: ShimContext, item: Row, exi
 }
 
 /**
- * A stand-in for the Wix admin client, on MegaDeal's database. `run`
- * gives each operation a connection (lib/db/connection.ts withDb, or the
- * tests' in-process database). `wix` is the real Wix client, still used
- * for what hasn't moved yet (photo uploads, email, logins).
+ * The site's data client, on MegaDeal's database, answering the calls the
+ * routes were first written against (Wix's). `run` gives each operation a
+ * connection (lib/db/connection.ts withDb, or the tests' in-process
+ * database).
  */
-export function createPgAdminClient(run: Run, wix?: () => { fetchWithAuth: (url: string, init?: any) => Promise<Response> }) {
+export function createPgAdminClient(run: Run) {
   const ctx: ShimContext = { pendingProducts: new Map() };
 
   const items = {
@@ -617,7 +607,7 @@ export function createPgAdminClient(run: Run, wix?: () => { fetchWithAuth: (url:
     }),
   };
 
-  async function fetchWithAuth(url: string, init: { method?: string; body?: string } = {}): Promise<Response> {
+  async function fetchWithAuth(url: string, init: { method?: string; body?: string; headers?: Record<string, string> } = {}): Promise<Response> {
     const method = (init.method ?? "GET").toUpperCase();
     const body = init.body ? JSON.parse(init.body) : null;
     let m: RegExpMatchArray | null;
@@ -653,19 +643,13 @@ export function createPgAdminClient(run: Run, wix?: () => { fetchWithAuth: (url:
         return run((db) => patchProduct(db, id, body?.product ?? {}));
       }
     }
-    if (!wix) throw new Error(`No Wix client for ${method} ${url}`);
-    return wix().fetchWithAuth(url, init);
+    throw new Error(`Not supported: ${method} ${url}`);
   }
 
   return { items, productsV3, fetchWithAuth, __postgres: true as const };
 }
 
 export type PgAdminClient = ReturnType<typeof createPgAdminClient>;
-
-/** True for the database stand-in (vs the real Wix client). */
-export function isPgClient(client: unknown): client is PgAdminClient {
-  return Boolean((client as { __postgres?: boolean } | null)?.__postgres);
-}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });

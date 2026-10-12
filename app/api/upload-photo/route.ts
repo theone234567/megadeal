@@ -1,10 +1,9 @@
 import { imageSizeAcceptable } from "@/lib/imageDimensions";
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
-import { createWixAdminClient } from "@/lib/wixAdmin";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { isAdminRequest } from "@/lib/adminSession";
-import { newPhotoKey, photoBucket, photoStorage, putPhoto } from "@/lib/photoStorage";
+import { newPhotoKey, photoBucket, putPhoto } from "@/lib/photoStorage";
 import { SITE_URL } from "@/lib/siteConfig";
 
 // Generous cap on the decoded image — the client already resizes/compresses
@@ -18,8 +17,7 @@ const MAX_BYTES = 3_000_000;
 const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 // Longest slug we'll keep before appending the disambiguating suffix — well
-// under any filesystem/URL limit, just short enough that the Media Manager
-// listing stays scannable.
+// under any filesystem/URL limit, and short enough to stay readable.
 const MAX_SLUG_LENGTH = 60;
 
 /**
@@ -27,7 +25,7 @@ const MAX_SLUG_LENGTH = 60;
  * merchant typed) into a clean, URL-safe filename fragment. Runs server-side
  * so the label is never trusted as-is: this is the only thing standing
  * between "World's #1 Fish & Chips!! 🐟" (or something actually offensive)
- * and a public, permanent, googleable Wix Media filename.
+ * and a public, permanent, googleable photo address.
  */
 function slugify(input: string): string {
   return input
@@ -133,69 +131,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // MegaDeal's own storage, once switched on (lib/photoStorage.ts). The
-  // key doubles as the id the deal form passes back.
-  if (photoStorage() === "r2") {
-    try {
-      const bucket = await photoBucket();
-      if (!bucket) {
-        console.error("[upload-photo] PHOTO_STORAGE=r2 but no PHOTOS bucket is bound");
-        return NextResponse.json({ error: "Couldn't start the upload." }, { status: 502 });
-      }
-      const ext = mimeType === "image/jpeg" ? "jpg" : mimeType.split("/")[1];
-      const key = newPhotoKey(slugify(label), ext);
-      const url = await putPhoto(bucket, key, bytes, mimeType, SITE_URL);
-      return NextResponse.json({ url, id: key });
-    } catch (err) {
-      console.error("[upload-photo] storage failed", err);
-      return NextResponse.json({ error: "Upload failed." }, { status: 502 });
-    }
-  }
-
+  // MegaDeal's own storage (lib/photoStorage.ts). The key doubles as the
+  // id the deal form passes back.
   try {
-    const adminClient = createWixAdminClient();
-    const ext = mimeType.split("/")[1]?.split("+")[0] || "jpg";
-    // A short random suffix, not the label alone, disambiguates repeat
-    // uploads under the same business/deal name — Wix addresses the file by
-    // the id it returns, never by this name, so the suffix only needs to
-    // avoid two uploads looking identical in the Media Manager listing.
-    const suffix = Math.random().toString(36).slice(2, 8);
-    const slug = slugify(label);
-    const fileName = `${slug || "megadeal-photo"}-${suffix}.${ext}`;
-
-    const genRes = await adminClient.fetchWithAuth(
-      "https://www.wixapis.com/site-media/v1/files/generate-upload-url",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mimeType, fileName }),
-      }
-    );
-    if (!genRes.ok) {
+    const bucket = await photoBucket();
+    if (!bucket) {
+      console.error("[upload-photo] no PHOTOS bucket is bound");
       return NextResponse.json({ error: "Couldn't start the upload." }, { status: 502 });
     }
-    const { uploadUrl } = await genRes.json();
-
-    // The generated uploadUrl is a signed, self-authorizing URL — no admin
-    // auth header needed (or wanted) on this specific request.
-    const uploadRes = await fetch(`${uploadUrl}?filename=${encodeURIComponent(fileName)}`, {
-      method: "PUT",
-      headers: { "Content-Type": mimeType },
-      body: bytes,
-    });
-    if (!uploadRes.ok) {
-      return NextResponse.json({ error: "Upload failed." }, { status: 502 });
-    }
-    const uploadJson = await uploadRes.json();
-    const url = uploadJson?.file?.url;
-    const id = uploadJson?.file?.id;
-    if (!url || !id) {
-      return NextResponse.json({ error: "Upload failed." }, { status: 502 });
-    }
-
-    return NextResponse.json({ url, id });
+    const ext = mimeType === "image/jpeg" ? "jpg" : mimeType.split("/")[1];
+    const key = newPhotoKey(slugify(label), ext);
+    const url = await putPhoto(bucket, key, bytes, mimeType, SITE_URL);
+    return NextResponse.json({ url, id: key });
   } catch (err) {
-    console.error("[upload-photo] failed", err);
-    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+    console.error("[upload-photo] storage failed", err);
+    return NextResponse.json({ error: "Upload failed." }, { status: 502 });
   }
 }

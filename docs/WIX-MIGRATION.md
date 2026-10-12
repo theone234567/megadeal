@@ -1,5 +1,16 @@
 # Moving MegaDeal off Wix
 
+> **Finished (12 Oct 2026).** Every part runs on MegaDeal's own services,
+> and the Wix code, packages, switches and API keys are gone ("Taking Wix
+> out of the code" below). The free Wix account is kept, holding a copy of
+> the old records. What's left on purpose: `lib/db/wixShim.ts` (the data
+> client, which answers the calls the routes were written against), the
+> `wix_id` columns (old addresses still redirect), and the handling of
+> `static.wixstatic.com` photo addresses, until Admin > System checks shows
+> every photo copied. The rest of this page is the record of how the move
+> was done; the admin page it mentions as "Moving off Wix" is now
+> **System checks** (`/admin/system`).
+
 MegaDeal uses Wix as its backend: logins, the database, deal products,
 photo storage and email. This is the plan to move each of those to
 services the site controls directly, one at a time, with the live site

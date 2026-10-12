@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 import path from "node:path";
 
 /**
- * Unit tests for the pure logic only — no Wix, no network, no React.
+ * Unit tests for the pure logic only — no network, no React.
  *
  * The functions covered here are the ones where a quiet mistake does real
  * damage and nothing else would catch it: terms that get rewritten behind

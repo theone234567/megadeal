@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useWix } from "@/context/WixProvider";
+import { useSession } from "@/context/SessionProvider";
 import { uploadPhoto } from "@/lib/imageUpload";
 import { CATEGORIES } from "@/lib/categories";
 import { parseDraft, MAX_DRAFT_TEXT, draftRevisionOf } from "@/lib/dealDraft";
@@ -74,7 +74,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   // In the portal, PortalShell already provides the page's <main>; the
   // admin's test-deal pages have none of their own.
   const Main = isTest ? "main" : "div";
-  const { isLoggedIn, member } = useWix();
+  const { isLoggedIn, member } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const duplicateId = isTest ? null : searchParams.get("duplicate");

@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 // Admin rescheduling and approval of scheduled deals
-// (app/api/admin/deals/[id]/route.ts) against a fake Wix.
+// (app/api/admin/deals/[id]/route.ts) against a fake data client.
 let row: Record<string, any> = {};
 const update = vi.fn(async (_c: string, item: Record<string, any>) => item);
 vi.mock("./adminSession", () => ({ isAdminRequest: async () => true }));
-vi.mock("./wixAdmin", () => ({ createWixAdminClient: () => ({ items: { get: async () => row, update } }) }));
+vi.mock("./dataClient", () => ({ createDataClient: () => ({ items: { get: async () => row, update } }) }));
 vi.mock("./merchantActivity", () => ({ logMerchantActivity: vi.fn() }));
 vi.mock("./indexNowDeal", () => ({ notifyDealChanged: vi.fn() }));
 

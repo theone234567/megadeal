@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PasswordField from "@/components/PasswordField";
-import { useWix } from "@/context/WixProvider";
+import { useSession } from "@/context/SessionProvider";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { isLoggedIn, member, logout } = useWix();
+  const { isLoggedIn, member, logout } = useSession();
   const [signingOut, setSigningOut] = useState(false);
   const [password, setPassword] = useState("");
   // Two-factor sign-in, once the server asks for it (lib/totp.ts).
@@ -18,7 +18,7 @@ export default function AdminLoginPage() {
 
   async function signOutBusiness() {
     setSigningOut(true);
-    // Sends the visitor through Wix's own logout and straight back to this
+    // Signs the business out and comes straight back to this
     // exact page, ready to sign in as admin — the default target (site
     // origin) would otherwise strand them on the homepage mid-task.
     await logout(`${window.location.origin}/admin/login`);

@@ -1,20 +1,19 @@
 import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { dataBackend, withDb, type Sql } from "./db/connection";
+import { withDb, type Sql } from "./db/connection";
 import { countWixPhotos } from "./db/copyPhotos";
 import { MIGRATION_MARKERS } from "./db/migrationMarkers";
-import { photoBucket, photoResizer, photoStorage } from "./photoStorage";
-import { authBackend } from "./authSession";
+import { photoBucket, photoResizer } from "./photoStorage";
 import { isJwtKey } from "./supabaseAuth";
 import { getRateLimitKv } from "./rateLimit";
-import { LAST_RUN_KEY, backupBucket, latestBackup, latestWixCopy } from "./backupStorage";
+import { backupBucket, latestBackup } from "./backupStorage";
 import { maintenanceOn } from "./maintenance";
 import { EMAIL_HOOK_REACHED_KEY, HOURLY_RUN_KEY } from "./kvMarkers";
 
 /**
- * The admin "Moving off Wix" page (app/admin/move-off-wix): for each switch
- * in docs/WIX-MIGRATION.md, whether it's on and whether everything it needs
- * is in place, checked live and said in plain words.
+ * The admin "System checks" page (app/admin/system): whether everything
+ * the database, photos, email and business logins need is in place,
+ * checked live and said in plain words.
  *
  * Read-only: it looks, it never changes anything. It never shows a secret,
  * only whether one is set; and an error from the database or a service is
@@ -34,9 +33,6 @@ export interface Check {
 export interface Section {
   id: "database" | "photos" | "email" | "logins";
   title: string;
-  /** The setting that turns it on, e.g. DATA_BACKEND=postgres. */
-  switchName: string;
-  on: boolean;
   /** Nothing missing here or in what it depends on. */
   ready: boolean;
   checks: Check[];
@@ -45,7 +41,7 @@ export interface Section {
 export interface Readiness {
   checkedAt: string;
   sections: Section[];
-  /** Photos still on Wix, when the database can be read. */
+  /** Photos still loaded from Wix's servers, when the database can be read. */
   wixPhotosLeft: number | null;
 }
 
@@ -124,21 +120,9 @@ async function backupCheck(): Promise<Check> {
   // No CRON_SECRET needed: the site's scheduler uses its own password
   // (lib/internalCall.ts).
   try {
-    if (dataBackend() !== "postgres") {
-      // Nothing to copy yet; the job only keeps the new database awake.
-      // Says whether it's running, so it's known to work by switch day.
-      const last = await (await getRateLimitKv())?.get(LAST_RUN_KEY).catch(() => null);
-      const run = last ? (JSON.parse(last) as { at: string; result: string }) : null;
-      if (!run) return info("Nightly backup", "The nightly job hasn't run yet: Cloudflare runs it each night at about 3:20am (2:20am in winter). Copies start once the database is switched on.");
-      const ago = (Date.now() - new Date(run.at).getTime()) / 3_600_000;
-      const said = run.result === "awake" ? "the new database answered" : "the new database didn't answer";
-      return ago <= 36
-        ? ok("Nightly backup", `The nightly job last ran ${ago < 1 ? "under an hour" : `${Math.round(ago)} hours`} ago (${said}). Copies start once the database is switched on.`)
-        : warning("Nightly backup", `The nightly job last ran ${Math.round(ago / 24)} days ago. Cloudflare > Workers & Pages > megadeal > Settings > Trigger events should list its schedule.`);
-    }
     const latest = await latestBackup(bucket);
     if (!latest) {
-      return warning("Nightly backup", "No backup yet. The first is taken the night after the database is switched on (or press Save a copy of the database below).");
+      return warning("Nightly backup", "No backup yet. Cloudflare takes one each night at about 3:20am (2:20am in winter); press Save a copy of the database below to take one now.");
     }
     const hours = (Date.now() - new Date(latest.uploaded).getTime()) / 3_600_000;
     const when = hours < 1 ? "under an hour ago" : hours < 48 ? `${Math.round(hours)} hours ago` : `${Math.round(hours / 24)} days ago`;
@@ -149,17 +133,6 @@ async function backupCheck(): Promise<Check> {
     console.error("[migrationReadiness] backup check failed", err);
     return warning("Nightly backup", "Couldn't look in the backup bucket just now.");
   }
-}
-
-/** A last copy of Wix to keep, before its subscription ends: a reminder, never a blocker. */
-async function wixCopyCheck(): Promise<Check> {
-  const bucket = await backupBucket();
-  const copy = bucket ? await latestWixCopy(bucket).catch(() => null) : null;
-  if (!copy) {
-    return info("Copy of Wix kept", "No copy of Wix saved yet. Before ending the Wix subscription, press Save a copy of Wix below, then download it from Cloudflare > R2 to keep (the bucket deletes copies after 30 days).");
-  }
-  const when = new Date(copy.uploaded).toLocaleDateString("en-NZ", { timeZone: "Pacific/Auckland", dateStyle: "medium" });
-  return ok("Copy of Wix kept", `A copy of Wix was saved on ${when}. Download it from Cloudflare > R2 to keep it past 30 days.`);
 }
 
 /** The hourly jobs (database watch, expired deals): that Cloudflare runs them. */
@@ -215,41 +188,34 @@ async function databaseSection(): Promise<{ section: Section; facts: DatabaseFac
     );
     checks.push(
       facts.tablesWithoutRls.length
-        ? missing("Data locked down", `Row-level security is off for: ${facts.tablesWithoutRls.join(", ")}. Anyone with the public key could read or change them. Turn it on before switching.`)
+        ? missing("Data locked down", `Row-level security is off for: ${facts.tablesWithoutRls.join(", ")}. Anyone with the public key could read or change them. Turn it on now.`)
         : ok("Data locked down", "Row-level security is on for every table.")
     );
     if (facts.counts) {
       const { businesses, deals, subscribers } = facts.counts;
       checks.push(
         businesses === 0
-          ? missing(
-              "Data copied from Wix",
-              dataBackend() === "postgres"
-                ? "The database has no businesses. If it was lost, restore the latest backup below."
-                : "No businesses yet. Use Import for real below (or scripts/wix-import.ts) first."
-            )
-          : ok("Data copied from Wix", `${businesses} business${businesses === 1 ? "" : "es"}, ${deals} deal${deals === 1 ? "" : "s"}, ${subscribers} subscriber${subscribers === 1 ? "" : "s"}. Check they match what the import found in Wix before switching.`)
+          ? missing("Data", "The database has no businesses. If it was lost, restore the latest backup below.")
+          : ok("Data", `${businesses} business${businesses === 1 ? "" : "es"}, ${deals} deal${deals === 1 ? "" : "s"}, ${subscribers} subscriber${subscribers === 1 ? "" : "s"}.`)
       );
     }
   }
 
   checks.push(await backupCheck());
-  if (dataBackend() === "postgres") checks.push(await hourlyCheck());
-  if (dataBackend() === "postgres") checks.push(await wixCopyCheck());
+  checks.push(await hourlyCheck());
   if (maintenanceOn()) {
-    checks.push(warning("Changes paused", "MAINTENANCE_MODE=writes is on: businesses can't save anything. Remove it from wrangler.toml once the switch is done."));
+    checks.push(warning("Changes paused", "MAINTENANCE_MODE=writes is on: businesses can't save anything. Remove it from wrangler.toml when the work it was for is done."));
   }
 
   const ready = checks.every((c) => c.state !== "missing");
   return {
-    section: { id: "database", title: "Database", switchName: "DATA_BACKEND=postgres", on: dataBackend() === "postgres", ready, checks },
+    section: { id: "database", title: "Database", ready, checks },
     facts,
   };
 }
 
-async function photosSection(dbReady: boolean, facts: DatabaseFacts | null): Promise<Section> {
+async function photosSection(facts: DatabaseFacts | null): Promise<Section> {
   const checks: Check[] = [];
-  checks.push(dbReady ? ok("Database", "Ready.") : missing("Database", "Photos move with the database: get it ready first."));
   checks.push(
     (await photoBucket())
       ? ok("Photo storage", "The PHOTOS storage bucket is connected.")
@@ -264,17 +230,15 @@ async function photosSection(dbReady: boolean, facts: DatabaseFacts | null): Pro
     checks.push(
       facts.wixPhotosLeft === 0
         ? ok("Photos copied", "Every photo is on MegaDeal's own storage.")
-        : (photoStorage() === "r2" ? warning : info)(
+        : warning(
             "Photos copied",
-            `${facts.wixPhotosLeft} photo${facts.wixPhotosLeft === 1 ? " is" : "s are"} still on Wix. ${photoStorage() === "r2" ? "Copy them across below." : "Once photo storage is switched on, copy them across here."}`
+            `${facts.wixPhotosLeft} photo${facts.wixPhotosLeft === 1 ? " is" : "s are"} still loaded from Wix's servers. Copy them across below.`
           )
     );
   }
   return {
     id: "photos",
     title: "Photos",
-    switchName: "PHOTO_STORAGE=r2",
-    on: photoStorage() === "r2",
     ready: checks.every((c) => c.state !== "missing"),
     checks,
   };
@@ -359,29 +323,19 @@ async function emailSection(fetchFn: Fetch): Promise<Section> {
       )
     );
   }
-  checks.push(info("Warm-up", "A new sending domain has no reputation yet. Switch on with a small volume (verification codes and notices) before any newsletter."));
-
   return {
     id: "email",
     title: "Email",
-    switchName: "EMAIL_PROVIDER=resend",
-    on: process.env.EMAIL_PROVIDER === "resend",
     ready: checks.every((c) => c.state !== "missing"),
     checks,
   };
 }
 
-async function loginsSection(dbReady: boolean, facts: DatabaseFacts | null, emailOn: boolean, emailReady: boolean, fetchFn: Fetch): Promise<Section> {
+async function loginsSection(facts: DatabaseFacts | null, fetchFn: Fetch): Promise<Section> {
   const checks: Check[] = [];
-  checks.push(dbReady ? ok("Database", "Ready.") : missing("Database", "Logins move with the database: get it ready first."));
   if (facts && !facts.authUsersTable) {
     checks.push(missing("Accounts table", "The database has no auth.users table: it must be the same Supabase project the logins use."));
   }
-  checks.push(
-    emailOn && emailReady
-      ? ok("Email", "Sign-up codes and reset links go out from MegaDeal's own email.")
-      : info("Email", "Sign-up codes and reset links go out through Wix's email until email is switched over. That works, but switch email first if you can.")
-  );
 
   const url = process.env.SUPABASE_AUTH_URL?.trim() || process.env.SUPABASE_URL?.trim();
   const anon = set("SUPABASE_ANON_KEY");
@@ -522,13 +476,11 @@ async function loginsSection(dbReady: boolean, facts: DatabaseFacts | null, emai
       ? ok("Attempt limits", "The RATE_LIMIT_KV store is connected: repeated sign-in attempts are slowed down.")
       : missing("Attempt limits", "The RATE_LIMIT_KV binding is missing, so sign-in attempts aren't limited.")
   );
-  checks.push(info("Existing businesses", "Wix passwords can't be copied, so each business sets a new password once, from an emailed link. Once this is switched on, send the links with the button below."));
+  checks.push(info("Businesses brought over from Wix", "Their Wix passwords couldn't be copied, so each sets a new password once, from an emailed link: the button below sends them."));
 
   return {
     id: "logins",
     title: "Business logins",
-    switchName: "AUTH_BACKEND=supabase",
-    on: authBackend() === "supabase",
     ready: checks.every((c) => c.state !== "missing"),
     checks,
   };
@@ -537,7 +489,8 @@ async function loginsSection(dbReady: boolean, facts: DatabaseFacts | null, emai
 /** Every check, run now. */
 export async function checkReadiness(fetchFn: Fetch = fetch): Promise<Readiness> {
   const { section: database, facts } = await databaseSection();
-  const [photos, email] = await Promise.all([photosSection(database.ready, facts), emailSection(fetchFn)]);
-  const logins = await loginsSection(database.ready, facts, email.on, email.ready, fetchFn);
+  const [photos, email, logins] = await Promise.all([photosSection(facts), emailSection(fetchFn), loginsSection(facts, fetchFn)]);
   return { checkedAt: new Date().toISOString(), sections: [database, photos, email, logins], wixPhotosLeft: facts?.wixPhotosLeft ?? null };
 }
+
+export { firstProblem } from "./systemFirstProblem";

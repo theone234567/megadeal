@@ -145,10 +145,10 @@ export default function RootLayout({
           <Trackers />
         </Suspense>
         <MegadealArtProvider art={megadealArt}>
-          {/* No WixProvider here: only the portal, admin and signup pages
-              use Wix sign-in, and they have it in their own layouts.
-              Here it put the Wix sign-in code (about 100KB) and a
-              session check (/api/auth/me) on every page, public or not. */}
+          {/* No SessionProvider here: only the portal, admin and signup
+              pages need to know who's signed in, and they have it in their
+              own layouts. Here it would put a session check (/api/auth/me)
+              on every page, public or not. */}
           <PreviewBanner siteLaunched={SITE_LAUNCHED} />
           <Header />
           {children}

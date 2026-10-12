@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
-import { adminResetMemberPassword, generateTempPassword } from "@/lib/wixPassword";
-import { accountIdForEmail, authBackend, endAllSessions } from "@/lib/authSession";
+import { generateTempPassword } from "@/lib/tempPassword";
+import { accountIdForEmail, endAllSessions } from "@/lib/authSession";
 import { adminSetPassword } from "@/lib/supabaseAuth";
 
 /**
@@ -32,37 +32,16 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         { status: 400 }
       );
     }
-    // See app/api/auth/request-password-reset/route.ts for why this
-    // matters: without a real Wix Member already linked (_owner set),
-    // adminResetMemberPassword's Sign On step would silently create a
-    // brand-new member for this email instead of resetting anything.
-    // MegaDeal's own logins: set it through Supabase. A business brought
-    // over from Wix has no login yet; this makes one, and the business is
-    // linked to it the first time it signs in. Every session using the old
-    // password ends.
-    if (authBackend() === "supabase") {
-      const password = generateTempPassword(16);
-      const set = await adminSetPassword(email, password, await accountIdForEmail(email));
-      if (!set.ok) {
-        console.error("[admin/merchants/[id]/reset-password] refused", set.status, set.code);
-        return NextResponse.json({ error: "Couldn't reset the password. Please try again." }, { status: 502 });
-      }
-      if (set.data.id) await endAllSessions(set.data.id);
-      await logAdminAction({ action: "Business password reset", target: auditTarget(merchant.businessName || email, merchant._id) });
-      return NextResponse.json({ password });
+    // Set through Supabase. A business brought over from Wix with no login
+    // yet gets one, linked to the business the first time it signs in.
+    // Every session using the old password ends.
+    const password = generateTempPassword(16);
+    const set = await adminSetPassword(email, password, await accountIdForEmail(email));
+    if (!set.ok) {
+      console.error("[admin/merchants/[id]/reset-password] refused", set.status, set.code);
+      return NextResponse.json({ error: "Couldn't reset the password. Please try again." }, { status: 502 });
     }
-
-    if (!merchant._owner) {
-      return NextResponse.json(
-        {
-          error:
-            "Nobody has signed in with this business's email yet, so there's no account to reset. It'll link automatically the first time they sign in.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const password = await adminResetMemberPassword(email);
+    if (set.data.id) await endAllSessions(set.data.id);
     // The temporary password itself is never logged.
     await logAdminAction({ action: "Business password reset", target: auditTarget(merchant.businessName || email, merchant._id) });
     return NextResponse.json({ password });

@@ -5,8 +5,8 @@ import { NextRequest } from "next/server";
 const merchant = { _id: "m1", email: "o@example.com", businessName: "Ok Cafe", status: "Approved", creditsBalance: 4 };
 const writes = vi.fn();
 vi.mock("./adminSession", () => ({ isAdminRequest: async () => true }));
-vi.mock("./wixAdmin", () => ({
-  createWixAdminClient: () => ({
+vi.mock("./dataClient", () => ({
+  createDataClient: () => ({
     items: { get: async () => merchant, update: writes, insert: writes, query: () => ({ eq: () => ({ find: async () => ({ items: [] }) }) }) },
     fetchWithAuth: writes,
   }),

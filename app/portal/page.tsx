@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useWix } from "@/context/WixProvider";
+import { useSession } from "@/context/SessionProvider";
 import { fetchMerchantMe, SessionExpiredError } from "@/lib/fetchMerchantMe";
 import type { DealStatus } from "@/lib/types";
 import DealManageCard, { type DealRecord } from "@/components/portal/DealManageCard";
@@ -80,7 +80,7 @@ function finishedAt(deal: DealRecord): number {
 }
 
 export default function PortalPage() {
-  const { member, isLoggedIn, logout } = useWix();
+  const { member, isLoggedIn, logout } = useSession();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   // Assumed launched until the server says otherwise, so the pre-launch
   // notice never flashes up after launch.

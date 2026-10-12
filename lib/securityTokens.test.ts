@@ -11,7 +11,6 @@ import { createTestDb } from "./db/testDb";
 let db: Awaited<ReturnType<typeof createTestDb>>["db"];
 const kv = new Map<string, string>();
 
-process.env.DATA_BACKEND = "postgres";
 vi.mock("@/lib/db/connection", () => ({
   withDb: async (fn: (sql: { query: (text: string, params?: unknown[]) => Promise<unknown[]> }) => unknown) =>
     fn({ query: async (text, params) => (await db.query(text, params as any[])).rows }),

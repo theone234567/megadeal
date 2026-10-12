@@ -10,14 +10,16 @@ import type { Sql } from "./connection";
  * The real API routes a business and an admin use, run end to end on the
  * new database: sign up, save a draft, submit it, get it approved, pause
  * and restart it, count a view, withdraw one for a refund. Only the edges
- * are stubbed: who is signed in (Wix logins haven't moved yet), email,
- * the AI review and search-engine pings. Nothing here reaches Wix.
+ * are stubbed: who is signed in, email,
+ * the AI review and search-engine pings.
  */
 
 let pglite: PGlite;
 let db: Sql;
 
-const member = { id: "wix-member-1", email: "owner@harbourbistro.co.nz", loginEmailVerified: true, nickname: null };
+/** A login (Supabase account) the test database has. */
+const login = (n: number) => `0000000${n}-0000-4000-8000-000000000000`;
+const member = { id: login(1), email: "owner@harbourbistro.co.nz", loginEmailVerified: true, nickname: null };
 let signedIn: typeof member | null = member;
 let admin = false;
 let aiReview: Record<string, unknown> | null = null;
@@ -36,6 +38,7 @@ vi.mock("@/lib/aiReview", async (orig) => ({ ...(await orig<typeof import("../ai
 beforeAll(async () => {
   pglite = (await createTestDb()).db;
   db = { query: async (text, params) => (await pglite.query<any>(text, params as any[])).rows };
+  for (let n = 1; n <= 9; n++) await db.query("insert into auth.users (id) values ($1)", [login(n)]);
 }, 60_000);
 afterAll(async () => {
   await pglite?.close();
@@ -105,7 +108,7 @@ async function signUpApprovedWithCredits(credits = 10) {
 describe("a business on the new database", () => {
   it("signs up: the application is saved, linked to their login, with a tidy link", async () => {
     const item = await signUpApprovedWithCredits();
-    expect(item).toMatchObject({ businessName: "Harbour Bistro", status: "Pending", _owner: "wix-member-1", category: "Food & Drink" });
+    expect(item).toMatchObject({ businessName: "Harbour Bistro", status: "Pending", _owner: login(1), category: "Food & Drink" });
     const [row] = await db.query("select website, email, nzbn, referral_code from public.merchants");
     expect(row).toMatchObject({ website: "https://harbourbistro.co.nz", email: "owner@harbourbistro.co.nz", nzbn: "9429000000001" });
     expect(row.referral_code).toMatch(/^MD/);
@@ -129,14 +132,14 @@ describe("a business on the new database", () => {
       { business_name: "Harbour Bistro", contact_name: "Sam", phone: null, legal_business_name: null, status: "Pending" },
     ]);
     // A phone, when one is given, still has to be a real one.
-    signedIn = { ...member, id: "wix-member-2", email: "new@cafe.nz" };
+    signedIn = { ...member, id: login(2), email: "new@cafe.nz" };
     expect((await call(apply.POST, request("POST", { businessName: "New Cafe", contactName: "Jo", phone: "12", agreedToTerms: true }))).status).toBe(400);
   });
 
   it("one business per email: a second login with the same address can't make another", async () => {
     const apply = await import("@/app/api/merchants/apply/route");
     expect((await call(apply.POST, request("POST", SIGNUP))).status).toBe(200);
-    signedIn = { ...member, id: "wix-member-5", email: "OWNER@harbourbistro.co.nz" };
+    signedIn = { ...member, id: login(5), email: "OWNER@harbourbistro.co.nz" };
     const second = await call(apply.POST, request("POST", { businessName: "Second Bistro", contactName: "Sam", agreedToTerms: true }));
     expect(second).toMatchObject({ status: 409, body: { error: expect.stringMatching(/already a MegaDeal business with this email/) } });
     expect(await db.query("select count(*)::int as n from public.merchants")).toEqual([{ n: 1 }]);
@@ -154,9 +157,9 @@ describe("a business on the new database", () => {
     expect(await ask("MD000000")).toEqual({ valid: false });
     expect(await ask("'; drop table")).toEqual({ valid: false });
 
-    signedIn = { ...member, id: "wix-member-2", email: "new@cafe.nz" };
+    signedIn = { ...member, id: login(2), email: "new@cafe.nz" };
     const second = (await call(apply.POST, request("POST", { businessName: "New Cafe", contactName: "Jo", referredByCode: first.referralCode, agreedToTerms: true }))).body.item;
-    signedIn = { ...member, id: "wix-member-3", email: "typo@cafe.nz" };
+    signedIn = { ...member, id: login(3), email: "typo@cafe.nz" };
     const third = (await call(apply.POST, request("POST", { businessName: "Typo Cafe", contactName: "Al", referredByCode: "MD999999", agreedToTerms: true }))).body.item;
     admin = true;
     const route = await import("@/app/api/admin/merchants/[id]/route");
@@ -167,8 +170,8 @@ describe("a business on the new database", () => {
   it("signing up claims a business an admin set up for that email, and keeps its details", async () => {
     const apply = await import("@/app/api/merchants/apply/route");
     await call(apply.POST, request("POST", { ...SIGNUP, bio: "Fresh seafood by the water, with views across the harbour." }));
-    await db.query("update public.merchants set wix_owner_id = null, owner_id = null");
-    signedIn = { ...member, id: "wix-member-9" };
+    await db.query("update public.merchants set owner_id = null");
+    signedIn = { ...member, id: login(9) };
     const res = await call(apply.POST, request("POST", { businessName: "Harbour Bistro", contactName: "Sam Lee", agreedToTerms: true }));
     expect(res.status).toBe(200);
     expect(await db.query("select contact_name, phone, contact_phone, legal_business_name, address, bio, website from public.merchants")).toEqual([
@@ -259,7 +262,7 @@ describe("a business on the new database", () => {
     await signUpApprovedWithCredits(10);
     const create = await import("@/app/api/deals/create/route");
     const { body } = await call(create.POST, request("POST", DEAL));
-    signedIn = { ...member, id: "wix-member-2", email: "someone@else.nz" };
+    signedIn = { ...member, id: login(2), email: "someone@else.nz" };
     const status = await import("@/app/api/deals/[id]/status/route");
     expect((await call(status.POST, request("POST", { status: "Cancelled" }), params(body.item._id))).status).toBe(403);
   });
@@ -338,7 +341,7 @@ describe("admin work and the rest of the business portal", () => {
     const [{ credits_balance: before }] = await db.query("select credits_balance from public.merchants");
 
     admin = false;
-    signedIn = { ...member, id: "wix-member-2", email: "new@cafe.nz" };
+    signedIn = { ...member, id: login(2), email: "new@cafe.nz" };
     const second = (await call(apply.POST, request("POST", { ...SIGNUP, businessName: "New Cafe", nzbn: "9429000000002", referredByCode: first.referralCode }))).body.item;
     admin = true;
     await call(route.PATCH, request("PATCH", { status: "Approved" }), params(second._id));
@@ -433,9 +436,7 @@ describe("admin work and the rest of the business portal", () => {
     const live = await liveDeal();
     admin = true;
     const route = await import("@/app/api/admin/merchants/[id]/route");
-    vi.stubEnv("DATA_BACKEND", "postgres");
     const refused = await call(route.DELETE, request("DELETE"), params(m._id));
-    vi.unstubAllEnvs();
     expect(refused.status).toBe(409);
     expect(refused.body.error).toMatch(/Suspend it instead/);
     await db.query("delete from public.deals where id = $1", [live._id]);

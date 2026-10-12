@@ -5,14 +5,13 @@ import { createTestDb } from "./testDb";
 import type { Sql } from "./sql";
 import { packBackup, takeBackup } from "./backup";
 
-/** Admin > Moving off Wix > "Restore from a backup" (app/api/admin/restore-backup): only into an empty database. */
+/** Admin > System checks > "Restore from a backup" (app/api/admin/restore-backup): only into an empty database. */
 
 const SITE = "https://megadeal.co.nz";
 const KEY = "backups/2026-10-20T13-23-00Z.json.gz";
 let source: PGlite;
 let target: PGlite;
 let admin = true;
-let backend: "wix" | "postgres" = "postgres";
 const objects = new Map<string, Uint8Array>();
 const bucket = {
   put: async () => {},
@@ -28,7 +27,7 @@ vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext: async () => ({ 
 vi.mock("@/lib/adminSession", () => ({ isAdminRequest: async () => admin }));
 vi.mock("@/lib/authSession", () => ({ fromOwnSite: (req: Request) => req.headers.get("origin") === SITE }));
 vi.mock("@/lib/adminAudit", () => ({ logAdminAction: async () => {} }));
-vi.mock("@/lib/db/connection", () => ({ dataBackend: () => backend, withDb: (fn: (db: Sql) => unknown) => fn(sqlFor(target)) }));
+vi.mock("@/lib/db/connection", () => ({ withDb: (fn: (db: Sql) => unknown) => fn(sqlFor(target)) }));
 
 async function list() {
   const { GET } = await import("@/app/api/admin/restore-backup/route");
@@ -57,7 +56,6 @@ afterAll(async () => {
 });
 beforeEach(() => {
   admin = true;
-  backend = "postgres";
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
@@ -80,11 +78,6 @@ describe("restoring a backup", () => {
     expect((await restore({ key: "backups/notes.txt", mode: "restore" })).status).toBe(400);
     expect((await restore({ key: "../photos/x.json.gz", mode: "restore" })).status).toBe(400);
     expect((await restore({ key: "backups/2026-01-01T00-00-00Z.json.gz", mode: "restore" })).status).toBe(404);
-  });
-
-  it("not while the site still reads Wix", async () => {
-    backend = "wix";
-    expect((await restore({ key: KEY, mode: "restore" })).status).toBe(409);
   });
 
   it("a rehearsal checks it all and keeps nothing", async () => {

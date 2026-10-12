@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cronCaller } from "@/lib/cronAuth";
-import { dataBackend, withDb } from "@/lib/db/connection";
+import { withDb } from "@/lib/db/connection";
 import { alertReviewQueue } from "@/lib/reviewQueueAlert";
 import { SITE_URL } from "@/lib/siteConfig";
 
@@ -15,7 +15,6 @@ export async function POST(req: NextRequest) {
   const caller = cronCaller(req);
   if (caller === "unset") return NextResponse.json({ error: "Not configured." }, { status: 503 });
   if (caller === "refused") return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  if (dataBackend() !== "postgres") return NextResponse.json({ skipped: "The data is still in Wix." });
   try {
     const result = await withDb((db) => alertReviewQueue(db, SITE_URL));
     return NextResponse.json({ result }, { status: result === "failed" ? 502 : 200 });

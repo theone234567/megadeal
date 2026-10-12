@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { logAdminAction } from "@/lib/adminAudit";
 import { fromOwnSite } from "@/lib/authSession";
-import { dataBackend, withDb } from "@/lib/db/connection";
+import { withDb } from "@/lib/db/connection";
 import { reminderCandidates, sendListingReminders } from "@/lib/listingReminders";
 import { SITE_URL } from "@/lib/siteConfig";
 
@@ -18,7 +18,6 @@ const headers = { "Cache-Control": "private, no-store" };
 
 export async function GET(req: NextRequest) {
   if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers });
-  if (dataBackend() !== "postgres") return NextResponse.json({ candidates: [] }, { headers });
   try {
     const candidates = await withDb(reminderCandidates);
     return NextResponse.json({ candidates }, { headers });
@@ -32,7 +31,6 @@ export async function POST(req: NextRequest) {
   if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers });
   // It emails real businesses: only from the admin page itself.
   if (!fromOwnSite(req, SITE_URL)) return NextResponse.json({ error: "Use the admin page." }, { status: 403, headers });
-  if (dataBackend() !== "postgres") return NextResponse.json({ error: "Not available yet." }, { status: 409, headers });
   try {
     const result = await withDb((db) => sendListingReminders(db, SITE_URL));
     if (result.sent || result.failed.length) {

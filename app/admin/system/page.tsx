@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { nextStep } from "@/lib/moveOffWixNextStep";
+import { firstProblem } from "@/lib/systemFirstProblem";
 
 type CheckState = "ok" | "missing" | "warning" | "info";
 interface Check {
@@ -13,8 +13,6 @@ interface Check {
 interface Section {
   id: string;
   title: string;
-  switchName: string;
-  on: boolean;
   ready: boolean;
   checks: Check[];
 }
@@ -34,10 +32,7 @@ const MARK: Record<CheckState, { sign: string; text: string; className: string }
 };
 
 function status(s: Section): { text: string; className: string } {
-  if (s.on && s.ready) return { text: "Switched on", className: "bg-emerald-700 text-white" };
-  if (s.on) return { text: "Switched on, but something's missing", className: "bg-red-600 text-white" };
-  if (s.ready) return { text: "Ready to switch on", className: "bg-brand-600 text-white" };
-  return { text: "Not ready yet", className: "bg-slate-200 text-slate-700" };
+  return s.ready ? { text: "All good", className: "bg-emerald-700 text-white" } : { text: "Something's missing", className: "bg-red-600 text-white" };
 }
 
 /**
@@ -97,8 +92,8 @@ function CopyPhotos({ left, onDone }: { left: number; onDone: () => void }) {
   return (
     <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
       <p className="text-sm text-slate-700">
-        {left} photo{left === 1 ? " is" : "s are"} still on Wix. Copying is safe to stop and run again; each business and deal
-        switches to its copy only once it's stored.
+        {left} photo{left === 1 ? " is" : "s are"} still loaded from Wix&apos;s servers. Copying is safe to stop and run again; each
+        business and deal switches to its copy only once it&apos;s stored.
       </p>
       <button
         onClick={run}
@@ -128,129 +123,6 @@ function CopyPhotos({ left, onDone }: { left: number; onDone: () => void }) {
           </ul>
         </details>
       )}
-    </div>
-  );
-}
-
-/** Copies everything from Wix into the new database, as a rehearsal or for real (app/api/admin/import-from-wix). */
-function ImportFromWix({ onDone }: { onDone: () => void }) {
-  type Result = {
-    mode: "rehearse" | "import";
-    committed: boolean;
-    failed: Record<string, string>;
-    counts: Record<string, { exported: number; imported: number }>;
-    issues: { record: string; field: string; problem: string }[];
-    pausedDeals: { id: string; name: string; business: string }[];
-  };
-  const [running, setRunning] = useState<null | "rehearse" | "import">(null);
-  const [result, setResult] = useState<Result | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  async function run(mode: "rehearse" | "import") {
-    if (mode === "import" && !window.confirm("Copy everything from Wix into the new database now? Anything an earlier run left there is replaced. Changes should be paused first.")) return;
-    setRunning(mode);
-    setError(null);
-    setResult(null);
-    try {
-      const res = await fetch("/api/admin/import-from-wix", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(failure(res, json, "It stopped. Please try again."));
-      setResult(json);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setRunning(null);
-      onDone();
-    }
-  }
-
-  const missing = result ? Object.entries(result.counts).filter(([, c]) => c.imported < c.exported) : [];
-
-  return (
-    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <p className="text-sm text-slate-700">
-        Copy the businesses, deals, subscribers and messages from Wix into the new database. Try a rehearsal first: it does the
-        whole copy, checks every record and then undoes it, so it changes nothing. Import for real once changes are paused
-        (switch-day step 1), then switch the database on.
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        <button
-          onClick={() => run("rehearse")}
-          disabled={running !== null}
-          className="rounded-lg border border-brand-600 bg-white px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50 disabled:opacity-60"
-        >
-          {running === "rehearse" ? "Rehearsing…" : "Rehearse (changes nothing)"}
-        </button>
-        <button
-          onClick={() => run("import")}
-          disabled={running !== null}
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
-        >
-          {running === "import" ? "Copying…" : "Import for real"}
-        </button>
-      </div>
-      <div aria-live="polite" className="mt-3 text-sm text-slate-700">
-        {error && <p className="text-red-700">{error}</p>}
-        {result && (
-          <>
-            <p className="font-semibold text-slate-900">
-              {result.committed ? "Copied into the new database." : "Rehearsal finished: nothing was kept."}
-              {missing.length === 0 && result.issues.length === 0 && " Every record came across."}
-            </p>
-            <table className="mt-2 w-full max-w-md text-left text-sm">
-              <thead>
-                <tr className="text-slate-500">
-                  <th className="py-1 font-semibold">In Wix</th>
-                  <th className="py-1 text-right font-semibold">Found</th>
-                  <th className="py-1 text-right font-semibold">Copied</th>
-                </tr>
-              </thead>
-              <tbody className="tabular-nums">
-                {Object.entries(result.counts).map(([name, c]) => (
-                  <tr key={name} className="border-t border-slate-200">
-                    <td className="py-1">{name}</td>
-                    <td className="py-1 text-right">{c.exported}</td>
-                    <td className={`py-1 text-right ${c.imported < c.exported ? "font-semibold text-amber-800" : ""}`}>{c.imported}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {Object.keys(result.failed).length > 0 && (
-              <p className="mt-2 text-red-700">Couldn&apos;t read in full: {Object.entries(result.failed).map(([k, v]) => `${k} (${v})`).join(", ")}.</p>
-            )}
-            {result.issues.length > 0 && (
-              <details className="mt-2">
-                <summary className="cursor-pointer font-semibold text-slate-800">{result.issues.length} record{result.issues.length === 1 ? "" : "s"} to check</summary>
-                <ul className="mt-2 space-y-1 text-slate-600">
-                  {result.issues.map((i, n) => (
-                    <li key={n}>
-                      {i.record}: {i.problem} ({i.field})
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
-            {result.pausedDeals.length > 0 && (
-              <details className="mt-2">
-                <summary className="cursor-pointer font-semibold text-slate-800">
-                  {result.pausedDeals.length} paused deal{result.pausedDeals.length === 1 ? "" : "s"}: re-pause any an admin paused
-                </summary>
-                <ul className="mt-2 space-y-1 text-slate-600">
-                  {result.pausedDeals.map((d) => (
-                    <li key={d.id}>
-                      {d.name} ({d.business})
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
-          </>
-        )}
-      </div>
     </div>
   );
 }
@@ -299,8 +171,8 @@ function ApplyUpdates({ onDone }: { onDone: () => void }) {
   );
 }
 
-/** Marks unsubscribed anyone who unsubscribed in Wix after the import (app/api/admin/carry-unsubscribes). */
-function CarryUnsubscribes() {
+/** Saves a copy of the database to the private backups bucket now (app/api/admin/save-copy). */
+function SaveCopy() {
   const [running, setRunning] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -308,14 +180,16 @@ function CarryUnsubscribes() {
     setRunning(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/admin/carry-unsubscribes", { method: "POST" });
+      const res = await fetch("/api/admin/save-copy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ what: "database" }),
+      });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(failure(res, json, "It stopped. Please try again."));
       setMessage({
         ok: true,
-        text: json.newlyUnsubscribed
-          ? `${json.newlyUnsubscribed} unsubscribe${json.newlyUnsubscribed === 1 ? "" : "s"} brought over from Wix.`
-          : "Nothing to bring over: everyone who unsubscribed in Wix is unsubscribed here too.",
+        text: `Saved as ${json.saved} (${Math.max(1, Math.round(json.bytes / 1024))} KB) in the backups bucket. Copies there are deleted after 30 days; to keep one longer, download it from Cloudflare > R2 and store it somewhere private.`,
       });
     } catch (err) {
       setMessage({ ok: false, text: (err as Error).message });
@@ -327,79 +201,16 @@ function CarryUnsubscribes() {
   return (
     <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
       <p className="text-sm text-slate-700">
-        Anyone who unsubscribed in Wix between the import and the switch is only recorded there. Press this once after switching
-        (and again any time while Wix is kept): it only ever unsubscribes people, never adds anyone.
+        Save a copy of the database to the private backups bucket now: the same copy the nightly backup takes. Worth doing before
+        any big change.
       </p>
       <button
         onClick={run}
         disabled={running}
         className="mt-3 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
       >
-        {running ? "Checking…" : "Bring over unsubscribes from Wix"}
+        {running ? "Saving…" : "Save a copy of the database"}
       </button>
-      {message && (
-        <p aria-live="polite" className={`mt-2 text-sm ${message.ok ? "text-slate-700" : "text-red-700"}`}>
-          {message.text}
-        </p>
-      )}
-    </div>
-  );
-}
-
-/** Saves a copy of the database, or of everything in Wix, to the private backups bucket now (app/api/admin/save-copy). */
-function SaveCopy({ database }: { database: boolean }) {
-  const [running, setRunning] = useState<null | "database" | "wix">(null);
-  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-
-  async function run(what: "database" | "wix") {
-    setRunning(what);
-    setMessage(null);
-    try {
-      const res = await fetch("/api/admin/save-copy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ what }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(failure(res, json, "It stopped. Please try again."));
-      setMessage({
-        ok: true,
-        text: `Saved as ${json.saved} (${Math.max(1, Math.round(json.bytes / 1024))} KB) in the backups bucket. Copies there are deleted after 30 days; to keep one longer, download it from Cloudflare > R2 and store it somewhere private.`,
-      });
-    } catch (err) {
-      setMessage({ ok: false, text: (err as Error).message });
-    } finally {
-      setRunning(null);
-    }
-  }
-
-  return (
-    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <p className="text-sm text-slate-700">
-        Save a copy to the private backups bucket now.{" "}
-        {database
-          ? "The database copy is the one the nightly backup takes: save one straight after switching. "
-          : ""}
-        Save a copy of Wix before ending the Wix subscription, in case a question about old data comes up later.
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {database && (
-          <button
-            onClick={() => run("database")}
-            disabled={running !== null}
-            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
-          >
-            {running === "database" ? "Saving…" : "Save a copy of the database"}
-          </button>
-        )}
-        <button
-          onClick={() => run("wix")}
-          disabled={running !== null}
-          className="rounded-lg border border-brand-600 bg-white px-4 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50 disabled:opacity-60"
-        >
-          {running === "wix" ? "Saving…" : "Save a copy of Wix"}
-        </button>
-      </div>
       {message && (
         <p aria-live="polite" className={`mt-2 break-words text-sm ${message.ok ? "text-slate-700" : "text-red-700"}`}>
           {message.text}
@@ -593,15 +404,15 @@ function LoginInvites() {
   );
 }
 
-/** Admin: how ready each step off Wix is, checked live (lib/migrationReadiness.ts). */
-export default function MoveOffWixPage() {
+/** Admin: whether the database, photos, email and logins have everything they need, checked live (lib/systemChecks.ts). */
+export default function SystemChecksPage() {
   const [data, setData] = useState<Readiness | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
-    fetch("/api/admin/move-off-wix", { cache: "no-store" })
+    fetch("/api/admin/system", { cache: "no-store" })
       .then(async (res) => {
         if (res.status === 401) throw new Error("Sign in to the admin dashboard first.");
         if (!res.ok) throw new Error("The checks couldn't run. Please try again.");
@@ -619,11 +430,10 @@ export default function MoveOffWixPage() {
       <Link href="/admin" className="text-sm font-semibold text-brand-700 hover:underline">
         ← Back to admin
       </Link>
-      <h1 className="mt-3 text-2xl font-extrabold text-slate-900">Moving off Wix</h1>
+      <h1 className="mt-3 text-2xl font-extrabold text-slate-900">System checks</h1>
       <p className="mt-1 max-w-2xl text-sm text-slate-600">
-        Each part of the site that moves off Wix has its own switch, set in Cloudflare. This page checks, live, whether everything
-        each one needs is in place. Switch them on in this order. Nothing here changes anything except the copy, save and restore buttons. The
-        full plan is in docs/WIX-MIGRATION.md.
+        Checks, live, that the database, photos, email and business logins have everything they need. Nothing here changes
+        anything except the buttons.
       </p>
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -646,28 +456,21 @@ export default function MoveOffWixPage() {
         </p>
       )}
 
-      {data && nextStep(data) && (
-        <div className="mt-6 rounded-2xl border-2 border-brand-600 bg-brand-50 p-4" role="status">
-          <p className="text-xs font-bold uppercase tracking-wide text-brand-700">Your next step</p>
-          <p className="mt-1 text-sm text-slate-900">{nextStep(data)}</p>
+      {data && firstProblem(data) && (
+        <div className="mt-6 rounded-2xl border-2 border-red-600 bg-red-50 p-4" role="status">
+          <p className="text-xs font-bold uppercase tracking-wide text-red-700">Needs fixing</p>
+          <p className="mt-1 text-sm text-slate-900">{firstProblem(data)}</p>
         </div>
       )}
 
       {data && (
-        <ol className="mt-6 space-y-5">
-          {data.sections.map((s, i) => {
+        <ul className="mt-6 space-y-5">
+          {data.sections.map((s) => {
             const st = status(s);
             return (
               <li key={s.id} className="rounded-2xl border border-slate-200 bg-white p-5">
                 <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-900">
-                      {i + 1}. {s.title}
-                    </h2>
-                    <p className="text-xs text-slate-500">
-                      Switch: <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-700">{s.switchName}</code>
-                    </p>
-                  </div>
+                  <h2 className="text-lg font-bold text-slate-900">{s.title}</h2>
                   <span className={`rounded-full px-3 py-1 text-xs font-bold ${st.className}`}>{st.text}</span>
                 </div>
                 <ul className="mt-4 divide-y divide-slate-100">
@@ -692,23 +495,19 @@ export default function MoveOffWixPage() {
                     );
                   })}
                 </ul>
-                {s.id === "photos" && s.on && data.wixPhotosLeft != null && data.wixPhotosLeft > 0 && (
+                {s.id === "photos" && data.wixPhotosLeft != null && data.wixPhotosLeft > 0 && (
                   <CopyPhotos left={data.wixPhotosLeft} onDone={load} />
-                )}
-                {s.id === "database" && !s.on && s.checks.some((c) => c.label === "Database answers" && c.state === "ok") && (
-                  <ImportFromWix onDone={load} />
                 )}
                 {s.id === "database" && s.checks.some((c) => c.label === "Tables up to date" && c.state === "missing") && (
                   <ApplyUpdates onDone={load} />
                 )}
-                {s.id === "database" && s.on && <CarryUnsubscribes />}
-                {s.id === "database" && <SaveCopy database={s.on} />}
-                {s.id === "database" && s.on && <RestoreBackup />}
-                {s.id === "logins" && s.on && <LoginInvites />}
+                {s.id === "database" && <SaveCopy />}
+                {s.id === "database" && <RestoreBackup />}
+                {s.id === "logins" && <LoginInvites />}
               </li>
             );
           })}
-        </ol>
+        </ul>
       )}
     </main>
   );

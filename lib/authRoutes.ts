@@ -1,6 +1,6 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
-import { authBackend, fromOwnSite } from "./authSession";
+import { fromOwnSite } from "./authSession";
 import { checkRateLimit, getClientIp } from "./rateLimit";
 import { verifyTurnstile } from "./turnstile";
 import { SITE_URL } from "./siteConfig";
@@ -13,7 +13,6 @@ export async function authPreflight(
   opts: { limitKey: string; perIp: number; captcha: boolean }
 ): Promise<{ stop: NextResponse } | { body: Record<string, unknown>; ip: string; email: string }> {
   const stop = (error: string, status: number) => ({ stop: NextResponse.json({ error }, { status }) });
-  if (authBackend() !== "supabase") return stop("Not available.", 404);
   if (!fromOwnSite(req, SITE_URL)) return stop("Please use the form on megadeal.co.nz.", 403);
   const ip = getClientIp(req);
   if ((await checkRateLimit(`${opts.limitKey}-ip:${ip}`, opts.perIp, 15 * 60, { failClosed: true })).limited) {

@@ -98,7 +98,7 @@ jobs:
       # short version, this project is still in active design iteration,
       # a strict visual assertion sitting in front of the only deploy path
       # would need re-approving after nearly every real change, and two of
-      # the five pages need live Wix data or a signed-in session this job
+      # the five pages need live data or a signed-in session this job
       # doesn't have anyway.
       #
       # Runs against the actual Cloudflare Workers runtime (opennextjs

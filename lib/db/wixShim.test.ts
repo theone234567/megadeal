@@ -18,10 +18,16 @@ let pglite: PGlite;
 let db: Sql;
 let run: Run;
 
+// Logins (Supabase accounts) that own the test businesses.
+const OWNER_1 = "11111111-1111-4111-8111-111111111111";
+const OWNER_2 = "22222222-2222-4222-8222-222222222222";
+const owner = (i: number) => `3333333${i}-3333-4333-8333-333333333333`;
+
 beforeAll(async () => {
   pglite = (await createTestDb()).db;
   db = { query: async (text, params) => (await pglite.query<any>(text, params as any[])).rows };
   run = (fn) => fn(db);
+  for (const id of [OWNER_1, OWNER_2, owner(0), owner(1), owner(2)]) await db.query("insert into auth.users (id) values ($1)", [id]);
 }, 60_000);
 afterAll(async () => {
   await pglite?.close();
@@ -34,7 +40,7 @@ const client = () => createPgAdminClient(run);
 
 async function business(extra: Record<string, unknown> = {}) {
   return client().items.insert("Merchants", {
-    _owner: "wix-member-1",
+    _owner: OWNER_1,
     businessName: "Harbour Bistro",
     email: "Owner@HarbourBistro.co.nz",
     emailVerified: true,
@@ -52,7 +58,7 @@ describe("businesses", () => {
   it("saves and reads back a business the way Wix returns it", async () => {
     const m = await business();
     expect(m).toMatchObject({
-      _owner: "wix-member-1",
+      _owner: OWNER_1,
       businessName: "Harbour Bistro",
       category: "Food & Drink",
       amenities: "Outdoor seating, Wheelchair access",
@@ -68,7 +74,7 @@ describe("businesses", () => {
   it("keeps a home-based business's address private setting, and works before that database update is applied", async () => {
     const saved = await business({ hideAddress: true, serviceArea: "North Shore", status: "Approved", address: "5A Camelot Place", lat: -36.781234, lng: 174.712345 });
     expect(saved).toMatchObject({ hideAddress: true, serviceArea: "North Shore" });
-    expect((await business({ _owner: "wix-member-2", email: "two@cafe.nz", referralCode: "MDTWO" })).hideAddress).toBe(false);
+    expect((await business({ _owner: OWNER_2, email: "two@cafe.nz", referralCode: "MDTWO" })).hideAddress).toBe(false);
     // The public view: no street, and a pin rounded to about a kilometre.
     expect(await db.query("select address, lat, lng, service_area from public.public_businesses where hide_address")).toEqual([
       { address: null, lat: -36.78, lng: 174.71, service_area: "North Shore" },
@@ -91,7 +97,7 @@ describe("businesses", () => {
 
   it("finds a business by its owner, and by email whatever the capitals", async () => {
     const m = await business();
-    const owned = await client().items.query("Merchants").eq("_owner", "wix-member-1").find();
+    const owned = await client().items.query("Merchants").eq("_owner", OWNER_1).find();
     expect(owned.items.map((x) => x._id)).toEqual([m._id]);
     const byEmail = await queryAllByEmail((e) => client().items.query("Merchants").eq("email", e), "owner@harbourbistro.co.nz", "t");
     expect(byEmail.map((x) => x._id)).toEqual([m._id]);
@@ -114,7 +120,7 @@ describe("businesses", () => {
   });
 
   it("pages through everything (lib/queryAll.ts)", async () => {
-    for (let i = 0; i < 3; i++) await business({ email: `b${i}@x.nz`, _owner: `m${i}` });
+    for (let i = 0; i < 3; i++) await business({ email: `b${i}@x.nz`, _owner: owner(i) });
     expect(await queryAllItems(() => client().items.query("Merchants"), "t")).toHaveLength(3);
     expect((await client().items.query("Merchants").limit(2).find()).items).toHaveLength(2);
     expect((await client().items.query("Merchants").limit(2).skip(2).find()).items).toHaveLength(1);

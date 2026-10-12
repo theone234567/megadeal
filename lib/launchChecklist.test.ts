@@ -6,7 +6,7 @@ import { buildChecklist, isManualItem, looksLikeTest, MANUAL_ITEMS, type LaunchF
 
 const facts = (over: Partial<LaunchFacts> = {}): LaunchFacts => ({
   launched: false,
-  offWix: { allOn: true, problem: null },
+  system: { problem: null },
   backup: { ok: true, detail: "Latest copy taken 3 hours ago (13 KB)." },
   accountEmails: { problem: null, lastSentAt: "2026-10-09T01:00:00Z" },
   turnstile: true,
@@ -26,9 +26,9 @@ const item = (f: LaunchFacts, id: string) => buildChecklist(f).flatMap((s) => s.
 
 describe("the launch checklist", () => {
   it("ticks what the site can check for itself", () => {
-    expect(item(facts(), "off-wix").state).toBe("done");
-    expect(item(facts({ offWix: { allOn: false, problem: "Business logins: Robot check." } }), "off-wix")).toMatchObject({ state: "todo", detail: expect.stringMatching(/Robot check/) });
-    expect(item(facts({ offWix: null }), "off-wix").state).toBe("warning");
+    expect(item(facts(), "system").state).toBe("done");
+    expect(item(facts({ system: { problem: "Business logins: Robot check." } }), "system")).toMatchObject({ state: "todo", detail: expect.stringMatching(/Robot check/) });
+    expect(item(facts({ system: null }), "system").state).toBe("warning");
     expect(item(facts({ withoutLogin: 4 }), "existing-businesses")).toMatchObject({ state: "todo", detail: expect.stringMatching(/4 businesses have no password/) });
     expect(item(facts({ accountEmails: { problem: null, lastSentAt: null } }), "account-emails").state).toBe("todo");
     expect(item(facts({ accountEmails: { problem: "couldn't be sent", lastSentAt: "2026-10-09T01:00:00Z" } }), "account-emails").state).toBe("warning");

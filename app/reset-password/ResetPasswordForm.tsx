@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PasswordField from "@/components/PasswordField";
 
 const INPUT_CLASS =
@@ -17,14 +17,8 @@ export default function ResetPasswordForm({ hasLink }: { hasLink: boolean }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
-  // Wix's rule, or the longer one MegaDeal's own logins ask for (lib/authRoutes.ts).
-  const [minPassword, setMinPassword] = useState(8);
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((d) => d?.authBackend === "supabase" && setMinPassword(10))
-      .catch(() => {});
-  }, []);
+  // The same rule as sign-up (lib/authRoutes.ts).
+  const minPassword = 10;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

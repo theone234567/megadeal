@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { logAdminAction } from "@/lib/adminAudit";
-import { authBackend, fromOwnSite } from "@/lib/authSession";
+import { fromOwnSite } from "@/lib/authSession";
 import { withDb } from "@/lib/db/connection";
 import { businessesWithoutLogin, sendLoginInvites } from "@/lib/loginInvites";
 import { SITE_URL } from "@/lib/siteConfig";
@@ -17,13 +17,8 @@ export const dynamic = "force-dynamic";
 
 const headers = { "Cache-Control": "private, no-store" };
 
-function notReady() {
-  return NextResponse.json({ error: "Switch business logins to MegaDeal's own system first (AUTH_BACKEND=supabase)." }, { status: 409, headers });
-}
-
 export async function GET(req: NextRequest) {
   if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers });
-  if (authBackend() !== "supabase") return notReady();
   try {
     const list = await withDb(businessesWithoutLogin);
     return NextResponse.json({ waiting: list.length }, { headers });
@@ -37,7 +32,6 @@ export async function POST(req: NextRequest) {
   if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers });
   // It emails real businesses: only from the admin page itself.
   if (!fromOwnSite(req, SITE_URL)) return NextResponse.json({ error: "Use the admin page." }, { status: 403, headers });
-  if (authBackend() !== "supabase") return notReady();
   try {
     const result = await withDb((db) => sendLoginInvites(db, SITE_URL));
     if (result.sent || result.failed.length) {

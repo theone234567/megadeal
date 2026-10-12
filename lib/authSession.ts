@@ -1,7 +1,7 @@
 import "server-only";
 import type { NextRequest, NextResponse } from "next/server";
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
-import { dataBackend, withDb } from "./db/connection";
+import { withDb } from "./db/connection";
 import { authBase, refreshSession, type AuthSession } from "./supabaseAuth";
 import type { VerifiedMember } from "./memberAuth";
 
@@ -24,14 +24,6 @@ import type { VerifiedMember } from "./memberAuth";
 export const ACCESS_COOKIE = "md_access";
 export const REFRESH_COOKIE = "md_refresh";
 const REFRESH_DAYS = 30;
-
-export type AuthBackend = "wix" | "supabase";
-
-/** Supabase logins only with the new database: accounts and businesses
- *  live in one database there. */
-export function authBackend(): AuthBackend {
-  return process.env.AUTH_BACKEND === "supabase" && dataBackend() === "postgres" ? "supabase" : "wix";
-}
 
 const secure = process.env.NODE_ENV === "production";
 

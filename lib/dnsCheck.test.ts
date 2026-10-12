@@ -12,7 +12,7 @@ describe("DMARC policy from DNS", () => {
   });
 
   it("shows report-only DMARC as a warning, enforced as done", () => {
-    const base = { launched: false, offWix: null, backup: { ok: true, detail: "" }, accountEmails: { problem: null, lastSentAt: null }, turnstile: true, twoFactor: true, aiReview: true, notifyEmail: true, withoutLogin: 0, testBusinesses: [], approvedBusinesses: 0, draftDeals: 0, liveDeals: 0, verifiedSubscribers: 0, ticks: {} } as LaunchFacts;
+    const base = { launched: false, system: null, backup: { ok: true, detail: "" }, accountEmails: { problem: null, lastSentAt: null }, turnstile: true, twoFactor: true, aiReview: true, notifyEmail: true, withoutLogin: 0, testBusinesses: [], approvedBusinesses: 0, draftDeals: 0, liveDeals: 0, verifiedSubscribers: 0, ticks: {} } as LaunchFacts;
     const state = (emailDns: LaunchFacts["emailDns"]) =>
       buildChecklist({ ...base, emailDns }).flatMap((s) => s.items).find((i) => i.id === "email-policy")!.state;
     expect(state({ dmarcPolicy: "none", spf: true })).toBe("warning");

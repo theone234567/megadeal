@@ -8,11 +8,10 @@ import type { Sql } from "./db/sql";
 vi.mock("server-only", () => ({}));
 let cfEnv: Record<string, unknown> = {};
 vi.mock("@opennextjs/cloudflare", () => ({ getCloudflareContext: async () => ({ env: cfEnv }) }));
-let lastBackupRun: string | null = null;
 let lastHourlyRun: string | null = null;
 vi.mock("./rateLimit", () => ({
   getRateLimitKv: async () => ({
-    get: async (k: string) => (k === "cron:backup:last" ? lastBackupRun : k === "cron:hourly:last" ? lastHourlyRun : null),
+    get: async (k: string) => (k === "cron:hourly:last" ? lastHourlyRun : null),
     put: async () => {},
   }),
 }));
@@ -25,7 +24,7 @@ vi.mock("./db/connection", async (orig) => ({
   withDb: async (fn: (db: Sql) => unknown) => fn(sqlFor(pglite)),
 }));
 
-const { MIGRATION_MARKERS, databaseFacts, checkReadiness, fromDomain } = await import("./migrationReadiness");
+const { MIGRATION_MARKERS, databaseFacts, checkReadiness, fromDomain } = await import("./systemChecks");
 
 beforeAll(async () => {
   pglite = (await createTestDb()).db;
@@ -116,25 +115,29 @@ describe("checkReadiness", () => {
     vi.stubEnv("TURNSTILE_SECRET_KEY", "");
     const { fetchFn, calls } = services();
     const r = await checkReadiness(fetchFn);
-    expect(r.sections.map((s) => [s.id, s.on, s.ready])).toEqual([
-      ["database", false, false],
-      ["photos", false, false],
-      ["email", false, false],
-      ["logins", false, false],
+    expect(r.sections.map((s) => [s.id, s.ready])).toEqual([
+      ["database", false],
+      ["photos", false],
+      ["email", false],
+      ["logins", false],
     ]);
+    const { firstProblem } = await import("./systemChecks");
+    expect(firstProblem(r)).toMatch(/^Database: Connection\. No database is connected/);
     expect(check(r, "database", "Connection")?.state).toBe("missing");
     expect(check(r, "email", "Resend key")?.state).toBe("missing");
     expect(calls.every((u) => u.startsWith("https://cloudflare-dns.com/"))).toBe(true);
   });
 
-  it("with everything set up, only the import and the photo bucket are left", async () => {
+  it("with everything set up, only the empty database and the photo bucket are left", async () => {
     allSet();
     const r = await checkReadiness(services().fetchFn);
-    // Nothing is imported into the test database.
-    // (and, with no bucket here, the nightly backup: a warning, not a blocker)
+    // The test database has no businesses (and, with no bucket here, no
+    // nightly backup: a warning, not a blocker; nor have the hourly
+    // checks run).
     expect(section(r, "database").checks.filter((c) => c.state !== "ok").map((c) => [c.label, c.state])).toEqual([
-      ["Data copied from Wix", "missing"],
+      ["Data", "missing"],
       ["Nightly backup", "warning"],
+      ["Hourly checks", "info"],
     ]);
     expect(section(r, "email").ready).toBe(true);
     expect(check(r, "photos", "Photo storage")?.state).toBe("missing");
@@ -209,7 +212,6 @@ describe("the nightly backup check", () => {
   it("is fine with a copy from last night, and says when", async () => {
     allSet();
     vi.stubEnv("CRON_SECRET", "s");
-    vi.stubEnv("DATA_BACKEND", "postgres");
     cfEnv = { BACKUPS: bucketWith(50, 26, 3) };
     const c = check(await checkReadiness(services().fetchFn), "database", "Nightly backup");
     expect(c).toMatchObject({ state: "ok", detail: "Latest copy taken 3 hours ago (20 KB)." });
@@ -218,7 +220,6 @@ describe("the nightly backup check", () => {
   it("warns when the latest copy is old: the job may be failing", async () => {
     allSet();
     vi.stubEnv("CRON_SECRET", "s");
-    vi.stubEnv("DATA_BACKEND", "postgres");
     cfEnv = { BACKUPS: bucketWith(80) };
     const c = check(await checkReadiness(services().fetchFn), "database", "Nightly backup");
     expect(c?.state).toBe("warning");
@@ -246,20 +247,8 @@ describe("the nightly backup check", () => {
     expect(c?.detail).not.toContain("CRON_SECRET");
   });
 
-  it("after the switch, reminds to keep a copy of Wix", async () => {
+  it("says when the hourly checks last ran", async () => {
     allSet();
-    vi.stubEnv("CRON_SECRET", "s");
-    vi.stubEnv("DATA_BACKEND", "postgres");
-    const objects: { key: string; uploaded: Date; size: number }[] = [];
-    cfEnv = { BACKUPS: { put: async () => {}, list: async ({ prefix }: { prefix: string }) => ({ objects: objects.filter((o) => o.key.startsWith(prefix)), truncated: false }) } };
-    expect(check(await checkReadiness(services().fetchFn), "database", "Copy of Wix kept")).toMatchObject({ state: "info", detail: expect.stringContaining("Save a copy of Wix") });
-    objects.push({ key: "wix-copies/2026-10-20T01-00-00Z.json.gz", uploaded: new Date("2026-10-20T01:00:00Z"), size: 50_000 });
-    expect(check(await checkReadiness(services().fetchFn), "database", "Copy of Wix kept")).toMatchObject({ state: "ok", detail: expect.stringContaining("20 Oct 2026") });
-  });
-
-  it("after the switch, says when the hourly checks last ran", async () => {
-    allSet();
-    vi.stubEnv("DATA_BACKEND", "postgres");
     lastHourlyRun = null;
     expect(check(await checkReadiness(services().fetchFn), "database", "Hourly checks")).toMatchObject({ state: "info", detail: expect.stringContaining("haven't run yet") });
     lastHourlyRun = JSON.stringify({ at: new Date(Date.now() - 20 * 60_000).toISOString(), database: "up" });
@@ -270,34 +259,15 @@ describe("the nightly backup check", () => {
     expect(check(await checkReadiness(services().fetchFn), "database", "Hourly checks")?.state).toBe("info");
     lastHourlyRun = null;
   });
-
-  it("before the switch, says whether the nightly job is running", async () => {
-    allSet();
-    vi.stubEnv("CRON_SECRET", "s");
-    vi.stubEnv("DATA_BACKEND", "wix");
-    cfEnv = { BACKUPS: bucketWith() };
-    lastBackupRun = null;
-    expect(check(await checkReadiness(services().fetchFn), "database", "Nightly backup")).toMatchObject({ state: "info", detail: expect.stringContaining("hasn't run yet") });
-
-    lastBackupRun = JSON.stringify({ at: new Date(Date.now() - 5 * 3_600_000).toISOString(), result: "awake" });
-    expect(check(await checkReadiness(services().fetchFn), "database", "Nightly backup")).toMatchObject({
-      state: "ok",
-      detail: expect.stringContaining("last ran 5 hours ago (the new database answered)"),
-    });
-
-    lastBackupRun = JSON.stringify({ at: new Date(Date.now() - 4 * 86_400_000).toISOString(), result: "awake" });
-    expect(check(await checkReadiness(services().fetchFn), "database", "Nightly backup")?.state).toBe("warning");
-    lastBackupRun = null;
-  });
 });
 
-describe("build settings on the readiness page", () => {
+describe("build settings on the System checks page", () => {
   it("reads every NEXT_PUBLIC_ value written out in full, never by name", async () => {
     // A NEXT_PUBLIC_ value exists only where it's written out
     // (process.env.NEXT_PUBLIC_X), copied in by the build: looked up by
     // name on the live site it always reads as missing.
     const { readFileSync } = await import("fs");
-    const source = readFileSync(join(__dirname, "migrationReadiness.ts"), "utf8");
+    const source = readFileSync(join(__dirname, "systemChecks.ts"), "utf8");
     expect(source).not.toMatch(/set\(\s*["'`]NEXT_PUBLIC_/);
     expect(source).not.toMatch(/process\.env\[\s*["'`]NEXT_PUBLIC_/);
   });

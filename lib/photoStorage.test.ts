@@ -73,8 +73,6 @@ describe("which photo addresses the site accepts", () => {
 describe("uploading to MegaDeal's own storage", () => {
   beforeEach(() => {
     stored.clear();
-    vi.stubEnv("PHOTO_STORAGE", "r2");
-    vi.stubEnv("DATA_BACKEND", "postgres");
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => {
@@ -124,12 +122,6 @@ describe("uploading to MegaDeal's own storage", () => {
       const res = await GET(new NextRequest(`${SITE}/media/${key.join("/")}`), { params: Promise.resolve({ key }) });
       expect(res.status).toBe(404);
     }
-  });
-
-  it("stays on Wix while the data is still on Wix", async () => {
-    vi.stubEnv("DATA_BACKEND", "wix");
-    const { photoStorage } = await import("./photoStorage");
-    expect(photoStorage()).toBe("wix");
   });
 });
 

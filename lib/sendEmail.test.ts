@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { emailHtmlToText, headerSafe } from "./emailText";
 
-const wixFetch = vi.fn(async () => new Response("{}"));
-vi.mock("./wixAdmin", () => ({ createWixAdminClient: () => ({ fetchWithAuth: wixFetch }) }));
 
 describe("plain-text emails", () => {
   it("keep the words and every link's address", () => {
@@ -28,7 +26,7 @@ describe("sending", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     resend.mockReset();
     resend.mockImplementation(async () => new Response("{}"));
-    wixFetch.mockClear();
+    vi.stubEnv("RESEND_API_KEY", "re_test");
   });
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -36,16 +34,14 @@ describe("sending", () => {
     vi.restoreAllMocks();
   });
 
-  it("on Wix when the switch is off", async () => {
+  it("isn't sent without a Resend key", async () => {
+    vi.stubEnv("RESEND_API_KEY", "");
     const { sendTransactionalEmail } = await import("./sendEmail");
-    expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "Hi", html: "<p>Hi</p>" })).toBe(true);
-    expect(wixFetch).toHaveBeenCalledOnce();
+    expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "Hi", html: "<p>Hi</p>" })).toBe(false);
     expect(resend).not.toHaveBeenCalled();
   });
 
-  it("through Resend when switched on: text part, reply-to, and one-click unsubscribe for list mail", async () => {
-    vi.stubEnv("EMAIL_PROVIDER", "resend");
-    vi.stubEnv("RESEND_API_KEY", "re_test");
+  it("through Resend: text part, reply-to, and one-click unsubscribe for list mail", async () => {
     const { sendTransactionalEmail } = await import("./sendEmail");
     await sendTransactionalEmail({ to: "a@b.nz", subject: "Confirm", html: "<p>Hi</p>", replyTo: "hello@megadeal.co.nz", unsubscribeUrl: "https://megadeal.co.nz/api/email-signup/unsubscribe?token=abc" });
     const [url, init] = resend.mock.calls[0];
@@ -59,36 +55,34 @@ describe("sending", () => {
       reply_to: "hello@megadeal.co.nz",
       headers: { "List-Unsubscribe": "<https://megadeal.co.nz/api/email-signup/unsubscribe?token=abc>", "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
     });
-    expect(wixFetch).not.toHaveBeenCalled();
   });
 
-  it("refuses anything that isn't a plain address, on either provider", async () => {
+  it("refuses anything that isn't a plain address", async () => {
     const { sendTransactionalEmail } = await import("./sendEmail");
     for (const to of ["a@b.nz\r\nBcc: victim@x.nz", "not-an-address", "a@b.nz, <evil>@x.nz", ""]) {
       expect(await sendTransactionalEmail({ to, subject: "x", html: "x" }), to).toBe(false);
     }
     expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "x", html: "x", replyTo: "x\nBcc: y@z.nz" })).toBe(false);
-    expect(wixFetch).not.toHaveBeenCalled();
+    expect(resend).not.toHaveBeenCalled();
   });
 
   it("replies go to the first of several notification addresses", async () => {
     const { sendTransactionalEmail } = await import("./sendEmail");
     expect(await sendTransactionalEmail({ to: "a@b.nz", subject: "Welcome", html: "x", replyTo: "owner@example.nz, help@megadeal.co.nz" })).toBe(true);
-    const body = JSON.parse(String(((wixFetch.mock.calls[0] as unknown[])[1] as RequestInit).body));
-    expect(body.emailTransmission.replyTo).toEqual({ emailAddress: "owner@example.nz" });
+    const body = JSON.parse(String(resend.mock.calls[0][1].body));
+    expect(body.reply_to).toBe("owner@example.nz");
   });
 
   it("sends to each of several notification addresses", async () => {
     const { sendTransactionalEmail } = await import("./sendEmail");
     await sendTransactionalEmail({ to: "a@b.nz, c@d.nz", subject: "New message", html: "x" });
-    const body = JSON.parse(String((wixFetch.mock.calls[0] as unknown[])[1] && ((wixFetch.mock.calls[0] as unknown[])[1] as RequestInit).body));
-    expect(body.emailTransmission.toRecipients).toEqual([{ emailAddress: "a@b.nz" }, { emailAddress: "c@d.nz" }]);
+    const body = JSON.parse(String(resend.mock.calls[0][1].body));
+    expect(body.to).toEqual(["a@b.nz", "c@d.nz"]);
   });
 
   describe("when Resend says too many at once", () => {
     const tooMany = (body = '{"name":"rate_limit_exceeded"}') => new Response(body, { status: 429, headers: { "retry-after": "0.25" } });
     beforeEach(() => {
-      vi.stubEnv("EMAIL_PROVIDER", "resend");
       vi.stubEnv("RESEND_API_KEY", "re_test");
     });
 

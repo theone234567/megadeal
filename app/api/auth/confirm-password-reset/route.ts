@@ -4,17 +4,15 @@ import {
   restorePasswordResetToken,
   revokePasswordResetTokens,
 } from "@/lib/passwordResetTokens";
-import { setMemberPassword } from "@/lib/wixPassword";
-import { accountIdForEmail, authBackend } from "@/lib/authSession";
-import { endAllSessions } from "@/lib/authSession";
+import { accountIdForEmail, endAllSessions } from "@/lib/authSession";
 import { adminSetPassword } from "@/lib/supabaseAuth";
 import { BREACHED_PASSWORD_MESSAGE, passwordSeenInBreaches } from "@/lib/pwnedPassword";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { readJsonBody } from "@/lib/readJsonBody";
 import { RESET_COOKIE, RESET_TOKEN_RE } from "@/lib/sensitivePaths";
 
-// Wix's rule; MegaDeal's own logins ask for 10 (lib/authRoutes.ts).
-const minPasswordLength = () => (authBackend() === "supabase" ? 10 : 8);
+// The same rule as sign-up (lib/authRoutes.ts).
+const MIN_PASSWORD = 10;
 
 const LINK_USED =
   "This link has expired or has already been used. Get a new one with “Forgot password” on the sign-in page.";
@@ -50,8 +48,8 @@ export async function POST(req: NextRequest) {
   if (!RESET_TOKEN_RE.test(token)) {
     return reply({ error: "This reset link is invalid. Open the link in your email again." }, 400, true);
   }
-  if (newPassword.length < minPasswordLength() || newPassword.length > 200) {
-    return reply({ error: `Password must be at least ${minPasswordLength()} characters.` }, 400);
+  if (newPassword.length < MIN_PASSWORD || newPassword.length > 200) {
+    return reply({ error: `Password must be at least ${MIN_PASSWORD} characters.` }, 400);
   }
 
   // Before the link is used up, so choosing another password still works.
@@ -68,25 +66,21 @@ export async function POST(req: NextRequest) {
   const email = used.email;
 
   try {
-    if (authBackend() === "supabase") {
-      // The link proved the address: set the password (making the login
-      // for a business brought over from Wix), then end every session
-      // that used the old one.
-      const userId = await accountIdForEmail(email);
-      const set = await adminSetPassword(email, newPassword, userId);
-      if (!set.ok) {
-        console.error("[auth/confirm-password-reset] refused", set.status, set.code);
-        await restorePasswordResetToken(token, used);
-        const weak = set.code === "weak_password";
-        return reply(
-          { error: weak ? "Choose a stronger password: longer, and not a common one." : "Couldn't set your new password. Please try again." },
-          weak ? 400 : 502
-        );
-      }
-      await endAllSessions(set.data.id ?? userId);
-    } else {
-      await setMemberPassword(email, newPassword);
+    // The link proved the address: set the password (making the login
+    // for a business brought over from Wix), then end every session that
+    // used the old one.
+    const userId = await accountIdForEmail(email);
+    const set = await adminSetPassword(email, newPassword, userId);
+    if (!set.ok) {
+      console.error("[auth/confirm-password-reset] refused", set.status, set.code);
+      await restorePasswordResetToken(token, used);
+      const weak = set.code === "weak_password";
+      return reply(
+        { error: weak ? "Choose a stronger password: longer, and not a common one." : "Couldn't set your new password. Please try again." },
+        weak ? 400 : 502
+      );
     }
+    await endAllSessions(set.data.id ?? userId);
   } catch (err) {
     // Never the provider's own text: it can say more than a visitor should
     // see (security review finding 2).

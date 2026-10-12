@@ -8,7 +8,7 @@ let row: Record<string, any> = {};
 const emailed: { to: string; subject: string; html: string }[] = [];
 let sendWorks = true;
 vi.mock("./adminSession", () => ({ isAdminRequest: async () => true }));
-vi.mock("./wixAdmin", () => ({ createWixAdminClient: () => ({ items: { get: async () => row, update: async (_c: string, item: any) => item } }) }));
+vi.mock("./dataClient", () => ({ createDataClient: () => ({ items: { get: async () => row, update: async (_c: string, item: any) => item } }) }));
 vi.mock("./merchantActivity", () => ({ logMerchantActivity: vi.fn() }));
 vi.mock("./indexNowDeal", () => ({ notifyDealChanged: vi.fn() }));
 vi.mock("./adminAudit", () => ({ logAdminAction: vi.fn(), auditTarget: (n: string) => n }));

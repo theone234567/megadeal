@@ -4,7 +4,7 @@ Everything that has to happen to open MegaDeal to the public, in order. Most of 
 switches by itself when `LAUNCHED` turns on; this is the short list of what doesn't.
 
 **Admin > Launch checklist** is this guide as a page: what the site can check ticks
-itself (the Wix move, backups, account emails, test businesses left, businesses without a
+itself (system checks, backups, account emails, test businesses left, businesses without a
 password), and the rest are ticked there by hand.
 
 ## The week before
@@ -22,15 +22,12 @@ password), and the rest are ticked there by hand.
 
 ### Also the week before: the systems behind the site
 
-Since 8 Oct 2026 the site runs on its own database (Supabase), photo storage and email,
-not Wix (`docs/WIX-MIGRATION.md`). Before opening it to the public:
+The site runs on its own database (Supabase), photo storage, email and sign-in; Wix is
+no longer used (`docs/WIX-MIGRATION.md`). Before opening it to the public:
 
-- **Admin → Moving off Wix: every box green or blue.** In particular **Nightly backup**
+- **Admin → System checks: every box green or blue.** In particular **Nightly backup**
   shows a copy from last night, **Hourly checks** ran within the hour, and **Tables up to
   date** has a tick (if not, press **Apply database updates** there).
-- **Business sign-in moved off Wix** (stage 3), so new businesses sign up on MegaDeal's
-  own sign-in. Not strictly needed to launch, but it's better done before businesses
-  arrive than after.
 - **An uptime monitor** (UptimeRobot or Better Stack, free): watch
   `https://megadeal.co.nz/api/health` every 5 minutes and email you. The site emails you
   itself if the database stops answering, but only an outside monitor notices the whole

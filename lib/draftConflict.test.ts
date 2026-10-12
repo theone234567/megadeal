@@ -18,7 +18,7 @@ describe("draft save conflicts", () => {
   });
 });
 
-// The draft route against a fake Wix: two tabs saving the same draft.
+// The draft route against a fake data client: two tabs saving the same draft.
 let row: Record<string, any> = {};
 const update = vi.fn(async (_c: string, item: Record<string, any>) => {
   row = item;
@@ -27,8 +27,8 @@ const update = vi.fn(async (_c: string, item: Record<string, any>) => {
 vi.mock("./memberAuth", () => ({ getVerifiedMember: async () => ({ id: "u1", email: "t@example.com" }) }));
 vi.mock("./memberRateLimit", () => ({ memberRateLimited: async () => false, HOUR: 3_600_000 }));
 vi.mock("./merchant", () => ({ getOrClaimMerchant: async () => ({ _id: "m1", status: "Approved" }) }));
-vi.mock("./wixAdmin", () => ({
-  createWixAdminClient: () => ({
+vi.mock("./dataClient", () => ({
+  createDataClient: () => ({
     items: {
       get: async () => row,
       update,

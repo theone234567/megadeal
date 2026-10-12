@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { parseTestDealInput, TEST_DEAL_PHOTOS, type TestDeal } from "./testDeals";
 
 // "Copy to real draft" (app/api/admin/test-deals/[id]/route.ts), against a
-// fake Wix: the only test-deal action that writes anything real.
+// fake data client: the only test-deal action that writes anything real.
 const { fields } = parseTestDealInput({
   businessName: "Test Spa", suburb: "", dealName: "Express facial", category: "Beauty & Spa",
   description: "A 30-minute facial.", terms: "Bookings essential.", priceNow: 45, priceWas: 90, isFlash: true,
@@ -21,8 +21,8 @@ vi.mock("./testDealStore", () => ({
   getTestDeal: async (id: string) => (id === "t1" ? test : null),
   restartTestDeal: vi.fn(), updateTestDeal: vi.fn(), deleteTestDeal: vi.fn(),
 }));
-vi.mock("./wixAdmin", () => ({
-  createWixAdminClient: () => ({
+vi.mock("./dataClient", () => ({
+  createDataClient: () => ({
     items: {
       get: async () => merchant,
       query: () => ({ eq: () => ({ eq: () => ({ find: async () => ({ items: Array.from({ length: draftCount }) }) }) }) }),

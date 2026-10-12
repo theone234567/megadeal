@@ -13,11 +13,11 @@ import ContactMessagesPanel from "@/components/admin/ContactMessagesPanel";
 import ListingRemindersPanel from "@/components/admin/ListingRemindersPanel";
 import { missedScheduledStart } from "@/lib/dealSchedule";
 import { readRevision } from "@/lib/dealRevision";
-import { useWix } from "@/context/WixProvider";
+import { useSession } from "@/context/SessionProvider";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { isLoggedIn: businessAlsoActive, member: businessMember, logout: logoutBusiness } = useWix();
+  const { isLoggedIn: businessAlsoActive, member: businessMember, logout: logoutBusiness } = useSession();
   const [signingOutBusiness, setSigningOutBusiness] = useState(false);
   const [tab, setTab] = useState<"merchants" | "deals" | "subscribers" | "messages" | "tests" | "settings">("merchants");
 
@@ -280,8 +280,8 @@ export default function AdminDashboardPage() {
           <Link href="/admin/logins" className="text-sm font-medium text-slate-500 hover:text-brand-700">
             Check a login
           </Link>
-          <Link href="/admin/move-off-wix" className="text-sm font-medium text-slate-500 hover:text-brand-700">
-            Moving off Wix
+          <Link href="/admin/system" className="text-sm font-medium text-slate-500 hover:text-brand-700">
+            System checks
           </Link>
           <button
             onClick={handleLogout}
