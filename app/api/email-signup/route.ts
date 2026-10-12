@@ -5,6 +5,7 @@ import { SITE_URL } from "@/lib/siteConfig";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { publicFormCheckOn, verifyTurnstile } from "@/lib/turnstile";
+import { readSmallJson } from "@/lib/readJsonBody";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ALLOWED_AUDIENCES: EmailAudience[] = ["customer", "merchant"];
@@ -17,7 +18,7 @@ const ALLOWED_AUDIENCES: EmailAudience[] = ["customer", "merchant"];
  * subscribed without proving they control the inbox.
  */
 export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, 4096);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }

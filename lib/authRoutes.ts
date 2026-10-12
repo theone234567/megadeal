@@ -4,6 +4,7 @@ import { authBackend, fromOwnSite } from "./authSession";
 import { checkRateLimit, getClientIp } from "./rateLimit";
 import { verifyTurnstile } from "./turnstile";
 import { SITE_URL } from "./siteConfig";
+import { readSmallJson } from "./readJsonBody";
 
 /** What every sign-in route checks first, in this order. Returns a
  *  response to send instead, or the parsed body to carry on with. */
@@ -18,7 +19,7 @@ export async function authPreflight(
   if ((await checkRateLimit(`${opts.limitKey}-ip:${ip}`, opts.perIp, 15 * 60, { failClosed: true })).limited) {
     return stop("Too many attempts. Please wait a few minutes and try again.", 429);
   }
-  const body = ((await req.json().catch(() => null)) ?? {}) as Record<string, unknown>;
+  const body = ((await readSmallJson(req)) ?? {}) as Record<string, unknown>;
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase().slice(0, 254) : "";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return stop("Enter a valid email address.", 400);
   // The robot check before the per-address limit: otherwise anyone could

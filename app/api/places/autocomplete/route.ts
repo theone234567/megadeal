@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { tryConsumePlacesQuota } from "@/lib/placesUsageLimiter";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { readSmallJson } from "@/lib/readJsonBody";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export const dynamic = "force-dynamic";
  * the same from the client's point of view: address entry never breaks.
  */
 export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, 4096);
   const input = typeof body?.input === "string" ? body.input.trim().slice(0, 200) : "";
   const sessionToken = typeof body?.sessionToken === "string" ? body.sessionToken.slice(0, 100) : "";
 

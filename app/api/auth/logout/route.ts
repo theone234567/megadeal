@@ -3,6 +3,7 @@ import { createWixClient } from "@/lib/wixClient";
 import { MEMBER_COOKIE_NAME, parseTokens } from "@/lib/memberSession";
 import { ACCESS_COOKIE, authBackend, clearSessionCookies } from "@/lib/authSession";
 import { signOut } from "@/lib/supabaseAuth";
+import { readSmallJson } from "@/lib/readJsonBody";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     return res;
   }
   const tokens = parseTokens(req.cookies.get(MEMBER_COOKIE_NAME)?.value);
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, 4096);
   const returnTo = typeof body?.returnTo === "string" ? body.returnTo : undefined;
 
   let logoutUrl: string | null = null;

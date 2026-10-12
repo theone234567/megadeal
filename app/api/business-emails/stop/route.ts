@@ -19,6 +19,8 @@ export async function POST(req: NextRequest) {
     const ok = validBusinessOptOut(q.get("m"), q.get("s")) && (await optOutBusiness(q.get("m")!));
     return new NextResponse(ok ? "Unsubscribed." : "That link isn't valid.", { status: ok ? 200 : 400, headers: { "Cache-Control": "no-store" } });
   }
+  // The form has two short fields; anything bigger isn't from it.
+  if (Number(req.headers.get("content-length") ?? 0) > 4096) return NextResponse.redirect(`${SITE_URL}/stop-emails?done=0`, 303);
   const form = await req.formData().catch(() => null);
   const m = form?.get("m");
   const ok = validBusinessOptOut(m, form?.get("s")) && (await optOutBusiness(m));

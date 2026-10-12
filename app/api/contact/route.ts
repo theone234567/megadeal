@@ -5,6 +5,7 @@ import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { publicFormCheckOn, verifyTurnstile } from "@/lib/turnstile";
+import { readSmallJson } from "@/lib/readJsonBody";
 
 // This route stores the message only — it must never add the sender to the
 // EmailSignups mailing list. There's no consent checkbox on the contact
@@ -20,7 +21,7 @@ function cleanText(value: unknown, maxLength: number): string {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }

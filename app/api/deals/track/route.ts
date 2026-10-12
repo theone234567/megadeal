@@ -4,6 +4,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { incrementFieldAtomically } from "@/lib/creditsAtomic";
 import { isAdminRequest } from "@/lib/adminSession";
 import { DEAL_EVENT_FIELD, isDealEvent } from "@/lib/dealEvents";
+import { readSmallJson } from "@/lib/readJsonBody";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export const dynamic = "force-dynamic";
  * this never blocks or fails a request from the visitor's point of view.
  */
 export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, 4096);
   const productId = body?.productId ? String(body.productId) : "";
   const event = body?.event;
 

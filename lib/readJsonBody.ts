@@ -32,3 +32,11 @@ export async function readJsonBody(req: Request, maxBytes: number): Promise<unkn
     return null;
   }
 }
+
+/** For the public forms (sign-in, contact, sign-ups): a small JSON body,
+ *  or null for one that's too large or isn't JSON, which they already
+ *  answer as an invalid request. Nothing they take comes near 16 KB. */
+export async function readSmallJson(req: Request, maxBytes = 16 * 1024): Promise<any> {
+  const body = await readJsonBody(req, maxBytes);
+  return body === "too_large" ? null : body;
+}
