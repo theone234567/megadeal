@@ -28,7 +28,7 @@ export default function DealLoading() {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(340px,1fr)] lg:gap-x-8">
-          <div className="animate-shimmer aspect-[4/3] w-full rounded-[18px]" />
+          <div className="animate-shimmer aspect-[3/2] w-full rounded-2xl" />
 
           <div className="self-start rounded-[18px] border border-slate-200/80 bg-white p-5 shadow-card">
             <div className="animate-shimmer h-12 w-36 rounded-lg" />

@@ -134,27 +134,29 @@ export default function DealDetail({
   const profileHref = deal.businessSlug && !preview ? `/business/${deal.businessSlug}` : null;
 
   return (
-    <main className="mx-auto max-w-[1040px] px-4 py-6 sm:px-6 lg:py-8">
+    <main className="mx-auto max-w-[1040px] px-4 py-4 sm:px-6 sm:py-6 lg:py-7">
       <Breadcrumbs
+        compact
         items={[{ name: DEFAULT_CITY.name, href: cityPath() }, ...(category ? [{ name: category, href: categoryPath(category) }] : []), { name: deal.name }]}
       />
 
       {/* 1. Title and business */}
-      <header className="mt-4">
+      <header>
         {deal.isFlash ? (
-          <span className="inline-block rounded-full bg-brand-600 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-white">
+          <span className="mb-1.5 inline-block rounded-full bg-brand-600 px-2.5 py-0.5 text-[0.6875rem] font-extrabold uppercase tracking-wide text-white">
             Flash Deal
           </span>
         ) : (
+          // On a phone the breadcrumb above already names the category.
           category && (
-            <span className="text-[0.6875rem] font-bold uppercase tracking-[0.12em] text-brand-700">{category}</span>
+            <span className="mb-1 hidden text-[0.6875rem] font-bold uppercase tracking-[0.12em] text-brand-700 sm:block">{category}</span>
           )
         )}
-        <h1 className="mt-1.5 text-balance font-display text-[1.75rem] font-semibold leading-tight text-slate-900 sm:text-[2rem] lg:text-[2.25rem]">
+        <h1 className="text-balance font-display text-[1.375rem] font-semibold leading-tight text-slate-900 sm:text-[1.75rem] lg:text-[1.875rem]">
           {deal.name}
         </h1>
         {(deal.businessName || place) && (
-          <p className="mt-1.5 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-600">
             {deal.businessName &&
               // Only a link when there's a profile to go to.
               (profileHref ? (
@@ -174,18 +176,19 @@ export default function DealDetail({
         )}
       </header>
 
-      <div className="mt-5 grid grid-cols-1 gap-6 lg:mt-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)] lg:gap-x-9 lg:gap-y-8">
-        {/* 2. Photo: always 4:3, whatever shape was uploaded. */}
+      <div className="mt-3 grid grid-cols-1 gap-5 sm:mt-4 lg:mt-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,1fr)] lg:gap-x-9 lg:gap-y-8">
+        {/* 2. Photo: 3:2, the same shape as the deal's card, so it doesn't
+            push the price and the action off a phone's first screen. */}
         <div className="lg:col-start-1 lg:row-start-1">
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[18px] bg-brand-50">
+          <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-brand-50">
             {deal.image ? (
               // A plain <img>: next/image makes no srcset while images are
               // unoptimized, and this lets a phone take a smaller copy.
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={wixImageUrl(deal.image, 1200, 900)}
-                srcSet={wixImageSrcSet(deal.image, [640, 900, 1200], 4 / 3)}
-                sizes="(min-width: 1024px) 600px, (min-width: 640px) 90vw, 100vw"
+                src={wixImageUrl(deal.image, 1200, 800)}
+                srcSet={wixImageSrcSet(deal.image, [640, 900, 1200], 3 / 2)}
+                sizes="(min-width: 1024px) 540px, (min-width: 640px) 90vw, 100vw"
                 alt={`${deal.name}${deal.businessName ? ` at ${deal.businessName}` : ""}${place ? `, ${place}` : ""}`}
                 className="absolute inset-0 h-full w-full object-cover"
                 loading="eager"
@@ -204,7 +207,8 @@ export default function DealDetail({
             photo on desktop; part of the page flow on a phone. */}
         <aside
           aria-label="Price and how to use this deal"
-          className="lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start lg:rounded-[18px] lg:border lg:border-slate-200 lg:bg-white lg:p-6"
+          // Stays in view on a computer while the conditions are read.
+          className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start lg:rounded-[18px] lg:border lg:border-slate-200 lg:bg-white lg:p-6"
         >
           {deal.isFlash && deal.expiresAt && live && (
             <div className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-brand-50 px-4 py-3">
@@ -223,7 +227,7 @@ export default function DealDetail({
           )}
 
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="font-display text-[2.5rem] font-semibold leading-none text-brand-700">
+            <span className="font-display text-[2.25rem] font-semibold leading-none text-brand-700 lg:text-[2.5rem]">
               {formatMoney(deal.now, deal.currency, deal.formattedNow)}
             </span>
             {deal.was > deal.now && (
@@ -239,7 +243,7 @@ export default function DealDetail({
             </p>
           )}
 
-          <div className="mt-5 border-t border-slate-200/80 pt-4">
+          <div className="mt-4 border-t border-slate-200/80 pt-4">
             {/* Ended or sold out: a plain notice, no code or action. */}
             {!live ? (
               <div className="rounded-xl bg-slate-50 px-4 py-3 text-center" aria-live="polite">
@@ -260,6 +264,11 @@ export default function DealDetail({
                 preview={preview}
                 onAction={tracker.track}
                 onOpen={tracker.interest}
+                price={{
+                  now: formatMoney(deal.now, deal.currency, deal.formattedNow),
+                  was: deal.was > deal.now ? formatMoney(deal.was, deal.currency, deal.formattedWas) : null,
+                  percentOff: savingPct,
+                }}
               />
             )}
           </div>
@@ -342,6 +351,10 @@ export default function DealDetail({
 
       {/* 6. About the business */}
       <AboutBusiness deal={deal} preview={preview} onAction={tracker.track} />
+
+      {/* The end of this deal: the phone's "Contact business" bar
+          (ContactBusiness.tsx) gives way from here on. */}
+      <div id="deal-end" aria-hidden="true" />
 
       {moreDeals}
     </main>

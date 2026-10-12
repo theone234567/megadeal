@@ -16,7 +16,7 @@ export interface Crumb {
  * of a bare URL), so this always renders both from one `items` list rather
  * than risking them drifting apart.
  */
-export default function Breadcrumbs({ items }: { items: Crumb[] }) {
+export default function Breadcrumbs({ items, compact = false }: { items: Crumb[]; compact?: boolean }) {
   const withHome: Crumb[] = [{ name: "Home", href: "/" }, ...items];
 
   return (
@@ -36,16 +36,25 @@ export default function Breadcrumbs({ items }: { items: Crumb[] }) {
           }),
         }}
       />
-      <nav aria-label="Breadcrumb" className="mb-4 flex flex-wrap items-center gap-1.5 text-sm text-slate-500">
+      <nav
+        aria-label="Breadcrumb"
+        className={
+          compact
+            ? // One line on a phone, the current page cut short with "…",
+              // so the trail never takes two lines above the content.
+              "mb-3 flex items-center gap-1.5 overflow-hidden whitespace-nowrap text-[0.8125rem] text-slate-500 sm:text-sm"
+            : "mb-4 flex flex-wrap items-center gap-1.5 text-sm text-slate-500"
+        }
+      >
         {withHome.map((item, i) => (
-          <span key={i} className="flex items-center gap-1.5">
+          <span key={i} className={`flex items-center gap-1.5 ${compact ? (item.href ? "shrink-0" : "min-w-0") : ""}`}>
             {i > 0 && <span aria-hidden="true">/</span>}
             {item.href ? (
               <Link href={item.href} className="hover:text-brand-700 hover:underline">
                 {item.name}
               </Link>
             ) : (
-              <span aria-current="page" className="font-medium text-slate-700">
+              <span aria-current="page" className={`font-medium text-slate-700 ${compact ? "truncate" : ""}`}>
                 {item.name}
               </span>
             )}

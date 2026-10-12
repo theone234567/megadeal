@@ -103,6 +103,7 @@ export default function ContactBusiness({
   preview,
   onAction,
   onOpen,
+  price,
 }: {
   businessName: string | null;
   code: string | null;
@@ -116,6 +117,8 @@ export default function ContactBusiness({
   onAction: (action: DealAction) => void;
   /** Counts opening the pop-up as the visit's interest. */
   onOpen: () => void;
+  /** For the bar at the bottom of a phone's screen (below). */
+  price?: { now: string; was: string | null; percentOff: number | null };
 }) {
   const [open, setOpen] = useState(false);
   // The pop-up's rows (with the business's email address) are only built
@@ -123,7 +126,32 @@ export default function ContactBusiness({
   const [opened, setOpened] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const barButtonRef = useRef<HTMLButtonElement>(null);
+  // Which button opened the pop-up, for focus to go back to.
+  const openedFrom = useRef<HTMLButtonElement | null>(null);
   const business = businessName || "the business";
+
+  // On a phone, a bar with the price and "Contact business" stays at the
+  // bottom of the screen whenever the panel's own button is out of view
+  // (not yet reached, or scrolled past), and gives way at the end of the
+  // deal (#deal-end) so it never sits over the lists below or the footer.
+  const [buttonInView, setButtonInView] = useState(true);
+  const [endInView, setEndInView] = useState(false);
+  useEffect(() => {
+    const button = buttonRef.current;
+    const end = document.getElementById("deal-end");
+    if (!button || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.target === button) setButtonInView(e.isIntersecting);
+        else setEndInView(e.isIntersecting || e.boundingClientRect.top < 0);
+      }
+    });
+    io.observe(button);
+    if (end) io.observe(end);
+    return () => io.disconnect();
+  }, []);
+  const showBar = Boolean(price) && options.length > 0 && !buttonInView && !endInView;
 
   useEffect(() => {
     const d = dialogRef.current;
@@ -134,7 +162,14 @@ export default function ContactBusiness({
 
   function close() {
     setOpen(false);
-    buttonRef.current?.focus();
+    (openedFrom.current ?? buttonRef.current)?.focus();
+  }
+
+  function openFrom(button: HTMLButtonElement | null) {
+    openedFrom.current = button;
+    onOpen();
+    setOpened(true);
+    setOpen(true);
   }
 
   const buttonClass =
@@ -150,11 +185,7 @@ export default function ContactBusiness({
             ref={buttonRef}
             type="button"
             aria-haspopup="dialog"
-            onClick={() => {
-              onOpen();
-              setOpened(true);
-              setOpen(true);
-            }}
+            onClick={() => openFrom(buttonRef.current)}
             className={buttonClass}
           >
             Contact business <span aria-hidden="true">→</span>
@@ -172,6 +203,38 @@ export default function ContactBusiness({
 
       <p className="mt-3 text-sm font-bold text-slate-900">{instruction.heading}</p>
       <p className="mt-0.5 text-sm leading-relaxed text-slate-600">{instruction.text}</p>
+
+      {price && options.length > 0 && (
+        <div
+          className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(0.625rem+env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-6px_20px_rgba(15,23,42,0.08)] backdrop-blur transition-transform duration-200 motion-reduce:transition-none lg:hidden ${
+            showBar ? "translate-y-0" : "pointer-events-none translate-y-full"
+          }`}
+          // Out of view, it's also out of reach of keyboards and screen readers.
+          inert={!showBar}
+        >
+          <div className="mx-auto flex max-w-[1040px] items-center gap-3">
+            <p className="min-w-0 leading-tight">
+              <span className="font-display text-xl font-semibold text-brand-700">{price.now}</span>
+              {price.was && (
+                <span className="ml-1.5 text-sm text-slate-500 line-through">
+                  <span className="sr-only">Usual price </span>
+                  {price.was}
+                </span>
+              )}
+              {price.percentOff !== null && <span className="block text-xs font-bold text-brand-700">{price.percentOff}% off</span>}
+            </p>
+            <button
+              ref={barButtonRef}
+              type="button"
+              aria-haspopup="dialog"
+              onClick={() => openFrom(barButtonRef.current)}
+              className="ml-auto flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-brand-600 px-5 text-[0.9375rem] font-extrabold text-white shadow-card transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+            >
+              Contact business <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {options.length > 0 && (
         <dialog
