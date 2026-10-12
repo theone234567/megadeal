@@ -18,8 +18,7 @@ committed, and nothing loads it.
 ## Nothing breaks while these are missing
 
 Every lookup returns `null` when a file isn't here, and each spot falls
-back to the vector artwork the site already ships (`components/Logo.tsx`,
-`components/ElephantMascot.tsx`, `AucklandSkylineArt`). The page is
+back to artwork the site already ships. The page is
 complete either way — it just gets the illustrated versions once these
 land. That avoids putting broken-image glyphs on the live signup page,
 and means no code change is needed when you add them.
