@@ -18,7 +18,7 @@ const ALLOWED_AUDIENCES: EmailAudience[] = ["customer", "merchant"];
  * subscribed without proving they control the inbox.
  */
 export async function POST(req: NextRequest) {
-  const body = await readSmallJson(req, 4096);
+  const body = await readSmallJson(req, 8192);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
