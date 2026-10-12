@@ -83,7 +83,7 @@ const BUSINESS_STEPS: Step[] = [
   {
     number: "3",
     title: "We review your application",
-    text: "Our team checks new businesses before they go live — usually within a couple of business days.",
+    text: "Our team checks new businesses before they go live — usually within 12 hours.",
   },
   {
     number: "4",

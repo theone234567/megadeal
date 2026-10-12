@@ -40,7 +40,7 @@ function welcomeEmailHtml(businessName: string): string {
         <p style="margin:0 0 16px;">🎉 You're in! Thanks for signing up to MegaDeal — we're genuinely excited to have ${safeName || "your business"} on board.</p>
         <p style="margin:0 0 8px;">Here's what happens next:</p>
         <ul style="margin:0 0 16px;padding-left:20px;">
-          <li style="margin-bottom:6px;">Our team will take a look at your application — usually within a couple of business days</li>
+          <li style="margin-bottom:6px;">Our team will take a look at your application — usually within 12 hours</li>
           <li style="margin-bottom:6px;">Once you're approved, you'll have deal credits waiting in your portal, ready to list your first deal straight away</li>
           <li>From there it's simple: you set the offer, we bring the customers, and you keep every dollar</li>
         </ul>${
