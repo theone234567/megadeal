@@ -1,6 +1,10 @@
 "use client";
 
 import Link from "next/link";
+
+// Footer links aren't fetched ahead (prefetch={false}): scrolling past
+// them on a phone otherwise downloaded a dozen pages and their pictures
+// nobody had asked for. Each page still loads as normal when tapped.
 import { ADVERTISE_PAGES } from "@/lib/businessLinks";
 import { usePathname } from "next/navigation";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
@@ -68,12 +72,13 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
               <h2 className="text-lg font-bold text-white">Own a local business?</h2>
               <p className="text-sm text-brand-100">
                 List your deal on MegaDeal and get up to {promo.months} months free advertising — use code <span className="font-bold">{promo.code}</span> at signup.{" "}
-                <Link href="/terms" className="text-brand-200 underline hover:text-white">
+                <Link prefetch={false} href="/terms" className="text-brand-200 underline hover:text-white">
                   Conditions apply.
                 </Link>
               </p>
             </div>
             <Link
+              prefetch={false}
               href="/list-your-business"
               className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-full bg-white px-5 text-[0.9375rem] font-semibold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
             >
@@ -118,7 +123,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
             <ul className="space-y-1 text-sm text-slate-600">
               {FOOTER_CATEGORIES.map((category) => (
                 <li key={category.name}>
-                  <Link href={category.href} className="inline-block py-1 hover:text-brand-700">
+                  <Link prefetch={false} href={category.href} className="inline-block py-1 hover:text-brand-700">
                     {category.name}
                   </Link>
                 </li>
@@ -131,7 +136,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
             <ul className="space-y-1 text-sm text-slate-600">
               {ADVERTISE_PAGES.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="inline-block py-1 hover:text-brand-700">
+                  <Link prefetch={false} href={l.href} className="inline-block py-1 hover:text-brand-700">
                     {l.name} advertising
                   </Link>
                 </li>
@@ -141,22 +146,22 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
           <div>
             <h2 className="mb-3 text-sm font-bold text-slate-900">Company</h2>
             <ul className="space-y-1 text-sm text-slate-600">
-              <li><Link href="/list-your-business" className="inline-block py-1 hover:text-brand-700">List your business</Link></li>
-              <li><Link href="/about" className="inline-block py-1 hover:text-brand-700">About MegaDeal</Link></li>
-              <li><Link href="/how-it-works" className="inline-block py-1 hover:text-brand-700">How it works</Link></li>
-              <li><Link href="/careers" className="inline-block py-1 hover:text-brand-700">Careers</Link></li>
+              <li><Link prefetch={false} href="/list-your-business" className="inline-block py-1 hover:text-brand-700">List your business</Link></li>
+              <li><Link prefetch={false} href="/about" className="inline-block py-1 hover:text-brand-700">About MegaDeal</Link></li>
+              <li><Link prefetch={false} href="/how-it-works" className="inline-block py-1 hover:text-brand-700">How it works</Link></li>
+              <li><Link prefetch={false} href="/careers" className="inline-block py-1 hover:text-brand-700">Careers</Link></li>
               {!siteLaunched && (
-                <li><Link href="/coming-soon" className="inline-block py-1 hover:text-brand-700">Coming soon</Link></li>
+                <li><Link prefetch={false} href="/coming-soon" className="inline-block py-1 hover:text-brand-700">Coming soon</Link></li>
               )}
             </ul>
           </div>
           <div>
             <h2 className="mb-3 text-sm font-bold text-slate-900">Support</h2>
             <ul className="space-y-1 text-sm text-slate-600">
-              <li><Link href="/help" className="inline-block py-1 hover:text-brand-700">Help centre</Link></li>
-              <li><Link href="/redeem" className="inline-block py-1 hover:text-brand-700">How to redeem a deal</Link></li>
-              <li><Link href="/refund-policy" className="inline-block py-1 hover:text-brand-700">Refund policy</Link></li>
-              <li><Link href="/contact" className="inline-block py-1 hover:text-brand-700">Contact us</Link></li>
+              <li><Link prefetch={false} href="/help" className="inline-block py-1 hover:text-brand-700">Help centre</Link></li>
+              <li><Link prefetch={false} href="/redeem" className="inline-block py-1 hover:text-brand-700">How to redeem a deal</Link></li>
+              <li><Link prefetch={false} href="/refund-policy" className="inline-block py-1 hover:text-brand-700">Refund policy</Link></li>
+              <li><Link prefetch={false} href="/contact" className="inline-block py-1 hover:text-brand-700">Contact us</Link></li>
             </ul>
           </div>
           <div>
@@ -168,8 +173,8 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
         <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 sm:flex-row">
           <p className="text-center text-sm text-slate-500 sm:text-left">© {new Date().getFullYear()} MegaDeal. All rights reserved.</p>
           <div className="flex gap-4 text-sm text-slate-500">
-            <Link href="/terms" className="inline-block py-1 hover:text-brand-700">Terms</Link>
-            <Link href="/privacy" className="inline-block py-1 hover:text-brand-700">Privacy</Link>
+            <Link prefetch={false} href="/terms" className="inline-block py-1 hover:text-brand-700">Terms</Link>
+            <Link prefetch={false} href="/privacy" className="inline-block py-1 hover:text-brand-700">Privacy</Link>
           </div>
         </div>
       </div>

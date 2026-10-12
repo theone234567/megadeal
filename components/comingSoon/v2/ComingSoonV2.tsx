@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import EmailSignupForm from "@/components/EmailSignupForm";
 import { CreditCardIcon, SearchIcon, TagIcon } from "@/components/icons";
@@ -10,6 +9,11 @@ import { EXAMPLE_MASSAGE_DEAL } from "@/lib/exampleDeals";
 // generated its image module types, so static image imports fail there.
 // The 240px copy: he's shown at most 104px wide.
 const MASCOT = "/megadeal/coming-soon-v2/mascot-hoodie-240.webp";
+const MASCOT_SRCSET = "/megadeal/coming-soon-v2/mascot-hoodie-160.webp 160w, /megadeal/coming-soon-v2/mascot-hoodie-240.webp 240w";
+/** A category photo's smaller copies (…-200w, -300w, -400w.webp), so a
+ *  phone fetches the size it shows rather than the 400px one. */
+const categorySrcSet = (src: string) =>
+  [200, 300, 400].map((w) => `${src.replace(/-400w\.webp$/, `-${w}w.webp`)} ${w}w`).join(", ");
 const HERO_SIZES = "(max-width: 767px) calc(100vw - 84px), (max-width: 1223px) 44vw, 506px";
 import styles from "./ComingSoonV2.module.css";
 
@@ -60,7 +64,17 @@ export default function ComingSoonV2() {
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: V2_HERO.position }}
               />
               {/* Small and decorative; the photo's edge hides his lower half. */}
-              <Image className={styles.mascot} src={MASCOT} alt="" width={240} height={248} sizes="(max-width: 767px) 72px, 104px" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className={styles.mascot}
+                src={MASCOT}
+                srcSet={MASCOT_SRCSET}
+                sizes="(max-width: 767px) 72px, 104px"
+                alt=""
+                width={240}
+                height={248}
+                decoding="async"
+              />
             </div>
           </div>
           <div className={styles.conversion}>
@@ -132,13 +146,15 @@ export default function ComingSoonV2() {
             {V2_CATEGORIES.map((c) => (
               <li key={c.label}>
                 <div className={styles.categoryPhoto}>
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={c.src}
+                    srcSet={categorySrcSet(c.src)}
                     alt={c.alt}
-                    fill
                     loading="lazy"
+                    decoding="async"
                     sizes="(max-width: 767px) calc((100vw - 52px) / 2), (max-width: 1023px) 30vw, 190px"
-                    style={{ objectFit: "cover" }}
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
                   />
                 </div>
                 <h3>{c.label}</h3>
