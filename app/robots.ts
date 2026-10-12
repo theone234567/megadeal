@@ -5,13 +5,11 @@ import { SITE_URL } from "@/lib/siteConfig";
 // /help), not a functional/private route — it belongs indexed like any
 // other content page, so it isn't in this list.
 //
-// /login-callback and /reset-password are both client components (no
-// static content, state-dependent on a one-time code/token in the URL),
-// so neither can export its own `metadata` the way every other page here
-// does — Next.js only allows that from a Server Component. Blocking them
-// here instead gets the same "don't index this" outcome without needing
-// a Server Component wrapper just to hold a robots directive.
-const DISALLOWED = ["/admin", "/admin/*", "/portal", "/portal/*", "/api/*", "/login-callback", "/reset-password"];
+// /reset-password is state-dependent on a one-time token, so it's kept out
+// here as well as by its noindex header. (/login-callback, Wix's sign-in
+// return page, is gone: left crawlable so search engines see it's gone
+// and drop it.)
+const DISALLOWED = ["/admin", "/admin/*", "/portal", "/portal/*", "/api/*", "/reset-password"];
 
 export default function robots(): MetadataRoute.Robots {
   return {

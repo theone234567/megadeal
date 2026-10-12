@@ -23,7 +23,6 @@ const ALWAYS_OPEN = [
   "/api/csp-report",
   "/api/auth/login",
   "/api/auth/logout",
-  "/api/auth/session",
   "/api/auth/me",
   "/api/auth/email-hook",
   "/api/deals/track", // view counts on public pages
