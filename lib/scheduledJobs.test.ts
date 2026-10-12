@@ -25,7 +25,7 @@ describe("scheduled jobs", () => {
   it("runs without CRON_SECRET, with the site's own password, which the routes accept", async () => {
     const seen: Request[] = [];
     const result = await runScheduledJob("17 * * * *", {}, async (req) => (seen.push(req), new Response("{}")));
-    expect(result).toBe("/api/cron/expired-deals: 200, /api/cron/watch: 200");
+    expect(result).toBe("/api/cron/expired-deals: 200, /api/cron/watch: 200, /api/cron/review-queue: 200");
     const bearer = seen[0].headers.get("authorization") ?? "";
     expect(bearer).toBe(`Bearer ${internalCallToken()}`);
     expect(internalCallToken()).toMatch(/^[0-9a-f]{64}$/);
@@ -43,7 +43,7 @@ describe("scheduled jobs", () => {
         return new Response("{}", { status: ran.length === 1 ? 500 : 200 });
       })
     ).rejects.toThrow(/expired-deals answered 500/);
-    expect(ran).toEqual(["/api/cron/expired-deals", "/api/cron/watch"]);
+    expect(ran).toEqual(["/api/cron/expired-deals", "/api/cron/watch", "/api/cron/review-queue"]);
     await expect(runScheduledJob("0 0 * * *", { CRON_SECRET: "s" }, async () => new Response())).rejects.toThrow(/No job/);
   });
 });
