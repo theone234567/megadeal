@@ -5,7 +5,8 @@ import { inTransaction, type Sql } from "./sql";
 /**
  * Deletes a business with everything of its own: every deal (submitted
  * ones too), its credit history and its old page addresses (both go with
- * it in the database), in one transaction. For tidying up test
+ * it in the database), and its email choices and reminder history, in one
+ * transaction. For tidying up test
  * businesses: the ordinary delete keeps a business that has submitted
  * deals, as a record of credits spent.
  *
@@ -45,6 +46,11 @@ export async function deleteBusinessCompletely(db: Sql, merchantId: string, opts
     }
     await tx.query("delete from public.deals where merchant_id = $1", [merchantId]);
     await tx.query("delete from public.merchants where id = $1", [merchantId]);
+    // Its email choices and reminder history (lib/businessEmailOptOut.ts,
+    // lib/listingReminders.ts), kept by its id: meaningless without it.
+    await tx.query("delete from public.site_settings where key = any($1::text[])", [
+      [`biz-email-opt-out:${merchantId}`, `listing-reminder:${merchantId}`],
+    ]);
     return { ok: true, name: m.business_name ?? "", email: m.email ?? "", deals: deals.length, ownerId: m.owner_id };
   });
 }

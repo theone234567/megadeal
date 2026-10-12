@@ -51,26 +51,27 @@ async function testBusiness(dealStatus: string): Promise<string> {
     [m.id, dealStatus]
   );
   await db.query("insert into public.merchant_activity (merchant_id, type, amount, description) values ($1, 'credit', 12, 'Welcome credits')", [m.id]);
+  await db.query("insert into public.site_settings (key, value) values ($1, 'x'), ($2, 'y')", [`biz-email-opt-out:${m.id}`, `listing-reminder:${m.id}`]);
   return m.id;
 }
 const counts = async () =>
-  (await db.query("select (select count(*) from public.merchants)::int as m, (select count(*) from public.deals)::int as d, (select count(*) from public.merchant_activity)::int as a"))[0];
+  (await db.query("select (select count(*) from public.merchants)::int as m, (select count(*) from public.deals)::int as d, (select count(*) from public.merchant_activity)::int as a, (select count(*) from public.site_settings where key like 'biz-email-opt-out:%' or key like 'listing-reminder:%')::int as s"))[0];
 
 describe("deleting a business with all its deals", () => {
   it("after launch, refuses while a deal is live; otherwise removes everything in one go", async () => {
     const id = await testBusiness("Live");
     const refused = await deleteBusinessCompletely(db, id, { launched: true });
     expect(refused).toMatchObject({ ok: false, status: 409 });
-    expect(await counts()).toEqual({ m: 1, d: 2, a: 1 });
+    expect(await counts()).toEqual({ m: 1, d: 2, a: 1, s: 2 });
     await db.query("update public.deals set status = 'Cancelled' where merchant_id = $1", [id]);
     expect(await deleteBusinessCompletely(db, id, { launched: true })).toMatchObject({ ok: true, deals: 2, email: "test3@example.nz" });
-    expect(await counts()).toEqual({ m: 0, d: 0, a: 0 });
+    expect(await counts()).toEqual({ m: 0, d: 0, a: 0, s: 0 });
   });
 
   it("before launch nothing is public, so a live deal doesn't stop it", async () => {
     const id = await testBusiness("Live");
     expect(await deleteBusinessCompletely(db, id, { launched: false })).toMatchObject({ ok: true, deals: 2 });
-    expect(await counts()).toEqual({ m: 0, d: 0, a: 0 });
+    expect(await counts()).toEqual({ m: 0, d: 0, a: 0, s: 0 });
   });
 
   it("from admin: only with the name typed exactly, and the login too if asked", async () => {
@@ -84,12 +85,12 @@ describe("deleting a business with all its deals", () => {
       );
     expect((await send({ everything: true, confirm: "Test Bistro" }, "https://evil.example")).status).toBe(403);
     expect((await send({ everything: true, confirm: "test bistr" })).status).toBe(400);
-    expect(await counts()).toEqual({ m: 1, d: 2, a: 1 });
+    expect(await counts()).toEqual({ m: 1, d: 2, a: 1, s: 2 });
     await db.query("update public.merchants set owner_id = null where id = $1", [id]);
     const res = await send({ everything: true, confirm: "Test Bistro", login: false });
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ ok: true, deletedDeals: 2 });
-    expect(await counts()).toEqual({ m: 0, d: 0, a: 0 });
+    expect(await counts()).toEqual({ m: 0, d: 0, a: 0, s: 0 });
     expect(deletedLogins).toEqual([]);
   });
 });
