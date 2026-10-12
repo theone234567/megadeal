@@ -27,6 +27,7 @@ const FAQ_JSONLD = [
   { q: "What if a business won't honour a deal?", a: "First check the deal hasn't expired and that you've met its conditions, such as booking ahead. If a business still won't honour a current deal, use the \"Deal not honoured? Tell us\" link on the deal page, or our contact page, and our team will look into it." },
   { q: "Can I get a refund?", a: "Since MegaDeal never charges you, there's nothing for us to refund. Payment and any resulting dispute is between you and the business." },
   { q: "Is Groupon still in New Zealand?", a: "No. Groupon closed its New Zealand business in 2020, and MegaDeal isn't connected with it. MegaDeal is a New Zealand-owned local deals site, starting in Auckland. It works differently: there's no voucher to buy. You get a free deal code, contact the business, and pay them directly at the deal price." },
+  { q: "How do I stop MegaDeal emails?", a: "Every MegaDeal email that isn't about your account has an Unsubscribe link at the bottom: one click and those emails stop. Businesses can also choose which MegaDeal emails they get under \"Emails from MegaDeal\" in the business portal. Emails about your account and your deals, like sign-in codes and approvals, always come." },
   { q: "I'm a business — how do I list a deal?", a: "Head to our business page to find out how listing works — you advertise with pay-as-you-go credits, and customers pay you directly when they redeem." },
 ];
 
@@ -125,6 +126,20 @@ const FAQS: Faq[] = [
     // claim of any link with Groupon.
     q: "Is Groupon still in New Zealand?",
     a: "No. Groupon closed its New Zealand business in 2020, and MegaDeal isn't connected with it. MegaDeal is a New Zealand-owned local deals site, starting in Auckland. It works differently: there's no voucher to buy. You get a free deal code, contact the business, and pay them directly at the deal price.",
+  },
+  {
+    q: "How do I stop MegaDeal emails?",
+    a: (
+      <>
+        Every MegaDeal email that isn&apos;t about your account has an Unsubscribe link at the
+        bottom: one click and those emails stop. Businesses can also choose which MegaDeal emails
+        they get under &quot;Emails from MegaDeal&quot; in the{" "}
+        <Link href="/portal" prefetch={false} className="font-semibold text-brand-600 hover:underline">
+          business portal
+        </Link>
+        . Emails about your account and your deals, like sign-in codes and approvals, always come.
+      </>
+    ),
   },
   {
     q: "I'm a business — how do I list a deal?",
