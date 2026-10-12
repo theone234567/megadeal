@@ -246,15 +246,20 @@ export async function resolveDealRedirect(db: Sql, slug: string): Promise<string
 
 /** Every approved business's page, with when it last changed, for the
  *  sitemap. `email` is "" here: deals carry their business's slug. */
-export async function listBusinessesForSitemap(db: Sql): Promise<{ slug: string; email: string; updatedAt: string | null }[]> {
+export async function listBusinessesForSitemap(
+  db: Sql
+): Promise<{ slug: string; email: string; updatedAt: string | null; bio: string | null; photos: number }[]> {
   const rows = await db.query(
-    `select m.business_name, m.slug_id, m.slug, m.email, m.updated_at
+    `select m.business_name, m.slug_id, m.slug, m.email, m.updated_at, m.bio,
+            jsonb_array_length(coalesce(m.photos, '[]'::jsonb)) as photo_count
        from public.merchants m where m.status = 'Approved' order by m.created_at`
   );
   return rows.map((r) => ({
     slug: r.slug ?? businessSlug(r.business_name, r.slug_id),
     email: String(r.email || "").toLowerCase(),
     updatedAt: toIso(r.updated_at),
+    bio: blankToNull(r.bio),
+    photos: Number(r.photo_count ?? 0),
   }));
 }
 

@@ -5,6 +5,7 @@ import { mapProductToDeal, unwrapProduct } from "./mapDeal";
 import { businessSlug } from "./slug";
 import { CATEGORY_NAME_BY_ID, isMegaShopProduct } from "./categories";
 import { mapMerchantToBusiness, applyBusinessToDeal, type PublicBusiness } from "./business";
+import { parseBusinessPhotos } from "./businessPhotos";
 import { isDealLive } from "./dealVisibility";
 import { isScheduledFuture } from "./dealSchedule";
 import { parseBookingRequirement } from "./booking";
@@ -440,7 +441,7 @@ function latestIso(...values: unknown[]): string | null {
  * business page by its newest deal.
  */
 export async function fetchAllBusinessSlugsForSitemap(): Promise<
-  { slug: string; email: string; updatedAt: string | null }[]
+  { slug: string; email: string; updatedAt: string | null; bio: string | null; photos: number }[]
 > {
   try {
     if (dataBackend() === "postgres") return await withDb((db) => pg.listBusinessesForSitemap(db));
@@ -457,6 +458,8 @@ export async function fetchAllBusinessSlugsForSitemap(): Promise<
         slug: businessSlug(m.businessName, m._id),
         email: String(m.email || "").toLowerCase(),
         updatedAt: latestIso(m._updatedDate),
+        bio: typeof m.bio === "string" && m.bio.trim() ? m.bio : null,
+        photos: parseBusinessPhotos(m.photos).length,
       }));
   } catch {
     return [];

@@ -7,6 +7,7 @@ import {
   fetchAllBusinessSlugsForSitemap,
 } from "@/lib/fetchDealServer";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
+import { businessPageIsThin } from "@/lib/businessIndexing";
 
 // Deals are created/edited by merchants continuously, so a build-time-only
 // static sitemap would go stale between deploys.
@@ -97,7 +98,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   const businesses = await fetchAllBusinessSlugsForSitemap();
-  const businessPages: MetadataRoute.Sitemap = businesses.map((b) => ({
+  // Not the thin ones: no live deal, no bio, no photos (noindex too).
+  const businessPages: MetadataRoute.Sitemap = businesses
+    .filter((b) => !businessPageIsThin({ liveDeals: deals.filter((d) => d.merchantEmail === b.email).length, bio: b.bio, photos: b.photos }))
+    .map((b) => ({
     url: `${SITE_URL}/business/${b.slug}`,
     lastModified: newest([b.updatedAt, ...deals.filter((d) => d.merchantEmail === b.email).map((d) => d.updatedAt)]),
     changeFrequency: "weekly",

@@ -9,6 +9,7 @@ import {
   fetchAllBusinessSlugsForSitemap,
 } from "@/lib/fetchDealServer";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
+import { businessPageIsThin } from "@/lib/businessIndexing";
 
 // One-off bulk push of every currently-live URL to IndexNow — for kicking
 // off indexing of pages that were already up before IndexNow submission
@@ -55,7 +56,9 @@ export async function POST(req: NextRequest) {
         (c) => `${SITE_URL}${categoryPath(c.name)}`
       );
       const businesses = await fetchAllBusinessSlugsForSitemap();
-      const businessUrls = businesses.map((b) => `${SITE_URL}/business/${b.slug}`);
+      const businessUrls = businesses
+        .filter((b) => !businessPageIsThin({ liveDeals: deals.filter((d) => d.merchantEmail === b.email).length, bio: b.bio, photos: b.photos }))
+        .map((b) => `${SITE_URL}/business/${b.slug}`);
       urls = [...staticUrls, `${SITE_URL}${cityPath()}`, `${SITE_URL}${flashDealsPath()}`, ...categoryUrls, ...dealUrls, ...businessUrls];
     }
     await submitUrlsToIndexNow(urls);

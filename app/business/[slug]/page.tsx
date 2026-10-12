@@ -27,6 +27,7 @@ import {
   toSpecialOpeningHoursSpecification,
 } from "@/lib/businessHours";
 import { wixImageUrl } from "@/lib/wixImageUrl";
+import { businessPageIsThin } from "@/lib/businessIndexing";
 
 // Every other page that fetches live Wix data (homepage, category pages,
 // the deal page, flash deals) sets an explicit revalidate window — this
@@ -59,7 +60,10 @@ export async function generateMetadata(
   // /deal/[slug], so a long bio gets a clean SERP snippet instead of
   // Google truncating it somewhere arbitrary past its usual ~155-160
   // character display limit.
-  const summary = `${business.businessName}${placeLabel(business.suburb, business.city) ? ` in ${placeLabel(business.suburb, business.city)}` : ""} on ${SITE_NAME} — ${deals.length} live deal${deals.length === 1 ? "" : "s"}, contact details and opening hours.`;
+  const where = placeLabel(business.suburb, business.city);
+  const summary = `${business.businessName}${where ? ` in ${where}` : ""} on ${SITE_NAME} — ${
+    deals.length ? `${deals.length} live deal${deals.length === 1 ? "" : "s"}` : "deals when they run"
+  }, contact details and opening hours.`;
   const bio = (business.bio ?? "").trim();
   // A one-line bio ("Mobile beauty therapist who comes to you.") is too
   // thin a snippet on its own: the summary follows it.
@@ -75,7 +79,11 @@ export async function generateMetadata(
     // — but this page is reachable directly regardless, so it needs the
     // same protection: no business/deal page should get indexed while
     // the catalog might still hold pre-launch test data.
-    robots: SITE_LAUNCHED ? undefined : { index: false, follow: true },
+    // Also kept out until it has something on it (lib/businessIndexing.ts).
+    robots:
+      SITE_LAUNCHED && !businessPageIsThin({ liveDeals: deals.length, bio: business.bio, photos: business.photos.length })
+        ? undefined
+        : { index: false, follow: true },
     openGraph: {
       title,
       description,
