@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BookingEmailLink from "@/components/BookingEmailLink";
+import ClampedBio from "@/components/business/ClampedBio";
 import { hideEmail } from "@/lib/hiddenEmail";
 import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import Image from "next/image";
@@ -245,12 +246,18 @@ export default async function BusinessProfilePage(
               url={`${SITE_URL}/business/${business.slug}`}
               className="mt-2"
             />
+            {deals.length > 0 && (
+              <a
+                href="#deals"
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-bold text-white shadow-card transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+              >
+                See {deals.length} live deal{deals.length === 1 ? "" : "s"} <span aria-hidden="true">↓</span>
+              </a>
+            )}
           </div>
         </div>
 
-        {business.bio && (
-          <p className="mt-5 max-w-2xl text-sm leading-relaxed text-slate-600">{business.bio}</p>
-        )}
+        {business.bio && <ClampedBio text={business.bio} className="mt-5" />}
 
         {business.amenities.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
@@ -265,170 +272,198 @@ export default async function BusinessProfilePage(
           </div>
         )}
 
-        {/* Only past 1 photo — a single photo is already shown as the
-            avatar above, so a one-tile gallery here would just repeat it. */}
-        {business.photos.length > 1 && (
-          <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {business.photos.map((url, i) => (
-              <div
-                key={url + i}
-                className="relative aspect-square overflow-hidden rounded-xl border border-slate-100 bg-slate-50"
-              >
-                <Image
-                  src={wixImageUrl(url, 600, 600)}
-                  // Real, distinct alt text per photo — what actually shows
-                  // up in Google Image Search and to screen readers, unlike
-                  // the empty alt on the small avatar above (decorative,
-                  // since the business name right next to it already says
-                  // the same thing).
-                  alt={`${business.businessName} — photo ${i + 1}`}
-                  fill
-                  sizes="(min-width: 640px) 25vw, 33vw"
-                  loading="lazy"
-                  className="object-cover"
-                />
-              </div>
-            ))}
+      </div>
+
+      {/* The deals straight after the introduction: they're what most
+          visitors come for, so they don't wait below the photos, contact
+          details and hours. */}
+      <section id="deals" aria-labelledby="deals-heading" className="mt-8 scroll-mt-4">
+        <h2 id="deals-heading" className="font-display mb-5 text-xl font-bold text-slate-900">
+          {deals.length > 0
+            ? `${deals.length} live deal${deals.length === 1 ? "" : "s"} from ${business.businessName}`
+            : `No live deals from ${business.businessName} right now`}
+        </h2>
+        <DealGrid
+          deals={deals}
+          emptyMessage={`${business.businessName} doesn't have any live deals at the moment — check back soon!`}
+        />
+        {deals.length > 0 && (
+          <div className="mt-6">
+            <HowToUseStrip bare />
           </div>
         )}
+      </section>
 
-        {(hasContactInfo || business.businessHours || hasSocial) && (
-          <div className="mt-6 grid grid-cols-1 gap-4 border-t border-slate-100 pt-5 sm:grid-cols-2">
-            {hasContactInfo && (
-              <div className="space-y-1.5 text-sm">
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                  How to book
-                </p>
-                {business.bookingUrl && (
-                  <a
-                    href={business.bookingUrl.startsWith("http") ? business.bookingUrl : `https://${business.bookingUrl}`}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow ugc"
-                    className="mb-1 flex items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-2 font-bold text-white transition hover:bg-brand-700 active:scale-95"
-                  >
-                    <CalendarIcon className="h-4 w-4" /> Book now
-                  </a>
-                )}
-                {business.phone && (
-                  <a
-                    href={`tel:${business.phone.replace(/[^0-9+]/g, "")}`}
-                    className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
-                  >
-                    <PhoneIcon className="h-4 w-4 shrink-0" /> {business.phone}
-                  </a>
-                )}
-                {business.bookingEmail && (
-                  // Encoded in the HTML, shown by the browser: no spam bots.
-                  <BookingEmailLink
-                    hidden={hideEmail(business.bookingEmail)!}
-                    className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
+      {(business.photos.length > 1 || hasContactInfo || business.businessHours || hasSocial) && (
+        <div className="mt-8 rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
+          <h2 className="font-display mb-4 text-lg font-bold text-slate-900">About {business.businessName}</h2>
+          {/* Only past 1 photo — a single photo is already shown as the
+              avatar above, so a one-tile gallery here would just repeat it. */}
+          {business.photos.length > 1 && (
+            <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {business.photos.map((url, i) => (
+                <div
+                  key={url + i}
+                  className="relative aspect-square overflow-hidden rounded-xl border border-slate-100 bg-slate-50"
+                >
+                  <Image
+                    src={wixImageUrl(url, 600, 600)}
+                    // Real, distinct alt text per photo — what actually shows
+                    // up in Google Image Search and to screen readers, unlike
+                    // the empty alt on the small avatar above (decorative,
+                    // since the business name right next to it already says
+                    // the same thing).
+                    alt={`${business.businessName} — photo ${i + 1}`}
+                    fill
+                    sizes="(min-width: 640px) 25vw, 33vw"
+                    loading="lazy"
+                    className="object-cover"
                   />
-                )}
-                {business.website && (
-                  <a
-                    href={business.website.startsWith("http") ? business.website : `https://${business.website}`}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow ugc"
-                    className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
-                  >
-                    <GlobeIcon className="h-4 w-4 shrink-0" /> Visit website
-                  </a>
-                )}
-                {business.address && (
-                  <div>
-                    <p className="flex items-center gap-2 text-slate-600">
-                      <MapPinIcon className="h-4 w-4 shrink-0" /> {fullAddress}
-                    </p>
-                    {(mapUrl || directionsUrl) && (
-                      <p className="mt-1 flex items-center gap-3 pl-6 text-xs font-semibold text-brand-700">
-                        {mapUrl && (
-                          <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                            View map
-                          </a>
-                        )}
-                        {directionsUrl && (
-                          <a
-                            href={directionsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:underline"
-                          >
-                            Get directions
-                          </a>
-                        )}
-                      </p>
-                    )}
-                  </div>
-                )}
-                {business.addressHidden && (
-                  <div>
-                    {placeLabel(business.suburb, business.city) && (
-                      <p className="flex items-center gap-2 text-slate-600">
-                        <MapPinIcon className="h-4 w-4 shrink-0" /> {placeLabel(business.suburb, business.city)}
-                      </p>
-                    )}
-                  </div>
-                )}
-                {locationNotes(business.addressHidden, business.serviceArea).map((note) => (
-                  <p key={note} className="pl-6 text-xs text-slate-600">
-                    {note}
-                  </p>
-                ))}
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
+          )}
 
-            {(showHours || hasSocial) && (
-              <div className="space-y-1.5 text-sm">
-                {showHours && (
-                  <div className="flex items-start gap-2 text-slate-600">
-                    <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" />
+          {(hasContactInfo || business.businessHours || hasSocial) && (
+            <div
+              className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${business.photos.length > 1 ? "mt-6 border-t border-slate-100 pt-5" : ""}`}
+            >
+              {hasContactInfo && (
+                <div className="space-y-1.5 text-sm">
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                    How to book
+                  </p>
+                  {business.bookingUrl && (
+                    <a
+                      href={business.bookingUrl.startsWith("http") ? business.bookingUrl : `https://${business.bookingUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow ugc"
+                      className="mb-1 flex items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-2 font-bold text-white transition hover:bg-brand-700 active:scale-95"
+                    >
+                      <CalendarIcon className="h-4 w-4" /> Book now
+                    </a>
+                  )}
+                  {business.phone && (
+                    <a
+                      href={`tel:${business.phone.replace(/[^0-9+]/g, "")}`}
+                      className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
+                    >
+                      <PhoneIcon className="h-4 w-4 shrink-0" /> {business.phone}
+                    </a>
+                  )}
+                  {business.bookingEmail && (
+                    // Encoded in the HTML, shown by the browser: no spam bots.
+                    <BookingEmailLink
+                      hidden={hideEmail(business.bookingEmail)!}
+                      className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
+                    />
+                  )}
+                  {business.website && (
+                    <a
+                      href={business.website.startsWith("http") ? business.website : `https://${business.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow ugc"
+                      className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
+                    >
+                      <GlobeIcon className="h-4 w-4 shrink-0" /> Visit website
+                    </a>
+                  )}
+                  {business.address && (
                     <div>
-                      {openNow !== null && (
-                        <p
-                          className={`mb-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
-                            openNow ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-600"
-                          }`}
-                        >
-                          {openNow ? "● Open now" : "Closed now"}
+                      <p className="flex items-center gap-2 text-slate-600">
+                        <MapPinIcon className="h-4 w-4 shrink-0" /> {fullAddress}
+                      </p>
+                      {(mapUrl || directionsUrl) && (
+                        <p className="mt-1 flex items-center gap-3 pl-6 text-xs font-semibold text-brand-700">
+                          {mapUrl && (
+                            <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                              View map
+                            </a>
+                          )}
+                          {directionsUrl && (
+                            <a
+                              href={directionsUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline"
+                            >
+                              Get directions
+                            </a>
+                          )}
                         </p>
                       )}
-                      {hoursLines ? (
-                        hoursLines.map((line, i) => <p key={i}>{line}</p>)
-                      ) : (
-                        <p>{business.businessHours}</p>
+                    </div>
+                  )}
+                  {business.addressHidden && (
+                    <div>
+                      {placeLabel(business.suburb, business.city) && (
+                        <p className="flex items-center gap-2 text-slate-600">
+                          <MapPinIcon className="h-4 w-4 shrink-0" /> {placeLabel(business.suburb, business.city)}
+                        </p>
                       )}
                     </div>
-                  </div>
-                )}
-                {hasSocial && (
-                  <div className="flex items-center gap-3">
-                    {business.facebookUrl && (
-                      <a
-                        href={business.facebookUrl}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow ugc"
-                        className="font-medium text-brand-700 hover:underline"
-                      >
-                        Facebook
-                      </a>
-                    )}
-                    {business.instagramUrl && (
-                      <a
-                        href={business.instagramUrl}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow ugc"
-                        className="font-medium text-brand-700 hover:underline"
-                      >
-                        Instagram
-                      </a>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+                  )}
+                  {locationNotes(business.addressHidden, business.serviceArea).map((note) => (
+                    <p key={note} className="pl-6 text-xs text-slate-600">
+                      {note}
+                    </p>
+                  ))}
+                </div>
+              )}
+
+              {(showHours || hasSocial) && (
+                <div className="space-y-1.5 text-sm">
+                  {showHours && (
+                    <div className="flex items-start gap-2 text-slate-600">
+                      <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                      <div>
+                        {openNow !== null && (
+                          <p
+                            className={`mb-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
+                              openNow ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-600"
+                            }`}
+                          >
+                            {openNow ? "● Open now" : "Closed now"}
+                          </p>
+                        )}
+                        {hoursLines ? (
+                          hoursLines.map((line, i) => <p key={i}>{line}</p>)
+                        ) : (
+                          <p>{business.businessHours}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {hasSocial && (
+                    <div className="flex items-center gap-3">
+                      {business.facebookUrl && (
+                        <a
+                          href={business.facebookUrl}
+                          target="_blank"
+                          rel="noopener noreferrer nofollow ugc"
+                          className="font-medium text-brand-700 hover:underline"
+                        >
+                          Facebook
+                        </a>
+                      )}
+                      {business.instagramUrl && (
+                        <a
+                          href={business.instagramUrl}
+                          target="_blank"
+                          rel="noopener noreferrer nofollow ugc"
+                          className="font-medium text-brand-700 hover:underline"
+                        >
+                          Instagram
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <p className="mt-4 text-xs text-slate-500">
         {business.businessName} is a business advertising on MegaDeal —
@@ -440,20 +475,6 @@ export default async function BusinessProfilePage(
         .
       </p>
 
-      {deals.length > 0 && (
-        <div className="mt-8">
-          <HowToUseStrip bare />
-        </div>
-      )}
-      <h2 className="font-display mb-5 mt-6 text-xl font-bold text-slate-900">
-        {deals.length > 0
-          ? `${deals.length} live deal${deals.length === 1 ? "" : "s"} from ${business.businessName}`
-          : `No live deals from ${business.businessName} right now`}
-      </h2>
-      <DealGrid
-        deals={deals}
-        emptyMessage={`${business.businessName} doesn't have any live deals at the moment — check back soon!`}
-      />
     </main>
   );
 }
