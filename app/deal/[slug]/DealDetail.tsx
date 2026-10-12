@@ -186,8 +186,9 @@ export default function DealDetail({
               // unoptimized, and this lets a phone take a smaller copy.
               // eslint-disable-next-line @next/next/no-img-element
               <img
+                // Sizes MegaDeal's own photo storage makes (lib/photoUrl.ts).
                 src={wixImageUrl(deal.image, 1200, 800)}
-                srcSet={wixImageSrcSet(deal.image, [640, 900, 1200], 3 / 2)}
+                srcSet={wixImageSrcSet(deal.image, [540, 750, 1200], 3 / 2)}
                 sizes="(min-width: 1024px) 540px, (min-width: 640px) 90vw, 100vw"
                 alt={`${deal.name}${deal.businessName ? ` at ${deal.businessName}` : ""}${place ? `, ${place}` : ""}`}
                 className="absolute inset-0 h-full w-full object-cover"
@@ -264,11 +265,17 @@ export default function DealDetail({
                 preview={preview}
                 onAction={tracker.track}
                 onOpen={tracker.interest}
-                price={{
-                  now: formatMoney(deal.now, deal.currency, deal.formattedNow),
-                  was: deal.was > deal.now ? formatMoney(deal.was, deal.currency, deal.formattedWas) : null,
-                  percentOff: savingPct,
-                }}
+                // The phone's bottom bar: never in a preview, where it
+                // would sit over the deal form's or admin's own buttons.
+                price={
+                  preview
+                    ? undefined
+                    : {
+                        now: formatMoney(deal.now, deal.currency, deal.formattedNow),
+                        was: deal.was > deal.now ? formatMoney(deal.was, deal.currency, deal.formattedWas) : null,
+                        percentOff: savingPct,
+                      }
+                }
               />
             )}
           </div>

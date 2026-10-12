@@ -44,3 +44,16 @@ describe("wixImageSrcSet", () => {
     expect(wixImageSrcSet("https://images.unsplash.com/photo-1", [360], 3 / 2)).toBeUndefined();
   });
 });
+
+describe("the deal page's photo sizes", () => {
+  it("are all ones MegaDeal's own photo storage makes, so a phone never gets the full-size original", async () => {
+    const { SITE_URL } = await import("./siteConfig");
+    const own = `${SITE_URL}/media/photos/2026-10/deal-photo.jpg`;
+    // As app/deal/[slug]/DealDetail.tsx asks for them.
+    const set = wixImageSrcSet(own, [540, 750, 1200], 3 / 2);
+    expect(set).toBeDefined();
+    expect(set).toContain("1200w");
+    const { PHOTO_SIZES } = await import("./photoUrl");
+    expect(PHOTO_SIZES.has("1200x800")).toBe(true);
+  });
+});

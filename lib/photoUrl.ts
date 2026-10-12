@@ -57,7 +57,8 @@ export function isUploadedPhotoUrl(url: unknown, siteUrl: string): url is string
 export const PHOTO_SIZES: ReadonlySet<string> = new Set([
   "160x160", // business logo
   "360x240", "540x360", "750x500", // deal cards
-  "480x360", "640x480", "900x675", "1200x900", // deal pages
+  "1200x800", // deal pages (3:2, with the card sizes above)
+  "480x360", "640x480", "900x675", "1200x900", // 4:3 (earlier deal pages, business photos)
   "600x600", // business gallery
   "800x600", // shop cards
   "1000x750", // AI deal review

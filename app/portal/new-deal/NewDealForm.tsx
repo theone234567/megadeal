@@ -1535,7 +1535,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           </label>
           <p className="mb-2 text-xs leading-relaxed text-slate-500">
             Choose one clear landscape photo of this offer: the food, room or treatment does far more
-            than a logo. Best at 4:3 landscape, at least 1200 × 900 pixels. MegaDeal may crop it slightly
+            than a logo. Best at 3:2 landscape, at least 1200 × 800 pixels. MegaDeal may crop it slightly
             to fit deal cards and the deal page; the box below shows the crop.
           </p>
           {isTest ? (
@@ -1565,8 +1565,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           ) : (
           <div className="flex items-center gap-4">
             <div
-              // 4:3, the shape the deal page shows it at.
-              className={`flex aspect-[4/3] w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed text-slate-300 ${
+              // 3:2, the shape the deal page and cards show it at.
+              className={`flex aspect-[3/2] w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-dashed text-slate-300 ${
                 problemFor("deal-photo-field") ? "border-2 border-red-400 bg-red-50" : "border-slate-300 bg-slate-50"
               }`}
             >
