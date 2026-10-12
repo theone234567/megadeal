@@ -871,7 +871,7 @@ export default function MerchantProfileForm({
 
         {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             type="submit"
             disabled={saving}
