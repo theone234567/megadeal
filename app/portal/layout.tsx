@@ -5,6 +5,8 @@ import { SessionProvider } from "@/context/SessionProvider";
 // The merchant portal shows a signed-in merchant's own private business
 // data (applications, deal drafts, credits) — never something to index.
 export const metadata: Metadata = {
+  // Its own name in the browser tab, not the site's sales line.
+  title: "Business portal",
   robots: { index: false, follow: false, nocache: true },
 };
 

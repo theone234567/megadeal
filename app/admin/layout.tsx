@@ -4,6 +4,8 @@ import { SessionProvider } from "@/context/SessionProvider";
 // The admin dashboard is a private back-office tool, not public content —
 // keep it out of search results and AI crawlers' indexes entirely.
 export const metadata: Metadata = {
+  // Its own name in the browser tab, not the site's sales line.
+  title: "Admin",
   robots: { index: false, follow: false, nocache: true },
 };
 
