@@ -59,9 +59,11 @@ export async function generateMetadata(
   // /deal/[slug], so a long bio gets a clean SERP snippet instead of
   // Google truncating it somewhere arbitrary past its usual ~155-160
   // character display limit.
-  const description =
-    (business.bio ? truncateForMeta(business.bio) : "") ||
-    `${business.businessName}${placeLabel(business.suburb, business.city) ? ` in ${placeLabel(business.suburb, business.city)}` : ""} on ${SITE_NAME} — ${deals.length} live deal${deals.length === 1 ? "" : "s"}, contact details and opening hours.`;
+  const summary = `${business.businessName}${placeLabel(business.suburb, business.city) ? ` in ${placeLabel(business.suburb, business.city)}` : ""} on ${SITE_NAME} — ${deals.length} live deal${deals.length === 1 ? "" : "s"}, contact details and opening hours.`;
+  const bio = (business.bio ?? "").trim();
+  // A one-line bio ("Mobile beauty therapist who comes to you.") is too
+  // thin a snippet on its own: the summary follows it.
+  const description = truncateForMeta(bio.length >= 70 ? bio : bio ? `${bio.replace(/[.!\s]*$/, "")}. ${summary}` : summary);
   const url = `${SITE_URL}/business/${business.slug}`;
 
   return {
@@ -82,6 +84,8 @@ export async function generateMetadata(
       // Every photo, not just the first — social platforms that support
       // multiple OG images (Facebook, LinkedIn) pick whichever renders
       // best, and the rest cost nothing extra to list.
+      // Without photos, the logo, else MegaDeal's own card, so a shared
+      // link never shows up bare.
       images:
         business.photos.length > 0
           ? business.photos.map((url) => ({
@@ -90,7 +94,9 @@ export async function generateMetadata(
               height: 630,
               alt: business.businessName,
             }))
-          : undefined,
+          : business.logoUrl
+            ? [{ url: wixImageUrl(business.logoUrl, 600, 600, "jpg"), width: 600, height: 600, alt: business.businessName }]
+            : [`${SITE_URL}/opengraph-image`],
       type: "website",
     },
     twitter: { card: "summary", title, description },
