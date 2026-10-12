@@ -97,7 +97,7 @@ export default async function CityPage() {
 
         {flash.length > 0 && (
           <section aria-labelledby="flash-heading" className="mt-10">
-            <div className="mb-4 flex items-end justify-between gap-4">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
               <h2 id="flash-heading" className="font-display text-xl font-bold text-slate-900">
                 Flash deals in {CITY}
               </h2>
@@ -111,7 +111,7 @@ export default async function CityPage() {
 
         {sections.map(({ c, deals: inCategory }) => (
           <section key={c.slug} aria-labelledby={`h-${c.slug}`} className="mt-10">
-            <div className="mb-4 flex items-end justify-between gap-4">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
               <h2 id={`h-${c.slug}`} className="font-display text-xl font-bold text-slate-900">
                 {CATEGORY_COPY[c.slug]?.h1 ?? `${c.name} deals in ${CITY}`}
               </h2>
