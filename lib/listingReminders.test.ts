@@ -69,10 +69,19 @@ describe("finish-your-listing reminders", () => {
     expect(sent[0].html).toContain("your address");
     expect((await sendListingReminders(db, "https://megadeal.co.nz")).sent).toBe(0);
 
+    // Kept in the database too, so a wiped KV doesn't mean a repeat.
     const key = [...kv.keys()][0];
-    kv.set(key, JSON.stringify({ count: 1, last: new Date(Date.now() - 8 * 86_400_000).toISOString() }));
+    kv.clear();
+    expect((await sendListingReminders(db, "https://megadeal.co.nz")).sent).toBe(0);
+
+    // A week on (both records moved back), the second and last one.
+    const setBoth = async (v: object) => {
+      kv.set(key, JSON.stringify(v));
+      await db.query("update public.site_settings set value = $2 where key = $1", [key, JSON.stringify(v)]);
+    };
+    await setBoth({ count: 1, last: new Date(Date.now() - 8 * 86_400_000).toISOString() });
     expect((await sendListingReminders(db, "https://megadeal.co.nz")).sent).toBe(1);
-    kv.set(key, JSON.stringify({ count: 2, last: new Date(Date.now() - 30 * 86_400_000).toISOString() }));
+    await setBoth({ count: 2, last: new Date(Date.now() - 30 * 86_400_000).toISOString() });
     expect((await reminderCandidates(db))).toEqual([]);
   });
 });
@@ -80,6 +89,7 @@ describe("finish-your-listing reminders", () => {
 describe("a business that unsubscribed", () => {
   it("is never sent a reminder", async () => {
     kv.clear();
+    await db.query("delete from public.site_settings where key like 'listing-reminder:%'");
     const fresh = await reminderCandidates(db);
     expect(fresh.length).toBeGreaterThan(0);
     kv.set(`biz-email-opt-out:${fresh[0].id}`, new Date().toISOString());

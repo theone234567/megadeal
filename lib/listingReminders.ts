@@ -60,7 +60,7 @@ export async function reminderCandidates(db: Sql): Promise<ReminderCandidate[]> 
     const missing = listingGaps(r);
     // Nothing to finish, or a test sign-up (its address isn't a real business's).
     if (missing.length === 0 || looksLikeTest(r.business_name ?? "", r.email)) continue;
-    const sent = await readSent(kv, r.id);
+    const sent = await readSent(db, kv, r.id);
     if (sent.count >= MAX_REMINDERS) continue;
     if (sent.last && Date.now() - Date.parse(sent.last) < MIN_DAYS_BETWEEN * 86_400_000) continue;
     out.push({ id: r.id, businessName: r.business_name, email: r.email, missing });
@@ -70,14 +70,41 @@ export async function reminderCandidates(db: Sql): Promise<ReminderCandidate[]> 
 
 type Kv = Awaited<ReturnType<typeof getRateLimitKv>>;
 
-async function readSent(kv: Kv, id: string): Promise<{ count: number; last: string | null }> {
+type Sent = { count: number; last: string | null };
+
+function parseSent(raw: string | null | undefined): Sent {
   try {
-    const raw = await kv?.get(SENT_PREFIX + id);
     const parsed = raw ? JSON.parse(raw) : null;
     return { count: Number(parsed?.count) || 0, last: typeof parsed?.last === "string" ? parsed.last : null };
   } catch {
     return { count: 0, last: null };
   }
+}
+
+/** What's been sent to a business: kept in the database (site_settings,
+ *  backed up nightly) and, as before, KV; the fuller of the two counts. */
+async function readSent(db: Sql, kv: Kv, id: string): Promise<Sent> {
+  const [row] = await db
+    .query<{ value: string | null }>(`select value from public.site_settings where key = $1`, [SENT_PREFIX + id])
+    .catch(() => []);
+  const inDb = parseSent(row?.value);
+  const inKv = parseSent(await kv?.get(SENT_PREFIX + id).catch(() => null));
+  const newer = [inDb.last, inKv.last].filter((x): x is string => Boolean(x)).sort().pop() ?? null;
+  return { count: Math.max(inDb.count, inKv.count), last: newer };
+}
+
+async function recordSent(db: Sql, kv: Kv, id: string, sent: Sent): Promise<void> {
+  const value = JSON.stringify(sent);
+  await db
+    .query(
+      `insert into public.site_settings (key, value) values ($1, $2)
+       on conflict (key) do update set value = excluded.value`,
+      [SENT_PREFIX + id, value],
+    )
+    .catch((err) => console.error("[listingReminders] couldn't record a reminder", err));
+  await kv
+    ?.put(SENT_PREFIX + id, value, { expirationTtl: 365 * 86_400 })
+    .catch((err) => console.error("[listingReminders] couldn't record a reminder in KV", err));
 }
 
 /** "a, b and c". */
@@ -121,10 +148,8 @@ export async function sendListingReminders(db: Sql, siteUrl: string, limit = 25)
       continue;
     }
     sent++;
-    const prev = await readSent(kv, c.id);
-    await kv
-      ?.put(SENT_PREFIX + c.id, JSON.stringify({ count: prev.count + 1, last: new Date().toISOString() }), { expirationTtl: 365 * 86_400 })
-      .catch((err) => console.error("[listingReminders] couldn't record a reminder", err));
+    const prev = await readSent(db, kv, c.id);
+    await recordSent(db, kv, c.id, { count: prev.count + 1, last: new Date().toISOString() });
   }
   return { sent, failed, remaining: all.length - batch.length };
 }
