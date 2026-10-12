@@ -59,7 +59,7 @@ describe("database facts", () => {
     expect(facts.tablesWithoutRls).toEqual(["deals"]);
     expect(facts.wixPhotosLeft).toBeNull();
     await db.close();
-  });
+  }, 60_000);
 });
 
 describe("fromDomain", () => {

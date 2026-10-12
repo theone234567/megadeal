@@ -22,5 +22,8 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["lib/**/*.test.ts"],
+    // Setting up a test database (PGlite, every migration) takes a few
+    // seconds alone and much longer while the other files run alongside.
+    hookTimeout: 60_000,
   },
 });

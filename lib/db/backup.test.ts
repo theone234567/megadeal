@@ -68,7 +68,7 @@ describe("backups", () => {
     const [after] = await dst.query<{ slug: string }>("select slug from public.merchants where id = $1", [m.id]);
     expect(after.slug).toBe("harbour-bistro-ponsonby-otahuhu");
     await target.close();
-  });
+  }, 60_000);
 
   it("a rehearsal changes nothing, and nothing goes into a database that has data", async () => {
     const backup = await takeBackup(src);
@@ -81,7 +81,7 @@ describe("backups", () => {
     await expect(restoreBackup(dst, backup, { commit: true })).rejects.toThrow(/already has data/);
     await expect(restoreBackup(dst, { format: "something-else" } as any)).rejects.toThrow(/isn't a MegaDeal backup/);
     await target.close();
-  });
+  }, 60_000);
 
   it("into a new Supabase project, businesses come back without their old logins, to be claimed again", async () => {
     // Logins live in Supabase's auth schema, which a backup leaves out.
@@ -112,5 +112,5 @@ describe("backups", () => {
     await owned.close();
     await fresh.close();
     // Builds a second database of its own, which alone takes ~5s.
-  }, 30_000);
+  }, 60_000);
 });
