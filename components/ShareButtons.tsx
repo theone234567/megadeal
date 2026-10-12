@@ -30,7 +30,9 @@ export default function ShareButtons({
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    setUrl(urlOverride || window.location.href);
+    // The page's own address without its query (ad and campaign tags,
+    // anything else added to the link): what's shared is the clean link.
+    setUrl(urlOverride || window.location.origin + window.location.pathname);
     setCanNativeShare(typeof navigator !== "undefined" && Boolean((navigator as any).share));
   }, [urlOverride]);
 
