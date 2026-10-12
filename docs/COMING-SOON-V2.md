@@ -76,7 +76,7 @@ Alt text from the pack's manifest. No text is baked into the images.
 - CSP is enforced (`CSP_ENFORCE` can drop it to report-only), plus nosniff, `X-Frame-Options:
   DENY`, Referrer-Policy, Permissions-Policy and HSTS.
 - Public build variables (`NEXT_PUBLIC_*`) hold only non-secret IDs (site URL, analytics, pixel,
-  verification codes, Wix client ID).
+  verification codes, Turnstile site key).
 - The **current** page still says "Free to join, unsubscribe anytime", "Early access before deals
   go public" and "Every business is approved by our team" (the pack's banned claims). Left as is,
   per the pack; remove when approved, or by switching to V2.

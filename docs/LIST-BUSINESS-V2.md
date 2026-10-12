@@ -12,17 +12,17 @@ is the real one, so only test with an address you control.
 ## Signup: one form, two steps
 The redesign does not have its own signup. It uses the existing
 `MerchantSignupForm` with `twoStep`, so every check and request is unchanged:
-reCAPTCHA (invisible, then the checkbox if Wix asks), the honeypot, the
-signed-in guard, Wix registration and email verification, the resend
+the Turnstile robot check, the honeypot, the signed-in guard, account
+registration and email verification (lib/siteAuth.ts), the resend
 cooldown, attribution (first touch, fbp/fbc), Meta and GA events, and
 `/api/merchants/apply`.
 
 | Field | Step | Sent as |
 |---|---|---|
 | Your name | 1 | `contactName` |
-| Email | 1 | Wix account |
-| Password, confirm | 1 | Wix account (confirm is checked in the browser only) |
-| Legal / registered business name | 2 | `businessName`, `legalBusinessName`, Wix nickname |
+| Email | 1 | the login account |
+| Password, confirm | 1 | the login account (confirm is checked in the browser only) |
+| Legal / registered business name | 2 | `businessName`, `legalBusinessName` |
 | Contact phone (private) | 2 | `contactPhone` |
 | Business phone + "Same as my contact phone" (unticked) | 2 | `phone` |
 | Promo code (pre-filled with the current offer) | 2 | `couponCode` |
@@ -33,7 +33,7 @@ cooldown, attribution (first touch, fbp/fbc), Meta and GA events, and
 Continue only runs the browser's checks on step 1 (plus password length and
 match): no account, no request. Both steps stay mounted, so Back keeps every
 value, and the final button reads the whole form exactly as the one-page form
-does. Wix email/password errors send the visitor back to step 1. Passwords live
+does. Email/password errors send the visitor back to step 1. Passwords live
 only in memory, never in storage or the URL. Credits, approval and the promo
 are decided on the server at approval, never by the form.
 
