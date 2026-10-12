@@ -1,6 +1,7 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "crypto";
 import { getRateLimitKv } from "./rateLimit";
+import type { Sql } from "./db/connection";
 
 /**
  * "Stop MegaDeal business emails": one opt-out per business, for the
@@ -44,24 +45,49 @@ export function validBusinessOptOut(id: unknown, sig: unknown): id is string {
   return timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
 }
 
-/** Records the opt-out, for good. False if it couldn't be saved (so the
- *  person isn't told it worked when it didn't). */
-export async function optOutBusiness(id: string): Promise<boolean> {
-  const kv = await getRateLimitKv();
-  if (!kv) return false;
-  try {
-    await kv.put(OPT_OUT_PREFIX + id, new Date().toISOString());
-    return true;
-  } catch (err) {
-    console.error("[businessEmailOptOut] couldn't save", err);
-    return false;
-  }
+/** MegaDeal's own database (site_settings, backed up nightly), or null
+ *  without one, when only Cloudflare KV is used. */
+async function inDatabase<T>(fn: (db: Sql) => Promise<T>): Promise<T | null> {
+  if (process.env.DATA_BACKEND !== "postgres") return null;
+  return (await import("./securityStore")).inDatabase(fn);
 }
 
-/** Turns business emails back on (the business's own choice, in the portal). */
-export async function optInBusiness(id: string): Promise<boolean> {
+/** Records the opt-out, for good: in the database (so it's in the nightly
+ *  backup and survives anything happening to KV) and in KV (where opt-outs
+ *  made before were kept). False only if neither could save it, so the
+ *  person isn't told it worked when it didn't. */
+export async function optOutBusiness(id: string): Promise<boolean> {
+  const at = new Date().toISOString();
+  const inDb = await inDatabase(async (db) => {
+    await db.query(
+      `insert into public.site_settings (key, value) values ($1, $2) on conflict (key) do nothing`,
+      [OPT_OUT_PREFIX + id, at],
+    );
+    return true;
+  });
   const kv = await getRateLimitKv();
-  if (!kv) return false;
+  let inKv = false;
+  if (kv) {
+    try {
+      await kv.put(OPT_OUT_PREFIX + id, at);
+      inKv = true;
+    } catch (err) {
+      console.error("[businessEmailOptOut] couldn't save to KV", err);
+    }
+  }
+  return inDb === true || inKv;
+}
+
+/** Turns business emails back on (the business's own choice, in the
+ *  portal): cleared from both places, or false. */
+export async function optInBusiness(id: string): Promise<boolean> {
+  const db = await inDatabase(async (db) => {
+    await db.query(`delete from public.site_settings where key = $1`, [OPT_OUT_PREFIX + id]);
+    return true;
+  });
+  if (db === null && process.env.DATA_BACKEND === "postgres") return false;
+  const kv = await getRateLimitKv();
+  if (!kv) return db === true;
   try {
     await kv.delete(OPT_OUT_PREFIX + id);
     return true;
@@ -71,14 +97,21 @@ export async function optInBusiness(id: string): Promise<boolean> {
   }
 }
 
-/** The ids of businesses that have opted out, among `ids`. */
+/** The ids of businesses that have opted out, among `ids` (either place
+ *  counts). */
 export async function optedOutBusinesses(ids: string[]): Promise<Set<string>> {
-  const kv = await getRateLimitKv();
   const out = new Set<string>();
+  if (ids.length === 0) return out;
+  const keys = ids.map((id) => OPT_OUT_PREFIX + id);
+  const rows = await inDatabase((db) =>
+    db.query<{ key: string }>(`select key from public.site_settings where key = any($1::text[])`, [keys]),
+  );
+  for (const r of rows ?? []) out.add(r.key.slice(OPT_OUT_PREFIX.length));
+  const kv = await getRateLimitKv();
   if (!kv) return out;
   await Promise.all(
     ids.map(async (id) => {
-      if (await kv.get(OPT_OUT_PREFIX + id).catch(() => null)) out.add(id);
+      if (!out.has(id) && (await kv.get(OPT_OUT_PREFIX + id).catch(() => null))) out.add(id);
     }),
   );
   return out;
