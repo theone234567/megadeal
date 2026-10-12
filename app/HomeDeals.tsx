@@ -117,6 +117,14 @@ export default function HomeDeals({
   const allDeals = useWithTestDeals(initialDeals, testDeals);
   const matching = matchDeals(allDeals, filters, now, coords);
   const { flash, everyday } = splitByType(matching, filters.type);
+  // When a search or filter finds nothing, a few of what's live anyway,
+  // so the page is never a dead end.
+  const suggestions =
+    matching.length === 0 && hasNarrowingFilters(filters)
+      ? matchDeals(allDeals, parseHomeFilters(new URLSearchParams()), now, coords)
+          .filter((d) => d.inStock !== false)
+          .slice(0, 4)
+      : [];
   const shown = filters.type === "flash" ? flash.length : filters.type === "everyday" ? everyday.length : matching.length;
 
   const href = (patch: Partial<HomeFilters>) => homeHref(filters, patch, basePath);
@@ -160,6 +168,7 @@ export default function HomeDeals({
           flash={flash}
           everyday={everyday}
           coords={coords}
+          suggestions={suggestions}
         />
       )}
     </div>
@@ -434,12 +443,14 @@ function Collections({
   flash,
   everyday,
   coords,
+  suggestions,
 }: {
   href: HrefFor;
   filters: HomeFilters;
   flash: Deal[];
   everyday: Deal[];
   coords: ReturnType<typeof useUserLocation>["coords"];
+  suggestions: Deal[];
 }) {
   const explicit = filters.type !== "all";
   const step = explicit ? 16 : 8;
@@ -451,15 +462,27 @@ function Collections({
 
   if (!explicit && flash.length === 0 && everyday.length === 0) {
     return (
-      <EmptyState
-        href={href}
-        filters={filters}
-        message={
-          hasNarrowingFilters(filters)
-            ? "No deals match these filters right now."
-            : "New local deals are on the way — check back soon."
-        }
-      />
+      <>
+        <EmptyState
+          href={href}
+          filters={filters}
+          message={
+            hasNarrowingFilters(filters)
+              ? filters.q
+                ? `No deals match “${filters.q}” right now. Try a shorter or different word.`
+                : "No deals match these filters right now."
+              : "New local deals are on the way — check back soon."
+          }
+        />
+        {suggestions.length > 0 && (
+          <section aria-labelledby="suggestions-heading" className="mt-8">
+            <h2 id="suggestions-heading" className="mb-4 font-display text-lg font-bold text-hp-ink">
+              Other deals on now
+            </h2>
+            <DealGrid deals={suggestions} userLocation={coords} />
+          </section>
+        )}
+      </>
     );
   }
 
