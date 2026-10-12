@@ -31,13 +31,13 @@ export default function EndedDeal({ deal, moreDeals }: { deal: Deal; moreDeals: 
         aria-labelledby="ended-deal-heading"
         className="grid grid-cols-1 overflow-hidden rounded-[18px] border border-slate-200/80 bg-white shadow-card sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]"
       >
-        <div className="relative aspect-[4/3] w-full bg-brand-50 sm:aspect-auto sm:min-h-[240px]">
+        <div className="relative aspect-[3/2] w-full bg-brand-50 sm:aspect-auto sm:min-h-[240px]">
           {deal.image && (
             // Greyed out: it's a record of the deal, not an offer.
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={wixImageUrl(deal.image, 900, 675)}
-              srcSet={wixImageSrcSet(deal.image, [480, 900], 4 / 3)}
+              src={wixImageUrl(deal.image, 750, 500)}
+              srcSet={wixImageSrcSet(deal.image, [540, 750], 3 / 2)}
               sizes="(min-width: 640px) 40vw, 100vw"
               alt=""
               className="absolute inset-0 h-full w-full object-cover opacity-70 grayscale"
