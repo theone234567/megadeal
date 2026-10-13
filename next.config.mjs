@@ -277,8 +277,9 @@ const nextConfig = {
         // Cache-Control (/api/version needs no-store), and two
         // Cache-Control headers on one response is ambiguous. So are
         // uploaded photos (/media/, app/media/[...key]): each has a new
-        // name, so they're cached for a year like _next/static.
-        source: "/((?!_next/static|_next/image|api/|media/).*)",
+        // name, so they're cached for a year like _next/static. And the
+        // public deals feed (/feed/), which sets its own short cache.
+        source: "/((?!_next/static|_next/image|api/|media/|feed/).*)",
         headers: [{ key: "Cache-Control", value: "no-cache, must-revalidate" }],
       },
       {

@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "crypto";
 import { CATEGORIES } from "../categories";
+import { cleanDealTags } from "../dealTags";
 import type { Sql } from "./connection";
 
 /**
@@ -208,6 +209,7 @@ const MERCHANTS: Collection = {
       newColumn: true,
     }),
     f("serviceArea", "service_area", { expr: "(to_jsonb(t)->>'service_area')", newColumn: true }),
+    f("claimedAt", null, { expr: "(to_jsonb(t)->>'claimed_at')", read: asDate, readOnly: true }),
   ],
 };
 
@@ -259,6 +261,18 @@ const DEALS: Collection = {
     f("draftData", "draft_data", jsonText),
     f("draftRevision", "draft_revision", { read: num, write: (v: any) => num(v) ?? 0 }),
     bool("isTest", "is_test"),
+    // Provenance (supabase/migrations/20261017000000_deal_provenance.sql).
+    // The database keeps the change and approval times itself.
+    f("tags", "tags", {
+      expr: "coalesce(to_jsonb(t)->'tags', '[]'::jsonb)",
+      read: (v: any) => (Array.isArray(v) && v.length ? v : null),
+      write: (v: any) => cleanDealTags(v),
+      newColumn: true,
+    }),
+    f("merchantConfirmedAt", "merchant_confirmed_at", { expr: "(to_jsonb(t)->>'merchant_confirmed_at')", read: asDate, write: iso, newColumn: true }),
+    f("source", "source", { expr: "coalesce(to_jsonb(t)->>'source', 'merchant')", newColumn: true }),
+    f("contentUpdatedAt", null, { expr: "(to_jsonb(t)->>'content_updated_at')", read: asDate, readOnly: true }),
+    f("approvedAt", null, { expr: "(to_jsonb(t)->>'approved_at')", read: asDate, readOnly: true }),
     ...["view", "click", "codeCopy", "websiteClick", "callClick", "emailClick", "directionsClick"].map((n) =>
       f(`${n}Count`, `${n.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)}_count`, { read: num, write: (v: any) => num(v) ?? 0 })
     ),
@@ -531,7 +545,7 @@ async function dropColumnsNotThereYet(db: Sql, c: Collection, cols: Row): Promis
   }
   for (const x of missing) {
     if (x.col! in cols) {
-      console.error(`[db] ${c.table}.${x.col} isn't in the database yet (Admin > Moving off Wix > Apply database updates), so it wasn't saved`);
+      console.error(`[db] ${c.table}.${x.col} isn't in the database yet (Admin > System checks > Apply database updates), so it wasn't saved`);
       delete cols[x.col!];
     }
   }

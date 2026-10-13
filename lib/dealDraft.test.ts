@@ -130,3 +130,16 @@ describe("website code in drafts", () => {
     expect(sanitizeDraft({ codeOnWebsite: "true", codeTested: 1 })).toMatchObject({ codeOnWebsite: false, codeTested: false });
   });
 });
+
+describe("tags in drafts", () => {
+  it("are kept through a save and reopen, unknown ones dropped", () => {
+    const draft = sanitizeDraft({ ...EMPTY_DRAFT, dealName: "Brunch", tags: ["vegan-options", "free-beer"] });
+    expect(draft.tags).toEqual(["vegan-options"]);
+    expect(parseDraft(draftToRow(draft, "a@b.nz")).tags).toEqual(["vegan-options"]);
+  });
+
+  it("fall back to the row's own column if the editing copy is lost", () => {
+    const row = { ...draftToRow({ ...EMPTY_DRAFT, tags: ["kids"] }, "a@b.nz"), draftData: "" };
+    expect(parseDraft(row).tags).toEqual(["kids"]);
+  });
+});

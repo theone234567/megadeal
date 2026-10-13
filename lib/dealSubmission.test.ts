@@ -60,3 +60,14 @@ describe("checkDealFields", () => {
     expect(res.ok && res.fields.codeOnWebsite).toBe(true);
   });
 });
+
+describe("tags", () => {
+  it("keeps known tags only, in list order, at most five", () => {
+    const res = checkDealFields({ ...good, bookingRequirement: "recommended", tags: ["kids", "made-up", "date-night", "kids"] }, rules);
+    expect(res.ok && res.fields.tags).toEqual(["date-night", "kids"]);
+  });
+
+  it("a deal that needs booking can't say walk-ins are welcome", () => {
+    expect(err({ ...good, tags: ["walk-ins-welcome"] })).toEqual([400, 'A deal that needs booking can\'t be tagged "Walk-ins welcome".']);
+  });
+});

@@ -9,6 +9,7 @@ import { describeMinutes } from "@/lib/dealDuration";
 import { creditsLabel, creditsToRefund } from "@/lib/platformSettingsRules";
 import PhotoUploadField from "./PhotoUploadField";
 import DealChangeRequest from "./DealChangeRequest";
+import DealConfirmLive from "./DealConfirmLive";
 import DealResults from "@/components/DealResults";
 import DealConditions from "@/components/DealConditions";
 
@@ -178,6 +179,8 @@ export default function DealManageCard({
           {status === "Paused" && deal.pausedBy === "admin" && (
             <p className="text-sm text-slate-600">MegaDeal paused this deal. <a href="/contact" className="font-semibold text-brand-700 underline">Contact us</a> to restart it.</p>
           )}
+
+          {status === "Live" && siteLaunched && <DealConfirmLive deal={deal} />}
 
           <DealResults deal={deal} />
 

@@ -11,7 +11,7 @@ import { placeLabel } from "@/lib/location";
 import { hideEmail } from "@/lib/hiddenEmail";
 import { dealTitles } from "@/lib/dealTitle";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { dealOffer } from "@/lib/dealOffer";
+import { dealJsonLd } from "@/lib/dealJsonLd";
 import { wixImageUrl } from "@/lib/wixImageUrl";
 
 // See app/page.tsx for why this is a short revalidate window rather than
@@ -146,57 +146,14 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
     );
   }
 
-  // The business behind the deal, as a local business with a place —
-  // linked by @id to the full record on its /business page, so search
-  // engines can connect the offer to a real location for local searches.
-  const seller = deal.businessName
-    ? {
-        "@type": "LocalBusiness",
-        ...(deal.businessSlug
-          ? {
-              "@id": `${SITE_URL}/business/${deal.businessSlug}#business`,
-              url: `${SITE_URL}/business/${deal.businessSlug}`,
-            }
-          : {}),
-        name: deal.businessName,
-        telephone: deal.businessPhone || undefined,
-        address:
-          deal.businessAddress || deal.businessCity || deal.businessSuburb
-            ? {
-                "@type": "PostalAddress",
-                streetAddress: deal.businessAddress || undefined,
-                // The suburb as the locality, the city as the region, when
-                // both are known ("Takapuna", "Auckland").
-                addressLocality: deal.businessSuburb || deal.businessCity || undefined,
-                addressRegion: deal.businessSuburb ? deal.businessCity || undefined : undefined,
-                addressCountry: "NZ",
-              }
-            : undefined,
-        // The pin the business set on its map, when it has one; never the
-        // approximate one of a home-based or mobile business.
-        geo:
-          !deal.businessAddressHidden && typeof deal.businessLat === "number" && typeof deal.businessLng === "number"
-            ? { "@type": "GeoCoordinates", latitude: deal.businessLat, longitude: deal.businessLng }
-            : undefined,
-        areaServed: deal.businessServiceArea || undefined,
-      }
-    : undefined;
-
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: safeJsonLd({
-            "@context": "https://schema.org",
-            "@type": "Product",
-            name: deal.name,
-            description: stripHtml(deal.description) || deal.name,
-            image: deal.image ? [deal.image] : undefined,
-            category: deal.categories[0] || undefined,
-            brand: deal.businessName ? { "@type": "Brand", name: deal.businessName } : undefined,
-            offers: dealOffer(deal, SITE_URL, seller),
-          }),
+          // Product, Offer, the business and the page itself, with when
+          // it last changed and was last checked (lib/dealJsonLd.ts).
+          __html: safeJsonLd(dealJsonLd(deal, SITE_URL)),
         }}
       />
       <DealDetail

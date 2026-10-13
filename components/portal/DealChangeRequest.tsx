@@ -4,6 +4,8 @@ import { useState } from "react";
 import { BOOKING_CHOICES } from "@/lib/booking";
 import { readRevision, revisionLines } from "@/lib/dealRevision";
 import type { DealRecord } from "./DealManageCard";
+import DealTagPicker from "@/components/DealTagPicker";
+import { cleanDealTags } from "@/lib/dealTags";
 
 const input = "w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400";
 const label = "mb-1 block text-xs font-semibold text-slate-700";
@@ -31,6 +33,7 @@ export default function DealChangeRequest({ deal }: { deal: DealRecord }) {
     note: "",
   }));
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const [tags, setTags] = useState<string[]>(() => cleanDealTags(deal.tags));
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -50,6 +53,7 @@ export default function DealChangeRequest({ deal }: { deal: DealRecord }) {
             priceWas: form.priceWas,
             bookingRequirement: form.bookingRequirement || undefined,
             quantityAvailable: form.quantityAvailable,
+            tags,
           },
           note: form.note,
         }),
@@ -165,6 +169,7 @@ export default function DealChangeRequest({ deal }: { deal: DealRecord }) {
               ))}
             </select>
           </div>
+          <DealTagPicker id={`cr-tags-${deal._id}`} legend="Good to know" value={tags} onChange={setTags} />
           <div>
             <label htmlFor={`cr-note-${deal._id}`} className={label}>
               Note for our team <span className="font-normal text-slate-500">(optional)</span>

@@ -86,6 +86,12 @@ export default function RootLayout({
         {/* First thing in the tree: a tab stranded by a deploy should
             repair itself before the visitor hits a dead form. */}
         <StaleBuildRecovery />
+        {/* Points feed readers and AI tools at the machine-readable copy of
+            the deals (app/feed/deals.json, documented at /developers).
+            React places it in <head>. Only once there are deals to list. */}
+        {SITE_LAUNCHED && (
+          <link rel="alternate" type="application/json" title={`${SITE_NAME} live deals (JSON)`} href={`${SITE_URL}/feed/deals.json`} />
+        )}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -127,6 +133,8 @@ export default function RootLayout({
             __html: safeJsonLd({
               "@context": "https://schema.org",
               "@type": "WebSite",
+              // Deal pages point back to this (lib/dealJsonLd.ts isPartOf).
+              "@id": `${SITE_URL}/#website`,
               name: SITE_NAME,
               url: SITE_URL,
               ...(SITE_LAUNCHED

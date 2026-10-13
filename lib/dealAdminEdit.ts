@@ -1,5 +1,6 @@
 import { bookingConflict, isBookingChoice } from "./booking";
 import { dealCodeError, normaliseDealCode } from "./dealCode";
+import { cleanDealTags } from "./dealTags";
 
 /**
  * Admin edits to a submitted deal's content. Businesses can't change a deal
@@ -18,6 +19,7 @@ export const EDITABLE_DEAL_FIELDS = [
   "bookingRequirement",
   "quantityAvailable",
   "dealCode",
+  "tags",
 ] as const;
 export type EditableDealField = (typeof EDITABLE_DEAL_FIELDS)[number];
 
@@ -99,6 +101,11 @@ export function parseAdminContentEdit(
     next.dealCode = code;
   }
 
+  if (body.tags !== undefined) {
+    // Only tags from the fixed list; anything else is dropped, not refused.
+    next.tags = cleanDealTags(body.tags);
+  }
+
   // Nothing to check when the request isn't a content edit (a status or
   // expiry save) — stored values it doesn't touch mustn't block it.
   if (Object.keys(next).length === 0) return { changes: {}, error: null };
@@ -120,10 +127,21 @@ export function parseAdminContentEdit(
   }
   const conflict = bookingConflict(next.bookingRequirement ?? existing.bookingRequirement, (next.terms ?? existing.terms) as string);
   if (conflict) return { changes: {}, error: conflict };
+  if (
+    (next.bookingRequirement ?? existing.bookingRequirement) === "required" &&
+    cleanDealTags(next.tags ?? existing.tags).includes("walk-ins-welcome")
+  ) {
+    return { changes: {}, error: "A deal that needs booking can't be tagged \"Walk-ins welcome\"." };
+  }
 
   const changes: Partial<Record<EditableDealField, unknown>> = {};
   for (const field of EDITABLE_DEAL_FIELDS) {
-    if (field in next && next[field] !== (existing[field] ?? null)) changes[field] = next[field];
+    if (!(field in next)) continue;
+    const same =
+      field === "tags"
+        ? (next.tags as string[]).join(",") === cleanDealTags(existing.tags).join(",")
+        : next[field] === (existing[field] ?? null);
+    if (!same) changes[field] = next[field];
   }
   return { changes, error: null };
 }

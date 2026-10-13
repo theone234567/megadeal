@@ -1,4 +1,5 @@
 import { dealDisplayStatus } from "./dealStatus";
+import { cleanDealTags, dealTagLabel } from "./dealTags";
 import { EDITABLE_DEAL_FIELDS, parseAdminContentEdit, type EditableDealField } from "./dealAdminEdit";
 
 /**
@@ -24,6 +25,7 @@ export const REVISION_FIELD_LABELS: Record<(typeof REVISABLE_FIELDS)[number], st
   priceWas: "Usual price",
   bookingRequirement: "Booking",
   quantityAvailable: "Quantity",
+  tags: "Good to know",
 };
 
 export interface DealRevision {
@@ -82,6 +84,7 @@ export function readRevision(row: Record<string, any> | null | undefined): DealR
 }
 
 function show(field: string, v: unknown): string {
+  if (field === "tags") return cleanDealTags(v).map(dealTagLabel).join(", ") || "None";
   if (v === null || v === undefined || v === "") return field === "quantityAvailable" ? "No limit" : "—";
   if (field === "priceNow" || field === "priceWas") return `$${v}`;
   if (field === "bookingRequirement") {

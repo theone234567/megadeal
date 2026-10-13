@@ -4,6 +4,7 @@ import { MAX_BUSINESS_PHOTOS } from "../businessPhotos";
 import { parseBookingRequirement } from "../booking";
 import { CATEGORIES } from "../categories";
 import { isDealLive } from "../dealVisibility";
+import { cleanDealTags } from "../dealTags";
 import type { PublicBusiness } from "../business";
 import type { Deal, DealStatus } from "../types";
 import type { Sql } from "./connection";
@@ -30,13 +31,22 @@ const BUSINESS_COLUMNS = `
   m.booking_email as b_booking_email, m.lat as b_lat, m.lng as b_lng,
   m.rating as b_rating, m.review_count as b_review_count,
   coalesce((to_jsonb(m)->>'hide_address')::boolean, false) as b_hide_address,
-  to_jsonb(m)->>'service_area' as b_service_area, m.postcode as b_postcode`;
+  to_jsonb(m)->>'service_area' as b_service_area, m.postcode as b_postcode,
+  m.owner_id is not null as b_claimed, m.first_approved_at as b_approved_at`;
 
 const DEAL_COLUMNS = `
   d.id, d.slug, d.name, d.description, d.category_slug, d.photo_url, d.price_now, d.price_was,
   d.ribbon, d.terms, d.quantity_available, d.is_flash, d.status, d.booking_requirement,
   d.deal_code, d.code_on_website, d.code_website_url, d.first_published_at, d.expires_at,
-  d.ever_live, d.updated_at`;
+  d.ever_live, d.updated_at,
+  -- Provenance (20261017000000_deal_provenance.sql), read so the site
+  -- works before that update is applied: then a deal's last change is its
+  -- approval (updated_at also moves with every view count).
+  coalesce((to_jsonb(d)->>'content_updated_at')::timestamptz, d.first_approved_at, d.created_at) as content_updated_at,
+  coalesce((to_jsonb(d)->>'approved_at')::timestamptz, d.first_approved_at) as approved_at,
+  (to_jsonb(d)->>'merchant_confirmed_at')::timestamptz as merchant_confirmed_at,
+  coalesce(to_jsonb(d)->>'source', 'merchant') as source,
+  coalesce(to_jsonb(d)->'tags', '[]'::jsonb) as tags`;
 
 type Row = Record<string, any>;
 
@@ -146,6 +156,13 @@ export function rowToDeal(r: Row): Deal {
     bookingRequirement: parseBookingRequirement(r.booking_requirement),
     codeOnWebsite: typeof r.code_on_website === "boolean" ? r.code_on_website : null,
     codeWebsiteUrl: blankToNull(r.code_website_url),
+    updatedAt: toIso(r.content_updated_at),
+    approvedAt: toIso(r.approved_at),
+    merchantConfirmedAt: toIso(r.merchant_confirmed_at),
+    source: r.source === "admin" || r.source === "community" ? r.source : "merchant",
+    tags: cleanDealTags(r.tags),
+    businessClaimed: r.b_claimed === true,
+    businessApprovedAt: toIso(r.b_approved_at),
   };
 }
 

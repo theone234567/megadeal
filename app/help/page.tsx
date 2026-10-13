@@ -4,6 +4,7 @@ import Link from "next/link";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { pageMetadata } from "@/lib/pageMetadata";
+import OpenHashedDetails from "@/components/OpenHashedDetails";
 
 export const metadata: Metadata = pageMetadata({
   title: "Help Centre",
@@ -24,6 +25,7 @@ const FAQ_JSONLD = [
   { q: "How long do I have to use a deal?", a: "Every deal shows its own validity window on the deal page. Once it expires, the business is under no obligation to honour the discounted price." },
   { q: "Can I redeem the same deal more than once?", a: "Deals are for genuine personal use — unless a listing says otherwise, that's one redemption per person. A business can decline to honour a deal it reasonably believes is being reused or resold." },
   { q: "How do I know a business is legitimate?", a: "Every business is reviewed by our team before their first deal goes live — we don't publish listings automatically." },
+  { q: "What do \"Business verified\" and \"Checked\" mean on a deal?", a: "Every deal page says who stands behind it. \"Business verified\" means the business has its own MegaDeal account and our team approved the deal. \"Listed by MegaDeal\" means our team approved it but the business hasn't set up its account yet. \"Checked\" is when our team last approved the deal, or when the business last confirmed it's still running as listed; \"Updated\" is when anything on the deal last changed. Deal end dates are real: we never show a fake countdown." },
   { q: "What if a business won't honour a deal?", a: "First check the deal hasn't expired and that you've met its conditions, such as booking ahead. If a business still won't honour a current deal, use the \"Deal not honoured? Tell us\" link on the deal page, or our contact page, and our team will look into it." },
   { q: "Can I get a refund?", a: "Since MegaDeal never charges you, there's nothing for us to refund. Payment and any resulting dispute is between you and the business." },
   { q: "Is Groupon still in New Zealand?", a: "No. Groupon closed its New Zealand business in 2020, and MegaDeal isn't connected with it. MegaDeal is a New Zealand-owned local deals site, starting in Auckland. It works differently: there's no voucher to buy. You get a free deal code, contact the business, and pay them directly at the deal price." },
@@ -34,6 +36,8 @@ const FAQ_JSONLD = [
 interface Faq {
   q: string;
   a: ReactNode;
+  /** An anchor other pages link to (/help#id). */
+  id?: string;
 }
 
 const FAQS: Faq[] = [
@@ -91,6 +95,11 @@ const FAQS: Faq[] = [
   {
     q: "How do I know a business is legitimate?",
     a: "Every business is reviewed by our team before their first deal goes live — we don't publish listings automatically.",
+  },
+  {
+    id: "deal-checks",
+    q: "What do \"Business verified\" and \"Checked\" mean on a deal?",
+    a: "Every deal page says who stands behind it. \"Business verified\" means the business has its own MegaDeal account and our team approved the deal. \"Listed by MegaDeal\" means our team approved it but the business hasn't set up its account yet. \"Checked\" is when our team last approved the deal, or when the business last confirmed it's still running as listed; \"Updated\" is when anything on the deal last changed. Deal end dates are real: we never show a fake countdown.",
   },
   {
     q: "What if a business won't honour a deal?",
@@ -193,11 +202,13 @@ export default function HelpPage() {
           <h2 id="help-faq-heading" className={`${fredoka.className} mb-6 text-2xl font-bold text-slate-900 sm:text-3xl`}>
             Questions about using MegaDeal
           </h2>
+          <OpenHashedDetails />
           <div className="space-y-3">
             {FAQS.map((f) => (
               <details
                 key={f.q}
-                className="group rounded-2xl border border-slate-100 bg-white p-5 shadow-card"
+                id={f.id}
+                className="scroll-mt-24 group rounded-2xl border border-slate-100 bg-white p-5 shadow-card"
               >
                 <summary className="cursor-pointer list-none font-bold text-slate-900 marker:content-none">
                   <span className="flex items-center justify-between gap-4">

@@ -2,6 +2,7 @@ import { bookingConflict, isBookingChoice, websiteCodeError, type BookingRequire
 import { CATEGORY_ID_BY_NAME } from "./categories";
 import { dealCodeError, normaliseDealCode } from "./dealCode";
 import { durationError } from "./dealDuration";
+import { cleanDealTags } from "./dealTags";
 
 /**
  * The checks on a deal's own fields when it's submitted, in one place:
@@ -29,6 +30,8 @@ export interface DealFields {
   codeOnWebsite: boolean;
   codeWebsiteUrl: string;
   bookingRequirement: Exclude<BookingRequirement, "unknown">;
+  /** "Good to know" tags from the fixed list; unknown ones are dropped. */
+  tags: string[];
 }
 
 export interface DealFieldRules {
@@ -91,6 +94,10 @@ export function checkDealFields(body: any, rules: DealFieldRules): DealFieldsRes
   if (!isBookingChoice(bookingRequirement)) return fail("Choose whether customers need to book.");
   const conflict = bookingConflict(bookingRequirement, terms);
   if (conflict) return fail(conflict);
+  const tags = cleanDealTags(body?.tags);
+  if (bookingRequirement === "required" && tags.includes("walk-ins-welcome")) {
+    return fail("A deal that needs booking can't be tagged \"Walk-ins welcome\".");
+  }
   if (!categoryId) return fail("Choose a category.");
   if (!Number.isFinite(priceNow) || priceNow <= 0) return fail("Enter a valid deal price.");
   if (priceWas !== undefined && (!Number.isFinite(priceWas) || priceWas < priceNow)) {
@@ -134,6 +141,7 @@ export function checkDealFields(body: any, rules: DealFieldRules): DealFieldsRes
       codeOnWebsite,
       codeWebsiteUrl,
       bookingRequirement,
+      tags,
     },
   };
 }

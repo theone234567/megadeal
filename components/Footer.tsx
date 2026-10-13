@@ -162,6 +162,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
               <li><Link prefetch={false} href="/redeem" className="inline-block py-1 hover:text-brand-700">How to redeem a deal</Link></li>
               <li><Link prefetch={false} href="/refund-policy" className="inline-block py-1 hover:text-brand-700">Refund policy</Link></li>
               <li><Link prefetch={false} href="/contact" className="inline-block py-1 hover:text-brand-700">Contact us</Link></li>
+              <li><Link prefetch={false} href="/developers" className="inline-block py-1 hover:text-brand-700">Deals data for developers</Link></li>
             </ul>
           </div>
           <div>

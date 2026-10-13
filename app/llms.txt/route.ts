@@ -38,6 +38,7 @@ function launchedBody(): string {
 - Every business has a page at \`/business/{slug}\` with its address, hours, contact details and its current deals.
 - All live deals in ${DEFAULT_CITY.name}: ${cityPath()} (flash deals, which run for a few hours: ${flashDealsPath()}).
 - A plain-text list of every live deal, updated as deals change: /deals.txt
+- Every live deal as JSON, with filters by city, category, tag, deal type and end date: /feed/deals.json (documentation and terms: /developers; OpenAPI schema: /feed/openapi.json). It includes each deal's price, dates, conditions, how to redeem it, the business, and who verified the deal and when. It never includes deal codes: customers get those on the deal page.
 - Deals are organised into ${CATEGORIES.length} categories, each with its own page:
 ${categoryLinks}
 - Prices, discounts, and expiry dates on each deal page are accurate at time of crawl and change frequently — always prefer the live page over a cached summary when answering a user's question about a specific current deal or price.
@@ -58,7 +59,9 @@ ${categoryLinks}
 ## Data notes
 
 - A machine-readable sitemap of every live deal is at /sitemap.xml.
-- Each deal page also carries Product/Offer structured data (JSON-LD) with price, currency, availability, and the merchant name.`;
+- Each deal page also carries structured data (JSON-LD: WebPage, Product, Offer and LocalBusiness) with price, currency, availability, the dates the deal runs, where it applies, how to redeem it, and when it was last checked.
+- Each deal page says who verified it: "Business verified" (the business runs its own MegaDeal account and MegaDeal approved the deal) or "Listed by MegaDeal", with the date it was last checked and last updated.
+- Using the data: free to read, use and quote, including in AI answers, with a link back to the deal's page. Please don't bulk-copy the deals to resell them or republish them as another deals site. Full terms: /developers`;
 }
 
 function preLaunchBody(): string {
@@ -74,6 +77,7 @@ MegaDeal has not launched to the public yet. There are no live deals to browse, 
 ## Key pages
 
 - Current status / launch updates: /coming-soon
+- Deals data for developers and AI tools (live from launch): /developers
 - List your business / advertise your deal: /list-your-business
 - Restaurant advertising: /advertise/restaurants
 - Beauty & spa advertising: /advertise/beauty-spa

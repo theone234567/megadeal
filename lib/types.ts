@@ -80,4 +80,21 @@ export interface Deal {
   /** An admin test deal (lib/testDeals.ts): never in Wix, shown only on
    *  admin previews, linking to its private page. */
   isTest?: boolean;
+
+  // Provenance (supabase/migrations/20261017000000_deal_provenance.sql,
+  // lib/dealVerification.ts). Optional: previews and examples have none.
+  /** When anything a customer sees on the deal last changed. */
+  updatedAt?: string | null;
+  /** When MegaDeal last approved what the deal says. */
+  approvedAt?: string | null;
+  /** When the business last confirmed it's still running as listed. */
+  merchantConfirmedAt?: string | null;
+  /** Who put the deal on MegaDeal. */
+  source?: "merchant" | "admin" | "community";
+  /** From lib/dealTags.ts only. */
+  tags?: string[];
+  /** The business's owner has a login linked to it. */
+  businessClaimed?: boolean;
+  /** When MegaDeal first approved the business. */
+  businessApprovedAt?: string | null;
 }

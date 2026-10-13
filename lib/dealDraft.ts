@@ -2,6 +2,7 @@ import { parseTerms } from "./dealTerms";
 import { normaliseDealCode } from "./dealCode";
 import { isBookingChoice } from "./booking";
 import { clampEverydayDays, clampFlashMinutes } from "./dealDuration";
+import { cleanDealTags } from "./dealTags";
 
 /**
  * A deal the merchant hasn't submitted yet.
@@ -61,6 +62,8 @@ export interface DealDraftData {
   startMode: "on_approval" | "scheduled";
   startDate: string;
   startTime: string;
+  /** Up to five "good to know" tags from the fixed list (lib/dealTags.ts). */
+  tags: string[];
 }
 
 export const EMPTY_DRAFT: DealDraftData = {
@@ -86,6 +89,7 @@ export const EMPTY_DRAFT: DealDraftData = {
   startMode: "on_approval",
   startDate: "",
   startTime: "",
+  tags: [],
 };
 
 /** Matches the maxLength on the matching textareas, so the form stops
@@ -138,6 +142,7 @@ export function sanitizeDraft(input: any): DealDraftData {
     startMode: input?.startMode === "scheduled" ? "scheduled" : "on_approval",
     startDate: /^\d{4}-\d{2}-\d{2}$/.test(input?.startDate ?? "") ? input.startDate : "",
     startTime: /^\d{2}:\d{2}$/.test(input?.startTime ?? "") ? input.startTime : "",
+    tags: cleanDealTags(input?.tags),
   };
 }
 
@@ -211,6 +216,7 @@ export function draftToRow(draft: DealDraftData, merchantEmail: string) {
     quantityAvailable: textToNum(draft.quantityAvailable),
     isFlash: draft.isFlash,
     bookingRequirement: draft.bookingRequirement || null,
+    tags: draft.tags,
     merchantEmail,
     status: "Draft",
     // Written in the hope the field exists; harmless if it doesn't,
@@ -259,6 +265,7 @@ export function parseDraft(row: any): DealDraftData {
     photoUrl: stored.photoUrl || row?.photoUrl || "",
     photoMediaId: stored.photoMediaId || extra.pm || "",
     dealCode: stored.dealCode || extra.dc || "",
+    tags: stored.tags ?? row?.tags ?? [],
   });
 }
 

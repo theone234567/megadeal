@@ -21,6 +21,7 @@ import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 import { placeLabel } from "@/lib/location";
 import { keyRestrictions, splitTermsForDisplay } from "@/lib/dealTerms";
 import DealConditions from "@/components/DealConditions";
+import { DealProvenance, DealTags } from "@/components/DealProvenance";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import {
   contactInstruction,
@@ -293,6 +294,7 @@ export default function DealDetail({
           <p className="mt-2 max-w-[65ch] whitespace-pre-line text-[0.9375rem] leading-relaxed text-slate-700">
             {deal.description}
           </p>
+          <DealTags tags={deal.tags} />
         </section>
 
         {/* 5. Key conditions, then every condition exactly as written. */}
@@ -327,6 +329,8 @@ export default function DealDetail({
                 <DealConditions terms={deal.terms} className="mt-3 text-slate-700" />
               </details>
             )}
+
+            <DealProvenance deal={deal} />
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-slate-600">
               <p>

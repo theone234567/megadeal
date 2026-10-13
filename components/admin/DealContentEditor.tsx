@@ -4,6 +4,8 @@ import { useState } from "react";
 import { BOOKING_CHOICES } from "@/lib/booking";
 import { effectiveVerdict, type AiReview } from "@/lib/aiReview";
 import PhotoUploadField from "@/components/portal/PhotoUploadField";
+import DealTagPicker from "@/components/DealTagPicker";
+import { cleanDealTags } from "@/lib/dealTags";
 import type { AdminDeal } from "./DealRow";
 
 const FIELD_LABELS: Record<string, string> = {
@@ -16,6 +18,7 @@ const FIELD_LABELS: Record<string, string> = {
   quantityAvailable: "Quantity",
   dealCode: "Deal code",
   photoUrl: "Photo",
+  tags: "Good to know",
 };
 
 function formFromDeal(deal: AdminDeal) {
@@ -29,6 +32,8 @@ function formFromDeal(deal: AdminDeal) {
     bookingRequirement: deal.bookingRequirement ?? "",
     quantityAvailable: deal.quantityAvailable != null ? String(deal.quantityAvailable) : "",
     dealCode: deal.dealCode ?? "",
+    // Comma-joined so it compares like the other fields; sent as a list.
+    tags: cleanDealTags(deal.tags).join(","),
   };
 }
 
@@ -71,7 +76,7 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
     const original = formFromDeal(deal);
     const changed: Record<string, unknown> = {};
     for (const key of Object.keys(form) as (keyof typeof form)[]) {
-      if (form[key] !== original[key]) changed[key] = form[key];
+      if (form[key] !== original[key]) changed[key] = key === "tags" ? form.tags.split(",").filter(Boolean) : form[key];
     }
     if (Object.keys(changed).length === 0) {
       setEditing(false);
@@ -206,6 +211,14 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
               onChange={(e) => setForm({ ...form, dealCode: e.target.value.toUpperCase() })}
             />
           </label>
+          <div className="sm:col-span-2">
+            <DealTagPicker
+              id={`admin-tags-${deal._id}`}
+              legend="Good to know"
+              value={form.tags.split(",").filter(Boolean)}
+              onChange={(tags) => setForm({ ...form, tags: tags.join(",") })}
+            />
+          </div>
           <p className="text-xs text-slate-500 sm:col-span-2">
             Customers who already saw or copied the code saw the old version — if a change makes the deal worse for them,
             honour what they saw.

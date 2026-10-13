@@ -6,6 +6,8 @@ import DealConditions from "@/components/DealConditions";
 import type { DealStatus } from "@/lib/types";
 import Link from "next/link";
 import DealContentEditor from "./DealContentEditor";
+import { nzLongDate } from "@/lib/dealVerification";
+import { cleanDealTags, dealTagLabel } from "@/lib/dealTags";
 import { aiSummary, effectiveVerdict } from "@/lib/aiReview";
 import { describeMinutes } from "@/lib/dealDuration";
 import { dealDisplayStatus } from "@/lib/dealStatus";
@@ -289,6 +291,7 @@ export default function DealRow({
           <div className="mt-1">
             <DealResults deal={deal} />
           </div>
+          <DealChecks deal={deal} />
           {!deal.productId && (
             <p className="mt-2 text-xs font-semibold text-amber-700">
               ⚠️ This deal has no page on the site yet — it won&apos;t appear on the storefront even if
@@ -446,5 +449,24 @@ function RevisionReview({ deal, onSaved }: { deal: AdminDeal; onSaved: (item: Ad
       </div>
       {error && <p className="mt-1 text-xs text-red-700">{error}</p>}
     </div>
+  );
+}
+
+/** Where the deal came from and when it was last checked or changed: the
+ *  facts its public page and the deals feed show (lib/dealVerification.ts). */
+function DealChecks({ deal }: { deal: AdminDeal }) {
+  const at = (v: unknown) => (typeof v === "string" || v instanceof Date ? nzLongDate(String(v instanceof Date ? v.toISOString() : v)) : null);
+  const tags = cleanDealTags(deal.tags);
+  const parts = [
+    `Listed by ${deal.source === "admin" ? "MegaDeal" : deal.source === "community" ? "the public" : "the business"}`,
+    at(deal.approvedAt) && `approved ${at(deal.approvedAt)}`,
+    at(deal.merchantConfirmedAt) ? `business confirmed ${at(deal.merchantConfirmedAt)}` : "not confirmed by the business",
+    at(deal.contentUpdatedAt) && `last changed ${at(deal.contentUpdatedAt)}`,
+  ].filter(Boolean);
+  return (
+    <p className="mt-2 text-xs text-slate-500">
+      {parts.join(" · ")}
+      {tags.length > 0 && <> · Tags: {tags.map(dealTagLabel).join(", ")}</>}
+    </p>
   );
 }

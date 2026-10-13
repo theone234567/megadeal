@@ -26,9 +26,14 @@ const withIds = (row: Row, ids: Record<string, string>): Row =>
 // was the Stores product's (now the deal's own), and Wix sent
 // ready-formatted prices and a variant id. The business address is
 // different on purpose (readable, no Wix id), and redirected: checked in
-// its own test below.
+// its own test below. Provenance (who listed it, when it was checked) is
+// new since Wix: checked in its own test below.
 function comparable(deal: Deal) {
-  const { id: _id, formattedNow: _fn, formattedWas: _fw, variantId: _v, businessSlug: _b, ...rest } = deal;
+  const {
+    id: _id, formattedNow: _fn, formattedWas: _fw, variantId: _v, businessSlug: _b,
+    updatedAt: _u, approvedAt: _a, merchantConfirmedAt: _m, source: _s, tags: _t, businessClaimed: _c, businessApprovedAt: _ba,
+    ...rest
+  } = deal;
   return rest;
 }
 
@@ -138,6 +143,14 @@ describe("what the public never gets", () => {
     await db.query("insert into public.merchants (email, business_name, suburb, status) values ('new@x.nz', 'Kai Café & Bar', 'Ōtāhuhu', 'Approved')");
     expect((await readBusinessBySlug(db, "kai-cafe-bar-otahuhu"))?.businessName).toBe("Kai Café & Bar");
     expect(await readBusinessBySlug(db, "not a slug")).toBeNull();
+  });
+
+  it("says who listed each deal and when it was last checked", async () => {
+    await db.query("update public.deals set tags = '{date-night,not-a-tag}', merchant_confirmed_at = now() where slug = 'real-deal'");
+    const deal = (await readDealBySlug(db, "real-deal", NOW))!.deal;
+    expect(deal).toMatchObject({ source: "merchant", tags: ["date-night"], businessClaimed: false });
+    expect(deal.updatedAt).toEqual(expect.any(String));
+    expect(deal.merchantConfirmedAt).toEqual(expect.any(String));
   });
 
   it("the admin preview opens any status but not a draft", async () => {

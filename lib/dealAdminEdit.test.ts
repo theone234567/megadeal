@@ -115,3 +115,15 @@ describe("business actions", () => {
     expect(withdrawalRefundsCredit({ status: "Pending Approval", viewCount: 3 })).toBe(false);
   });
 });
+
+describe("tags", () => {
+  it("changes tags only when the list really changes, dropping unknown ones", () => {
+    expect(parseAdminContentEdit({ tags: ["kids", "nope"] }, { ...row, tags: ["kids"] }).changes).toEqual({});
+    expect(parseAdminContentEdit({ tags: ["groups", "kids"] }, { ...row, tags: ["kids"] }).changes).toEqual({ tags: ["kids", "groups"] });
+    expect(parseAdminContentEdit({ tags: [] }, { ...row, tags: ["kids"] }).changes).toEqual({ tags: [] });
+  });
+
+  it("refuses walk-ins on a deal that needs booking", () => {
+    expect(parseAdminContentEdit({ tags: ["walk-ins-welcome"] }, row).error).toMatch(/Walk-ins welcome/);
+  });
+});

@@ -44,6 +44,8 @@ import { TEST_DEAL_PHOTOS, testDealDurationValue, type TestDeal } from "@/lib/te
 import { SCHEDULE_MAX_AHEAD_DAYS, parseScheduledStart, type StartMode } from "@/lib/dealSchedule";
 import { formatNzDateTime, nzDateTimeParts } from "@/lib/nzTime";
 import { safeWebHref } from "@/lib/socialLinks";
+import DealTagPicker from "@/components/DealTagPicker";
+import { cleanDealTags } from "@/lib/dealTags";
 
 interface MerchantRecord {
   _id: string;
@@ -133,6 +135,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   const [codeOnWebsite, setCodeOnWebsite] = useState(false);
   const [codeWebsiteUrl, setCodeWebsiteUrl] = useState("");
   const [codeTested, setCodeTested] = useState(false);
+  // "Good to know" tags from the fixed list (lib/dealTags.ts).
+  const [tags, setTags] = useState<string[]>([]);
   // "Use my own code instead" was chosen. The box also shows whenever a
   // code is already there (a reopened draft or a copied deal).
   const [ownCodeChosen, setOwnCodeChosen] = useState(false);
@@ -296,6 +300,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         setCodeOnWebsite(original.codeOnWebsite === true);
         setCodeWebsiteUrl(typeof original.codeWebsiteUrl === "string" ? original.codeWebsiteUrl : "");
         setCodeTested(false);
+        setTags(cleanDealTags(original.tags));
         setQuantityAvailable(
           original.quantityAvailable !== undefined && original.quantityAvailable !== null
             ? String(original.quantityAvailable)
@@ -362,6 +367,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         setCodeOnWebsite(draft.codeOnWebsite);
         setCodeWebsiteUrl(draft.codeWebsiteUrl);
         setCodeTested(draft.codeTested);
+        setTags(draft.tags ?? []);
         setStartMode(draft.startMode);
         setStartDate(draft.startDate);
         setStartTime(draft.startTime);
@@ -498,7 +504,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   const snapshot = JSON.stringify([
     dealName, category, description, terms, priceNow, priceWas, durationDays, isFlash, durationMinutes,
     quantityAvailable, bookingRequirement, dealCode, codeOnWebsite, codeWebsiteUrl, codeTested,
-    selectedTerms, customTerms, photoPreview ?? "", testBusiness, testSuburb, startMode, startDate, startTime,
+    selectedTerms, customTerms, photoPreview ?? "", testBusiness, testSuburb, startMode, startDate, startTime, tags,
   ]);
   const hasContent = Boolean(dealName.trim() || description.trim());
   const unsaved = savedSnapshot !== null && snapshot !== savedSnapshot && hasContent;
@@ -580,6 +586,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             codeTested,
             selectedTerms,
             customTerms,
+            tags,
             startMode,
             startDate,
             startTime,
@@ -691,6 +698,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           codeOnWebsite: codeOnWebsite && Boolean(dealCode),
           codeWebsiteUrl,
           codeTested,
+          tags,
           ...(startMode === "scheduled" ? { startMode, startDate, startTime } : {}),
           photoUrl: media?.url || "",
           photoMediaId: media?.id || "",
@@ -891,6 +899,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         dealCode: normaliseDealCode(dealCode) || savedCode,
         codeOnWebsite: codeOnWebsite && Boolean(dealCode),
         codeWebsiteUrl,
+        tags,
       },
       isTest ? { businessName: testBusiness || null, suburb: testSuburb || null, city: "Auckland" } : merchant
     );
@@ -1683,6 +1692,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             </p>
           )}
         </fieldset>
+
+        <DealTagPicker value={tags} onChange={setTags} />
 
         <div id="deal-terms" className="scroll-mt-24">
           <label className="mb-1 block font-display text-base font-bold text-slate-900">
