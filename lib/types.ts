@@ -93,6 +93,8 @@ export interface Deal {
   source?: "merchant" | "admin" | "community";
   /** From lib/dealTags.ts only. */
   tags?: string[];
+  /** Up to four more photos besides `image`, for the deal page's gallery. */
+  gallery?: string[];
   /** The business's owner has a login linked to it. */
   businessClaimed?: boolean;
   /** When MegaDeal first approved the business. */

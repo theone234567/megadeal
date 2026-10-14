@@ -724,6 +724,7 @@ export default function PortalPage() {
                           onChangeStatus={handleChangeDealStatus}
                           onChangePhoto={handleChangeDealPhoto}
                           siteLaunched={siteLaunched}
+                          profilePhotos={parseBusinessPhotos(merchant?.photos)}
                         />
                       ))}
                     </ul>
@@ -745,6 +746,7 @@ export default function PortalPage() {
                             onChangeStatus={handleChangeDealStatus}
                             onChangePhoto={handleChangeDealPhoto}
                             siteLaunched={siteLaunched}
+                            profilePhotos={parseBusinessPhotos(merchant?.photos)}
                           />
                         ))}
                       </ul>

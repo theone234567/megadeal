@@ -6,6 +6,8 @@ import { effectiveVerdict, type AiReview } from "@/lib/aiReview";
 import PhotoUploadField from "@/components/portal/PhotoUploadField";
 import DealTagPicker from "@/components/DealTagPicker";
 import { cleanDealTags } from "@/lib/dealTags";
+import { cleanGallery } from "@/lib/dealGallery";
+import { wixImageUrl } from "@/lib/wixImageUrl";
 import type { AdminDeal } from "./DealRow";
 
 const FIELD_LABELS: Record<string, string> = {
@@ -19,6 +21,7 @@ const FIELD_LABELS: Record<string, string> = {
   dealCode: "Deal code",
   photoUrl: "Photo",
   tags: "Good to know",
+  gallery: "More photos",
 };
 
 function formFromDeal(deal: AdminDeal) {
@@ -34,6 +37,8 @@ function formFromDeal(deal: AdminDeal) {
     dealCode: deal.dealCode ?? "",
     // Comma-joined so it compares like the other fields; sent as a list.
     tags: cleanDealTags(deal.tags).join(","),
+    // One address per line, so it compares like the other fields.
+    gallery: cleanGallery(deal.gallery, deal.photoUrl).join("\n"),
   };
 }
 
@@ -76,7 +81,8 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
     const original = formFromDeal(deal);
     const changed: Record<string, unknown> = {};
     for (const key of Object.keys(form) as (keyof typeof form)[]) {
-      if (form[key] !== original[key]) changed[key] = key === "tags" ? form.tags.split(",").filter(Boolean) : form[key];
+      if (form[key] !== original[key]) changed[key] =
+        key === "tags" ? form.tags.split(",").filter(Boolean) : key === "gallery" ? form.gallery.split("\n").filter(Boolean) : form[key];
     }
     if (Object.keys(changed).length === 0) {
       setEditing(false);
@@ -211,6 +217,27 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
               onChange={(e) => setForm({ ...form, dealCode: e.target.value.toUpperCase() })}
             />
           </label>
+          {form.gallery && (
+            <div className="sm:col-span-2">
+              <p className="text-xs font-semibold text-slate-600">More photos (remove any that shouldn&apos;t be shown)</p>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {form.gallery.split("\n").filter(Boolean).map((url) => (
+                  <div key={url} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={wixImageUrl(url, 360, 240)} alt="" className="h-16 w-24 rounded-lg object-cover" />
+                    <button
+                      type="button"
+                      aria-label="Remove this photo"
+                      onClick={() => setForm({ ...form, gallery: form.gallery.split("\n").filter((u) => u && u !== url).join("\n") })}
+                      className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-sm font-bold text-slate-700"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="sm:col-span-2">
             <DealTagPicker
               id={`admin-tags-${deal._id}`}

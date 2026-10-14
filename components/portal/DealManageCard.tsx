@@ -36,6 +36,8 @@ interface DealManageCardProps {
   onChangePhoto: (deal: DealRecord, dataUrl: string) => Promise<void>;
   /** Before launch an approved deal isn't visible to anyone yet. */
   siteLaunched?: boolean;
+  /** The business's profile photos, offered when changing the deal's. */
+  profilePhotos?: string[];
 }
 
 export default function DealManageCard({
@@ -43,6 +45,7 @@ export default function DealManageCard({
   onChangeStatus,
   onChangePhoto,
   siteLaunched = true,
+  profilePhotos = [],
 }: DealManageCardProps) {
   const [open, setOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -221,7 +224,7 @@ export default function DealManageCard({
                     } and submit a corrected one.`
                   : ""}
               </p>
-              <DealChangeRequest deal={deal} />
+              <DealChangeRequest deal={deal} profilePhotos={profilePhotos} />
             </div>
           )}
 

@@ -3,6 +3,7 @@ import { CATEGORY_ID_BY_NAME } from "./categories";
 import { dealCodeError, normaliseDealCode } from "./dealCode";
 import { durationError } from "./dealDuration";
 import { cleanDealTags } from "./dealTags";
+import { MAX_DEAL_GALLERY, cleanGallery } from "./dealGallery";
 
 /**
  * The checks on a deal's own fields when it's submitted, in one place:
@@ -32,6 +33,8 @@ export interface DealFields {
   bookingRequirement: Exclude<BookingRequirement, "unknown">;
   /** "Good to know" tags from the fixed list; unknown ones are dropped. */
   tags: string[];
+  /** Up to four more photos besides the main one. */
+  gallery: string[];
 }
 
 export interface DealFieldRules {
@@ -120,6 +123,15 @@ export function checkDealFields(body: any, rules: DealFieldRules): DealFieldsRes
   if (!photoUrl) return fail("Add a photo of your deal.");
   const photoProblem = rules.photoError(photoUrl);
   if (photoProblem) return fail(photoProblem);
+  // More photos are optional, but each must pass the same check as the
+  // main one: refused rather than quietly dropped, so what the business
+  // sees in its preview is what gets reviewed.
+  const rawGallery = Array.isArray(body?.gallery) ? body.gallery : [];
+  if (rawGallery.length > MAX_DEAL_GALLERY) return fail(`Add at most ${MAX_DEAL_GALLERY} more photos.`);
+  const gallery = cleanGallery(rawGallery, photoUrl);
+  for (const url of gallery) {
+    if (rules.photoError(url)) return fail("One of the extra photos couldn't be used. Remove it and add it again.");
+  }
 
   return {
     ok: true,
@@ -142,6 +154,7 @@ export function checkDealFields(body: any, rules: DealFieldRules): DealFieldsRes
       codeWebsiteUrl,
       bookingRequirement,
       tags,
+      gallery,
     },
   };
 }

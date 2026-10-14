@@ -5,6 +5,8 @@ import { BOOKING_CHOICES } from "@/lib/booking";
 import { readRevision, revisionLines } from "@/lib/dealRevision";
 import type { DealRecord } from "./DealManageCard";
 import DealTagPicker from "@/components/DealTagPicker";
+import DealGalleryPicker from "@/components/DealGalleryPicker";
+import { cleanGallery } from "@/lib/dealGallery";
 import { cleanDealTags } from "@/lib/dealTags";
 
 const input = "w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400";
@@ -16,7 +18,7 @@ const label = "mb-1 block text-xs font-semibold text-slate-700";
  * the deal stays exactly as it is for customers until an admin approves.
  * One request at a time; sending another replaces it.
  */
-export default function DealChangeRequest({ deal }: { deal: DealRecord }) {
+export default function DealChangeRequest({ deal, profilePhotos = [] }: { deal: DealRecord; profilePhotos?: string[] }) {
   const [row, setRow] = useState<DealRecord>(deal);
   const pending = readRevision(row);
   const [open, setOpen] = useState(false);
@@ -34,6 +36,7 @@ export default function DealChangeRequest({ deal }: { deal: DealRecord }) {
   }));
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
   const [tags, setTags] = useState<string[]>(() => cleanDealTags(deal.tags));
+  const [gallery, setGallery] = useState<string[]>(() => cleanGallery(deal.gallery, deal.photoUrl));
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
@@ -54,6 +57,7 @@ export default function DealChangeRequest({ deal }: { deal: DealRecord }) {
             bookingRequirement: form.bookingRequirement || undefined,
             quantityAvailable: form.quantityAvailable,
             tags,
+            gallery,
           },
           note: form.note,
         }),
@@ -169,6 +173,14 @@ export default function DealChangeRequest({ deal }: { deal: DealRecord }) {
               ))}
             </select>
           </div>
+          <DealGalleryPicker
+            id={`cr-gallery-${deal._id}`}
+            value={gallery}
+            onChange={setGallery}
+            profilePhotos={profilePhotos}
+            mainUrl={deal.photoUrl ?? null}
+            label={deal.dealName}
+          />
           <DealTagPicker id={`cr-tags-${deal._id}`} legend="Good to know" value={tags} onChange={setTags} />
           <div>
             <label htmlFor={`cr-note-${deal._id}`} className={label}>

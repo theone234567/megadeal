@@ -21,7 +21,7 @@ import type { Deal } from "./types";
  * FEED_VERSION follows semver: adding a field is a minor change; renaming
  * or removing one is a major change, announced on /developers first.
  */
-export const FEED_VERSION = "1.0.0";
+export const FEED_VERSION = "1.1.0";
 
 /** Most deals one request returns; ?limit= can ask for fewer. */
 export const FEED_MAX_LIMIT = 500;
@@ -162,6 +162,8 @@ export function feedDeal(deal: Deal, siteUrl: string) {
     title: deal.name,
     description: htmlToText(deal.description),
     image: orNull(deal.image),
+    // Since 1.1: every photo, the main one first.
+    images: deal.image ? [deal.image, ...(deal.gallery ?? [])] : [],
     type: deal.isFlash ? "flash" : "everyday",
     price: {
       amount: deal.now,

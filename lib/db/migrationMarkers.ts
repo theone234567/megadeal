@@ -15,4 +15,5 @@ export const MIGRATION_MARKERS: { file: string; sql: string }[] = [
   { file: "20261015000000_visit_type.sql", sql: "exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'merchants' and column_name = 'visit_type')" },
   { file: "20261016000000_security_tokens.sql", sql: "to_regclass('public.rate_limits') is not null" },
   { file: "20261017000000_deal_provenance.sql", sql: "exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'deals' and column_name = 'content_updated_at')" },
+  { file: "20261018000000_deal_gallery.sql", sql: "exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'deals' and column_name = 'gallery')" },
 ];

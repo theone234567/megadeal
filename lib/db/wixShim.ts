@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "crypto";
 import { CATEGORIES } from "../categories";
 import { cleanDealTags } from "../dealTags";
+import { cleanGallery } from "../dealGallery";
 import type { Sql } from "./connection";
 
 /**
@@ -267,6 +268,13 @@ const DEALS: Collection = {
       expr: "coalesce(to_jsonb(t)->'tags', '[]'::jsonb)",
       read: (v: any) => (Array.isArray(v) && v.length ? v : null),
       write: (v: any) => cleanDealTags(v),
+      newColumn: true,
+    }),
+    // Extra photos (20261018000000_deal_gallery.sql).
+    f("gallery", "gallery", {
+      expr: "coalesce(to_jsonb(t)->'gallery', '[]'::jsonb)",
+      read: (v: any) => (Array.isArray(v) && v.length ? v : null),
+      write: (v: any) => cleanGallery(v, null),
       newColumn: true,
     }),
     f("merchantConfirmedAt", "merchant_confirmed_at", { expr: "(to_jsonb(t)->>'merchant_confirmed_at')", read: asDate, write: iso, newColumn: true }),

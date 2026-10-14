@@ -1,6 +1,9 @@
 import { bookingConflict, isBookingChoice } from "./booking";
 import { dealCodeError, normaliseDealCode } from "./dealCode";
 import { cleanDealTags } from "./dealTags";
+import { MAX_DEAL_GALLERY, cleanGallery } from "./dealGallery";
+import { isUploadedPhotoUrl } from "./photoUrl";
+import { SITE_URL } from "./siteConfig";
 
 /**
  * Admin edits to a submitted deal's content. Businesses can't change a deal
@@ -20,6 +23,7 @@ export const EDITABLE_DEAL_FIELDS = [
   "quantityAvailable",
   "dealCode",
   "tags",
+  "gallery",
 ] as const;
 export type EditableDealField = (typeof EDITABLE_DEAL_FIELDS)[number];
 
@@ -101,6 +105,15 @@ export function parseAdminContentEdit(
     next.dealCode = code;
   }
 
+  if (body.gallery !== undefined) {
+    // Uploaded photos only, as on submission; the main photo isn't repeated.
+    const raw = Array.isArray(body.gallery) ? body.gallery : [];
+    const gallery = cleanGallery(raw, existing.photoUrl, (url) => isUploadedPhotoUrl(url, SITE_URL));
+    if (raw.length > MAX_DEAL_GALLERY || gallery.length !== new Set(raw.filter((u) => u !== existing.photoUrl)).size) {
+      return { changes: {}, error: `Add up to ${MAX_DEAL_GALLERY} more photos, each uploaded to MegaDeal.` };
+    }
+    next.gallery = gallery;
+  }
   if (body.tags !== undefined) {
     // Only tags from the fixed list; anything else is dropped, not refused.
     next.tags = cleanDealTags(body.tags);
@@ -140,6 +153,8 @@ export function parseAdminContentEdit(
     const same =
       field === "tags"
         ? (next.tags as string[]).join(",") === cleanDealTags(existing.tags).join(",")
+        : field === "gallery"
+        ? (next.gallery as string[]).join("\n") === cleanGallery(existing.gallery, existing.photoUrl).join("\n")
         : next[field] === (existing[field] ?? null);
     if (!same) changes[field] = next[field];
   }

@@ -4,6 +4,7 @@ import { MAX_BUSINESS_PHOTOS } from "../businessPhotos";
 import { parseBookingRequirement } from "../booking";
 import { CATEGORIES } from "../categories";
 import { isDealLive } from "../dealVisibility";
+import { cleanGallery } from "../dealGallery";
 import { cleanDealTags } from "../dealTags";
 import type { PublicBusiness } from "../business";
 import type { Deal, DealStatus } from "../types";
@@ -46,7 +47,8 @@ const DEAL_COLUMNS = `
   coalesce((to_jsonb(d)->>'approved_at')::timestamptz, d.first_approved_at) as approved_at,
   (to_jsonb(d)->>'merchant_confirmed_at')::timestamptz as merchant_confirmed_at,
   coalesce(to_jsonb(d)->>'source', 'merchant') as source,
-  coalesce(to_jsonb(d)->'tags', '[]'::jsonb) as tags`;
+  coalesce(to_jsonb(d)->'tags', '[]'::jsonb) as tags,
+  coalesce(to_jsonb(d)->'gallery', '[]'::jsonb) as gallery`;
 
 type Row = Record<string, any>;
 
@@ -162,6 +164,7 @@ export function rowToDeal(r: Row): Deal {
     merchantConfirmedAt: toIso(r.merchant_confirmed_at),
     source: r.source === "admin" || r.source === "community" ? r.source : "merchant",
     tags: cleanDealTags(r.tags),
+    gallery: cleanGallery(r.gallery, blankToNull(r.photo_url)),
     businessClaimed: r.b_claimed === true,
     businessApprovedAt: toIso(r.b_approved_at),
   };

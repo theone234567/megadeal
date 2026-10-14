@@ -71,3 +71,15 @@ describe("tags", () => {
     expect(err({ ...good, tags: ["walk-ins-welcome"] })).toEqual([400, 'A deal that needs booking can\'t be tagged "Walk-ins welcome".']);
   });
 });
+
+describe("more photos", () => {
+  const ok = (n: number) => `https://static.wixstatic.com/media/g${n}.jpg`;
+  it("keeps up to four that pass the photo check, never repeating the main photo", () => {
+    const res = checkDealFields({ ...good, gallery: [ok(1), good.photoUrl, ok(2)] }, rules);
+    expect(res.ok && res.fields.gallery).toEqual([ok(1), ok(2)]);
+  });
+  it("refuses a photo from anywhere else, or too many", () => {
+    expect(err({ ...good, gallery: ["https://evil.example/x.jpg"] })?.[1]).toMatch(/extra photos/);
+    expect(err({ ...good, gallery: [1, 2, 3, 4, 5].map(ok) })?.[1]).toMatch(/at most 4/);
+  });
+});

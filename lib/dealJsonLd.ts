@@ -124,7 +124,8 @@ export function dealJsonLd(deal: Deal, siteUrl: string) {
         url,
         name: deal.name,
         description,
-        image: deal.image ? [deal.image] : undefined,
+        // Every photo, main first: Google recommends several.
+        image: deal.image ? [deal.image, ...(deal.gallery ?? [])] : undefined,
         sku: deal.id,
         category,
         keywords: tags.length ? tags.join(", ") : undefined,

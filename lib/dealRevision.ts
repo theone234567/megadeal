@@ -26,6 +26,7 @@ export const REVISION_FIELD_LABELS: Record<(typeof REVISABLE_FIELDS)[number], st
   bookingRequirement: "Booking",
   quantityAvailable: "Quantity",
   tags: "Good to know",
+  gallery: "More photos",
 };
 
 export interface DealRevision {
@@ -84,6 +85,10 @@ export function readRevision(row: Record<string, any> | null | undefined): DealR
 }
 
 function show(field: string, v: unknown): string {
+  if (field === "gallery") {
+    const n = Array.isArray(v) ? v.length : 0;
+    return n === 0 ? "None" : `${n} photo${n === 1 ? "" : "s"}`;
+  }
   if (field === "tags") return cleanDealTags(v).map(dealTagLabel).join(", ") || "None";
   if (v === null || v === undefined || v === "") return field === "quantityAvailable" ? "No limit" : "—";
   if (field === "priceNow" || field === "priceWas") return `$${v}`;

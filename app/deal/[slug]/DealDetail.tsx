@@ -17,11 +17,11 @@ import { CalendarIcon } from "@/components/icons";
 import { trackDealEvent } from "@/lib/trackDeal";
 import { useDealActionTracker } from "@/lib/useDealActionTracker";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 import { placeLabel } from "@/lib/location";
 import { keyRestrictions, splitTermsForDisplay } from "@/lib/dealTerms";
 import DealConditions from "@/components/DealConditions";
 import OpenStatus from "./OpenStatus";
+import DealPhotos from "./DealPhotos";
 import { DealProvenance, DealTags } from "@/components/DealProvenance";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import {
@@ -186,28 +186,18 @@ export default function DealDetail({
         {/* 2. Photo: 3:2, the same shape as the deal's card, so it doesn't
             push the price and the action off a phone's first screen. */}
         <div className="lg:col-start-1 lg:row-start-1">
-          <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-brand-50">
-            {deal.image ? (
-              // A plain <img>: next/image makes no srcset while images are
-              // unoptimized, and this lets a phone take a smaller copy.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                // Sizes MegaDeal's own photo storage makes (lib/photoUrl.ts).
-                src={wixImageUrl(deal.image, 1200, 800)}
-                srcSet={wixImageSrcSet(deal.image, [540, 750, 1200], 3 / 2)}
-                sizes="(min-width: 1024px) 540px, (min-width: 640px) 90vw, 100vw"
-                alt={`${deal.name}${deal.businessName ? ` at ${deal.businessName}` : ""}${place ? `, ${place}` : ""}`}
-                className="absolute inset-0 h-full w-full object-cover"
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
-              />
-            ) : (
+          {deal.image ? (
+            <DealPhotos
+              images={[deal.image, ...(deal.gallery ?? [])]}
+              alt={`${deal.name}${deal.businessName ? ` at ${deal.businessName}` : ""}${place ? `, ${place}` : ""}`}
+            />
+          ) : (
+            <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-brand-50">
               <div aria-hidden className="flex h-full w-full items-center justify-center text-7xl opacity-40">
                 {categoryEmoji}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* 3. Price, code and the one action. A bordered panel beside the

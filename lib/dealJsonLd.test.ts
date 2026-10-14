@@ -96,6 +96,11 @@ describe("Google's Product snippet requirements", () => {
     expect(p.offers.priceValidUntil).toBe("2026-11-05");
   });
 
+  it("lists every photo, the main one first", () => {
+    const withGallery = { ...deal, gallery: ["https://megadeal.co.nz/media/photos/2026-10/room.jpg"] };
+    expect(node("Product", withGallery).image).toEqual([deal.image, "https://megadeal.co.nz/media/photos/2026-10/room.jpg"]);
+  });
+
   it("carries the usual price as a strikethrough price", () => {
     const spec = node("Product").offers.priceSpecification;
     expect(spec[1]).toMatchObject({ priceType: "https://schema.org/StrikethroughPrice", price: 80, priceCurrency: "NZD" });

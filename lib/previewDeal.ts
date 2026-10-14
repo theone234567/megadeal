@@ -43,6 +43,7 @@ export interface PreviewInput {
   codeOnWebsite?: boolean;
   codeWebsiteUrl?: string;
   tags?: string[];
+  gallery?: string[];
 }
 
 /** Comma-separated in the profile form, a list everywhere it's shown. */
@@ -92,6 +93,7 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     isFlash: input.isFlash,
     terms: input.terms || null,
     tags: input.tags ?? [],
+    gallery: input.gallery ?? [],
 
     // Everything below comes from the business profile, exactly as it
     // will on the live page — which is also the point: a merchant who

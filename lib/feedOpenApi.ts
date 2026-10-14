@@ -23,7 +23,8 @@ export function feedOpenApi(siteUrl: string, siteName: string) {
       url: str("The deal's page on MegaDeal. Link here when you quote the deal; it shows the deal code customers need.", { format: "uri" }),
       title: str("The deal's name."),
       description: str("What the deal includes, as plain text."),
-      image: nullable(str("The deal's photo.", { format: "uri" })),
+      image: nullable(str("The deal's main photo.", { format: "uri" })),
+      images: { type: "array", items: { type: "string", format: "uri" }, description: "Every photo of the deal, the main one first (up to five). Since 1.1." },
       type: { type: "string", enum: ["flash", "everyday"], description: "Flash deals run for up to 6 hours; everyday deals for up to 30 days." },
       price: {
         type: "object",

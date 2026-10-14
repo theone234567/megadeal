@@ -46,6 +46,10 @@ import { formatNzDateTime, nzDateTimeParts } from "@/lib/nzTime";
 import { safeWebHref } from "@/lib/socialLinks";
 import DealTagPicker from "@/components/DealTagPicker";
 import { cleanDealTags } from "@/lib/dealTags";
+import { wixImageUrl } from "@/lib/wixImageUrl";
+import DealGalleryPicker from "@/components/DealGalleryPicker";
+import { cleanGallery } from "@/lib/dealGallery";
+import { parseBusinessPhotos } from "@/lib/businessPhotos";
 
 interface MerchantRecord {
   _id: string;
@@ -137,6 +141,9 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   const [codeTested, setCodeTested] = useState(false);
   // "Good to know" tags from the fixed list (lib/dealTags.ts).
   const [tags, setTags] = useState<string[]>([]);
+  // Up to four more photos (lib/dealGallery.ts), already uploaded.
+  const [gallery, setGallery] = useState<string[]>([]);
+  const profilePhotos = parseBusinessPhotos(merchant?.photos);
   // "Use my own code instead" was chosen. The box also shows whenever a
   // code is already there (a reopened draft or a copied deal).
   const [ownCodeChosen, setOwnCodeChosen] = useState(false);
@@ -301,6 +308,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         setCodeWebsiteUrl(typeof original.codeWebsiteUrl === "string" ? original.codeWebsiteUrl : "");
         setCodeTested(false);
         setTags(cleanDealTags(original.tags));
+        setGallery(cleanGallery(original.gallery, original.photoUrl));
         setQuantityAvailable(
           original.quantityAvailable !== undefined && original.quantityAvailable !== null
             ? String(original.quantityAvailable)
@@ -368,6 +376,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         setCodeWebsiteUrl(draft.codeWebsiteUrl);
         setCodeTested(draft.codeTested);
         setTags(draft.tags ?? []);
+        setGallery(draft.gallery ?? []);
         setStartMode(draft.startMode);
         setStartDate(draft.startDate);
         setStartTime(draft.startTime);
@@ -504,7 +513,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   const snapshot = JSON.stringify([
     dealName, category, description, terms, priceNow, priceWas, durationDays, isFlash, durationMinutes,
     quantityAvailable, bookingRequirement, dealCode, codeOnWebsite, codeWebsiteUrl, codeTested,
-    selectedTerms, customTerms, photoPreview ?? "", testBusiness, testSuburb, startMode, startDate, startTime, tags,
+    selectedTerms, customTerms, photoPreview ?? "", testBusiness, testSuburb, startMode, startDate, startTime, tags, gallery,
   ]);
   const hasContent = Boolean(dealName.trim() || description.trim());
   const unsaved = savedSnapshot !== null && snapshot !== savedSnapshot && hasContent;
@@ -587,6 +596,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             selectedTerms,
             customTerms,
             tags,
+            gallery,
             startMode,
             startDate,
             startTime,
@@ -699,6 +709,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           codeWebsiteUrl,
           codeTested,
           tags,
+          gallery,
           ...(startMode === "scheduled" ? { startMode, startDate, startTime } : {}),
           photoUrl: media?.url || "",
           photoMediaId: media?.id || "",
@@ -900,6 +911,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         codeOnWebsite: codeOnWebsite && Boolean(dealCode),
         codeWebsiteUrl,
         tags,
+        gallery,
       },
       isTest ? { businessName: testBusiness || null, suburb: testSuburb || null, city: "Auckland" } : merchant
     );
@@ -1607,8 +1619,49 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             />
           </div>
           )}
+          {/* The main photo can also be one already on the business's
+              profile: nothing to upload again. */}
+          {!isTest && profilePhotos.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs font-semibold text-slate-700">Or use a photo from your business profile</p>
+              <div className="mt-1.5 grid grid-cols-3 gap-2 sm:grid-cols-6">
+                {profilePhotos.map((url) => {
+                  const on = !photo && uploaded?.url === url;
+                  return (
+                    <button
+                      key={url}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => {
+                        setPhoto(null);
+                        setUploaded({ url, id: "" });
+                        setGallery((g) => g.filter((u) => u !== url));
+                      }}
+                      className={`overflow-hidden rounded-lg border-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 ${
+                        on ? "border-brand-600" : "border-transparent hover:border-brand-300"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={wixImageUrl(url, 360, 240)} alt="" className="aspect-[3/2] w-full object-cover" />
+                      <span className="sr-only">{on ? "Main photo" : "Use as the main photo"}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           {fieldError("deal-photo-field")}
         </div>
+
+        {!isTest && (
+          <DealGalleryPicker
+            value={gallery}
+            onChange={setGallery}
+            profilePhotos={profilePhotos}
+            mainUrl={photo ? null : uploaded?.url ?? null}
+            label={dealName}
+          />
+        )}
 
         {/* Asked outright rather than inferred: the public deal page shows
             different next steps for each answer (lib/booking.ts), and a

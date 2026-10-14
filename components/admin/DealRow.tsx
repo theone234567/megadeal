@@ -6,6 +6,7 @@ import DealConditions from "@/components/DealConditions";
 import type { DealStatus } from "@/lib/types";
 import Link from "next/link";
 import DealContentEditor from "./DealContentEditor";
+import { wixImageUrl } from "@/lib/wixImageUrl";
 import { nzLongDate } from "@/lib/dealVerification";
 import { cleanDealTags, dealTagLabel } from "@/lib/dealTags";
 import { aiSummary, effectiveVerdict } from "@/lib/aiReview";
@@ -430,6 +431,17 @@ function RevisionReview({ deal, onSaved }: { deal: AdminDeal; onSaved: (item: Ad
           </li>
         ))}
       </ul>
+      {/* The proposed photos themselves, to check before approving. */}
+      {Array.isArray(revision.changes.gallery) && revision.changes.gallery.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {(revision.changes.gallery as string[]).map((url) => (
+            <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={wixImageUrl(url, 360, 240)} alt="Proposed photo" className="h-16 w-24 rounded-lg object-cover" />
+            </a>
+          ))}
+        </div>
+      )}
       {revision.note && <p className="mt-1 italic">&ldquo;{revision.note}&rdquo;</p>}
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <button type="button" disabled={busy} onClick={() => decide("approve")} className="rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-white disabled:opacity-50">

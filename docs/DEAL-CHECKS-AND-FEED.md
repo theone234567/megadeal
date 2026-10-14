@@ -3,7 +3,7 @@
 What MegaDeal tells customers, search engines and AI tools about where a deal came from and how
 fresh it is, and where each fact comes from. Added 13 Oct 2026
 (`supabase/migrations/20261017000000_deal_provenance.sql`). It needs **Admin → System checks →
-Apply database updates** once; until then the site works as before, but tags and "Still running
+Apply database updates** once (it also adds `20261018000000_deal_gallery.sql`); until then the site works as before, but tags and "Still running
 as listed" aren't saved.
 
 ## What each deal records
@@ -16,6 +16,7 @@ The database keeps these itself (triggers), whichever part of the site changes a
 | `approved_at` | When MegaDeal last approved what the deal says | An admin approves a submission, approves a change request or photo, or edits the deal. Not when the business pauses, restarts, confirms or marks it sold out. |
 | `merchant_confirmed_at` | When the business last said it's still running as listed | The business presses **Still running as listed** on a live deal in its portal. |
 | `source` | Who put the deal on MegaDeal | Always `merchant` today; `admin` and `community` are there for later. |
+| `gallery` | Up to 4 more photos besides the main one (`lib/dealGallery.ts`, 14 Oct 2026) | The business picks them from its profile photos or uploads them; MegaDeal checks them with the deal; changes on a submitted deal go through "Request a change". |
 | `tags` | Up to 5 facts from a fixed list (`lib/dealTags.ts`) | The business picks them; MegaDeal checks them on approval and can edit them. |
 
 Businesses record `claimed_at`: when the owner first linked a login.

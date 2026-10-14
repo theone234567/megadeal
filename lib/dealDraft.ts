@@ -3,6 +3,7 @@ import { normaliseDealCode } from "./dealCode";
 import { isBookingChoice } from "./booking";
 import { clampEverydayDays, clampFlashMinutes } from "./dealDuration";
 import { cleanDealTags } from "./dealTags";
+import { cleanGallery } from "./dealGallery";
 
 /**
  * A deal the merchant hasn't submitted yet.
@@ -64,6 +65,8 @@ export interface DealDraftData {
   startTime: string;
   /** Up to five "good to know" tags from the fixed list (lib/dealTags.ts). */
   tags: string[];
+  /** Up to four more photos (uploaded addresses), lib/dealGallery.ts. */
+  gallery: string[];
 }
 
 export const EMPTY_DRAFT: DealDraftData = {
@@ -90,6 +93,7 @@ export const EMPTY_DRAFT: DealDraftData = {
   startDate: "",
   startTime: "",
   tags: [],
+  gallery: [],
 };
 
 /** Matches the maxLength on the matching textareas, so the form stops
@@ -143,6 +147,8 @@ export function sanitizeDraft(input: any): DealDraftData {
     startDate: /^\d{4}-\d{2}-\d{2}$/.test(input?.startDate ?? "") ? input.startDate : "",
     startTime: /^\d{2}:\d{2}$/.test(input?.startTime ?? "") ? input.startTime : "",
     tags: cleanDealTags(input?.tags),
+    // Checked properly on submit, like the main photo.
+    gallery: cleanGallery(input?.gallery, text(input?.photoUrl, 500)),
   };
 }
 
@@ -217,6 +223,7 @@ export function draftToRow(draft: DealDraftData, merchantEmail: string) {
     isFlash: draft.isFlash,
     bookingRequirement: draft.bookingRequirement || null,
     tags: draft.tags,
+    gallery: draft.gallery,
     merchantEmail,
     status: "Draft",
     // Written in the hope the field exists; harmless if it doesn't,
@@ -266,6 +273,7 @@ export function parseDraft(row: any): DealDraftData {
     photoMediaId: stored.photoMediaId || extra.pm || "",
     dealCode: stored.dealCode || extra.dc || "",
     tags: stored.tags ?? row?.tags ?? [],
+    gallery: stored.gallery ?? row?.gallery ?? [],
   });
 }
 

@@ -112,6 +112,17 @@ describe("when MegaDeal last approved a deal", () => {
   });
 });
 
+describe("more photos", () => {
+  it("count as a change to what customers see, up to four", async () => {
+    const id = await submittedDeal();
+    await age(id);
+    const before = (await times(id)).content_updated_at.getTime();
+    await db.query("update public.deals set gallery = '{https://megadeal.co.nz/media/a.jpg}' where id = $1", [id]);
+    expect((await times(id)).content_updated_at.getTime()).toBeGreaterThan(before);
+    await expect(db.query("update public.deals set gallery = '{a,b,c,d,e}' where id = $1", [id])).rejects.toThrow();
+  });
+});
+
 describe("tags", () => {
   it("are short lower-case words from a list, a few at most", async () => {
     const id = await submittedDeal();

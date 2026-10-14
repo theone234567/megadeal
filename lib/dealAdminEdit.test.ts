@@ -127,3 +127,15 @@ describe("tags", () => {
     expect(parseAdminContentEdit({ tags: ["walk-ins-welcome"] }, row).error).toMatch(/Walk-ins welcome/);
   });
 });
+
+describe("more photos", () => {
+  const own = (n: string) => `https://megadeal.co.nz/media/photos/2026-10/${n}.jpg`;
+  const withPhoto = { ...row, photoUrl: own("main"), gallery: [own("a"), own("b")] };
+  it("changes only when the list really changes, and keeps the order", () => {
+    expect(parseAdminContentEdit({ gallery: [own("a"), own("b")] }, withPhoto).changes).toEqual({});
+    expect(parseAdminContentEdit({ gallery: [own("b")] }, withPhoto).changes).toEqual({ gallery: [own("b")] });
+  });
+  it("refuses a photo that wasn't uploaded to MegaDeal", () => {
+    expect(parseAdminContentEdit({ gallery: ["https://evil.example/x.jpg"] }, withPhoto).error).toMatch(/uploaded to MegaDeal/);
+  });
+});

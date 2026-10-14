@@ -97,6 +97,7 @@ export async function POST(req: NextRequest) {
     codeWebsiteUrl,
     bookingRequirement,
     tags,
+    gallery,
   } = checked.fields;
 
   // A requested start time (lib/dealSchedule.ts), only while scheduling is
@@ -351,6 +352,7 @@ export async function POST(req: NextRequest) {
     isFlash,
     bookingRequirement,
     tags,
+    gallery,
     // A submitted draft keeps the code it has had since it was first
     // saved (and shown in its preview); otherwise a new one.
     dealCode: customDealCode || (draftRow && /^MEGA-[A-Z0-9]{5}$/.test(String(draftRow.dealCode)) ? draftRow.dealCode : generateDealCode()),

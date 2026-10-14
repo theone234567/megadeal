@@ -108,6 +108,14 @@ describe("each deal", () => {
     });
   });
 
+  it("lists every photo, the main one first", () => {
+    expect(feedDeal({ ...base, gallery: ["https://megadeal.co.nz/media/photos/2026-10/room.jpg"] }, SITE).images).toEqual([
+      base.image,
+      "https://megadeal.co.nz/media/photos/2026-10/room.jpg",
+    ]);
+    expect(feedDeal({ ...base, image: null }, SITE).images).toEqual([]);
+  });
+
   it("never includes the deal code or any email address", () => {
     const text = JSON.stringify(buildFeed([base, spa], all, opts));
     expect(text).not.toContain("MEGA-7K4XQ");
@@ -177,7 +185,7 @@ describe("the feed", () => {
   it("says who publishes it, its terms, docs and schema", () => {
     const feed = buildFeed([base], all, opts);
     expect(feed).toMatchObject({
-      version: "1.0.0",
+      version: "1.1.0",
       publisher: { name: "MegaDeal", url: SITE },
       docs: `${SITE}/developers`,
       schema: `${SITE}/feed/openapi.json`,

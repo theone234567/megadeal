@@ -143,3 +143,11 @@ describe("tags in drafts", () => {
     expect(parseDraft(row).tags).toEqual(["kids"]);
   });
 });
+
+describe("more photos in drafts", () => {
+  it("are kept through a save and reopen", () => {
+    const g = ["https://megadeal.co.nz/media/photos/2026-10/a.jpg"];
+    const draft = sanitizeDraft({ ...EMPTY_DRAFT, photoUrl: "https://megadeal.co.nz/media/photos/2026-10/main.jpg", gallery: g });
+    expect(parseDraft(draftToRow(draft, "a@b.nz")).gallery).toEqual(g);
+  });
+});

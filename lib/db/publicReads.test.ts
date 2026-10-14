@@ -31,7 +31,7 @@ const withIds = (row: Row, ids: Record<string, string>): Row =>
 function comparable(deal: Deal) {
   const {
     id: _id, formattedNow: _fn, formattedWas: _fw, variantId: _v, businessSlug: _b,
-    updatedAt: _u, approvedAt: _a, merchantConfirmedAt: _m, source: _s, tags: _t, businessClaimed: _c, businessApprovedAt: _ba,
+    updatedAt: _u, approvedAt: _a, merchantConfirmedAt: _m, source: _s, tags: _t, gallery: _g, businessClaimed: _c, businessApprovedAt: _ba,
     ...rest
   } = deal;
   return rest;
