@@ -1,4 +1,5 @@
 import type { Deal } from "./types";
+import { htmlToText } from "./htmlText";
 
 /**
  * A deal as the listings need it: the homepage, category pages, flash
@@ -35,4 +36,33 @@ export function toListingDeal(deal: Deal): Deal {
     dealCode: null,
     bookingRequirement: "unknown",
   };
+}
+
+/** Longest description a card-list keeps: enough for the search box to
+ *  match on what a deal is, without a long write-up on every card. */
+export const CARD_DESCRIPTION_CHARS = 300;
+
+/**
+ * A deal as it's handed to the browser in a list of cards (the homepage,
+ * category and flash pages): a listing deal with its description cut to
+ * plain text of CARD_DESCRIPTION_CHARS (search reads it; no card shows it)
+ * and none of the deal page's own extras (photos, tags, checks). With hundreds of
+ * deals these made up most of each listing page's size. The deal page,
+ * the feed and the structured data use the full deal.
+ */
+export function toCardDeal(deal: Deal): Deal {
+  // Shown on the deal page only, so left off each card. Removed rather
+  // than set to undefined: a page's data still spells out undefined fields.
+  const {
+    gallery: _gallery,
+    tags: _tags,
+    updatedAt: _updatedAt,
+    approvedAt: _approvedAt,
+    merchantConfirmedAt: _confirmed,
+    source: _source,
+    businessClaimed: _claimed,
+    businessApprovedAt: _bizApproved,
+    ...card
+  } = toListingDeal(deal);
+  return { ...card, description: htmlToText(deal.description).slice(0, CARD_DESCRIPTION_CHARS) };
 }

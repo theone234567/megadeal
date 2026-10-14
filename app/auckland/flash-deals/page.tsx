@@ -7,6 +7,7 @@ import FlashDealsList from "./FlashDealsList";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { toCardDeal } from "@/lib/listingDeal";
 
 // Rendered for each request, never at build time: the build can't see the
 // switches in wrangler.toml [vars] (DATA_BACKEND is runtime-only) or reach
@@ -88,8 +89,9 @@ export default async function FlashDealsPage() {
         <HowToUseStrip />
       </div>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <Suspense fallback={null}>
-          <FlashDealsList initialDeals={deals} testDeals={!SITE_LAUNCHED} />
+        {/* Space held while the deals arrive, so the footer doesn't jump. */}
+        <Suspense fallback={<div className="min-h-screen" aria-hidden="true" />}>
+          <FlashDealsList initialDeals={deals.filter((d) => d.isFlash).map(toCardDeal)} testDeals={!SITE_LAUNCHED} />
         </Suspense>
       </div>
     </main>

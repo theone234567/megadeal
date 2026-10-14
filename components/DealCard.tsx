@@ -53,12 +53,16 @@ export default function DealCard({
   /** The card is the largest thing on screen when the page opens (a hero):
    *  its photo loads straight away instead of lazily. */
   priority = false,
+  imageSizes = "(min-width: 1024px) 280px, (min-width: 768px) 33vw, calc(50vw - 22px)",
 }: {
   deal: Deal;
   /** Distance from the viewer, in km — shown beside the locality when known. */
   distanceKm?: number | null;
   preview?: boolean;
   priority?: boolean;
+  /** How wide the photo shows, for the browser to pick a copy: half the
+   *  screen on a phone by default (a two-column grid). */
+  imageSizes?: string;
 }) {
   const soldOut = !deal.inStock;
   // From the two real prices: a "was" at or below the deal price is no saving.
@@ -116,7 +120,10 @@ export default function DealCard({
           <img
             src={wixImageUrl(deal.image, 750, 500)}
             srcSet={wixImageSrcSet(deal.image, [360, 540, 750], 3 / 2)}
-            sizes="(min-width: 1024px) 280px, (min-width: 768px) 33vw, 50vw"
+            // A phone's two columns are half the screen less the page
+            // margins and gap: "50vw" made a 3x phone take the 750px copy
+            // for a 173px card instead of the 540px one.
+            sizes={imageSizes}
             // Empty: the title is already the link's text, so repeating it
             // as the photo's alt made screen readers announce it twice.
             alt=""

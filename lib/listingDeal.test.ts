@@ -39,3 +39,17 @@ describe("toListingDeal", () => {
     expect(JSON.stringify(d)).not.toMatch(/09 123 4567|book@example\.com|MEGA-49|12 Example St/);
   });
 });
+
+describe("toCardDeal", () => {
+  it("keeps what cards and search use, with the description cut to plain text", async () => {
+    const { toCardDeal, CARD_DESCRIPTION_CHARS } = await import("./listingDeal");
+    const long = { ...full, description: `<p>${"Two pizzas &amp; a salad. ".repeat(40)}</p>`, gallery: ["https://megadeal.co.nz/media/a.jpg"], tags: ["kids"] };
+    const c = toCardDeal(long);
+    expect(c.description.startsWith("Two pizzas & a salad.")).toBe(true);
+    expect(c.description.length).toBeLessThanOrEqual(CARD_DESCRIPTION_CHARS);
+    expect(c.gallery).toBeUndefined();
+    expect(c.tags).toBeUndefined();
+    expect(c.dealCode).toBeNull();
+    expect(c).toMatchObject({ name: full.name, image: full.image, now: full.now, terms: full.terms, businessName: full.businessName });
+  });
+});

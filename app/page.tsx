@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { toSearchString } from "@/lib/homeFilters";
+import { toCardDeal } from "@/lib/listingDeal";
 
 const HOME_TITLE = `${SITE_NAME} — Local Deals Up to 50% Off in Auckland & NZ`;
 const HOME_DESCRIPTION =
@@ -87,7 +88,7 @@ export default async function HomePage(props: { searchParams: Promise<Record<str
         <Hero />
       </SearchAwareHero>
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
-        <HomeDeals initialDeals={deals} initialSearch={initialSearch} testDeals={!SITE_LAUNCHED} />
+        <HomeDeals initialDeals={deals.map(toCardDeal)} initialSearch={initialSearch} testDeals={!SITE_LAUNCHED} />
       </div>
     </main>
   );

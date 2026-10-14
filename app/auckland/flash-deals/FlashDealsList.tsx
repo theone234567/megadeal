@@ -67,7 +67,7 @@ export default function FlashDealsList({ initialDeals, testDeals = false }: { in
       {view === "map" ? (
         <DealsMap deals={sorted} userLocation={coords} />
       ) : (
-        <DealGrid deals={sorted} emptyMessage={emptyMessage} />
+        <DealGrid deals={sorted} emptyMessage={emptyMessage} priorityCount={2} />
       )}
     </>
   );

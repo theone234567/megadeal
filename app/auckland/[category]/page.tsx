@@ -11,6 +11,7 @@ import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { CATEGORY_COPY, SEO_REGION } from "@/lib/categoryCopy";
+import { toCardDeal } from "@/lib/listingDeal";
 
 // See app/page.tsx for why this is a short revalidate window rather than
 // force-dynamic.
@@ -132,19 +133,27 @@ export default async function CategoryPage(
         <HowToUseStrip />
       </div>
       <div className="mx-auto max-w-7xl px-4 pb-8 pt-6 sm:px-6 lg:px-8">
-        <Suspense fallback={null}>
-          <CategoryDeals category={category} initialDeals={deals} testDeals={!SITE_LAUNCHED} />
+        {/* The deals arrive a moment after the rest of the page. Their
+            space is held meanwhile, and the text below waits with them,
+            so nothing on screen jumps when they appear. */}
+        <Suspense fallback={<div className="min-h-screen" aria-hidden="true" />}>
+          <CategoryDeals
+            category={category}
+            // Only this category's deals, as cards: the page lists no others.
+            initialDeals={deals.filter((d) => d.categories.includes(category)).map(toCardDeal)}
+            testDeals={!SITE_LAUNCHED}
+          />
+          {copy && (
+            <section className="mt-12 max-w-2xl border-t border-slate-100 pt-8">
+              <h2 className="font-display text-lg font-bold text-slate-900">{copy.more.heading}</h2>
+              {copy.more.paragraphs.map((p) => (
+                <p key={p.slice(0, 24)} className="mt-3 text-sm leading-relaxed text-slate-600">
+                  {p}
+                </p>
+              ))}
+            </section>
+          )}
         </Suspense>
-        {copy && (
-          <section className="mt-12 max-w-2xl border-t border-slate-100 pt-8">
-            <h2 className="font-display text-lg font-bold text-slate-900">{copy.more.heading}</h2>
-            {copy.more.paragraphs.map((p) => (
-              <p key={p.slice(0, 24)} className="mt-3 text-sm leading-relaxed text-slate-600">
-                {p}
-              </p>
-            ))}
-          </section>
-        )}
       </div>
     </main>
   );

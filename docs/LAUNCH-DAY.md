@@ -35,7 +35,9 @@ no longer used (`docs/WIX-MIGRATION.md`). Before opening it to the public:
   lets `/api/health` through.
 - **Plans for real traffic.** Check Cloudflare > Workers & Pages > Plans: on the free plan,
   Workers Paid ($5 a month) lifts the daily limits (100,000 requests; 1,000 writes to the
-  store the rate limits use), which a busy launch day could reach. Past the request limit
+  store the rate limits use), which a busy launch day could reach. Every photo counts as a
+  request too (they're served by the site, `app/media`): a homepage visit is roughly 10–15
+  requests, so the free limit is reached at a few thousand visits a day. Past the request limit
   the site answers with an error until midnight UTC; past the write limit it carries on,
   but rate limits stop counting. Supabase Pro (about US$25 a month)
   adds point-in-time recovery (rewind to any minute, rather than last night's copy) and

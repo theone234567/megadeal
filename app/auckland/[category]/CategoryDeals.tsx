@@ -24,6 +24,9 @@ const DealsMap = dynamic(() => import("@/components/DealsMap"), {
 
 // Deals are fetched server-side (see page.tsx) so listings are present in
 // the raw HTML on first load. This component only filters/sorts on top.
+/** Deals shown before "Show more", and how many each press adds. */
+const PAGE = 24;
+
 export default function CategoryDeals({
   category,
   initialDeals,
@@ -65,6 +68,8 @@ export default function CategoryDeals({
     : `No deals in ${category} right now — check back soon!`;
 
   const sorted = sortDeals(filtered, sort, coords);
+  // A batch at a time: a busy category could have hundreds of deals.
+  const [limit, setLimit] = useState(PAGE);
 
   return (
     <>
@@ -87,7 +92,20 @@ export default function CategoryDeals({
       {view === "map" ? (
         <DealsMap deals={sorted} userLocation={coords} />
       ) : (
-        <DealGrid deals={sorted} emptyMessage={emptyMessage} userLocation={coords} />
+        <>
+          <DealGrid deals={sorted.slice(0, limit)} emptyMessage={emptyMessage} userLocation={coords} priorityCount={2} />
+          {sorted.length > limit && (
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setLimit((n) => n + PAGE)}
+                className="flex min-h-[48px] w-full items-center justify-center rounded-full border-[1.5px] border-brand-600 bg-white px-6 text-[0.9375rem] font-semibold text-brand-700 hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 sm:w-auto"
+              >
+                Show more deals ({sorted.length - limit} more)
+              </button>
+            </div>
+          )}
+        </>
       )}
     </>
   );

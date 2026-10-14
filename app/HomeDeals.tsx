@@ -458,7 +458,9 @@ function Collections({
   const inviteBusinesses = !explicit && !hasNarrowingFilters(filters);
   const [everydayLimit, setEverydayLimit] = useState(step);
 
-  const card = (d: Deal) => <DealCard deal={d} distanceKm={dealDistanceKm(d, coords)} />;
+  const card = (d: Deal, priority = false, imageSizes?: string) => (
+    <DealCard deal={d} distanceKm={dealDistanceKm(d, coords)} priority={priority} imageSizes={imageSizes} />
+  );
 
   if (!explicit && flash.length === 0 && everyday.length === 0) {
     return (
@@ -524,7 +526,9 @@ function Collections({
                     i === 3 ? "md:hidden lg:block" : i > 3 ? "md:hidden" : ""
                   }`}
                 >
-                  {card(d)}
+                  {/* The first card is on screen as the page opens. */}
+                  {/* The swiped row's cards are 84% of a phone's width. */}
+                  {card(d, i === 0, "(min-width: 1024px) 280px, (min-width: 768px) 33vw, 84vw")}
                 </li>
               ))}
             </ul>
@@ -551,7 +555,7 @@ function Collections({
           />
           {everyday.length > 0 ? (
             <>
-              <DealGrid deals={everyday.slice(0, everydayLimit)} userLocation={coords} />
+              <DealGrid deals={everyday.slice(0, everydayLimit)} userLocation={coords} priorityCount={flash.length === 0 ? 2 : 0} />
               {everyday.length > everydayLimit && (
                 <div className="mt-5 flex justify-center">
                   <button

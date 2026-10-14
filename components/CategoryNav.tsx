@@ -78,9 +78,12 @@ export default function CategoryNav(props: Props) {
               <Link
                 href={href}
                 scroll={false}
-                // On the homepage a click filters in place, so fetching the
-                // category page ahead of time would be wasted work.
-                prefetch={props.mode === "filter" ? false : undefined}
+                // Never fetched ahead of time. On the homepage a click filters
+                // in place; elsewhere, fetching all seven pages in the
+                // background on every page view cost seven requests to the
+                // site (against Cloudflare's daily allowance) for the one,
+                // if any, the visitor taps. The page loads on the tap.
+                prefetch={false}
                 onClick={(e) => handleClick(e, filterHref(slug))}
                 aria-current={selected ? "true" : undefined}
                 className={`group flex h-full min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 text-[0.875rem] font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 lg:flex-col lg:justify-start lg:gap-2 lg:whitespace-normal xl:whitespace-nowrap lg:rounded-none lg:border-0 lg:border-b-[3px] lg:px-1 lg:pb-3 lg:pt-3 lg:text-center ${

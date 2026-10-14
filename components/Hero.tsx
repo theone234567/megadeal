@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRightIcon } from "./icons";
 
@@ -39,7 +38,7 @@ export default function Hero() {
           <picture>
             <img
               src="/megadeal/hero/auckland-skyline-800.webp"
-              srcSet="/megadeal/hero/auckland-skyline-800.webp 800w, /megadeal/hero/auckland-skyline.webp 1600w"
+              srcSet="/megadeal/hero/auckland-skyline-640.webp 640w, /megadeal/hero/auckland-skyline-800.webp 800w, /megadeal/hero/auckland-skyline.webp 1600w"
               sizes="(min-width: 1200px) 650px, (min-width: 640px) 54vw, 100vw"
               alt=""
               width={800}
@@ -87,12 +86,18 @@ export default function Hero() {
 
           {/* Bottom-aligned so the feet sit on the panel's edge. */}
           <div className="self-end [grid-area:art]">
-            <Image
-              src="/megadeal/mascot/megadeal-mascot-hero.webp"
+            {/* A plain <img> with sized copies: images aren't optimised on
+                Cloudflare, so next/image sent the 560px original to a
+                118px space. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/megadeal/mascot/megadeal-mascot-hero-240.webp"
+              srcSet="/megadeal/mascot/megadeal-mascot-hero-240.webp 240w, /megadeal/mascot/megadeal-mascot-hero-380.webp 380w, /megadeal/mascot/megadeal-mascot-hero.webp 560w"
               alt=""
               width={560}
               height={580}
-              priority
+              fetchPriority="high"
+              decoding="async"
               sizes="(min-width: 1024px) 190px, (min-width: 640px) 150px, 118px"
               className="block h-auto w-[92px] select-none min-[360px]:w-[118px] sm:w-[150px] lg:w-[190px]"
             />

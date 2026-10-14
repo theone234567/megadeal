@@ -7,11 +7,16 @@ export default function DealGrid({
   deals,
   emptyMessage = "No deals found. Try a different search or category.",
   userLocation = null,
+  priorityCount = 0,
 }: {
   deals: Deal[];
   emptyMessage?: string;
   /** When set, each card shows its distance from this point. */
   userLocation?: Coords | null;
+  /** The first cards' photos load straight away, ahead of everything
+   *  else: the ones on screen when a listing opens. The rest load as
+   *  they're scrolled to. */
+  priorityCount?: number;
 }) {
   if (deals.length === 0) {
     return (
@@ -26,8 +31,8 @@ export default function DealGrid({
     // a very narrow screen or with enlarged text (rem grows with the text).
     // Three on tablets, four on desktop.
     <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,9.5rem),1fr))] gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5">
-      {deals.map((deal) => (
-        <DealCard key={deal.id} deal={deal} distanceKm={dealDistanceKm(deal, userLocation)} />
+      {deals.map((deal, i) => (
+        <DealCard key={deal.id} deal={deal} distanceKm={dealDistanceKm(deal, userLocation)} priority={i < priorityCount} />
       ))}
     </div>
   );
