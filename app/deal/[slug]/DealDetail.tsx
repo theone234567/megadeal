@@ -21,6 +21,7 @@ import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 import { placeLabel } from "@/lib/location";
 import { keyRestrictions, splitTermsForDisplay } from "@/lib/dealTerms";
 import DealConditions from "@/components/DealConditions";
+import OpenStatus from "./OpenStatus";
 import { DealProvenance, DealTags } from "@/components/DealProvenance";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import {
@@ -133,6 +134,9 @@ export default function DealDetail({
     websiteCode: Boolean(codeLink),
   });
   const profileHref = deal.businessSlug && !preview ? `/business/${deal.businessSlug}` : null;
+  // Somewhere to go from a sold-out deal: the rest of its category.
+  const soldOutCategory = CATEGORIES.find((c) => deal.categories.includes(c.name));
+  const soldOutHref = !preview && soldOutCategory ? { href: categoryPath(soldOutCategory.name), label: soldOutCategory.name } : null;
 
   return (
     <main className="mx-auto max-w-[1040px] px-4 py-4 sm:px-6 sm:py-6 lg:py-7">
@@ -173,6 +177,7 @@ export default function DealDetail({
               ))}
             {deal.businessName && place && <span aria-hidden="true"> · </span>}
             {place}
+            {!preview && <OpenStatus hours={deal.businessHours} />}
           </p>
         )}
       </header>
@@ -209,8 +214,9 @@ export default function DealDetail({
             photo on desktop; part of the page flow on a phone. */}
         <aside
           aria-label="Price and how to use this deal"
-          // Stays in view on a computer while the conditions are read.
-          className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start lg:rounded-[18px] lg:border lg:border-slate-200 lg:bg-white lg:p-6"
+          // Stays in view on a computer while the conditions are read,
+          // clear of the site's sticky header.
+          className="lg:sticky lg:top-24 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start lg:rounded-[18px] lg:border lg:border-slate-200 lg:bg-white lg:p-6"
         >
           {deal.isFlash && deal.expiresAt && live && (
             <div className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-brand-50 px-4 py-3">
@@ -254,7 +260,8 @@ export default function DealDetail({
                 Ends {formatOfferEndDate(deal.expiresAt)}
                 {/* Days are counted in New Zealand, so this can differ
                     from the server's render around midnight. */}
-                <span suppressHydrationWarning>{offerDaysLeft(deal.expiresAt)}</span>
+                {/* Not for a sold-out deal: there's nothing left to hurry for. */}
+                {deal.inStock && <span suppressHydrationWarning>{offerDaysLeft(deal.expiresAt)}</span>}
               </span>
             </p>
           )}
@@ -267,9 +274,14 @@ export default function DealDetail({
                 <p className="mt-0.5 text-xs text-slate-600">It can no longer be claimed through MegaDeal.</p>
               </div>
             ) : !deal.inStock ? (
-              <p className="rounded-xl bg-slate-50 px-4 py-3 text-center text-sm font-bold text-slate-700" aria-live="polite">
-                Sold out — check back soon
-              </p>
+              <div className="rounded-xl bg-slate-50 px-4 py-3 text-center" aria-live="polite">
+                <p className="text-sm font-bold text-slate-700">Sold out — check back soon</p>
+                {soldOutHref && (
+                  <Link href={soldOutHref.href} prefetch={false} className="mt-1 inline-block text-sm font-semibold text-brand-700 underline-offset-2 hover:underline">
+                    See more {soldOutHref.label} deals →
+                  </Link>
+                )}
+              </div>
             ) : (
               <ContactBusiness
                 businessName={deal.businessName}
@@ -280,6 +292,7 @@ export default function DealDetail({
                 preview={preview}
                 onAction={tracker.track}
                 onOpen={tracker.interest}
+                websiteHref={codeLink}
                 // The phone's bottom bar: never in a preview, where it
                 // would sit over the deal form's or admin's own buttons.
                 price={

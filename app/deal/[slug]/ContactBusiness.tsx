@@ -104,6 +104,7 @@ export default function ContactBusiness({
   onAction,
   onOpen,
   price,
+  websiteHref = null,
 }: {
   businessName: string | null;
   code: string | null;
@@ -119,6 +120,10 @@ export default function ContactBusiness({
   onOpen: () => void;
   /** For the bar at the bottom of a phone's screen (below). */
   price?: { now: string; was: string | null; percentOff: number | null };
+  /** Where the business's own code is entered online (lib/booking.ts
+   *  websiteCodeHref). Then the main action is one tap: copy the code and
+   *  open that page; the other ways to contact move into the pop-up. */
+  websiteHref?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   // The pop-up's rows (with the business's email address) are only built
@@ -127,6 +132,9 @@ export default function ContactBusiness({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const barButtonRef = useRef<HTMLButtonElement>(null);
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const otherWaysRef = useRef<HTMLButtonElement>(null);
+  const online = Boolean(websiteHref) && !preview;
   // Which button opened the pop-up, for focus to go back to.
   const openedFrom = useRef<HTMLButtonElement | null>(null);
   const business = businessName || "the business";
@@ -138,7 +146,7 @@ export default function ContactBusiness({
   const [buttonInView, setButtonInView] = useState(true);
   const [endInView, setEndInView] = useState(false);
   useEffect(() => {
-    const button = buttonRef.current;
+    const button = buttonRef.current ?? linkRef.current;
     const end = document.getElementById("deal-end");
     if (!button || typeof IntersectionObserver === "undefined") return;
     const io = new IntersectionObserver((entries) => {
@@ -151,7 +159,7 @@ export default function ContactBusiness({
     if (end) io.observe(end);
     return () => io.disconnect();
   }, []);
-  const showBar = Boolean(price) && options.length > 0 && !buttonInView && !endInView;
+  const showBar = Boolean(price) && (options.length > 0 || online) && !buttonInView && !endInView;
 
   useEffect(() => {
     const d = dialogRef.current;
@@ -163,6 +171,16 @@ export default function ContactBusiness({
   function close() {
     setOpen(false);
     (openedFrom.current ?? buttonRef.current)?.focus();
+  }
+
+  /** Copy the code and let the link open the business's page in a new
+   *  tab. The copy is best effort: the code is on screen either way. */
+  function goOnline() {
+    onAction("website");
+    if (code) {
+      onAction("copy");
+      navigator.clipboard?.writeText(code).catch(() => {});
+    }
   }
 
   function openFrom(button: HTMLButtonElement | null) {
@@ -180,7 +198,32 @@ export default function ContactBusiness({
       {code && <CodeBox code={code} onCopy={() => onAction("copy")} />}
 
       <div className={code ? "mt-2" : ""}>
-        {options.length > 0 ? (
+        {online ? (
+          <>
+            <a
+              ref={linkRef}
+              href={websiteHref!}
+              target="_blank"
+              rel="noopener noreferrer nofollow ugc"
+              onClick={goOnline}
+              className={buttonClass}
+            >
+              {code ? "Copy code & go to website" : "Go to website"} <span aria-hidden="true">↗</span>
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+            {options.length > 0 && (
+              <button
+                ref={otherWaysRef}
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => openFrom(otherWaysRef.current)}
+                className="mt-2 w-full rounded-full py-2 text-sm font-semibold text-brand-700 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+              >
+                Other ways to contact {business}
+              </button>
+            )}
+          </>
+        ) : options.length > 0 ? (
           <button
             ref={buttonRef}
             type="button"
@@ -204,7 +247,7 @@ export default function ContactBusiness({
       <p className="mt-3 text-sm font-bold text-slate-900">{instruction.heading}</p>
       <p className="mt-0.5 text-sm leading-relaxed text-slate-600">{instruction.text}</p>
 
-      {price && options.length > 0 && (
+      {price && (options.length > 0 || online) && (
         <div
           className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(0.625rem+env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-6px_20px_rgba(15,23,42,0.08)] backdrop-blur transition-transform duration-200 motion-reduce:transition-none lg:hidden ${
             showBar ? "translate-y-0" : "pointer-events-none translate-y-full"
@@ -223,15 +266,28 @@ export default function ContactBusiness({
               )}
               {price.percentOff !== null && <span className="block text-xs font-bold text-brand-700">{price.percentOff}% off</span>}
             </p>
-            <button
-              ref={barButtonRef}
-              type="button"
-              aria-haspopup="dialog"
-              onClick={() => openFrom(barButtonRef.current)}
-              className="ml-auto flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-brand-600 px-5 text-[0.9375rem] font-extrabold text-white shadow-card transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
-            >
-              Contact business <span aria-hidden="true">→</span>
-            </button>
+            {online ? (
+              <a
+                href={websiteHref!}
+                target="_blank"
+                rel="noopener noreferrer nofollow ugc"
+                onClick={goOnline}
+                className="ml-auto flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-brand-600 px-5 text-[0.9375rem] font-extrabold text-white shadow-card transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+              >
+                {code ? "Copy code & go" : "Go to website"} <span aria-hidden="true">↗</span>
+                <span className="sr-only"> to the business&apos;s website (opens in a new tab)</span>
+              </a>
+            ) : (
+              <button
+                ref={barButtonRef}
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => openFrom(barButtonRef.current)}
+                className="ml-auto flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full bg-brand-600 px-5 text-[0.9375rem] font-extrabold text-white shadow-card transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+              >
+                Contact business <span aria-hidden="true">→</span>
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -266,9 +322,9 @@ export default function ContactBusiness({
                   <CloseIcon className="h-5 w-5" />
                 </button>
               </div>
-              <p className="mt-1 text-sm text-slate-600">
-                {code ? "Quote your deal code when contacting the business." : "Mention this MegaDeal offer when contacting the business."}
-              </p>
+              {/* The same instruction as under the button, so the two never
+                  disagree (e.g. "enter it at checkout on their website"). */}
+              <p className="mt-1 text-sm text-slate-600">{instruction.text}</p>
 
               {code && (
                 <div className="mt-4">

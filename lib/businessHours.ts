@@ -269,3 +269,39 @@ export function isOpenNow(data: BusinessHoursData, now: Date = new Date()): bool
     return minutes >= open && minutes < close;
   });
 }
+
+/** The hours that apply on an NZ date: its exception, else its weekday. */
+function hoursOn(data: BusinessHoursData, date: string): { closed: boolean; ranges: TimeRange[] } | undefined {
+  const special = (data.exceptions ?? []).find((e) => e.date === date);
+  if (special) return special;
+  const day = new Intl.DateTimeFormat("en-US", { timeZone: "UTC", weekday: "short" }).format(new Date(`${date}T12:00:00Z`)) as Day;
+  return data.schedule.find((d) => d.day === day);
+}
+
+/**
+ * "Open now · closes 9:30pm", or "Closed · opens 5pm" / "opens tomorrow
+ * 11:30am" / "opens Tue 11:30am", in New Zealand time, for the deal page's
+ * header line. Null when the business hasn't given its hours, or nothing
+ * opens in the next week: "closed" is never shown for hours nobody gave.
+ */
+export function openStatus(data: BusinessHoursData, now: Date = new Date()): { open: boolean; label: string } | null {
+  if (!hoursKnown(data)) return null;
+  const { minutes } = nzNow(now);
+  const valid = (r: TimeRange) => timeToMinutes(r.close) > timeToMinutes(r.open);
+  const today = hoursOn(data, nzToday(now));
+  if (today && !today.closed) {
+    const current = today.ranges.find((r) => valid(r) && minutes >= timeToMinutes(r.open) && minutes < timeToMinutes(r.close));
+    if (current) return { open: true, label: `Open now · closes ${formatTime12h(current.close)}` };
+    const later = today.ranges.filter((r) => valid(r) && timeToMinutes(r.open) > minutes).sort((a, b) => timeToMinutes(a.open) - timeToMinutes(b.open))[0];
+    if (later) return { open: false, label: `Closed · opens ${formatTime12h(later.open)}` };
+  }
+  for (let i = 1; i <= 7; i++) {
+    const date = nzToday(new Date(now.getTime() + i * 86_400_000));
+    const h = hoursOn(data, date);
+    const first = h && !h.closed ? h.ranges.filter(valid).sort((a, b) => timeToMinutes(a.open) - timeToMinutes(b.open))[0] : undefined;
+    if (!first) continue;
+    const when = i === 1 ? "tomorrow" : new Intl.DateTimeFormat("en-NZ", { timeZone: "UTC", weekday: "short" }).format(new Date(`${date}T12:00:00Z`));
+    return { open: false, label: `Closed · opens ${when} ${formatTime12h(first.open)}` };
+  }
+  return null;
+}
