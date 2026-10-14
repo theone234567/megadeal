@@ -106,6 +106,13 @@ describe("the storefront shows what it did on Wix", () => {
     const pgDeals = await listLiveDealsForSitemap(db, NOW);
     expect(pgDeals.map(({ slug, categories, merchantEmail }) => ({ slug, categories, merchantEmail })).sort((a, b) => a.slug.localeCompare(b.slug))).toEqual(golden.sitemapDeals);
   });
+
+  it("dates each deal by when what customers see last changed, not by its views", async () => {
+    const before = await listLiveDealsForSitemap(db, NOW);
+    await db.query("update public.deals set view_count = view_count + 1, click_count = click_count + 1");
+    const after = await listLiveDealsForSitemap(db, NOW);
+    expect(after.map((d) => d.updatedAt)).toEqual(before.map((d) => d.updatedAt));
+  });
 });
 
 describe("what the public never gets", () => {

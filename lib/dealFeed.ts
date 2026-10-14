@@ -81,7 +81,8 @@ function nzOffsetMinutes(at: number): number {
  *  a typo and returning every deal). */
 export function parseFeedFilters(params: URLSearchParams): FeedFilterResult {
   for (const key of params.keys()) {
-    if (!KNOWN_PARAMS.has(key)) return { ok: false, error: `Unknown parameter "${key}". See /developers for the ones you can use.` };
+    // Named back, but never more than a few characters of whatever was sent.
+    if (!KNOWN_PARAMS.has(key)) return { ok: false, error: `Unknown parameter "${key.slice(0, 40)}". See /developers for the ones you can use.` };
   }
   const filters: FeedFilters = { limit: FEED_MAX_LIMIT, offset: 0 };
   const get = (k: string) => params.get(k)?.trim().toLowerCase() || undefined;

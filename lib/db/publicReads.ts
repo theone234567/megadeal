@@ -291,7 +291,12 @@ export async function listLiveDealsForSitemap(
   now: number = Date.now()
 ): Promise<{ slug: string; updatedAt: string | null; categories: string[]; merchantEmail: string }[]> {
   const rows = await db.query(
-    `select d.slug, d.updated_at, d.category_slug, d.status, d.first_published_at, d.expires_at, m.email
+    // When what customers see last changed (content_updated_at), not
+    // updated_at, which moves on every view and click: a sitemap date
+    // that changes constantly teaches search engines to ignore it. Read
+    // through to_jsonb until the database update adds the column.
+    `select d.slug, coalesce((to_jsonb(d)->>'content_updated_at')::timestamptz, d.updated_at) as updated_at,
+            d.category_slug, d.status, d.first_published_at, d.expires_at, m.email
        from public.deals d
        join public.merchants m on m.id = d.merchant_id
       where d.status = 'Live' and not d.is_test and m.status = 'Approved' and d.slug is not null`
