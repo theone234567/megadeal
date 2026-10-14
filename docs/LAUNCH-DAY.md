@@ -69,6 +69,9 @@ What then changes by itself:
   engines recrawl them.
 - Businesses can submit their saved drafts; each goes live once an admin approves it. Nothing
   is published automatically.
+- The deals feed (`/feed/deals.json`, documented at `/developers`) starts listing live deals,
+  and every page gets a link to it for AI tools. Before launch it answers `"launched": false`
+  with no deals.
 
 ## Straight after
 
@@ -83,6 +86,10 @@ What then changes by itself:
    stopping Google: look in Cloudflare → the domain → Security → Events for what challenged
    it, and turn that rule or setting off. (Cloudflare challenges requests from data centres,
    seen on 7 Oct 2026; verified search engines like Google are normally let through.)
+   Then paste a deal page into Google's Rich Results Test
+   (search.google.com/test/rich-results): it should find a **Product snippet** and
+   **Merchant listing** with no errors (a warning about missing reviews is expected:
+   MegaDeal doesn't collect its own reviews yet).
 8. **Share a link to yourself** (Messenger, WhatsApp or similar) for the homepage and
    `/list-your-business`: the preview should show the new logo and, for the business page,
    up to 3 months. Facebook keeps old previews for a while; its Sharing Debugger refreshes one.

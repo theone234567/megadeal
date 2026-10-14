@@ -40,6 +40,8 @@ export interface PublicBusiness {
   lng: number | null;
   rating: number | null;
   reviewCount: number | null;
+  /** The business runs its own MegaDeal account (its owner signs in). */
+  claimed?: boolean;
 }
 
 /** Maps a raw Wix "Merchants" data item to the public-safe shape. Caller

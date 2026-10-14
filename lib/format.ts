@@ -41,6 +41,17 @@ export function formatOfferEndDate(iso: string, withTime = false): string {
   return new Intl.DateTimeFormat("en-NZ", opts).format(date);
 }
 
+/** " · 3 days left" (or " · last day") in an offer's final week, counted
+ *  in New Zealand calendar days; "" before then or once it has ended. */
+export function offerDaysLeft(expiresAt: string, now: number = Date.now()): string {
+  const nzDay = (t: number) => new Date(t).toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" });
+  const end = Date.parse(expiresAt);
+  if (Number.isNaN(end) || end <= now) return "";
+  const days = Math.round((Date.parse(nzDay(end)) - Date.parse(nzDay(now))) / 86_400_000);
+  if (days > 7) return "";
+  return days === 0 ? " · last day" : ` · ${days} ${days === 1 ? "day" : "days"} left`;
+}
+
 export function formatMoney(amount: number, currency: string, formatted?: string | null) {
   if (formatted) return formatted;
   try {

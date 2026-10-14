@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { truncateForMeta, formatOfferEndDate } from "./format";
+import { truncateForMeta, formatOfferEndDate, offerDaysLeft } from "./format";
 
 describe("truncateForMeta", () => {
   it("leaves short text alone", () => {
@@ -41,5 +41,19 @@ describe("formatOfferEndDate", () => {
     vi.setSystemTime(new Date("2026-09-26T00:00:00Z"));
     // 26 Sept is the day before NZ daylight saving starts, so UTC+12.
     expect(formatOfferEndDate("2026-09-26T03:05:00Z", true)).toMatch(/^26 September at 3:05\s?pm$/);
+  });
+});
+
+describe("offerDaysLeft", () => {
+  // 14 Oct 2026, 10am in New Zealand (NZDT, UTC+13).
+  const now = Date.parse("2026-10-13T21:00:00Z");
+  it("counts New Zealand calendar days in the last week", () => {
+    expect(offerDaysLeft("2026-10-17T10:59:00Z", now)).toBe(" · 3 days left"); // 17 Oct, 11:59pm NZ
+    expect(offerDaysLeft("2026-10-14T11:00:00Z", now)).toBe(" · 1 day left"); // 15 Oct, 12am NZ
+    expect(offerDaysLeft("2026-10-14T05:00:00Z", now)).toBe(" · last day"); // 14 Oct, 6pm NZ
+  });
+  it("says nothing earlier than that, or once it has ended", () => {
+    expect(offerDaysLeft("2026-10-30T00:00:00Z", now)).toBe("");
+    expect(offerDaysLeft("2026-10-13T20:00:00Z", now)).toBe("");
   });
 });

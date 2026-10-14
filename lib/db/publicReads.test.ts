@@ -88,8 +88,11 @@ describe("the storefront shows what it did on Wix", () => {
   it("the same business page, at a readable address the old one redirects to", async () => {
     // The fixture has no suburb saved, so it's the name alone.
     const pg = await readBusinessBySlug(db, "harbour-bistro");
-    const { id: _p, slug: _ps, ...pgBusiness } = pg!;
+    // claimed is new since Wix (shown as "Business verified").
+    const { id: _p, slug: _ps, claimed: _cl, ...pgBusiness } = pg!;
     expect(pgBusiness).toEqual(golden.businessPage);
+    // The fixture's owner hasn't linked a login.
+    expect(pg!.claimed).toBe(false);
     expect(await resolveBusinessRedirect(db, "harbour-bistro-3f2a9c1e")).toBe("harbour-bistro");
     // Any name in front of the old id finds it too, as Wix's did.
     expect(await resolveBusinessRedirect(db, "old-name-3f2a9c1e")).toBe("harbour-bistro");

@@ -4,7 +4,7 @@ import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import type { Deal } from "@/lib/types";
-import { formatMoney, formatOfferEndDate } from "@/lib/format";
+import { formatMoney, formatOfferEndDate, offerDaysLeft } from "@/lib/format";
 import { dealSaving, dealSavingPercent } from "@/lib/dealSaving";
 import { isDealLive } from "@/lib/dealVisibility";
 import { getDirectionsUrl } from "@/lib/mapLinks";
@@ -242,6 +242,20 @@ export default function DealDetail({
           {saving !== null && savingPct !== null && (
             <p className="mt-1.5 text-sm font-bold text-brand-700">
               Save {formatMoney(saving, deal.currency)} · {savingPct}% off
+            </p>
+          )}
+          {/* When it ends, beside the price rather than only in the
+              conditions: the date decides whether it's worth acting on.
+              Flash deals have their countdown above instead. */}
+          {deal.expiresAt && !deal.isFlash && live && (
+            <p className="mt-2 flex items-center gap-1.5 text-sm text-slate-700">
+              <CalendarIcon className="h-4 w-4 shrink-0 text-brand-600" />
+              <span>
+                Ends {formatOfferEndDate(deal.expiresAt)}
+                {/* Days are counted in New Zealand, so this can differ
+                    from the server's render around midnight. */}
+                <span suppressHydrationWarning>{offerDaysLeft(deal.expiresAt)}</span>
+              </span>
             </p>
           )}
 

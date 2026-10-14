@@ -71,3 +71,16 @@ export function nzLongDate(iso: string | null | undefined): string | null {
   if (!iso || Number.isNaN(Date.parse(iso))) return null;
   return new Date(iso).toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric", timeZone: "Pacific/Auckland" });
 }
+
+/** "13 Oct", or "13 Oct 2025" when it isn't this year, as the date it is
+ *  in New Zealand: short enough to sit on one line on a phone. */
+export function nzShortDate(iso: string | null | undefined, now: number = Date.now()): string | null {
+  if (!iso || Number.isNaN(Date.parse(iso))) return null;
+  const year = (t: number) => new Date(t).toLocaleDateString("en-NZ", { year: "numeric", timeZone: "Pacific/Auckland" });
+  return new Date(iso).toLocaleDateString("en-NZ", {
+    day: "numeric",
+    month: "short",
+    ...(year(Date.parse(iso)) !== year(now) ? { year: "numeric" as const } : {}),
+    timeZone: "Pacific/Auckland",
+  });
+}

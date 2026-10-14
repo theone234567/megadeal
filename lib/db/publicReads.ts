@@ -97,6 +97,7 @@ export function rowToBusiness(r: Row): PublicBusiness {
     lng: place.lng,
     rating: toNumber(r.b_rating),
     reviewCount: toNumber(r.b_review_count),
+    claimed: r.b_claimed === true,
   };
 }
 

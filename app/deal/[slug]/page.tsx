@@ -138,7 +138,9 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
       <EndedDeal
         deal={ended}
         moreDeals={
-          <Suspense fallback={null}>
+          // Keyed: an element passed in as a prop otherwise trips React's
+          // "unique key" warning in development.
+          <Suspense key="more-deals" fallback={null}>
             <MoreDeals deal={ended} />
           </Suspense>
         }
@@ -163,7 +165,7 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
         moreDeals={
           // Its own boundary: the deal shows as soon as it's read, and the
           // lists of other deals follow when they're ready.
-          <Suspense fallback={null}>
+          <Suspense key="more-deals" fallback={null}>
             <MoreDeals deal={deal} />
           </Suspense>
         }

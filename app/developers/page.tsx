@@ -83,7 +83,11 @@ const h2 = `${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`;
 
 function Code({ children }: { children: ReactNode }) {
   return (
-    <pre className="mt-3 overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-relaxed text-slate-100">
+    // Focusable, so a keyboard can scroll a long line sideways.
+    <pre
+      tabIndex={0}
+      className="mt-3 overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs leading-relaxed text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+    >
       <code>{children}</code>
     </pre>
   );
@@ -168,7 +172,12 @@ export default function DevelopersPage() {
         <section>
           <h2 className={h2}>Filters</h2>
           <p className="mt-3 text-slate-600">Add any of these to the address. They combine, so every one has to match.</p>
-          <div className="mt-4 overflow-x-auto">
+          <div
+            className="mt-4 overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            tabIndex={0}
+            role="region"
+            aria-label="Filters"
+          >
             <table className="w-full min-w-[32rem] text-left text-sm">
               <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
                 <tr>

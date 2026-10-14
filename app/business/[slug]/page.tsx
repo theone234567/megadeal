@@ -13,7 +13,7 @@ import { locationNotes, placeLabel } from "@/lib/location";
 import { truncateForMeta } from "@/lib/format";
 import DealGrid from "@/components/DealGrid";
 import HowToUseStrip from "@/components/HowToUseStrip";
-import { PhoneIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon } from "@/components/icons";
+import { PhoneIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon, CheckIcon } from "@/components/icons";
 import StarRating from "@/components/StarRating";
 import ShareButtons from "@/components/ShareButtons";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -195,6 +195,9 @@ export default async function BusinessProfilePage(
             // structured-data policy on review markup and risks a sitewide
             // manual action — the star rating still shows visually on the
             // page below, just not as verified review data.
+            // Its live deals, by the @id each deal page gives its Offer
+            // (lib/dealJsonLd.ts), so the business and its offers connect.
+            makesOffer: deals.length > 0 ? deals.map((d) => ({ "@id": `${SITE_URL}/deal/${d.slug}#offer` })) : undefined,
             sameAs: [
               business.website,
               business.bookingUrl,
@@ -228,6 +231,17 @@ export default async function BusinessProfilePage(
             <h1 className="font-display text-2xl font-bold text-slate-900 sm:text-3xl">
               {business.businessName}
             </h1>
+            {business.claimed && (
+              <Link
+                href="/help#deal-checks"
+                prefetch={false}
+                className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
+                title="This business runs its own MegaDeal account and lists its own deals"
+              >
+                <CheckIcon className="h-3.5 w-3.5" />
+                Business verified
+              </Link>
+            )}
             {business.rating !== null && (
               <StarRating rating={business.rating} reviewCount={business.reviewCount} className="mt-1" />
             )}
