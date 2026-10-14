@@ -102,10 +102,7 @@ export default async function CategoryPage(
       <div className="mx-auto max-w-[1320px] px-4 pt-4 sm:px-6 lg:px-8">
         <CategoryNav mode="link" active={def.slug} />
       </div>
-      <div className="pt-6">
-        <HowToUseStrip />
-      </div>
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8">
         {categoryDeals.length > 0 && (
           <script
             type="application/ld+json"
@@ -128,8 +125,13 @@ export default async function CategoryPage(
         <h1 className="font-display text-2xl font-bold text-slate-900">
           {copy ? copy.h1 : `${category} deals in ${SEO_REGION}`}
         </h1>
-        {copy && <p className="mt-1.5 mb-5 max-w-2xl text-sm text-slate-600 sm:text-base">{copy.intro}</p>}
-        {!copy && <div className="mb-5" />}
+        {copy && <p className="mt-1.5 max-w-2xl text-sm text-slate-600 sm:text-base">{copy.intro}</p>}
+      </div>
+      {/* After the heading, so the page says what it is first. */}
+      <div className="pt-5">
+        <HowToUseStrip />
+      </div>
+      <div className="mx-auto max-w-7xl px-4 pb-8 pt-6 sm:px-6 lg:px-8">
         <Suspense fallback={null}>
           <CategoryDeals category={category} initialDeals={deals} testDeals={!SITE_LAUNCHED} />
         </Suspense>

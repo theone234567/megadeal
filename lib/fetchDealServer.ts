@@ -7,6 +7,7 @@ import { readEdgeCache, writeEdgeCache } from "./edgeCache";
 import type { Deal } from "./types";
 import { withDb } from "./db/connection";
 import * as pg from "./db/publicReads";
+import { soldOutLast } from "./sortDeals";
 
 /**
  * Server-only lookup for a deal page (its metadata, JSON-LD and body).
@@ -141,7 +142,9 @@ async function fetchAllLiveDeals(): Promise<Deal[]> {
   if (!listing) return [];
   // Re-checked on the way out: a deal can expire while it's held here.
   const now = Date.now();
-  return listing.deals.filter((d) => isDealLive(d, now)).map(toListingDeal);
+  // Newest first, sold-out deals last: the city, category and "more
+  // deals" lists show them in this order.
+  return soldOutLast(listing.deals.filter((d) => isDealLive(d, now)).map(toListingDeal));
 }
 
 /**

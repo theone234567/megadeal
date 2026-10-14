@@ -12,6 +12,8 @@ import DealChangeRequest from "./DealChangeRequest";
 import DealConfirmLive from "./DealConfirmLive";
 import DealResults from "@/components/DealResults";
 import DealConditions from "@/components/DealConditions";
+import { cleanGallery } from "@/lib/dealGallery";
+import { wixImageUrl } from "@/lib/wixImageUrl";
 
 export interface DealRecord {
   _id: string;
@@ -200,6 +202,19 @@ export default function DealManageCard({
             }
             onConfirm={(dataUrl) => onChangePhoto(deal, dataUrl)}
           />
+          {/* The deal's extra photos, shown after the main one on its page.
+              Changed through "Request a change" below. */}
+          {cleanGallery(deal.gallery, deal.photoUrl).length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-slate-700">More photos</p>
+              <div className="mt-1 flex flex-wrap gap-2">
+                {cleanGallery(deal.gallery, deal.photoUrl).map((url) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={url} src={wixImageUrl(url, 360, 240)} alt="" className="h-14 w-20 rounded-lg object-cover" />
+                ))}
+              </div>
+            </div>
+          )}
           {deal.pendingPhotoUrl && !isPast && (
             <div className="flex items-center gap-3 rounded-xl border border-brand-100 bg-brand-50 p-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}

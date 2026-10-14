@@ -19,6 +19,13 @@ export function dealDistanceKm(deal: Deal, userLocation: Coords | null): number 
   return haversineDistanceKm(userLocation, { lat: deal.businessLat, lng: deal.businessLng });
 }
 
+/** Sold-out deals after the ones people can still get, each group in the
+ *  order it was in. A sold-out deal stays listed (it may come back), just
+ *  never ahead of an available one. */
+export function soldOutLast<T extends Pick<Deal, "inStock">>(deals: T[]): T[] {
+  return [...deals.filter((d) => d.inStock !== false), ...deals.filter((d) => d.inStock === false)];
+}
+
 export function sortDeals(deals: Deal[], sort: SortOption, userLocation: Coords | null = null): Deal[] {
   const sorted = [...deals];
   switch (sort) {
@@ -49,5 +56,5 @@ export function sortDeals(deals: Deal[], sort: SortOption, userLocation: Coords 
       });
       break;
   }
-  return sorted;
+  return soldOutLast(sorted);
 }

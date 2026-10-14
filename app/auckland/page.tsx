@@ -83,10 +83,7 @@ export default async function CityPage() {
       <div className="mx-auto max-w-[1320px] px-4 pt-4 sm:px-6 lg:px-8">
         <CategoryNav mode="link" active="" />
       </div>
-      <div className="pt-6">
-        <HowToUseStrip />
-      </div>
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8">
         <Breadcrumbs items={[{ name: CITY }]} />
         <h1 className="font-display text-2xl font-bold text-slate-900 sm:text-3xl">Deals in {CITY}</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
@@ -94,9 +91,15 @@ export default async function CityPage() {
             ? `${deals.length} live ${deals.length === 1 ? "deal" : "deals"} from ${CITY} businesses right now. Each one is set by the business itself: pick one, then call, book or visit them and quote the deal code. You pay the business, not ${SITE_NAME}.`
             : `New deals from ${CITY} businesses are on the way. Check back soon.`}
         </p>
+      </div>
+      {/* After the heading, so the page says what it is first. */}
+      <div className="pt-5">
+        <HowToUseStrip />
+      </div>
+      <div className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
 
         {flash.length > 0 && (
-          <section aria-labelledby="flash-heading" className="mt-10">
+          <section aria-labelledby="flash-heading" className="mt-8">
             <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
               <h2 id="flash-heading" className="font-display text-xl font-bold text-slate-900">
                 Flash deals in {CITY}
