@@ -51,7 +51,12 @@ export async function POST(req: NextRequest) {
     const key = backupKey(now);
     await bucket.put(key, bytes, { httpMetadata: { contentType: "application/gzip" } });
     const rows = Object.fromEntries(Object.entries(backup.tables).map(([t, r]) => [t, r.length]));
-    return NextResponse.json({ saved: key, bytes: bytes.length, rows });
+    // Deal activity is kept for 400 days (20261021000000_deal_events.sql),
+    // trimmed once today's copy is safely stored.
+    const trimmed = await withDb((db) =>
+      db.query("delete from public.deal_events where occurred_at < now() - interval '400 days' returning 1"),
+    ).then((r) => r.length, () => 0);
+    return NextResponse.json({ saved: key, bytes: bytes.length, rows, oldEventsDeleted: trimmed });
   } catch (err) {
     console.error("[cron/backup] failed", err);
     await alertOwner("the database or the backup storage didn't answer.");

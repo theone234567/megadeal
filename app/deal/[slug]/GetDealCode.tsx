@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import type { DealAction } from "@/lib/dealEvents";
-import type { ContactAction, DealContact } from "@/lib/dealContact";
+import type { ContactAction, ContactMethod, DealContact } from "@/lib/dealContact";
 import { formatBusinessHoursLines, hoursToday, type BusinessHoursData } from "@/lib/businessHours";
 import { ChevronDownIcon, CloseIcon, CopyIcon } from "@/components/icons";
 
@@ -33,7 +32,9 @@ export default function GetDealCode({
   hours,
   profileHref,
   preview,
-  onAction,
+  onCopied,
+  onContact,
+  onProfileClick,
   onOpen,
   onReveal,
 }: {
@@ -48,11 +49,15 @@ export default function GetDealCode({
   profileHref: string | null;
   /** A merchant's or admin's preview: nothing counted, no link goes anywhere. */
   preview: boolean;
-  onAction: (action: DealAction) => void;
+  /** The browser confirmed the code was copied. */
+  onCopied: () => void;
+  /** A tap on a way to contact the business. */
+  onContact: (method: ContactMethod | "directions") => void;
+  onProfileClick: () => void;
   /** The button was pressed ("main" in the price panel, "sticky" in the
    *  phone's bottom bar). */
   onOpen: (source: "main" | "sticky") => void;
-  /** The code is on screen. */
+  /** The code is on screen: each time the panel opens. */
   onReveal: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -62,7 +67,6 @@ export default function GetDealCode({
   const mainRef = useRef<HTMLButtonElement>(null);
   const barRef = useRef<HTMLButtonElement>(null);
   const openedFrom = useRef<HTMLButtonElement | null>(null);
-  const revealed = useRef(false);
 
   const [mainInView, setMainInView] = useState(true);
   const [endInView, setEndInView] = useState(false);
@@ -98,12 +102,10 @@ export default function GetDealCode({
     [],
   );
 
-  // Counted once the code is actually showing, once per page visit.
+  // Counted once the code is actually showing, each time the panel opens
+  // (reports count each visit once as well).
   useEffect(() => {
-    if (open && opened && !revealed.current) {
-      revealed.current = true;
-      onReveal();
-    }
+    if (open && opened) onReveal();
   }, [open, opened, onReveal]);
 
   function openFrom(button: HTMLButtonElement | null, source: "main" | "sticky") {
@@ -188,7 +190,9 @@ export default function GetDealCode({
             hours={hours}
             profileHref={profileHref}
             preview={preview}
-            onAction={onAction}
+            onCopied={onCopied}
+            onContact={onContact}
+            onProfileClick={onProfileClick}
             onClose={close}
           />
         )}
@@ -207,7 +211,9 @@ function Panel({
   hours,
   profileHref,
   preview,
-  onAction,
+  onCopied,
+  onContact,
+  onProfileClick,
   onClose,
 }: {
   code: string | null;
@@ -219,7 +225,9 @@ function Panel({
   hours: BusinessHoursData | null;
   profileHref: string | null;
   preview: boolean;
-  onAction: (action: DealAction) => void;
+  onCopied: () => void;
+  onContact: (method: ContactMethod | "directions") => void;
+  onProfileClick: () => void;
   onClose: () => void;
 }) {
   const [allHours, setAllHours] = useState(false);
@@ -259,7 +267,7 @@ function Panel({
           )}
         </p>
 
-        {code ? <CodeBox code={code} onCopied={() => onAction("copy")} /> : null}
+        {code ? <CodeBox code={code} onCopied={onCopied} /> : null}
 
         <p className="mt-2 text-center text-sm text-slate-700">{contact.instruction}</p>
         {/* The business's own words, as written, after MegaDeal's line. */}
@@ -273,8 +281,8 @@ function Panel({
 
         {(contact.primary || contact.secondary) && (
           <div className="mt-2.5 grid gap-2">
-            {contact.primary && <ActionLink a={contact.primary} variant="primary" preview={preview} onAction={onAction} />}
-            {contact.secondary && <ActionLink a={contact.secondary} variant="secondary" preview={preview} onAction={onAction} />}
+            {contact.primary && <ActionLink a={contact.primary} variant="primary" preview={preview} onContact={onContact} />}
+            {contact.secondary && <ActionLink a={contact.secondary} variant="secondary" preview={preview} onContact={onContact} />}
           </div>
         )}
 
@@ -310,7 +318,7 @@ function Panel({
               <ul className="flex flex-wrap items-center justify-center gap-x-5">
                 {contact.links.map((a) => (
                   <li key={a.method}>
-                    <ActionLink a={a} variant="link" preview={preview} onAction={onAction} />
+                    <ActionLink a={a} variant="link" preview={preview} onContact={onContact} />
                   </li>
                 ))}
               </ul>
@@ -319,6 +327,7 @@ function Panel({
               <Link
                 href={profileHref}
                 prefetch={false}
+                onClick={onProfileClick}
                 className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-brand-700 underline underline-offset-2 hover:text-brand-800"
               >
                 View business profile <span aria-hidden="true">→</span>
@@ -338,12 +347,12 @@ function ActionLink({
   a,
   variant,
   preview,
-  onAction,
+  onContact,
 }: {
   a: ContactAction;
   variant: "primary" | "secondary" | "link";
   preview: boolean;
-  onAction: (action: DealAction) => void;
+  onContact: (method: ContactMethod | "directions") => void;
 }) {
   const cls =
     variant === "primary"
@@ -369,7 +378,7 @@ function ActionLink({
       href={a.href}
       // Counted without holding up the visit: the ping is sent with
       // keepalive (lib/trackDeal.ts).
-      onClick={() => onAction(a.action)}
+      onClick={() => onContact(a.method)}
       {...(a.external ? { target: "_blank", rel: "noopener noreferrer nofollow ugc" } : {})}
       aria-label={a.method === "phone" ? `Call ${a.detail}` : undefined}
       className={`${cls} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2`}

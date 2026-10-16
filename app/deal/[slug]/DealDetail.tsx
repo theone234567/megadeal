@@ -14,7 +14,6 @@ import ShareButtons from "@/components/ShareButtons";
 import GetDealCode from "./GetDealCode";
 import BusinessSummary from "./BusinessSummary";
 import { CalendarIcon } from "@/components/icons";
-import { trackDealEvent } from "@/lib/trackDeal";
 import { useDealActionTracker } from "@/lib/useDealActionTracker";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { placeLabel } from "@/lib/location";
@@ -73,12 +72,7 @@ export default function DealDetail({
   }, [preview]);
   const live = preview || isDealLive(deal, now);
 
-  const tracker = useDealActionTracker(deal.id, preview);
-
-  useEffect(() => {
-    if (preview) return;
-    trackDealEvent(deal.id, "view");
-  }, [deal.id, preview]);
+  const tracker = useDealActionTracker(deal.id, preview, deal.businessSlug);
 
   const category = deal.categories[0];
   const categoryEmoji = CATEGORIES.find((c) => c.name === category)?.emoji ?? "🏷️";
@@ -280,8 +274,10 @@ export default function DealDetail({
                 hours={hours}
                 profileHref={profileHref}
                 preview={preview}
-                onAction={tracker.track}
-                onOpen={tracker.interest}
+                onCopied={tracker.copied}
+                onContact={(method) => tracker.contact(method, "code_panel")}
+                onProfileClick={() => tracker.profileClick("code_panel")}
+                onOpen={tracker.codeClick}
                 onReveal={tracker.reveal}
               />
             )}
@@ -317,7 +313,12 @@ export default function DealDetail({
       </section>
 
       {/* 5. A short word on the business; its profile has the rest. */}
-      <BusinessSummary deal={deal} preview={preview} onAction={tracker.track} />
+      <BusinessSummary
+        deal={deal}
+        preview={preview}
+        onWebsite={() => tracker.contact("website", "deal_page")}
+        onProfileClick={() => tracker.profileClick("deal_page")}
+      />
 
       <DealProvenance deal={deal} />
       <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-slate-600">

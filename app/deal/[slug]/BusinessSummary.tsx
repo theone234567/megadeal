@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Deal } from "@/lib/types";
-import type { DealAction } from "@/lib/dealEvents";
 import { safeWebHref } from "@/lib/socialLinks";
 import { wixImageUrl } from "@/lib/wixImageUrl";
 
@@ -16,11 +15,13 @@ import { wixImageUrl } from "@/lib/wixImageUrl";
 export default function BusinessSummary({
   deal,
   preview,
-  onAction,
+  onWebsite,
+  onProfileClick,
 }: {
   deal: Deal;
   preview: boolean;
-  onAction: (action: DealAction) => void;
+  onWebsite: () => void;
+  onProfileClick: () => void;
 }) {
   const name = deal.businessName?.trim();
   if (!name) return null;
@@ -63,7 +64,7 @@ export default function BusinessSummary({
           {!preview && (profile || website) && (
             <p className="flex flex-wrap items-center gap-x-4 text-sm">
               {profile && hasPlaceOrHours && (
-                <Link href={`${profile}#contact`} prefetch={false} className={link}>
+                <Link href={`${profile}#contact`} prefetch={false} onClick={onProfileClick} className={link}>
                   Address &amp; hours
                 </Link>
               )}
@@ -72,7 +73,7 @@ export default function BusinessSummary({
                   href={website}
                   target="_blank"
                   rel="noopener noreferrer nofollow ugc"
-                  onClick={() => onAction("website")}
+                  onClick={onWebsite}
                   className={link}
                 >
                   Website
@@ -87,6 +88,7 @@ export default function BusinessSummary({
         <Link
           href={profile}
           prefetch={false}
+          onClick={onProfileClick}
           className="inline-flex min-h-[44px] shrink-0 items-center gap-1 self-start text-sm font-bold text-brand-700 underline underline-offset-2 hover:text-brand-800 sm:self-center"
         >
           View business profile <span aria-hidden="true">→</span>

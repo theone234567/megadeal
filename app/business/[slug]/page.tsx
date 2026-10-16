@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import BookingEmailLink from "@/components/BookingEmailLink";
 import BackToDeal from "@/components/business/BackToDeal";
+import ProfileViewTracker from "@/components/business/ProfileViewTracker";
 import PhotoGallery from "@/components/business/PhotoGallery";
 import { hideEmail } from "@/lib/hiddenEmail";
 import { DEFAULT_CITY, cityPath } from "@/lib/cities";
@@ -242,6 +243,7 @@ export default async function BusinessProfilePage(
       />
 
       <BackToDeal deals={deals.map((d) => ({ slug: d.slug, name: d.name }))} />
+      <ProfileViewTracker businessSlug={business.slug} deals={deals.map((d) => ({ slug: d.slug, id: d.id }))} />
       <Breadcrumbs items={[{ name: DEFAULT_CITY.name, href: cityPath() }, { name: business.businessName }]} />
 
       {/* Who and where */}

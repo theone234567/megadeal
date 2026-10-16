@@ -1,5 +1,6 @@
 "use client";
 
+import DealResultsPanel from "@/components/portal/DealResultsPanel";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "@/context/SessionProvider";
@@ -787,6 +788,9 @@ export default function PortalPage() {
               </Link>
             </div>
           </section>
+
+          {/* What customers did with the deals (lib/dealEventLog.ts). */}
+          <DealResultsPanel />
 
           {/* Deal credits used to sit in a 2-column grid beside Application
               status, with "Recent activity" as an unrelated box further

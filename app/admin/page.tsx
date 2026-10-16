@@ -283,6 +283,9 @@ export default function AdminDashboardPage() {
           <Link href="/admin/system" className="text-sm font-medium text-slate-500 hover:text-brand-700">
             System checks
           </Link>
+          <Link href="/admin/results" className="text-sm font-medium text-slate-500 hover:text-brand-700">
+            Deal results
+          </Link>
           <button
             onClick={handleLogout}
             className="text-sm font-medium text-slate-500 hover:text-brand-700"

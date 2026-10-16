@@ -26,6 +26,7 @@ export const BACKUP_TABLES = [
   "contact_messages",
   "api_usage_counters",
   "site_settings",
+  "deal_events",
 ] as const;
 
 export interface Backup {
@@ -72,6 +73,13 @@ export async function takeBackup(db: Sql, now = new Date()): Promise<Backup> {
   await db.query("begin isolation level repeatable read read only");
   try {
     for (const table of BACKUP_TABLES) {
+      // A table a database update adds that this database hasn't had yet
+      // (the site is published before "Apply database updates").
+      const [{ present }] = await db.query<{ present: boolean }>(`select to_regclass($1) is not null as present`, [`public.${table}`]);
+      if (!present) {
+        tables[table] = [];
+        continue;
+      }
       const cols = await storedColumns(db, table);
       const [row] = await db.query<{ rows: Record<string, unknown>[] | null }>(
         `select json_agg(r) as rows from (select ${cols.map(ident).join(", ")} from public.${ident(table)} order by 1) r`
