@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import BookingEmailLink from "@/components/BookingEmailLink";
-import ClampedBio from "@/components/business/ClampedBio";
+import BackToDeal from "@/components/business/BackToDeal";
+import PhotoGallery from "@/components/business/PhotoGallery";
 import { hideEmail } from "@/lib/hiddenEmail";
 import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import Image from "next/image";
@@ -8,12 +9,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchBusinessProfileBySlug } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
-import { getMapUrl, getDirectionsUrl } from "@/lib/mapLinks";
+import { getDirectionsUrl } from "@/lib/mapLinks";
+import { phoneLink } from "@/lib/booking";
+import { comparableUrl } from "@/lib/dealContact";
+import { safeWebHref } from "@/lib/socialLinks";
+import { formatMoney } from "@/lib/format";
+import { dealSavingPercent } from "@/lib/dealSaving";
+import type { Deal } from "@/lib/types";
 import { locationNotes, placeLabel } from "@/lib/location";
 import { truncateForMeta } from "@/lib/format";
-import DealGrid from "@/components/DealGrid";
-import HowToUseStrip from "@/components/HowToUseStrip";
-import { PhoneIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon, CheckIcon } from "@/components/icons";
+import { PhoneIcon, GlobeIcon, MapPinIcon, ClockIcon, CalendarIcon, CheckIcon, FacebookIcon, InstagramIcon } from "@/components/icons";
 import StarRating from "@/components/StarRating";
 import ShareButtons from "@/components/ShareButtons";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -23,11 +28,11 @@ import {
   parseBusinessHours,
   formatBusinessHoursLines,
   hoursKnown,
-  isOpenNow,
+  openStatus,
   toOpeningHoursSpecification,
   toSpecialOpeningHoursSpecification,
 } from "@/lib/businessHours";
-import { wixImageUrl } from "@/lib/wixImageUrl";
+import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 import { businessPageIsThin } from "@/lib/businessIndexing";
 
 // Every other page that fetches live Wix data (homepage, category pages,
@@ -122,10 +127,23 @@ export default async function BusinessProfilePage(
   if (!result) notFound();
   const { business, deals } = result;
 
-  const hasContactInfo = Boolean(
-    business.website || business.phone || business.address || business.addressHidden || business.bookingUrl || business.bookingEmail
-  );
-  const hasSocial = Boolean(business.facebookUrl || business.instagramUrl);
+  // Every way to get in touch the business actually supplied: a booking
+  // link (or else its phone) as the button, the rest as links. The same
+  // page as both website and booking link shows once.
+  const phone = phoneLink(business.phone);
+  const bookingHref = safeWebHref(business.bookingUrl);
+  const websiteRaw = safeWebHref(business.website);
+  const websiteHref = websiteRaw && !(bookingHref && comparableUrl(websiteRaw) === comparableUrl(bookingHref)) ? websiteRaw : null;
+  const emailHidden = business.bookingEmail ? hideEmail(business.bookingEmail) : null;
+  const facebook = safeWebHref(business.facebookUrl);
+  const instagram = safeWebHref(business.instagramUrl);
+  const mainContact = bookingHref
+    ? { label: "Book online", href: bookingHref, external: true, Icon: CalendarIcon }
+    : phone
+      ? { label: "Call business", href: phone.href, external: false, Icon: PhoneIcon }
+      : null;
+  const place = placeLabel(business.suburb, business.city);
+  const category = deals.flatMap((d) => d.categories)[0] ?? null;
   // The saved address plus the suburb and city it doesn't already include,
   // for the address line and the map search.
   const addressText = (business.address ?? "").toLowerCase();
@@ -136,19 +154,19 @@ export default async function BusinessProfilePage(
   const mapTarget = { ...business, address: [business.address, missing(business.suburb)].filter(Boolean).join(", ") || null };
   // None for a home-based or mobile business (its street is private and
   // its pin only approximate, lib/location.ts publicLocation).
-  const mapUrl = business.addressHidden ? null : getMapUrl(mapTarget);
   const directionsUrl = business.addressHidden ? null : getDirectionsUrl(mapTarget);
   const parsedHours = parseBusinessHours(business.businessHours);
-  const hoursLines = parsedHours ? formatBusinessHoursLines(parsedHours) : null;
-  // "Closed now" only when real hours say so, never because none were given.
+  const hoursLines = parsedHours ? formatBusinessHoursLines(parsedHours) : business.businessHours ? [business.businessHours] : [];
   const known = parsedHours ? hoursKnown(parsedHours) : false;
-  const openNow = parsedHours && known ? isOpenNow(parsedHours) : null;
   const specialHours = parsedHours ? toSpecialOpeningHoursSpecification(parsedHours) : [];
-  // Hours set but empty (no open day, no notes, no upcoming dates) show nothing.
-  const showHours = Boolean(business.businessHours) && (!hoursLines || hoursLines.length > 0);
+  const status = parsedHours ? openStatus(parsedHours) : null;
+  const hasLocation = Boolean(fullAddress || place);
+  const hasContact = Boolean(mainContact || websiteHref || (bookingHref && phone) || emailHidden || hasLocation || hoursLines.length || facebook || instagram);
+  const cover = business.photos[0] ?? null;
+  const link = "inline-flex min-h-[44px] items-center gap-1 font-semibold text-brand-700 underline underline-offset-2 hover:text-brand-800";
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-[1200px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -208,287 +226,258 @@ export default async function BusinessProfilePage(
         }}
       />
 
+      <BackToDeal deals={deals.map((d) => ({ slug: d.slug, name: d.name }))} />
       <Breadcrumbs items={[{ name: DEFAULT_CITY.name, href: cityPath() }, { name: business.businessName }]} />
 
-      <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
-        <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-          {business.logoUrl ? (
-            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-              <Image
-                src={wixImageUrl(business.logoUrl, 160, 160)}
-                alt={business.businessName}
-                fill
-                sizes="80px"
-                className="object-cover"
-              />
-            </div>
-          ) : (
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-4xl">
-              🏪
-            </div>
-          )}
-          <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900 sm:text-3xl">
-              {business.businessName}
-            </h1>
+      {/* Who and where */}
+      <header className="flex items-center gap-4">
+        {business.logoUrl ? (
+          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-slate-50 ring-1 ring-slate-200 sm:h-20 sm:w-20">
+            <Image src={wixImageUrl(business.logoUrl, 160, 160)} alt="" fill sizes="80px" className="object-cover" />
+          </div>
+        ) : (
+          <span
+            aria-hidden="true"
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand-50 font-display text-3xl font-semibold text-brand-700 sm:h-20 sm:w-20"
+          >
+            {business.businessName.trim().charAt(0).toUpperCase()}
+          </span>
+        )}
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl font-semibold leading-tight text-slate-900 sm:text-[2rem]">{business.businessName}</h1>
+          {(category || place) && <p className="mt-0.5 text-base text-slate-600">{[category, place].filter(Boolean).join(" · ")}</p>}
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
             {business.claimed && (
               <Link
                 href="/help#deal-checks"
                 prefetch={false}
-                className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
+                className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
                 title="This business runs its own MegaDeal account and lists its own deals"
               >
                 <CheckIcon className="h-3.5 w-3.5" />
                 Business verified
               </Link>
             )}
-            {business.rating !== null && (
-              <StarRating rating={business.rating} reviewCount={business.reviewCount} className="mt-1" />
-            )}
-            <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-              {placeLabel(business.suburb, business.city) && (
-                <span className="flex items-center gap-1">
-                  <MapPinIcon className="h-3.5 w-3.5" /> {placeLabel(business.suburb, business.city)}
-                </span>
-              )}
-              {business.priceRange && (
-                <span className="font-semibold text-slate-600">{business.priceRange}</span>
-              )}
-            </p>
-            <ShareButtons
-              title={business.businessName}
-              url={`${SITE_URL}/business/${business.slug}`}
-              className="mt-2"
-            />
-            {deals.length > 0 && (
-              <a
-                href="#deals"
-                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-bold text-white shadow-card transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
-              >
-                See {deals.length} live deal{deals.length === 1 ? "" : "s"} <span aria-hidden="true">↓</span>
-              </a>
-            )}
+            {business.rating !== null && <StarRating rating={business.rating} reviewCount={business.reviewCount} />}
+            {business.priceRange && <span className="text-sm font-semibold text-slate-600">{business.priceRange}</span>}
           </div>
         </div>
+      </header>
 
-        {business.bio && <ClampedBio text={business.bio} className="mt-5" />}
-
-        {business.amenities.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {business.amenities.map((a) => (
-              <span
-                key={a}
-                className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600"
-              >
-                {a}
-              </span>
-            ))}
-          </div>
-        )}
-
-      </div>
-
-      {/* The deals straight after the introduction: they're what most
-          visitors come for, so they don't wait below the photos, contact
-          details and hours. */}
-      <section id="deals" aria-labelledby="deals-heading" className="mt-8 scroll-mt-4">
-        <h2 id="deals-heading" className="font-display mb-5 text-xl font-bold text-slate-900">
-          {deals.length > 0
-            ? `${deals.length} live deal${deals.length === 1 ? "" : "s"} from ${business.businessName}`
-            : `No live deals from ${business.businessName} right now`}
-        </h2>
-        <DealGrid
-          deals={deals}
-          emptyMessage={`${business.businessName} doesn't have any live deals at the moment — check back soon!`}
-        />
-        {deals.length > 0 && (
-          <div className="mt-6">
-            <HowToUseStrip bare />
-          </div>
-        )}
-      </section>
-
-      {(business.photos.length > 1 || hasContactInfo || business.businessHours || hasSocial) && (
-        <div className="mt-8 rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
-          <h2 className="font-display mb-4 text-lg font-bold text-slate-900">About {business.businessName}</h2>
-          {/* Only past 1 photo — a single photo is already shown as the
-              avatar above, so a one-tile gallery here would just repeat it. */}
-          {business.photos.length > 1 && (
-            <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {business.photos.map((url, i) => (
-                <div
-                  key={url + i}
-                  className="relative aspect-square overflow-hidden rounded-xl border border-slate-100 bg-slate-50"
-                >
-                  <Image
-                    src={wixImageUrl(url, 600, 600)}
-                    // Real, distinct alt text per photo — what actually shows
-                    // up in Google Image Search and to screen readers, unlike
-                    // the empty alt on the small avatar above (decorative,
-                    // since the business name right next to it already says
-                    // the same thing).
-                    alt={`${business.businessName} — photo ${i + 1}`}
-                    fill
-                    sizes="(min-width: 640px) 25vw, 33vw"
-                    loading="lazy"
-                    className="object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {(hasContactInfo || business.businessHours || hasSocial) && (
-            <div
-              className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${business.photos.length > 1 ? "mt-6 border-t border-slate-100 pt-5" : ""}`}
-            >
-              {hasContactInfo && (
-                <div className="space-y-1.5 text-sm">
-                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                    How to book
-                  </p>
-                  {business.bookingUrl && (
-                    <a
-                      href={business.bookingUrl.startsWith("http") ? business.bookingUrl : `https://${business.bookingUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow ugc"
-                      className="mb-1 flex items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-2 font-bold text-white transition hover:bg-brand-700 active:scale-95"
-                    >
-                      <CalendarIcon className="h-4 w-4" /> Book now
-                    </a>
-                  )}
-                  {business.phone && (
-                    <a
-                      href={`tel:${business.phone.replace(/[^0-9+]/g, "")}`}
-                      className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
-                    >
-                      <PhoneIcon className="h-4 w-4 shrink-0" /> {business.phone}
-                    </a>
-                  )}
-                  {business.bookingEmail && (
-                    // Encoded in the HTML, shown by the browser: no spam bots.
-                    <BookingEmailLink
-                      hidden={hideEmail(business.bookingEmail)!}
-                      className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
-                    />
-                  )}
-                  {business.website && (
-                    <a
-                      href={business.website.startsWith("http") ? business.website : `https://${business.website}`}
-                      target="_blank"
-                      rel="noopener noreferrer nofollow ugc"
-                      className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
-                    >
-                      <GlobeIcon className="h-4 w-4 shrink-0" /> Visit website
-                    </a>
-                  )}
-                  {business.address && (
-                    <div>
-                      <p className="flex items-center gap-2 text-slate-600">
-                        <MapPinIcon className="h-4 w-4 shrink-0" /> {fullAddress}
-                      </p>
-                      {(mapUrl || directionsUrl) && (
-                        <p className="mt-1 flex items-center gap-3 pl-6 text-xs font-semibold text-brand-700">
-                          {mapUrl && (
-                            <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                              View map
-                            </a>
-                          )}
-                          {directionsUrl && (
-                            <a
-                              href={directionsUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:underline"
-                            >
-                              Get directions
-                            </a>
-                          )}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  {business.addressHidden && (
-                    <div>
-                      {placeLabel(business.suburb, business.city) && (
-                        <p className="flex items-center gap-2 text-slate-600">
-                          <MapPinIcon className="h-4 w-4 shrink-0" /> {placeLabel(business.suburb, business.city)}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  {locationNotes(business.addressHidden, business.serviceArea).map((note) => (
-                    <p key={note} className="pl-6 text-xs text-slate-600">
-                      {note}
-                    </p>
-                  ))}
-                </div>
-              )}
-
-              {(showHours || hasSocial) && (
-                <div className="space-y-1.5 text-sm">
-                  {showHours && (
-                    <div className="flex items-start gap-2 text-slate-600">
-                      <ClockIcon className="mt-0.5 h-4 w-4 shrink-0" />
-                      <div>
-                        {openNow !== null && (
-                          <p
-                            className={`mb-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
-                              openNow ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-600"
-                            }`}
-                          >
-                            {openNow ? "● Open now" : "Closed now"}
-                          </p>
-                        )}
-                        {hoursLines ? (
-                          hoursLines.map((line, i) => <p key={i}>{line}</p>)
-                        ) : (
-                          <p>{business.businessHours}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {hasSocial && (
-                    <div className="flex items-center gap-3">
-                      {business.facebookUrl && (
-                        <a
-                          href={business.facebookUrl}
-                          target="_blank"
-                          rel="noopener noreferrer nofollow ugc"
-                          className="font-medium text-brand-700 hover:underline"
-                        >
-                          Facebook
-                        </a>
-                      )}
-                      {business.instagramUrl && (
-                        <a
-                          href={business.instagramUrl}
-                          target="_blank"
-                          rel="noopener noreferrer nofollow ugc"
-                          className="font-medium text-brand-700 hover:underline"
-                        >
-                          Instagram
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+      {/* One photo across the top, kept low so the details stay in view. */}
+      {cover && (
+        <div className="relative mt-4 aspect-[3/1] w-full overflow-hidden rounded-2xl bg-slate-100 sm:aspect-[4/1] lg:mt-5">
+          <Image
+            src={wixImageUrl(cover, 1200, 800)}
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 1200px) 1136px, 100vw"
+            className="object-cover"
+          />
         </div>
       )}
 
-      <p className="mt-4 text-xs text-slate-500">
-        {business.businessName} is a business advertising on MegaDeal —
-        MegaDeal doesn&apos;t process any payment or booking and isn&apos;t
-        a party to your booking with them. See our{" "}
-        <Link href="/terms" className="underline hover:text-slate-500">
-          terms
-        </Link>
-        .
-      </p>
+      <div className="mt-4 grid gap-4 lg:mt-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)] lg:items-start lg:gap-5">
+        {(business.bio || business.amenities.length > 0 || business.photos.length > 0) && (
+          <section aria-labelledby="about-heading" className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <h2 id="about-heading" className="font-display text-xl font-semibold text-slate-900">
+              About
+            </h2>
+            {business.bio && <p className="mt-2 max-w-[65ch] whitespace-pre-line text-base leading-relaxed text-slate-700">{business.bio}</p>}
+            {business.amenities.length > 0 && (
+              <ul className="mt-3 flex flex-wrap gap-2" aria-label="Features">
+                {business.amenities.map((a) => (
+                  <li key={a} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                    {a}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {business.photos.length > 0 && (
+              <div className={business.bio || business.amenities.length > 0 ? "mt-5 border-t border-slate-200 pt-5" : "mt-3"}>
+                <h3 className="mb-3 font-display text-lg font-semibold text-slate-900">Photos</h3>
+                <PhotoGallery photos={business.photos} name={business.businessName} />
+              </div>
+            )}
+          </section>
+        )}
 
+        {hasContact && (
+          <section id="contact" aria-labelledby="contact-heading" className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <h2 id="contact-heading" className="font-display text-xl font-semibold text-slate-900">
+              Contact &amp; visit
+            </h2>
+            {mainContact && (
+              <a
+                href={mainContact.href}
+                {...(mainContact.external ? { target: "_blank", rel: "noopener noreferrer nofollow ugc" } : {})}
+                className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border-[1.5px] border-brand-600 bg-white px-4 text-base font-bold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+              >
+                <mainContact.Icon className="h-[18px] w-[18px]" />
+                {mainContact.label}
+                {mainContact.external && <span aria-hidden="true">↗</span>}
+                {mainContact.external && <span className="sr-only"> (opens in a new tab)</span>}
+              </a>
+            )}
+            {(websiteHref || (bookingHref && phone) || emailHidden) && (
+              <ul className="mt-2 flex flex-wrap gap-x-5 text-sm">
+                {bookingHref && phone && (
+                  <li>
+                    <a href={phone.href} className={link}>
+                      <PhoneIcon className="h-4 w-4" /> {phone.display}
+                    </a>
+                  </li>
+                )}
+                {websiteHref && (
+                  <li>
+                    <a href={websiteHref} target="_blank" rel="noopener noreferrer nofollow ugc" className={link}>
+                      <GlobeIcon className="h-4 w-4" /> Website <span aria-hidden="true">↗</span>
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  </li>
+                )}
+                {emailHidden && (
+                  <li>
+                    {/* Encoded in the HTML, shown by the browser: no spam bots. */}
+                    <BookingEmailLink hidden={emailHidden} className={link} />
+                  </li>
+                )}
+              </ul>
+            )}
+
+            {hasLocation && (
+              <div className="mt-4 flex items-start gap-3 border-t border-slate-200 pt-4 text-[0.9375rem]">
+                <MapPinIcon className="mt-0.5 h-5 w-5 shrink-0 text-slate-700" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900">Location</p>
+                  <p className="text-slate-700">{business.addressHidden ? place : fullAddress || place}</p>
+                  {locationNotes(business.addressHidden, business.serviceArea).map((note) => (
+                    <p key={note} className="text-sm text-slate-600">
+                      {note}
+                    </p>
+                  ))}
+                  {directionsUrl && (
+                    <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className={`${link} text-sm`}>
+                      Get directions <span aria-hidden="true">↗</span>
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {hoursLines.length > 0 && (
+              <div className="mt-4 flex items-start gap-3 border-t border-slate-200 pt-4 text-[0.9375rem]">
+                <ClockIcon className="mt-0.5 h-5 w-5 shrink-0 text-slate-700" />
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-900">Opening hours</p>
+                  {/* From the hours the business gave, in New Zealand time. */}
+                  {known && status && <p className={`text-sm font-semibold ${status.open ? "text-emerald-800" : "text-slate-600"}`}>{status.label}</p>}
+                  <ul className="mt-0.5 tabular-nums text-slate-700">
+                    {hoursLines.map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {(facebook || instagram) && (
+              <ul className="mt-3 flex flex-wrap gap-x-5 border-t border-slate-200 pt-2 text-sm">
+                {facebook && (
+                  <li>
+                    <a href={facebook} target="_blank" rel="noopener noreferrer nofollow ugc" className={link}>
+                      <FacebookIcon className="h-4 w-4" /> Facebook
+                    </a>
+                  </li>
+                )}
+                {instagram && (
+                  <li>
+                    <a href={instagram} target="_blank" rel="noopener noreferrer nofollow ugc" className={link}>
+                      <InstagramIcon className="h-4 w-4" /> Instagram
+                    </a>
+                  </li>
+                )}
+              </ul>
+            )}
+          </section>
+        )}
+      </div>
+
+      <section id="deals" aria-labelledby="deals-heading" className="mt-4 scroll-mt-4 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 lg:mt-5">
+        <h2 id="deals-heading" className="font-display text-xl font-semibold text-slate-900">
+          {deals.length > 0 ? "Deals from this business" : `No live deals from ${business.businessName} right now`}
+        </h2>
+        {deals.length > 0 ? (
+          <ul className="mt-3 divide-y divide-slate-200">
+            {deals.map((d) => (
+              <BusinessDealRow key={d.id} deal={d} place={place} />
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-1 text-slate-600">Check back soon: new deals appear here as soon as they go live.</p>
+        )}
+      </section>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="max-w-[80ch] text-xs text-slate-500">
+          {business.businessName} is a business advertising on MegaDeal — MegaDeal doesn&apos;t process any payment or
+          booking and isn&apos;t a party to your booking with them. See our{" "}
+          <Link href="/terms" className="underline hover:text-slate-700">
+            terms
+          </Link>
+          .
+        </p>
+        <ShareButtons title={business.businessName} url={`${SITE_URL}/business/${business.slug}`} size="sm" />
+      </div>
     </main>
+  );
+}
+
+/** One of the business's deals: photo, title, place, price and one
+ *  "View deal". */
+function BusinessDealRow({ deal, place }: { deal: Deal; place: string | null }) {
+  const saving = dealSavingPercent(deal.was, deal.now);
+  return (
+    <li className="flex flex-wrap items-center gap-x-4 gap-y-3 py-3 sm:flex-nowrap">
+      <div className="relative aspect-[3/2] w-28 shrink-0 overflow-hidden rounded-xl bg-brand-50 sm:w-40">
+        {deal.image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={wixImageUrl(deal.image, 360, 240)}
+            srcSet={wixImageSrcSet(deal.image, [360, 540], 3 / 2)}
+            sizes="(min-width: 640px) 160px, 112px"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold text-brand-700">{deal.isFlash ? "Flash Deal" : "Everyday Deal"}</p>
+        <h3 className="line-clamp-2 font-display text-lg font-semibold leading-snug text-slate-900">{deal.name}</h3>
+        {place && <p className="text-sm text-slate-600">{place}</p>}
+      </div>
+      <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:shrink-0">
+        <p className="whitespace-nowrap">
+          <span className="font-display text-2xl font-semibold text-brand-700">{formatMoney(deal.now, deal.currency, deal.formattedNow)}</span>
+          {saving !== null && (
+            <span className="ml-1.5 text-sm text-slate-500 line-through">
+              <span className="sr-only">Usual price </span>
+              {formatMoney(deal.was, deal.currency, deal.formattedWas)}
+            </span>
+          )}
+        </p>
+        <Link
+          href={`/deal/${deal.slug}`}
+          prefetch={false}
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-brand-600 px-4 text-sm font-bold text-white transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+        >
+          View deal<span className="sr-only">: {deal.name}</span> <span aria-hidden="true">→</span>
+        </Link>
+      </div>
+    </li>
   );
 }
