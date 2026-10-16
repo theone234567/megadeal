@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ComponentType } from "react";
 import { CATEGORIES } from "@/lib/categories";
 import { homeHref, type HomeFilters } from "@/lib/homeFilters";
-import { CompassIcon, DumbbellIcon, FlowerIcon, GridIcon, SuitcaseIcon, UtensilsIcon, WrenchIcon } from "./icons";
+import { ChevronRightIcon, CompassIcon, DumbbellIcon, FlowerIcon, GridIcon, SuitcaseIcon, UtensilsIcon, WrenchIcon } from "./icons";
 
 const ICONS: Record<string, ComponentType<{ className?: string }>> = {
   "food-drink": UtensilsIcon,
@@ -37,9 +37,9 @@ type Props =
 /**
  * The one category control: a shallow strip of small icons and names, the
  * current one in purple and underlined. Every category shows in one row
- * where they fit; anywhere narrower the row scrolls sideways (swiped by
- * hand on a phone, never moving on its own), with the next item cut off
- * at the edge and a soft fade there so it reads as "there's more". Text is
+ * where they fit; anywhere narrower the row scrolls sideways (swiped on a
+ * phone, or with the arrow at either end, never moving on its own), with
+ * the next item cut off at the edge so it reads as "there's more". Text is
  * never shrunk to squeeze them all in.
  *
  * Every item is a real link, so it works before JavaScript loads and for
@@ -48,7 +48,7 @@ type Props =
 export default function CategoryNav(props: Props) {
   const active = props.mode === "filter" ? props.filters.category : props.active;
   const listRef = useRef<HTMLUListElement>(null);
-  const [moreRight, setMoreRight] = useState(false);
+  const [more, setMore] = useState({ left: false, right: false });
   // The link itself always points at the category's own page — the
   // indexable one, with its own title and text — so search engines and
   // "open in new tab" get that. On the homepage a plain click filters the
@@ -62,11 +62,12 @@ export default function CategoryNav(props: Props) {
     ...CATEGORIES.map((c) => ({ slug: c.slug, label: c.name, Icon: ICONS[c.slug] ?? GridIcon })),
   ];
 
-  // The fade shows only while there's more to scroll to.
+  // The fades and arrows show only while there's more to scroll to.
   useEffect(() => {
     const el = listRef.current;
     if (!el) return;
-    const update = () => setMoreRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    const update = () =>
+      setMore({ left: el.scrollLeft > 4, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 });
     update();
     el.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
@@ -89,6 +90,14 @@ export default function CategoryNav(props: Props) {
     }
   }, [active]);
 
+  // The arrows move the row by most of its width; it never moves on its own.
+  function step(direction: 1 | -1) {
+    const el = listRef.current;
+    if (!el) return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    el.scrollBy({ left: direction * el.clientWidth * 0.7, behavior: reduce ? "auto" : "smooth" });
+  }
+
   function handleClick(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
     if (props.mode !== "filter") return;
     // Let modified clicks (new tab etc.) behave as normal links.
@@ -101,7 +110,7 @@ export default function CategoryNav(props: Props) {
     <nav aria-label="Categories" className="relative border-b border-hp-line">
       <ul
         ref={listRef}
-        className="scrollbar-hide -mx-4 flex gap-1 overflow-x-auto scroll-px-4 px-4 sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:scroll-px-0 lg:px-0 xl:justify-between"
+        className="scrollbar-hide -mx-4 flex gap-1 overflow-x-auto scroll-px-4 px-4 sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:justify-between lg:gap-0 lg:scroll-px-0 lg:px-0"
       >
         {items.map(({ slug, label, Icon }) => {
           const selected = active === slug;
@@ -119,7 +128,7 @@ export default function CategoryNav(props: Props) {
                 prefetch={false}
                 onClick={(e) => handleClick(e, filterHref(slug))}
                 aria-current={selected ? "true" : undefined}
-                className={`-mb-px flex h-[52px] items-center gap-2 whitespace-nowrap border-b-[3px] px-2.5 text-[0.875rem] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-hp-purple lg:px-3 lg:text-[0.9375rem] ${
+                className={`-mb-px flex h-[52px] items-center gap-2 whitespace-nowrap border-b-[3px] px-2.5 text-[0.875rem] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-hp-purple lg:px-2 lg:text-[0.9375rem] ${
                   selected
                     ? "border-hp-purple text-hp-purple"
                     : "border-transparent text-hp-muted hover:border-hp-line hover:text-hp-ink"
@@ -132,13 +141,31 @@ export default function CategoryNav(props: Props) {
           );
         })}
       </ul>
-      {/* The "more this way" hint, only while the row has more to show. */}
-      <div
-        aria-hidden
-        className={`pointer-events-none absolute inset-y-0 -right-4 w-10 bg-gradient-to-l from-hp-page to-transparent transition-opacity sm:-right-6 lg:right-0 ${
-          moreRight ? "opacity-100" : "opacity-0"
-        }`}
-      />
+      {/* "More this way": a fade and an arrow at each end that has more
+          to show. The arrows are for a mouse; a keyboard tabs along the
+          links (each scrolls into view) and a phone also swipes. */}
+      {(["left", "right"] as const).map((side) => (
+        <div
+          key={side}
+          className={`pointer-events-none absolute inset-y-0 flex w-14 items-center transition-opacity ${
+            side === "left"
+              ? "-left-4 justify-start bg-gradient-to-r sm:-left-6 lg:left-0"
+              : "-right-4 justify-end bg-gradient-to-l sm:-right-6 lg:right-0"
+          } from-hp-page via-hp-page/90 to-transparent ${more[side] ? "opacity-100" : "opacity-0"}`}
+        >
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-hidden
+            onClick={() => step(side === "left" ? -1 : 1)}
+            className={`flex h-11 w-11 items-center justify-center ${more[side] ? "pointer-events-auto" : ""}`}
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-hp-line bg-white text-hp-ink shadow-sm hover:border-hp-boundary">
+              <ChevronRightIcon className={`h-4 w-4 ${side === "left" ? "rotate-180" : ""}`} />
+            </span>
+          </button>
+        </div>
+      ))}
     </nav>
   );
 }
