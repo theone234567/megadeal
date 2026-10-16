@@ -16,6 +16,7 @@ import { dealDistanceKm, sortDeals, type SortOption } from "./sortDeals";
  */
 
 export type DealType = "all" | "everyday" | "flash";
+export type BrowseView = "grid" | "map";
 export type PriceBand = "" | "under50" | "50to100" | "100to200" | "200plus";
 
 export interface HomeFilters {
@@ -28,6 +29,8 @@ export interface HomeFilters {
   sort: SortOption;
   /** Only deals within this many km — needs the visitor's location. */
   within: number | null;
+  /** Cards or the map: the same deals either way. */
+  view: BrowseView;
 }
 
 export const PRICE_BANDS: { value: PriceBand; label: string; min: number; max: number }[] = [
@@ -59,6 +62,7 @@ export function parseHomeFilters(params: ParamSource): HomeFilters {
     price: PRICE_BANDS.some((b) => b.value === price) ? price : "",
     sort: SORTS.includes(sort) ? sort : "ending",
     within: (DISTANCE_OPTIONS as readonly number[]).includes(within) ? within : null,
+    view: get("view") === "map" ? "map" : "grid",
   };
 }
 
@@ -75,6 +79,7 @@ export function homeHref(filters: HomeFilters, patch: Partial<HomeFilters> = {},
   if (f.price) params.set("price", f.price);
   if (f.within) params.set("within", String(f.within));
   if (f.sort !== "ending") params.set("sort", f.sort);
+  if (f.view === "map") params.set("view", "map");
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
 }
@@ -125,6 +130,34 @@ export function splitByType(matching: Deal[], type: DealType): { flash: Deal[]; 
     flash: type === "everyday" ? [] : matching.filter((d) => d.isFlash),
     everyday: type === "flash" ? [] : matching.filter((d) => !d.isFlash),
   };
+}
+
+/** The deals of one type from a matching list, in the same order: "all"
+ *  keeps Flash and Everyday together in one list. */
+export function filterByType(matching: Deal[], type: DealType): Deal[] {
+  return type === "all" ? matching : matching.filter((d) => (type === "flash") === d.isFlash);
+}
+
+/** The settings inside the Filters panel. Category, deal type, search,
+ *  sort and map/grid each have their own control, so they aren't here. */
+export type PanelFilters = Pick<HomeFilters, "price" | "within">;
+
+export const NO_PANEL_FILTERS: PanelFilters = { price: "", within: null };
+
+/** How many of the Filters panel's groups are set: the number on the
+ *  Filters button. */
+export function panelFilterCount(f: PanelFilters): number {
+  return (f.price ? 1 : 0) + (f.within ? 1 : 0);
+}
+
+/** One removable chip per applied panel filter, with what removing it
+ *  changes. */
+export function panelFilterChips(f: PanelFilters): { key: keyof PanelFilters; label: string; clear: Partial<PanelFilters> }[] {
+  const chips: { key: keyof PanelFilters; label: string; clear: Partial<PanelFilters> }[] = [];
+  const band = PRICE_BANDS.find((b) => b.value === f.price);
+  if (band) chips.push({ key: "price", label: band.label, clear: { price: "" } });
+  if (f.within) chips.push({ key: "within", label: `Within ${f.within} km`, clear: { within: null } });
+  return chips;
 }
 
 /** True when anything other than the deal type narrows the results. */

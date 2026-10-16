@@ -1,6 +1,17 @@
 import { describe, it, expect } from "vitest";
 import type { Deal } from "./types";
-import { hasNarrowingFilters, homeHref, matchDeals, parseHomeFilters, splitByType, type HomeFilters } from "./homeFilters";
+import {
+  NO_PANEL_FILTERS,
+  filterByType,
+  hasNarrowingFilters,
+  homeHref,
+  matchDeals,
+  panelFilterChips,
+  panelFilterCount,
+  parseHomeFilters,
+  splitByType,
+  type HomeFilters,
+} from "./homeFilters";
 
 const NOW = Date.parse("2026-09-27T20:00:00Z");
 const HOUR = 3_600_000;
@@ -130,5 +141,38 @@ describe("hasNarrowingFilters", () => {
   it("ignores the deal type", () => {
     expect(hasNarrowingFilters({ ...base, type: "flash" })).toBe(false);
     expect(hasNarrowingFilters({ ...base, category: "food-drink" })).toBe(true);
+  });
+});
+
+describe("one results list (browse toolbar)", () => {
+  it("keeps the map/grid choice in the URL, grid by default", () => {
+    expect(parseHomeFilters(params("view=map")).view).toBe("map");
+    expect(parseHomeFilters(params("view=table")).view).toBe("grid");
+    const f = parseHomeFilters(params("category=food-drink&view=map"));
+    expect(homeHref(f, { type: "flash" })).toBe("/?category=food-drink&type=flash&view=map");
+    expect(homeHref(f, { view: "grid" })).toBe("/?category=food-drink");
+  });
+
+  it("All deals keeps Flash and Everyday together in the existing order; the others filter that same list", () => {
+    const matching = matchDeals(catalogue, base, NOW);
+    expect(ids(filterByType(matching, "all"))).toEqual(ids(matching));
+    expect(ids(filterByType(matching, "flash"))).toEqual(["facial", "steak"]);
+    expect(ids(filterByType(matching, "everyday")).sort()).toEqual(["massage", "pizza"]);
+  });
+
+  it("counts only price and distance on the Filters button", () => {
+    const f = parseHomeFilters(params("category=food-drink&type=flash&sort=priceAsc&view=map&q=pizza"));
+    expect(panelFilterCount(f)).toBe(0);
+    expect(panelFilterChips(f)).toEqual([]);
+    const g = parseHomeFilters(params("price=under50&within=5"));
+    expect(panelFilterCount(g)).toBe(2);
+    expect(panelFilterChips(g).map((c) => c.label)).toEqual(["Under $50", "Within 5 km"]);
+  });
+
+  it("clearing the panel's filters keeps the category, type, search and sort", () => {
+    const f = parseHomeFilters(params("q=pizza&category=food-drink&type=flash&price=under50&within=5&sort=discount"));
+    expect(homeHref(f, NO_PANEL_FILTERS)).toBe("/?q=pizza&category=food-drink&type=flash&sort=discount");
+    const [price] = panelFilterChips(f);
+    expect(homeHref(f, price.clear)).toBe("/?q=pizza&category=food-drink&type=flash&within=5&sort=discount");
   });
 });

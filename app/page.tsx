@@ -16,11 +16,11 @@ const HOME_DESCRIPTION =
 // /coming-soon before that). Used to inherit the root layout's generic
 // defaults; this is the page most people will land on from search, so it
 // gets its own. Search and filter views (/?q=…, ?category=…, ?type=…,
-// ?price=…) are noindex: each is a thin, near-duplicate copy of the
+// ?price=…, ?view=map) are noindex: each is a thin, near-duplicate copy of the
 // homepage, and there are hundreds of combinations. The canonical points
 // them all back to "/", and the categories have their own indexable pages
 // (/category/…), which is where the homepage's category links point.
-const FILTER_PARAMS = ["q", "city", "category", "type", "price", "sort", "within"];
+const FILTER_PARAMS = ["q", "city", "category", "type", "price", "sort", "within", "view"];
 
 export async function generateMetadata(props: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

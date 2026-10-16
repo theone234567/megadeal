@@ -27,8 +27,9 @@ export default function CountdownBadge({
    *  explicit "Offer ended" once it reaches zero. "badge": the original
    *  dark pill. "left": the storefront card's
    *  white "2h 14m left" pill (the pink Flash label beside it is the one
-   *  accent), "Ended" at zero. */
-  variant?: "badge" | "offer" | "text" | "left";
+   *  accent), "Ended" at zero. "ends": plain "Ends in 2h 14m" text for a
+   *  card's label line (styled by `className`), "Ended" at zero. */
+  variant?: "badge" | "offer" | "text" | "left" | "ends";
   /** Classes for the "text" variant, which renders only the time left
    *  ("1h 58m", then "Ended") for a caller that supplies its own label. */
   className?: string;
@@ -103,6 +104,25 @@ export default function CountdownBadge({
         {parts.ended ? "Ended" : `${left} left`}
       </span>
     );
+  }
+
+  if (variant === "ends") {
+    if (!parts) {
+      return (
+        <span className={`${className} opacity-0`} aria-hidden="true">
+          Ends in 0h 00m
+        </span>
+      );
+    }
+    const left =
+      parts.days > 0
+        ? `${parts.days}d ${parts.hours}h`
+        : parts.hours > 0
+        ? `${parts.hours}h ${parts.minutes}m`
+        : parts.minutes > 0
+        ? `${parts.minutes}m`
+        : "<1m";
+    return <span className={className}>{parts.ended ? "Ended" : `Ends in ${left}`}</span>;
   }
 
   if (variant === "text" && !parts) {

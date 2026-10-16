@@ -29,9 +29,9 @@ const PLACEHOLDER_ICONS: Record<string, ComponentType<{ className?: string }>> =
 };
 
 /**
- * One card for Flash and Everyday Deals: photo, title, business, place and
- * price, with Flash adding its label and real time left. The whole card is
- * the link to the deal.
+ * One card for Flash and Everyday Deals: photo with the saving on it, then
+ * the deal type (a Flash Deal adds its real time left), title, business,
+ * place and price. The whole card is the link to the deal.
  *
  * Deliberately not shown, though the Deal type carries them:
  * - businessRating: typed in by an admin, not aggregated from customer
@@ -53,7 +53,7 @@ export default function DealCard({
   /** The card is the largest thing on screen when the page opens (a hero):
    *  its photo loads straight away instead of lazily. */
   priority = false,
-  imageSizes = "(min-width: 1024px) 280px, (min-width: 768px) 33vw, calc(50vw - 22px)",
+  imageSizes = "(min-width: 1200px) 280px, (min-width: 768px) 33vw, calc(50vw - 22px)",
 }: {
   deal: Deal;
   /** Distance from the viewer, in km — shown beside the locality when known. */
@@ -92,8 +92,10 @@ export default function DealCard({
     ? {}
     : { href: deal.isTest ? `/admin/test-deals/${deal.id}` : `/deal/${deal.slug}`, prefetch: false };
 
-  // Business and place on one line, one icon: the card's single metadata row.
-  const metaLine = [deal.businessName, locality].filter(Boolean).join(" · ");
+  // Place and business on one line, one icon: the card's single metadata
+  // row. The place first, so a narrow card cuts off the business name
+  // rather than the suburb.
+  const metaLine = [locality, deal.businessName].filter(Boolean).join(" · ");
   const footLine = [
     deal.expiresAt && !deal.isFlash ? `Offer ends ${formatOfferEndDate(deal.expiresAt, false)}` : null,
     ...restrictions,
@@ -111,11 +113,12 @@ export default function DealCard({
         preview ? "" : "hover:border-hp-purple/40 hover:shadow-card"
       }`}
     >
-      <div className="relative aspect-[3/2] w-full overflow-hidden bg-hp-lavender">
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-hp-lavender">
         {deal.image ? (
           // A plain <img>: next/image makes no srcset while images are
           // unoptimized, and this lets a phone take a smaller copy
-          // (wixImageSrcSet).
+          // (wixImageSrcSet). The 3:2 copies the photo store makes, shown
+          // a touch wider (16:10) by trimming the top and bottom.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={wixImageUrl(deal.image, 750, 500)}
@@ -142,41 +145,46 @@ export default function DealCard({
           </div>
         )}
 
-        {deal.isTest && (
-          <span className="absolute bottom-2 left-2 rounded-full bg-hp-ink/85 px-2 py-0.5 text-xs font-bold text-white">
-            Test deal
-          </span>
-        )}
-
         {soldOut ? (
           <div className="absolute inset-0 flex items-center justify-center bg-hp-ink/40">
             <span className="rounded-full bg-white px-3 py-1 text-sm font-bold text-hp-ink shadow">Sold out</span>
           </div>
         ) : (
-          // Fixed positions: the Flash label (or the saving) top left, the
-          // time left top right. One marker each, never both colours twice.
-          <div className="absolute inset-x-2 top-2 flex flex-wrap items-start justify-between gap-1.5">
-            {deal.isFlash ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-hp-flash px-2 py-0.5 text-xs font-bold text-white">
-                <ZapIcon className="h-3.5 w-3.5" />
-                Flash Deal
-              </span>
-            ) : (
-              savingPct !== null && (
-                <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-hp-purple shadow-sm">
-                  {savingPct}% off
-                </span>
-              )
-            )}
-            {deal.isFlash && deal.expiresAt && <CountdownBadge target={new Date(deal.expiresAt)} variant="left" />}
-          </div>
+          // The one marker on the photo: the saving, from the two real
+          // prices. The type and the time left sit below the photo.
+          savingPct !== null && (
+            <span className="absolute left-2 top-2 rounded-md bg-white px-2 py-0.5 text-xs font-bold text-hp-ink shadow-sm sm:left-2.5 sm:top-2.5 sm:text-[0.8125rem]">
+              {savingPct}% off
+            </span>
+          )
         )}
       </div>
 
       <div className="flex flex-1 flex-col gap-1 px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5">
+        {/* The deal type, and for a Flash Deal its real time left. Wraps
+            under the label on a narrow card rather than squeezing. */}
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold leading-5">
+          {deal.isTest && (
+            // Only ever seen by an admin before launch (lib/useTestDeals.ts).
+            <span className="rounded bg-hp-ink px-1.5 text-white">Test deal · preview only</span>
+          )}
+          {deal.isFlash ? (
+            <>
+              <span className="inline-flex items-center gap-1 rounded bg-[#FDE8F2] px-1.5 text-hp-flash">
+                <ZapIcon className="h-3.5 w-3.5" />
+                Flash
+              </span>
+              {deal.expiresAt && !soldOut && (
+                <CountdownBadge target={new Date(deal.expiresAt)} variant="ends" className="text-hp-flash" />
+              )}
+            </>
+          ) : (
+            <span className="rounded bg-hp-lavender px-1.5 text-hp-purple">Everyday</span>
+          )}
+        </p>
         {/* Two lines at most, and always two lines tall, so the rows of
             metadata and prices line up across a row of cards. */}
-        <h3 className="line-clamp-2 min-h-[2.7em] font-display text-[0.9375rem] font-semibold leading-[1.35] text-hp-ink group-hover:text-hp-purple sm:text-base">
+        <h3 className="line-clamp-2 min-h-[2.7em] font-display text-[0.9375rem] font-semibold leading-[1.35] text-hp-ink group-hover:text-hp-purple sm:text-base lg:text-[1.0625rem]">
           {deal.name}
         </h3>
         {metaLine && (
@@ -188,7 +196,7 @@ export default function DealCard({
 
         {/* mt-auto keeps prices level across a row of cards. */}
         <div className="mt-auto flex flex-wrap items-baseline gap-x-2 pt-1.5">
-          <span className="font-display text-xl font-semibold leading-none tracking-[-0.02em] text-hp-purple sm:text-[1.375rem]">
+          <span className="font-display text-xl font-semibold leading-none tracking-[-0.02em] text-hp-purple sm:text-[1.375rem] lg:text-2xl">
             {formatMoney(deal.now, deal.currency, deal.formattedNow)}
           </span>
           {savingPct !== null && (
@@ -202,11 +210,11 @@ export default function DealCard({
             main conditions — the date first, so a long condition can't
             push it out of view. "Offer ends", never "Valid until": the
             deadline to get the deal, not the dates it can be used on. A
-            Flash Deal's time left is on the photo instead. */}
+            Flash Deal's time left is on its label line instead. */}
         {/* Always rendered, empty or not, so every card in a row keeps
             this line's height and the prices above it stay level. */}
         <p className="truncate text-xs text-hp-muted" aria-hidden={footLine ? undefined : true}>
-          {footLine || " "}
+          {footLine || "\u00a0"}
         </p>
       </div>
     </Wrapper>

@@ -27,10 +27,10 @@ export default function DealGrid({
   }
 
   return (
-    // Phones: as many ~9.5rem columns as fit — two on most phones, one on
-    // a very narrow screen or with enlarged text (rem grows with the text).
-    // Three on tablets, four on desktop.
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,9.5rem),1fr))] gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5">
+    // Below 768px: two columns, or one when half the width is under ~9.5rem
+    // (a very narrow phone, or enlarged text, as rem grows with the text).
+    // Three from 768px, four from 1200px.
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,max(9.5rem,calc((100%_-_0.75rem)/2))),1fr))] gap-3 md:grid-cols-3 md:gap-5 min-[1200px]:grid-cols-4 lg:gap-6">
       {deals.map((deal, i) => (
         <DealCard key={deal.id} deal={deal} distanceKm={dealDistanceKm(deal, userLocation)} priority={i < priorityCount} />
       ))}
