@@ -11,26 +11,22 @@ import { getDirectionsUrl } from "@/lib/mapLinks";
 import { revealEmail } from "@/lib/hiddenEmail";
 import CountdownBadge from "@/components/CountdownBadge";
 import ShareButtons from "@/components/ShareButtons";
-import ContactBusiness from "./ContactBusiness";
-import AboutBusiness from "./AboutBusiness";
+import GetDealCode from "./GetDealCode";
+import BusinessSummary from "./BusinessSummary";
 import { CalendarIcon } from "@/components/icons";
 import { trackDealEvent } from "@/lib/trackDeal";
 import { useDealActionTracker } from "@/lib/useDealActionTracker";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { placeLabel } from "@/lib/location";
-import { keyRestrictions, splitTermsForDisplay } from "@/lib/dealTerms";
+import { splitTermsForDisplay } from "@/lib/dealTerms";
 import DealConditions from "@/components/DealConditions";
 import OpenStatus from "./OpenStatus";
 import DealPhotos from "./DealPhotos";
 import { DealProvenance, DealTags } from "@/components/DealProvenance";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
-import {
-  contactInstruction,
-  contactOptions,
-  effectiveBookingRequirement,
-  termsSayWalkInsWelcome,
-  websiteCodeHref,
-} from "@/lib/booking";
+import { effectiveBookingRequirement, termsSayWalkInsWelcome, websiteCodeHref } from "@/lib/booking";
+import { resolveDealContact } from "@/lib/dealContact";
+import { parseBusinessHours } from "@/lib/businessHours";
 
 // The deal is fetched server-side (see page.tsx), so the description,
 // price, conditions and business details are in the raw HTML on first
@@ -38,14 +34,15 @@ import {
 // the code, the Contact business pop-up) on top of real data.
 //
 // Deal first, business second. In DOM order: title, photo, price and the
-// one action, what's included, key conditions, then About the business —
-// so a phone (and a keyboard or screen reader) reads them in exactly that
-// order. On desktop the price panel sits beside the photo.
+// one action ("Get deal code", GetDealCode.tsx), what's included beside
+// every condition, then a short word on the business with a link to its
+// profile — so a phone (and a keyboard or screen reader) reads them in
+// exactly that order. On a computer the price card sits beside the photo.
 //
-// The one action is "Contact business" (ContactBusiness.tsx): every way to
-// reach the business is in its pop-up, from the business profile; the
-// deal's booking requirement (lib/booking.ts) only changes the sentence
-// under it. A missing booking link never reads as "no booking needed".
+// The ways to contact the business come from one resolver
+// (lib/dealContact.ts), from the business profile; the deal's booking
+// requirement (lib/booking.ts) decides the wording. A missing booking link
+// never reads as "no booking needed".
 //
 // Not shown, though the Deal type carries them: businessRating (typed in
 // by an admin, not aggregated customer reviews) and quantityAvailable (set
@@ -89,15 +86,8 @@ export default function DealDetail({
   const savingPct = dealSavingPercent(deal.was, deal.now);
   const place = placeLabel(deal.businessSuburb, deal.businessCity);
 
-  // Key conditions: the short forms of the standard ones, or (when there
-  // are none) the business's own first lines as written, never paraphrased.
-  const restrictions = keyRestrictions(deal.terms);
+  // Every condition, exactly as the business wrote or ticked it.
   const conditions = deal.terms ? splitTermsForDisplay(deal.terms) : [];
-  const keyLines = restrictions.length > 0 ? restrictions : conditions.slice(0, 3);
-  // "Full conditions" only when it adds something: a condition not already
-  // shown word for word above.
-  const shown = new Set(keyLines.map((l) => l.toLowerCase()));
-  const moreInFull = conditions.some((c) => !shown.has(c.toLowerCase()));
   const endLine = deal.expiresAt && !deal.isFlash ? `${live ? "Offer ends" : "Offer ended"} ${formatOfferEndDate(deal.expiresAt)}` : null;
 
   const requirement = effectiveBookingRequirement(deal.bookingRequirement, deal.terms);
@@ -116,11 +106,11 @@ export default function DealDetail({
   const directionsUrl = hasPlace
     ? getDirectionsUrl({ lat: deal.businessLat, lng: deal.businessLng, address: streetLine, city: deal.businessCity })
     : null;
-  const options = contactOptions({
+  const contact = resolveDealContact({
     requirement,
     businessName: deal.businessName,
     dealName: deal.name,
-    dealCode: deal.dealCode,
+    code: deal.dealCode,
     phone: deal.businessPhone,
     email: revealEmail(deal.businessBookingEmail),
     website: deal.businessWebsite,
@@ -128,18 +118,20 @@ export default function DealDetail({
     codeWebsiteUrl: codeLink,
     directionsUrl,
     addressText: hasPlace ? streetLine : null,
-  });
-  const instruction = contactInstruction(requirement, deal.dealCode, {
     walkIns: termsSayWalkInsWelcome(deal.terms),
-    websiteCode: Boolean(codeLink),
   });
-  const profileHref = deal.businessSlug && !preview ? `/business/${deal.businessSlug}` : null;
+  const hours = parseBusinessHours(deal.businessHours);
+  const profileHref = deal.businessSlug && !preview ? `/business/${deal.businessSlug}?from=${encodeURIComponent(deal.slug)}` : null;
   // Somewhere to go from a sold-out deal: the rest of its category.
   const soldOutCategory = CATEGORIES.find((c) => deal.categories.includes(c.name));
   const soldOutHref = !preview && soldOutCategory ? { href: categoryPath(soldOutCategory.name), label: soldOutCategory.name } : null;
+  const priceNow = formatMoney(deal.now, deal.currency, deal.formattedNow);
+  const priceWas = deal.was > deal.now ? formatMoney(deal.was, deal.currency, deal.formattedWas) : null;
+  const bookingWord =
+    requirement === "required" ? "Booking required" : requirement === "recommended" ? "Booking recommended" : requirement === "not_required" ? "No booking needed" : null;
 
   return (
-    <main className="mx-auto max-w-[1040px] px-4 py-4 sm:px-6 sm:py-6 lg:py-7">
+    <main className="mx-auto max-w-[1200px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
       <Breadcrumbs
         compact
         items={[{ name: DEFAULT_CITY.name, href: cityPath() }, ...(category ? [{ name: category, href: categoryPath(category) }] : []), { name: deal.name }]}
@@ -147,7 +139,9 @@ export default function DealDetail({
 
       {/* 1. Title and business */}
       <header>
-        {deal.isFlash ? (
+        {deal.isTest ? (
+          <span className="mb-1.5 inline-block rounded bg-slate-800 px-2 py-0.5 text-xs font-bold text-white">Test deal · preview only</span>
+        ) : deal.isFlash ? (
           <span className="mb-1.5 inline-block rounded-full bg-brand-600 px-2.5 py-0.5 text-[0.6875rem] font-extrabold uppercase tracking-wide text-white">
             Flash Deal
           </span>
@@ -157,23 +151,23 @@ export default function DealDetail({
             <span className="mb-1 hidden text-[0.6875rem] font-bold uppercase tracking-[0.12em] text-brand-700 sm:block">{category}</span>
           )
         )}
-        <h1 className="text-balance font-display text-[1.375rem] font-semibold leading-tight text-slate-900 sm:text-[1.75rem] lg:text-[1.875rem]">
+        <h1 className="text-balance font-display text-[1.5rem] font-semibold leading-tight text-slate-900 sm:text-[1.75rem] lg:text-[2rem]">
           {deal.name}
         </h1>
         {(deal.businessName || place) && (
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-base text-slate-600">
             {deal.businessName &&
               // Only a link when there's a profile to go to.
               (profileHref ? (
                 <Link
                   href={profileHref}
                   prefetch={false}
-                  className="font-bold text-slate-900 underline-offset-2 hover:text-brand-700 hover:underline"
+                  className="font-semibold text-slate-800 underline-offset-2 hover:text-brand-700 hover:underline"
                 >
                   {deal.businessName}
                 </Link>
               ) : (
-                <span className="font-bold text-slate-900">{deal.businessName}</span>
+                <span className="font-semibold text-slate-800">{deal.businessName}</span>
               ))}
             {deal.businessName && place && <span aria-hidden="true"> · </span>}
             {place}
@@ -182,17 +176,17 @@ export default function DealDetail({
         )}
       </header>
 
-      <div className="mt-3 grid grid-cols-1 gap-5 sm:mt-4 lg:mt-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,1fr)] lg:gap-x-9 lg:gap-y-8">
-        {/* 2. Photo: 3:2, the same shape as the deal's card, so it doesn't
-            push the price and the action off a phone's first screen. */}
-        <div className="lg:col-start-1 lg:row-start-1">
+      {/* 2. Photo beside the price on a computer (about 60/40); photo,
+          then price on a phone. */}
+      <div className="mt-3 grid grid-cols-1 gap-4 sm:mt-4 lg:mt-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(340px,1fr)] lg:items-start lg:gap-6">
+        <div>
           {deal.image ? (
             <DealPhotos
               images={[deal.image, ...(deal.gallery ?? [])]}
               alt={`${deal.name}${deal.businessName ? ` at ${deal.businessName}` : ""}${place ? `, ${place}` : ""}`}
             />
           ) : (
-            <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-brand-50">
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-brand-50">
               <div aria-hidden className="flex h-full w-full items-center justify-center text-7xl opacity-40">
                 {categoryEmoji}
               </div>
@@ -200,14 +194,9 @@ export default function DealDetail({
           )}
         </div>
 
-        {/* 3. Price, code and the one action. A bordered panel beside the
-            photo on desktop; part of the page flow on a phone. */}
-        <aside
-          aria-label="Price and how to use this deal"
-          // Stays in view on a computer while the conditions are read,
-          // clear of the site's sticky header.
-          className="lg:sticky lg:top-24 lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:self-start lg:rounded-[18px] lg:border lg:border-slate-200 lg:bg-white lg:p-6"
-        >
+        {/* 3. Price and the one action, in a card that's as tall as its
+            contents. */}
+        <aside aria-label="Price and deal code" className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
           {deal.isFlash && deal.expiresAt && live && (
             <div className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-brand-50 px-4 py-3">
               <span className="text-xs font-bold text-brand-700">Offer ends in</span>
@@ -224,40 +213,35 @@ export default function DealDetail({
             </div>
           )}
 
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="font-display text-[2.25rem] font-semibold leading-none text-brand-700 lg:text-[2.5rem]">
-              {formatMoney(deal.now, deal.currency, deal.formattedNow)}
-            </span>
-            {deal.was > deal.now && (
-              <span className="text-lg font-medium text-slate-500 line-through">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="font-display text-[2.5rem] font-semibold leading-none text-brand-700 lg:text-[2.75rem]">{priceNow}</span>
+            {priceWas && (
+              <span className="text-xl text-slate-500 line-through">
                 <span className="sr-only">Usual price </span>
-                {formatMoney(deal.was, deal.currency, deal.formattedWas)}
+                {priceWas}
+              </span>
+            )}
+            {saving !== null && savingPct !== null && (
+              <span className="rounded-lg bg-emerald-50 px-2 py-1 text-sm font-bold text-emerald-800">
+                Save {savingPct}%<span className="sr-only"> ({formatMoney(saving, deal.currency)})</span>
               </span>
             )}
           </div>
-          {saving !== null && savingPct !== null && (
-            <p className="mt-1.5 text-sm font-bold text-brand-700">
-              Save {formatMoney(saving, deal.currency)} · {savingPct}% off
-            </p>
-          )}
-          {/* When it ends, beside the price rather than only in the
-              conditions: the date decides whether it's worth acting on.
-              Flash deals have their countdown above instead. */}
-          {deal.expiresAt && !deal.isFlash && live && (
-            <p className="mt-2 flex items-center gap-1.5 text-sm text-slate-700">
-              <CalendarIcon className="h-4 w-4 shrink-0 text-brand-600" />
-              <span>
-                Ends {formatOfferEndDate(deal.expiresAt)}
-                {/* Days are counted in New Zealand, so this can differ
-                    from the server's render around midnight. */}
-                {/* Not for a sold-out deal: there's nothing left to hurry for. */}
-                {deal.inStock && <span suppressHydrationWarning>{offerDaysLeft(deal.expiresAt)}</span>}
-              </span>
+          {/* Whether to book and when it ends, beside the action: they
+              decide whether it's worth acting on. Flash deals have their
+              countdown above instead. */}
+          {live && (bookingWord || (deal.expiresAt && !deal.isFlash)) && (
+            <p className="mt-2.5 text-[0.9375rem] text-slate-700">
+              {[bookingWord, deal.expiresAt && !deal.isFlash ? `Ends ${formatOfferEndDate(deal.expiresAt)}` : null].filter(Boolean).join(" · ")}
+              {/* Days are counted in New Zealand, so this can differ from
+                  the server's render around midnight. Not for a sold-out
+                  deal: there's nothing left to hurry for. */}
+              {deal.expiresAt && !deal.isFlash && deal.inStock && <span suppressHydrationWarning>{offerDaysLeft(deal.expiresAt)}</span>}
             </p>
           )}
 
-          <div className="mt-4 border-t border-slate-200/80 pt-4">
-            {/* Ended or sold out: a plain notice, no code or action. */}
+          <div className="mt-4">
+            {/* Ended or sold out: a plain notice, never a code. */}
             {!live ? (
               <div className="rounded-xl bg-slate-50 px-4 py-3 text-center" aria-live="polite">
                 <p className="text-sm font-bold text-slate-700">This offer has ended</p>
@@ -273,115 +257,82 @@ export default function DealDetail({
                 )}
               </div>
             ) : (
-              <ContactBusiness
-                businessName={deal.businessName}
+              <GetDealCode
                 code={deal.dealCode}
-                options={options}
-                instruction={instruction}
+                contact={contact}
+                businessName={deal.businessName}
+                dealName={deal.name}
+                price={{ now: priceNow, was: priceWas, percentOff: savingPct }}
+                hours={hours}
                 profileHref={profileHref}
                 preview={preview}
                 onAction={tracker.track}
                 onOpen={tracker.interest}
-                websiteHref={codeLink}
-                // The phone's bottom bar: never in a preview, where it
-                // would sit over the deal form's or admin's own buttons.
-                price={
-                  preview
-                    ? undefined
-                    : {
-                        now: formatMoney(deal.now, deal.currency, deal.formattedNow),
-                        was: deal.was > deal.now ? formatMoney(deal.was, deal.currency, deal.formattedWas) : null,
-                        percentOff: savingPct,
-                      }
-                }
+                onReveal={tracker.reveal}
               />
             )}
           </div>
 
-          <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
-            No payment to MegaDeal. You pay {businessLabel} directly.
-          </p>
+          <p className="mt-3 text-center text-sm text-slate-600">Pay {businessLabel} directly.</p>
         </aside>
-
-        {/* 4. What's included */}
-        <section aria-labelledby="whats-included" className="lg:col-start-1 lg:row-start-2">
-          <h2 id="whats-included" className="font-display text-xl font-semibold text-slate-900 sm:text-[1.375rem]">
-            What&apos;s included
-          </h2>
-          <p className="mt-2 max-w-[65ch] whitespace-pre-line text-[0.9375rem] leading-relaxed text-slate-700">
-            {deal.description}
-          </p>
-          <DealTags tags={deal.tags} />
-        </section>
-
-        {/* 5. Key conditions, then every condition exactly as written. */}
-        {(keyLines.length > 0 || endLine) && (
-          <section aria-labelledby="key-conditions" className="lg:col-start-1 lg:row-start-3">
-            <h2 id="key-conditions" className="font-display text-xl font-semibold text-slate-900 sm:text-[1.375rem]">
-              Key conditions
-            </h2>
-            <ul className="mt-2.5 grid gap-1.5 text-[0.9375rem] text-slate-700">
-              {keyLines.map((line) => (
-                <li key={line} className="flex items-start gap-2 leading-snug">
-                  <span aria-hidden="true" className="mt-[0.45em] h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
-                  {line}
-                </li>
-              ))}
-              {endLine && (
-                <li className="flex items-start gap-2 leading-snug">
-                  <CalendarIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-                  {endLine}
-                </li>
-              )}
-            </ul>
-
-            {moreInFull && (
-              <details id="conditions" className="group mt-4 scroll-mt-24 rounded-xl border border-slate-200 px-4 py-3">
-                <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-bold text-slate-900 marker:hidden [&::-webkit-details-marker]:hidden">
-                  Full conditions
-                  <span aria-hidden="true" className="text-slate-500 transition group-open:rotate-180">
-                    ▾
-                  </span>
-                </summary>
-                <DealConditions terms={deal.terms} className="mt-3 text-slate-700" />
-              </details>
-            )}
-
-            <DealProvenance deal={deal} />
-
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-slate-600">
-              <p>
-                Offered by {businessLabel}, subject to availability. MegaDeal advertises the deal and isn&apos;t part
-                of your booking. See our{" "}
-                <Link href="/terms" className="underline hover:text-slate-800">
-                  terms
-                </Link>
-                . Deal not honoured?{" "}
-                {preview ? (
-                  <span className="font-semibold text-brand-700">Tell us</span>
-                ) : (
-                  <Link
-                    href={`/contact?deal=${encodeURIComponent(deal.slug)}`}
-                    className="font-semibold text-brand-700 underline underline-offset-2 hover:text-brand-800"
-                  >
-                    Tell us
-                  </Link>
-                )}
-                .
-              </p>
-              {/* Not in a preview: it would share the merchant's own
-                  auth-gated /portal/new-deal page. */}
-              {!preview && <ShareButtons title={deal.name} size="sm" />}
-            </div>
-          </section>
-        )}
       </div>
 
-      {/* 6. About the business */}
-      <AboutBusiness deal={deal} preview={preview} onAction={tracker.track} />
+      {/* 4. What's included and every condition, side by side on a
+          computer. The conditions are all shown, as written: nothing
+          material is folded away. */}
+      <section aria-label="Deal details and conditions" className="mt-4 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 lg:mt-5">
+        <div className="grid gap-6 lg:grid-cols-2 lg:gap-0 lg:divide-x lg:divide-slate-200">
+          <div className="lg:pr-8">
+            <h2 className="font-display text-xl font-semibold text-slate-900">Deal details</h2>
+            <p className="mt-2 max-w-[65ch] whitespace-pre-line text-base leading-relaxed text-slate-700">{deal.description}</p>
+            <DealTags tags={deal.tags} />
+          </div>
+          {(conditions.length > 0 || endLine) && (
+            <div id="conditions" className="scroll-mt-24 lg:pl-8">
+              <h2 className="font-display text-xl font-semibold text-slate-900">Conditions</h2>
+              <DealConditions terms={deal.terms} columns={1} className="mt-2.5 text-slate-700" />
+              {endLine && (
+                <p className={`flex items-start gap-2 text-[0.9375rem] leading-snug text-slate-700 ${conditions.length > 0 ? "mt-2" : "mt-2.5"}`}>
+                  <CalendarIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+                  {endLine}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
 
-      {/* The end of this deal: the phone's "Contact business" bar
-          (ContactBusiness.tsx) gives way from here on. */}
+      {/* 5. A short word on the business; its profile has the rest. */}
+      <BusinessSummary deal={deal} preview={preview} onAction={tracker.track} />
+
+      <DealProvenance deal={deal} />
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-slate-600">
+        <p className="max-w-[80ch]">
+          Offered by {businessLabel}, subject to availability. MegaDeal advertises the deal and isn&apos;t part of your
+          booking. See our{" "}
+          <Link href="/terms" className="underline hover:text-slate-800">
+            terms
+          </Link>
+          . Deal not honoured?{" "}
+          {preview ? (
+            <span className="font-semibold text-brand-700">Tell us</span>
+          ) : (
+            <Link
+              href={`/contact?deal=${encodeURIComponent(deal.slug)}`}
+              className="font-semibold text-brand-700 underline underline-offset-2 hover:text-brand-800"
+            >
+              Tell us
+            </Link>
+          )}
+          .
+        </p>
+        {/* Not in a preview: it would share the merchant's own
+            auth-gated /portal/new-deal page. */}
+        {!preview && <ShareButtons title={deal.name} size="sm" />}
+      </div>
+
+      {/* The end of this deal: the phone's "Get deal code" bar
+          (GetDealCode.tsx) gives way from here on. */}
       <div id="deal-end" aria-hidden="true" />
 
       {moreDeals}

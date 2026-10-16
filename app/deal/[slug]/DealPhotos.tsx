@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 
 /**
- * The deal's photos: the main one first, then any more the business added
+ * The deal's photos, 16:9 (the 3:2 copies the photo store makes, trimmed
+ * top and bottom): the main one first, then any more the business added
  * (lib/dealGallery.ts). With one photo it's a plain image, as before. With
  * more, they sit side by side and snap into place: swipe on a phone, the
  * arrows or the thumbnails on a computer, or the arrow keys once focused.
@@ -41,7 +42,7 @@ export default function DealPhotos({ images, alt }: { images: string[]; alt: str
       // Sizes MegaDeal's own photo storage makes (lib/photoUrl.ts).
       src={wixImageUrl(url, 1200, 800)}
       srcSet={wixImageSrcSet(url, [540, 750, 1200], 3 / 2)}
-      sizes="(min-width: 1024px) 540px, (min-width: 640px) 90vw, 100vw"
+      sizes="(min-width: 1024px) 640px, (min-width: 640px) 90vw, 100vw"
       alt={many ? `${alt} (photo ${i + 1} of ${images.length})` : alt}
       className="absolute inset-0 h-full w-full object-cover"
       loading={i === 0 ? "eager" : "lazy"}
@@ -52,7 +53,7 @@ export default function DealPhotos({ images, alt }: { images: string[]; alt: str
   );
 
   if (!many) {
-    return <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl bg-brand-50">{img(images[0], 0)}</div>;
+    return <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-brand-50">{img(images[0], 0)}</div>;
   }
 
   const arrow =
@@ -65,7 +66,7 @@ export default function DealPhotos({ images, alt }: { images: string[]; alt: str
           ref={track}
           tabIndex={0}
           aria-label={`Photos, ${images.length} in all. Swipe or use the arrow keys.`}
-          className="flex aspect-[3/2] w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden rounded-2xl bg-brand-50 [scrollbar-width:none] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 [&::-webkit-scrollbar]:hidden"
+          className="flex aspect-video w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden rounded-2xl bg-brand-50 [scrollbar-width:none] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 [&::-webkit-scrollbar]:hidden"
         >
           {images.map((url, i) => (
             <div

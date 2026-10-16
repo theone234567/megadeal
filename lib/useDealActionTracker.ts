@@ -30,5 +30,9 @@ export function useDealActionTracker(dealId: string, preview: boolean) {
     interested.current = true;
     trackDealEvent(dealId, "click");
   }, [dealId, preview]);
-  return useMemo(() => ({ track, interest }), [track, interest]);
+  /** The deal code is on screen (the "Get deal code" panel opened). */
+  const reveal = useCallback(() => {
+    interest();
+  }, [interest]);
+  return useMemo(() => ({ track, interest, reveal }), [track, interest, reveal]);
 }

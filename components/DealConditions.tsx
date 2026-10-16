@@ -10,17 +10,20 @@ import { splitTermsForDisplay } from "@/lib/dealTerms";
 export default function DealConditions({
   terms,
   size = "md",
+  columns = 2,
   className = "",
 }: {
   terms: string | null | undefined;
   size?: "sm" | "md";
+  /** Two columns where there's room, or always one (a narrow column). */
+  columns?: 1 | 2;
   className?: string;
 }) {
   const lines = terms ? splitTermsForDisplay(terms) : [];
   if (lines.length === 0) return null;
   return (
     <ul
-      className={`grid gap-x-6 sm:grid-cols-2 ${
+      className={`grid gap-x-6 ${columns === 2 ? "sm:grid-cols-2" : ""} ${
         size === "sm" ? "gap-y-1 text-xs" : "gap-y-2 text-[0.9375rem]"
       } ${className}`}
     >

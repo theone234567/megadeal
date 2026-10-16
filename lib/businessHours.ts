@@ -253,21 +253,52 @@ function nzNow(now: Date = new Date()): { day: Day; minutes: number } {
   return { day: (DAYS as readonly string[]).includes(weekday || "") ? (weekday as Day) : "Mon", minutes: hour * 60 + minute };
 }
 
-/** True if any of today's ranges (NZ time) contains right now. Doesn't
- *  handle a range that crosses midnight (e.g. a bar open 8pm-2am) — not
- *  needed for the kind of businesses this site lists today, but worth
- *  revisiting if that ever comes up. */
+/** True if the business is open right now (NZ time), counting a range
+ *  that runs past midnight (8pm–2am) on the day it starts. */
 export function isOpenNow(data: BusinessHoursData, now: Date = new Date()): boolean {
-  const { day, minutes } = nzNow(now);
-  const special = (data.exceptions ?? []).find((e) => e.date === nzToday(now));
-  const today = special ?? data.schedule.find((d) => d.day === day);
-  if (!today || today.closed) return false;
-  return today.ranges.some((r) => {
-    const open = timeToMinutes(r.open);
-    const close = timeToMinutes(r.close);
-    if (close <= open) return false;
-    return minutes >= open && minutes < close;
-  });
+  return currentRange(data, now) !== null;
+}
+
+/** The range the business is open in right now, if any: one of today's,
+ *  or last night's that runs past midnight. */
+function currentRange(data: BusinessHoursData, now: Date): TimeRange | null {
+  const { minutes } = nzNow(now);
+  const today = hoursOn(data, nzToday(now));
+  if (today && !today.closed) {
+    for (const r of today.ranges) {
+      const open = timeToMinutes(r.open);
+      const close = timeToMinutes(r.close);
+      if (close > open ? minutes >= open && minutes < close : close < open && minutes >= open) return r;
+    }
+  }
+  const yesterday = hoursOn(data, nzToday(new Date(now.getTime() - 86_400_000)));
+  if (yesterday && !yesterday.closed) {
+    for (const r of yesterday.ranges) {
+      const open = timeToMinutes(r.open);
+      const close = timeToMinutes(r.close);
+      if (close < open && minutes < close) return r;
+    }
+  }
+  return null;
+}
+
+/**
+ * Today's hours in New Zealand for the deal code panel: "9am–6pm",
+ * "11:30am–2pm, 5–9pm", "8pm–2am", or "Closed today" (with the dated
+ * exception's name, e.g. "Christmas Day", when there is one). Null when
+ * the business hasn't given its hours: they're never guessed.
+ */
+export function hoursToday(data: BusinessHoursData, now: Date = new Date()): { label: string; closed: boolean; note?: string } | null {
+  if (!hoursKnown(data)) return null;
+  const date = nzToday(now);
+  const note = (data.exceptions ?? []).find((e) => e.date === date)?.label;
+  const h = hoursOn(data, date);
+  if (!h || h.closed || h.ranges.length === 0) return { label: "Closed today", closed: true, ...(note ? { note } : {}) };
+  return {
+    label: h.ranges.map((r) => `${formatTime12h(r.open)}–${formatTime12h(r.close)}`).join(", "),
+    closed: false,
+    ...(note ? { note } : {}),
+  };
 }
 
 /** The hours that apply on an NZ date: its exception, else its weekday. */
@@ -287,18 +318,18 @@ function hoursOn(data: BusinessHoursData, date: string): { closed: boolean; rang
 export function openStatus(data: BusinessHoursData, now: Date = new Date()): { open: boolean; label: string } | null {
   if (!hoursKnown(data)) return null;
   const { minutes } = nzNow(now);
-  const valid = (r: TimeRange) => timeToMinutes(r.close) > timeToMinutes(r.open);
+  const current = currentRange(data, now);
+  if (current) return { open: true, label: `Open now · closes ${formatTime12h(current.close)}` };
+  const opens = (r: TimeRange) => timeToMinutes(r.open) !== timeToMinutes(r.close);
   const today = hoursOn(data, nzToday(now));
   if (today && !today.closed) {
-    const current = today.ranges.find((r) => valid(r) && minutes >= timeToMinutes(r.open) && minutes < timeToMinutes(r.close));
-    if (current) return { open: true, label: `Open now · closes ${formatTime12h(current.close)}` };
-    const later = today.ranges.filter((r) => valid(r) && timeToMinutes(r.open) > minutes).sort((a, b) => timeToMinutes(a.open) - timeToMinutes(b.open))[0];
+    const later = today.ranges.filter((r) => opens(r) && timeToMinutes(r.open) > minutes).sort((a, b) => timeToMinutes(a.open) - timeToMinutes(b.open))[0];
     if (later) return { open: false, label: `Closed · opens ${formatTime12h(later.open)}` };
   }
   for (let i = 1; i <= 7; i++) {
     const date = nzToday(new Date(now.getTime() + i * 86_400_000));
     const h = hoursOn(data, date);
-    const first = h && !h.closed ? h.ranges.filter(valid).sort((a, b) => timeToMinutes(a.open) - timeToMinutes(b.open))[0] : undefined;
+    const first = h && !h.closed ? h.ranges.filter(opens).sort((a, b) => timeToMinutes(a.open) - timeToMinutes(b.open))[0] : undefined;
     if (!first) continue;
     const when = i === 1 ? "tomorrow" : new Intl.DateTimeFormat("en-NZ", { timeZone: "UTC", weekday: "short" }).format(new Date(`${date}T12:00:00Z`));
     return { open: false, label: `Closed · opens ${when} ${formatTime12h(first.open)}` };

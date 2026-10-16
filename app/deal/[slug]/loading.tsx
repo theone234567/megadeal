@@ -16,7 +16,7 @@
  */
 export default function DealLoading() {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8" aria-busy="true">
+    <main className="mx-auto max-w-[1200px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-7" aria-busy="true">
       <span className="sr-only">Loading deal…</span>
       <div aria-hidden>
         <div className="animate-shimmer h-4 w-40 rounded" />
@@ -27,15 +27,14 @@ export default function DealLoading() {
           <div className="animate-shimmer mt-3 h-4 w-48 rounded" />
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(340px,1fr)] lg:gap-x-8">
-          <div className="animate-shimmer aspect-[3/2] w-full rounded-2xl" />
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:mt-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(340px,1fr)] lg:items-start lg:gap-6">
+          <div className="animate-shimmer aspect-video w-full rounded-2xl" />
 
-          <div className="self-start rounded-[18px] border border-slate-200/80 bg-white p-5 shadow-card">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
             <div className="animate-shimmer h-12 w-36 rounded-lg" />
             <div className="animate-shimmer mt-3 h-4 w-40 rounded" />
             <div className="animate-shimmer mt-2 h-3 w-48 rounded" />
-            <div className="animate-shimmer mt-5 h-28 w-full rounded-[13px]" />
-            <div className="animate-shimmer mt-5 h-12 w-full rounded-full" />
+            <div className="animate-shimmer mt-4 h-12 w-full rounded-xl" />
           </div>
         </div>
       </div>

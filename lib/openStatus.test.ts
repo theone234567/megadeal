@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { openStatus, type BusinessHoursData, type Day } from "./businessHours";
+import { hoursToday, isOpenNow, openStatus, type BusinessHoursData, type Day } from "./businessHours";
 
 /** "Open now · closes 9:30pm" on the deal page, in New Zealand time. */
 
@@ -42,5 +42,29 @@ describe("openStatus", () => {
 
   it("says nothing when no hours were given", () => {
     expect(openStatus(week({}), wed("12:00"))).toBeNull();
+  });
+});
+
+describe("late nights and today's hours (the deal code panel)", () => {
+  // A bar: 8pm–2am Wed to Sat.
+  const bar = week({ Wed: [["20:00", "02:00"]], Thu: [["20:00", "02:00"]], Fri: [["20:00", "02:00"]], Sat: [["20:00", "02:00"]] });
+
+  it("counts a range past midnight as open, on both sides of midnight", () => {
+    expect(openStatus(bar, wed("21:00"))).toEqual({ open: true, label: "Open now · closes 2am" });
+    expect(isOpenNow(bar, new Date("2026-10-15T01:30:00+13:00"))).toBe(true);
+    expect(isOpenNow(bar, new Date("2026-10-15T02:30:00+13:00"))).toBe(false);
+    expect(openStatus(bar, wed("19:00"))).toEqual({ open: false, label: "Closed · opens 8pm" });
+  });
+
+  it("gives today's hours, split ranges, closed days and named exceptions", () => {
+    expect(hoursToday(pizzeria, wed("09:00"))).toEqual({ label: "11:30am–2pm, 5pm–9:30pm", closed: false });
+    expect(hoursToday(bar, wed("09:00"))).toEqual({ label: "8pm–2am", closed: false });
+    expect(hoursToday(pizzeria, new Date("2026-10-12T12:00:00+13:00"))).toEqual({ label: "Closed today", closed: true });
+    const holiday = { ...pizzeria, exceptions: [{ date: "2026-10-14", closed: true, ranges: [], label: "Staff day" }] };
+    expect(hoursToday(holiday, wed("09:00"))).toEqual({ label: "Closed today", closed: true, note: "Staff day" });
+  });
+
+  it("says nothing when no hours were given", () => {
+    expect(hoursToday(week({}), wed("09:00"))).toBeNull();
   });
 });
