@@ -9,7 +9,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { parseDraft, MAX_DRAFT_TEXT, draftRevisionOf } from "@/lib/dealDraft";
 import { STANDARD_TERMS, renderTerms, parseTerms } from "@/lib/dealTerms";
 import { buildPreviewDeal } from "@/lib/previewDeal";
-import { DEAL_CODE_MAX, dealCodeError, normaliseDealCode } from "@/lib/dealCode";
+import { DEAL_CODE_MAX, dealCodeError, isGeneratedDealCode, normaliseDealCode } from "@/lib/dealCode";
 import {
   BOOKING_CHOICES,
   bookingConflict,
@@ -318,7 +318,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         setIsFlash(Boolean(original.isFlash));
         setBookingRequirement(isBookingChoice(original.bookingRequirement) ? original.bookingRequirement : "");
         setDealCode(
-          typeof original.dealCode === "string" && !original.dealCode.startsWith("MEGA-") ? original.dealCode : ""
+          typeof original.dealCode === "string" && !isGeneratedDealCode(original.dealCode) ? original.dealCode : ""
         );
         // Carried over, but the code has to be confirmed again: it may
         // have expired on their website since the last run.
@@ -402,7 +402,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         setStartMode(draft.startMode);
         setStartDate(draft.startDate);
         setStartTime(draft.startTime);
-        if (typeof item.dealCode === "string" && item.dealCode.startsWith("MEGA-")) setSavedCode(item.dealCode);
+        if (isGeneratedDealCode(item.dealCode)) setSavedCode(item.dealCode);
         // The photo comes back too, which the old local drafts could never
         // do — a File can't be serialised, so restoring one always meant
         // hunting for the image again.
@@ -646,7 +646,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
       if (item?._id) setDraftId(item._id);
       revisionRef.current = draftRevisionOf(item);
       setConflict(false);
-      if (typeof item?.dealCode === "string" && item.dealCode.startsWith("MEGA-")) setSavedCode(item.dealCode);
+      if (isGeneratedDealCode(item?.dealCode)) setSavedCode(item.dealCode);
       setSavedSnapshot(saving);
       setAutosaveError(null);
     } catch (err: any) {
@@ -1880,7 +1880,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
                 ) : (
                   <>
                     We&apos;ll make your code automatically when this deal is first saved, like{" "}
-                    <span className="font-mono font-bold tracking-wider text-slate-900">MEGA-7K2QD</span>. It&apos;s
+                    <span className="font-mono font-bold tracking-wider text-slate-900">FEASTKT</span>: a short word and two letters, easy to read out. It&apos;s
                     only for this deal.
                   </>
                 )}

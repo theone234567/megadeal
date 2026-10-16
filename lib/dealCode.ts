@@ -1,3 +1,5 @@
+import { isMemorableCode } from "./memorableCode";
+
 // Excludes visually ambiguous characters (0/O, 1/I/L) so a code read aloud
 // or typed by hand doesn't get misheard/mistyped.
 const CODE_CHARS = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
@@ -72,17 +74,33 @@ export function dealCodeError(code: string, opts: { allowReserved?: boolean } = 
   if (!opts.allowReserved && (code === "MEGA" || code.startsWith(RESERVED_PREFIX))) {
     return "Codes starting with MEGA- are reserved for MegaDeal — choose a different one.";
   }
+  if (!opts.allowReserved && isMemorableCode(code)) {
+    return "That looks like a code MegaDeal makes for deals — choose a different one.";
+  }
   return null;
+}
+
+/** A code MegaDeal made: MEGA-7K2QD, or a memorable one like FEASTKT
+ *  (lib/memorableCode.ts). Anything else is the business's own. */
+export function isGeneratedDealCode(code: unknown): code is string {
+  return typeof code === "string" && (/^MEGA-[A-Z0-9]{5}$/.test(code) || isMemorableCode(code));
 }
 
 /**
  * The code a draft carries from its first save, so the private preview
  * shows the real one and editing never changes it: the business's own
- * code when they've entered a valid one, otherwise the MEGA- code it
- * already has, otherwise a new one. Kept through submission.
+ * code when they've entered a valid one, otherwise the code MegaDeal
+ * already made for it, otherwise `fresh` (a new one, lib/db/dealCodes.ts).
+ * Kept through submission.
  */
-export function codeForDraft(ownCode: unknown, existingCode: unknown): string {
+export function codeForDraft(ownCode: unknown, existingCode: unknown, fresh: string = generateDealCode()): string {
   const own = typeof ownCode === "string" ? normaliseDealCode(ownCode) : "";
   if (own && !dealCodeError(own)) return own;
-  return typeof existingCode === "string" && /^MEGA-[A-Z0-9]{5}$/.test(existingCode) ? existingCode : generateDealCode();
+  return isGeneratedDealCode(existingCode) ? existingCode : fresh;
+}
+
+/** True when codeForDraft would need a new code made. */
+export function draftNeedsNewCode(ownCode: unknown, existingCode: unknown): boolean {
+  const own = typeof ownCode === "string" ? normaliseDealCode(ownCode) : "";
+  return !(own && !dealCodeError(own)) && !isGeneratedDealCode(existingCode);
 }

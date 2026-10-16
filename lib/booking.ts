@@ -1,3 +1,4 @@
+import { isMemorableCode } from "./memorableCode";
 import { splitTermsForDisplay, STANDARD_TERMS } from "./dealTerms";
 import { safeWebHref } from "./socialLinks";
 
@@ -173,11 +174,12 @@ export function websiteCodeHref(deal: {
   return safeWebHref(deal.codeWebsiteUrl);
 }
 
-/** MegaDeal-generated codes start with "MEGA-" (lib/dealCode.ts); a
- *  business can't choose one that does. Any other code is the business's
+/** MegaDeal-generated codes: MEGA-7K2QD, or since Oct 2026 a word and
+ *  letters like FEASTKT (lib/memorableCode.ts); a business can't choose
+ *  either kind. Any other code is the business's
  *  own, which they were asked to set up in their own booking system. */
 export function isMegaDealCode(code: string | null | undefined): boolean {
-  return Boolean(code && code.startsWith("MEGA-"));
+  return Boolean(code && (code.startsWith("MEGA-") || isMemorableCode(code)));
 }
 
 export type ContactKind = "phone" | "email" | "website" | "directions";

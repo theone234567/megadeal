@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { codeForDraft } from "@/lib/dealCode";
+import { codeForDraft, draftNeedsNewCode } from "@/lib/dealCode";
+import { newDealCode } from "@/lib/db/dealCodes";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
@@ -103,7 +104,11 @@ export async function POST(req: NextRequest) {
       const updated = await adminClient.items.update("Deals", {
         ...existing,
         ...row,
-        dealCode: codeForDraft(draft.dealCode, existing.dealCode),
+        dealCode: codeForDraft(
+          draft.dealCode,
+          existing.dealCode,
+          draftNeedsNewCode(draft.dealCode, existing.dealCode) ? await newDealCode(draft.category) : undefined,
+        ),
         draftRevision: draftRevisionOf(existing) + 1,
       });
       return NextResponse.json({ item: updated });
@@ -124,7 +129,7 @@ export async function POST(req: NextRequest) {
     // Every deal has its code from its first saved draft (lib/dealCode.ts).
     const created = await adminClient.items.insert("Deals", {
       ...row,
-      dealCode: codeForDraft(draft.dealCode, null),
+      dealCode: codeForDraft(draft.dealCode, null, draftNeedsNewCode(draft.dealCode, null) ? await newDealCode(draft.category) : undefined),
       draftRevision: 1,
     });
     return NextResponse.json({ item: created });

@@ -50,8 +50,10 @@ async function storedColumns(db: Sql, table: string): Promise<string[]> {
 
 /** Left out on purpose: short-lived security records (password-reset
  *  links, rate-limit counts), worthless after a restore and better never
- *  copied anywhere. */
-export const NOT_BACKED_UP = ["password_reset_tokens", "rate_limits"] as const;
+ *  copied anywhere; and the list of deal codes made (lib/db/dealCodes.ts),
+ *  which is only there to keep new codes unique: the codes themselves are
+ *  on their deals, which new codes are also checked against. */
+export const NOT_BACKED_UP = ["password_reset_tokens", "rate_limits", "deal_codes"] as const;
 
 /** Every public table that isn't in BACKUP_TABLES or NOT_BACKED_UP (its
  *  test fails then). */

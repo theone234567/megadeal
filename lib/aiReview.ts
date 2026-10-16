@@ -1,3 +1,4 @@
+import { isGeneratedDealCode } from "./dealCode";
 /**
  * Automatic first-pass review of deals and deal photos with Claude Haiku.
  *
@@ -145,7 +146,7 @@ function listingText(input: AiReviewInput): string {
           `Business: ${input.businessName || "(not given)"}`,
           `Category: ${input.category || "(not given)"}`,
           `Deal name: ${input.dealName}`,
-          input.dealCode && !input.dealCode.startsWith("MEGA-") ? `Deal code customers quote: ${input.dealCode}` : "",
+          input.dealCode && !isGeneratedDealCode(input.dealCode) ? `Deal code customers quote: ${input.dealCode}` : "",
           `What's included: ${input.description || ""}`,
           `Conditions: ${input.terms || ""}`,
           `Deal price: NZ$${input.priceNow ?? "?"}`,

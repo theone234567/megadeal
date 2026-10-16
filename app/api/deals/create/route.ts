@@ -18,7 +18,8 @@ import {
   maxRequestedDuration,
 } from "@/lib/platformSettingsRules";
 import { logMerchantActivity } from "@/lib/merchantActivity";
-import { generateDealCode } from "@/lib/dealCode";
+import { isGeneratedDealCode } from "@/lib/dealCode";
+import { newDealCode } from "@/lib/db/dealCodes";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
 import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
 import { toRequestedMinutes } from "@/lib/dealDuration";
@@ -360,7 +361,7 @@ export async function POST(req: NextRequest) {
     customerInstructions,
     // A submitted draft keeps the code it has had since it was first
     // saved (and shown in its preview); otherwise a new one.
-    dealCode: customDealCode || (draftRow && /^MEGA-[A-Z0-9]{5}$/.test(String(draftRow.dealCode)) ? draftRow.dealCode : generateDealCode()),
+    dealCode: customDealCode || (draftRow && isGeneratedDealCode(draftRow.dealCode) ? draftRow.dealCode : await newDealCode(category)),
     creditsCharged: cost,
     // Always written, so every new deal says yes or no (older deals have
     // neither and keep their old wording on the deal page).
