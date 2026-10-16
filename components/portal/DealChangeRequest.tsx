@@ -32,6 +32,7 @@ export default function DealChangeRequest({ deal, profilePhotos = [] }: { deal: 
     priceWas: deal.priceWas != null && deal.priceWas !== deal.priceNow ? String(deal.priceWas) : "",
     bookingRequirement: deal.bookingRequirement ?? "",
     quantityAvailable: deal.quantityAvailable != null ? String(deal.quantityAvailable) : "",
+    customerInstructions: deal.customerInstructions ?? "",
     note: "",
   }));
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -56,6 +57,7 @@ export default function DealChangeRequest({ deal, profilePhotos = [] }: { deal: 
             priceWas: form.priceWas,
             bookingRequirement: form.bookingRequirement || undefined,
             quantityAvailable: form.quantityAvailable,
+            customerInstructions: form.customerInstructions,
             tags,
             gallery,
           },
@@ -161,6 +163,18 @@ export default function DealChangeRequest({ deal, profilePhotos = [] }: { deal: 
               <label htmlFor={`cr-qty-${deal._id}`} className={label}>Quantity offered</label>
               <input id={`cr-qty-${deal._id}`} className={input} inputMode="numeric" value={form.quantityAvailable} onChange={(e) => set("quantityAvailable", e.target.value)} placeholder="No limit" />
             </div>
+          </div>
+          <div>
+            <label htmlFor={`cr-instr-${deal._id}`} className={label}>Special instructions (optional)</label>
+            <textarea
+              id={`cr-instr-${deal._id}`}
+              className={input}
+              rows={2}
+              maxLength={300}
+              value={form.customerInstructions}
+              onChange={(e) => set("customerInstructions", e.target.value)}
+              placeholder="e.g. Mention your code when you arrive."
+            />
           </div>
           <div>
             <label htmlFor={`cr-book-${deal._id}`} className={label}>Do customers need to book?</label>

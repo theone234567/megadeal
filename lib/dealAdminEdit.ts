@@ -24,6 +24,7 @@ export const EDITABLE_DEAL_FIELDS = [
   "dealCode",
   "tags",
   "gallery",
+  "customerInstructions",
 ] as const;
 export type EditableDealField = (typeof EDITABLE_DEAL_FIELDS)[number];
 
@@ -117,6 +118,11 @@ export function parseAdminContentEdit(
   if (body.tags !== undefined) {
     // Only tags from the fixed list; anything else is dropped, not refused.
     next.tags = cleanDealTags(body.tags);
+  }
+  if (body.customerInstructions !== undefined) {
+    const v = typeof body.customerInstructions === "string" ? body.customerInstructions.trim() : "";
+    if (v.length > 300) return { changes: {}, error: "Keep the special instructions to 300 characters or fewer." };
+    next.customerInstructions = v || null;
   }
 
   // Nothing to check when the request isn't a content edit (a status or

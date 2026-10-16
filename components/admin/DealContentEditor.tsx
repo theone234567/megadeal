@@ -22,6 +22,7 @@ const FIELD_LABELS: Record<string, string> = {
   photoUrl: "Photo",
   tags: "Good to know",
   gallery: "More photos",
+  customerInstructions: "Special instructions",
 };
 
 function formFromDeal(deal: AdminDeal) {
@@ -39,6 +40,7 @@ function formFromDeal(deal: AdminDeal) {
     tags: cleanDealTags(deal.tags).join(","),
     // One address per line, so it compares like the other fields.
     gallery: cleanGallery(deal.gallery, deal.photoUrl).join("\n"),
+    customerInstructions: deal.customerInstructions ?? "",
   };
 }
 
@@ -203,6 +205,10 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
                 </option>
               ))}
             </select>
+          </label>
+          <label className="text-xs font-semibold text-slate-600 sm:col-span-2">
+            Special instructions (optional)
+            <textarea className={input} rows={2} maxLength={300} value={form.customerInstructions} onChange={(e) => setForm({ ...form, customerInstructions: e.target.value })} />
           </label>
           <label className="text-xs font-semibold text-slate-600">
             Quantity (optional)

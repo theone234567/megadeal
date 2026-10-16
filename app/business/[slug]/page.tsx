@@ -12,6 +12,7 @@ import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { getDirectionsUrl } from "@/lib/mapLinks";
 import { phoneLink } from "@/lib/booking";
 import { comparableUrl } from "@/lib/dealContact";
+import { leadingMethod } from "@/lib/contactOverride";
 import { safeWebHref } from "@/lib/socialLinks";
 import { formatMoney } from "@/lib/format";
 import { dealSavingPercent } from "@/lib/dealSaving";
@@ -137,11 +138,25 @@ export default async function BusinessProfilePage(
   const emailHidden = business.bookingEmail ? hideEmail(business.bookingEmail) : null;
   const facebook = safeWebHref(business.facebookUrl);
   const instagram = safeWebHref(business.instagramUrl);
-  const mainContact = bookingHref
-    ? { label: "Book online", href: bookingHref, external: true, Icon: CalendarIcon }
-    : phone
-      ? { label: "Call business", href: phone.href, external: false, Icon: PhoneIcon }
-      : null;
+  // The business's chosen main button when it's still usable, otherwise
+  // booking link, then phone, then website (lib/contactOverride.ts).
+  const lead = leadingMethod({
+    phone: business.phone,
+    bookingUrl: business.bookingUrl,
+    website: websiteHref,
+    email: null,
+    preferred: business.preferredContact ?? null,
+  });
+  const mainContact =
+    lead === "booking" && bookingHref
+      ? { method: lead, label: "Book online", href: bookingHref, external: true, Icon: CalendarIcon }
+      : lead === "phone" && phone
+        ? { method: lead, label: "Call business", href: phone.href, external: false, Icon: PhoneIcon }
+        : lead === "website" && websiteHref
+          ? { method: lead, label: "Visit website", href: websiteHref, external: true, Icon: GlobeIcon }
+          : null;
+  const showPhoneLink = Boolean(phone) && mainContact?.method !== "phone";
+  const showWebsiteLink = Boolean(websiteHref) && mainContact?.method !== "website";
   const place = placeLabel(business.suburb, business.city);
   const category = deals.flatMap((d) => d.categories)[0] ?? null;
   // The saved address plus the suburb and city it doesn't already include,
@@ -161,7 +176,7 @@ export default async function BusinessProfilePage(
   const specialHours = parsedHours ? toSpecialOpeningHoursSpecification(parsedHours) : [];
   const status = parsedHours ? openStatus(parsedHours) : null;
   const hasLocation = Boolean(fullAddress || place);
-  const hasContact = Boolean(mainContact || websiteHref || (bookingHref && phone) || emailHidden || hasLocation || hoursLines.length || facebook || instagram);
+  const hasContact = Boolean(mainContact || websiteHref || phone || bookingHref || emailHidden || hasLocation || hoursLines.length || facebook || instagram);
   const cover = business.photos[0] ?? null;
   const link = "inline-flex min-h-[44px] items-center gap-1 font-semibold text-brand-700 underline underline-offset-2 hover:text-brand-800";
 
@@ -320,16 +335,24 @@ export default async function BusinessProfilePage(
                 {mainContact.external && <span className="sr-only"> (opens in a new tab)</span>}
               </a>
             )}
-            {(websiteHref || (bookingHref && phone) || emailHidden) && (
+            {(showWebsiteLink || showPhoneLink || (bookingHref && mainContact?.method !== "booking") || emailHidden) && (
               <ul className="mt-2 flex flex-wrap gap-x-5 text-sm">
-                {bookingHref && phone && (
+                {bookingHref && mainContact?.method !== "booking" && (
+                  <li>
+                    <a href={bookingHref} target="_blank" rel="noopener noreferrer nofollow ugc" className={link}>
+                      <CalendarIcon className="h-4 w-4" /> Book online <span aria-hidden="true">↗</span>
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  </li>
+                )}
+                {showPhoneLink && phone && (
                   <li>
                     <a href={phone.href} className={link}>
                       <PhoneIcon className="h-4 w-4" /> {phone.display}
                     </a>
                   </li>
                 )}
-                {websiteHref && (
+                {showWebsiteLink && websiteHref && (
                   <li>
                     <a href={websiteHref} target="_blank" rel="noopener noreferrer nofollow ugc" className={link}>
                       <GlobeIcon className="h-4 w-4" /> Website <span aria-hidden="true">↗</span>

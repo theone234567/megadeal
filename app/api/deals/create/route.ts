@@ -98,6 +98,8 @@ export async function POST(req: NextRequest) {
     bookingRequirement,
     tags,
     gallery,
+    contactOverride,
+    customerInstructions,
   } = checked.fields;
 
   // A requested start time (lib/dealSchedule.ts), only while scheduling is
@@ -353,6 +355,9 @@ export async function POST(req: NextRequest) {
     bookingRequirement,
     tags,
     gallery,
+    // This deal's own contact details (null: the business's), and its note.
+    contactOverride,
+    customerInstructions,
     // A submitted draft keeps the code it has had since it was first
     // saved (and shown in its preview); otherwise a new one.
     dealCode: customDealCode || (draftRow && /^MEGA-[A-Z0-9]{5}$/.test(String(draftRow.dealCode)) ? draftRow.dealCode : generateDealCode()),

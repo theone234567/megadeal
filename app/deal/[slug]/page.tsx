@@ -161,7 +161,12 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
       <DealDetail
         // The booking email goes to the browser encoded, so it isn't in
         // the page's HTML for spam bots to find (lib/hiddenEmail.ts).
-        deal={{ ...deal, businessBookingEmail: hideEmail(deal.businessBookingEmail) }}
+        deal={{
+          ...deal,
+          businessBookingEmail: hideEmail(deal.businessBookingEmail),
+          // A deal's own email is kept out of the HTML the same way.
+          ...(deal.contactOverride?.email ? { contactOverride: { ...deal.contactOverride, email: hideEmail(deal.contactOverride.email) } } : {}),
+        }}
         moreDeals={
           // Its own boundary: the deal shows as soon as it's read, and the
           // lists of other deals follow when they're ready.

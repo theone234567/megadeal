@@ -1,3 +1,5 @@
+import type { ContactOverride } from "./contactOverride";
+import { isContactMethod } from "./dealContact";
 import { businessSuburb, publicLocation } from "./location";
 import type { Deal } from "./types";
 import { businessSlug } from "./slug";
@@ -44,6 +46,9 @@ export interface PreviewInput {
   codeWebsiteUrl?: string;
   tags?: string[];
   gallery?: string[];
+  /** This deal's own contact details and the business's note. */
+  contactOverride?: ContactOverride | null;
+  customerInstructions?: string;
 }
 
 /** Comma-separated in the profile form, a list everywhere it's shown. */
@@ -94,6 +99,9 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     terms: input.terms || null,
     tags: input.tags ?? [],
     gallery: input.gallery ?? [],
+    contactOverride: input.contactOverride ?? null,
+    customerInstructions: input.customerInstructions?.trim() || null,
+    businessPreferredContact: isContactMethod(merchant?.preferredContact) ? merchant.preferredContact : null,
 
     // Everything below comes from the business profile, exactly as it
     // will on the live page — which is also the point: a merchant who

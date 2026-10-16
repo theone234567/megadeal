@@ -26,6 +26,7 @@ import { DealProvenance, DealTags } from "@/components/DealProvenance";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { effectiveBookingRequirement, termsSayWalkInsWelcome, websiteCodeHref } from "@/lib/booking";
 import { resolveDealContact } from "@/lib/dealContact";
+import { effectiveContact } from "@/lib/contactOverride";
 import { parseBusinessHours } from "@/lib/businessHours";
 
 // The deal is fetched server-side (see page.tsx), so the description,
@@ -106,15 +107,27 @@ export default function DealDetail({
   const directionsUrl = hasPlace
     ? getDirectionsUrl({ lat: deal.businessLat, lng: deal.businessLng, address: streetLine, city: deal.businessCity })
     : null;
+  // The business's details, or this deal's own where it has them.
+  const details = effectiveContact(
+    {
+      phone: deal.businessPhone,
+      bookingUrl: deal.businessBookingUrl,
+      website: deal.businessWebsite,
+      email: deal.businessBookingEmail,
+      preferred: deal.businessPreferredContact ?? null,
+    },
+    deal.contactOverride,
+  );
   const contact = resolveDealContact({
     requirement,
     businessName: deal.businessName,
     dealName: deal.name,
     code: deal.dealCode,
-    phone: deal.businessPhone,
-    email: revealEmail(deal.businessBookingEmail),
-    website: deal.businessWebsite,
-    bookingUrl: deal.businessBookingUrl,
+    phone: details.phone,
+    email: revealEmail(details.email),
+    website: details.website,
+    bookingUrl: details.bookingUrl,
+    preferred: details.preferred,
     codeWebsiteUrl: codeLink,
     directionsUrl,
     addressText: hasPlace ? streetLine : null,
@@ -262,6 +275,7 @@ export default function DealDetail({
                 contact={contact}
                 businessName={deal.businessName}
                 dealName={deal.name}
+                instructions={deal.customerInstructions ?? null}
                 price={{ now: priceNow, was: priceWas, percentOff: savingPct }}
                 hours={hours}
                 profileHref={profileHref}

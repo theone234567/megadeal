@@ -27,6 +27,7 @@ export const REVISION_FIELD_LABELS: Record<(typeof REVISABLE_FIELDS)[number], st
   quantityAvailable: "Quantity",
   tags: "Good to know",
   gallery: "More photos",
+  customerInstructions: "Special instructions",
 };
 
 export interface DealRevision {
@@ -90,7 +91,7 @@ function show(field: string, v: unknown): string {
     return n === 0 ? "None" : `${n} photo${n === 1 ? "" : "s"}`;
   }
   if (field === "tags") return cleanDealTags(v).map(dealTagLabel).join(", ") || "None";
-  if (v === null || v === undefined || v === "") return field === "quantityAvailable" ? "No limit" : "—";
+  if (v === null || v === undefined || v === "") return field === "quantityAvailable" ? "No limit" : field === "customerInstructions" ? "None" : "—";
   if (field === "priceNow" || field === "priceWas") return `$${v}`;
   if (field === "bookingRequirement") {
     return v === "required" ? "Booking required" : v === "recommended" ? "Booking recommended" : v === "not_required" ? "No booking needed" : String(v);

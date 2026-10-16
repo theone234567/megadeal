@@ -2,6 +2,8 @@ import { createHash, randomUUID } from "crypto";
 import { CATEGORIES } from "../categories";
 import { cleanDealTags } from "../dealTags";
 import { cleanGallery } from "../dealGallery";
+import { cleanContactOverride } from "../contactOverride";
+import { isContactMethod } from "../dealContact";
 import type { Sql } from "./connection";
 
 /**
@@ -210,6 +212,12 @@ const MERCHANTS: Collection = {
       newColumn: true,
     }),
     f("serviceArea", "service_area", { expr: "(to_jsonb(t)->>'service_area')", newColumn: true }),
+    // The main customer button (20261019000000_booking_contact.sql).
+    f("preferredContact", "preferred_contact", {
+      expr: "(to_jsonb(t)->>'preferred_contact')",
+      write: (v: any) => (isContactMethod(v) ? v : null),
+      newColumn: true,
+    }),
     f("claimedAt", null, { expr: "(to_jsonb(t)->>'claimed_at')", read: asDate, readOnly: true }),
   ],
 };
@@ -275,6 +283,22 @@ const DEALS: Collection = {
       expr: "coalesce(to_jsonb(t)->'gallery', '[]'::jsonb)",
       read: (v: any) => (Array.isArray(v) && v.length ? v : null),
       write: (v: any) => cleanGallery(v, null),
+      newColumn: true,
+    }),
+    // A deal's own contact details and the business's note on using it
+    // (20261019000000_booking_contact.sql).
+    f("contactOverride", "contact_override", {
+      expr: "(to_jsonb(t)->'contact_override')",
+      read: (v: any) => (v && typeof v === "object" ? v : null),
+      write: (v: any) => {
+        const clean = cleanContactOverride(v);
+        return clean ? JSON.stringify(clean) : null;
+      },
+      newColumn: true,
+    }),
+    f("customerInstructions", "customer_instructions", {
+      expr: "(to_jsonb(t)->>'customer_instructions')",
+      write: (v: any) => (typeof v === "string" && v.trim() ? v.trim().slice(0, 300) : null),
       newColumn: true,
     }),
     f("merchantConfirmedAt", "merchant_confirmed_at", { expr: "(to_jsonb(t)->>'merchant_confirmed_at')", read: asDate, write: iso, newColumn: true }),

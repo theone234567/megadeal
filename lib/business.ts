@@ -1,3 +1,4 @@
+import { isContactMethod, type ContactMethod } from "./dealContact";
 import { businessSlug } from "./slug";
 import { parseBusinessPhotos } from "./businessPhotos";
 import { businessSuburb, publicLocation } from "./location";
@@ -42,6 +43,8 @@ export interface PublicBusiness {
   reviewCount: number | null;
   /** The business runs its own MegaDeal account (its owner signs in). */
   claimed?: boolean;
+  /** Its main customer button, when it chose one. */
+  preferredContact?: ContactMethod | null;
 }
 
 /** Maps a raw Wix "Merchants" data item to the public-safe shape. Caller
@@ -77,6 +80,7 @@ export function mapMerchantToBusiness(merchant: any): PublicBusiness {
     lng: place.lng,
     rating: typeof merchant.rating === "number" ? merchant.rating : null,
     reviewCount: typeof merchant.reviewCount === "number" ? merchant.reviewCount : null,
+    preferredContact: isContactMethod(merchant.preferredContact) ? merchant.preferredContact : null,
   };
 }
 
@@ -103,6 +107,7 @@ export function applyBusinessToDeal<T extends Deal>(deal: T, business: PublicBus
     businessAmenities: business.amenities,
     businessBookingUrl: business.bookingUrl,
     businessBookingEmail: business.bookingEmail,
+    businessPreferredContact: business.preferredContact ?? null,
     businessLat: business.lat,
     businessLng: business.lng,
     businessRating: business.rating,

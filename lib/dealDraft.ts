@@ -1,3 +1,5 @@
+import { cleanContactOverride, type ContactOverride } from "./contactOverride";
+import { isContactMethod } from "./dealContact";
 import { parseTerms } from "./dealTerms";
 import { normaliseDealCode } from "./dealCode";
 import { isBookingChoice } from "./booking";
@@ -67,6 +69,11 @@ export interface DealDraftData {
   tags: string[];
   /** Up to four more photos (uploaded addresses), lib/dealGallery.ts. */
   gallery: string[];
+  /** This deal's own contact details, or null for the business's
+   *  (lib/contactOverride.ts). */
+  contactOverride: ContactOverride | null;
+  /** The business's short note on how to use the deal. */
+  customerInstructions: string;
 }
 
 export const EMPTY_DRAFT: DealDraftData = {
@@ -94,6 +101,8 @@ export const EMPTY_DRAFT: DealDraftData = {
   startTime: "",
   tags: [],
   gallery: [],
+  contactOverride: null,
+  customerInstructions: "",
 };
 
 /** Matches the maxLength on the matching textareas, so the form stops
@@ -149,7 +158,25 @@ export function sanitizeDraft(input: any): DealDraftData {
     tags: cleanDealTags(input?.tags),
     // Checked properly on submit, like the main photo.
     gallery: cleanGallery(input?.gallery, text(input?.photoUrl, 500)),
+    // A half-typed link is kept as typed in the draft; checked on submit.
+    contactOverride: draftOverride(input?.contactOverride),
+    customerInstructions: text(input?.customerInstructions, MAX_INSTRUCTIONS),
   };
+}
+
+export const MAX_INSTRUCTIONS = 300;
+
+/** A draft's override: known keys, short strings, nothing checked yet. */
+function draftOverride(value: unknown): ContactOverride | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const v = value as Record<string, unknown>;
+  const out: ContactOverride = {};
+  for (const key of ["phone", "bookingUrl", "website", "email"] as const) {
+    if (!(key in v)) continue;
+    out[key] = typeof v[key] === "string" ? (v[key] as string).trim().slice(0, 500) || null : null;
+  }
+  if ("preferred" in v) out.preferred = isContactMethod(v.preferred) ? v.preferred : null;
+  return Object.keys(out).length > 0 ? out : null;
 }
 
 /**
@@ -224,6 +251,9 @@ export function draftToRow(draft: DealDraftData, merchantEmail: string) {
     bookingRequirement: draft.bookingRequirement || null,
     tags: draft.tags,
     gallery: draft.gallery,
+    // Only a valid override goes in its column; the draft keeps the rest.
+    contactOverride: cleanContactOverride(draft.contactOverride),
+    customerInstructions: draft.customerInstructions || null,
     merchantEmail,
     status: "Draft",
     // Written in the hope the field exists; harmless if it doesn't,
@@ -274,6 +304,8 @@ export function parseDraft(row: any): DealDraftData {
     dealCode: stored.dealCode || extra.dc || "",
     tags: stored.tags ?? row?.tags ?? [],
     gallery: stored.gallery ?? row?.gallery ?? [],
+    contactOverride: stored.contactOverride ?? row?.contactOverride ?? null,
+    customerInstructions: stored.customerInstructions ?? row?.customerInstructions ?? "",
   });
 }
 

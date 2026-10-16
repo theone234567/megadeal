@@ -48,6 +48,9 @@ import DealTagPicker from "@/components/DealTagPicker";
 import { cleanDealTags } from "@/lib/dealTags";
 import { wixImageUrl } from "@/lib/wixImageUrl";
 import DealGalleryPicker from "@/components/DealGalleryPicker";
+import DealContactSection from "@/components/portal/DealContactSection";
+import { contactOverrideError, effectiveContact, type ContactDetails, type ContactOverride } from "@/lib/contactOverride";
+import { isContactMethod } from "@/lib/dealContact";
 import { cleanGallery } from "@/lib/dealGallery";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
 
@@ -123,10 +126,15 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
     if (durationMinutes > maxFlashMinutes) setDurationMinutes(maxFlashMinutes);
   }, [durationDays, durationMinutes, maxDays, maxFlashMinutes]);
   const [quantityAvailable, setQuantityAvailable] = useState("");
-  /** "required" | "recommended" | "not_required", or "" until chosen —
-   *  never defaulted, so "no booking needed" is always the merchant's
-   *  own answer (see lib/booking.ts). */
-  const [bookingRequirement, setBookingRequirement] = useState("");
+  /** "required" | "recommended" | "not_required". A new deal starts on
+   *  "recommended", shown and changeable; never on "no booking needed",
+   *  which is always the merchant's own answer (see lib/booking.ts). A
+   *  draft or copied deal keeps its own answer. */
+  const [bookingRequirement, setBookingRequirement] = useState("recommended");
+  /** This deal's own contact details, or null for the business's
+   *  (lib/contactOverride.ts), and the business's note on using it. */
+  const [contactOverride, setContactOverride] = useState<ContactOverride | null>(null);
+  const [customerInstructions, setCustomerInstructions] = useState("");
   /** The business's own deal code; blank means we generate one. */
   const [dealCode, setDealCode] = useState("");
   /** Left the code box at least once — "too short" and a trailing hyphen
@@ -209,11 +217,21 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
 
   // A test deal has no business to book with; the preview shows how the
   // page handles that.
-  const merchantCanTakeBookings = isTest || hasUsableBookingRoute({
-    bookingUrl: merchant?.bookingUrl || null,
+  const businessContact: ContactDetails = {
     phone: merchant?.phone || null,
-    bookingEmail: merchant?.bookingEmail || null,
+    bookingUrl: merchant?.bookingUrl || null,
+    website: merchant?.website || null,
+    email: merchant?.bookingEmail || null,
+    preferred: isContactMethod(merchant?.preferredContact) ? merchant.preferredContact : null,
+  };
+  // The deal's own details when it has them (lib/contactOverride.ts).
+  const dealContact = effectiveContact(businessContact, contactOverride);
+  const merchantCanTakeBookings = isTest || hasUsableBookingRoute({
+    bookingUrl: dealContact.bookingUrl,
+    phone: dealContact.phone,
+    bookingEmail: dealContact.email,
   });
+  const contactProblem = contactOverrideError(contactOverride);
   const bookingTermsConflict = bookingConflict(bookingRequirement, terms);
 
   useEffect(() => {
@@ -309,6 +327,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         setCodeTested(false);
         setTags(cleanDealTags(original.tags));
         setGallery(cleanGallery(original.gallery, original.photoUrl));
+        setContactOverride(original.contactOverride && typeof original.contactOverride === "object" ? original.contactOverride : null);
+        setCustomerInstructions(typeof original.customerInstructions === "string" ? original.customerInstructions : "");
         setQuantityAvailable(
           original.quantityAvailable !== undefined && original.quantityAvailable !== null
             ? String(original.quantityAvailable)
@@ -377,6 +397,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         setCodeTested(draft.codeTested);
         setTags(draft.tags ?? []);
         setGallery(draft.gallery ?? []);
+        setContactOverride(draft.contactOverride ?? null);
+        setCustomerInstructions(draft.customerInstructions ?? "");
         setStartMode(draft.startMode);
         setStartDate(draft.startDate);
         setStartTime(draft.startTime);
@@ -514,6 +536,7 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
     dealName, category, description, terms, priceNow, priceWas, durationDays, isFlash, durationMinutes,
     quantityAvailable, bookingRequirement, dealCode, codeOnWebsite, codeWebsiteUrl, codeTested,
     selectedTerms, customTerms, photoPreview ?? "", testBusiness, testSuburb, startMode, startDate, startTime, tags, gallery,
+    contactOverride, customerInstructions,
   ]);
   const hasContent = Boolean(dealName.trim() || description.trim());
   const unsaved = savedSnapshot !== null && snapshot !== savedSnapshot && hasContent;
@@ -597,6 +620,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             customTerms,
             tags,
             gallery,
+            contactOverride,
+            customerInstructions,
             startMode,
             startDate,
             startTime,
@@ -710,6 +735,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
           codeTested,
           tags,
           gallery,
+          contactOverride,
+          customerInstructions,
           ...(startMode === "scheduled" ? { startMode, startDate, startTime } : {}),
           photoUrl: media?.url || "",
           photoMediaId: media?.id || "",
@@ -912,6 +939,8 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         codeWebsiteUrl,
         tags,
         gallery,
+        contactOverride,
+        customerInstructions,
       },
       isTest ? { businessName: testBusiness || null, suburb: testSuburb || null, city: "Auckland" } : merchant
     );
@@ -1745,6 +1774,22 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
             </p>
           )}
         </fieldset>
+
+        {!isTest && (
+          <DealContactSection
+            business={businessContact}
+            override={contactOverride}
+            onOverrideChange={setContactOverride}
+            instructions={customerInstructions}
+            onInstructionsChange={setCustomerInstructions}
+            requirement={isBookingChoice(bookingRequirement) ? bookingRequirement : "unknown"}
+            code={normaliseDealCode(dealCode) || savedCode || null}
+            codeWebsiteUrl={codeOnWebsite && dealCode ? codeWebsiteUrl : null}
+            businessName={merchant?.businessName ?? null}
+            dealName={dealName}
+            error={contactOverride ? contactProblem : null}
+          />
+        )}
 
         <DealTagPicker value={tags} onChange={setTags} />
 

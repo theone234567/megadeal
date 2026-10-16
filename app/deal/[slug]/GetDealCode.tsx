@@ -28,6 +28,7 @@ export default function GetDealCode({
   contact,
   businessName,
   dealName,
+  instructions,
   price,
   hours,
   profileHref,
@@ -40,6 +41,8 @@ export default function GetDealCode({
   contact: DealContact;
   businessName: string | null;
   dealName: string;
+  /** The business's own note on using the deal. */
+  instructions: string | null;
   price: { now: string; was: string | null; percentOff: number | null };
   hours: BusinessHoursData | null;
   profileHref: string | null;
@@ -180,6 +183,7 @@ export default function GetDealCode({
             contact={contact}
             businessName={businessName}
             dealName={dealName}
+            instructions={instructions}
             price={price}
             hours={hours}
             profileHref={profileHref}
@@ -198,6 +202,7 @@ function Panel({
   contact,
   businessName,
   dealName,
+  instructions,
   price,
   hours,
   profileHref,
@@ -209,6 +214,7 @@ function Panel({
   contact: DealContact;
   businessName: string | null;
   dealName: string;
+  instructions: string | null;
   price: { now: string; was: string | null };
   hours: BusinessHoursData | null;
   profileHref: string | null;
@@ -256,6 +262,13 @@ function Panel({
         {code ? <CodeBox code={code} onCopied={() => onAction("copy")} /> : null}
 
         <p className="mt-2 text-center text-sm text-slate-700">{contact.instruction}</p>
+        {/* The business's own words, as written, after MegaDeal's line. */}
+        {instructions && (
+          <p className="mt-2 whitespace-pre-line rounded-xl bg-slate-50 px-3 py-2 text-center text-sm text-slate-800">
+            <span className="font-semibold">{businessName ? `From ${businessName}: ` : "From the business: "}</span>
+            {instructions}
+          </p>
+        )}
         {contact.requirementLine && <p className="mt-3 text-center text-sm font-semibold text-slate-900">{contact.requirementLine}</p>}
 
         {(contact.primary || contact.secondary) && (

@@ -5,6 +5,8 @@ import { parseBookingRequirement } from "../booking";
 import { CATEGORIES } from "../categories";
 import { isDealLive } from "../dealVisibility";
 import { cleanGallery } from "../dealGallery";
+import { cleanContactOverride } from "../contactOverride";
+import { isContactMethod } from "../dealContact";
 import { cleanDealTags } from "../dealTags";
 import type { PublicBusiness } from "../business";
 import type { Deal, DealStatus } from "../types";
@@ -33,7 +35,8 @@ const BUSINESS_COLUMNS = `
   m.rating as b_rating, m.review_count as b_review_count,
   coalesce((to_jsonb(m)->>'hide_address')::boolean, false) as b_hide_address,
   to_jsonb(m)->>'service_area' as b_service_area, m.postcode as b_postcode,
-  m.owner_id is not null as b_claimed, m.first_approved_at as b_approved_at`;
+  m.owner_id is not null as b_claimed, m.first_approved_at as b_approved_at,
+  to_jsonb(m)->>'preferred_contact' as b_preferred_contact`;
 
 const DEAL_COLUMNS = `
   d.id, d.slug, d.name, d.description, d.category_slug, d.photo_url, d.price_now, d.price_was,
@@ -48,7 +51,9 @@ const DEAL_COLUMNS = `
   (to_jsonb(d)->>'merchant_confirmed_at')::timestamptz as merchant_confirmed_at,
   coalesce(to_jsonb(d)->>'source', 'merchant') as source,
   coalesce(to_jsonb(d)->'tags', '[]'::jsonb) as tags,
-  coalesce(to_jsonb(d)->'gallery', '[]'::jsonb) as gallery`;
+  coalesce(to_jsonb(d)->'gallery', '[]'::jsonb) as gallery,
+  to_jsonb(d)->'contact_override' as contact_override,
+  to_jsonb(d)->>'customer_instructions' as customer_instructions`;
 
 type Row = Record<string, any>;
 
@@ -100,6 +105,7 @@ export function rowToBusiness(r: Row): PublicBusiness {
     rating: toNumber(r.b_rating),
     reviewCount: toNumber(r.b_review_count),
     claimed: r.b_claimed === true,
+    preferredContact: isContactMethod(r.b_preferred_contact) ? r.b_preferred_contact : null,
   };
 }
 
@@ -165,6 +171,9 @@ export function rowToDeal(r: Row): Deal {
     source: r.source === "admin" || r.source === "community" ? r.source : "merchant",
     tags: cleanDealTags(r.tags),
     gallery: cleanGallery(r.gallery, blankToNull(r.photo_url)),
+    businessPreferredContact: b.preferredContact ?? null,
+    contactOverride: cleanContactOverride(r.contact_override),
+    customerInstructions: blankToNull(r.customer_instructions),
     businessClaimed: r.b_claimed === true,
     businessApprovedAt: toIso(r.b_approved_at),
   };

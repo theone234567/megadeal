@@ -1,3 +1,4 @@
+import { cleanContactOverride, contactOverrideError, type ContactOverride } from "./contactOverride";
 import { bookingConflict, isBookingChoice, websiteCodeError, type BookingRequirement } from "./booking";
 import { CATEGORY_ID_BY_NAME } from "./categories";
 import { dealCodeError, normaliseDealCode } from "./dealCode";
@@ -35,6 +36,9 @@ export interface DealFields {
   tags: string[];
   /** Up to four more photos besides the main one. */
   gallery: string[];
+  /** This deal's own contact details, or null for the business's. */
+  contactOverride: ContactOverride | null;
+  customerInstructions: string | null;
 }
 
 export interface DealFieldRules {
@@ -133,9 +137,19 @@ export function checkDealFields(body: any, rules: DealFieldRules): DealFieldsRes
     if (rules.photoError(url)) return fail("One of the extra photos couldn't be used. Remove it and add it again.");
   }
 
+  // This deal's own contact details, when it has them: checked like the
+  // profile's, and never saved over the business's.
+  const overrideProblem = contactOverrideError(body?.contactOverride);
+  if (overrideProblem) return fail(overrideProblem);
+  const contactOverride = cleanContactOverride(body?.contactOverride);
+  const rawInstructions = typeof body?.customerInstructions === "string" ? body.customerInstructions.trim() : "";
+  if (rawInstructions.length > 300) return fail("Keep the special instructions to 300 characters or fewer.");
+
   return {
     ok: true,
     fields: {
+      contactOverride,
+      customerInstructions: rawInstructions || null,
       dealName,
       description,
       terms,

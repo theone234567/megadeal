@@ -35,6 +35,9 @@ export function toListingDeal(deal: Deal): Deal {
     businessReviewCount: null,
     dealCode: null,
     bookingRequirement: "unknown",
+    businessPreferredContact: null,
+    contactOverride: null,
+    customerInstructions: null,
   };
 }
 
@@ -62,6 +65,9 @@ export function toCardDeal(deal: Deal): Deal {
     source: _source,
     businessClaimed: _claimed,
     businessApprovedAt: _bizApproved,
+    businessPreferredContact: _preferred,
+    contactOverride: _override,
+    customerInstructions: _instructions,
     ...card
   } = toListingDeal(deal);
   return { ...card, description: htmlToText(deal.description).slice(0, CARD_DESCRIPTION_CHARS) };

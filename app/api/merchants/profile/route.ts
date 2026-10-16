@@ -1,3 +1,5 @@
+import { availableMethods } from "@/lib/contactOverride";
+import { isContactMethod } from "@/lib/dealContact";
 import { NextRequest, NextResponse } from "next/server";
 import { isBookingChoice } from "@/lib/booking";
 import { phoneLink } from "@/lib/booking";
@@ -138,6 +140,14 @@ export async function POST(req: NextRequest) {
     fieldErrors.instagramUrl = "Enter a valid Instagram profile URL (e.g. instagram.com/yourbusiness).";
   }
 
+  // The main customer button: one of the methods given here, or none
+  // (MegaDeal's order). Left alone if not sent.
+  const preferredContact =
+    body.preferredContact === undefined ? undefined : isContactMethod(body.preferredContact) ? body.preferredContact : null;
+  if (preferredContact && !availableMethods({ phone, bookingUrl, website, email: bookingEmail }).includes(preferredContact)) {
+    fieldErrors.preferredContact = "Choose the main button from the contact details you've added.";
+  }
+
   if (Object.keys(fieldErrors).length > 0) {
     const messages = Object.values(fieldErrors);
     return NextResponse.json(
@@ -199,6 +209,7 @@ export async function POST(req: NextRequest) {
         : isBookingChoice(body.defaultBookingRequirement)
           ? body.defaultBookingRequirement
           : "",
+    preferredContact: preferredContact === undefined ? merchant.preferredContact ?? null : preferredContact,
     facebookUrl,
     instagramUrl,
     priceRange,

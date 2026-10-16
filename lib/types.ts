@@ -1,3 +1,5 @@
+import type { ContactMethod } from "./dealContact";
+import type { ContactOverride } from "./contactOverride";
 import type { BookingRequirement } from "./booking";
 
 /**
@@ -95,6 +97,13 @@ export interface Deal {
   tags?: string[];
   /** Up to four more photos besides `image`, for the deal page's gallery. */
   gallery?: string[];
+  /** The business's main customer button (lib/dealContact.ts). */
+  businessPreferredContact?: ContactMethod | null;
+  /** This deal's own contact details, when they differ from the
+   *  business's (lib/contactOverride.ts). */
+  contactOverride?: ContactOverride | null;
+  /** The business's short note on how to use the deal. */
+  customerInstructions?: string | null;
   /** The business's owner has a login linked to it. */
   businessClaimed?: boolean;
   /** When MegaDeal first approved the business. */

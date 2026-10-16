@@ -1,5 +1,8 @@
 "use client";
 
+import { availableMethods } from "@/lib/contactOverride";
+import { CONTACT_METHOD_LABELS, type ContactMethod } from "@/lib/dealContact";
+
 import { useEffect, useRef, useState } from "react";
 import { EyeOffIcon, GlobeIcon } from "@/components/icons";
 import AddressAutocompleteField, { findAddressPin } from "@/components/AddressAutocompleteField";
@@ -54,6 +57,7 @@ interface MerchantRecord {
   businessHours?: string;
   bookingUrl?: string;
   bookingEmail?: string;
+  preferredContact?: string | null;
   facebookUrl?: string;
   instagramUrl?: string;
   priceRange?: string;
@@ -131,6 +135,11 @@ export default function MerchantProfileForm({
   const [businessHours, setBusinessHours] = useState(merchant.businessHours || "");
   const [bookingUrl, setBookingUrl] = useState(merchant.bookingUrl || "");
   const [bookingEmail, setBookingEmail] = useState(merchant.bookingEmail || "");
+  const [preferredContact, setPreferredContact] = useState<string>(merchant.preferredContact || "");
+  // What the details typed so far can offer a customer, for the main
+  // button choice (lib/contactOverride.ts).
+  const supplied = availableMethods({ phone, bookingUrl, website, email: bookingEmail });
+  const mainButton = preferredContact && supplied.includes(preferredContact as ContactMethod) ? (preferredContact as ContactMethod) : supplied[0] ?? null;
   const [facebookUrl, setFacebookUrl] = useState(merchant.facebookUrl || "");
   const [instagramUrl, setInstagramUrl] = useState(merchant.instagramUrl || "");
   const [priceRange, setPriceRange] = useState(merchant.priceRange || "");
@@ -208,6 +217,8 @@ export default function MerchantProfileForm({
           businessHours,
           bookingUrl,
           bookingEmail,
+          // Only a method that's there; otherwise MegaDeal's order.
+          ...(createMode ? {} : { preferredContact: mainButton && preferredContact === mainButton ? mainButton : null }),
           facebookUrl,
           instagramUrl,
           priceRange,
@@ -602,7 +613,12 @@ export default function MerchantProfileForm({
           </div>
 
           <div className="space-y-3 border-t border-slate-100 pt-4">
-            <h3 className="text-sm font-bold text-slate-900">Contact details</h3>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Booking &amp; contact</h3>
+              <p className="text-xs text-slate-500">
+                Add the ways customers can reach you. Every deal uses these unless you change them for that deal.
+              </p>
+            </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label htmlFor="profile-phone" className={labelClass}>
@@ -679,6 +695,37 @@ export default function MerchantProfileForm({
                 />
                 {fieldError("bookingEmail")}
               </div>
+              {/* The main customer button: only from what's been added. One
+                  method is picked automatically. */}
+              {!createMode && supplied.length > 0 && (
+                <div className="sm:col-span-2">
+                  <label htmlFor="profile-preferredContact" className={labelClass}>
+                    Main customer button
+                  </label>
+                  {supplied.length === 1 ? (
+                    <p className="text-sm text-slate-700">
+                      <span className="font-semibold">{CONTACT_METHOD_LABELS[supplied[0]]}</span> (the only way you&apos;ve added)
+                    </p>
+                  ) : (
+                    <select
+                      id="profile-preferredContact"
+                      value={mainButton ?? ""}
+                      onChange={(e) => setPreferredContact(e.target.value)}
+                      className={`${inputClass("preferredContact")} sm:max-w-xs`}
+                    >
+                      {supplied.map((m) => (
+                        <option key={m} value={m}>
+                          {CONTACT_METHOD_LABELS[m]}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {fieldError("preferredContact")}
+                  <p className="mt-1 text-xs text-slate-500">
+                    The big button customers see with your deal code. The others show as smaller links.
+                  </p>
+                </div>
+              )}
               <div>
                 <label htmlFor="profile-facebookUrl" className={labelClass}>
                   Facebook

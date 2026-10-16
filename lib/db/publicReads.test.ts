@@ -32,6 +32,8 @@ function comparable(deal: Deal) {
   const {
     id: _id, formattedNow: _fn, formattedWas: _fw, variantId: _v, businessSlug: _b,
     updatedAt: _u, approvedAt: _a, merchantConfirmedAt: _m, source: _s, tags: _t, gallery: _g, businessClaimed: _c, businessApprovedAt: _ba,
+    // Booking & contact settings, new since Wix (20261019000000_booking_contact.sql).
+    businessPreferredContact: _pc, contactOverride: _co, customerInstructions: _ci,
     ...rest
   } = deal;
   return rest;
@@ -89,7 +91,7 @@ describe("the storefront shows what it did on Wix", () => {
     // The fixture has no suburb saved, so it's the name alone.
     const pg = await readBusinessBySlug(db, "harbour-bistro");
     // claimed is new since Wix (shown as "Business verified").
-    const { id: _p, slug: _ps, claimed: _cl, ...pgBusiness } = pg!;
+    const { id: _p, slug: _ps, claimed: _cl, preferredContact: _pc, ...pgBusiness } = pg!;
     expect(pgBusiness).toEqual(golden.businessPage);
     // The fixture's owner hasn't linked a login.
     expect(pg!.claimed).toBe(false);
