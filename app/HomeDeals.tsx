@@ -8,7 +8,6 @@ import type { Deal } from "@/lib/types";
 import { useWithTestDeals } from "@/lib/useTestDeals";
 import { useUserLocation, type Coords, type LocationStatus } from "@/lib/geo";
 import { pushUrl, useUrlSearch } from "@/lib/useUrlSearch";
-import { SORT_OPTIONS, type SortOption } from "@/lib/sortDeals";
 import { categoryBySlug } from "@/lib/categories";
 import { DEFAULT_CITY } from "@/lib/cities";
 import {
@@ -28,7 +27,10 @@ import {
 } from "@/lib/homeFilters";
 import CategoryNav from "@/components/CategoryNav";
 import DealGrid from "@/components/DealGrid";
-import { ChevronDownIcon, CloseIcon, GridIcon, MapPinIcon, SlidersIcon } from "@/components/icons";
+import SortSelect from "@/components/SortSelect";
+import ViewToggle from "@/components/ViewToggle";
+import { BROWSE_CONTROL } from "@/components/browseControls";
+import { ChevronDownIcon, CloseIcon, SlidersIcon } from "@/components/icons";
 
 const DealsMap = dynamic(() => import("@/components/DealsMap"), {
   ssr: false,
@@ -51,10 +53,6 @@ const PAGE = 24;
 
 /** Changes the URL without a server round trip (lib/useUrlSearch.ts). */
 const navigate = pushUrl;
-
-/** The toolbar's buttons: one height and outline, so the row reads as one. */
-const CONTROL =
-  "flex h-11 min-w-0 items-center justify-center gap-1.5 rounded-xl border bg-white px-2 text-sm font-semibold min-[400px]:gap-2 min-[400px]:px-3.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2";
 
 /** A link that filters in place on a plain click, and still works as a
  *  normal link before JavaScript loads or when opened in a new tab. */
@@ -231,9 +229,6 @@ function Toolbar({
   locationStatus: LocationStatus;
   filtersButtonRef: React.RefObject<HTMLButtonElement>;
 }) {
-  const sortLabel = (v: SortOption) =>
-    v === "nearest" ? "Nearest to me" : SORT_OPTIONS.find((o) => o.value === v)?.label ?? "Sort";
-
   return (
     <div className="mt-4 flex flex-col gap-2.5 md:flex-row md:flex-wrap md:items-center md:justify-between lg:mt-5">
       {/* Plain links with a current state rather than tabs: they filter
@@ -270,70 +265,8 @@ function Toolbar({
           openerRef={filtersButtonRef}
         />
 
-        {/* A native select under a styled face: keyboard, screen readers
-            and phone pickers all work with no custom widget. */}
-        <label
-          className={`${CONTROL} relative focus-within:ring-2 focus-within:ring-hp-purple focus-within:ring-offset-2 md:min-w-[7rem] ${
-            filters.sort !== "ending" ? "border-hp-purple text-hp-purple" : "border-hp-line text-hp-ink hover:border-hp-boundary"
-          }`}
-        >
-          <span aria-hidden className="truncate">
-            {filters.sort === "ending" ? "Sort" : sortLabel(filters.sort)}
-          </span>
-          <ChevronDownIcon className="h-4 w-4 shrink-0" />
-          <select
-            aria-label="Sort deals"
-            value={filters.sort}
-            onChange={(e) => set({ sort: e.target.value as SortOption })}
-            className="absolute inset-0 cursor-pointer appearance-none opacity-0"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {sortLabel(o.value)}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {/* Tablet and up: both views, the current one filled. */}
-        <div role="group" aria-label="Show deals as" className="hidden overflow-hidden rounded-xl border border-hp-line bg-white md:flex">
-          {(["grid", "map"] as const).map((v, i) => {
-            const Icon = v === "grid" ? GridIcon : MapPinIcon;
-            const selected = filters.view === v;
-            return (
-              <button
-                key={v}
-                type="button"
-                onClick={() => set({ view: v })}
-                aria-pressed={selected}
-                className={`flex h-11 items-center gap-1.5 px-3.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-hp-purple ${
-                  i > 0 ? "border-l border-hp-line" : ""
-                } ${selected ? "bg-hp-purple text-white" : "text-hp-ink hover:bg-hp-lavender"}`}
-              >
-                <Icon className="h-[18px] w-[18px]" />
-                {v === "grid" ? "Grid" : "Map"}
-              </button>
-            );
-          })}
-        </div>
-        {/* Phones: one button to the other view — "List" back from the map. */}
-        <button
-          type="button"
-          onClick={() => set({ view: filters.view === "map" ? "grid" : "map" })}
-          className={`${CONTROL} border-hp-line text-hp-ink hover:border-hp-boundary md:hidden`}
-        >
-          {filters.view === "map" ? (
-            <>
-              <GridIcon className="h-[18px] w-[18px] shrink-0" />
-              List
-            </>
-          ) : (
-            <>
-              <MapPinIcon className="h-[18px] w-[18px] shrink-0" />
-              Map
-            </>
-          )}
-        </button>
+        <SortSelect value={filters.sort} onChange={(sort) => set({ sort })} />
+        <ViewToggle value={filters.view} onChange={(view) => set({ view })} />
       </div>
     </div>
   );
@@ -400,7 +333,7 @@ function FilterPanel({
         type="button"
         onClick={open}
         aria-haspopup="dialog"
-        className={`${CONTROL} ${applied ? "border-hp-purple text-hp-purple" : "border-hp-line text-hp-ink hover:border-hp-boundary"}`}
+        className={`${BROWSE_CONTROL} ${applied ? "border-hp-purple text-hp-purple" : "border-hp-line text-hp-ink hover:border-hp-boundary"}`}
       >
         {/* With a count, a phone's narrow button drops the icon rather
             than cutting off the text. */}

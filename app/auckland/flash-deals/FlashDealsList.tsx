@@ -15,7 +15,7 @@ import ViewToggle, { type DealsView } from "@/components/ViewToggle";
 const DealsMap = dynamic(() => import("@/components/DealsMap"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[420px] items-center justify-center rounded-2xl border border-slate-100 text-sm text-slate-500">
+    <div className="flex h-[420px] items-center justify-center rounded-2xl border border-hp-line bg-white text-sm text-hp-muted">
       Loading map…
     </div>
   ),
@@ -50,11 +50,11 @@ export default function FlashDealsList({ initialDeals, testDeals = false }: { in
     <>
       {/* The page's only other heading is the H1 ("Flash Deals") — this
           fills the H1->H3 gap before DealGrid's per-card <h3>s. */}
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-xl font-bold text-slate-900">Live flash deals</h2>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-xl font-bold text-hp-ink">Live flash deals</h2>
         {flash.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            <SortSelect value={sort} onChange={setSort} />
+          <div className="flex gap-2">
+            <SortSelect value={sort} onChange={setSort} className="min-w-[6.5rem]" />
             <ViewToggle value={view} onChange={setView} />
           </div>
         )}
@@ -67,7 +67,7 @@ export default function FlashDealsList({ initialDeals, testDeals = false }: { in
       {view === "map" ? (
         <DealsMap deals={sorted} userLocation={coords} />
       ) : (
-        <DealGrid deals={sorted} emptyMessage={emptyMessage} priorityCount={2} />
+        <DealGrid deals={sorted} emptyMessage={emptyMessage} userLocation={coords} priorityCount={2} />
       )}
     </>
   );
