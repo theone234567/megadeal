@@ -210,7 +210,7 @@ const FAQS: { q: string; a: string; aNode?: ReactNode }[] = [
 /** Defaults to the brand purple; the deal-hunters section below passes
  *  its own sky-blue accent instead so its checkmarks match that
  *  section's color, not the page's default. */
-function Tick({ children, color = "#6520B5" }: { children: ReactNode; color?: string }) {
+function Tick({ children, color = "#6D28D9" }: { children: ReactNode; color?: string }) {
   return (
     <li className="flex items-start gap-2.5 text-[15px] font-semibold leading-6 text-slate-900">
       <span
@@ -226,8 +226,8 @@ function Tick({ children, color = "#6520B5" }: { children: ReactNode; color?: st
 
 /**
  * Brand-purple wash over the hero's background photo, solid behind the
- * text column and fading out over the photo — rgba(101,32,181,*) is
- * the brand purple (#6520B5, brand-600 in tailwind.config.ts), the same
+ * text column and fading out over the photo — rgba(109,40,217,*) is
+ * the brand purple (#6D28D9, brand-600 in tailwind.config.ts), the same
  * purple the rest of the site uses, not a new colour.
  *
  * Fixed pixel width, not a percentage of the section: the text column is
@@ -316,7 +316,7 @@ async function LegacyComingSoonPage() {
           in that gap. */}
       <section
         id="cs-hero"
-        className="relative isolate overflow-hidden bg-[#6520B5] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 text-white"
+        className="relative isolate overflow-hidden bg-[#6D28D9] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 text-white"
       >
         {/* Photo + gradient layer: lg (1024px) and up only. Below that the
             artwork moves into its own panel underneath the content instead
@@ -390,7 +390,7 @@ async function LegacyComingSoonPage() {
                 className="absolute inset-y-0 left-0 w-[8%]"
                 style={{
                   backgroundImage:
-                    "linear-gradient(90deg, rgba(101,32,181,0.95) 0%, rgba(101,32,181,0) 100%)",
+                    "linear-gradient(90deg, rgba(109,40,217,0.95) 0%, rgba(109,40,217,0) 100%)",
                 }}
               />
               <div
@@ -398,7 +398,7 @@ async function LegacyComingSoonPage() {
                 className="absolute inset-x-0 top-0 h-[3.5%]"
                 style={{
                   backgroundImage:
-                    "linear-gradient(180deg, rgba(101,32,181,0.85) 0%, rgba(101,32,181,0) 100%)",
+                    "linear-gradient(180deg, rgba(109,40,217,0.85) 0%, rgba(109,40,217,0) 100%)",
                 }}
               />
               <div
@@ -406,13 +406,13 @@ async function LegacyComingSoonPage() {
                 className="absolute inset-x-0 bottom-0 h-[5%]"
                 style={{
                   backgroundImage:
-                    "linear-gradient(0deg, rgba(101,32,181,0.85) 0%, rgba(101,32,181,0) 100%)",
+                    "linear-gradient(0deg, rgba(109,40,217,0.85) 0%, rgba(109,40,217,0) 100%)",
                 }}
               />
             </div>
             <HeroGradientWash
               width={620}
-              stops="rgba(101,32,181,0.97) 0px, rgba(101,32,181,0.94) 460px, rgba(101,32,181,0.72) 520px, rgba(101,32,181,0.32) 565px, rgba(101,32,181,0.08) 600px, rgba(101,32,181,0) 620px"
+              stops="rgba(109,40,217,0.97) 0px, rgba(109,40,217,0.94) 460px, rgba(109,40,217,0.72) 520px, rgba(109,40,217,0.32) 565px, rgba(109,40,217,0.08) 600px, rgba(109,40,217,0) 620px"
             />
           </div>
         )}
@@ -499,7 +499,7 @@ async function LegacyComingSoonPage() {
 
               <Link
                 href="/list-your-business"
-                className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#6520B5]/40 sm:items-center sm:gap-4 sm:rounded-[20px] sm:p-4"
+                className="group flex items-center gap-3.5 rounded-[18px] border border-[#eee7f6] bg-white p-4 shadow-[0_12px_32px_rgba(40,7,88,.10)] transition hover:border-[#6D28D9]/40 sm:items-center sm:gap-4 sm:rounded-[20px] sm:p-4"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eee2ff] text-brand-700 sm:h-12 sm:w-12">
                   <StoreIcon className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -560,7 +560,7 @@ async function LegacyComingSoonPage() {
 
       {/* ------------------------------------------------- How MegaDeal works */}
       <section className={`${shell} py-8 lg:py-10`}>
-        <div className="rounded-[22px] bg-[#6520B5] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 px-5 py-7 text-white shadow-[0_16px_40px_rgba(69,16,141,.12)] sm:px-8 sm:py-8 lg:rounded-[26px]">
+        <div className="rounded-[22px] bg-[#6D28D9] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 px-5 py-7 text-white shadow-[0_16px_40px_rgba(69,16,141,.12)] sm:px-8 sm:py-8 lg:rounded-[26px]">
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
             <div>
               <h2 className={`${fredoka.className} text-2xl font-bold sm:text-3xl`}>
@@ -764,7 +764,7 @@ async function LegacyComingSoonPage() {
                 )}
               </div>
               <div className="flex min-h-[60px] items-center gap-2.5 px-3 py-3 lg:min-h-[64px]">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f2ecff] text-brand-700 transition group-hover:bg-[#6520B5] group-hover:text-white">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f2ecff] text-brand-700 transition group-hover:bg-[#6D28D9] group-hover:text-white">
                   <Icon className="h-[18px] w-[18px]" />
                 </span>
                 <span className="text-[13px] font-extrabold leading-tight text-slate-900 transition group-hover:text-brand-700 lg:text-sm">

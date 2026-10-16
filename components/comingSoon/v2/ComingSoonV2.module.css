@@ -1,9 +1,9 @@
 /* Coming-soon V2 (pack of 3 Oct 2026). Scoped to this module: no global
    selectors. Colours and fonts are the site's own tokens: --md-purple is
-   set by app/coming-soon/theme.css (#6520B5, Tailwind brand-600), the font
+   set by app/coming-soon/theme.css (#6D28D9, Tailwind brand-600), the font
    variables by next/font in lib/fonts.ts via the root layout. */
 .page {
-  --purple: var(--md-purple, #6520b5);
+  --purple: var(--md-purple, #6D28D9);
   --ink: #0f172a;
   --muted: #475569;
   --line: #e2e8f0;

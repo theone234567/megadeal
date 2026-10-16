@@ -84,7 +84,7 @@ const PRIMARY_BUTTON =
 
 const INK = "#0F172A";
 const BODY = "#475569";
-const PURPLE = "#6520B5";
+const PURPLE = "#6D28D9";
 const LINE = "#E8E1EF";
 const LAVENDER = "#F5EFFC";
 
@@ -332,7 +332,7 @@ export default function HomeCarAdvertisingPage() {
 
       <a
         href="#home-car-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#6520B5] focus:shadow-card"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#6D28D9] focus:shadow-card"
       >
         Skip to main content
       </a>
@@ -439,10 +439,10 @@ export default function HomeCarAdvertisingPage() {
               <li key={b.id}>
                 <a
                   href={`#${b.id}`}
-                  className="flex min-h-11 items-center gap-2 rounded-full border bg-white px-4 py-2 text-sm font-semibold transition hover:border-[#6520B5]/40 hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
+                  className="flex min-h-11 items-center gap-2 rounded-full border bg-white px-4 py-2 text-sm font-semibold transition hover:border-[#6D28D9]/40 hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
                   style={{ borderColor: LINE, color: INK }}
                 >
-                  <b.icon className="h-4 w-4 text-[#6520B5]" />
+                  <b.icon className="h-4 w-4 text-[#6D28D9]" />
                   {b.title}
                 </a>
               </li>
@@ -531,7 +531,7 @@ export default function HomeCarAdvertisingPage() {
                       <ul className="mt-2 space-y-2">
                         {b.ideas.map((idea) => (
                           <li key={idea.title} className="flex items-start gap-2 text-sm leading-snug" style={{ color: INK }}>
-                            <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#6520B5]" />
+                            <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-[#6D28D9]" />
                             <span>
                               <strong className="font-semibold">{idea.title}</strong>{" "}
                               <span style={{ color: BODY }}>— {idea.description}</span>
@@ -734,7 +734,7 @@ export default function HomeCarAdvertisingPage() {
                   style={{ borderColor: LINE }}
                 >
                   <summary
-                    className="cursor-pointer list-none font-bold marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6520B5]"
+                    className="cursor-pointer list-none font-bold marker:content-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6D28D9]"
                     style={{ color: INK }}
                   >
                     <span className="flex items-center justify-between gap-4">

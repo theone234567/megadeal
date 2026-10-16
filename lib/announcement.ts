@@ -115,7 +115,7 @@ export const BODY_MAX = 4000;
 
 /** Web addresses in already-escaped text become links (http and https only). */
 function linkify(escaped: string): string {
-  return escaped.replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g, (url) => `<a href="${url}" style="color:#6520B5;">${url}</a>`);
+  return escaped.replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g, (url) => `<a href="${url}" style="color:#6D28D9;">${url}</a>`);
 }
 
 /** Plain text in, safe HTML paragraphs out: a blank line starts a new
@@ -173,7 +173,7 @@ export function announcementHtml(opts: {
     brandedEmailHtml(`
       ${bodyToHtml(opts.body)}
       <div style="text-align:center;margin:24px 0 8px;">
-        <a href="${site}${button.path}" style="display:inline-block;background:#6520B5;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 32px;border-radius:9999px;">${escapeHtml(button.label)}</a>
+        <a href="${site}${button.path}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;font-size:15px;text-decoration:none;padding:14px 32px;border-radius:9999px;">${escapeHtml(button.label)}</a>
       </div>
     `) +
     `<p style="margin:16px auto 0;max-width:480px;text-align:center;font-size:12px;line-height:1.5;color:#a39cae;">

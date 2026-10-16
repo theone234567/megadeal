@@ -112,7 +112,7 @@ describe("the new-deals draft", () => {
 
   it("turns web addresses into links, and only those", () => {
     const html = bodyToHtml("See https://megadeal.co.nz/deal/x. Or javascript:alert(1) <a href=x>");
-    expect(html).toContain('<a href="https://megadeal.co.nz/deal/x" style="color:#6520B5;">https://megadeal.co.nz/deal/x</a>.');
+    expect(html).toContain('<a href="https://megadeal.co.nz/deal/x" style="color:#6D28D9;">https://megadeal.co.nz/deal/x</a>.');
     expect(html).not.toContain('href="javascript');
     expect(html).toContain("&lt;a href=x&gt;");
   });

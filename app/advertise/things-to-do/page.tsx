@@ -237,9 +237,9 @@ const H2 = `${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibol
 const EYEBROW = "text-xs font-bold uppercase tracking-wider";
 const INK = { color: "#0F172A" };
 const MUTED = { color: "#475569" };
-const PURPLE = { color: "#6520B5" };
+const PURPLE = { color: "#6D28D9" };
 const LINE = { borderColor: "#E8E1EF" };
-const ICON_CIRCLE = { backgroundColor: "#F5EFFC", color: "#6520B5" };
+const ICON_CIRCLE = { backgroundColor: "#F5EFFC", color: "#6D28D9" };
 const PRIMARY_BUTTON =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-hp-purple px-6 py-3 text-center text-base font-bold text-white transition hover:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2";
 
@@ -273,7 +273,7 @@ export default function ThingsToDoAdvertisingPage() {
 
       <a
         href="#things-to-do-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#6520B5] focus:shadow-card"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#6D28D9] focus:shadow-card"
       >
         Skip to main content
       </a>
@@ -375,10 +375,10 @@ export default function ThingsToDoAdvertisingPage() {
                 <li key={c.id}>
                   <a
                     href={`#${c.id}`}
-                    className="flex min-h-11 shrink-0 items-center gap-2 rounded-full border bg-white px-4 py-2 text-sm font-semibold transition hover:border-[#6520B5]/40 hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
+                    className="flex min-h-11 shrink-0 items-center gap-2 rounded-full border bg-white px-4 py-2 text-sm font-semibold transition hover:border-[#6D28D9]/40 hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
                     style={{ ...LINE, ...INK }}
                   >
-                    <c.icon className="h-4 w-4 text-[#6520B5]" />
+                    <c.icon className="h-4 w-4 text-[#6D28D9]" />
                     {c.title}
                   </a>
                 </li>
@@ -491,7 +491,7 @@ export default function ThingsToDoAdvertisingPage() {
                   <span
                     aria-hidden
                     className={`${fredoka.className} flex h-12 w-12 items-center justify-center rounded-full text-2xl font-bold`}
-                    style={{ backgroundColor: "#F1EBFB", color: "#6520B5" }}
+                    style={{ backgroundColor: "#F1EBFB", color: "#6D28D9" }}
                   >
                     {s.number}
                   </span>

@@ -110,7 +110,7 @@ export function reviewQueueEmail(waiting: QueueItem[], fresh: QueueItem[], admin
       <ul style="margin:0 0 16px;padding-left:20px;">${newList}${fresh.length > 10 ? `<li>and ${fresh.length - 10} more</li>` : ""}</ul>
       <p style="margin:0 0 16px;">Businesses are told they'll usually hear back within 12 hours.</p>
       <p style="margin:0 0 16px;text-align:center;">
-        <a href="${adminUrl}" style="display:inline-block;background:#6520B5;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Open admin</a>
+        <a href="${adminUrl}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Open admin</a>
       </p>
       <p style="margin:0;font-size:12px;color:#8b8494;">At most one of these an hour, and only when something new arrives.</p>
     `),

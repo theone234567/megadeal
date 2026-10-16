@@ -28,7 +28,7 @@ untouched by switching or rolling back.
   privacy policy), same double opt-in. Only a `shape="rounded"` option was added (8px corners,
   48px controls); every other form keeps its pill shape.
 - Fonts: Fredoka (headings) and Plus Jakarta Sans (body) from `lib/fonts.ts`, via their CSS
-  variables; purple `#6520B5` (`--md-purple`, Tailwind `brand-600`). Confirmed from computed
+  variables; purple `#6D28D9` (`--md-purple`, Tailwind `brand-600`). Confirmed from computed
   styles in the browser.
 - Social links: `SOCIAL_URLS` in `components/SocialLinks.tsx` (the site's existing profiles).
 - Copy, FAQs and category photos: `lib/comingSoonV2Content.ts`.

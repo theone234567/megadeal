@@ -2,7 +2,7 @@
 
 ## Match the actual Beauty & Spa page
 
-Observed on 29 September 2026: purple header with white logo; purple-gradient hero; Fredoka H1, weight 600, desktop 62px / 66.96px; Plus Jakarta Sans paragraphs, links and controls. Main text #0F172A; secondary text #475569; CTA text #6520B5. Reuse current source tokens/classes when available.
+Observed on 29 September 2026: purple header with white logo; purple-gradient hero; Fredoka H1, weight 600, desktop 62px / 66.96px; Plus Jakarta Sans paragraphs, links and controls. Main text #0F172A; secondary text #475569; CTA text #6D28D9. Reuse current source tokens/classes when available.
 
 Hero background observed:
 

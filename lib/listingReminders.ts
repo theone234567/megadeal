@@ -117,7 +117,7 @@ export function reminderEmailHtml(businessName: string, missing: string[], porta
     <p style="margin:0 0 16px;">Hi ${escapeHtml(businessName || "there")},</p>
     <p style="margin:0 0 16px;">Thanks for signing up to MegaDeal. Your listing is nearly ready: it just needs ${escapeHtml(joinList(missing))}. Once that's in, we can check and approve your business so you can start running deals.</p>
     <p style="margin:0 0 16px;text-align:center;">
-      <a href="${portalUrl}" style="display:inline-block;background:#6520B5;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Finish my listing</a>
+      <a href="${portalUrl}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Finish my listing</a>
     </p>
     <p style="margin:0 0 16px;font-size:13px;color:#8b8494;">It takes a few minutes. Questions? Just reply to this email.</p>
     <p style="margin:0;font-size:12px;color:#8b8494;border-top:1px solid #f1f0f4;padding-top:12px;">You're getting this because you started a MegaDeal business account. Don't want emails like this? <a href="${stopUrl}" style="color:#8b8494;">Unsubscribe</a>.</p>

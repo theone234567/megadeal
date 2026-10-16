@@ -39,8 +39,8 @@ Existing public pages use **Plus Jakarta Sans** and **Fredoka**. Standardise del
 |---|---|---|
 | `ink` | `#211A35` | Main text/headings |
 | `muted` | `#625C70` | Secondary text, not critical price/expiry |
-| `brand` | `#6520B5` | Primary actions, selected controls, links |
-| `brandHover` | `#501590` | Interactive hover |
+| `brand` | `#6D28D9` | Primary actions, selected controls, links |
+| `brandHover` | `#5B21B6` | Interactive hover |
 | `lavender` | `#F5F0FC` | Limited section tint |
 | `surface` | `#FFFFFF` | Cards, page surfaces |
 | `page` | `#FBFAFD` | Overall background |

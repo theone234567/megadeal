@@ -23,7 +23,7 @@
 export const LOGO_STYLE: "classic" | "minimal" = "minimal";
 
 /** The brand purple, as in tailwind.config.ts (brand-600 / hp-purple). */
-export const BRAND_PURPLE = "#6520B5";
+export const BRAND_PURPLE = "#6D28D9";
 
 /**
  * The site's headers are brand purple with the white logo while the

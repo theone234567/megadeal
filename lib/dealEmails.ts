@@ -14,7 +14,7 @@ export interface DealEmail {
 }
 
 const portalLink = (siteUrl: string, label: string) =>
-  `<p style="margin:0 0 16px;"><a href="${siteUrl}/portal" style="color:#6520B5;font-weight:700;">${label}</a></p>`;
+  `<p style="margin:0 0 16px;"><a href="${siteUrl}/portal" style="color:#6D28D9;font-weight:700;">${label}</a></p>`;
 
 /** A deal approved for the first time. Before launch, it shows from launch day. */
 export function dealLiveEmail(dealName: string, opts: { launched: boolean; siteUrl: string }): DealEmail {

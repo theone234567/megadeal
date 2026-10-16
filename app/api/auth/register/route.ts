@@ -53,7 +53,7 @@ function alreadyHaveAccountHtml(): string {
     <p style="margin:0 0 16px;">Hi there,</p>
     <p style="margin:0 0 16px;">Someone (hopefully you) just tried to sign up to MegaDeal with this email address. It already has a business account, and each email can have one business.</p>
     <p style="margin:0 0 16px;text-align:center;">
-      <a href="${signIn}" style="display:inline-block;background:#6520B5;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Sign in to your business portal</a>
+      <a href="${signIn}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Sign in to your business portal</a>
     </p>
     <p style="margin:0 0 16px;">Forgotten your password? On the sign-in page, enter your email and tap &ldquo;Forgot password&rdquo;. To list a second, different business, sign up with a different email address.</p>
     <p style="margin:0 0 16px;">If this wasn't you, you can ignore this email: nothing has changed on your account.</p>

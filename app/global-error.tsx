@@ -49,7 +49,7 @@ export default function GlobalError({
           style={{
             marginTop: "1.5rem",
             borderRadius: "999px",
-            background: "#6520B5",
+            background: "#6D28D9",
             color: "#fff",
             fontWeight: 700,
             fontSize: "0.875rem",
