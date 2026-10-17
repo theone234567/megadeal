@@ -34,7 +34,7 @@ export default function PrelaunchBar() {
   const pathname = usePathname();
   if (pathname && HIDDEN.test(pathname)) return null;
   return (
-    <div className="bg-hp-ink text-white">
+    <aside aria-label="Prelaunch" className="bg-hp-ink text-white">
       {/* Phone: two short lines. */}
       <div className="flex items-center gap-3 px-4 py-2 md:hidden">
         <MegaphoneIcon className="h-5 w-5 shrink-0 text-white/90" />
@@ -69,6 +69,6 @@ export default function PrelaunchBar() {
           <Terms />
         </p>
       </div>
-    </div>
+    </aside>
   );
 }

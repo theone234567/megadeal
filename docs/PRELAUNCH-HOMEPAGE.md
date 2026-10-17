@@ -5,30 +5,34 @@ looks like the marketplace, without launching the site.
 
 ## What visitors see, in order
 
-1. Purple header. The business button reads "Claim my free advertising"
+1. Dark prelaunch bar (`components/PrelaunchBar.tsx`), above the header on
+   every public page except the portal and admin: information only (the
+   header has the "Advertise free" button), with a T&Cs link. Scrolls away.
+2. Purple header. The business button reads "Claim my free advertising"
    ("Advertise free" where it's narrower) and goes to /list-your-business.
-2. Dark prelaunch bar (`components/PrelaunchBar.tsx`), above the header on
-   every public page: information only (the header has the "Advertise
-   free" button), with a T&Cs link.
 3. Hero (`components/PrelaunchHero.tsx`): "Auckland first", the one `<h1>`
    "Big local deals are coming to Auckland.", the offer, "Claim my free
-   advertising", "See example deals", one trust line. Auckland skyline photo
-   plus the current mascot, `public/megadeal/mascot/megadeal-mascot-hero.webp`,
-   as a separate layer at its own proportions.
-4. Example deals (`lib/demoDeals.ts`): fixed examples with "Example …"
-   businesses and the site's own photos, labelled EXAMPLE. Each opens an
+   advertising", "See example deals", one trust line. Beside it, three
+   example deals as tilted cards (`public/megadeal/hero/collage-*`) and the
+   current mascot, `public/megadeal/mascot/megadeal-mascot-hero.webp`, at
+   its own proportions.
+4. Example deals: test businesses' live deals first (so the owner can see
+   a real deal as it will look), then the fixed examples in
+   `lib/demoDeals.ts`, the first six one from each category. "Example …"
+   businesses, the site's own photos, labelled EXAMPLE. Each opens an
    example deal page (`/example/[slug]`): the real deal page under an
    "Example only" banner, code "EXAMPLE", contact details on example.com
    only, no phone. Never searched, counted, indexed or put in structured
    data.
-5. Categories, deal type, Filters (price and distance) and Sort: these
-   control the real deals only, so they sit right above them. No map before
-   launch (its pins open the deal pages, which are still private).
-6. Launch deals: real approved deals, labelled "Available at launch", in a
-   row (`components/DealRail.tsx`). Any category, filter, search or "View
-   all deals" shows the usual grid. The cards don't link: deal and business
-   pages stay admin-only until launch.
-7. Business strip with the full offer, then the footer.
+5. Categories (`components/CategoryNav.tsx`), all always on screen: one row
+   on a computer, equal tiles on a tablet and phone, so no category is
+   hidden off the edge. Then deal type, Filters (price and distance), Sort
+   and the map: these control the real deals only, so they sit right above
+   them.
+6. Live deals: real approved deals in a row (`components/DealRail.tsx`),
+   each opening its deal page. Any category, filter, search or "View all
+   deals" shows the usual grid.
+7. Purple business band with the full offer, then the footer.
 
 ## Search engines
 
