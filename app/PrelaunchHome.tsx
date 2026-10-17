@@ -7,7 +7,7 @@ import { PRELAUNCH_PROMO } from "@/lib/promo";
 import PrelaunchHero from "@/components/PrelaunchHero";
 import SearchAwareHero from "@/components/SearchAwareHero";
 import DealRail from "@/components/DealRail";
-import { ArrowRightIcon, CalendarIcon, PercentIcon, ZapIcon } from "@/components/icons";
+import { ArrowRightIcon, CheckIcon } from "@/components/icons";
 import HomeDeals from "./HomeDeals";
 
 /**
@@ -179,79 +179,112 @@ function HowItWorks() {
 }
 
 /**
- * The business offer, once, after the deals: a full-width purple band.
- * One row (heading left, action right), then the three things a business
- * gets as an icon list with one-line titles, then the conditions link.
- * A real <h2> and <ul> with plain words ("Auckland businesses",
- * "advertise free", "0% commission") so search engines and AI tools read
- * the offer, and descriptive link text.
+ * The business offer, once, after the deals: a contained purple card (the
+ * hero's rounded, soft-glow look, not a flat full-width slab). Left: a
+ * two-line headline, the offer as a short tick list, one action. Right,
+ * from tablet up: a sample listing ("Your deal here") with the mascot, so a
+ * business can picture its own deal. A real <h2> and <ul> in plain words
+ * ("Auckland businesses", "advertise free", "0% commission") for search
+ * engines and AI tools.
  */
 function BusinessBand() {
   const points = [
-    {
-      Icon: ZapIcon,
-      title: "Free while we prelaunch",
-      text: "Run 1 Everyday Deal and 1 Flash Deal at a time. No credits used before launch.",
-    },
-    {
-      Icon: CalendarIcon,
-      title: `Up to ${PRELAUNCH_PROMO.months} months free*`,
-      text: `${PRELAUNCH_PROMO.credits} credits once approved, used from launch: an Everyday Deal uses 30, a Flash Deal 3.`,
-    },
-    {
-      Icon: PercentIcon,
-      title: "0% commission",
-      text: "Customers contact you by phone, booking link or email, and pay you directly.",
-    },
+    { lead: "Free now:", text: "run 1 Everyday Deal and 1 Flash Deal at a time, no credits used." },
+    { lead: `Up to ${PRELAUNCH_PROMO.months} months free`, text: `from launch: ${PRELAUNCH_PROMO.credits} credits once you're approved.*` },
+    { lead: "0% commission:", text: "customers contact you and pay you directly." },
   ];
   return (
-    <section aria-labelledby="business-band-heading" className="mt-10 bg-hp-purple text-white lg:mt-12">
-      <div className="mx-auto max-w-[1200px] px-4 py-7 sm:px-6 lg:px-8 lg:py-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-8">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-white/85">For Auckland businesses · No credit card, no lock-in</p>
-            <h2 id="business-band-heading" className="mt-1 font-display text-[1.5rem] font-bold leading-tight sm:text-[1.75rem] lg:text-[2rem]">
-              {/* A sentence a line where it can't fit on one, never "Be / there". */}
-              <span className="block xl:inline">Advertise free.</span> <span className="block xl:inline">Be there on launch day.</span>
+    <section aria-labelledby="business-band-heading" className="mx-auto max-w-[1200px] px-4 pb-12 pt-10 sm:px-6 lg:px-8 lg:pb-14 lg:pt-12">
+      <div className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#7C3AED] via-hp-purple to-[#4C1D95] px-5 py-7 text-white sm:rounded-3xl sm:px-8 sm:py-9 lg:px-12 lg:py-10">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-[#F0ABFC]/20 blur-3xl" />
+
+        <div className="relative grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_240px] lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-14">
+          <div>
+            <p className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-[0.1em] text-white">
+              For Auckland businesses
+            </p>
+            <h2 id="business-band-heading" className="mt-3 font-display text-[1.75rem] font-bold leading-[1.1] sm:text-[2.125rem] lg:text-[2.5rem]">
+              <span className="block">Advertise free.</span>
+              <span className="block text-[#FDE68A]">Be there on launch day.</span>
             </h2>
+            <ul className="mt-5 space-y-2.5">
+              {points.map((p) => (
+                <li key={p.lead} className="flex items-start gap-2.5 text-[0.9375rem] leading-snug text-white/90 sm:text-base">
+                  <span aria-hidden="true" className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white text-hp-purple">
+                    <CheckIcon className="h-3.5 w-3.5" />
+                  </span>
+                  <span>
+                    <strong className="font-bold text-white">{p.lead}</strong> {p.text}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+              <Link
+                href="/list-your-business"
+                className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-white px-6 text-[0.9375rem] font-bold text-hp-purple shadow-[0_8px_20px_rgba(33,26,53,0.25)] transition hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple sm:w-auto"
+              >
+                Claim my free advertising
+                <ArrowRightIcon className="h-4 w-4" />
+              </Link>
+              <Link href="/portal" prefetch={false} className="text-sm font-semibold text-white/90 underline underline-offset-2 hover:text-white">
+                Business sign in
+              </Link>
+            </div>
+            <p className="mt-4 text-xs text-white/75">
+              No credit card · No lock-in ·{" "}
+              <Link href="/terms" prefetch={false} className="underline underline-offset-2 hover:text-white">
+                *Conditions apply. Offers may change at any time.
+              </Link>
+            </p>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2">
-            <Link
-              href="/list-your-business"
-              className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-6 text-[0.9375rem] font-bold text-hp-purple transition hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple"
-            >
-              Claim my free advertising
-              <ArrowRightIcon className="h-4 w-4" />
-            </Link>
-            <Link href="/portal" prefetch={false} className="hidden text-sm font-semibold text-white/90 underline underline-offset-2 hover:text-white sm:inline">
-              Business sign in
-            </Link>
+
+          {/* A sample listing, not a real deal: decorative only. */}
+          <div aria-hidden="true" className="relative mx-auto hidden w-full max-w-[300px] md:block">
+            <div className="rotate-[3deg] overflow-hidden rounded-2xl border-[5px] border-white bg-white text-hp-ink shadow-[0_18px_40px_rgba(20,10,50,0.35)]">
+              <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/megadeal/hero/collage-pizza-480.webp"
+                  srcSet="/megadeal/hero/collage-pizza-320.webp 320w, /megadeal/hero/collage-pizza-480.webp 480w"
+                  sizes="300px"
+                  width={480}
+                  height={360}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <span className="absolute left-2 top-2 rounded-md bg-[#FDE68A] px-2 py-0.5 text-[0.6875rem] font-extrabold uppercase tracking-wide text-hp-ink">
+                  Your deal here
+                </span>
+                <span className="absolute right-2 top-2 rounded-md bg-white px-2 py-0.5 text-xs font-bold text-hp-ink">37% off</span>
+              </div>
+              <div className="px-3 pb-3 pt-2.5">
+                <span className="rounded bg-hp-lavender px-1.5 py-0.5 text-[0.6875rem] font-semibold text-hp-purple">Everyday</span>
+                <p className="mt-1.5 font-display text-[0.9375rem] font-bold leading-snug">Your offer, on launch day</p>
+                <p className="mt-0.5 text-xs text-hp-muted">Your suburb · Your business</p>
+                <p className="mt-1.5 leading-none">
+                  <span className="font-display text-lg font-bold text-hp-purple">$49</span>
+                  <span className="ml-1.5 text-xs text-hp-muted line-through">$78</span>
+                </p>
+              </div>
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/megadeal/mascot/megadeal-mascot-hero-240.webp"
+              srcSet="/megadeal/mascot/megadeal-mascot-hero-240.webp 240w, /megadeal/mascot/megadeal-mascot-hero-380.webp 380w"
+              sizes="120px"
+              width={240}
+              height={249}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="absolute -bottom-8 -right-5 w-[96px] drop-shadow-[0_10px_18px_rgba(20,10,50,0.35)] lg:-right-10 lg:w-[116px]"
+            />
           </div>
         </div>
-
-        <ul className="mt-5 grid gap-4 border-t border-white/20 pt-5 md:grid-cols-3 md:gap-6">
-          {points.map(({ Icon, title, text }) => (
-            <li key={title} className="flex gap-3">
-              <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
-                <Icon className="h-[18px] w-[18px]" />
-              </span>
-              <div className="min-w-0">
-                <h3 className="font-display text-base font-bold leading-snug lg:text-[1.0625rem]">{title}</h3>
-                <p className="mt-0.5 text-sm leading-snug text-white/85">{text}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-white/75">
-          {/* On a phone "Business sign in" sits here, not alone under the button. */}
-          <Link href="/portal" prefetch={false} className="text-sm font-semibold text-white/90 underline underline-offset-2 hover:text-white sm:hidden">
-            Business sign in
-          </Link>
-          <Link href="/terms" prefetch={false} className="underline underline-offset-2 hover:text-white">
-            *Conditions apply. Offers may change at any time.
-          </Link>
-        </p>
       </div>
     </section>
   );
