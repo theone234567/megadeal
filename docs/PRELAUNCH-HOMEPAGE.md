@@ -25,9 +25,9 @@ looks like the marketplace, without launching the site.
    the real deal page under an "Example only" banner, code "EXAMPLE",
    contact details on example.com only, no phone. Never searched, counted,
    indexed or put in structured data.
-5. Shoppers' email sign-up ("Get Auckland's launch deals by email",
-   `#deal-alerts`, linked from the hero). The footer's own sign-up is left
-   out on this page, and the footer sits straight under the purple band.
+5. (The shoppers' email sign-up, "Get Auckland's launch deals by email",
+   is in the footer on every page, with the social links; the hero's link
+   jumps to it, `#deal-alerts`.)
 6. Categories (`components/CategoryNav.tsx`), all always on screen: one row
    on a computer, equal tiles on a tablet and phone. While deals are live
    they link to the real category pages (`/auckland/<category>`). Then deal
@@ -35,7 +35,8 @@ looks like the marketplace, without launching the site.
 7. Live deals: real approved deals in a row (`components/DealRail.tsx`).
 8. "How MegaDeal works" for shoppers (3 steps) and 5 questions, also given
    to search engines as FAQPage data.
-9. Purple business band with the full offer, then the footer.
+9. Purple business card with the offer and a sample listing (the mascot
+   pointing at it), then the footer.
 
 ## Search engines
 

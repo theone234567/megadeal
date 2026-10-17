@@ -63,9 +63,8 @@ export default function Footer({
   const promo = currentPromo(siteLaunched);
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
-  // The prelaunch homepage ends with its purple business band and has its
-  // own email sign-up higher up: no gap above the footer, no second
-  // sign-up in it.
+  // The prelaunch homepage ends with its business card, which has its own
+  // space below it: no extra gap above the footer.
   const prelaunchHomePage = prelaunchHome && pathname === "/";
   // The homepage has its own business invitation between the deal
   // sections, so this banner would repeat it a scroll later.
@@ -108,24 +107,32 @@ export default function Footer({
       )}
 
       <div className="mx-auto max-w-[1200px] px-4 pb-12 pt-10 sm:px-6 lg:px-8">
-        {/* Email sign-up: a full-width strip, so the email box has room
-            (in a fifth-width column it was ~150px, half the screen on a
-            phone). The wording follows launch: before it there are no
-            deal emails yet, only the launch announcement. */}
-        {!prelaunchHomePage && (
+        {/* Email sign-up for shoppers, with the social links: a full-width
+            strip, so the email box has room. The homepage hero's "Get
+            launch deals by email" lands here (#deal-alerts). The wording
+            follows launch: before it there are no deal emails yet, only
+            the launch announcement. */}
         <section
+          id="deal-alerts"
           aria-labelledby="footer-signup-heading"
-          className="mb-10 flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10"
+          className="mb-10 flex scroll-mt-24 flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10"
         >
           <div className="lg:max-w-md">
-            <h2 id="footer-signup-heading" className="font-display text-xl font-semibold text-slate-900 [text-wrap:balance]">
-              {siteLaunched ? "Never miss a local deal" : "Be first to hear about Auckland deals"}
+            <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-brand-600">
+              {siteLaunched ? "Deals by email" : "Shopping for deals?"}
+            </p>
+            <h2 id="footer-signup-heading" className="mt-1 font-display text-xl font-bold leading-tight text-slate-900 [text-wrap:balance] sm:text-2xl">
+              {siteLaunched ? "Never miss a local deal" : "Get Auckland\u2019s launch deals by email"}
             </h2>
             <p className="mt-1.5 text-sm text-slate-600">
               {siteLaunched
                 ? "The best new Auckland deals, straight to your inbox."
                 : "We'll email you when MegaDeal launches, then send the best new local deals."}
             </p>
+            <div className="mt-4 flex items-center gap-3">
+              <span className="text-sm font-semibold text-slate-700">Follow us</span>
+              <SocialLinks />
+            </div>
           </div>
           <div className="w-full lg:max-w-[520px]">
             <EmailSignupForm
@@ -136,9 +143,8 @@ export default function Footer({
             />
           </div>
         </section>
-        )}
 
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
           <div>
             <h2 className="mb-3 text-sm font-bold text-slate-900">Categories</h2>
             <ul className="space-y-1 text-sm text-slate-600">
@@ -187,10 +193,6 @@ export default function Footer({
                   search engines, which find it through llms.txt, the sitemap and
                   the <link rel="alternate"> in every page's head. */}
             </ul>
-          </div>
-          <div>
-            <h2 className="mb-3 text-sm font-bold text-slate-900">Follow MegaDeal</h2>
-            <SocialLinks />
           </div>
         </div>
 

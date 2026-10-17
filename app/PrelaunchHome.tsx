@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Deal } from "@/lib/types";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import EmailSignupForm from "@/components/EmailSignupForm";
 import { DEMO_DEALS } from "@/lib/demoDeals";
 import { PRELAUNCH_PROMO } from "@/lib/promo";
 import PrelaunchHero from "@/components/PrelaunchHero";
@@ -12,11 +11,10 @@ import HomeDeals from "./HomeDeals";
 
 /**
  * The public homepage before launch (lib/siteConfig.ts PRELAUNCH_HOME), in
- * this order: the dark prelaunch bar, the hero, the example deals, the
- * shopper email sign-up, then the categories and filters for the real
- * deals right above them, "How MegaDeal works" with its FAQ, then the
- * business band (the footer's own email sign-up is left out here, as this
- * page has one higher up). The example deals are fixed data,
+ * this order: the dark prelaunch bar, the hero, the example deals, then the
+ * categories and filters for the real deals right above them, "How
+ * MegaDeal works" with its FAQ, then the business card. The shoppers'
+ * email sign-up is the footer's (#deal-alerts, linked from the hero). The example deals are fixed data,
  * labelled EXAMPLE, each opening an example deal page; they're kept apart
  * from the real deals, so they're never searched, counted or listed as
  * offers anywhere. Search hides the hero and the example deals, as it
@@ -48,7 +46,6 @@ export default function PrelaunchHome({
             deals={[...testDeals, ...DEMO_DEALS]}
             variant="demo"
           />
-          <DealAlerts />
         </div>
       </SearchAwareHero>
       <div className="mx-auto max-w-[1200px] px-4 pt-5 sm:px-6 lg:px-8 lg:pt-7">
@@ -57,34 +54,6 @@ export default function PrelaunchHome({
       <HowItWorks />
       <BusinessBand />
     </main>
-  );
-}
-
-/**
- * Shoppers' one action before launch, near the top: launch deals by email
- * (the hero's "Get launch deals by email" link lands here). The same
- * signup as the footer's, which is left out on this page.
- */
-function DealAlerts() {
-  return (
-    <section
-      id="deal-alerts"
-      aria-labelledby="deal-alerts-heading"
-      className="mt-6 flex scroll-mt-24 flex-col gap-4 rounded-2xl border border-hp-line bg-white p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10"
-    >
-      <div className="lg:max-w-md">
-        <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-hp-purple">Shopping for deals?</p>
-        <h2 id="deal-alerts-heading" className="mt-1 font-display text-xl font-bold leading-tight text-hp-ink sm:text-2xl">
-          Get Auckland&apos;s launch deals by email
-        </h2>
-        <p className="mt-1.5 text-sm text-hp-muted">
-          We&apos;ll email you when MegaDeal launches, then send the best new local deals.
-        </p>
-      </div>
-      <div className="w-full lg:max-w-[500px]">
-        <EmailSignupForm audience="customer" source="home" buttonLabel="Notify me" surface="plain" />
-      </div>
-    </section>
   );
 }
 
@@ -182,8 +151,8 @@ function HowItWorks() {
  * The business offer, once, after the deals: a contained purple card (the
  * hero's rounded, soft-glow look, not a flat full-width slab). Left: a
  * two-line headline, the offer as a short tick list, one action. Right,
- * from tablet up: a sample listing ("Your deal here") with the mascot, so a
- * business can picture its own deal. A real <h2> and <ul> in plain words
+ * on a computer: a sample listing ("Your deal here") with the mascot
+ * pointing at it, so a business can picture its own deal. A real <h2> and <ul> in plain words
  * ("Auckland businesses", "advertise free", "0% commission") for search
  * engines and AI tools.
  */
@@ -199,14 +168,14 @@ function BusinessBand() {
         <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-[#F0ABFC]/20 blur-3xl" />
 
-        <div className="relative grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_240px] lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-14">
+        <div className="relative grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_370px] lg:gap-14">
           <div>
             <p className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-[0.1em] text-white">
               For Auckland businesses
             </p>
             <h2 id="business-band-heading" className="mt-3 font-display text-[1.75rem] font-bold leading-[1.1] sm:text-[2.125rem] lg:text-[2.5rem]">
               <span className="block">Advertise free.</span>
-              <span className="block text-[#FDE68A]">Be there on launch day.</span>
+              <span className="block text-[#BAE6FD]">Be there on launch day.</span>
             </h2>
             <ul className="mt-5 space-y-2.5">
               {points.map((p) => (
@@ -240,9 +209,10 @@ function BusinessBand() {
             </p>
           </div>
 
-          {/* A sample listing, not a real deal: decorative only. */}
-          <div aria-hidden="true" className="relative mx-auto hidden w-full max-w-[300px] md:block">
-            <div className="rotate-[3deg] overflow-hidden rounded-2xl border-[5px] border-white bg-white text-hp-ink shadow-[0_18px_40px_rgba(20,10,50,0.35)]">
+          {/* A sample listing, not a real deal: decorative only. The mascot
+              stands to its right, his open hand pointing at it. */}
+          <div aria-hidden="true" className="hidden items-end lg:flex">
+            <div className="w-[250px] shrink-0 rotate-[3deg] overflow-hidden rounded-2xl border-[5px] border-white bg-white text-hp-ink shadow-[0_18px_40px_rgba(20,10,50,0.35)]">
               <div className="relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -256,7 +226,7 @@ function BusinessBand() {
                   decoding="async"
                   className="aspect-[4/3] w-full object-cover"
                 />
-                <span className="absolute left-2 top-2 rounded-md bg-[#FDE68A] px-2 py-0.5 text-[0.6875rem] font-extrabold uppercase tracking-wide text-hp-ink">
+                <span className="absolute left-2 top-2 rounded-md bg-[#BAE6FD] px-2 py-0.5 text-[0.6875rem] font-extrabold uppercase tracking-wide text-hp-ink">
                   Your deal here
                 </span>
                 <span className="absolute right-2 top-2 rounded-md bg-white px-2 py-0.5 text-xs font-bold text-hp-ink">37% off</span>
@@ -281,7 +251,7 @@ function BusinessBand() {
               alt=""
               loading="lazy"
               decoding="async"
-              className="absolute -bottom-8 -right-5 w-[96px] drop-shadow-[0_10px_18px_rgba(20,10,50,0.35)] lg:-right-10 lg:w-[116px]"
+              className="relative z-10 -mb-4 -ml-2 w-[118px] shrink-0 drop-shadow-[0_10px_18px_rgba(20,10,50,0.35)]"
             />
           </div>
         </div>
