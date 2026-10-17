@@ -180,48 +180,53 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
           <p className="mt-5 text-sm text-slate-600 sm:text-center">{copy.dealNote}</p>
         </section>
 
-        {/* Signup (approved white design, 4 Oct 2026): white section, no
-            panel; introduction 40%, form 60%. Each piece is rendered once,
-            in phone order (introduction, company requirement, form, the
-            rest of the eligibility); from lg the grid places the
-            eligibility under the introduction and the form beside them. */}
+        {/* Signup, compact (17 Oct 2026): the introduction on the left,
+            the form beside it at its own height (no stretching to match),
+            in a centred block about 1060px wide. Each piece is rendered
+            once, in phone order: introduction, form, then who can join,
+            so on a phone the form comes straight after the introduction.
+            From 900px the grid puts "who can join" under the introduction
+            and the form beside them; narrower than that, two columns
+            would squeeze the form, so it stacks. */}
         <section
           id="business-signup"
           aria-labelledby="signup-title"
-          className="mt-4 grid scroll-mt-24 grid-cols-1 gap-y-6 bg-white py-8 sm:py-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:grid-rows-[auto_auto_auto_1fr] lg:gap-x-10 lg:gap-y-0"
+          className="mx-auto mt-4 grid max-w-[1060px] scroll-mt-24 grid-cols-1 gap-y-5 bg-white py-6 sm:py-10 min-[900px]:grid-cols-[minmax(0,1fr)_minmax(0,480px)] min-[900px]:grid-rows-[auto_1fr] min-[900px]:items-start min-[900px]:gap-x-12 min-[900px]:gap-y-0"
         >
-          <div className="lg:col-start-1 lg:row-start-1">
+          <div className="min-[900px]:col-start-1 min-[900px]:row-start-1 lg:pt-10">
             <h2
               id="signup-title"
-              className="font-display text-[32px] font-bold leading-[1.1] text-brand-600 sm:text-[36px] lg:text-[40px]"
+              className="font-display text-[32px] font-bold leading-[1.08] text-[#222126] lg:text-[40px]"
             >
               <span className="block">{copy.signupHeading[0]}</span>
-              <span className="block">{copy.signupHeading[1]}</span>
+              <span className="block text-brand-600">{copy.signupHeading[1]}</span>
             </h2>
-            <p className="mt-3 text-base text-[#222126] sm:text-lg">{copy.signupIntro}</p>
-            <ul className="mt-5 space-y-2.5">
+            <p className="mt-2.5 text-[15px] text-[#222126] sm:text-base lg:text-lg">{copy.signupIntro}</p>
+            <ul className="mt-3.5 space-y-1.5 lg:mt-5 lg:space-y-2.5">
               {copy.reassurances.map((t) => (
-                <li key={t} className="flex items-center gap-2.5 text-base text-[#222126]">
-                  <CheckIcon className="h-5 w-5 shrink-0 text-brand-600" />
+                <li key={t} className="flex items-center gap-2 text-[15px] text-[#222126] lg:text-base">
+                  <CheckIcon className="h-[18px] w-[18px] shrink-0 text-brand-600" />
                   {t}
                 </li>
               ))}
             </ul>
           </div>
-          <p className="text-base font-medium text-[#222126] lg:col-start-1 lg:row-start-3 lg:mt-3">
-            {copy.companyEligibility}
-          </p>
-          <div className="min-w-0 lg:col-start-2 lg:row-span-4 lg:row-start-1">
+          <div className="w-full min-w-0 sm:max-w-[560px] min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-1 min-[900px]:max-w-none">
             {/* useSearchParams (?ref=) inside needs a Suspense boundary. */}
             <Suspense fallback={null}>
               <MerchantSignupForm launched={launched} redesign />
             </Suspense>
           </div>
-          <div className="space-y-3 border-t border-[#E4E2E8] pt-5 text-base text-[#625D6B] lg:col-start-1 lg:row-start-2 lg:mt-6 lg:pt-6">
-            <p>{copy.eligibleFor}</p>
-            <p>
-              {copy.bookingClarification} {copy.notEligible}
-            </p>
+          <div className="border-t border-[#E4E2E8] pt-5 text-[15px] text-[#625D6B] sm:text-base min-[900px]:col-start-1 min-[900px]:row-start-2 min-[900px]:mt-6 min-[900px]:pt-6">
+            {/* Only on a phone, where this sits below the form. */}
+            <h3 className="mb-2 text-sm font-bold uppercase tracking-wide text-[#222126] min-[900px]:hidden">Who can join?</h3>
+            <div className="space-y-2.5 lg:text-[17px]">
+              <p>{copy.eligibleFor}</p>
+              <p>
+                {copy.bookingClarification} {copy.notEligible}
+              </p>
+              <p className="font-medium text-[#222126]">{copy.companyEligibility}</p>
+            </div>
           </div>
         </section>
 
