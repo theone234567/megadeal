@@ -3,7 +3,9 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Page not found",
-  robots: { index: false, follow: false },
+  // The same "noindex" Next.js adds to every not-found page itself (it
+  // overrides the layout's "index, follow"), so the two tags agree.
+  robots: { index: false },
 };
 
 export default function NotFound() {

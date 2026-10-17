@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { SITE_DESCRIPTION } from "@/lib/siteConfig";
+import { PRELAUNCH_HOME, SITE_DESCRIPTION } from "@/lib/siteConfig";
 import { getLogoDataUri, ogLogoHeight } from "@/lib/ogLogo";
 import { getOgFonts } from "@/lib/ogFonts";
 
@@ -50,9 +50,27 @@ export default async function OpengraphImage() {
             MegaDeal
           </span>
         )}
+        {/* Before launch the card says what the homepage says (its title
+            and description already do): deals are coming, businesses can
+            advertise free now. */}
+        {PRELAUNCH_HOME && (
+          <div
+            style={{
+              display: "flex",
+              marginTop: 36,
+              fontSize: 56,
+              fontFamily: "Fredoka",
+              fontWeight: 700,
+              color: "#211A35",
+              textAlign: "center",
+            }}
+          >
+            Big local deals are coming to Auckland.
+          </div>
+        )}
         <div
           style={{
-            marginTop: 36,
+            marginTop: PRELAUNCH_HOME ? 16 : 36,
             fontSize: 32,
             fontFamily: "Plus Jakarta Sans",
             fontWeight: 600,
@@ -61,7 +79,7 @@ export default async function OpengraphImage() {
             maxWidth: 900,
           }}
         >
-          {SITE_DESCRIPTION}
+          {PRELAUNCH_HOME ? "Auckland businesses can advertise free now." : SITE_DESCRIPTION}
         </div>
       </div>
     ),
