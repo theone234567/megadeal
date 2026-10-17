@@ -30,6 +30,8 @@ export const BACKUP_TABLES = [
   // The 17 Oct 2026 credit conversion's record of every balance before
   // and after (supabase/migrations/20261022000000_credit_rescale.sql).
   "credit_rescale_log",
+  // Which businesses the 17 Oct 2026 update marked as tests.
+  "test_business_marks",
 ] as const;
 
 export interface Backup {
