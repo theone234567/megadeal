@@ -7,7 +7,7 @@ import HowToUseStrip from "@/components/HowToUseStrip";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { categoryBySlug, categoryPath } from "@/lib/categories";
 import CategoryDeals from "./CategoryDeals";
-import { SITE_URL, SITE_NAME, DEALS_OPEN } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, DEALS_OPEN, SAVING_CLAIM } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { CATEGORY_COPY, SEO_REGION } from "@/lib/categoryCopy";
@@ -46,11 +46,11 @@ export async function generateMetadata(
   // keep the brand-inclusive version.
   // In the words people search ("restaurant deals Auckland"), from
   // lib/categoryCopy.ts; the category's own name only as a fallback.
-  const title = copy?.title ?? `${category} Deals in ${SEO_REGION} — Up to 50% Off`;
+  const title = copy?.title ?? `${category} Deals in ${SEO_REGION}${SAVING_CLAIM}`;
   const socialTitle = `${title} | ${SITE_NAME}`;
   const description =
     copy?.description ??
-    `Browse today's best ${category} deals in ${SEO_REGION}. Save up to 50% at real local businesses — new deals added daily.`;
+    `Browse today's best ${category} deals in ${SEO_REGION}${SAVING_CLAIM ? ". Save up to 50%" : ""} at real local businesses — new deals added daily.`;
   const url = `${SITE_URL}${categoryPath(category)}`;
   // A category with no live deals is an empty page — kept out of Google
   // (and the sitemap) until it has something in it, so thin pages don't

@@ -9,7 +9,7 @@ import { CATEGORY_COPY } from "@/lib/categoryCopy";
 import { DEFAULT_CITY, cityPath, flashDealsPath } from "@/lib/cities";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { DEALS_OPEN, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { DEALS_OPEN, SAVING_CLAIM, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import type { Deal } from "@/lib/types";
 
 /**
@@ -32,7 +32,7 @@ const PER_SECTION = 4;
 
 export async function generateMetadata(): Promise<Metadata> {
   const deals = await fetchAllLiveDealsServer();
-  const title = `Deals in ${CITY} — Local Offers Up to 50% Off`;
+  const title = SAVING_CLAIM ? `Deals in ${CITY} — Local Offers Up to 50% Off` : `Deals in ${CITY} — Local Offers from ${CITY} Businesses`;
   // Under 160 characters, so search results show it whole.
   const description = `Today's deals from ${CITY} businesses: food, beauty, activities, getaways, fitness and home services. Claim directly with the business; no coupons to buy.`;
   const url = `${SITE_URL}${cityPath()}`;

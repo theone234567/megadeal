@@ -8,7 +8,7 @@ import StaleBuildRecovery from "@/components/StaleBuildRecovery";
 import PreviewBanner from "@/components/PreviewBanner";
 import PrelaunchBar from "@/components/PrelaunchBar";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
-import { DEALS_OPEN, LEGAL_ENTITY_NAME, ORGANIZATION_ID, PRELAUNCH_HOME, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { DEALS_OPEN, LEGAL_ENTITY_NAME, ORGANIZATION_ID, PRELAUNCH_HOME, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { SEARCH_LOGO } from "@/lib/brand";
 import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
@@ -18,7 +18,7 @@ import { MegadealArtProvider } from "@/context/MegadealArtProvider";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — Local deals up to 50% off`,
+    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: `${SITE_NAME} — Local deals up to 50% off`,
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
     url: SITE_URL,
     siteName: SITE_NAME,
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Local deals up to 50% off`,
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
     description: SITE_DESCRIPTION,
   },
 };

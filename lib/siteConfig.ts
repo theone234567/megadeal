@@ -91,8 +91,16 @@ export const PRELAUNCH_FREE_DEALS = DEALS_OPEN && !SITE_LAUNCHED;
  */
 export const LAUNCHED_ON = "";
 
-export const SITE_DESCRIPTION =
-  "New Zealand's daily deals site — restaurants, spas, activities and getaways at up to 50% off from real local Kiwi businesses.";
+// No "up to 50% off" before launch: a saving claim needs live deals to back
+// it (Fair Trading Act), so it starts at launch along with them.
+export const SITE_TAGLINE = SITE_LAUNCHED ? "Local deals up to 50% off" : "Local deals from Auckland businesses";
+
+/** " — Up to 50% Off" for page titles from launch, nothing before it. */
+export const SAVING_CLAIM = SITE_LAUNCHED ? " — Up to 50% Off" : "";
+
+export const SITE_DESCRIPTION = SITE_LAUNCHED
+  ? "New Zealand's daily deals site — restaurants, spas, activities and getaways at up to 50% off from real local Kiwi businesses."
+  : "New Zealand's local deals site, launching in Auckland: restaurants, spas, activities, getaways and more from real local businesses.";
 
 /**
  * The registered legal entity behind MegaDeal, referenced in /terms and

@@ -174,7 +174,7 @@ const launchCities = ["Wellington", "Christchurch", "Queenstown", "Hamilton"];
 const FAQS: { q: string; a: string; aNode?: ReactNode }[] = [
   {
     q: "What is MegaDeal?",
-    a: "MegaDeal is a New Zealand-owned website for local deals — up to 50% off at restaurants, spas, activities, getaways and other local businesses. It's an advertising platform, not a shop: you never buy anything from MegaDeal.",
+    a: `MegaDeal is a New Zealand-owned website for local deals — ${SITE_LAUNCHED ? "up to 50% off " : ""}at restaurants, spas, activities, getaways and other local businesses. It's an advertising platform, not a shop: you never buy anything from MegaDeal.`,
   },
   {
     q: "When does MegaDeal launch?",

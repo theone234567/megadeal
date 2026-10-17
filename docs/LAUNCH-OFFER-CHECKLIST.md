@@ -25,6 +25,11 @@ Launch with the code switch (`LAUNCHED = true` in `lib/siteConfig.ts`, then push
 pages are pre-rendered, so a runtime-only `SITE_LAUNCHED` would leave them on the pre-launch
 wording.
 
+- **"Up to 50% off"** (17 Oct 2026): the site's default title and description,
+  the Auckland and category page titles and the coming-soon FAQ leave the saving
+  claim out before launch (no live deals to back it yet) and add it at launch
+  (`SITE_TAGLINE`, `SITE_DESCRIPTION`, `SAVING_CLAIM` in `lib/siteConfig.ts`).
+
 ## Must be updated before or at launch (owner to approve wording)
 
 ### Terms — `app/terms/page.tsx` (the offer paragraph) — needs owner/legal approval

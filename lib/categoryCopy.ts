@@ -1,3 +1,5 @@
+import { SAVING_CLAIM } from "./siteConfig";
+
 /**
  * Search-facing words for each category page: the <title>, meta
  * description, the line under the heading and a short section below the
@@ -36,7 +38,7 @@ const HOW_IT_WORKS =
 
 export const CATEGORY_COPY: Record<string, CategoryCopy> = {
   "food-drink": {
-    title: `Restaurant & Food Deals in ${SEO_REGION} — Up to 50% Off`,
+    title: `Restaurant & Food Deals in ${SEO_REGION}${SAVING_CLAIM}`,
     h1: `Restaurant & food deals in ${SEO_REGION}`,
     heading: "Food & drink",
     description: `Restaurant, café and bar deals in ${SEO_REGION} — set menus, lunch specials and meals for two from local eateries. Free to use, no vouchers.`,
@@ -50,7 +52,7 @@ export const CATEGORY_COPY: Record<string, CategoryCopy> = {
     },
   },
   "beauty-spa": {
-    title: `Spa, Massage & Beauty Deals in ${SEO_REGION} — Up to 50% Off`,
+    title: `Spa, Massage & Beauty Deals in ${SEO_REGION}${SAVING_CLAIM}`,
     h1: `Spa, massage & beauty deals in ${SEO_REGION}`,
     heading: "Beauty & spa",
     description: `Beauty and spa deals in ${SEO_REGION} — nails, hair, massage, facials, lashes and day spas from local salons. Free to use, no vouchers.`,
@@ -93,7 +95,7 @@ export const CATEGORY_COPY: Record<string, CategoryCopy> = {
     },
   },
   "health-fitness": {
-    title: `Gym & Fitness Deals in ${SEO_REGION} — Up to 50% Off`,
+    title: `Gym & Fitness Deals in ${SEO_REGION}${SAVING_CLAIM}`,
     h1: `Gym, fitness & wellness deals in ${SEO_REGION}`,
     heading: "Health & fitness",
     description: `Health and fitness deals in ${SEO_REGION} — gyms, classes, personal training and wellness from local providers. Free to use, no vouchers.`,
