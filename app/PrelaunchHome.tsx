@@ -5,7 +5,7 @@ import { PRELAUNCH_PROMO } from "@/lib/promo";
 import PrelaunchHero from "@/components/PrelaunchHero";
 import SearchAwareHero from "@/components/SearchAwareHero";
 import DealRail from "@/components/DealRail";
-import { ArrowRightIcon } from "@/components/icons";
+import { ArrowRightIcon, CalendarIcon, PercentIcon, ZapIcon } from "@/components/icons";
 import HomeDeals from "./HomeDeals";
 
 /**
@@ -55,37 +55,43 @@ export default function PrelaunchHome({
 }
 
 /**
- * The fuller business offer, once, after the deals: a full-width purple
- * band with a big headline and the offer as ruled rows (the style of the
- * coming-soon page's "call to businesses").
+ * The business offer, once, after the deals: a full-width purple band.
+ * One row (heading left, action right), then the three things a business
+ * gets as an icon list with one-line titles, then the conditions link.
+ * A real <h2> and <ul> with plain words ("Auckland businesses",
+ * "advertise free", "0% commission") so search engines and AI tools read
+ * the offer, and descriptive link text.
  */
 function BusinessBand() {
-  const rows = [
+  const points = [
     {
+      Icon: ZapIcon,
       title: "Free while we prelaunch",
-      text: "Run 1 Everyday Deal and 1 Flash Deal at a time, free. No credits are used before launch.",
+      text: "Run 1 Everyday Deal and 1 Flash Deal at a time. No credits used before launch.",
     },
     {
-      title: `Up to ${PRELAUNCH_PROMO.months} months free advertising`,
-      text: `${PRELAUNCH_PROMO.credits} credits once you're approved, used from launch: an Everyday Deal uses 30 credits, a Flash Deal 3.*`,
+      Icon: CalendarIcon,
+      title: `Up to ${PRELAUNCH_PROMO.months} months free*`,
+      text: `${PRELAUNCH_PROMO.credits} credits once approved, used from launch: an Everyday Deal uses 30, a Flash Deal 3.`,
     },
     {
-      title: "Customers contact you directly",
-      text: "Phone, booking link or email. MegaDeal takes 0% commission and doesn't sit between you and your customer.",
+      Icon: PercentIcon,
+      title: "0% commission",
+      text: "Customers contact you by phone, booking link or email, and pay you directly.",
     },
   ];
   return (
     <section aria-labelledby="business-band-heading" className="mt-10 bg-hp-purple text-white lg:mt-12">
-      <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div className="mx-auto max-w-[1200px] px-4 py-7 sm:px-6 lg:px-8 lg:py-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-8">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-white/85">For Auckland businesses</p>
-            <h2 id="business-band-heading" className="mt-1 text-balance font-display text-[1.625rem] font-bold leading-tight sm:text-[2rem]">
-              Advertise free. Be there on launch day.
+            <p className="text-sm font-semibold text-white/85">For Auckland businesses · No credit card, no lock-in</p>
+            <h2 id="business-band-heading" className="mt-1 font-display text-[1.5rem] font-bold leading-tight sm:text-[1.75rem] lg:text-[2rem]">
+              {/* A sentence a line where it can't fit on one, never "Be / there". */}
+              <span className="block xl:inline">Advertise free.</span> <span className="block xl:inline">Be there on launch day.</span>
             </h2>
-            <p className="mt-1.5 text-[0.9375rem] text-white/90">No credit card, no lock-in.</p>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2">
             <Link
               href="/list-your-business"
               className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-6 text-[0.9375rem] font-bold text-hp-purple transition hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple"
@@ -99,21 +105,21 @@ function BusinessBand() {
           </div>
         </div>
 
-        <ol className="mt-6 grid gap-5 border-t border-white/25 pt-5 md:grid-cols-3 md:gap-8">
-          {rows.map((r, i) => (
-            <li key={r.title}>
-              <p className="flex items-baseline gap-2.5">
-                <span aria-hidden="true" className="text-xs font-semibold tabular-nums text-white/80">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="font-display text-lg font-bold leading-snug">{r.title}</span>
-              </p>
-              <p className="mt-1 text-sm leading-relaxed text-white/90">{r.text}</p>
+        <ul className="mt-5 grid gap-4 border-t border-white/20 pt-5 md:grid-cols-3 md:gap-6">
+          {points.map(({ Icon, title, text }) => (
+            <li key={title} className="flex gap-3">
+              <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15">
+                <Icon className="h-[18px] w-[18px]" />
+              </span>
+              <div className="min-w-0">
+                <h3 className="font-display text-base font-bold leading-snug lg:text-[1.0625rem]">{title}</h3>
+                <p className="mt-0.5 text-sm leading-snug text-white/85">{text}</p>
+              </div>
             </li>
           ))}
-        </ol>
+        </ul>
 
-        <p className="mt-5 text-xs text-white/80">
+        <p className="mt-4 text-xs text-white/75">
           <Link href="/terms" prefetch={false} className="underline underline-offset-2 hover:text-white">
             *Conditions apply. Offers may change at any time.
           </Link>
