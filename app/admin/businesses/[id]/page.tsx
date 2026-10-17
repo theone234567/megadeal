@@ -6,7 +6,7 @@ import ServiceAreaPicker from "@/components/ServiceAreaPicker";
 import { referralCreditsLabel } from "@/lib/referralBonus";
 import { useParams, useRouter } from "next/navigation";
 import { RUDENESS_OVERRIDES, parseRudenessOverride, type RudenessOverride } from "@/lib/rudenessSetting";
-import type { AdminMerchant } from "@/components/admin/MerchantRow";
+import { listingMissing, type AdminMerchant } from "@/components/admin/MerchantRow";
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { EyeOffIcon, GlobeIcon } from "@/components/icons";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
@@ -715,6 +715,15 @@ export default function AdminBusinessDetailPage() {
 
         <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card sm:col-span-2">
           <h2 className="text-sm font-bold text-slate-900">Admin controls</h2>
+          {/* Approving gives the welcome credits and lets deals go live, but
+              the business's portal keeps asking it to finish its listing
+              until these are in: worth knowing before approving. */}
+          {status === "Approved" && merchant.status !== "Approved" && listingMissing(merchant).length > 0 && (
+            <p role="status" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              This business hasn&apos;t finished its listing yet (no {listingMissing(merchant).join(", ")}). You can still
+              approve it, but its portal will keep asking it to finish, and its deals will look bare until it does.
+            </p>
+          )}
           <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <label className="text-sm">
               <span className="mb-1 block text-slate-500">Status</span>
