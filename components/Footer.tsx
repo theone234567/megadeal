@@ -20,7 +20,7 @@ import EmailSignupForm from "./EmailSignupForm";
  * the whole column at the coming-soon page's category preview instead.
  */
 
-function footerCategories(siteLaunched: boolean) {
+function footerCategories(siteLaunched: boolean, prelaunchHome: boolean) {
   // The city page first: it's the page for "deals in Auckland", and every
   // page linking to it is what tells search engines it matters.
   return [
@@ -29,7 +29,11 @@ function footerCategories(siteLaunched: boolean) {
       name: category.name,
       href: siteLaunched
         ? categoryPath(category.name)
-        : "/coming-soon#categories",
+        : prelaunchHome
+          ? // The category pages are private until launch: the
+            // homepage's own filter instead.
+            `/?category=${category.slug}`
+          : "/coming-soon#categories",
     })),
   ];
 }
@@ -41,8 +45,8 @@ function footerCategories(siteLaunched: boolean) {
  * evaluate to `false` in the browser bundle no matter what the real
  * setting is — and disagree with the server render.
  */
-export default function Footer({ siteLaunched = false }: { siteLaunched?: boolean }) {
-  const FOOTER_CATEGORIES = footerCategories(siteLaunched);
+export default function Footer({ siteLaunched = false, prelaunchHome = false }: { siteLaunched?: boolean; prelaunchHome?: boolean }) {
+  const FOOTER_CATEGORIES = footerCategories(siteLaunched, prelaunchHome);
   // The business offer of the moment: 6 months / WELCOME6 before launch,
   // the launch offer after (lib/promo.ts).
   const promo = currentPromo(siteLaunched);
@@ -150,7 +154,7 @@ export default function Footer({ siteLaunched = false }: { siteLaunched?: boolea
               <li><Link prefetch={false} href="/about" className="inline-block py-1 hover:text-brand-700">About MegaDeal</Link></li>
               <li><Link prefetch={false} href="/how-it-works" className="inline-block py-1 hover:text-brand-700">How it works</Link></li>
               <li><Link prefetch={false} href="/careers" className="inline-block py-1 hover:text-brand-700">Careers</Link></li>
-              {!siteLaunched && (
+              {!siteLaunched && !prelaunchHome && (
                 <li><Link prefetch={false} href="/coming-soon" className="inline-block py-1 hover:text-brand-700">Coming soon</Link></li>
               )}
             </ul>

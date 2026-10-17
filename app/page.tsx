@@ -3,7 +3,9 @@ import SearchAwareHero from "@/components/SearchAwareHero";
 import HomeDeals from "./HomeDeals";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import type { Metadata } from "next";
-import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, SITE_LAUNCHED, PRELAUNCH_HOME } from "@/lib/siteConfig";
+import { PRELAUNCH_PROMO } from "@/lib/promo";
+import PrelaunchHome from "./PrelaunchHome";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { toSearchString } from "@/lib/homeFilters";
 import { toCardDeal } from "@/lib/listingDeal";
@@ -12,8 +14,14 @@ const HOME_TITLE = `${SITE_NAME} — Local Deals Up to 50% Off in Auckland & NZ`
 const HOME_DESCRIPTION =
   "Local deals up to 50% off at Auckland restaurants, spas, activities and getaways. No vouchers to buy — contact the business directly and pay them, not us.";
 
-// Only reachable once SITE_LAUNCHED is on (middleware.ts redirects "/" to
-// /coming-soon before that). Used to inherit the root layout's generic
+// Before launch (PRELAUNCH_HOME): what the page really is, a launch lineup
+// being built, not deals to claim today.
+const PRELAUNCH_TITLE = `${SITE_NAME} — Big local deals are coming to Auckland`;
+const PRELAUNCH_DESCRIPTION = `MegaDeal is building its Auckland launch lineup of local deals. Auckland businesses can advertise free now, with up to ${PRELAUNCH_PROMO.months} months free advertising from launch for eligible businesses.`;
+
+// Before launch this is the public prelaunch homepage (PRELAUNCH_HOME,
+// app/PrelaunchHome.tsx), or, with that switched off, reachable only by an
+// admin (middleware.ts redirects "/" to /coming-soon). Used to inherit the root layout's generic
 // defaults; this is the page most people will land on from search, so it
 // gets its own. Search and filter views (/?q=…, ?category=…, ?type=…,
 // ?price=…, ?view=map) are noindex: each is a thin, near-duplicate copy of the
@@ -30,20 +38,22 @@ export async function generateMetadata(props: {
     const v = params[k];
     return typeof v === "string" ? v.trim() !== "" : Array.isArray(v) && v.length > 0;
   });
+  const title = PRELAUNCH_HOME ? PRELAUNCH_TITLE : HOME_TITLE;
+  const description = PRELAUNCH_HOME ? PRELAUNCH_DESCRIPTION : HOME_DESCRIPTION;
   return {
-    title: { absolute: HOME_TITLE },
-    description: HOME_DESCRIPTION,
+    title: { absolute: title },
+    description,
     alternates: { canonical: SITE_URL },
     robots: filtered ? { index: false, follow: true } : undefined,
     openGraph: {
-      title: HOME_TITLE,
-      description: HOME_DESCRIPTION,
+      title,
+      description,
       url: SITE_URL,
       siteName: SITE_NAME,
       type: "website",
       locale: "en_NZ",
     },
-    twitter: { card: "summary_large_image", title: HOME_TITLE, description: HOME_DESCRIPTION },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
@@ -59,6 +69,11 @@ export default async function HomePage(props: { searchParams: Promise<Record<str
   const initialSearch = toSearchString(await props.searchParams);
   const deals = await fetchAllLiveDealsServer();
   const listedDeals = deals.slice(0, 20);
+
+  // Before launch: the public prelaunch homepage. No deal list in the
+  // structured data: the deals can't be claimed yet and their pages are
+  // still private. The demo deals are never in it either.
+  if (PRELAUNCH_HOME) return <PrelaunchHome deals={deals.map(toCardDeal)} initialSearch={initialSearch} />;
 
   return (
     <main className="bg-hp-page pb-2">

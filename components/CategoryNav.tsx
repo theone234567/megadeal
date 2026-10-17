@@ -26,6 +26,9 @@ type Props =
       basePath?: string;
       /** Changes the URL without a server round trip. */
       onNavigate: (href: string) => void;
+      /** Before launch the category pages are private, so the links stay
+       *  on the homepage. */
+      homeLinks?: boolean;
     }
   | {
       /** Elsewhere: ordinary links to the canonical category pages. */
@@ -45,6 +48,8 @@ type Props =
  * Every item is a real link, so it works before JavaScript loads and for
  * crawlers; on the homepage a click is intercepted to filter in place.
  */
+const categoryPage = (slug: string) => (slug ? `${cityPath()}/${slug}` : "/");
+
 export default function CategoryNav(props: Props) {
   const active = props.mode === "filter" ? props.filters.category : props.active;
   const listRef = useRef<HTMLUListElement>(null);
@@ -53,12 +58,12 @@ export default function CategoryNav(props: Props) {
   // indexable one, with its own title and text — so search engines and
   // "open in new tab" get that. On the homepage a plain click filters the
   // deals in place instead, keeping the other filters.
-  const pageHref = (slug: string) => (slug ? `${cityPath()}/${slug}` : "/");
   const filterHref = (slug: string) =>
-    props.mode === "filter" ? homeHref(props.filters, { category: slug }, props.basePath) : pageHref(slug);
+    props.mode === "filter" ? homeHref(props.filters, { category: slug }, props.basePath) : categoryPage(slug);
+  const pageHref = (slug: string) => (props.mode === "filter" && props.homeLinks ? filterHref(slug) : categoryPage(slug));
 
   const items = [
-    { slug: "", label: "All categories", Icon: GridIcon },
+    { slug: "", label: "All", Icon: GridIcon },
     ...CATEGORIES.map((c) => ({ slug: c.slug, label: c.name, Icon: ICONS[c.slug] ?? GridIcon })),
   ];
 

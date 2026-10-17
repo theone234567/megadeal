@@ -58,7 +58,13 @@ const T = PURPLE_HEADER
       comingSoonSignIn: "border-brand-600",
     };
 
-export default function Header() {
+export default function Header({
+  /** Before launch (lib/siteConfig.ts PRELAUNCH_HOME): the business button
+   *  offers the free advertising. */
+  prelaunch = false,
+}: {
+  prelaunch?: boolean;
+} = {}) {
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
   const businessLanding = pathname ? BUSINESS_LANDING_PAGES[pathname] : undefined;
@@ -181,9 +187,17 @@ export default function Header() {
           >
             Business sign in
           </Link>
-          <Link href="/list-your-business" className={`btn-secondary h-10 min-h-0 px-4 text-sm ${T.listBusiness}`}>
+          <Link href="/list-your-business" className={`btn-secondary h-10 min-h-0 whitespace-nowrap px-4 text-sm ${T.listBusiness}`}>
             <StoreIcon className="h-[18px] w-[18px]" />
-            List your business
+            {prelaunch ? (
+              <>
+                {/* The full wording where there's room. */}
+                <span className="xl:hidden">Advertise free</span>
+                <span className="hidden xl:inline">Claim my free advertising</span>
+              </>
+            ) : (
+              "List your business"
+            )}
           </Link>
         </div>
       </div>

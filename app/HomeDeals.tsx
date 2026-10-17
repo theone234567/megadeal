@@ -27,6 +27,7 @@ import {
 } from "@/lib/homeFilters";
 import CategoryNav from "@/components/CategoryNav";
 import DealGrid from "@/components/DealGrid";
+import DealRail from "@/components/DealRail";
 import SortSelect from "@/components/SortSelect";
 import ViewToggle from "@/components/ViewToggle";
 import { BROWSE_CONTROL } from "@/components/browseControls";
@@ -95,8 +96,14 @@ export default function HomeDeals({
   initialSearch = "",
   basePath = "/",
   testDeals = false,
+  prelaunch = false,
 }: {
   initialDeals: Deal[];
+  /** The public prelaunch homepage (lib/siteConfig.ts PRELAUNCH_HOME):
+   *  real deals are "Available at launch" and don't link to their
+   *  (still private) pages; the plain view is a "Launch deals" row rather
+   *  than the grid; no map (its pins open the deal pages). */
+  prelaunch?: boolean;
   /** Add the admin's test deals (pre-launch previews only). */
   testDeals?: boolean;
   /** The query string the server rendered with. */
@@ -104,7 +111,11 @@ export default function HomeDeals({
   basePath?: string;
 }) {
   const searchParams = useUrlSearch(initialSearch);
-  const filters = parseHomeFilters(searchParams);
+  const parsed = parseHomeFilters(searchParams);
+  const filters: HomeFilters = prelaunch ? { ...parsed, view: "grid" } : parsed;
+  // Before launch, the plain homepage shows a row of launch deals; any
+  // search, filter, category or "View all deals" shows the grid.
+  const railView = prelaunch && searchParams.toString() === "";
   const [now, setNow] = useState(() => Date.now());
   const { coords, status: locationStatus, request: requestLocation } = useUserLocation();
   const needsLocation = filters.sort === "nearest" || filters.within !== null;
@@ -161,7 +172,7 @@ export default function HomeDeals({
       {filters.q && <h1 className="sr-only">Search results for {filters.q}</h1>}
 
       <div className="mt-2 lg:mt-3">
-        <CategoryNav mode="filter" filters={filters} basePath={basePath} onNavigate={navigate} />
+        <CategoryNav mode="filter" filters={filters} basePath={basePath} onNavigate={navigate} homeLinks={prelaunch} />
       </div>
 
       <Toolbar
@@ -172,6 +183,7 @@ export default function HomeDeals({
         hasLocation={coords !== null}
         locationStatus={locationStatus}
         filtersButtonRef={filtersButtonRef}
+        showMap={!prelaunch}
       />
 
       {needsLocation && !coords && <LocationNote status={locationStatus} onRequest={requestLocation} />}
@@ -185,9 +197,38 @@ export default function HomeDeals({
         }}
       />
 
-      <ResultsHeading filters={filters} results={results} />
+      {railView ? (
+        <DealRail
+          id="launch-deals"
+          className="mt-6 lg:mt-7"
+          title="Launch deals"
+          description="Real offers submitted by Auckland businesses for MegaDeal's launch. More are being added."
+          deals={results.slice(0, 12)}
+          variant="launch"
+          viewAll={{
+            href: `${basePath}?view=grid`,
+            label: "View all deals",
+            onClick: (e) => {
+              if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+              e.preventDefault();
+              navigate(`${basePath}?view=grid`);
+            },
+          }}
+          empty={
+            <div className="mt-3 rounded-2xl border border-dashed border-hp-line bg-white px-6 py-8 text-center">
+              <p className="font-semibold text-hp-ink">The first launch deals are on their way.</p>
+              <p className="mt-1 text-sm text-hp-muted">Auckland businesses are adding their offers now. Have one of your own?</p>
+              <Link href="/list-your-business" className="btn-primary mt-4">
+                Claim my free advertising
+              </Link>
+            </div>
+          }
+        />
+      ) : (
+        <ResultsHeading filters={filters} results={results} prelaunch={prelaunch} />
+      )}
 
-      {filters.view === "map" ? (
+      {railView ? null : filters.view === "map" ? (
         <MapResults deals={results} coords={coords} />
       ) : (
         // Keyed on the filters so "Show more" starts over when they change.
@@ -198,6 +239,7 @@ export default function HomeDeals({
           results={results}
           coords={coords}
           suggestions={suggestions}
+          prelaunch={prelaunch}
         />
       )}
     </div>
@@ -220,6 +262,7 @@ function Toolbar({
   hasLocation,
   locationStatus,
   filtersButtonRef,
+  showMap,
 }: {
   href: HrefFor;
   filters: HomeFilters;
@@ -228,6 +271,7 @@ function Toolbar({
   hasLocation: boolean;
   locationStatus: LocationStatus;
   filtersButtonRef: React.RefObject<HTMLButtonElement>;
+  showMap: boolean;
 }) {
   return (
     <div className="mt-4 flex flex-col gap-2.5 md:flex-row md:flex-wrap md:items-center md:justify-between lg:mt-5">
@@ -255,7 +299,7 @@ function Toolbar({
         })}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 md:ml-auto md:flex md:items-center md:gap-2.5">
+      <div className={`grid gap-2 md:ml-auto md:flex md:items-center md:gap-2.5 ${showMap ? "grid-cols-3" : "grid-cols-2"}`}>
         <FilterPanel
           filters={filters}
           onApply={(panel) => set(panel)}
@@ -266,7 +310,7 @@ function Toolbar({
         />
 
         <SortSelect value={filters.sort} onChange={(sort) => set({ sort })} />
-        <ViewToggle value={filters.view} onChange={(view) => set({ view })} />
+        {showMap && <ViewToggle value={filters.view} onChange={(view) => set({ view })} />}
       </div>
     </div>
   );
@@ -338,7 +382,13 @@ function FilterPanel({
         {/* With a count, a phone's narrow button drops the icon rather
             than cutting off the text. */}
         <SlidersIcon className={`h-[18px] w-[18px] shrink-0 ${applied ? "hidden min-[430px]:block" : ""}`} />
-        <span className="truncate">Filters{applied > 0 ? ` (${applied})` : ""}</span>
+        <span className="truncate">Filters</span>
+        {applied > 0 && (
+          <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-hp-purple px-1.5 text-xs font-bold text-white">
+            {applied}
+            <span className="sr-only"> applied</span>
+          </span>
+        )}
       </button>
 
       <dialog
@@ -497,13 +547,15 @@ function LocationNote({ status, onRequest }: { status: LocationStatus; onRequest
  * "Results for “pizza”", with the count beneath. Test deals (an admin's
  * pre-launch previews) are called out here as well as on each card.
  */
-function ResultsHeading({ filters, results }: { filters: HomeFilters; results: Deal[] }) {
+function ResultsHeading({ filters, results, prelaunch = false }: { filters: HomeFilters; results: Deal[]; prelaunch?: boolean }) {
   const categoryName = filters.category ? categoryBySlug(filters.category)?.name : null;
   const place = filters.city || DEFAULT_CITY.name;
   const title = filters.q
     ? `Results for “${filters.q}”`
     : categoryName
     ? `${categoryName} deals${filters.city ? ` in ${filters.city}` : ""}`
+    : prelaunch
+    ? "Launch deals"
     : `${place} deals`;
 
   const n = results.length;
@@ -547,16 +599,20 @@ function Results({
   results,
   coords,
   suggestions,
+  prelaunch,
 }: {
   href: HrefFor;
   filters: HomeFilters;
   results: Deal[];
   coords: Coords | null;
   suggestions: Deal[];
+  prelaunch: boolean;
 }) {
   const [limit, setLimit] = useState(PAGE);
-  // Only on the plain homepage view, not in the middle of a search.
-  const inviteBusinesses = filters.type === "all" && !hasNarrowingFilters(filters);
+  // Only on the plain homepage view, not in the middle of a search. The
+  // prelaunch homepage has its own business strip below.
+  const inviteBusinesses = !prelaunch && filters.type === "all" && !hasNarrowingFilters(filters);
+  const variant = prelaunch ? "launch" : "default";
 
   if (results.length === 0) {
     const narrowed = hasNarrowingFilters(filters);
@@ -582,9 +638,9 @@ function Results({
         {suggestions.length > 0 && (
           <section aria-labelledby="suggestions-heading" className="mt-8">
             <h2 id="suggestions-heading" className="mb-4 font-display text-lg font-bold text-hp-ink">
-              Other deals on now
+              {prelaunch ? "Other launch deals" : "Other deals on now"}
             </h2>
-            <DealGrid deals={suggestions} userLocation={coords} />
+            <DealGrid deals={suggestions} userLocation={coords} variant={variant} />
           </section>
         )}
         {inviteBusinesses && <BusinessInvite />}
@@ -594,7 +650,7 @@ function Results({
 
   return (
     <>
-      <DealGrid deals={results.slice(0, limit)} userLocation={coords} priorityCount={2} />
+      <DealGrid deals={results.slice(0, limit)} userLocation={coords} priorityCount={prelaunch ? 0 : 2} variant={variant} />
       {results.length > limit && (
         <div className="mt-6 flex justify-center">
           <button

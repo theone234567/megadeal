@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { cityPath, flashDealsPath } from "@/lib/cities";
-import { SITE_URL, SITE_LAUNCHED, LAUNCHED_ON } from "@/lib/siteConfig";
+import { SITE_URL, SITE_LAUNCHED, LAUNCHED_ON, PRELAUNCH_HOME } from "@/lib/siteConfig";
 import { contentUpdated } from "@/lib/sitemapDates";
 import {
   fetchAllLiveDealSlugsForSitemap,
@@ -23,9 +23,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // While pre-launch (middleware.ts redirects "/" to /coming-soon),
     // submitting the bare "/" here would just hand crawlers a redirect
     // stub — point them at the real front door instead. Flips back
-    // automatically once SITE_LAUNCHED is set, no manual edit needed.
+    // automatically once SITE_LAUNCHED is set, no manual edit needed. With
+    // the public prelaunch homepage (PRELAUNCH_HOME) "/" is the front door
+    // already, and /coming-soon redirects to it.
     {
-      url: SITE_LAUNCHED ? SITE_URL : `${SITE_URL}/coming-soon`,
+      url: SITE_LAUNCHED || PRELAUNCH_HOME ? SITE_URL : `${SITE_URL}/coming-soon`,
       changeFrequency: "hourly",
       priority: 1,
     },

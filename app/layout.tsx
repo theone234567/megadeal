@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import StaleBuildRecovery from "@/components/StaleBuildRecovery";
 import PreviewBanner from "@/components/PreviewBanner";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
-import { ORGANIZATION_ID, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { ORGANIZATION_ID, PRELAUNCH_HOME, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { SEARCH_LOGO } from "@/lib/brand";
 import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
@@ -157,10 +157,10 @@ export default function RootLayout({
               pages need to know who's signed in, and they have it in their
               own layouts. Here it would put a session check (/api/auth/me)
               on every page, public or not. */}
-          <PreviewBanner siteLaunched={SITE_LAUNCHED} />
-          <Header />
+          <PreviewBanner siteLaunched={SITE_LAUNCHED} prelaunchHome={PRELAUNCH_HOME} />
+          <Header prelaunch={PRELAUNCH_HOME} />
           {children}
-          <Footer siteLaunched={SITE_LAUNCHED} />
+          <Footer siteLaunched={SITE_LAUNCHED} prelaunchHome={PRELAUNCH_HOME} />
         </MegadealArtProvider>
       </body>
     </html>

@@ -16,9 +16,11 @@ const PRELAUNCH_PRIVATE = /^\/(?:auckland|deal|business)(?:\/|$)/;
  * from the server layout (SITE_LAUNCHED isn't readable in the browser —
  * see Footer.tsx).
  */
-export default function PreviewBanner({ siteLaunched }: { siteLaunched: boolean }) {
+export default function PreviewBanner({ siteLaunched, prelaunchHome = false }: { siteLaunched: boolean; prelaunchHome?: boolean }) {
   const pathname = usePathname();
-  if (siteLaunched || !pathname || !(pathname === "/" || PRELAUNCH_PRIVATE.test(pathname))) return null;
+  // With the public prelaunch homepage, "/" is public: no banner there.
+  const privateHome = pathname === "/" && !prelaunchHome;
+  if (siteLaunched || !pathname || !(privateHome || PRELAUNCH_PRIVATE.test(pathname))) return null;
 
   return (
     <div

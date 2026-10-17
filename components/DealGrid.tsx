@@ -8,6 +8,7 @@ export default function DealGrid({
   emptyMessage = "No deals found. Try a different search or category.",
   userLocation = null,
   priorityCount = 0,
+  variant = "default",
 }: {
   deals: Deal[];
   emptyMessage?: string;
@@ -17,6 +18,8 @@ export default function DealGrid({
    *  else: the ones on screen when a listing opens. The rest load as
    *  they're scrolled to. */
   priorityCount?: number;
+  /** "launch": real deals before launch (DealCard). */
+  variant?: "default" | "launch";
 }) {
   if (deals.length === 0) {
     return (
@@ -32,7 +35,7 @@ export default function DealGrid({
     // Three from 768px, four from 1200px.
     <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,max(9.5rem,calc((100%_-_0.75rem)/2))),1fr))] gap-3 md:grid-cols-3 md:gap-5 min-[1200px]:grid-cols-4 lg:gap-6">
       {deals.map((deal, i) => (
-        <DealCard key={deal.id} deal={deal} distanceKm={dealDistanceKm(deal, userLocation)} priority={i < priorityCount} />
+        <DealCard key={deal.id} deal={deal} distanceKm={dealDistanceKm(deal, userLocation)} priority={i < priorityCount} variant={variant} />
       ))}
     </div>
   );

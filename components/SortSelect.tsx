@@ -6,8 +6,8 @@ const label = (v: SortOption) =>
   v === "nearest" ? "Nearest to me" : SORT_OPTIONS.find((o) => o.value === v)?.label ?? "Sort";
 
 /**
- * The deal listings' sort control: reads "Sort" until something other
- * than the default is picked, then names it. A native select under a
+ * The deal listings' sort control: reads "Sort: Ending soon" ("Sort" on a
+ * phone) until something else is picked, then names it. A native select under a
  * styled face, so keyboard, screen readers and phone pickers all work
  * with no custom widget.
  */
@@ -27,7 +27,13 @@ export default function SortSelect({
       } ${className}`}
     >
       <span aria-hidden className="truncate">
-        {value === "ending" ? "Sort" : label(value)}
+        {value === "ending" ? (
+          <>
+            Sort<span className="hidden md:inline">: {label(value)}</span>
+          </>
+        ) : (
+          label(value)
+        )}
       </span>
       <ChevronDownIcon className="h-4 w-4 shrink-0" />
       <select

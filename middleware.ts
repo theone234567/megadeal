@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
+import { PRELAUNCH_HOME, SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
 import { categoryByLegacySegment, categoryBySlug, categoryPath } from "@/lib/categories";
 import { ADMIN_COOKIE_NAME, hasValidAdminSignature } from "@/lib/adminCookie";
 import { blockedForMaintenance, MAINTENANCE_MESSAGE } from "@/lib/maintenance";
@@ -155,12 +155,22 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
+  // With the public prelaunch homepage (PRELAUNCH_HOME), "/" is the front
+  // door before launch too: /coming-soon hands it its standing, the same
+  // way it will at launch. Design previews (?design=) still reach their
+  // admin check below.
+  const csDesign = request.nextUrl.searchParams.get("design");
+  if (PRELAUNCH_HOME && path === "/coming-soon" && !csDesign) {
+    const res = NextResponse.redirect(new URL("/", request.url), 308);
+    res.headers.set("Cache-Control", "no-store");
+    return res;
+  }
+
   // Coming-soon design previews (lib/siteConfig.ts COMING_SOON_DESIGN): a
   // signed-in admin sees a design at /coming-soon?design=v2 or ?design=v3
   // (the V3 pack of 4 Oct 2026, preview only) while everyone else keeps
   // the current one. The internal preview addresses are admin-only too.
   // Never cached, never indexed.
-  const csDesign = request.nextUrl.searchParams.get("design");
   const csPreview =
     path === "/coming-soon/v2-preview" || path === "/coming-soon/v3-preview"
       ? path
@@ -196,7 +206,7 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
-  if (!SITE_LAUNCHED && (path === "/" || PRELAUNCH_PRIVATE.test(path))) {
+  if (!SITE_LAUNCHED && ((path === "/" && !PRELAUNCH_HOME) || PRELAUNCH_PRIVATE.test(path))) {
     // Admin preview: before launch the customer side is visible only to
     // someone signed into /admin, so test deals from a real business
     // account can be checked end to end exactly as they'll look at launch.
@@ -220,7 +230,9 @@ export async function middleware(request: NextRequest) {
     // no-store on both: browsers otherwise remember a permanent redirect
     // indefinitely, so everyone who visited before launch would keep being
     // sent to /coming-soon after it — and the admin couldn't preview "/".
-    const res = NextResponse.redirect(new URL("/coming-soon", request.url), path === "/" ? 308 : 307);
+    // With the public prelaunch homepage, the private pages send people to
+    // it instead.
+    const res = NextResponse.redirect(new URL(PRELAUNCH_HOME ? "/" : "/coming-soon", request.url), path === "/" ? 308 : 307);
     res.headers.set("Cache-Control", "no-store");
     return res;
   }

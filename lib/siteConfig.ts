@@ -44,6 +44,24 @@ const LAUNCHED = false;
 export const SITE_LAUNCHED = LAUNCHED || process.env.SITE_LAUNCHED === "true";
 
 /**
+ * THE PUBLIC PRELAUNCH HOMEPAGE (the homepage pack of 17 Oct 2026).
+ *
+ * Before launch, "/" is the public homepage in its prelaunch form (app/
+ * PrelaunchHome.tsx): a black prelaunch bar, the free-advertising hero,
+ * clearly labelled demo deals, then the real deals Auckland businesses
+ * have submitted for launch ("Available at launch"). /coming-soon sends
+ * people (and its search standing) to "/" instead. The deal, business and
+ * /auckland pages stay admin-only until launch, exactly as before, so a
+ * launch deal's card doesn't open a page and no code is shown.
+ *
+ * Off ("off" here or PRELAUNCH_HOME=off in the build environment): "/"
+ * goes back to redirecting to /coming-soon, as before. Has no effect once
+ * SITE_LAUNCHED is true.
+ */
+const PRELAUNCH_HOME_LIVE: "on" | "off" = "on";
+export const PRELAUNCH_HOME = !SITE_LAUNCHED && (process.env.PRELAUNCH_HOME ?? PRELAUNCH_HOME_LIVE) === "on";
+
+/**
  * The day the site launched, as "YYYY-MM-DD" (New Zealand date). Set it in
  * the same change as LAUNCHED = true. The business pages switch to the
  * launch offer at that moment, and this is the date the sitemap then gives

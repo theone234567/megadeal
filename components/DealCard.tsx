@@ -54,6 +54,11 @@ export default function DealCard({
    *  its photo loads straight away instead of lazily. */
   priority = false,
   imageSizes = "(min-width: 1200px) 280px, (min-width: 768px) 33vw, calc(50vw - 22px)",
+  /** "demo": an example on the prelaunch homepage (lib/demoDeals.ts),
+   *  labelled DEMO, with no link, code or date. "launch": a real deal
+   *  before launch, labelled "Available at launch", with no link (its page
+   *  opens at launch). */
+  variant = "default",
 }: {
   deal: Deal;
   /** Distance from the viewer, in km — shown beside the locality when known. */
@@ -63,7 +68,9 @@ export default function DealCard({
   /** How wide the photo shows, for the browser to pick a copy: half the
    *  screen on a phone by default (a two-column grid). */
   imageSizes?: string;
+  variant?: "default" | "demo" | "launch";
 }) {
+  const demo = variant === "demo";
   const soldOut = !deal.inStock;
   // From the two real prices: a "was" at or below the deal price is no saving.
   const savingPct = dealSavingPercent(deal.was, deal.now);
@@ -80,7 +87,8 @@ export default function DealCard({
   // business in Auckland for now, the city alone tells a shopper little.
   const locality = [deal.businessSuburb || deal.businessCity, distance].filter(Boolean).join(" · ");
 
-  const Wrapper = preview ? "div" : Link;
+  const linked = !preview && variant === "default";
+  const Wrapper = linked ? Link : "div";
   // prefetch off: a deal page is built fresh from Wix on every request, so
   // Next's automatic prefetch of each card in view ran a full Wix lookup
   // per card — a dozen at once just from looking at the homepage, enough
@@ -88,7 +96,7 @@ export default function DealCard({
   // The deal page's loading screen still shows as soon as it's clicked.
   // A test deal (lib/testDeals.ts) has no public page; its card goes to
   // the admin-only one.
-  const wrapperProps = preview
+  const wrapperProps = !linked
     ? {}
     : { href: deal.isTest ? `/admin/test-deals/${deal.id}` : `/deal/${deal.slug}`, prefetch: false };
 
@@ -96,12 +104,14 @@ export default function DealCard({
   // row. The place first, so a narrow card cuts off the business name
   // rather than the suburb.
   const metaLine = [locality, deal.businessName].filter(Boolean).join(" · ");
-  const footLine = [
-    deal.expiresAt && !deal.isFlash ? `Offer ends ${formatOfferEndDate(deal.expiresAt, false)}` : null,
-    ...restrictions,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const footLine = demo
+    ? "Example only · not a live offer"
+    : [
+        deal.expiresAt && !deal.isFlash && variant !== "launch" ? `Offer ends ${formatOfferEndDate(deal.expiresAt, false)}` : null,
+        ...restrictions,
+      ]
+        .filter(Boolean)
+        .join(" · ");
 
   return (
     <Wrapper
@@ -110,7 +120,7 @@ export default function DealCard({
       // positioned, and without a positioned card around it, it escaped the
       // Flash row's scroll area and made the whole page scroll sideways.
       className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border border-hp-line bg-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 ${
-        preview ? "" : "hover:border-hp-purple/40 hover:shadow-card"
+        linked ? "hover:border-hp-purple/40 hover:shadow-card" : ""
       }`}
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-hp-lavender">
@@ -137,7 +147,7 @@ export default function DealCard({
             loading={priority ? "eager" : "lazy"}
             {...(priority ? { fetchPriority: "high" } : {})}
             decoding="async"
-            className={`absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-[1.02] ${soldOut ? "grayscale" : ""}`}
+            className={`absolute inset-0 h-full w-full object-cover transition duration-300 ${linked ? "group-hover:scale-[1.02]" : ""} ${soldOut ? "grayscale" : ""}`}
           />
         ) : (
           <div aria-hidden className="flex h-full w-full items-center justify-center text-hp-purple/40">
@@ -153,10 +163,20 @@ export default function DealCard({
           // The one marker on the photo: the saving, from the two real
           // prices. The type and the time left sit below the photo.
           savingPct !== null && (
-            <span className="absolute left-2 top-2 rounded-md bg-white px-2 py-0.5 text-xs font-bold text-hp-ink shadow-sm sm:left-2.5 sm:top-2.5 sm:text-[0.8125rem]">
+            <span
+              className={`absolute top-2 rounded-md bg-white px-2 py-0.5 text-xs font-bold text-hp-ink shadow-sm sm:top-2.5 sm:text-[0.8125rem] ${
+                demo ? "right-2 sm:right-2.5" : "left-2 sm:left-2.5"
+              }`}
+            >
               {savingPct}% off
             </span>
           )
+        )}
+        {/* An example, in words, not just a colour: it can't be redeemed. */}
+        {demo && (
+          <span className="absolute left-2 top-2 rounded-md bg-hp-ink px-2 py-0.5 text-xs font-extrabold tracking-[0.08em] text-white sm:left-2.5 sm:top-2.5">
+            DEMO
+          </span>
         )}
       </div>
 
@@ -168,13 +188,14 @@ export default function DealCard({
             // Only ever seen by an admin before launch (lib/useTestDeals.ts).
             <span className="rounded bg-hp-ink px-1.5 text-white">Test deal · preview only</span>
           )}
+          {variant === "launch" && <span className="rounded bg-[#E7F6EC] px-1.5 text-green-800">Available at launch</span>}
           {deal.isFlash ? (
             <>
-              <span className="inline-flex items-center gap-1 rounded bg-[#FDE8F2] px-1.5 text-hp-flash">
+              <span className="inline-flex items-center gap-1 rounded bg-[#FDE8F2] px-1.5 text-[#B8196A]">
                 <ZapIcon className="h-3.5 w-3.5" />
                 Flash
               </span>
-              {deal.expiresAt && !soldOut && (
+              {deal.expiresAt && !soldOut && variant === "default" && (
                 <CountdownBadge target={new Date(deal.expiresAt)} variant="ends" className="text-hp-flash" />
               )}
             </>
@@ -184,7 +205,12 @@ export default function DealCard({
         </p>
         {/* Two lines at most, and always two lines tall, so the rows of
             metadata and prices line up across a row of cards. */}
-        <h3 className="line-clamp-2 min-h-[2.7em] font-display text-[0.9375rem] font-semibold leading-[1.35] text-hp-ink group-hover:text-hp-purple sm:text-base lg:text-[1.0625rem]">
+        <h3
+          className={`line-clamp-2 min-h-[2.7em] font-display text-[0.9375rem] font-semibold leading-[1.35] text-hp-ink sm:text-base lg:text-[1.0625rem] ${
+            linked ? "group-hover:text-hp-purple" : ""
+          }`}
+        >
+          {demo && <span className="sr-only">Demo deal: </span>}
           {deal.name}
         </h3>
         {metaLine && (
