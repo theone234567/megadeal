@@ -83,6 +83,8 @@ MegaDeal has not launched to the public yet. There are no live deals to browse, 
 - Beauty & spa advertising: /advertise/beauty-spa
 - Home & car business advertising (cleaning, gardening, home maintenance, car wash, servicing, tyres): /advertise/home-car
 - Activity & experience advertising (tours, outdoor adventures, indoor activities, family experiences, workshops, cruises and day trips): /advertise/things-to-do
+- Accommodation & getaway advertising (hotels, motels, B&Bs, retreats, lodges, glamping, holiday parks): /advertise/travel-getaways
+- Health & fitness advertising (gyms, yoga and Pilates studios, fitness classes, personal training, martial arts, dance, swim and sports coaching): /advertise/health-fitness
 - How it works: /how-it-works
 - How to redeem a deal (once launched): /redeem
 - About: /about

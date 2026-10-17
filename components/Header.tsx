@@ -19,6 +19,8 @@ const BUSINESS_LANDING_PAGES: Record<string, { ctaLabel: string }> = {
   "/advertise/beauty-spa": { ctaLabel: "List my business" },
   "/advertise/home-car": { ctaLabel: "List my business" },
   "/advertise/things-to-do": { ctaLabel: "List my business" },
+  "/advertise/travel-getaways": { ctaLabel: "List my business" },
+  "/advertise/health-fitness": { ctaLabel: "List my business" },
 };
 
 // Colours for the three headers below: brand purple with the white logo

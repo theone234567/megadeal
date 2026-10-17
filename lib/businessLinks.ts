@@ -25,6 +25,18 @@ export const ADVERTISE_PAGES = [
     blurb: "Tours, activities and classes: fill more sessions with locals.",
   },
   {
+    slug: "travel-getaways",
+    href: "/advertise/travel-getaways",
+    name: "Travel & Getaways",
+    blurb: "Hotels, B&Bs and retreats: fill quieter nights with local guests.",
+  },
+  {
+    slug: "health-fitness",
+    href: "/advertise/health-fitness",
+    name: "Health & Fitness",
+    blurb: "Gyms, studios and classes: welcome new local members.",
+  },
+  {
     slug: "home-car",
     href: "/advertise/home-car",
     name: "Home & Car",

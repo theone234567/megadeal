@@ -34,6 +34,8 @@ export async function POST(req: NextRequest) {
       `${SITE_URL}/advertise/beauty-spa`,
       `${SITE_URL}/advertise/home-car`,
       `${SITE_URL}/advertise/things-to-do`,
+      `${SITE_URL}/advertise/travel-getaways`,
+      `${SITE_URL}/advertise/health-fitness`,
       `${SITE_URL}/how-it-works`,
       `${SITE_URL}/redeem`,
       `${SITE_URL}/help`,

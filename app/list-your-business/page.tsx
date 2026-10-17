@@ -196,6 +196,8 @@ const BUSINESS_TYPES = [
   {
     icon: SuitcaseIcon,
     label: "Travel & Getaways",
+    href: "/advertise/travel-getaways",
+    ctaLabel: "See offer ideas for accommodation & getaways →",
     color: { bg: "bg-indigo-100", icon: "text-indigo-600" },
     description:
       "Give guests a reason to book your quieter dates. Showcase your accommodation with a stay package, an added extra or an offer on selected nights.",
@@ -203,6 +205,8 @@ const BUSINESS_TYPES = [
   {
     icon: DumbbellIcon,
     label: "Health & Fitness",
+    href: "/advertise/health-fitness",
+    ctaLabel: "See offer ideas for gyms & studios →",
     color: { bg: "bg-emerald-100", icon: "text-emerald-600" },
     description:
       "Introduce new customers to your gym, yoga studio, Pilates sessions or fitness classes. An introductory offer or class package can help them take the first step.",

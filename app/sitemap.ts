@@ -42,6 +42,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/advertise/home-car`, changeFrequency: "weekly", priority: 0.5 },
     // Tours, activities and experiences — same bucket.
     { url: `${SITE_URL}/advertise/things-to-do`, changeFrequency: "weekly", priority: 0.5 },
+    // Accommodation and getaways; gyms, studios and classes — same bucket.
+    { url: `${SITE_URL}/advertise/travel-getaways`, changeFrequency: "weekly", priority: 0.5 },
+    { url: `${SITE_URL}/advertise/health-fitness`, changeFrequency: "weekly", priority: 0.5 },
     { url: `${SITE_URL}/how-it-works`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/redeem`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/help`, changeFrequency: "monthly", priority: 0.3 },

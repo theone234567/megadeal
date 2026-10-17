@@ -11,6 +11,8 @@ export const CONTENT_UPDATED: Record<string, string> = {
   "/advertise/beauty-spa": "2026-10-05",
   "/advertise/home-car": "2026-10-05",
   "/advertise/things-to-do": "2026-10-05",
+  "/advertise/travel-getaways": "2026-10-17",
+  "/advertise/health-fitness": "2026-10-17",
   "/how-it-works": "2026-10-06",
   "/redeem": "2026-10-03",
   "/help": "2026-10-13",
@@ -35,6 +37,8 @@ export const CHANGES_AT_LAUNCH = new Set([
   "/advertise/beauty-spa",
   "/advertise/home-car",
   "/advertise/things-to-do",
+  "/advertise/travel-getaways",
+  "/advertise/health-fitness",
   "/how-it-works",
   "/about",
 ]);

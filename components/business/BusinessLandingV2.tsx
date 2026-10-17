@@ -11,8 +11,10 @@ import {
   CheckIcon,
   ChevronDownIcon,
   CompassIcon,
+  DumbbellIcon,
   FlowerIcon,
   PercentIcon,
+  SuitcaseIcon,
   UsersIcon,
   UtensilsIcon,
   WrenchIcon,
@@ -39,6 +41,8 @@ const INDUSTRY_ICONS: Record<(typeof ADVERTISE_PAGES)[number]["slug"], typeof Co
   "food-drink": UtensilsIcon,
   "beauty-spa": FlowerIcon,
   "things-to-do": CompassIcon,
+  "travel-getaways": SuitcaseIcon,
+  "health-fitness": DumbbellIcon,
   "home-car": WrenchIcon,
 };
 

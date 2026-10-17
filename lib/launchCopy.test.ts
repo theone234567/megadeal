@@ -18,6 +18,8 @@ const PAGES = [
   "@/app/advertise/beauty-spa/page",
   "@/app/advertise/home-car/page",
   "@/app/advertise/things-to-do/page",
+  "@/app/advertise/travel-getaways/page",
+  "@/app/advertise/health-fitness/page",
   "@/app/list-your-business/page",
 ];
 
