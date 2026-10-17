@@ -22,7 +22,7 @@ export default async function SubscribedPage(
           <h1 className="mt-3 text-xl font-bold text-slate-900">You&apos;re confirmed!</h1>
           <p className="mt-2 text-sm text-slate-500">
             Your email is verified — you&apos;ll start getting MegaDeal
-            alerts. You can unsubscribe anytime using the link in any email.
+            alerts. You can unsubscribe any time using the link in any email.
           </p>
         </>
       ) : (

@@ -215,7 +215,7 @@ export default function EmailSignupForm({
             <a href="/privacy" className={linkClass}>
               privacy policy
             </a>
-            . I can unsubscribe anytime.
+            . I can unsubscribe any time.
           </span>
         </label>
         {consentMissing && (

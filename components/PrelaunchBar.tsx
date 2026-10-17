@@ -26,7 +26,7 @@ const Dot = () => (
 
 const Terms = () => (
   <Link href="/terms" prefetch={false} className="underline underline-offset-2 hover:text-white">
-    T&amp;Cs apply
+    Conditions apply
   </Link>
 );
 
@@ -60,10 +60,6 @@ export default function PrelaunchBar() {
           <span className="hidden lg:inline">
             <Dot />
             Up to {PRELAUNCH_PROMO.months} months free from launch
-          </span>
-          <span className="hidden lg:inline">
-            <Dot />
-            0% commission
           </span>
           <Dot />
           <Terms />

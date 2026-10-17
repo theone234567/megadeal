@@ -1,12 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PRELAUNCH_PROMO } from "@/lib/promo";
-import { ArrowRightIcon, ChevronDownIcon, CreditCardIcon, PercentIcon, UnlockIcon } from "./icons";
+import { ArrowRightIcon, CreditCardIcon, PercentIcon, UnlockIcon } from "./icons";
 
 /**
  * The prelaunch homepage's hero: one message and one action. Eyebrow,
  * headline, a short paragraph, "Claim my free advertising", a link down
- * to the example deals and one trust line. The fuller offer is in the
+ * to the shoppers' email sign-up and one trust line. The fuller offer is in the
  * business strip further down, not here.
  *
  * The picture is a bright collage of three example deals (small copies of
@@ -34,23 +34,20 @@ export default function PrelaunchHero() {
             Big local deals are <span className="text-hp-purple">coming to Auckland.</span>
           </h1>
           <p className="mt-3 max-w-[34rem] text-[0.9375rem] leading-relaxed text-hp-ink sm:text-base">
-            We&apos;re building MegaDeal&apos;s launch lineup now. Auckland businesses can advertise free during
-            prelaunch and eligible businesses can receive up to {PRELAUNCH_PROMO.months} months free advertising from
-            launch.*
+            Auckland&apos;s new local deals site is building its launch lineup. Businesses can advertise free now, with up to {PRELAUNCH_PROMO.months} months free from launch.*
           </p>
           <div className="mt-5 flex flex-col gap-2 lg:mt-4 min-[400px]:flex-row min-[400px]:flex-wrap min-[400px]:items-center min-[400px]:gap-3">
             <Link href="/list-your-business" className="btn-primary min-h-[48px] px-6 text-base">
               Claim my free advertising
               <ArrowRightIcon className="h-4 w-4" />
             </Link>
-            <a
-              href="#example-deals"
-              className="inline-flex min-h-[48px] items-center justify-center gap-1.5 rounded-full border-[1.5px] border-hp-purple/30 bg-white px-5 text-[0.9375rem] font-semibold text-hp-purple transition hover:border-hp-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
-            >
-              See example deals
-              <ChevronDownIcon className="h-4 w-4" />
-            </a>
           </div>
+          <p className="mt-3 text-sm text-hp-ink lg:mt-2.5">
+            Shopping for deals?{" "}
+            <a href="#deal-alerts" className="font-semibold text-hp-purple underline underline-offset-2 hover:no-underline">
+              Get launch deals by email
+            </a>
+          </p>
           <ul className="mt-4 flex flex-wrap lg:mt-3 items-center gap-x-4 gap-y-1.5 text-[0.8125rem] text-hp-muted sm:text-sm">
             <li className="inline-flex items-center gap-1.5">
               <PercentIcon className="h-4 w-4 text-hp-purple" />
@@ -66,7 +63,7 @@ export default function PrelaunchHero() {
             </li>
             <li>
               <Link href="/terms" prefetch={false} className="underline underline-offset-2 hover:text-hp-ink">
-                *Conditions apply, offers may change
+                *Conditions apply. Offers may change at any time.
               </Link>
             </li>
           </ul>

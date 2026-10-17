@@ -42,7 +42,8 @@ type Props =
  * (Home & Car, last in the list, included) is ever hidden off the edge of
  * a scrolling row or behind an arrow, and nothing moves on its own:
  * - on a computer: one row of small icons and names, the current one in
- *   purple and underlined;
+ *   purple and underlined (slightly smaller text below 1280px, so all
+ *   seven always fit on the one line);
  * - on a tablet: one row of equal tiles, icon above name;
  * - on a phone: the same tiles, four to a row (the second row centred).
  * Text is never shrunk to fit; a long name wraps onto two lines instead.
@@ -94,13 +95,13 @@ export default function CategoryNav(props: Props) {
                 prefetch={false}
                 onClick={(e) => handleClick(e, filterHref(slug))}
                 aria-current={selected ? "true" : undefined}
-                className={`flex h-full min-h-[64px] flex-col items-center justify-center gap-1 rounded-xl border px-1 py-2 text-center text-[0.75rem] font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple sm:text-[0.8125rem] lg:-mb-px lg:h-[52px] lg:min-h-0 lg:flex-row lg:gap-2 lg:whitespace-nowrap lg:rounded-none lg:border-0 lg:border-b-[3px] lg:px-2 lg:py-0 lg:text-[0.9375rem] lg:focus-visible:ring-inset ${
+                className={`flex h-full min-h-[64px] flex-col items-center justify-center gap-1 rounded-xl border px-1 py-2 text-center text-[0.75rem] font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple sm:text-[0.8125rem] lg:-mb-px lg:h-[52px] lg:min-h-0 lg:flex-row lg:gap-1.5 lg:whitespace-nowrap lg:rounded-none lg:border-0 lg:border-b-[3px] lg:px-1.5 lg:py-0 lg:text-sm xl:gap-2 xl:px-2 xl:text-[0.9375rem] lg:focus-visible:ring-inset ${
                   selected
                     ? "border-hp-purple/40 bg-hp-lavender text-hp-purple lg:border-hp-purple lg:bg-transparent"
                     : "border-hp-line bg-white text-hp-muted hover:border-hp-boundary hover:text-hp-ink lg:border-transparent lg:bg-transparent lg:hover:border-hp-line"
                 }`}
               >
-                <Icon className="h-[22px] w-[22px] shrink-0 lg:h-5 lg:w-5" />
+                <Icon className="h-[22px] w-[22px] shrink-0 lg:h-[18px] lg:w-[18px] xl:h-5 xl:w-5" />
                 {label}
               </Link>
             </li>

@@ -9,6 +9,7 @@ import PrelaunchHome from "./PrelaunchHome";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { hasFilterParams, toSearchString } from "@/lib/homeFilters";
 import { toCardDeal } from "@/lib/listingDeal";
+import { isAdminViewer } from "@/lib/adminViewer";
 
 const HOME_TITLE = `${SITE_NAME} — Local Deals Up to 50% Off in Auckland & NZ`;
 const HOME_DESCRIPTION =
@@ -17,7 +18,7 @@ const HOME_DESCRIPTION =
 // Before launch (PRELAUNCH_HOME): what the page really is, a launch lineup
 // being built, not deals to claim today.
 const PRELAUNCH_TITLE = `${SITE_NAME} — Big local deals are coming to Auckland`;
-const PRELAUNCH_DESCRIPTION = `MegaDeal is building its Auckland launch lineup of local deals. Auckland businesses can advertise free now, with up to ${PRELAUNCH_PROMO.months} months free advertising from launch for eligible businesses.`;
+const PRELAUNCH_DESCRIPTION = `Auckland's new local deals site. Businesses can advertise free now, with up to ${PRELAUNCH_PROMO.months} months free from launch. Deals from restaurants, spas, activities and more.`;
 
 // Before launch this is the public prelaunch homepage (PRELAUNCH_HOME,
 // app/PrelaunchHome.tsx), or, with that switched off, reachable only by an
@@ -94,7 +95,9 @@ export default async function HomePage(props: { searchParams: Promise<Record<str
         )}
         <PrelaunchHome
           deals={deals.map(toCardDeal)}
-          testDeals={(await fetchTestBusinessDeals()).map(toCardDeal)}
+          // A test business's deals are only for the owner to preview: shown
+          // among the examples to a signed-in admin, never to the public.
+          testDeals={(await isAdminViewer()) ? (await fetchTestBusinessDeals()).map(toCardDeal) : []}
           initialSearch={initialSearch}
           dealsLive={DEALS_OPEN}
         />

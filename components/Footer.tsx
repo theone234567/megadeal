@@ -63,6 +63,10 @@ export default function Footer({
   const promo = currentPromo(siteLaunched);
   const pathname = usePathname();
   const isComingSoon = pathname === "/coming-soon";
+  // The prelaunch homepage ends with its purple business band and has its
+  // own email sign-up higher up: no gap above the footer, no second
+  // sign-up in it.
+  const prelaunchHomePage = prelaunchHome && pathname === "/";
   // The homepage has its own business invitation between the deal
   // sections, so this banner would repeat it a scroll later.
   const hideOwnABusinessCta =
@@ -79,7 +83,7 @@ export default function Footer({
   if (pathname?.startsWith("/portal")) return null;
 
   return (
-    <footer className="mt-16 border-t border-slate-100 bg-slate-50">
+    <footer className={`${prelaunchHomePage ? "" : "mt-16 "}border-t border-slate-100 bg-slate-50`}>
       {!hideOwnABusinessCta && (
         <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-brand-700 px-6 py-6 text-center sm:flex-row sm:text-left">
@@ -108,6 +112,7 @@ export default function Footer({
             (in a fifth-width column it was ~150px, half the screen on a
             phone). The wording follows launch: before it there are no
             deal emails yet, only the launch announcement. */}
+        {!prelaunchHomePage && (
         <section
           aria-labelledby="footer-signup-heading"
           className="mb-10 flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10"
@@ -131,6 +136,7 @@ export default function Footer({
             />
           </div>
         </section>
+        )}
 
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
           <div>

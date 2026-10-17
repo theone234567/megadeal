@@ -840,7 +840,7 @@ export default function NewDealForm({
             <p className="mt-2 text-sm text-slate-600">
               Your deal is now <strong>Pending Approval</strong>. We&apos;ll review
               it and create your live listing shortly — you can track its status
-              anytime in your portal.
+              any time in your portal.
             </p>
           </>
         )}

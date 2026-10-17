@@ -181,7 +181,7 @@ export default function HomeDeals({
       {filters.q && <h1 className="sr-only">Search results for {filters.q}</h1>}
 
       <div className="mt-2 lg:mt-3">
-        <CategoryNav mode="filter" filters={filters} basePath={basePath} onNavigate={navigate} homeLinks={prelaunch} />
+        <CategoryNav mode="filter" filters={filters} basePath={basePath} onNavigate={navigate} homeLinks={prelaunch && !dealsLive} />
       </div>
 
       <Toolbar

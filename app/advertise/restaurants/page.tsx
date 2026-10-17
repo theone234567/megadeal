@@ -358,7 +358,7 @@ export default function RestaurantAdvertisingPage() {
               <p className="mt-4 text-xs text-white/60">
                 {LAUNCHED ? "For eligible new businesses." : "For eligible businesses joining before launch."}{" "}
                 <Link href="/terms" className="underline decoration-white/40 underline-offset-2 hover:text-white/90 hover:decoration-white/90">
-                  T&amp;Cs apply.
+                  Conditions apply.
                 </Link>
               </p>
             </div>

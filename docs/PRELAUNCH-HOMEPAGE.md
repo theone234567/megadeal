@@ -16,23 +16,26 @@ looks like the marketplace, without launching the site.
    example deals as tilted cards (`public/megadeal/hero/collage-*`) and the
    current mascot, `public/megadeal/mascot/megadeal-mascot-hero.webp`, at
    its own proportions.
-4. Example deals: test businesses' live deals first (so the owner can see
-   a real deal as it will look), then the fixed examples in
-   `lib/demoDeals.ts`, the first six one from each category. "Example …"
-   businesses, the site's own photos, labelled EXAMPLE. Each opens an
-   example deal page (`/example/[slug]`): the real deal page under an
-   "Example only" banner, code "EXAMPLE", contact details on example.com
-   only, no phone. Never searched, counted, indexed or put in structured
-   data.
-5. Categories (`components/CategoryNav.tsx`), all always on screen: one row
-   on a computer, equal tiles on a tablet and phone, so no category is
-   hidden off the edge. Then deal type, Filters (price and distance), Sort
-   and the map: these control the real deals only, so they sit right above
-   them.
-6. Live deals: real approved deals in a row (`components/DealRail.tsx`),
-   each opening its deal page. Any category, filter, search or "View all
-   deals" shows the usual grid.
-7. Purple business band with the full offer, then the footer.
+4. Example deals: the fixed examples in `lib/demoDeals.ts`, the first six
+   one from each category. A test business's live deals come first only for
+   a signed-in admin (`lib/adminViewer.ts`), so the owner can preview a real
+   deal; the public never sees them, and their example pages answer "not
+   found" to anyone else. "Example …" businesses, the site's own photos,
+   labelled EXAMPLE. Each opens an example deal page (`/example/[slug]`):
+   the real deal page under an "Example only" banner, code "EXAMPLE",
+   contact details on example.com only, no phone. Never searched, counted,
+   indexed or put in structured data.
+5. Shoppers' email sign-up ("Get Auckland's launch deals by email",
+   `#deal-alerts`, linked from the hero). The footer's own sign-up is left
+   out on this page, and the footer sits straight under the purple band.
+6. Categories (`components/CategoryNav.tsx`), all always on screen: one row
+   on a computer, equal tiles on a tablet and phone. While deals are live
+   they link to the real category pages (`/auckland/<category>`). Then deal
+   type, Filters, Sort and the map, right above the live deals.
+7. Live deals: real approved deals in a row (`components/DealRail.tsx`).
+8. "How MegaDeal works" for shoppers (3 steps) and 5 questions, also given
+   to search engines as FAQPage data.
+9. Purple business band with the full offer, then the footer.
 
 ## Search engines
 

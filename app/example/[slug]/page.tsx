@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { exampleDeal } from "@/lib/demoDeals";
 import { fetchTestBusinessDeals } from "@/lib/fetchDealServer";
 import { hideEmail } from "@/lib/hiddenEmail";
+import { isAdminViewer } from "@/lib/adminViewer";
 import type { Deal } from "@/lib/types";
 import DealDetail from "@/app/deal/[slug]/DealDetail";
 
@@ -19,9 +20,13 @@ import DealDetail from "@/app/deal/[slug]/DealDetail";
 // data is fixed in code, so this costs next to nothing.
 export const dynamic = "force-dynamic";
 
-/** A fixed example, or else a test business's live deal with that address. */
+/** A fixed example, or else (for a signed-in admin only) a test
+ *  business's live deal with that address. */
 async function findExample(slug: string): Promise<Deal | null> {
-  return exampleDeal(slug) ?? (await fetchTestBusinessDeals()).find((d) => d.slug === slug) ?? null;
+  const fixed = exampleDeal(slug);
+  if (fixed) return fixed;
+  if (!(await isAdminViewer())) return null;
+  return (await fetchTestBusinessDeals()).find((d) => d.slug === slug) ?? null;
 }
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {

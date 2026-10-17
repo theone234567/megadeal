@@ -795,7 +795,7 @@ async function LegacyComingSoonPage() {
               </p>
 
               <ul className="mt-5 grid gap-2.5 sm:grid-cols-2 sm:gap-x-8">
-                <Tick color="#0369a1">Free to join, unsubscribe anytime</Tick>
+                <Tick color="#0369a1">Free to join, unsubscribe any time</Tick>
                 <Tick color="#0369a1">Early access before deals go public</Tick>
                 <Tick color="#0369a1">Every business is approved by our team</Tick>
               </ul>

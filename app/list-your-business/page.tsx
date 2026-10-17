@@ -473,7 +473,7 @@ export default async function MerchantsPage() {
             <p className="mt-1 text-xs text-slate-500">
               *
               <Link href="/terms" className="underline hover:text-slate-600">
-                T&amp;Cs apply.
+                Conditions apply.
               </Link>
             </p>
           </div>

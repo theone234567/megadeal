@@ -57,7 +57,7 @@ const SHARED = {
   dealNote: "Choose an Everyday Deal for an ongoing offer, or a Flash Deal for a short promotion.",
   signupHeading: ["Let’s get your", "business ready."] as [string, string],
   signupIntro: "Create your account in a minute, then finish your listing in your portal.",
-  reassurances: ["No credit card required to sign up.", "No lock-in contracts.", "Cancel anytime."],
+  reassurances: ["No credit card required to sign up.", "No lock-in contracts.", "Cancel any time."],
   eligibleFor: "For local services, experiences and hospitality.",
   bookingClarification: "Online bookings and payments for eligible local services are welcome.",
   notEligible: "E-commerce retail and adult businesses are not eligible.",
