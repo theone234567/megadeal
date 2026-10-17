@@ -181,7 +181,7 @@ export default function Header({
             )}
             {/* Auckland is the only city for now: on a narrow phone the
                 picker gives way to the button. */}
-            <div className={prelaunch ? "hidden min-[420px]:block" : ""}>{location}</div>
+            <div className={prelaunch ? "hidden min-[520px]:block" : ""}>{location}</div>
             <MobileMenu />
           </div>
         </div>

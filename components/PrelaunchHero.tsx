@@ -74,7 +74,7 @@ export default function PrelaunchHero() {
 
         {/* The picture: decorative, the headline says what matters. Three
             sunny example deals as tilted cards, and the mascot in front. */}
-        <div aria-hidden="true" className="relative mx-4 h-[250px] min-[400px]:h-[290px] sm:mx-6 sm:h-[340px] lg:mx-0 lg:h-[350px] xl:h-[370px]">
+        <div aria-hidden="true" className="relative mx-4 h-[190px] min-[400px]:h-[215px] sm:mx-6 sm:h-[300px] lg:mx-0 lg:h-[350px] xl:h-[370px]">
           <div className="absolute right-[8%] top-[6%] h-[70%] w-[70%] rounded-full bg-[#FFE7B3] opacity-60 blur-3xl" />
           <div className="absolute bottom-[4%] left-[10%] h-[55%] w-[55%] rounded-full bg-[#D9C8FF] opacity-70 blur-3xl" />
           <CollageCard photo="pizza" price="$49" was="$78" off="37% off" priceLeft className="left-[16%] top-[5%] -rotate-[5deg]" />
@@ -87,7 +87,7 @@ export default function PrelaunchHero() {
             height={580}
             loading="eager"
             sizes="(min-width: 1024px) 180px, 30vw"
-            className="absolute bottom-0 left-0 z-20 h-auto w-[30%] max-w-[180px] select-none drop-shadow-[0_10px_18px_rgba(33,26,53,0.22)]"
+            className="absolute bottom-0 left-0 z-20 h-auto w-[25%] max-w-[180px] sm:w-[30%] select-none drop-shadow-[0_10px_18px_rgba(33,26,53,0.22)]"
           />
         </div>
       </div>
@@ -114,7 +114,7 @@ function CollageCard({
 }) {
   return (
     <div
-      className={`absolute w-[42%] overflow-hidden rounded-2xl border-[5px] border-white bg-white shadow-[0_14px_30px_rgba(33,26,53,0.2)] ${className}`}
+      className={`absolute w-[38%] overflow-hidden rounded-xl border-4 sm:w-[42%] sm:rounded-2xl sm:border-[5px] border-white bg-white shadow-[0_14px_30px_rgba(33,26,53,0.2)] ${className}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
