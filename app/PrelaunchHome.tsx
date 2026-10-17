@@ -10,7 +10,7 @@ import HomeDeals from "./HomeDeals";
 
 /**
  * The public homepage before launch (lib/siteConfig.ts PRELAUNCH_HOME), in
- * this order: the black prelaunch bar, the hero, the example deals, then the
+ * this order: the dark prelaunch bar, the hero, the example deals, then the
  * categories and filters for the real deals right above them ("Launch
  * deals"), then the business strip. The example deals are fixed data,
  * labelled EXAMPLE, each opening an example deal page; they're kept apart

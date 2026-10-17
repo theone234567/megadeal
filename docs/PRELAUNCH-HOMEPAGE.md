@@ -7,7 +7,9 @@ looks like the marketplace, without launching the site.
 
 1. Purple header. The business button reads "Claim my free advertising"
    ("Advertise free" where it's narrower) and goes to /list-your-business.
-2. Black prelaunch bar (`components/PrelaunchBar.tsx`).
+2. Dark prelaunch bar (`components/PrelaunchBar.tsx`), above the header on
+   every public page: information only (the header has the "Advertise
+   free" button), with a T&Cs link.
 3. Hero (`components/PrelaunchHero.tsx`): "Auckland first", the one `<h1>`
    "Big local deals are coming to Auckland.", the offer, "Claim my free
    advertising", "See example deals", one trust line. Auckland skyline photo

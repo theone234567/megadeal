@@ -16,13 +16,15 @@ import { ArrowRightIcon, ChevronDownIcon, CreditCardIcon, PercentIcon, UnlockIco
  * (public/megadeal/mascot/megadeal-mascot-hero.webp), at its own
  * proportions: only its width is set.
  *
- * On a computer the text takes the left half and the collage the right.
+ * On a computer the text takes the left half and the collage the right,
+ * at a fixed height and centred beside the text, so the bottom card and
+ * the mascot stay close to the top two however tall the text runs.
  * On a phone the text and buttons come first and the collage follows.
  */
 export default function PrelaunchHero() {
   return (
     <section aria-labelledby="hero-heading" className="overflow-hidden bg-gradient-to-br from-white via-hp-lavender to-[#ECE4FA]">
-      <div className="mx-auto grid max-w-[1200px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-stretch">
+      <div className="mx-auto grid max-w-[1200px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center">
         <div className="px-4 pb-5 pt-5 sm:px-6 sm:pt-7 lg:py-7 lg:pl-8 lg:pr-4">
           <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-hp-purple">Auckland first</p>
           <h1
@@ -72,7 +74,7 @@ export default function PrelaunchHero() {
 
         {/* The picture: decorative, the headline says what matters. Three
             sunny example deals as tilted cards, and the mascot in front. */}
-        <div aria-hidden="true" className="relative mx-4 h-[250px] min-[400px]:h-[290px] sm:mx-6 sm:h-[340px] lg:mx-0 lg:h-auto lg:min-h-[360px]">
+        <div aria-hidden="true" className="relative mx-4 h-[250px] min-[400px]:h-[290px] sm:mx-6 sm:h-[340px] lg:mx-0 lg:h-[350px] xl:h-[370px]">
           <div className="absolute right-[8%] top-[6%] h-[70%] w-[70%] rounded-full bg-[#FFE7B3] opacity-60 blur-3xl" />
           <div className="absolute bottom-[4%] left-[10%] h-[55%] w-[55%] rounded-full bg-[#D9C8FF] opacity-70 blur-3xl" />
           <CollageCard photo="pizza" price="$49" was="$78" off="37% off" priceLeft className="left-[16%] top-[5%] -rotate-[5deg]" />
