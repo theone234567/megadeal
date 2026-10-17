@@ -57,12 +57,17 @@ export default function DealDetail({
   moreDeals = null,
   /** The merchant's (or admin's) preview: the same page, but nothing is
    *  tracked and no contact link goes anywhere. */
-  preview = false,
+  preview: previewProp = false,
+  /** An example deal (lib/demoDeals.ts, /example/[slug]): the page as a
+   *  preview, under an "Example only" banner, without breadcrumbs. */
+  example = false,
 }: {
   deal: Deal;
   moreDeals?: ReactNode;
   preview?: boolean;
+  example?: boolean;
 }) {
+  const preview = previewProp || example;
   // A customer can sit on this page a while; re-check every 30s so a deal
   // that ends while the tab is open stops offering its code and action.
   const [now, setNow] = useState(() => Date.now());
@@ -168,10 +173,23 @@ export default function DealDetail({
 
   return (
     <main className="mx-auto max-w-[1200px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
-      <Breadcrumbs
-        compact
-        items={[{ name: DEFAULT_CITY.name, href: cityPath() }, ...(category ? [{ name: category, href: categoryPath(category) }] : []), { name: deal.name }]}
-      />
+      {example ? (
+        <div role="note" className="mb-4 flex flex-col gap-2 rounded-xl border border-hp-border bg-hp-lavender px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-hp-ink">
+            <span className="mr-2 rounded-md bg-hp-ink px-2 py-0.5 text-xs font-extrabold tracking-[0.08em] text-white">EXAMPLE</span>
+            This shows how a MegaDeal deal page will look. It isn&apos;t a live offer, the business is made up and the
+            code can&apos;t be used.
+          </p>
+          <Link href="/#example-deals" className="shrink-0 text-sm font-semibold text-hp-purple underline underline-offset-2 hover:text-hp-purple-dark">
+            Back to example deals
+          </Link>
+        </div>
+      ) : (
+        <Breadcrumbs
+          compact
+          items={[{ name: DEFAULT_CITY.name, href: cityPath() }, ...(category ? [{ name: category, href: categoryPath(category) }] : []), { name: deal.name }]}
+        />
+      )}
 
       {/* Eyebrow, the title (the page's one big heading) and where it is.
           Hours aren't here: they're once, in Contact & booking. */}

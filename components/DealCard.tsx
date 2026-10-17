@@ -55,7 +55,7 @@ export default function DealCard({
   priority = false,
   imageSizes = "(min-width: 1200px) 280px, (min-width: 768px) 33vw, calc(50vw - 22px)",
   /** "demo": an example on the prelaunch homepage (lib/demoDeals.ts),
-   *  labelled DEMO, with no link, code or date. "launch": a real deal
+   *  labelled EXAMPLE, opening its example page. "launch": a real deal
    *  before launch, labelled "Available at launch", with no link (its page
    *  opens at launch). */
   variant = "default",
@@ -87,7 +87,7 @@ export default function DealCard({
   // business in Auckland for now, the city alone tells a shopper little.
   const locality = [deal.businessSuburb || deal.businessCity, distance].filter(Boolean).join(" · ");
 
-  const linked = !preview && variant === "default";
+  const linked = !preview && variant !== "launch";
   const Wrapper = linked ? Link : "div";
   // prefetch off: a deal page is built fresh from Wix on every request, so
   // Next's automatic prefetch of each card in view ran a full Wix lookup
@@ -98,7 +98,10 @@ export default function DealCard({
   // the admin-only one.
   const wrapperProps = !linked
     ? {}
-    : { href: deal.isTest ? `/admin/test-deals/${deal.id}` : `/deal/${deal.slug}`, prefetch: false };
+    : {
+        href: demo ? `/example/${deal.slug}` : deal.isTest ? `/admin/test-deals/${deal.id}` : `/deal/${deal.slug}`,
+        prefetch: false,
+      };
 
   // Place and business on one line, one icon: the card's single metadata
   // row. The place first, so a narrow card cuts off the business name
@@ -175,7 +178,7 @@ export default function DealCard({
         {/* An example, in words, not just a colour: it can't be redeemed. */}
         {demo && (
           <span className="absolute left-2 top-2 rounded-md bg-hp-ink px-2 py-0.5 text-xs font-extrabold tracking-[0.08em] text-white sm:left-2.5 sm:top-2.5">
-            DEMO
+            EXAMPLE
           </span>
         )}
       </div>
@@ -210,7 +213,7 @@ export default function DealCard({
             linked ? "group-hover:text-hp-purple" : ""
           }`}
         >
-          {demo && <span className="sr-only">Demo deal: </span>}
+          {demo && <span className="sr-only">Example deal: </span>}
           {deal.name}
         </h3>
         {metaLine && (

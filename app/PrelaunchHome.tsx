@@ -12,12 +12,13 @@ import HomeDeals from "./HomeDeals";
 
 /**
  * The public homepage before launch (lib/siteConfig.ts PRELAUNCH_HOME), in
- * this order: the black prelaunch bar, the hero, the demo deals, then the
+ * this order: the black prelaunch bar, the hero, the example deals, then the
  * categories and filters for the real deals right above them ("Launch
- * deals"), then the business strip. The demo deals are examples only:
- * fixed data, labelled DEMO, kept apart from the real deals, so they're
- * never searched, counted or listed as offers anywhere. Search hides the
- * hero and the demo deals, as it hides the hero after launch.
+ * deals"), then the business strip. The example deals are fixed data,
+ * labelled EXAMPLE, each opening an example deal page; they're kept apart
+ * from the real deals, so they're never searched, counted or listed as
+ * offers anywhere. Search hides the hero and the example deals, as it
+ * hides the hero after launch.
  */
 export default function PrelaunchHome({ deals, initialSearch }: { deals: Deal[]; initialSearch: string }) {
   return (
@@ -27,8 +28,8 @@ export default function PrelaunchHome({ deals, initialSearch }: { deals: Deal[];
         <PrelaunchHero />
         <div className="mx-auto max-w-[1200px] px-4 pt-7 sm:px-6 lg:px-8 lg:pt-9">
           <DealRail
-            id="demo-deals"
-            title="Demo deals"
+            id="example-deals"
+            title="Example deals"
             description="Examples showing how MegaDeal will look at launch. These are not live offers and cannot be redeemed."
             deals={DEMO_DEALS}
             variant="demo"

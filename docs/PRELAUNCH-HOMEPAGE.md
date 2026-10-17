@@ -10,12 +10,15 @@ looks like the marketplace, without launching the site.
 2. Black prelaunch bar (`components/PrelaunchBar.tsx`).
 3. Hero (`components/PrelaunchHero.tsx`): "Auckland first", the one `<h1>`
    "Big local deals are coming to Auckland.", the offer, "Claim my free
-   advertising", "See demo deals", one trust line. Auckland skyline photo
+   advertising", "See example deals", one trust line. Auckland skyline photo
    plus the current mascot, `public/megadeal/mascot/megadeal-mascot-hero.webp`,
    as a separate layer at its own proportions.
-4. Demo deals (`lib/demoDeals.ts`): fixed examples with "Example …"
-   businesses and the site's own photos, labelled DEMO, with no link, code
-   or date. They are never searched, counted or put in structured data.
+4. Example deals (`lib/demoDeals.ts`): fixed examples with "Example …"
+   businesses and the site's own photos, labelled EXAMPLE. Each opens an
+   example deal page (`/example/[slug]`): the real deal page under an
+   "Example only" banner, code "EXAMPLE", contact details on example.com
+   only, no phone. Never searched, counted, indexed or put in structured
+   data.
 5. Categories, deal type, Filters (price and distance) and Sort: these
    control the real deals only, so they sit right above them. No map before
    launch (its pins open the deal pages, which are still private).

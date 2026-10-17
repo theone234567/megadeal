@@ -8,7 +8,7 @@ import { ArrowRightIcon, ChevronRightIcon } from "./icons";
 
 /**
  * A row of deal cards that scrolls sideways: the homepage's curated
- * collections (the demo deals and the launch deals before launch). Not for
+ * collections (the example deals and the launch deals before launch). Not for
  * search or filter results, which stay a grid.
  *
  * Plain native scrolling with snap points, so a phone swipes it and shows
@@ -29,7 +29,7 @@ export default function DealRail({
   empty,
   className = "",
 }: {
-  /** For the heading's id and in-page links (#demo-deals). */
+  /** For the heading's id and in-page links (#example-deals). */
   id: string;
   title: string;
   description?: ReactNode;
@@ -108,7 +108,7 @@ export default function DealRail({
         <ul
           ref={listRef}
           id={`${id}-list`}
-          // Focusable so a keyboard can scroll it (the demo cards aren't links).
+          // Focusable so a keyboard can scroll it.
           tabIndex={0}
           aria-label={title}
           className="scrollbar-hide -mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 pt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-hp-purple sm:-mx-6 sm:gap-4 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:scroll-px-0 lg:px-0"

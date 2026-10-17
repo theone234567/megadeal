@@ -6,7 +6,7 @@ import { ArrowRightIcon, ChevronDownIcon, CreditCardIcon, PercentIcon, UnlockIco
 /**
  * The prelaunch homepage's hero: one message and one action. Eyebrow,
  * headline, a short paragraph, "Claim my free advertising", a link down
- * to the demo deals and one trust line. The fuller offer is in the
+ * to the example deals and one trust line. The fuller offer is in the
  * business strip further down, not here.
  *
  * The picture is two separate layers: the Auckland skyline photo (no
@@ -42,10 +42,10 @@ export default function PrelaunchHero() {
               <ArrowRightIcon className="h-4 w-4" />
             </Link>
             <a
-              href="#demo-deals"
+              href="#example-deals"
               className="inline-flex min-h-[48px] items-center justify-center gap-1.5 rounded-full border-[1.5px] border-hp-purple/30 bg-white px-5 text-[0.9375rem] font-semibold text-hp-purple transition hover:border-hp-purple focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
             >
-              See demo deals
+              See example deals
               <ChevronDownIcon className="h-4 w-4" />
             </a>
           </div>
