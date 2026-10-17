@@ -14,7 +14,8 @@ export default function PrivacyPage() {
   return (
     <PageShell title="Privacy policy" subtitle="Last updated October 2026">
       <p>
-        MegaDeal is operated by {LEGAL_ENTITY_NAME} (NZBN {LEGAL_ENTITY_NZBN}),
+        MegaDeal is operated by {LEGAL_ENTITY_NAME}
+        {LEGAL_ENTITY_NZBN ? ` (NZBN ${LEGAL_ENTITY_NZBN})` : ""},
         a company registered in New Zealand (&quot;MegaDeal&quot;,
         &quot;we&quot;, &quot;us&quot;). This policy explains what personal
         information we collect, why we collect it, and the choices you have

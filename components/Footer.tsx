@@ -12,6 +12,7 @@ import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import SocialLinks from "./SocialLinks";
 import { currentPromo } from "@/lib/promo";
 import EmailSignupForm from "./EmailSignupForm";
+import { LEGAL_ENTITY_NAME } from "@/lib/siteConfig";
 
 /**
  * Before launch, the /auckland/* category pages render the full launched-site chrome
@@ -176,7 +177,7 @@ export default function Footer({ siteLaunched = false, prelaunchHome = false }: 
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 sm:flex-row">
-          <p className="text-center text-sm text-slate-500 sm:text-left">© {new Date().getFullYear()} MegaDeal. All rights reserved.</p>
+          <p className="text-center text-sm text-slate-500 sm:text-left">© {new Date().getFullYear()} {LEGAL_ENTITY_NAME}. All rights reserved.</p>
           <div className="flex gap-4 text-sm text-slate-500">
             <Link prefetch={false} href="/terms" className="inline-block py-1 hover:text-brand-700">Terms</Link>
             <Link prefetch={false} href="/privacy" className="inline-block py-1 hover:text-brand-700">Privacy</Link>

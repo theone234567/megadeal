@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import StaleBuildRecovery from "@/components/StaleBuildRecovery";
 import PreviewBanner from "@/components/PreviewBanner";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
-import { ORGANIZATION_ID, PRELAUNCH_HOME, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { LEGAL_ENTITY_NAME, ORGANIZATION_ID, PRELAUNCH_HOME, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { SEARCH_LOGO } from "@/lib/brand";
 import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
@@ -100,6 +100,8 @@ export default function RootLayout({
               "@type": "Organization",
               "@id": ORGANIZATION_ID,
               name: SITE_NAME,
+              // The registered company behind the brand (lib/siteConfig.ts).
+              legalName: LEGAL_ENTITY_NAME,
               url: SITE_URL,
               description: SITE_DESCRIPTION,
               areaServed: { "@type": "Country", name: "New Zealand" },

@@ -80,8 +80,10 @@ export const SITE_DESCRIPTION =
  * party to be enforceable, and the Privacy Act 2020 requires an agency to
  * be identifiable too.
  */
-export const LEGAL_ENTITY_NAME = "Babo Investments Limited";
-export const LEGAL_ENTITY_NZBN = "9429035341451";
+export const LEGAL_ENTITY_NAME = "MegaDeal Limited";
+/** MegaDeal Limited's NZBN. Left empty, the pages name the company
+ *  without one. */
+export const LEGAL_ENTITY_NZBN = "9429052744594";
 
 /**
  * Which coming-soon design /coming-soon shows: "v2" (the Coming Soon pack
