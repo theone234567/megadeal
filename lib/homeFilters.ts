@@ -17,7 +17,7 @@ import { dealDistanceKm, sortDeals, type SortOption } from "./sortDeals";
 
 export type DealType = "all" | "everyday" | "flash";
 export type BrowseView = "grid" | "map";
-export type PriceBand = "" | "under50" | "50to100" | "100to200" | "200plus";
+export type PriceBand = "" | "under25" | "25to50" | "50to100" | "100plus";
 
 export interface HomeFilters {
   q: string;
@@ -34,10 +34,10 @@ export interface HomeFilters {
 }
 
 export const PRICE_BANDS: { value: PriceBand; label: string; min: number; max: number }[] = [
-  { value: "under50", label: "Under $50", min: 0, max: 50 },
-  { value: "50to100", label: "$50 – $100", min: 50, max: 100 },
-  { value: "100to200", label: "$100 – $200", min: 100, max: 200 },
-  { value: "200plus", label: "$200 and over", min: 200, max: Infinity },
+  { value: "under25", label: "Under $25", min: 0, max: 25 },
+  { value: "25to50", label: "$25–$50", min: 25, max: 50 },
+  { value: "50to100", label: "$50–$100", min: 50, max: 100 },
+  { value: "100plus", label: "$100+", min: 100, max: Infinity },
 ];
 
 export const DISTANCE_OPTIONS = [2, 5, 10, 25] as const;

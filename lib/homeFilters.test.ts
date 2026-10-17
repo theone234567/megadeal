@@ -56,8 +56,8 @@ const ids = (list: Deal[]) => list.map((d) => d.id);
 
 describe("parseHomeFilters", () => {
   it("reads the URL and ignores unknown values", () => {
-    const f = parseHomeFilters(params("q=pizza&category=food-drink&type=flash&price=under50&sort=priceAsc&within=5"));
-    expect(f).toMatchObject({ q: "pizza", category: "food-drink", type: "flash", price: "under50", sort: "priceAsc", within: 5 });
+    const f = parseHomeFilters(params("q=pizza&category=food-drink&type=flash&price=under25&sort=priceAsc&within=5"));
+    expect(f).toMatchObject({ q: "pizza", category: "food-drink", type: "flash", price: "under25", sort: "priceAsc", within: 5 });
     const junk = parseHomeFilters(params("category=megashop&type=saved&price=cheap&sort=random&within=7"));
     expect(junk).toMatchObject({ category: "", type: "all", price: "", sort: "ending", within: null });
   });
@@ -112,7 +112,7 @@ describe("matchDeals + splitByType", () => {
     expect(ids(matchDeals(catalogue, { ...base, q: "PIZZA" }, NOW))).toEqual(["pizza"]);
     expect(ids(matchDeals(catalogue, { ...base, q: "harbour" }, NOW)).length).toBe(4); // business name
     expect(ids(matchDeals(catalogue, { ...base, city: "wellington" }, NOW))).toEqual(["massage"]);
-    expect(ids(matchDeals(catalogue, { ...base, price: "100to200" }, NOW))).toEqual(["massage"]);
+    expect(ids(matchDeals(catalogue, { ...base, price: "100plus" }, NOW))).toEqual(["massage"]);
     expect(matchDeals(catalogue, { ...base, q: "pizza", city: "Wellington" }, NOW)).toEqual([]);
   });
 
@@ -164,13 +164,13 @@ describe("one results list (browse toolbar)", () => {
     const f = parseHomeFilters(params("category=food-drink&type=flash&sort=priceAsc&view=map&q=pizza"));
     expect(panelFilterCount(f)).toBe(0);
     expect(panelFilterChips(f)).toEqual([]);
-    const g = parseHomeFilters(params("price=under50&within=5"));
+    const g = parseHomeFilters(params("price=under25&within=5"));
     expect(panelFilterCount(g)).toBe(2);
-    expect(panelFilterChips(g).map((c) => c.label)).toEqual(["Under $50", "Within 5 km"]);
+    expect(panelFilterChips(g).map((c) => c.label)).toEqual(["Under $25", "Within 5 km"]);
   });
 
   it("clearing the panel's filters keeps the category, type, search and sort", () => {
-    const f = parseHomeFilters(params("q=pizza&category=food-drink&type=flash&price=under50&within=5&sort=discount"));
+    const f = parseHomeFilters(params("q=pizza&category=food-drink&type=flash&price=under25&within=5&sort=discount"));
     expect(homeHref(f, NO_PANEL_FILTERS)).toBe("/?q=pizza&category=food-drink&type=flash&sort=discount");
     const [price] = panelFilterChips(f);
     expect(homeHref(f, price.clear)).toBe("/?q=pizza&category=food-drink&type=flash&within=5&sort=discount");
