@@ -1,7 +1,7 @@
 import Hero from "@/components/Hero";
 import SearchAwareHero from "@/components/SearchAwareHero";
 import HomeDeals from "./HomeDeals";
-import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
+import { fetchAllLiveDealsServer, fetchTestBusinessDeals } from "@/lib/fetchDealServer";
 import type { Metadata } from "next";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED, PRELAUNCH_HOME, DEALS_OPEN } from "@/lib/siteConfig";
 import { PRELAUNCH_PROMO } from "@/lib/promo";
@@ -94,7 +94,12 @@ export default async function HomePage(props: { searchParams: Promise<Record<str
             }}
           />
         )}
-        <PrelaunchHome deals={deals.map(toCardDeal)} initialSearch={initialSearch} dealsLive={DEALS_OPEN} />
+        <PrelaunchHome
+          deals={deals.map(toCardDeal)}
+          testDeals={(await fetchTestBusinessDeals()).map(toCardDeal)}
+          initialSearch={initialSearch}
+          dealsLive={DEALS_OPEN}
+        />
       </>
     );
   }

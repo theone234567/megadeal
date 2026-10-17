@@ -167,6 +167,24 @@ async function loadAllLiveDeals(): Promise<Deal[]> {
   return withDb((db) => pg.loadLiveDeals(db));
 }
 
+/**
+ * Test businesses' live deals, for the homepage's example deals and their
+ * example pages (lib/db/publicReads.ts loadTestBusinessDeals). Kept for a
+ * minute, like the listing; a failed read is just no extra examples.
+ */
+let testDealsCache: { at: number; deals: Deal[] } | null = null;
+export const fetchTestBusinessDeals = cache(async (): Promise<Deal[]> => {
+  const now = Date.now();
+  if (testDealsCache && now - testDealsCache.at < 60_000) return testDealsCache.deals;
+  try {
+    const deals = await withDb((db) => pg.loadTestBusinessDeals(db, now));
+    testDealsCache = { at: now, deals };
+    return deals;
+  } catch {
+    return [];
+  }
+});
+
 export interface BusinessProfile extends PublicBusiness {
   id: string;
 }

@@ -75,9 +75,8 @@ export const PRELAUNCH_HOME = !SITE_LAUNCHED && (process.env.PRELAUNCH_HOME ?? P
  * deals are drafts only and the customer pages admin-only until launch,
  * as before. Always on once SITE_LAUNCHED is true.
  */
-// Off until the test businesses are marked as tests (Admin -> Businesses ->
-// "Test business"), so none of their deals go public; then "on".
-const PRELAUNCH_DEALS_LIVE: "on" | "off" = "off";
+// On since 17 Oct 2026, once every test business was marked as a test.
+const PRELAUNCH_DEALS_LIVE: "on" | "off" = "on";
 export const DEALS_OPEN = SITE_LAUNCHED || (PRELAUNCH_HOME && (process.env.PRELAUNCH_DEALS ?? PRELAUNCH_DEALS_LIVE) === "on");
 
 /** Before launch with live deals: deals are free, 1 of each type at a time. */

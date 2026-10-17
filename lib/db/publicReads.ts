@@ -201,6 +201,26 @@ export async function loadLiveDeals(db: Sql, now: number = Date.now()): Promise<
   return rows.map(rowToDeal).filter((d) => isDealLive(d, now));
 }
 
+/**
+ * The live deals of businesses marked as tests (20261023000000_test_
+ * businesses.sql): never listed as real deals, but shown among the
+ * homepage's example deals so the owner can see how a deal looks
+ * (app/PrelaunchHome.tsx, /example/[slug]). Admin test deals (is_test on
+ * the deal) aren't included.
+ */
+export async function loadTestBusinessDeals(db: Sql, now: number = Date.now()): Promise<Deal[]> {
+  const rows = await db.query(
+    `select ${DEAL_COLUMNS}, ${BUSINESS_COLUMNS}
+       from public.deals d
+       join public.merchants m on m.id = d.merchant_id
+      where d.status = 'Live' and not d.is_test
+        and coalesce((to_jsonb(m)->>'is_test')::boolean, false)
+      order by d.first_published_at desc nulls last, d.created_at desc
+      limit 12`
+  );
+  return rows.map(rowToDeal).filter((d) => isDealLive(d, now));
+}
+
 export interface DealRead {
   deal: Deal;
   /** Showing on the site now. */
