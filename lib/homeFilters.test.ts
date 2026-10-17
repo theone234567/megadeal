@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import type { Deal } from "./types";
 import {
+  hasFilterParams,
   NO_PANEL_FILTERS,
   filterByType,
   hasNarrowingFilters,
@@ -174,5 +175,20 @@ describe("one results list (browse toolbar)", () => {
     expect(homeHref(f, NO_PANEL_FILTERS)).toBe("/?q=pizza&category=food-drink&type=flash&sort=discount");
     const [price] = panelFilterChips(f);
     expect(homeHref(f, price.clear)).toBe("/?q=pizza&category=food-drink&type=flash&within=5&sort=discount");
+  });
+});
+
+describe("hasFilterParams", () => {
+  const p = (qs: string) => new URLSearchParams(qs);
+  it("ignores tracking tags from ads and shared links", () => {
+    expect(hasFilterParams(p(""))).toBe(false);
+    expect(hasFilterParams(p("utm_source=facebook&utm_campaign=launch"))).toBe(false);
+    expect(hasFilterParams(p("fbclid=abc123"))).toBe(false);
+    expect(hasFilterParams(p("gclid=xyz&q="))).toBe(false);
+  });
+  it("sees a real search, filter or view", () => {
+    for (const qs of ["q=pizza", "category=home-car", "type=flash", "price=under25", "view=grid", "view=map", "within=5", "sort=discount"]) {
+      expect(hasFilterParams(p(`${qs}&fbclid=1`)), qs).toBe(true);
+    }
   });
 });

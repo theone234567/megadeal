@@ -15,6 +15,7 @@ import {
   NO_PANEL_FILTERS,
   PRICE_BANDS,
   filterByType,
+  hasFilterParams,
   hasNarrowingFilters,
   homeHref,
   matchDeals,
@@ -121,7 +122,9 @@ export default function HomeDeals({
   const filters: HomeFilters = pagesPrivate ? { ...parsed, view: "grid" } : parsed;
   // Before launch, the plain homepage shows a row of launch deals; any
   // search, filter, category or "View all deals" shows the grid.
-  const railView = prelaunch && searchParams.toString() === "";
+  // Tracking tags from ads and shared links (?fbclid=…, ?utm_source=…)
+  // don't count: those visitors get the same rows as everyone else.
+  const railView = prelaunch && !hasFilterParams(searchParams);
   const [now, setNow] = useState(() => Date.now());
   const { coords, status: locationStatus, request: requestLocation } = useUserLocation();
   const needsLocation = filters.sort === "nearest" || filters.within !== null;

@@ -160,6 +160,17 @@ export function panelFilterChips(f: PanelFilters): { key: keyof PanelFilters; la
   return chips;
 }
 
+/** The homepage's own query parameters. Anything else in its address
+ *  (utm_source, fbclid, gclid and other tracking tags from ads and links)
+ *  isn't a filter: such a visit gets the plain homepage. */
+export const FILTER_PARAMS = ["q", "city", "category", "type", "price", "sort", "within", "view"] as const;
+
+/** True when the address asks for a search, filter or view of the deals,
+ *  not the plain homepage. */
+export function hasFilterParams(params: ParamSource): boolean {
+  return FILTER_PARAMS.some((k) => (params.get(k) ?? "").trim() !== "");
+}
+
 /** True when anything other than the deal type narrows the results. */
 export function hasNarrowingFilters(f: HomeFilters): boolean {
   return Boolean(f.q || f.city || f.category || f.price || f.within);

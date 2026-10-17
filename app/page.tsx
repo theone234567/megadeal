@@ -7,7 +7,7 @@ import { SITE_URL, SITE_NAME, SITE_LAUNCHED, PRELAUNCH_HOME, DEALS_OPEN } from "
 import { PRELAUNCH_PROMO } from "@/lib/promo";
 import PrelaunchHome from "./PrelaunchHome";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { toSearchString } from "@/lib/homeFilters";
+import { hasFilterParams, toSearchString } from "@/lib/homeFilters";
 import { toCardDeal } from "@/lib/listingDeal";
 
 const HOME_TITLE = `${SITE_NAME} — Local Deals Up to 50% Off in Auckland & NZ`;
@@ -28,16 +28,14 @@ const PRELAUNCH_DESCRIPTION = `MegaDeal is building its Auckland launch lineup o
 // homepage, and there are hundreds of combinations. The canonical points
 // them all back to "/", and the categories have their own indexable pages
 // (/category/…), which is where the homepage's category links point.
-const FILTER_PARAMS = ["q", "city", "category", "type", "price", "sort", "within", "view"];
-
 export async function generateMetadata(props: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
   const params = await props.searchParams;
-  const filtered = FILTER_PARAMS.some((k) => {
+  const filtered = hasFilterParams({ get: (k) => {
     const v = params[k];
-    return typeof v === "string" ? v.trim() !== "" : Array.isArray(v) && v.length > 0;
-  });
+    return typeof v === "string" ? v : Array.isArray(v) ? (v[0] ?? null) : null;
+  } });
   const title = PRELAUNCH_HOME ? PRELAUNCH_TITLE : HOME_TITLE;
   const description = PRELAUNCH_HOME ? PRELAUNCH_DESCRIPTION : HOME_DESCRIPTION;
   return {
