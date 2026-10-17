@@ -77,7 +77,7 @@ MegaDeal has not launched to the public yet. There are no live deals to browse, 
 ## Key pages
 
 - Current status / launch updates: /coming-soon
-- Deals data for developers and AI tools (live from launch): /developers
+- Deals data for developers and AI tools: /developers
 - List your business / advertise your deal: /list-your-business
 - Restaurant advertising: /advertise/restaurants
 - Beauty & spa advertising: /advertise/beauty-spa

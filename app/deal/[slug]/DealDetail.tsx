@@ -265,7 +265,7 @@ export default function DealDetail({
 
             <p className="text-sm font-semibold text-hp-muted">Deal price</p>
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span className="font-display text-[2.5rem] font-bold leading-none text-hp-ink">{priceNow}</span>
+              <span className="font-display text-[2.5rem] font-bold leading-none text-hp-purple">{priceNow}</span>
               {priceWas && (
                 <span className="text-xl text-hp-muted line-through">
                   <span className="sr-only">Usual price </span>

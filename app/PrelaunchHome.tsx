@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Deal } from "@/lib/types";
 import { DEMO_DEALS } from "@/lib/demoDeals";
 import { PRELAUNCH_PROMO } from "@/lib/promo";
-import PrelaunchBar from "@/components/PrelaunchBar";
 import PrelaunchHero from "@/components/PrelaunchHero";
 import SearchAwareHero from "@/components/SearchAwareHero";
 import DealRail from "@/components/DealRail";
@@ -35,7 +34,6 @@ export default function PrelaunchHome({
 }) {
   return (
     <main className="bg-hp-page">
-      <PrelaunchBar />
       <SearchAwareHero initialSearch={initialSearch}>
         <PrelaunchHero />
         <div className="mx-auto max-w-[1200px] px-4 pt-7 sm:px-6 lg:px-8 lg:pt-9">
@@ -72,51 +70,45 @@ function BusinessBand() {
       text: `${PRELAUNCH_PROMO.credits} credits once you're approved, used from launch: an Everyday Deal uses 30 credits, a Flash Deal 3.*`,
     },
     {
-      title: "Customers reach you, not a voucher desk",
+      title: "Customers contact you directly",
       text: "Phone, booking link or email. MegaDeal takes 0% commission and doesn't sit between you and your customer.",
     },
   ];
   return (
-    <section aria-labelledby="business-band-heading" className="mt-12 bg-hp-purple text-white lg:mt-16">
-      <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-[40rem]">
+    <section aria-labelledby="business-band-heading" className="mt-10 bg-hp-purple text-white lg:mt-12">
+      <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-white/85">For Auckland businesses</p>
-            <h2
-              id="business-band-heading"
-              className="mt-2 text-balance font-display text-[2.125rem] font-bold leading-[1.05] sm:text-[2.75rem] lg:text-[3.25rem]"
-            >
+            <h2 id="business-band-heading" className="mt-1 text-balance font-display text-[1.625rem] font-bold leading-tight sm:text-[2rem]">
               Advertise free. Be there on launch day.
             </h2>
-            <p className="mt-4 max-w-[34rem] text-base leading-relaxed text-white/90">
-              Get your offers in front of Auckland customers while we build our launch lineup. No credit card, no lock-in.
-            </p>
+            <p className="mt-1.5 text-[0.9375rem] text-white/90">No credit card, no lock-in.</p>
           </div>
-          <div className="flex shrink-0 flex-col items-start gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
             <Link
               href="/list-your-business"
-              className="inline-flex min-h-[52px] items-center gap-2 rounded-full bg-white px-7 text-base font-bold text-hp-purple transition hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple"
+              className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-6 text-[0.9375rem] font-bold text-hp-purple transition hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple"
             >
               Claim my free advertising
               <ArrowRightIcon className="h-4 w-4" />
             </Link>
-            <Link href="/portal" prefetch={false} className="px-1 text-sm font-semibold text-white/90 underline underline-offset-2 hover:text-white">
+            <Link href="/portal" prefetch={false} className="text-sm font-semibold text-white/90 underline underline-offset-2 hover:text-white">
               Business sign in
             </Link>
           </div>
         </div>
 
-        <ol className="mt-10 border-t border-white/25">
+        <ol className="mt-6 grid gap-5 border-t border-white/25 pt-5 md:grid-cols-3 md:gap-8">
           {rows.map((r, i) => (
-            <li
-              key={r.title}
-              className="grid gap-x-8 gap-y-1.5 border-b border-white/25 py-6 sm:grid-cols-[3rem_minmax(0,1fr)] md:grid-cols-[3rem_minmax(0,1fr)_minmax(0,1fr)] md:items-baseline"
-            >
-              <span aria-hidden="true" className="text-sm font-semibold tabular-nums text-white/80">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h3 className="font-display text-[1.375rem] font-bold leading-tight sm:text-2xl">{r.title}</h3>
-              <p className="text-[0.9375rem] leading-relaxed text-white/90 sm:col-start-2 md:col-start-auto">{r.text}</p>
+            <li key={r.title}>
+              <p className="flex items-baseline gap-2.5">
+                <span aria-hidden="true" className="text-xs font-semibold tabular-nums text-white/80">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="font-display text-lg font-bold leading-snug">{r.title}</span>
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-white/90">{r.text}</p>
             </li>
           ))}
         </ol>

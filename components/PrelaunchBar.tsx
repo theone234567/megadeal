@@ -1,14 +1,22 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { PRELAUNCH_PROMO } from "@/lib/promo";
 import { ArrowRightIcon, MegaphoneIcon } from "./icons";
 
 /**
- * The black strip under the header on the prelaunch homepage: the one
- * place that says the site is in prelaunch and businesses can advertise
- * free now. The hero carries the main offer and the business strip the
- * details, so this stays to one line (two on a phone).
+ * The black strip above the header on every public page before launch
+ * (app/layout.tsx, with PRELAUNCH_HOME): says the site is in prelaunch and
+ * businesses can advertise free now. It scrolls away; the purple header
+ * below stays pinned with its own "Advertise free" button. Not in the
+ * business portal or admin, which have their own screens.
  */
+const HIDDEN = /^\/(?:portal|admin|coming-soon)(?:\/|$)/;
+
 export default function PrelaunchBar() {
+  const pathname = usePathname();
+  if (pathname && HIDDEN.test(pathname)) return null;
   return (
     <div className="bg-[#17131F] text-white">
       {/* Phone: the whole strip is the link. */}

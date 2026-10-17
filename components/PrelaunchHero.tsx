@@ -9,15 +9,15 @@ import { ArrowRightIcon, ChevronDownIcon, CreditCardIcon, PercentIcon, UnlockIco
  * to the example deals and one trust line. The fuller offer is in the
  * business strip further down, not here.
  *
- * The picture is two separate layers: the Auckland skyline photo (no
- * mascot baked in) and the current mascot on top of it, toward the bottom
- * right, clear of Sky Tower and of the text. The mascot is the approved
- * file itself (public/megadeal/mascot/megadeal-mascot-hero.webp), drawn at
- * its own proportions: only its height is set, the width follows.
+ * The picture is a bright collage of three example deals (small copies of
+ * the site's own photos in public/megadeal/hero/collage-*) as tilted
+ * cards with their saving and price, and the current mascot in front of
+ * them, waving toward the headline. The mascot is the approved file itself
+ * (public/megadeal/mascot/megadeal-mascot-hero.webp), at its own
+ * proportions: only its width is set.
  *
- * On a computer the text takes the left half and the picture the right,
- * about 340px tall in all. On a phone the text and button come first and
- * a short band of the picture follows.
+ * On a computer the text takes the left half and the collage the right.
+ * On a phone the text and buttons come first and the collage follows.
  */
 export default function PrelaunchHero() {
   return (
@@ -70,39 +70,66 @@ export default function PrelaunchHero() {
           </ul>
         </div>
 
-        {/* The picture: decorative, the headline says what matters. */}
-        <div
-          aria-hidden="true"
-          // Wider than the page column: on a wide screen the photo runs to
-          // the screen's right edge instead of stopping at the column.
-          className="relative h-[176px] min-[480px]:h-[220px] sm:h-[260px] lg:-mr-[max(0px,calc((100vw-1200px)/2))] lg:h-auto lg:min-h-[320px]"
-        >
-          <div className="absolute inset-0 lg:[mask-image:linear-gradient(to_right,transparent,black_22%)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/megadeal/hero/auckland-skyline-800.webp"
-              srcSet="/megadeal/hero/auckland-skyline-640.webp 640w, /megadeal/hero/auckland-skyline-800.webp 800w, /megadeal/hero/auckland-skyline.webp 1600w"
-              sizes="(min-width: 1200px) 600px, (min-width: 1024px) 50vw, 100vw"
-              alt=""
-              width={800}
-              height={351}
-              fetchPriority="high"
-              decoding="async"
-              // Sky Tower is the photo's centre: kept left of the mascot.
-              className="h-full w-full select-none object-cover object-[78%_40%] lg:object-[80%_50%]"
-            />
-          </div>
+        {/* The picture: decorative, the headline says what matters. Three
+            sunny example deals as tilted cards, and the mascot in front. */}
+        <div aria-hidden="true" className="relative mx-4 h-[250px] min-[400px]:h-[290px] sm:mx-6 sm:h-[340px] lg:mx-0 lg:h-auto lg:min-h-[360px]">
+          <div className="absolute right-[8%] top-[6%] h-[70%] w-[70%] rounded-full bg-[#FFE7B3] opacity-60 blur-3xl" />
+          <div className="absolute bottom-[4%] left-[10%] h-[55%] w-[55%] rounded-full bg-[#D9C8FF] opacity-70 blur-3xl" />
+          <CollageCard photo="pizza" price="$49" was="$78" off="37% off" priceLeft className="left-[16%] top-[5%] -rotate-[5deg]" />
+          <CollageCard photo="massage" price="$69" was="$120" off="42% off" className="right-[1%] top-[11%] rotate-[4deg]" />
+          <CollageCard photo="kayak" price="$59" was="$99" off="40% off" className="bottom-[5%] right-[19%] z-10 -rotate-[2deg]" />
           <Image
             src="/megadeal/mascot/megadeal-mascot-hero.webp"
             alt=""
             width={560}
             height={580}
             loading="eager"
-            sizes="(min-width: 1024px) 290px, 170px"
-            className="absolute bottom-0 right-3 h-[92%] w-auto select-none drop-shadow-[0_8px_16px_rgba(33,26,53,0.18)] sm:right-8 lg:right-[max(1.5rem,calc((100vw-1200px)/2+1.5rem))] lg:h-[min(86%,290px)]"
+            sizes="(min-width: 1024px) 180px, 30vw"
+            className="absolute bottom-0 left-0 z-20 h-auto w-[30%] max-w-[180px] select-none drop-shadow-[0_10px_18px_rgba(33,26,53,0.22)]"
           />
         </div>
       </div>
     </section>
+  );
+}
+
+/** One example deal in the collage: a photo with its saving and price. */
+function CollageCard({
+  photo,
+  price,
+  was,
+  off,
+  priceLeft = false,
+  className,
+}: {
+  photo: "pizza" | "massage" | "kayak";
+  price: string;
+  was: string;
+  off: string;
+  /** Put the price on the left, clear of a card overlapping the right. */
+  priceLeft?: boolean;
+  className: string;
+}) {
+  return (
+    <div
+      className={`absolute w-[42%] overflow-hidden rounded-2xl border-[5px] border-white bg-white shadow-[0_14px_30px_rgba(33,26,53,0.2)] ${className}`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/megadeal/hero/collage-${photo}-480.webp`}
+        srcSet={`/megadeal/hero/collage-${photo}-320.webp 320w, /megadeal/hero/collage-${photo}-480.webp 480w`}
+        sizes="(min-width: 1024px) 250px, 42vw"
+        width={480}
+        height={360}
+        alt=""
+        decoding="async"
+        className="aspect-[4/3] w-full object-cover"
+      />
+      <span className="absolute left-2 top-2 rounded-md bg-white px-2 py-0.5 text-xs font-bold text-hp-ink shadow-sm">{off}</span>
+      <span className={`absolute bottom-2 ${priceLeft ? "left-2" : "right-2"} rounded-lg bg-white px-2 py-1 leading-none shadow-sm`}>
+        <span className="font-display text-base font-bold text-hp-purple sm:text-lg">{price}</span>
+        <span className="ml-1 text-[0.6875rem] text-hp-muted line-through sm:text-xs">{was}</span>
+      </span>
+    </div>
   );
 }

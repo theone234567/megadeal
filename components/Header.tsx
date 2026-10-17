@@ -168,7 +168,18 @@ export default function Header({
             <BrandLogo placement="site" tone={T.logo} />
           </Link>
           <div className="flex shrink-0 items-center gap-1 lg:hidden">
-            {location}
+            {prelaunch && (
+              // Before launch the offer stays one tap away on a phone too.
+              <Link
+                href="/list-your-business"
+                className={`mr-1 inline-flex h-9 items-center whitespace-nowrap rounded-full bg-white px-3 text-[0.8125rem] font-bold text-hp-purple focus-visible:outline-none focus-visible:ring-2 ${T.ring}`}
+              >
+                Advertise free
+              </Link>
+            )}
+            {/* Auckland is the only city for now: on a narrow phone the
+                picker gives way to the button. */}
+            <div className={prelaunch ? "hidden min-[420px]:block" : ""}>{location}</div>
             <MobileMenu />
           </div>
         </div>

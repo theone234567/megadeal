@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StaleBuildRecovery from "@/components/StaleBuildRecovery";
 import PreviewBanner from "@/components/PreviewBanner";
+import PrelaunchBar from "@/components/PrelaunchBar";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
 import { DEALS_OPEN, LEGAL_ENTITY_NAME, ORGANIZATION_ID, PRELAUNCH_HOME, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
@@ -160,6 +161,7 @@ export default function RootLayout({
               own layouts. Here it would put a session check (/api/auth/me)
               on every page, public or not. */}
           <PreviewBanner siteLaunched={DEALS_OPEN} prelaunchHome={PRELAUNCH_HOME} />
+          {PRELAUNCH_HOME && <PrelaunchBar />}
           <Header prelaunch={PRELAUNCH_HOME} />
           {children}
           <Footer siteLaunched={SITE_LAUNCHED} prelaunchHome={PRELAUNCH_HOME} dealsOpen={DEALS_OPEN} />
