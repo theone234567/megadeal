@@ -166,8 +166,10 @@ export default function DealCodeReveal({
         <div aria-live="polite">
           <p className="text-sm font-semibold text-hp-ink">Your deal code</p>
           {code ? (
-            <div className="mt-1.5 flex items-center justify-between gap-3 rounded-lg bg-hp-code py-2.5 pl-4 pr-2.5">
-              <span ref={codeRef} className={`min-w-0 select-all whitespace-nowrap font-display font-semibold leading-none tracking-[0.03em] text-hp-purple ${size}`}>
+            {/* The code is never cut off: when the card is too narrow for
+                both, Copy code moves under it. */}
+            <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-lg bg-hp-code py-2.5 pl-4 pr-2.5">
+              <span ref={codeRef} className={`select-all whitespace-nowrap font-display font-semibold leading-tight tracking-[0.03em] text-hp-purple ${size}`}>
                 {code}
               </span>
               <button
