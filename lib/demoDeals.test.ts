@@ -33,6 +33,11 @@ describe("DEMO_DEALS", () => {
     expect(exampleDeal("nope")).toBeNull();
   });
 
+  it("shows every category, one of each first", () => {
+    const first = DEMO_DEALS.slice(0, CATEGORIES.length).map((d) => d.categories[0]);
+    expect(new Set(first)).toEqual(new Set(CATEGORIES.map((c) => c.name)));
+  });
+
   it("has a real saving and a real category on each", () => {
     for (const d of DEMO_DEALS) {
       expect(d.was).toBeGreaterThan(d.now);

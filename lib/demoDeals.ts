@@ -14,6 +14,9 @@ import type { BookingRequirement } from "./booking";
  * The business names say "Example", the website and email use example.com
  * (reserved for examples, so nobody real is contacted), and there's no
  * phone number. Photos are the site's own.
+ *
+ * Every category has at least one, and the first six are one of each, so
+ * no kind of business is left out of the first screen of examples.
  */
 const HOURS = (open: string, close: string, closedMon = false) =>
   JSON.stringify({
@@ -140,22 +143,6 @@ export const DEMO_DEALS: Deal[] = [
     booking: "required",
   }),
   example({
-    slug: "nails",
-    name: "Gel manicure & pedicure",
-    businessName: "Example Nail Studio",
-    businessSuburb: "Newmarket",
-    image: "/images/beauty-spa/beauty-nails.webp",
-    now: 55,
-    was: 100,
-    category: "Beauty & Spa",
-    description:
-      "A gel manicure and a classic pedicure in one visit.\n\n- Gel manicure with your choice of colour\n- Classic pedicure\n- About 90 minutes in all",
-    terms: "Booking recommended. Not valid with any other offer.",
-    bio: "An example nail studio, made up to show what a business's details look like on MegaDeal.",
-    hours: HOURS("09:30", "18:00"),
-    booking: "recommended",
-  }),
-  example({
     slug: "car-detail",
     name: "Full interior & exterior car detail",
     businessName: "Example Auto Care",
@@ -170,6 +157,38 @@ export const DEMO_DEALS: Deal[] = [
     bio: "An example car care business, made up to show what a business's details look like on MegaDeal.",
     hours: HOURS("08:00", "17:00"),
     booking: "required",
+  }),
+  example({
+    slug: "getaway",
+    name: "Waiheke sea-view getaway – 1 night for two",
+    businessName: "Example Island Retreat",
+    businessSuburb: "Waiheke Island",
+    image: "/megadeal-coming-soon/travel-getaways-v1.webp",
+    now: 189,
+    was: 320,
+    category: "Travel & Getaways",
+    description:
+      "A night away in a sea-view room on Waiheke, with breakfast and a lie-in.\n\n- One night for two in a sea-view room\n- Cooked breakfast for two\n- Late checkout at 11am",
+    terms: "Booking required, subject to availability. Sunday to Thursday nights. Ferry not included.",
+    bio: "An example island retreat, made up to show what a business's details look like on MegaDeal.",
+    hours: HOURS("08:00", "20:00"),
+    booking: "required",
+  }),
+  example({
+    slug: "yoga",
+    name: "10-class yoga pass",
+    businessName: "Example Yoga Studio",
+    businessSuburb: "Grey Lynn",
+    image: "/megadeal-coming-soon/health-fitness-v1.webp",
+    now: 79,
+    was: 180,
+    category: "Health & Fitness",
+    description:
+      "Ten classes at a calm, friendly studio, from gentle flow to power yoga.\n\n- 10 classes, any on the timetable\n- Mats provided\n- Valid for three months",
+    terms: "New customers only. Book each class online. Valid for three months from your first class.",
+    bio: "An example yoga studio, made up to show what a business's details look like on MegaDeal.",
+    hours: HOURS("06:00", "20:30"),
+    booking: "recommended",
   }),
   example({
     slug: "kayak",
@@ -188,21 +207,20 @@ export const DEMO_DEALS: Deal[] = [
     booking: "required",
   }),
   example({
-    slug: "facial",
-    name: "Signature facial – 60 mins",
-    businessName: "Example Skin Clinic",
-    businessSuburb: "Remuera",
-    image: "/images/beauty-spa/beauty-facial.webp",
-    now: 79,
-    was: 140,
+    slug: "nails",
+    name: "Gel manicure & pedicure",
+    businessName: "Example Nail Studio",
+    businessSuburb: "Newmarket",
+    image: "/images/beauty-spa/beauty-nails.webp",
+    now: 55,
+    was: 100,
     category: "Beauty & Spa",
-    flash: true,
     description:
-      "A one-hour facial matched to your skin type, finished with a hand and arm massage.\n\n- Skin consultation\n- 60 minute signature facial\n- Hand and arm massage",
-    terms: "Booking required. One per customer.",
-    bio: "An example skin clinic, made up to show what a business's details look like on MegaDeal.",
-    hours: HOURS("09:00", "18:00", true),
-    booking: "required",
+      "A gel manicure and a classic pedicure in one visit.\n\n- Gel manicure with your choice of colour\n- Classic pedicure\n- About 90 minutes in all",
+    terms: "Booking recommended. Not valid with any other offer.",
+    bio: "An example nail studio, made up to show what a business's details look like on MegaDeal.",
+    hours: HOURS("09:30", "18:00"),
+    booking: "recommended",
   }),
   example({
     slug: "home-clean",
@@ -218,6 +236,23 @@ export const DEMO_DEALS: Deal[] = [
     terms: "Booking required. Central Auckland suburbs only.",
     bio: "An example cleaning business, made up to show what a business's details look like on MegaDeal.",
     hours: HOURS("08:00", "18:00"),
+    booking: "required",
+  }),
+  example({
+    slug: "facial",
+    name: "Signature facial – 60 mins",
+    businessName: "Example Skin Clinic",
+    businessSuburb: "Remuera",
+    image: "/images/beauty-spa/beauty-facial.webp",
+    now: 79,
+    was: 140,
+    category: "Beauty & Spa",
+    flash: true,
+    description:
+      "A one-hour facial matched to your skin type, finished with a hand and arm massage.\n\n- Skin consultation\n- 60 minute signature facial\n- Hand and arm massage",
+    terms: "Booking required. One per customer.",
+    bio: "An example skin clinic, made up to show what a business's details look like on MegaDeal.",
+    hours: HOURS("09:00", "18:00", true),
     booking: "required",
   }),
 ];
