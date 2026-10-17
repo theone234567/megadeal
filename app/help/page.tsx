@@ -4,6 +4,8 @@ import Link from "next/link";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { pageMetadata } from "@/lib/pageMetadata";
+import { SITE_LAUNCHED } from "@/lib/siteConfig";
+import { currentPromo } from "@/lib/promo";
 import OpenHashedDetails from "@/components/OpenHashedDetails";
 
 export const metadata: Metadata = pageMetadata({
@@ -12,6 +14,14 @@ export const metadata: Metadata = pageMetadata({
     "Answers to the most common MegaDeal questions — how deals work, redeeming without a voucher, refunds, and listing a business.",
   path: "/help",
 });
+
+// The business answer follows launch: before it, advertising is free (1
+// Everyday + 1 Flash Deal at a time, lib/prelaunchAllowance.ts) and the
+// offer's months start at launch; after it, pay-as-you-go credits.
+const PROMO = currentPromo(SITE_LAUNCHED);
+const BUSINESS_COST = SITE_LAUNCHED
+  ? `you advertise with pay-as-you-go credits (eligible new businesses get up to ${PROMO.months} months free), and customers pay you directly when they redeem.`
+  : `advertising is free while we prelaunch (1 Everyday Deal and 1 Flash Deal at a time), eligible businesses get up to ${PROMO.months} months free from launch, and customers pay you directly when they redeem. Conditions apply.`;
 
 // Plain-text mirror of the JSX answers below, for FAQPage structured data —
 // duplicated here rather than shared because the JSX versions include
@@ -30,7 +40,7 @@ const FAQ_JSONLD = [
   { q: "Can I get a refund?", a: "Since MegaDeal never charges you, there's nothing for us to refund. Payment and any resulting dispute is between you and the business." },
   { q: "Is Groupon still in New Zealand?", a: "No. Groupon closed its New Zealand business in 2020, and MegaDeal isn't connected with it. MegaDeal is a New Zealand-owned local deals site, starting in Auckland. It works differently: there's no voucher to buy. You get a free deal code, contact the business, and pay them directly at the deal price." },
   { q: "How do I stop MegaDeal emails?", a: "Every MegaDeal email that isn't about your account has an Unsubscribe link at the bottom: one click and those emails stop. Businesses can also choose which MegaDeal emails they get under \"Emails from MegaDeal\" in the business portal. Emails about your account and your deals, like sign-in codes and approvals, always come." },
-  { q: "I'm a business — how do I list a deal?", a: "Head to our business page to find out how listing works — you advertise with pay-as-you-go credits, and customers pay you directly when they redeem." },
+  { q: "I'm a business — how do I list a deal?", a: `Head to our business page to find out how listing works — ${BUSINESS_COST}` },
 ];
 
 interface Faq {
@@ -158,9 +168,7 @@ const FAQS: Faq[] = [
         <Link href="/list-your-business" className="font-semibold text-brand-600 hover:underline">
           business page
         </Link>{" "}
-        to find out how listing works — you advertise with
-        pay-as-you-go credits, and customers pay you directly when they
-        redeem.
+        to find out how listing works — {BUSINESS_COST}
       </>
     ),
   },
