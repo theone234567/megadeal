@@ -27,14 +27,14 @@ export default function DealLoading() {
           <div className="animate-shimmer mt-3 h-4 w-48 rounded" />
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:mt-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(340px,1fr)] lg:items-start lg:gap-6">
-          <div className="animate-shimmer aspect-video w-full rounded-2xl" />
+        <div className="mt-4 grid grid-cols-1 gap-6 lg:mt-5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] lg:items-start lg:gap-x-8">
+          <div className="animate-shimmer aspect-video w-full rounded-xl" />
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+          <div className="rounded-xl border border-hp-border bg-white p-5 sm:p-6">
             <div className="animate-shimmer h-12 w-36 rounded-lg" />
             <div className="animate-shimmer mt-3 h-4 w-40 rounded" />
             <div className="animate-shimmer mt-2 h-3 w-48 rounded" />
-            <div className="animate-shimmer mt-4 h-12 w-full rounded-xl" />
+            <div className="animate-shimmer mt-4 h-12 w-full rounded-lg" />
           </div>
         </div>
       </div>

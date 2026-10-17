@@ -27,6 +27,10 @@ const config: Config = {
           muted: "#625C70",
           lavender: "#F5F0FC",
           line: "#E7E0EF",
+          // Card and panel borders on the deal page.
+          border: "#D6D3DC",
+          // The deal code's chip.
+          code: "#F3EEFE",
           boundary: "#8D7AA8",
           purple: "#6D28D9",
           "purple-dark": "#5B21B6",

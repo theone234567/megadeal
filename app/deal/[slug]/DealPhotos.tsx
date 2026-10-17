@@ -53,7 +53,7 @@ export default function DealPhotos({ images, alt }: { images: string[]; alt: str
   );
 
   if (!many) {
-    return <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-brand-50">{img(images[0], 0)}</div>;
+    return <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-brand-50">{img(images[0], 0)}</div>;
   }
 
   const arrow =
@@ -66,7 +66,7 @@ export default function DealPhotos({ images, alt }: { images: string[]; alt: str
           ref={track}
           tabIndex={0}
           aria-label={`Photos, ${images.length} in all. Swipe or use the arrow keys.`}
-          className="flex aspect-video w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden rounded-2xl bg-brand-50 [scrollbar-width:none] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 [&::-webkit-scrollbar]:hidden"
+          className="flex aspect-video w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden rounded-xl bg-brand-50 [scrollbar-width:none] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 [&::-webkit-scrollbar]:hidden"
         >
           {images.map((url, i) => (
             <div

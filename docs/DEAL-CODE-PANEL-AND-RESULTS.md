@@ -5,17 +5,25 @@ switch it on or undo it.
 
 ## What customers see
 
-- **Deal page** (`app/deal/[slug]/DealDetail.tsx`): photo (16:9) beside a
-  price card; "Booking required · Ends 28 October" beside one button,
-  **Get deal code**; then *Deal details* beside every *Condition*, all shown;
-  then a short "About" for the business with links to its address and
-  hours, website and profile. On a phone, a bar with the price and the same
-  button appears once the main button scrolls away.
-- **Get deal code** (`GetDealCode.tsx`): a dialog (computer) or a sheet from
-  the bottom (phone) with the code and Copy, how to use it, the business's
-  own note, the main contact button and the others, *Hours today* (all
-  hours on request), directions only for a public address, and the
-  profile. The same code every time; nothing is copied or opened by itself.
+- **Deal page** (`app/deal/[slug]/DealDetail.tsx`): one job, get the code
+  and then contact the business (MegaDeal takes no payment). Title, then
+  the photo beside a price card that stays in view on a computer; *About
+  this deal*; one white panel with *What's included* (a list written in the
+  description) beside every *Condition*, plus when it ends and "You pay
+  the business directly"; *Contact & booking*; *About the business*.
+- **Get deal code** (`DealCodeReveal.tsx`): the one purple button. It
+  turns into the code in place (no pop-up) and stays for the visit, with
+  *Copy code* ("Copied") and how to use it. "Reveal code & booking
+  options" does the same and scrolls to Contact & booking. On a phone a
+  bar with the price and the button sits at the bottom; once revealed it
+  shows the code and "Code saved".
+- **Contact & booking** (`ContactBooking.tsx`): "18 Bay Road, Whangaparāoa ·
+  Open today 8am–8pm" (the only place hours show, worked out in the
+  browser in NZ time), then a cell each for Phone, Email and Website (and
+  a booking page if it's a different one). The email isn't in the page's
+  HTML: *Show email* reveals it as a link. The address opens *Address &
+  hours*: the full address, the week's hours and *Open in maps* (only for
+  a public address).
 - **Business profile** (`app/business/[slug]/page.tsx`): About and photos
   (they open larger) beside *Contact & visit*, then its deals. *Back to
   deal* appears when it was opened from one of its own live deals.
