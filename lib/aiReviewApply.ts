@@ -4,7 +4,7 @@ import { withdrawalRefundsCredit } from "./dealStatus";
 import { creditsToRefund } from "./platformSettingsRules";
 import { withHistory } from "./dealAdminEdit";
 import { logMerchantActivity } from "./merchantActivity";
-import { SITE_LAUNCHED } from "./siteConfig";
+import { DEALS_OPEN } from "./siteConfig";
 import { getSiteRudenessCheck, rudenessCheckApplies } from "./rudenessSetting";
 import { notifyDealChanged } from "./indexNowDeal";
 import { firstPublicationFields } from "./dealDuration";
@@ -84,7 +84,7 @@ export async function reviewSubmittedDeal(
       await logMerchantActivity(adminClient, {
         merchantEmail: deal.merchantEmail,
         type: "deal",
-        description: SITE_LAUNCHED
+        description: DEALS_OPEN
           ? `"${deal.dealName}" is now live`
           : `"${deal.dealName}" is approved — customers will see it from launch day`,
       });

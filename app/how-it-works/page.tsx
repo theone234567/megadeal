@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { SITE_LAUNCHED, SITE_NAME } from "@/lib/siteConfig";
+import { DEALS_OPEN, SITE_LAUNCHED, SITE_NAME } from "@/lib/siteConfig";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { pageMetadata } from "@/lib/pageMetadata";
@@ -88,12 +88,13 @@ const BUSINESS_STEPS: Step[] = [
   {
     number: "4",
     title: "Get notified and log in",
-    text: "You'll get a welcome email the moment your account is approved. From there, log in to your business portal any time — you'll have a couple of free introductory deal credits waiting (plus your free advertising credits, if you signed up with an offer code), and you can complete the rest of your profile whenever suits, if you haven't already.",
+    text: "You'll get a welcome email the moment your account is approved. From there, log in to your business portal any time — you'll have your free advertising credits waiting, and you can complete the rest of your profile whenever suits, if you haven't already.",
   },
-  // Before launch, deals can only be saved as drafts (app/api/deals/create
-  // refuses submissions); after it, they go live once approved. There's no
-  // "deal is live" email, so none is promised.
-  SITE_LAUNCHED
+  // Until deals open (DEALS_OPEN, before launch too) they can only be saved
+  // as drafts (app/api/deals/create refuses submissions); after that, they
+  // go live once approved. There's no "deal is live" email, so none is
+  // promised.
+  DEALS_OPEN
     ? {
         number: "5",
         title: "Your deal goes live once approved",
@@ -101,7 +102,8 @@ const BUSINESS_STEPS: Step[] = [
           <>
             Submit your deal from your business portal. Our team checks it,
             and once it&apos;s approved it goes live for customers — your
-            business portal shows where it&apos;s at. Got a question in the
+            business portal shows where it&apos;s at.
+            {!SITE_LAUNCHED && " Before launch you can run 1 Everyday Deal and 1 Flash Deal at a time, free."} Got a question in the
             meantime? Feel free to{" "}
             <Link href="/contact" className="font-semibold text-brand-600 hover:underline">
               get in touch

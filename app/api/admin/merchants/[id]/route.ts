@@ -10,8 +10,8 @@ import { adminDeleteUser } from "@/lib/supabaseAuth";
 import { queryAllByEmail } from "@/lib/queryAll";
 import { businessEmailChoices } from "@/lib/businessEmailChoices";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
-import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
-import { promoForCode } from "@/lib/promo";
+import { DEALS_OPEN, SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { currentPromo, promoForCode } from "@/lib/promo";
 import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { escapeHtml } from "@/lib/escapeHtml";
@@ -36,9 +36,11 @@ function cleanText(value: unknown, maxLength: number): string {
 
 const INTRO_CREDITS = 2;
 // The free-advertising offer advertised on /list-your-business: WELCOME6
-// (up to 6 months, 24 credits) before launch, WELCOME3 (3 months, 12
-// credits) from launch — see lib/promo.ts, which decides by SITE_LAUNCHED
-// at the moment of approval. A business enters it in the same field used
+// (up to 6 months, 180 credits) before launch, WELCOME3 (up to 3 months,
+// 90 credits) from launch — see lib/promo.ts, which decides by
+// SITE_LAUNCHED at the moment of approval. Since 17 Oct 2026 every
+// business gets it on its first approval, code or not (the owner's
+// decision); the code is still accepted. A business enters it in the same field used
 // for peer referrals; it isn't anyone's real referralCode, so it can never
 // collide with an actual referral match.
 
@@ -218,6 +220,11 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     if (!v) return NextResponse.json({ error: "Contact phone can't be empty." }, { status: 400 });
     patch.contactPhone = v;
   }
+  // A test business is never public (lib/db/publicReads.ts).
+  if (body.isTest !== undefined) {
+    if (typeof body.isTest !== "boolean") return NextResponse.json({ error: "Test business must be on or off." }, { status: 400 });
+    patch.isTest = body.isTest;
+  }
   if (body.nzbn !== undefined) {
     const v = normalizeNzbn(body.nzbn);
     if (!isValidNzbnFormat(v)) {
@@ -391,13 +398,15 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
 
   // The free-advertising promo. After launch, WELCOME6 typed before launch
   // still counts, as the launch offer (lib/promo.ts).
-  const promo = enteredCode ? promoForCode(enteredCode, SITE_LAUNCHED) : null;
+  const promo = (enteredCode ? promoForCode(enteredCode, SITE_LAUNCHED) : null) ?? (firstApproval ? currentPromo(SITE_LAUNCHED) : null);
   if (becomingApproved && promo) {
     if (await claimPromoAtomically(adminClient, existing._id)) {
       promoGranted = promo.credits;
       patch.promoRewarded = true;
     }
   }
+  // The offer replaces the small introductory grant: one or the other.
+  if (promoGranted > 0) introGranted = 0;
   if (becomingApproved && enteredReferral) {
     // Referral bonus: if this merchant signed up with someone else's referral
     // code, both sides get a bonus once this merchant is approved. The claim
@@ -574,7 +583,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         html: brandedEmailHtml(`
           <p style="margin:0 0 16px;">Hi ${safeName},</p>
           <p style="margin:0 0 16px;">We've checked your business details and you're approved again${
-            SITE_LAUNCHED ? " — your live deals are showing to customers again" : ""
+            DEALS_OPEN ? " — your live deals are showing to customers again" : ""
           }.</p>
           <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6D28D9;font-weight:700;">Go to your portal</a></p>
         `),
@@ -608,7 +617,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         html: brandedEmailHtml(`
           <p style="margin:0 0 16px;">Hi ${safeName},</p>
           <p style="margin:0 0 16px;">Good news — your business is approved on MegaDeal. ${
-            SITE_LAUNCHED
+            DEALS_OPEN
               ? "Log in to your business portal to submit your first deal:"
               : "MegaDeal hasn&#39;t launched to customers yet, so for now you can set up your listing and build your deals as drafts in your business portal. We&#39;ll email you the moment we go live, and you can submit them straight away:"
           }</p>
@@ -781,7 +790,7 @@ async function deleteEverything(req: NextRequest, id: string, body: { confirm?: 
     if (!typed || typed !== ((m.business_name ?? "").trim() || id)) {
       return NextResponse.json({ error: "Type the business's name exactly to confirm." }, { status: 400 });
     }
-    const out = await withDb((db) => deleteBusinessCompletely(db, id, { launched: SITE_LAUNCHED }));
+    const out = await withDb((db) => deleteBusinessCompletely(db, id, { launched: DEALS_OPEN }));
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status });
 
     let loginNote = "login kept";

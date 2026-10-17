@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { SITE_LAUNCHED } from "@/lib/siteConfig";
+import { DEALS_OPEN, PRELAUNCH_FREE_DEALS } from "@/lib/siteConfig";
 import NewDealForm from "./NewDealForm";
 
 // SITE_LAUNCHED is a server-only env var (no NEXT_PUBLIC_ prefix), so this
@@ -8,7 +8,7 @@ import NewDealForm from "./NewDealForm";
 export default function NewDealPage() {
   return (
     <Suspense fallback={null}>
-      <NewDealForm siteLaunched={SITE_LAUNCHED} />
+      <NewDealForm siteLaunched={DEALS_OPEN} prelaunchFree={PRELAUNCH_FREE_DEALS} />
     </Suspense>
   );
 }

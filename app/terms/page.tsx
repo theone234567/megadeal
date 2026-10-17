@@ -106,9 +106,21 @@ export default function TermsPage() {
         to customers, not from the date they were granted.
       </p>
       <p>
-        MegaDeal may offer up to 6 months of free advertising credits to
-        businesses that join before our official launch in Auckland — this
-        offer is only available before launch, not after. It&apos;s subject
+        How credits are used: an Everyday Deal (running for up to 30 days)
+        uses 30 credits and a Flash Deal uses 3 credits, taken when the deal
+        is submitted for review. Before our official launch, each approved
+        business can run 1 Everyday Deal and 1 Flash Deal at a time without
+        using any credits; credits are used from launch.
+      </p>
+      <p>
+        Free advertising offer: businesses approved before our official
+        launch in Auckland receive up to 180 advertising credits (up to 6
+        months of Everyday Deals). Businesses approved after launch receive
+        up to 90 credits (up to 3 months). These offers, the number of
+        credits each deal uses and the prelaunch allowance are subject to
+        change, and we may change or withdraw them at any time; a change
+        doesn&apos;t remove credits already in a business&apos;s balance.
+        The offer is subject
         to fair use, and we reserve the right to decline it — or decline
         the underlying business application entirely — for any reason,
         including for pure online/e-commerce stores or adult entertainment

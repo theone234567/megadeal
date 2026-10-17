@@ -32,7 +32,7 @@ vi.mock("@/lib/metaCapi", () => ({ sendMetaCapiEvent: async () => {} }));
 vi.mock("@/lib/adminAudit", () => ({ logAdminAction: async () => {}, auditTarget: (n: unknown) => String(n) }));
 vi.mock("@/lib/indexNowDeal", () => ({ notifyDealChanged: () => {}, notifyBusinessChanged: () => {} }));
 // As after launch: before it, submissions are refused (drafts only).
-vi.mock("@/lib/siteConfig", async (orig) => ({ ...(await orig<typeof import("../siteConfig")>()), SITE_LAUNCHED: true }));
+vi.mock("@/lib/siteConfig", async (orig) => ({ ...(await orig<typeof import("../siteConfig")>()), SITE_LAUNCHED: true, DEALS_OPEN: true, PRELAUNCH_FREE_DEALS: false }));
 vi.mock("@/lib/aiReview", async (orig) => ({ ...(await orig<typeof import("../aiReview")>()), reviewWithAi: async () => aiReview }));
 
 beforeAll(async () => {
@@ -97,7 +97,7 @@ const DEAL = {
   photoMediaId: "m1",
 };
 
-async function signUpApprovedWithCredits(credits = 10) {
+async function signUpApprovedWithCredits(credits = 100) {
   const apply = await import("@/app/api/merchants/apply/route");
   const res = await call(apply.POST, request("POST", SIGNUP));
   expect(res.status).toBe(200);
@@ -196,7 +196,7 @@ describe("a business on the new database", () => {
   });
 
   it("saves a draft, submits it (credits taken), and an admin approves it onto the site", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     const draftRoute = await import("@/app/api/deals/draft/route");
     const saved = await call(draftRoute.POST, request("POST", { draft: { dealName: "Two-course dinner", category: "Food & Drink", priceNow: "49" } }));
     expect(saved.status).toBe(200);
@@ -209,8 +209,8 @@ describe("a business on the new database", () => {
     expect(submitted.body).toMatchObject({ outcome: "pending" });
     expect(submitted.body.item).toMatchObject({ _id: draftId, status: "Pending Approval", productId: draftId, category: "Food & Drink" });
     const [m] = await db.query("select credits_balance from public.merchants");
-    expect(m.credits_balance).toBeLessThan(10);
-    const charged = 10 - m.credits_balance;
+    expect(m.credits_balance).toBeLessThan(100);
+    const charged = 100 - m.credits_balance;
     expect(await db.query("select type, amount from public.merchant_activity")).toEqual([{ type: "credit", amount: -charged }]);
 
     // Not on the site until approved.
@@ -236,7 +236,7 @@ describe("a business on the new database", () => {
   });
 
   it("pauses and restarts its own deal, but not one MegaDeal paused", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     const create = await import("@/app/api/deals/create/route");
     const { body } = await call(create.POST, request("POST", DEAL));
     const id = body.item._id;
@@ -259,7 +259,7 @@ describe("a business on the new database", () => {
   });
 
   it("another business can't touch it", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     const create = await import("@/app/api/deals/create/route");
     const { body } = await call(create.POST, request("POST", DEAL));
     signedIn = { ...member, id: login(2), email: "someone@else.nz" };
@@ -268,20 +268,20 @@ describe("a business on the new database", () => {
   });
 
   it("withdraws a deal waiting for approval and gets the credits back", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     const create = await import("@/app/api/deals/create/route");
     const { body } = await call(create.POST, request("POST", DEAL));
     const status = await import("@/app/api/deals/[id]/status/route");
     const res = await call(status.POST, request("POST", { status: "Cancelled" }), params(body.item._id));
     expect(res.body).toMatchObject({ creditRefunded: true });
-    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 10 }]);
+    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 100 }]);
     // Twice is still one refund.
     await call(status.POST, request("POST", { status: "Cancelled" }), params(body.item._id));
-    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 10 }]);
+    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 100 }]);
   });
 
   it("counts a customer's view of a live deal, and lists the business's deals and activity", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     const create = await import("@/app/api/deals/create/route");
     const { body } = await call(create.POST, request("POST", DEAL));
     admin = true;
@@ -322,7 +322,8 @@ describe("admin work and the rest of the business portal", () => {
     const approved = await call(route.PATCH, request("PATCH", { status: "Approved" }), params(body.item._id));
     expect(approved.status).toBe(200);
     const [{ credits_balance: welcome }] = await db.query("select credits_balance from public.merchants");
-    expect(welcome).toBeGreaterThan(0);
+    // The current offer, with no code typed (launched here: 90 credits).
+    expect(welcome).toBe(90);
 
     expect((await call(route.PATCH, request("PATCH", { creditsBalance: welcome + 5 }), params(body.item._id))).status).toBe(400);
     expect((await call(route.PATCH, request("PATCH", { creditsBalance: welcome + 5, creditsReason: "Launch thank-you" }), params(body.item._id))).status).toBe(200);
@@ -399,7 +400,7 @@ describe("admin work and the rest of the business portal", () => {
   });
 
   it("asks for a change to a live deal, and an admin approves it", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     const deal = await liveDeal();
     const revision = await import("@/app/api/deals/[id]/revision/route");
     const asked = await call(revision.POST, request("POST", { changes: { terms: "Dine-in only. Not on public holidays." } }), params(deal._id));
@@ -412,7 +413,7 @@ describe("admin work and the rest of the business portal", () => {
   });
 
   it("an admin's price edit reaches the deal page", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     const deal = await liveDeal();
     admin = true;
     const adminDeal = await import("@/app/api/admin/deals/[id]/route");
@@ -421,7 +422,7 @@ describe("admin work and the rest of the business portal", () => {
   });
 
   it("deletes a draft, but not a submitted deal", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     const draftRoute = await import("@/app/api/deals/draft/route");
     const draft = (await call(draftRoute.POST, request("POST", { draft: { dealName: "Half-written" } }))).body.item;
     const live = await liveDeal();
@@ -432,7 +433,7 @@ describe("admin work and the rest of the business portal", () => {
   });
 
   it("an admin deletes a business with its drafts and activity, but not one with submitted deals", async () => {
-    const m = await signUpApprovedWithCredits(10);
+    const m = await signUpApprovedWithCredits(100);
     const live = await liveDeal();
     admin = true;
     const route = await import("@/app/api/admin/merchants/[id]/route");
@@ -450,7 +451,7 @@ describe("admin work and the rest of the business portal", () => {
   });
 
   it("admin lists: businesses, deals, sign-ups; and the site-wide rudeness setting", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     await liveDeal();
     admin = true;
     for (const path of ["merchants", "deals", "email-signups"]) {
@@ -518,7 +519,7 @@ describe("the AI review and housekeeping on the new database", () => {
   const review = (verdict: string, extra: Record<string, boolean> = {}) => ({ verdict, flags: { ...flags, ...extra }, reasons: ["test"], messageToBusiness: "Please change the wording.", model: "test", at: new Date().toISOString() });
 
   it("a clean deal from an approved business goes live straight away", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     aiReview = review("approve");
     const create = await import("@/app/api/deals/create/route");
     const res = await call(create.POST, request("POST", DEAL));
@@ -529,18 +530,18 @@ describe("the AI review and housekeeping on the new database", () => {
   });
 
   it("an offensive deal is turned down with its credits back", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     aiReview = review("reject", { offensive: true });
     const create = await import("@/app/api/deals/create/route");
     const res = await call(create.POST, request("POST", DEAL));
     expect(res.body.outcome).toBe("rejected");
     expect(res.body.creditsReturned).toBeGreaterThan(0);
-    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 10 }]);
+    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 100 }]);
     expect(await db.query("select status from public.deals")).toEqual([{ status: "Cancelled" }]);
   });
 
   it("a deal withdrawn while the AI was still reviewing it isn't refunded twice when the review turns it down", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     aiReview = null; // review unavailable: the deal waits for a person
     const create = await import("@/app/api/deals/create/route");
     const { body } = await call(create.POST, request("POST", DEAL));
@@ -553,19 +554,19 @@ describe("the AI review and housekeeping on the new database", () => {
     // Meanwhile the business withdraws it and gets its credits back.
     const status = await import("@/app/api/deals/[id]/status/route");
     await call(status.POST, request("POST", { status: "Cancelled" }), params(body.item._id));
-    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 10 }]);
+    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 100 }]);
 
     // Then the review comes back: turned down.
     aiReview = review("reject", { offensive: true });
     const { reviewSubmittedDeal } = await import("@/lib/aiReviewApply");
     const result = await reviewSubmittedDeal(client, stale, merchant, { apply: true });
     expect(result.creditsReturned ?? 0).toBe(0);
-    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 10 }]);
+    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 100 }]);
     expect(await db.query("select status, credit_refunded from public.deals")).toEqual([{ status: "Cancelled", credit_refunded: true }]);
   });
 
   it("a review that fails leaves the deal as it was, waiting for a person", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     const create = await import("@/app/api/deals/create/route");
     const { body } = await call(create.POST, request("POST", DEAL));
     const client = createPgAdminClient((fn) => fn(db));
@@ -579,7 +580,7 @@ describe("the AI review and housekeeping on the new database", () => {
   });
 
   it("a replacement photo on a live deal: approved swaps it in (old kept in history), turned down leaves the old one", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     aiReview = review("approve");
     const create = await import("@/app/api/deals/create/route");
     const { body } = await call(create.POST, request("POST", DEAL));
@@ -619,7 +620,7 @@ describe("the AI review and housekeeping on the new database", () => {
   });
 
   it("a replacement photo from a business that isn't approved waits for a person, even if the AI likes it", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     aiReview = review("approve");
     const create = await import("@/app/api/deals/create/route");
     const { body } = await call(create.POST, request("POST", DEAL));
@@ -633,7 +634,7 @@ describe("the AI review and housekeeping on the new database", () => {
   });
 
   it("the hourly job finds deals that have just ended", async () => {
-    await signUpApprovedWithCredits(10);
+    await signUpApprovedWithCredits(100);
     aiReview = review("approve");
     const create = await import("@/app/api/deals/create/route");
     await call(create.POST, request("POST", DEAL));

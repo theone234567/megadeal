@@ -5,6 +5,8 @@ export interface AdminMerchant {
   _id: string;
   _owner?: string;
   businessName?: string;
+  /** Never public (lib/db/publicReads.ts). */
+  isTest?: boolean;
   email?: string;
   phone?: string;
   address?: string;
@@ -83,6 +85,9 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
           <div>
             <p className="font-semibold text-brand-700 hover:underline">
               {merchant.businessName || "—"}
+              {merchant.isTest && (
+                <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 align-middle text-[11px] font-bold text-amber-800">TEST</span>
+              )}
             </p>
             {/* Same reason as the detail page: an empty field rendered
                 bare is indistinguishable from one nobody displayed. */}

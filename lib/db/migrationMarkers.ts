@@ -19,4 +19,6 @@ export const MIGRATION_MARKERS: { file: string; sql: string }[] = [
   { file: "20261019000000_booking_contact.sql", sql: "exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'deals' and column_name = 'contact_override')" },
   { file: "20261020000000_deal_codes.sql", sql: "to_regclass('public.deal_codes') is not null" },
   { file: "20261021000000_deal_events.sql", sql: "to_regclass('public.deal_events') is not null" },
+  { file: "20261022000000_credit_rescale.sql", sql: "to_regclass('public.credit_rescale_log') is not null" },
+  { file: "20261023000000_test_businesses.sql", sql: "exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'merchants' and column_name = 'is_test')" },
 ];

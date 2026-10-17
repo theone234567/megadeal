@@ -9,7 +9,7 @@ import { CATEGORY_COPY } from "@/lib/categoryCopy";
 import { DEFAULT_CITY, cityPath, flashDealsPath } from "@/lib/cities";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { DEALS_OPEN, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import type { Deal } from "@/lib/types";
 
 /**
@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: { canonical: url },
     // Empty, or before launch: kept out of search, like an empty category.
-    robots: SITE_LAUNCHED && deals.length > 0 ? undefined : { index: false, follow: true },
+    robots: DEALS_OPEN && deals.length > 0 ? undefined : { index: false, follow: true },
     // The image named, as on flash deals: a page's own openGraph replaces
     // the layout's whole, so without it a shared link has no picture.
     openGraph: { title: `${title} | ${SITE_NAME}`, description, url, siteName: SITE_NAME, type: "website", images: [`${SITE_URL}/opengraph-image`] },

@@ -104,13 +104,13 @@ export async function recordDealEvents(db: Sql, events: IncomingEvent[], device:
          from (
            select d.merchant_id, d.id as deal_id
              from public.deals d join public.merchants m on m.id = d.merchant_id
-            where $3::uuid is not null and d.id = $3::uuid and m.status = 'Approved'
+            where $3::uuid is not null and d.id = $3::uuid and m.status = 'Approved' and not coalesce((to_jsonb(m)->>'is_test')::boolean, false)
               and d.status in ('Live', 'Paused') and not coalesce(d.is_test, false)
               and ($4::text is null or m.slug = $4)
            union all
            select m.id, null
              from public.merchants m
-            where $3::uuid is null and m.slug = $4 and m.status = 'Approved'
+            where $3::uuid is null and m.slug = $4 and m.status = 'Approved' and not coalesce((to_jsonb(m)->>'is_test')::boolean, false)
          ) owner
        on conflict (event_id) do nothing
        returning event_id`,

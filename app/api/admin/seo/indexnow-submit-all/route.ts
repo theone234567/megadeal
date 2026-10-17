@@ -3,7 +3,7 @@ import { cityPath, flashDealsPath } from "@/lib/cities";
 import { logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { submitUrlsToIndexNow } from "@/lib/indexNow";
-import { SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_URL, DEALS_OPEN } from "@/lib/siteConfig";
 import {
   fetchAllLiveDealSlugsForSitemap,
   fetchAllBusinessSlugsForSitemap,
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   try {
     // Matches app/sitemap.ts's own unconditional (pre-launch-safe) bucket —
     // /flash-deals used to be here instead, but it's robots:{index:false}
-    // until SITE_LAUNCHED, so pushing it via IndexNow just asked Bing to
+    // until DEALS_OPEN, so pushing it via IndexNow just asked Bing to
     // recrawl a page it would then correctly skip indexing anyway.
     const staticUrls = [
       `${SITE_URL}/`,
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     // previews that redirect everyone else to /coming-soon (middleware.ts)
     // — same split as app/sitemap.ts, so only the public pages go out.
     let urls = staticUrls;
-    if (SITE_LAUNCHED) {
+    if (DEALS_OPEN) {
       const deals = await fetchAllLiveDealSlugsForSitemap();
       const dealUrls = deals.map((d) => `${SITE_URL}/deal/${d.slug}`);
       // Same as the sitemap: only categories that have a live deal.

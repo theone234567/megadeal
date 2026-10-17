@@ -20,6 +20,9 @@ vi.mock("@/lib/siteConfig", async (orig) => ({
   get SITE_LAUNCHED() {
     return launched;
   },
+  get DEALS_OPEN() {
+    return launched;
+  },
 }));
 vi.mock("@/lib/supabaseAuth", async (orig) => ({
   ...(await orig<typeof import("../supabaseAuth")>()),

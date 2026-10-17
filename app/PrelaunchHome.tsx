@@ -20,7 +20,16 @@ import HomeDeals from "./HomeDeals";
  * offers anywhere. Search hides the hero and the example deals, as it
  * hides the hero after launch.
  */
-export default function PrelaunchHome({ deals, initialSearch }: { deals: Deal[]; initialSearch: string }) {
+export default function PrelaunchHome({
+  deals,
+  initialSearch,
+  dealsLive = false,
+}: {
+  deals: Deal[];
+  initialSearch: string;
+  /** Real deals are live before launch (lib/siteConfig.ts DEALS_OPEN). */
+  dealsLive?: boolean;
+}) {
   return (
     <main className="bg-hp-page pb-2">
       <PrelaunchBar />
@@ -37,7 +46,7 @@ export default function PrelaunchHome({ deals, initialSearch }: { deals: Deal[];
         </div>
       </SearchAwareHero>
       <div className="mx-auto max-w-[1200px] px-4 pt-5 sm:px-6 lg:px-8 lg:pt-7">
-        <HomeDeals initialDeals={deals} initialSearch={initialSearch} prelaunch />
+        <HomeDeals initialDeals={deals} initialSearch={initialSearch} prelaunch dealsLive={dealsLive} />
         <BusinessStrip />
       </div>
     </main>
@@ -47,10 +56,10 @@ export default function PrelaunchHome({ deals, initialSearch }: { deals: Deal[];
 /** The fuller business offer, once, after the launch deals. */
 function BusinessStrip() {
   const points = [
-    "Advertise free now",
-    "1 Everyday Deal + 1 Flash Deal",
-    "0% commission",
-    `Up to ${PRELAUNCH_PROMO.months} months free advertising from launch*`,
+    "Advertise free now: 1 Everyday Deal + 1 Flash Deal at a time",
+    "0% commission, no lock-in, no credit card",
+    `${PRELAUNCH_PROMO.credits} free credits once approved: up to ${PRELAUNCH_PROMO.months} months of advertising from launch*`,
+    "An Everyday Deal uses 30 credits, a Flash Deal 3",
   ];
   return (
     <aside
@@ -90,7 +99,7 @@ function BusinessStrip() {
         </Link>
         <p className="text-xs text-hp-muted">
           <Link href="/terms" prefetch={false} className="underline underline-offset-2 hover:text-hp-ink">
-            *Conditions apply
+            *Conditions apply. Offers may change at any time.
           </Link>
           <span aria-hidden="true"> · </span>
           <Link href="/portal" prefetch={false} className="underline underline-offset-2 hover:text-hp-ink">

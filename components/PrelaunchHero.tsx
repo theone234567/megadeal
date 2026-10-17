@@ -64,7 +64,7 @@ export default function PrelaunchHero() {
             </li>
             <li>
               <Link href="/terms" prefetch={false} className="underline underline-offset-2 hover:text-hp-ink">
-                *Conditions apply
+                *Conditions apply, offers may change
               </Link>
             </li>
           </ul>

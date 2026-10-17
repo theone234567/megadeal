@@ -85,7 +85,10 @@ export default function PortalPage() {
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   // Assumed launched until the server says otherwise, so the pre-launch
   // notice never flashes up after launch.
+  // Whether approved deals are public (before launch too, with live
+  // deals on), and whether it's still before the official launch.
   const [siteLaunched, setSiteLaunched] = useState(true);
+  const [prelaunch, setPrelaunch] = useState(false);
   const platformSettings = usePlatformSettings();
   // "My deals" filters, kept for this browser tab so they're still set
   // after opening a deal to duplicate it and coming back.
@@ -176,10 +179,11 @@ export default function PortalPage() {
     // catch below can tell the two apart instead of both landing on
     // `{ item: null }`.
     fetchMerchantMe()
-      .then(({ item: record, siteLaunched: launched }) => {
+      .then(({ item: record, siteLaunched: launched, prelaunch: before }) => {
         if (cancelled) return;
         setMerchant(record ?? null);
         setSiteLaunched(launched !== false);
+        setPrelaunch(before === true);
         loadDeals();
       })
       .catch((err) => {
@@ -395,6 +399,16 @@ export default function PortalPage() {
             Customers can&apos;t see MegaDeal yet, so nothing here is public. Set up your profile and build
             your deals as drafts now — you can submit them the moment we go live, and approved deals appear
             to customers from launch day. We&apos;ll email you when we launch.
+          </p>
+        </div>
+      )}
+      {siteLaunched && prelaunch && merchant && (
+        <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-sm font-extrabold text-emerald-900">Prelaunch: your deals can go live now</p>
+          <p className="mt-1 text-sm text-emerald-800">
+            Submit a deal and once we&apos;ve approved it, customers can see it and get the code. Before launch you can
+            run 1 Everyday Deal and 1 Flash Deal at a time, free: no credits are used, so your free months from launch
+            stay untouched.
           </p>
         </div>
       )}

@@ -93,22 +93,22 @@ export function businessPageCopy(launched: boolean): BusinessPageCopy {
       headline: "Advertise your Auckland business. Up to 6 months free.",
       headlineLead: "Advertise your Auckland business.",
       headlineAccent: "Up to 6 months free.",
-      offerQualifier: "For eligible pre-launch businesses. Terms and conditions apply.",
-      launchNote: "Your free advertising starts when MegaDeal goes live.",
+      offerQualifier: "For eligible pre-launch businesses. Offers may change at any time. Terms and conditions apply.",
+      launchNote: "Before launch, run 1 Everyday Deal and 1 Flash Deal at a time, free.",
       faqs: [
         {
           question: "How does the free advertising offer work?",
           answer:
-            "Eligible businesses that sign up before launch can receive up to six months of free advertising. Your free advertising period starts when MegaDeal goes live to customers, not when you sign up. No credit card is required to sign up. Offer terms and conditions apply.",
+            "Businesses approved before launch get 180 free advertising credits: up to six months of Everyday Deals (an Everyday Deal, running up to 30 days, uses 30 credits; a Flash Deal uses 3). Before launch you can also run 1 Everyday Deal and 1 Flash Deal at a time without using any credits, so your credits are only used from launch. No credit card is required. Offers may change at any time; terms and conditions apply.",
         },
         FAQ_AFTER_FREE_PERIOD,
         FAQ_BOOK_AND_PAY,
         FAQ_DISCOUNT,
         FAQ_WHO,
         {
-          question: "Can I get everything ready before launch?",
+          question: "Can my deals go live before launch?",
           answer:
-            "Yes. You can complete your business profile, create your offers and preview how they’ll look before they go live. MegaDeal is launching in Auckland first.",
+            "Yes. Once your business is approved, you can submit 1 Everyday Deal and 1 Flash Deal at a time, free. When we’ve reviewed a deal it goes live and customers can see it straight away. MegaDeal is launching in Auckland first.",
         },
       ],
     };
@@ -122,12 +122,12 @@ export function businessPageCopy(launched: boolean): BusinessPageCopy {
     headlineLead: "Fill quiet times.",
     headlineAccent: "Reach more Auckland customers.",
     subheading: `Up to ${promo.months} months free advertising for new businesses.`,
-    offerQualifier: "For eligible businesses. Terms and conditions apply.",
+    offerQualifier: "For eligible businesses. Offers may change at any time. Terms and conditions apply.",
     launchNote: null,
     faqs: [
       {
         question: "How does the free advertising offer work?",
-        answer: `Eligible new businesses can receive up to ${promo.months} months of free advertising. No credit card is required to sign up. Offer terms and conditions apply.`,
+        answer: `Eligible new businesses get ${promo.credits} free advertising credits: up to ${promo.months} months of Everyday Deals (an Everyday Deal, running up to 30 days, uses 30 credits; a Flash Deal uses 3). No credit card is required to sign up. Offers may change at any time; terms and conditions apply.`,
       },
       FAQ_AFTER_FREE_PERIOD,
       FAQ_BOOK_AND_PAY,

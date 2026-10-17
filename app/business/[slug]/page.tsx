@@ -9,7 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchBusinessProfileBySlug } from "@/lib/fetchDealServer";
-import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, DEALS_OPEN } from "@/lib/siteConfig";
 import { getDirectionsUrl } from "@/lib/mapLinks";
 import { phoneLink } from "@/lib/booking";
 import { comparableUrl } from "@/lib/dealContact";
@@ -83,13 +83,13 @@ export async function generateMetadata(
     description,
     alternates: { canonical: url },
     // Pre-launch, "/" redirects to /coming-soon so visitors never see a
-    // demo-data-filled deal grid (see SITE_LAUNCHED in lib/siteConfig.ts)
+    // demo-data-filled deal grid (see DEALS_OPEN in lib/siteConfig.ts)
     // — but this page is reachable directly regardless, so it needs the
     // same protection: no business/deal page should get indexed while
     // the catalog might still hold pre-launch test data.
     // Also kept out until it has something on it (lib/businessIndexing.ts).
     robots:
-      SITE_LAUNCHED && !businessPageIsThin({ liveDeals: deals.length, bio: business.bio, photos: business.photos.length })
+      DEALS_OPEN && !businessPageIsThin({ liveDeals: deals.length, bio: business.bio, photos: business.photos.length })
         ? undefined
         : { index: false, follow: true },
     openGraph: {

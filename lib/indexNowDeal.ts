@@ -2,7 +2,7 @@ import "server-only";
 import { flashDealsPath } from "./cities";
 import { after } from "next/server";
 import { submitUrlsToIndexNow } from "./indexNow";
-import { SITE_URL, SITE_LAUNCHED } from "./siteConfig";
+import { SITE_URL, DEALS_OPEN } from "./siteConfig";
 import { isScheduledFuture } from "./dealSchedule";
 import { CATEGORY_NAME_BY_ID, categoryPath } from "./categories";
 import { unwrapProduct } from "./mapDeal";
@@ -27,7 +27,7 @@ export function notifyDealChanged(
   deal: Record<string, any> | null | undefined,
   merchant?: Record<string, any> | null
 ): void {
-  if (!SITE_LAUNCHED || !deal?.productId) return;
+  if (!DEALS_OPEN || !deal?.productId) return;
   // Approved but not started yet: its pages aren't public until then. The
   // hourly job tells search engines once it starts
   // (app/api/cron/expired-deals).
@@ -71,7 +71,7 @@ export function notifyDealChanged(
 
 /** Same, for a business's own page after its profile changes. */
 export function notifyBusinessChanged(merchant: Record<string, any> | null | undefined): void {
-  if (!SITE_LAUNCHED || !merchant?.businessName || !merchant?._id || merchant.status !== "Approved") return;
+  if (!DEALS_OPEN || !merchant?.businessName || !merchant?._id || merchant.status !== "Approved") return;
   const url = `${SITE_URL}/business/${merchant.slug || businessSlug(merchant.businessName, merchant._id)}`;
   try {
     after(() => submitUrlsToIndexNow([url]));

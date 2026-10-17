@@ -5,7 +5,8 @@
  * on the portal's "Refer a business" card. One number for both, so the
  * card can't promise a different amount from what's given.
  */
-export const REFERRAL_BONUS_CREDITS: number = 4;
+// One Everyday Deal's worth (30 credits since 17 Oct 2026; was 4).
+export const REFERRAL_BONUS_CREDITS: number = 30;
 
 export const referralCreditsLabel = `${REFERRAL_BONUS_CREDITS} bonus deal credit${REFERRAL_BONUS_CREDITS === 1 ? "" : "s"}`;
 

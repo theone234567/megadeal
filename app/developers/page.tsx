@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { SITE_LAUNCHED, SITE_NAME, SITE_URL, ORGANIZATION_ID } from "@/lib/siteConfig";
+import { DEALS_OPEN, SITE_NAME, SITE_URL, ORGANIZATION_ID } from "@/lib/siteConfig";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { pageMetadata } from "@/lib/pageMetadata";
@@ -111,7 +111,7 @@ export default function DevelopersPage() {
       {/* Dataset: lets Google Dataset Search and AI tools find the feed as
           data, with its licence terms and format. Only once there are
           deals in it. */}
-      {SITE_LAUNCHED && (
+      {DEALS_OPEN && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -146,7 +146,7 @@ export default function DevelopersPage() {
       </section>
 
       <div className="mx-auto max-w-3xl space-y-12 px-4 py-12 sm:px-6 lg:px-8">
-        {!SITE_LAUNCHED && (
+        {!DEALS_OPEN && (
           <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             {SITE_NAME} hasn&apos;t launched yet, so the feed is empty for now: it returns <code>&quot;launched&quot;: false</code> and no
             deals. Everything below is how it works from launch day.

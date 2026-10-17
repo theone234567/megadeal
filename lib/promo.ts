@@ -1,9 +1,11 @@
 /**
  * The business signup offer, in one place.
  *
- * Before launch: WELCOME6, up to 6 months of free advertising (24
- * credits) for businesses approved before launch. From launch: WELCOME3,
- * up to 3 months (12 credits). The owner's decision (28 Sep 2026): the
+ * Before launch: WELCOME6, up to 6 months of free advertising (180
+ * credits: an Everyday Deal of up to 30 days is 30 credits) for businesses
+ * approved before launch. From launch: WELCOME3, up to 3 months (90
+ * credits). Was 24 and 12 on the old credit scale (17 Oct 2026). Every
+ * business gets the current one on its first approval, code or not. The owner's decision (28 Sep 2026): the
  * offer drops to 3 months at launch; anyone approved before launch keeps
  * their 6 months.
  *
@@ -18,8 +20,8 @@ export interface Promo {
   credits: number;
 }
 
-export const PRELAUNCH_PROMO: Promo = { code: "WELCOME6", months: 6, credits: 24 };
-export const LAUNCH_PROMO: Promo = { code: "WELCOME3", months: 3, credits: 12 };
+export const PRELAUNCH_PROMO: Promo = { code: "WELCOME6", months: 6, credits: 180 };
+export const LAUNCH_PROMO: Promo = { code: "WELCOME3", months: 3, credits: 90 };
 
 export function currentPromo(launched: boolean): Promo {
   return launched ? LAUNCH_PROMO : PRELAUNCH_PROMO;

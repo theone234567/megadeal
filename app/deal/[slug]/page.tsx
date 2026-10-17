@@ -5,7 +5,7 @@ import DealDetail from "./DealDetail";
 import MoreDeals from "./MoreDeals";
 import EndedDeal from "./EndedDeal";
 import { fetchDealForSEO, fetchEndedDeal, fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
-import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, DEALS_OPEN } from "@/lib/siteConfig";
 import { formatMoney, truncateForMeta } from "@/lib/format";
 import { placeLabel } from "@/lib/location";
 import { hideEmail } from "@/lib/hiddenEmail";
@@ -99,11 +99,11 @@ export async function generateMetadata(
     description,
     alternates: { canonical: url },
     // Pre-launch, "/" redirects to /coming-soon so visitors never see a
-    // demo-data-filled deal grid (see SITE_LAUNCHED in lib/siteConfig.ts)
+    // demo-data-filled deal grid (see DEALS_OPEN in lib/siteConfig.ts)
     // — but this page is reachable directly regardless, so it needs the
     // same protection: no deal page should get indexed while the catalog
     // might still hold pre-launch test data.
-    robots: SITE_LAUNCHED ? undefined : { index: false, follow: true },
+    robots: DEALS_OPEN ? undefined : { index: false, follow: true },
     openGraph: {
       title: socialTitle,
       description,

@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { LAUNCH_PROMO, PRELAUNCH_PROMO, currentPromo, promoForCode } from "./promo";
 
 describe("business signup promo", () => {
-  it("is 6 months (24 credits) before launch and 3 months (12 credits) after", () => {
-    expect(currentPromo(false)).toEqual({ code: "WELCOME6", months: 6, credits: 24 });
-    expect(currentPromo(true)).toEqual({ code: "WELCOME3", months: 3, credits: 12 });
+  it("is 6 months (180 credits) before launch and 3 months (90 credits) after", () => {
+    expect(currentPromo(false)).toEqual({ code: "WELCOME6", months: 6, credits: 180 });
+    expect(currentPromo(true)).toEqual({ code: "WELCOME3", months: 3, credits: 90 });
   });
 
   it("before launch accepts only WELCOME6, in any case", () => {

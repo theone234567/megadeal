@@ -31,7 +31,7 @@ export default function PrelaunchBar() {
           <span aria-hidden="true" className="mx-2 text-white/50">·</span>
           <span>Auckland businesses can advertise free now</span>
           <span className="hidden xl:inline">
-            <span aria-hidden="true" className="mx-2 text-white/50">·</span>1 Everyday Deal + 1 Flash Deal
+            <span aria-hidden="true" className="mx-2 text-white/50">·</span>1 Everyday + 1 Flash Deal at a time
           </span>
           <span className="hidden lg:inline">
             <span aria-hidden="true" className="mx-2 text-white/50">·</span>Up to {PRELAUNCH_PROMO.months} months free from launch*

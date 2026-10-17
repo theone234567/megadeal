@@ -62,6 +62,28 @@ const PRELAUNCH_HOME_LIVE: "on" | "off" = "on";
 export const PRELAUNCH_HOME = !SITE_LAUNCHED && (process.env.PRELAUNCH_HOME ?? PRELAUNCH_HOME_LIVE) === "on";
 
 /**
+ * LIVE DEALS BEFORE LAUNCH (17 Oct 2026). With the prelaunch homepage on,
+ * approved businesses can submit deals now, and once a deal is approved
+ * it is live: its page, its business's page and the /auckland listings
+ * are public and indexable, and the code can be used. Before launch each
+ * business can run 1 Everyday Deal and 1 Flash Deal at a time, free (no
+ * credits spent, lib/prelaunchAllowance.ts), so the free months from
+ * launch are untouched. The business offer itself (WELCOME6, 6 months)
+ * still follows SITE_LAUNCHED.
+ *
+ * Off ("off" here or PRELAUNCH_DEALS=off in the build environment):
+ * deals are drafts only and the customer pages admin-only until launch,
+ * as before. Always on once SITE_LAUNCHED is true.
+ */
+// Off until the test businesses are marked as tests (Admin -> Businesses ->
+// "Test business"), so none of their deals go public; then "on".
+const PRELAUNCH_DEALS_LIVE: "on" | "off" = "off";
+export const DEALS_OPEN = SITE_LAUNCHED || (PRELAUNCH_HOME && (process.env.PRELAUNCH_DEALS ?? PRELAUNCH_DEALS_LIVE) === "on");
+
+/** Before launch with live deals: deals are free, 1 of each type at a time. */
+export const PRELAUNCH_FREE_DEALS = DEALS_OPEN && !SITE_LAUNCHED;
+
+/**
  * The day the site launched, as "YYYY-MM-DD" (New Zealand date). Set it in
  * the same change as LAUNCHED = true. The business pages switch to the
  * launch offer at that moment, and this is the date the sitemap then gives

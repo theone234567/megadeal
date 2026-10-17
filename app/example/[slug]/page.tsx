@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { DEMO_DEALS, exampleDeal } from "@/lib/demoDeals";
+import { exampleDeal } from "@/lib/demoDeals";
 import DealDetail from "@/app/deal/[slug]/DealDetail";
 
 /**
@@ -10,11 +10,10 @@ import DealDetail from "@/app/deal/[slug]/DealDetail";
  * indexed, not in the sitemap, and no offer data, so search engines never
  * take an example for a real deal.
  */
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return DEMO_DEALS.map((d) => ({ slug: d.slug }));
-}
+// Rendered on request: pages prebuilt at build time from a dynamic route
+// weren't served on Cloudflare (every example answered "not found"). The
+// data is fixed in code, so this costs next to nothing.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const deal = exampleDeal((await props.params).slug);

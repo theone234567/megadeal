@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { PRELAUNCH_HOME, SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
+import { DEALS_OPEN, PRELAUNCH_HOME, SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
 import { categoryByLegacySegment, categoryBySlug, categoryPath } from "@/lib/categories";
 import { ADMIN_COOKIE_NAME, hasValidAdminSignature } from "@/lib/adminCookie";
 import { blockedForMaintenance, MAINTENANCE_MESSAGE } from "@/lib/maintenance";
@@ -206,7 +206,9 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
-  if (!SITE_LAUNCHED && ((path === "/" && !PRELAUNCH_HOME) || PRELAUNCH_PRIVATE.test(path))) {
+  // With live deals before launch (DEALS_OPEN) the deal, business and
+  // /auckland pages are public too.
+  if (!SITE_LAUNCHED && ((path === "/" && !PRELAUNCH_HOME) || (!DEALS_OPEN && PRELAUNCH_PRIVATE.test(path)))) {
     // Admin preview: before launch the customer side is visible only to
     // someone signed into /admin, so test deals from a real business
     // account can be checked end to end exactly as they'll look at launch.

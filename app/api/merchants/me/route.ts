@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createDataClient } from "@/lib/dataClient";
 import { getOrClaimMerchant } from "@/lib/merchant";
-import { SITE_LAUNCHED } from "@/lib/siteConfig";
+import { DEALS_OPEN, SITE_LAUNCHED } from "@/lib/siteConfig";
 
 export const dynamic = "force-dynamic";
 
@@ -23,9 +23,10 @@ export async function GET(req: NextRequest) {
   try {
     const adminClient = createDataClient();
     const merchant = await getOrClaimMerchant(adminClient, member);
-    // siteLaunched is a server-only setting; the portal needs it to tell
-    // businesses that, before launch, everything they see is a preview.
-    return NextResponse.json({ item: merchant, siteLaunched: SITE_LAUNCHED });
+    // Server-only settings the portal needs: siteLaunched is whether
+    // approved deals are public (DEALS_OPEN, which can be before launch);
+    // prelaunch whether it's still before the official launch.
+    return NextResponse.json({ item: merchant, siteLaunched: DEALS_OPEN, prelaunch: !SITE_LAUNCHED });
   } catch (err) {
     console.error("[merchants/me] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

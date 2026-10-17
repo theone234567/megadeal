@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createDataClient } from "@/lib/dataClient";
 import { notifyDealChanged } from "@/lib/indexNowDeal";
-import { SITE_LAUNCHED } from "@/lib/siteConfig";
+import { DEALS_OPEN } from "@/lib/siteConfig";
 import { cronCaller } from "@/lib/cronAuth";
 
 /**
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   if (caller === "refused") return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
   // Before launch deal pages aren't public, so there's nothing to tell.
-  if (!SITE_LAUNCHED) return NextResponse.json({ notified: 0, skipped: "not launched" });
+  if (!DEALS_OPEN) return NextResponse.json({ notified: 0, skipped: "not launched" });
 
   try {
     const adminClient = createDataClient();

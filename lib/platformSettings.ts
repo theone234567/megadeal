@@ -50,12 +50,22 @@ async function kv(): Promise<MinimalKVNamespace | null> {
   return getRateLimitKv();
 }
 
+/** The credit scale stored settings are on. 2 since 17 Oct 2026 (an
+ *  Everyday Deal 30 credits, a Flash Deal 3); a record without it was
+ *  saved on the old scale (4 and 1), and its two costs are replaced by
+ *  the new defaults. Every other setting is kept as saved. */
+const CREDIT_SCALE = 2;
+
 function fromRaw(raw: string | null): StoredPlatformSettings {
   if (!raw) return { version: 0, settings: DEFAULT_PLATFORM_SETTINGS, updatedAt: null, isDefault: true };
-  const parsed = JSON.parse(raw) as { version?: unknown; settings?: unknown; updatedAt?: unknown };
+  const parsed = JSON.parse(raw) as { version?: unknown; settings?: unknown; updatedAt?: unknown; creditScale?: unknown };
   // Re-checked on the way out too: a key added later falls back to its
   // default, and a bad stored value can't reach the enforcement code.
-  const { settings } = parsePlatformSettings(parsed.settings);
+  const { settings: checked } = parsePlatformSettings(parsed.settings);
+  const settings =
+    parsed.creditScale === CREDIT_SCALE
+      ? checked
+      : { ...checked, everydayCredits: DEFAULT_PLATFORM_SETTINGS.everydayCredits, flashCredits: DEFAULT_PLATFORM_SETTINGS.flashCredits };
   return {
     version: typeof parsed.version === "number" ? parsed.version : 0,
     settings,
@@ -113,7 +123,7 @@ export async function savePlatformSettings(
   if (changes.length === 0) return { ok: true, stored: current, changes };
 
   const at = new Date().toISOString();
-  const next = { version: current.version + 1, settings, updatedAt: at };
+  const next = { version: current.version + 1, settings, updatedAt: at, creditScale: CREDIT_SCALE };
   await store.put(SETTINGS_KEY, JSON.stringify(next));
 
   const history = await getSettingsHistory();

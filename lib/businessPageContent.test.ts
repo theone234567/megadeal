@@ -9,7 +9,8 @@ describe("list-your-business v2 copy", () => {
     const c = businessPageCopy(false);
     expect(c.headline).toBe("Advertise your Auckland business. Up to 6 months free.");
     expect(c.offerQualifier).toMatch(/pre-launch/);
-    expect(c.launchNote).toMatch(/starts when MegaDeal goes live/);
+    expect(c.launchNote).toMatch(/1 Everyday Deal and 1 Flash Deal at a time, free/);
+    expect(c.offerQualifier).toMatch(/may change at any time/);
     expect(c.faqs).toHaveLength(6);
     expect(JSON.stringify(c)).not.toMatch(BANNED);
   });
@@ -20,6 +21,7 @@ describe("list-your-business v2 copy", () => {
     expect(text).not.toMatch(/6 months|six months|pre-launch|before launch/i);
     expect(c.launchNote).toBeNull();
     expect(c.subheading).toMatch(/Up to 3 months/);
+    expect(c.offerQualifier).toMatch(/may change at any time/);
     expect(text).not.toMatch(BANNED);
   });
 });

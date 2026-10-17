@@ -22,6 +22,7 @@ import { LEGAL_ENTITY_NAME } from "@/lib/siteConfig";
  */
 
 function footerCategories(siteLaunched: boolean, prelaunchHome: boolean) {
+  // Category pages are public once deals are (DEALS_OPEN), launched or not.
   // The city page first: it's the page for "deals in Auckland", and every
   // page linking to it is what tells search engines it matters.
   return [
@@ -46,8 +47,17 @@ function footerCategories(siteLaunched: boolean, prelaunchHome: boolean) {
  * evaluate to `false` in the browser bundle no matter what the real
  * setting is — and disagree with the server render.
  */
-export default function Footer({ siteLaunched = false, prelaunchHome = false }: { siteLaunched?: boolean; prelaunchHome?: boolean }) {
-  const FOOTER_CATEGORIES = footerCategories(siteLaunched, prelaunchHome);
+export default function Footer({
+  siteLaunched = false,
+  prelaunchHome = false,
+  dealsOpen = siteLaunched,
+}: {
+  siteLaunched?: boolean;
+  prelaunchHome?: boolean;
+  /** Deal and category pages are public (lib/siteConfig.ts DEALS_OPEN). */
+  dealsOpen?: boolean;
+}) {
+  const FOOTER_CATEGORIES = footerCategories(dealsOpen, prelaunchHome);
   // The business offer of the moment: 6 months / WELCOME6 before launch,
   // the launch offer after (lib/promo.ts).
   const promo = currentPromo(siteLaunched);

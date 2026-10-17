@@ -39,7 +39,9 @@ export interface PlatformSettings {
 }
 
 /** What a fresh store starts with: today's behaviour, plus the agreed
- *  credit costs (Everyday 4, Flash 1). */
+ *  credit costs (17 Oct 2026): an Everyday Deal (up to 30 days) is 30
+ *  credits, a Flash Deal 3. Was 4 and 1 (lib/platformSettings.ts moves a
+ *  store saved on that scale across). */
 export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   acceptSubmissions: true,
   everydayEnabled: true,
@@ -49,8 +51,8 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   // Off until an admin turns it on (handoff pack: scheduling is enabled
   // only once its backend works, by choice rather than by deploy).
   schedulingEnabled: false,
-  everydayCredits: 4,
-  flashCredits: 1,
+  everydayCredits: 30,
+  flashCredits: 3,
   everydayMaxDays: 30,
   flashMaxHours: 6,
 };
@@ -228,7 +230,7 @@ export type PublicPlatformSettings = Pick<
 >;
 
 /** What deals cost now, in one line for the portal's credit cards:
- *  "Everyday deal: 4 credits · Flash deal: 1 credit". Paused types are
+ *  "Everyday deal: 30 credits · Flash deal: 3 credits". Paused types are
  *  left out; "free" when charging is off. */
 export function dealCostsLine(s: PublicPlatformSettings): string {
   if (!s.chargeCredits) return "Deals are free to submit at the moment.";

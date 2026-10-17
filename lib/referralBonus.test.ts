@@ -74,8 +74,8 @@ describe("approving a referred business", () => {
     );
     expect(res.status).toBe(200);
     const byId = Object.fromEntries(increments.mock.calls.map((c) => [c[1], c[2]]));
-    // 2 intro + 24 (WELCOME6, before launch) + 4 referral.
-    expect(byId.new).toBe(2 + 24 + REFERRAL_BONUS_CREDITS);
+    // 180 (WELCOME6, before launch; it replaces the 2 intro credits) + 30 referral.
+    expect(byId.new).toBe(180 + REFERRAL_BONUS_CREDITS);
     expect(byId.ref).toBe(REFERRAL_BONUS_CREDITS);
   });
 

@@ -3,7 +3,7 @@ import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { notifyDealChanged } from "@/lib/indexNowDeal";
-import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
+import { DEALS_OPEN, SITE_URL } from "@/lib/siteConfig";
 import { isUploadedPhotoUrl } from "@/lib/photoUrl";
 import { firstPublicationFields, manualExpiryError } from "@/lib/dealDuration";
 import { hasDealExpired } from "@/lib/dealStatus";
@@ -292,7 +292,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     let email: DealEmail | null = null;
     if (statusChanged && existing.merchantEmail) {
       if (patch.status === "Live" && !existing.everLive) {
-        email = dealLiveEmail(dealName, { launched: SITE_LAUNCHED, siteUrl: SITE_URL });
+        email = dealLiveEmail(dealName, { launched: DEALS_OPEN, siteUrl: SITE_URL });
       } else if ((patch.status === "Paused" || patch.status === "Cancelled") && (existing.status === "Live" || existing.status === "Pending Approval")) {
         email = dealStoppedEmail(dealName, patch.status, patch.statusNote ?? existing.statusNote, { siteUrl: SITE_URL });
       }
@@ -317,7 +317,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         await logMerchantActivity(adminClient, {
           merchantEmail: existing.merchantEmail,
           type: "deal",
-          description: SITE_LAUNCHED
+          description: DEALS_OPEN
             ? `"${dealName}" is now live`
             : `"${dealName}" is approved — customers will see it from launch day`,
         });

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import CategoryNav from "@/components/CategoryNav";
 import HowToUseStrip from "@/components/HowToUseStrip";
 import FlashDealsList from "./FlashDealsList";
-import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, DEALS_OPEN } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { toCardDeal } from "@/lib/listingDeal";
@@ -24,11 +24,11 @@ export const metadata: Metadata = {
   description: `All of ${SITE_NAME}'s current flash deals in one place — short-burst offers that end fast, so grab them while they last.`,
   alternates: { canonical: `${SITE_URL}${flashDealsPath()}` },
   // Pre-launch, "/" redirects to /coming-soon so visitors never see a
-  // demo-data-filled deal grid (see SITE_LAUNCHED in lib/siteConfig.ts)
+  // demo-data-filled deal grid (see DEALS_OPEN in lib/siteConfig.ts)
   // — but this page is reachable directly regardless, so it needs the
   // same protection: no browse page should get indexed while the
   // catalog might still hold pre-launch test data.
-  robots: SITE_LAUNCHED ? undefined : { index: false, follow: true },
+  robots: DEALS_OPEN ? undefined : { index: false, follow: true },
   openGraph: {
     title: `Flash Deals | ${SITE_NAME}`,
     description: "Short-burst offers that end fast — grab them while they last.",
@@ -91,7 +91,7 @@ export default async function FlashDealsPage() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Space held while the deals arrive, so the footer doesn't jump. */}
         <Suspense fallback={<div className="min-h-screen" aria-hidden="true" />}>
-          <FlashDealsList initialDeals={deals.filter((d) => d.isFlash).map(toCardDeal)} testDeals={!SITE_LAUNCHED} />
+          <FlashDealsList initialDeals={deals.filter((d) => d.isFlash).map(toCardDeal)} testDeals={!DEALS_OPEN} />
         </Suspense>
       </div>
     </main>

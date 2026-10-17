@@ -76,6 +76,11 @@ function blankToNull(value: unknown): string | null {
 }
 
 /** The business's public fields, from a row selected with BUSINESS_COLUMNS. */
+/** A business the public may see: approved, and not marked as a test
+ *  (supabase/migrations/20261023000000_test_businesses.sql). Read through
+ *  to_jsonb so it works before that update is applied. */
+const PUBLIC_BUSINESS = "m.status = 'Approved' and not coalesce((to_jsonb(m)->>'is_test')::boolean, false)";
+
 export function rowToBusiness(r: Row): PublicBusiness {
   const place = publicLocation({ address: blankToNull(r.b_address), lat: toNumber(r.b_lat), lng: toNumber(r.b_lng), hideAddress: r.b_hide_address === true });
   const photos = Array.isArray(r.b_photos) ? r.b_photos : typeof r.b_photos === "string" ? JSON.parse(r.b_photos) : [];
@@ -190,7 +195,7 @@ export async function loadLiveDeals(db: Sql, now: number = Date.now()): Promise<
     `select ${DEAL_COLUMNS}, ${BUSINESS_COLUMNS}
        from public.deals d
        join public.merchants m on m.id = d.merchant_id
-      where d.status = 'Live' and not d.is_test and m.status = 'Approved'
+      where d.status = 'Live' and not d.is_test and ${PUBLIC_BUSINESS}
       order by d.first_published_at desc nulls last, d.created_at desc`
   );
   return rows.map(rowToDeal).filter((d) => isDealLive(d, now));
@@ -216,7 +221,7 @@ export async function readDealBySlug(db: Sql, slug: string, now: number = Date.n
     `select ${DEAL_COLUMNS}, ${BUSINESS_COLUMNS}
        from public.deals d
        join public.merchants m on m.id = d.merchant_id
-      where d.slug = $1 and not d.is_test and m.status = 'Approved'`,
+      where d.slug = $1 and not d.is_test and ${PUBLIC_BUSINESS}`,
     [slug]
   );
   if (!row) return null;
@@ -231,7 +236,7 @@ export async function readDealBySlug(db: Sql, slug: string, now: number = Date.n
 
 /** An approved business by its page address, or null. */
 export async function readBusinessBySlug(db: Sql, slug: string): Promise<(PublicBusiness & { id: string }) | null> {
-  const [row] = await db.query(`select ${BUSINESS_COLUMNS} from public.merchants m where m.slug = $1 and m.status = 'Approved'`, [slug]);
+  const [row] = await db.query(`select ${BUSINESS_COLUMNS} from public.merchants m where m.slug = $1 and ${PUBLIC_BUSINESS}`, [slug]);
   return row ? { id: row.b_id, ...rowToBusiness(row) } : null;
 }
 
@@ -246,7 +251,7 @@ export async function resolveBusinessRedirect(db: Sql, slug: string): Promise<st
   const idPrefix = slug.match(/-([0-9a-f]{8})$/)?.[1] ?? null;
   const [row] = await db.query<{ slug: string }>(
     `select m.slug from public.merchants m
-      where m.status = 'Approved' and m.slug <> $1
+      where ${PUBLIC_BUSINESS} and m.slug <> $1
         and (m.id in (select merchant_id from public.slug_redirects where kind = 'business' and old_slug = $1)
              or ($2::text is not null and m.slug_id = $2 and not exists (select 1 from public.merchants c where c.slug = $1)))
       limit 1`,
@@ -266,7 +271,7 @@ export async function resolveDealRedirect(db: Sql, slug: string): Promise<string
        join public.deals d on d.id = r.deal_id
        join public.merchants m on m.id = d.merchant_id
       where r.kind = 'deal' and r.old_slug = $1 and d.slug is not null and d.slug <> $1
-        and not d.is_test and m.status = 'Approved'
+        and not d.is_test and ${PUBLIC_BUSINESS}
         and (d.status = 'Live' or d.first_published_at is not null or d.ever_live)
         and not exists (select 1 from public.deals c where c.slug = $1)`,
     [slug]
@@ -282,7 +287,7 @@ export async function listBusinessesForSitemap(
   const rows = await db.query(
     `select m.business_name, m.slug_id, m.slug, m.email, m.updated_at, m.bio,
             jsonb_array_length(coalesce(m.photos, '[]'::jsonb)) as photo_count
-       from public.merchants m where m.status = 'Approved' order by m.created_at`
+       from public.merchants m where ${PUBLIC_BUSINESS} order by m.created_at`
   );
   return rows.map((r) => ({
     slug: r.slug ?? businessSlug(r.business_name, r.slug_id),
@@ -308,7 +313,7 @@ export async function listLiveDealsForSitemap(
             d.category_slug, d.status, d.first_published_at, d.expires_at, m.email
        from public.deals d
        join public.merchants m on m.id = d.merchant_id
-      where d.status = 'Live' and not d.is_test and m.status = 'Approved' and d.slug is not null`
+      where d.status = 'Live' and not d.is_test and ${PUBLIC_BUSINESS} and d.slug is not null`
   );
   return rows
     .filter((r) => isDealLive({ status: r.status, startsAt: toIso(r.first_published_at), expiresAt: toIso(r.expires_at) }, now))

@@ -273,7 +273,7 @@ export function buildChecklist(f: LaunchFacts): ChecklistSection[] {
       `Admin > Subscribers > Email subscribers (email name “launch”): preview, send yourself a test, then send. ${n(f.verifiedSubscribers, "confirmed subscriber")} waiting.`,
       { href: "/admin", label: "Subscribers" }
     ),
-    manual("offer-check", "Launch offer works end to end", "Approve a test signup that used WELCOME3: 12 credits, and its email names WELCOME3 (docs/LAUNCH-OFFER-CHECKLIST.md).", undefined),
+    manual("offer-check", "Launch offer works end to end", "Approve a test signup after launch: 90 credits (WELCOME3), and its email names WELCOME3 (docs/LAUNCH-OFFER-CHECKLIST.md).", undefined),
   ];
   if (f.launched) after.unshift(auto("live-deals", "Deals live now", f.liveDeals > 0 ? "done" : "warning", f.liveDeals > 0 ? `${n(f.liveDeals, "deal")} on the site.` : "No deals live: the homepage is empty."));
 

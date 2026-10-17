@@ -11,6 +11,9 @@ vi.mock("./siteConfig", async (orig) => ({
   get SITE_LAUNCHED() {
     return launched;
   },
+  get DEALS_OPEN() {
+    return launched;
+  },
 }));
 vi.mock("./fetchDealServer", () => ({ fetchAllLiveDealsServer: () => listing() }));
 

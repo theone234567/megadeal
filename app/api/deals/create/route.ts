@@ -21,7 +21,9 @@ import { logMerchantActivity } from "@/lib/merchantActivity";
 import { isGeneratedDealCode } from "@/lib/dealCode";
 import { newDealCode } from "@/lib/db/dealCodes";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
-import { SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
+import { DEALS_OPEN, PRELAUNCH_FREE_DEALS, SITE_URL } from "@/lib/siteConfig";
+import { prelaunchAllowanceBlock } from "@/lib/prelaunchAllowance";
+import { queryAllByEmail } from "@/lib/queryAll";
 import { toRequestedMinutes } from "@/lib/dealDuration";
 
 const WIX_STORES_APP_ID = "215238eb-22a5-4c36-9e7b-e7c08025e04e";
@@ -132,9 +134,10 @@ export async function POST(req: NextRequest) {
   if (merchant.status === "Suspended") {
     return NextResponse.json({ error: "Your account is suspended. Contact us for help." }, { status: 403 });
   }
-  // Before launch deals are built and saved as drafts only (the form does
-  // the same); this stops a submission reaching review from anywhere else.
-  if (!SITE_LAUNCHED) {
+  // Until deals open (lib/siteConfig.ts DEALS_OPEN) they're built and
+  // saved as drafts only (the form does the same); this stops a submission
+  // reaching review from anywhere else.
+  if (!DEALS_OPEN) {
     return NextResponse.json(
       { error: "MegaDeal hasn't launched yet. Save this deal as a draft and submit it once we go live." },
       { status: 403 }
@@ -171,10 +174,18 @@ export async function POST(req: NextRequest) {
       { status: 400 }
     );
   }
-  // What this deal costs now (Everyday 4, Flash 1 by default; 0 when
+  // What this deal costs now (Everyday 30, Flash 3 by default; 0 when
   // charging is off). Recorded on the deal, so a refund returns exactly
   // what was taken even if the costs change later.
-  const cost = dealCreditCost(isFlash, settings);
+  // Before launch: free, but 1 Everyday and 1 Flash at a time
+  // (lib/prelaunchAllowance.ts), so the free months from launch are
+  // untouched.
+  if (PRELAUNCH_FREE_DEALS) {
+    const mine = await queryAllByEmail((email) => adminClient.items.query("Deals").eq("merchantEmail", email), member.email, "Deals (allowance)");
+    const blocked = prelaunchAllowanceBlock(mine, isFlash, Date.now());
+    if (blocked) return NextResponse.json({ error: blocked }, { status: 403 });
+  }
+  const cost = PRELAUNCH_FREE_DEALS ? 0 : dealCreditCost(isFlash, settings);
   const credits = Number(merchant.creditsBalance) || 0;
   if (credits < cost) {
     return NextResponse.json(

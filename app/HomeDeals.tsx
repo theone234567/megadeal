@@ -97,6 +97,7 @@ export default function HomeDeals({
   basePath = "/",
   testDeals = false,
   prelaunch = false,
+  dealsLive = false,
 }: {
   initialDeals: Deal[];
   /** The public prelaunch homepage (lib/siteConfig.ts PRELAUNCH_HOME):
@@ -104,6 +105,10 @@ export default function HomeDeals({
    *  (still private) pages; the plain view is a "Launch deals" row rather
    *  than the grid; no map (its pins open the deal pages). */
   prelaunch?: boolean;
+  /** Before launch with live deals (lib/siteConfig.ts DEALS_OPEN): the
+   *  real deals are live, so their cards open their pages as usual and
+   *  the map is back. */
+  dealsLive?: boolean;
   /** Add the admin's test deals (pre-launch previews only). */
   testDeals?: boolean;
   /** The query string the server rendered with. */
@@ -112,7 +117,8 @@ export default function HomeDeals({
 }) {
   const searchParams = useUrlSearch(initialSearch);
   const parsed = parseHomeFilters(searchParams);
-  const filters: HomeFilters = prelaunch ? { ...parsed, view: "grid" } : parsed;
+  const pagesPrivate = prelaunch && !dealsLive;
+  const filters: HomeFilters = pagesPrivate ? { ...parsed, view: "grid" } : parsed;
   // Before launch, the plain homepage shows a row of launch deals; any
   // search, filter, category or "View all deals" shows the grid.
   const railView = prelaunch && searchParams.toString() === "";
@@ -183,7 +189,7 @@ export default function HomeDeals({
         hasLocation={coords !== null}
         locationStatus={locationStatus}
         filtersButtonRef={filtersButtonRef}
-        showMap={!prelaunch}
+        showMap={!pagesPrivate}
       />
 
       {needsLocation && !coords && <LocationNote status={locationStatus} onRequest={requestLocation} />}
@@ -199,12 +205,16 @@ export default function HomeDeals({
 
       {railView ? (
         <DealRail
-          id="launch-deals"
+          id="live-deals"
           className="mt-6 lg:mt-7"
-          title="Launch deals"
-          description="Real offers submitted by Auckland businesses for MegaDeal's launch. More are being added."
+          title={dealsLive ? "Live deals" : "Launch deals"}
+          description={
+            dealsLive
+              ? "Real offers from Auckland businesses, on now. Get the code and contact the business directly."
+              : "Real offers submitted by Auckland businesses for MegaDeal's launch. More are being added."
+          }
           deals={results.slice(0, 12)}
-          variant="launch"
+          variant={dealsLive ? "default" : "launch"}
           viewAll={{
             href: `${basePath}?view=grid`,
             label: "View all deals",
@@ -216,7 +226,7 @@ export default function HomeDeals({
           }}
           empty={
             <div className="mt-3 rounded-2xl border border-dashed border-hp-line bg-white px-6 py-8 text-center">
-              <p className="font-semibold text-hp-ink">The first launch deals are on their way.</p>
+              <p className="font-semibold text-hp-ink">The first {dealsLive ? "live" : "launch"} deals are on their way.</p>
               <p className="mt-1 text-sm text-hp-muted">Auckland businesses are adding their offers now. Have one of your own?</p>
               <Link href="/list-your-business" className="btn-primary mt-4">
                 Claim my free advertising
@@ -225,7 +235,7 @@ export default function HomeDeals({
           }
         />
       ) : (
-        <ResultsHeading filters={filters} results={results} prelaunch={prelaunch} />
+        <ResultsHeading filters={filters} results={results} prelaunch={prelaunch} dealsLive={dealsLive} />
       )}
 
       {railView ? null : filters.view === "map" ? (
@@ -240,6 +250,7 @@ export default function HomeDeals({
           coords={coords}
           suggestions={suggestions}
           prelaunch={prelaunch}
+          dealsLive={dealsLive}
         />
       )}
     </div>
@@ -547,7 +558,17 @@ function LocationNote({ status, onRequest }: { status: LocationStatus; onRequest
  * "Results for “pizza”", with the count beneath. Test deals (an admin's
  * pre-launch previews) are called out here as well as on each card.
  */
-function ResultsHeading({ filters, results, prelaunch = false }: { filters: HomeFilters; results: Deal[]; prelaunch?: boolean }) {
+function ResultsHeading({
+  filters,
+  results,
+  prelaunch = false,
+  dealsLive = false,
+}: {
+  filters: HomeFilters;
+  results: Deal[];
+  prelaunch?: boolean;
+  dealsLive?: boolean;
+}) {
   const categoryName = filters.category ? categoryBySlug(filters.category)?.name : null;
   const place = filters.city || DEFAULT_CITY.name;
   const title = filters.q
@@ -555,7 +576,9 @@ function ResultsHeading({ filters, results, prelaunch = false }: { filters: Home
     : categoryName
     ? `${categoryName} deals${filters.city ? ` in ${filters.city}` : ""}`
     : prelaunch
-    ? "Launch deals"
+    ? dealsLive
+      ? "Live deals"
+      : "Launch deals"
     : `${place} deals`;
 
   const n = results.length;
@@ -600,6 +623,7 @@ function Results({
   coords,
   suggestions,
   prelaunch,
+  dealsLive,
 }: {
   href: HrefFor;
   filters: HomeFilters;
@@ -607,12 +631,13 @@ function Results({
   coords: Coords | null;
   suggestions: Deal[];
   prelaunch: boolean;
+  dealsLive: boolean;
 }) {
   const [limit, setLimit] = useState(PAGE);
   // Only on the plain homepage view, not in the middle of a search. The
   // prelaunch homepage has its own business strip below.
   const inviteBusinesses = !prelaunch && filters.type === "all" && !hasNarrowingFilters(filters);
-  const variant = prelaunch ? "launch" : "default";
+  const variant = prelaunch && !dealsLive ? "launch" : "default";
 
   if (results.length === 0) {
     const narrowed = hasNarrowingFilters(filters);
@@ -638,7 +663,7 @@ function Results({
         {suggestions.length > 0 && (
           <section aria-labelledby="suggestions-heading" className="mt-8">
             <h2 id="suggestions-heading" className="mb-4 font-display text-lg font-bold text-hp-ink">
-              {prelaunch ? "Other launch deals" : "Other deals on now"}
+              {prelaunch && !dealsLive ? "Other launch deals" : "Other deals on now"}
             </h2>
             <DealGrid deals={suggestions} userLocation={coords} variant={variant} />
           </section>

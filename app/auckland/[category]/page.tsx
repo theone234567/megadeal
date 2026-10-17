@@ -7,7 +7,7 @@ import HowToUseStrip from "@/components/HowToUseStrip";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { categoryBySlug, categoryPath } from "@/lib/categories";
 import CategoryDeals from "./CategoryDeals";
-import { SITE_URL, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, DEALS_OPEN } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { CATEGORY_COPY, SEO_REGION } from "@/lib/categoryCopy";
@@ -62,11 +62,11 @@ export async function generateMetadata(
     description,
     alternates: { canonical: url },
     // Pre-launch, "/" redirects to /coming-soon so visitors never see a
-    // demo-data-filled deal grid (see SITE_LAUNCHED in lib/siteConfig.ts)
+    // demo-data-filled deal grid (see DEALS_OPEN in lib/siteConfig.ts)
     // — but this page is reachable directly regardless, so it needs the
     // same protection: no category page should get indexed while the
     // catalog might still hold pre-launch test data.
-    robots: SITE_LAUNCHED && hasDeals ? undefined : { index: false, follow: true },
+    robots: DEALS_OPEN && hasDeals ? undefined : { index: false, follow: true },
     // The image named, as on flash deals: a page's own openGraph replaces
     // the layout's whole, so without it a shared link has no picture.
     openGraph: { title: socialTitle, description, url, siteName: SITE_NAME, type: "website", images: [`${SITE_URL}/opengraph-image`] },
@@ -141,7 +141,7 @@ export default async function CategoryPage(
             category={category}
             // Only this category's deals, as cards: the page lists no others.
             initialDeals={deals.filter((d) => d.categories.includes(category)).map(toCardDeal)}
-            testDeals={!SITE_LAUNCHED}
+            testDeals={!DEALS_OPEN}
           />
           {copy && (
             <section className="mt-12 max-w-2xl border-t border-slate-100 pt-8">

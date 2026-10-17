@@ -3,7 +3,7 @@ import SearchAwareHero from "@/components/SearchAwareHero";
 import HomeDeals from "./HomeDeals";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import type { Metadata } from "next";
-import { SITE_URL, SITE_NAME, SITE_LAUNCHED, PRELAUNCH_HOME } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, SITE_LAUNCHED, PRELAUNCH_HOME, DEALS_OPEN } from "@/lib/siteConfig";
 import { PRELAUNCH_PROMO } from "@/lib/promo";
 import PrelaunchHome from "./PrelaunchHome";
 import { safeJsonLd } from "@/lib/safeJsonLd";
@@ -70,10 +70,34 @@ export default async function HomePage(props: { searchParams: Promise<Record<str
   const deals = await fetchAllLiveDealsServer();
   const listedDeals = deals.slice(0, 20);
 
-  // Before launch: the public prelaunch homepage. No deal list in the
-  // structured data: the deals can't be claimed yet and their pages are
-  // still private. The demo deals are never in it either.
-  if (PRELAUNCH_HOME) return <PrelaunchHome deals={deals.map(toCardDeal)} initialSearch={initialSearch} />;
+  // Before launch: the public prelaunch homepage. The real deals go in the
+  // structured data only once they're live (DEALS_OPEN); the example
+  // deals never do.
+  if (PRELAUNCH_HOME) {
+    return (
+      <>
+        {DEALS_OPEN && listedDeals.length > 0 && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: safeJsonLd({
+                "@context": "https://schema.org",
+                "@type": "ItemList",
+                name: `Live deals on ${SITE_NAME}`,
+                itemListElement: listedDeals.map((d, i) => ({
+                  "@type": "ListItem",
+                  position: i + 1,
+                  url: `${SITE_URL}/deal/${d.slug}`,
+                  name: d.name,
+                })),
+              }),
+            }}
+          />
+        )}
+        <PrelaunchHome deals={deals.map(toCardDeal)} initialSearch={initialSearch} dealsLive={DEALS_OPEN} />
+      </>
+    );
+  }
 
   return (
     <main className="bg-hp-page pb-2">

@@ -212,6 +212,12 @@ const MERCHANTS: Collection = {
       newColumn: true,
     }),
     f("serviceArea", "service_area", { expr: "(to_jsonb(t)->>'service_area')", newColumn: true }),
+    // A test business, never public (20261023000000_test_businesses.sql).
+    f("isTest", "is_test", {
+      expr: "coalesce((to_jsonb(t)->>'is_test')::boolean, false)",
+      write: (v: any) => Boolean(v),
+      newColumn: true,
+    }),
     // The main customer button (20261019000000_booking_contact.sql).
     f("preferredContact", "preferred_contact", {
       expr: "(to_jsonb(t)->>'preferred_contact')",

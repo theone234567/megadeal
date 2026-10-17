@@ -59,8 +59,9 @@ describe("notifyDealChanged", () => {
     vi.unstubAllEnvs();
   });
 
-  it("does nothing before launch", async () => {
+  it("does nothing while deals aren't public", async () => {
     vi.stubEnv("SITE_LAUNCHED", "false");
+    vi.stubEnv("PRELAUNCH_DEALS", "off");
     const { notifyDealChanged } = await import("./indexNowDeal");
     notifyDealChanged(client({ id: "p1", slug: "x" }), { productId: "p1" });
     await settle();

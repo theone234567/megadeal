@@ -1,7 +1,7 @@
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
-import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { DEALS_OPEN, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import type { Deal } from "@/lib/types";
 
 /**
@@ -32,7 +32,7 @@ export async function GET() {
   // Not for search results: the deal pages are what should rank. AI
   // crawlers read it regardless; search engines just don't list it.
   const headers = { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=60", "X-Robots-Tag": "noindex" };
-  if (!SITE_LAUNCHED) {
+  if (!DEALS_OPEN) {
     return new Response(`# ${SITE_NAME} live deals\n\n${SITE_NAME} hasn't launched yet, so there are no live deals. See ${SITE_URL}/coming-soon.\n`, { headers });
   }
   const deals = await fetchAllLiveDealsServer();

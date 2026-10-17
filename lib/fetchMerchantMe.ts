@@ -12,7 +12,7 @@ export class SessionExpiredError extends Error {
  * before giving up. An expired sign-in isn't retried: it throws
  * SessionExpiredError so the page can ask them to sign in again.
  */
-export async function fetchMerchantMe(): Promise<{ item: any; siteLaunched?: boolean }> {
+export async function fetchMerchantMe(): Promise<{ item: any; siteLaunched?: boolean; prelaunch?: boolean }> {
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const res = await fetch("/api/merchants/me");

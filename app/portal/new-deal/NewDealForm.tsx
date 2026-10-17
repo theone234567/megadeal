@@ -78,7 +78,18 @@ export interface TestDealFormMode {
   initial: TestDeal | null;
 }
 
-export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: boolean; testMode?: TestDealFormMode }) {
+export default function NewDealForm({
+  siteLaunched,
+  prelaunchFree = false,
+  testMode,
+}: {
+  /** Deals can be submitted (lib/siteConfig.ts DEALS_OPEN): from launch,
+   *  or before it with live deals on. */
+  siteLaunched: boolean;
+  /** Before launch: free, 1 Everyday and 1 Flash at a time. */
+  prelaunchFree?: boolean;
+  testMode?: TestDealFormMode;
+}) {
   const isTest = Boolean(testMode);
   // In the portal, PortalShell already provides the page's <main>; the
   // admin's test-deal pages have none of their own.
@@ -112,7 +123,9 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
   // Display only: the server checks them again on submission.
   // Test deals ignore them: anything a business could be allowed can be tried.
   const liveSettings = usePlatformSettings();
-  const platformSettings = isTest ? null : liveSettings;
+  // Before launch deals are free (lib/prelaunchAllowance.ts): shown as
+  // costing nothing, as the server charges.
+  const platformSettings = isTest ? null : liveSettings && prelaunchFree ? { ...liveSettings, chargeCredits: false } : liveSettings;
   // Flash up to 6 hours, Everyday up to 30 days (lib/dealDuration.ts), or
   // less if an admin has set a shorter maximum.
   const maxDays = platformSettings?.everydayMaxDays ?? EVERYDAY_MAX_DAYS;
@@ -1144,7 +1157,9 @@ export default function NewDealForm({ siteLaunched, testMode }: { siteLaunched: 
         {cost === null || credits < cost
           ? `You have ${creditsText}. `
           : cost === 0
-            ? "Submitting a deal is free at the moment. "
+            ? prelaunchFree
+              ? "Before launch, 1 Everyday Deal and 1 Flash Deal at a time are free. "
+              : "Submitting a deal is free at the moment. "
             : `This ${dealTypeName(isFlash)} will use ${creditsLabel(cost)} of your ${creditsText}. `}
         Your deal goes live once we&apos;ve reviewed it.
       </p>

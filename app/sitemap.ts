@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { cityPath, flashDealsPath } from "@/lib/cities";
-import { SITE_URL, SITE_LAUNCHED, LAUNCHED_ON, PRELAUNCH_HOME } from "@/lib/siteConfig";
+import { SITE_URL, SITE_LAUNCHED, LAUNCHED_ON, PRELAUNCH_HOME, DEALS_OPEN } from "@/lib/siteConfig";
 import { contentUpdated } from "@/lib/sitemapDates";
 import {
   fetchAllLiveDealSlugsForSitemap,
@@ -65,7 +65,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // even though "/" redirects to /coming-soon), so don't hand crawlers a
   // sitemap full of URLs they're not allowed to index — submit them only
   // once the site has actually launched.
-  if (!SITE_LAUNCHED) {
+  // With live deals before launch (DEALS_OPEN) they're public and
+  // indexable already.
+  if (!DEALS_OPEN) {
     return staticPages;
   }
 

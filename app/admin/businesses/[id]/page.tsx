@@ -97,6 +97,7 @@ export default function AdminBusinessDetailPage() {
   const [city, setCity] = useState("");
   const [suburb, setSuburb] = useState("");
   const [hideAddress, setHideAddress] = useState(false);
+  const [isTest, setIsTest] = useState(false);
   const [serviceArea, setServiceArea] = useState("");
   const [postcode, setPostcode] = useState("");
   const [website, setWebsite] = useState("");
@@ -138,6 +139,7 @@ export default function AdminBusinessDetailPage() {
     setCity(item.city || "");
     setSuburb(item.suburb || "");
     setHideAddress(item.hideAddress === true);
+    setIsTest(item.isTest === true);
     setServiceArea(item.serviceArea || "");
     setPostcode(item.postcode || "");
     setWebsite(item.website || "");
@@ -209,6 +211,7 @@ export default function AdminBusinessDetailPage() {
       city !== (merchant.city || "") ||
       suburb !== (merchant.suburb || "") ||
       hideAddress !== (merchant.hideAddress === true) ||
+      isTest !== (merchant.isTest === true) ||
       serviceArea !== (merchant.serviceArea || "") ||
       postcode !== (merchant.postcode || "") ||
       website !== (merchant.website || "") ||
@@ -291,6 +294,7 @@ export default function AdminBusinessDetailPage() {
           city,
           suburb,
           hideAddress,
+          isTest,
           serviceArea,
           postcode,
           website,
@@ -503,6 +507,16 @@ export default function AdminBusinessDetailPage() {
             <Field label="Public phone" value={phone} onChange={setPhone} required />
             <Field label="Address" value={address} onChange={setAddress} required />
             <Field label="Suburb" value={suburb} onChange={setSuburb} placeholder="e.g. Takapuna" />
+            <label className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm sm:col-span-2">
+              <input type="checkbox" checked={isTest} onChange={(e) => setIsTest(e.target.checked)} className="mt-0.5 h-4 w-4" />
+              <span>
+                <span className="font-semibold text-amber-900">Test business</span>
+                <span className="block text-xs text-amber-800">
+                  Never shown to the public: its profile and all its deals stay off the website, listings, search,
+                  feeds and the sitemap, whatever their status. Admins still see everything here.
+                </span>
+              </span>
+            </label>
             <label className="flex items-start gap-2 text-sm sm:col-span-2">
               <input type="checkbox" checked={hideAddress} onChange={(e) => setHideAddress(e.target.checked)} className="mt-0.5 h-4 w-4" />
               <span>

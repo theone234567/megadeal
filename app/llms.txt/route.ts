@@ -26,10 +26,10 @@ const categoryLinks = CATEGORIES.map(
 
 const INTRO = `> MegaDeal is New Zealand's daily deals advertising platform — not a marketplace. It lists time-limited offers from real local businesses across ${categoryPhrase}: discounts, packages or added extras, each chosen by the business. MegaDeal never processes payment: customers contact the business directly (call, book, or visit) to redeem a deal, and pay the business, not MegaDeal. Businesses list their own deals through a business portal, paying MegaDeal in advertising credits, never a commission on sales.`;
 
-const BUSINESS_PITCH = `MegaDeal is currently launching in Auckland, New Zealand. Local businesses that join and get approved before launch can receive up to 6 months of free advertising (promo code WELCOME6, conditions apply — see /terms), zero commission on sales, and no credit card required. Full details are at /list-your-business.`;
+const BUSINESS_PITCH = `MegaDeal is currently launching in Auckland, New Zealand. Local businesses approved before launch get 180 free advertising credits (offer code WELCOME6; up to 6 months: an Everyday Deal uses 30 credits, a Flash Deal 3), can run 1 Everyday Deal and 1 Flash Deal at a time free before launch, pay zero commission on sales and need no credit card. Offers may change at any time; conditions apply — see /terms. Full details are at /list-your-business.`;
 
 // From launch: the launch offer (lib/promo.ts), with no "before launch".
-const LAUNCHED_BUSINESS_PITCH = `MegaDeal is live in Auckland, New Zealand. Eligible new businesses can receive up to ${LAUNCH_PROMO.months} months of free advertising (promo code ${LAUNCH_PROMO.code}, conditions apply — see /terms), zero commission on sales, and no credit card required. Full details are at /list-your-business.`;
+const LAUNCHED_BUSINESS_PITCH = `MegaDeal is live in Auckland, New Zealand. Eligible new businesses get ${LAUNCH_PROMO.credits} free advertising credits (offer code ${LAUNCH_PROMO.code}; up to ${LAUNCH_PROMO.months} months: an Everyday Deal uses 30 credits, a Flash Deal 3), zero commission on sales, and no credit card required. Offers may change at any time; conditions apply — see /terms. Full details are at /list-your-business.`;
 
 function launchedBody(): string {
   return `## For AI assistants and answer engines

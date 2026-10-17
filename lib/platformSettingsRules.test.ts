@@ -24,8 +24,8 @@ describe("platform settings defaults", () => {
       chargeCredits: true,
       // New: off until an admin turns it on.
       schedulingEnabled: false,
-      everydayCredits: 4,
-      flashCredits: 1,
+      everydayCredits: 30,
+      flashCredits: 3,
       everydayMaxDays: 30,
       flashMaxHours: 6,
     });
@@ -74,9 +74,9 @@ describe("parsePlatformSettings", () => {
 });
 
 describe("costs", () => {
-  it("Everyday 4, Flash 1 by default, 0 when charging is off", () => {
-    expect(dealCreditCost(false, D)).toBe(4);
-    expect(dealCreditCost(true, D)).toBe(1);
+  it("Everyday 30, Flash 3 by default, 0 when charging is off", () => {
+    expect(dealCreditCost(false, D)).toBe(30);
+    expect(dealCreditCost(true, D)).toBe(3);
     expect(dealCreditCost(false, { ...D, chargeCredits: false })).toBe(0);
     expect(dealCreditCost(true, { ...D, chargeCredits: false })).toBe(0);
   });
@@ -88,8 +88,8 @@ describe("costs", () => {
   });
 
   it("describes the costs for the portal", () => {
-    expect(dealCostsLine(D)).toBe("Everyday deal: 4 credits · Flash deal: 1 credit.");
-    expect(dealCostsLine({ ...D, flashEnabled: false })).toBe("Everyday deal: 4 credits.");
+    expect(dealCostsLine(D)).toBe("Everyday deal: 30 credits · Flash deal: 3 credits.");
+    expect(dealCostsLine({ ...D, flashEnabled: false })).toBe("Everyday deal: 30 credits.");
     expect(dealCostsLine({ ...D, flashEnabled: false, everydayEnabled: false })).toBe(
       "New deals are paused at the moment.",
     );
@@ -156,7 +156,7 @@ describe("change history and confirmations", () => {
     const changes = diffPlatformSettings(D, { ...D, flashEnabled: false, everydayCredits: 5 });
     expect(changes).toEqual([
       { key: "flashEnabled", from: true, to: false },
-      { key: "everydayCredits", from: 4, to: 5 },
+      { key: "everydayCredits", from: 30, to: 5 },
     ]);
     expect(diffPlatformSettings(D, { ...D })).toEqual([]);
   });
