@@ -191,7 +191,7 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
         <section
           id="business-signup"
           aria-labelledby="signup-title"
-          className="mx-auto mt-4 grid max-w-[1060px] scroll-mt-24 grid-cols-1 gap-y-5 bg-white py-6 sm:py-10 min-[900px]:grid-cols-[minmax(0,1fr)_minmax(0,480px)] min-[900px]:grid-rows-[auto_1fr] min-[900px]:items-start min-[900px]:gap-x-12 min-[900px]:gap-y-0"
+          className="mx-auto mt-4 grid max-w-[1060px] scroll-mt-24 grid-cols-1 gap-y-5 bg-white py-6 sm:py-10 min-[900px]:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:grid-cols-[minmax(0,1fr)_minmax(0,520px)] min-[900px]:grid-rows-[auto_1fr] min-[900px]:items-start min-[900px]:gap-x-12 min-[900px]:gap-y-0"
         >
           <div className="min-[900px]:col-start-1 min-[900px]:row-start-1 lg:pt-10">
             <h2
