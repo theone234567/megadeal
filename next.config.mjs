@@ -18,6 +18,8 @@ const BUILD_SHA = (
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // No "X-Powered-By: Next.js" header: it only tells an attacker what to try.
+  poweredByHeader: false,
   // The Postgres driver (lib/db/connection.ts) reaches the database on
   // Cloudflare through pg-cloudflare, which it loads only when running
   // there, so the build's file tracing misses it and the Worker bundle

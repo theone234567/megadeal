@@ -11,10 +11,11 @@ looks like the marketplace, without launching the site.
    One line on a computer, two on a phone, never cut off. Scrolls away.
 2. Purple header. The business button reads "Claim my free advertising"
    ("Advertise free" where it's narrower) and goes to /list-your-business.
-3. Hero (`components/PrelaunchHero.tsx`), kept short so the example deals
-   show on the first screen: the one `<h1>` "Big local deals are coming to
-   Auckland.", the offer, "0% commission. No lock-in. No credit card." as
-   one bold two-tone line, "Claim my free advertising". Beside
+3. Hero (`components/PrelaunchHero.tsx`), a purple card like the business
+   card (white text, light-blue accents), kept short so the example deals
+   show on the first screen: "Launching in Auckland", the one `<h1>` "Big local deals are coming to
+   Auckland.", the offer, "0% commission", "No lock-in", "No credit card"
+   as bold round ticks, "Claim my free advertising". Beside
    it, three example deals as small deal cards (`public/megadeal/hero/
    collage-*`), each in front of the one to its left so every saving, name
    and price shows, and the current mascot,
