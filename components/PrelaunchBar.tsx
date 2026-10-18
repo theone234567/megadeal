@@ -54,9 +54,6 @@ export default function PrelaunchBar() {
           <span className="font-extrabold tracking-[0.08em] text-white">PRELAUNCH</span>
           <Dot />
           <span className="text-white">Auckland businesses can advertise free now</span>
-          <span className="hidden xl:inline">
-            <Dot />1 Everyday + 1 Flash Deal at a time
-          </span>
           <span className="hidden lg:inline">
             <Dot />
             Up to {PRELAUNCH_PROMO.months} months free from launch

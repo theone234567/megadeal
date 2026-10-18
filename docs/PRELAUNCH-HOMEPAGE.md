@@ -7,15 +7,19 @@ looks like the marketplace, without launching the site.
 
 1. Dark prelaunch bar (`components/PrelaunchBar.tsx`), above the header on
    every public page except the portal and admin: information only (the
-   header has the "Advertise free" button), with a T&Cs link. Scrolls away.
+   header has the "Advertise free" button), with a "Conditions apply" link.
+   One line on a computer, two on a phone, never cut off. Scrolls away.
 2. Purple header. The business button reads "Claim my free advertising"
    ("Advertise free" where it's narrower) and goes to /list-your-business.
-3. Hero (`components/PrelaunchHero.tsx`): "Auckland first", the one `<h1>`
-   "Big local deals are coming to Auckland.", the offer, "Claim my free
-   advertising", "See example deals", one trust line. Beside it, three
-   example deals as tilted cards (`public/megadeal/hero/collage-*`) and the
-   current mascot, `public/megadeal/mascot/megadeal-mascot-hero.webp`, at
-   its own proportions.
+3. Hero (`components/PrelaunchHero.tsx`), kept short so the example deals
+   show on the first screen: the one `<h1>` "Big local deals are coming to
+   Auckland.", the offer, "0% commission. No lock-in. No credit card." as
+   one bold two-tone line, "Claim my free advertising". Beside
+   it, three example deals as small deal cards (`public/megadeal/hero/
+   collage-*`), each in front of the one to its left so every saving, name
+   and price shows, and the current mascot,
+   `public/megadeal/mascot/megadeal-mascot-hero.webp`, at its own
+   proportions, bottom right, his open hand towards them.
 4. Example deals: the fixed examples in `lib/demoDeals.ts`, the first six
    one from each category. A test business's live deals come first only for
    a signed-in admin (`lib/adminViewer.ts`), so the owner can preview a real
@@ -26,8 +30,7 @@ looks like the marketplace, without launching the site.
    contact details on example.com only, no phone. Never searched, counted,
    indexed or put in structured data.
 5. (The shoppers' email sign-up, "Get Auckland's launch deals by email",
-   is in the footer on every page, with the social links; the hero's link
-   jumps to it, `#deal-alerts`.)
+   is in the footer on every page, with the social links, `#deal-alerts`.)
 6. Categories (`components/CategoryNav.tsx`), all always on screen: one row
    on a computer, equal tiles on a tablet and phone. While deals are live
    they link to the real category pages (`/auckland/<category>`). Then deal
@@ -35,8 +38,13 @@ looks like the marketplace, without launching the site.
 7. Live deals: real approved deals in a row (`components/DealRail.tsx`).
 8. "How MegaDeal works" for shoppers (3 steps) and 5 questions, also given
    to search engines as FAQPage data.
-9. Purple business card with the offer and a sample listing (the mascot
-   pointing at it), then the footer.
+9. Purple business card with the offer, one button, and a sample listing
+   (the mascot pointing at it), then the footer.
+
+Sizes are one scale throughout: every section heading is 24px on a phone
+and 28px from 1024px wide (the business card's 26/32px, as the one
+feature block), section descriptions 14/15px, and 40px between sections on
+a phone, 48px on a computer.
 
 ## Search engines
 

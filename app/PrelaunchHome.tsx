@@ -14,7 +14,7 @@ import HomeDeals from "./HomeDeals";
  * this order: the dark prelaunch bar, the hero, the example deals, then the
  * categories and filters for the real deals right above them, "How
  * MegaDeal works" with its FAQ, then the business card. The shoppers'
- * email sign-up is the footer's (#deal-alerts, linked from the hero). The example deals are fixed data,
+ * email sign-up is the footer's (#deal-alerts). The example deals are fixed data,
  * labelled EXAMPLE, each opening an example deal page; they're kept apart
  * from the real deals, so they're never searched, counted or listed as
  * offers anywhere. Search hides the hero and the example deals, as it
@@ -38,7 +38,7 @@ export default function PrelaunchHome({
     <main className="bg-hp-page">
       <SearchAwareHero initialSearch={initialSearch}>
         <PrelaunchHero />
-        <div className="mx-auto max-w-[1200px] px-4 pt-7 sm:px-6 lg:px-8 lg:pt-9">
+        <div className="mx-auto max-w-[1200px] px-4 pt-10 sm:px-6 lg:px-8 lg:pt-12">
           <DealRail
             id="example-deals"
             title="Example deals"
@@ -48,7 +48,7 @@ export default function PrelaunchHome({
           />
         </div>
       </SearchAwareHero>
-      <div className="mx-auto max-w-[1200px] px-4 pt-5 sm:px-6 lg:px-8 lg:pt-7">
+      <div className="mx-auto max-w-[1200px] px-4 pt-10 sm:px-6 lg:px-8 lg:pt-12">
         <HomeDeals initialDeals={deals} initialSearch={initialSearch} prelaunch dealsLive={dealsLive} />
       </div>
       <HowItWorks />
@@ -105,10 +105,10 @@ function HowItWorks() {
       />
       <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12">
         <div>
-          <h2 id="how-heading" className="font-display text-[1.625rem] font-bold leading-tight text-hp-ink sm:text-[1.875rem]">
+          <h2 id="how-heading" className="font-display text-[1.5rem] font-bold leading-tight text-hp-ink lg:text-[1.75rem]">
             How MegaDeal works
           </h2>
-          <p className="mt-1.5 text-[0.9375rem] text-hp-muted">No vouchers, no fees for customers.</p>
+          <p className="mt-1 text-sm text-hp-muted sm:text-[0.9375rem]">No vouchers, no fees for customers.</p>
           <ol className="mt-5 space-y-4">
             {STEPS.map((s, i) => (
               <li key={s.title} className="flex gap-3">
@@ -127,7 +127,7 @@ function HowItWorks() {
           </ol>
         </div>
         <div>
-          <h2 className="font-display text-xl font-bold text-hp-ink">Questions</h2>
+          <h2 className="font-display text-lg font-bold text-hp-ink">Questions</h2>
           <div className="mt-3 divide-y divide-hp-line rounded-2xl border border-hp-line bg-white">
             {FAQS.map((f) => (
               <details key={f.q} name="home-faq" className="group px-4 sm:px-5">
@@ -150,7 +150,8 @@ function HowItWorks() {
 /**
  * The business offer, once, after the deals: a contained purple card (the
  * hero's rounded, soft-glow look, not a flat full-width slab). Left: a
- * two-line headline, the offer as a short tick list, one action. Right,
+ * two-line headline, the offer as a short tick list, one action (signing
+ * in is in the header). Right,
  * on a computer: a sample listing ("Your deal here") with the mascot
  * pointing at it, so a business can picture its own deal. A real <h2> and <ul> in plain words
  * ("Auckland businesses", "advertise free", "0% commission") for search
@@ -163,23 +164,23 @@ function BusinessBand() {
     { lead: "0% commission:", text: "customers contact you and pay you directly." },
   ];
   return (
-    <section aria-labelledby="business-band-heading" className="mx-auto max-w-[1200px] px-4 pb-12 pt-10 sm:px-6 lg:px-8 lg:pb-14 lg:pt-12">
-      <div className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#7C3AED] via-hp-purple to-[#4C1D95] px-5 py-7 text-white sm:rounded-3xl sm:px-8 sm:py-9 lg:px-12 lg:py-10">
+    <section aria-labelledby="business-band-heading" className="mx-auto max-w-[1200px] px-4 pb-12 pt-10 sm:px-6 lg:px-8 lg:pb-16 lg:pt-12">
+      <div className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#7C3AED] via-hp-purple to-[#4C1D95] px-5 py-7 text-white sm:rounded-3xl sm:px-8 sm:py-8 lg:px-10 lg:py-9">
         <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-[#F0ABFC]/20 blur-3xl" />
 
-        <div className="relative grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_370px] lg:gap-14">
+        <div className="relative grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-12">
           <div>
             <p className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-[0.1em] text-white">
               For Auckland businesses
             </p>
-            <h2 id="business-band-heading" className="mt-3 font-display text-[1.75rem] font-bold leading-[1.1] sm:text-[2.125rem] lg:text-[2.5rem]">
+            <h2 id="business-band-heading" className="mt-3 font-display text-[1.625rem] font-bold leading-[1.1] lg:text-[2rem]">
               <span className="block">Advertise free.</span>
               <span className="block text-[#BAE6FD]">Be there on launch day.</span>
             </h2>
-            <ul className="mt-5 space-y-2.5">
+            <ul className="mt-4 space-y-2">
               {points.map((p) => (
-                <li key={p.lead} className="flex items-start gap-2.5 text-[0.9375rem] leading-snug text-white/90 sm:text-base">
+                <li key={p.lead} className="flex items-start gap-2.5 text-[0.9375rem] leading-snug text-white/90">
                   <span aria-hidden="true" className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white text-hp-purple">
                     <CheckIcon className="h-3.5 w-3.5" />
                   </span>
@@ -189,16 +190,13 @@ function BusinessBand() {
                 </li>
               ))}
             </ul>
-            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <div className="mt-6">
               <Link
                 href="/list-your-business"
                 className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-white px-6 text-[0.9375rem] font-bold text-hp-purple shadow-[0_8px_20px_rgba(33,26,53,0.25)] transition hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple sm:w-auto"
               >
                 Claim my free advertising
                 <ArrowRightIcon className="h-4 w-4" />
-              </Link>
-              <Link href="/portal" prefetch={false} className="text-sm font-semibold text-white/90 underline underline-offset-2 hover:text-white">
-                Business sign in
               </Link>
             </div>
             <p className="mt-4 text-xs text-white/75">
@@ -212,13 +210,13 @@ function BusinessBand() {
           {/* A sample listing, not a real deal: decorative only. The mascot
               stands to its right, his open hand pointing at it. */}
           <div aria-hidden="true" className="hidden items-end lg:flex">
-            <div className="w-[250px] shrink-0 rotate-[3deg] overflow-hidden rounded-2xl border-[5px] border-white bg-white text-hp-ink shadow-[0_18px_40px_rgba(20,10,50,0.35)]">
+            <div className="w-[220px] shrink-0 rotate-[3deg] overflow-hidden rounded-2xl border-[5px] border-white bg-white text-hp-ink shadow-[0_18px_40px_rgba(20,10,50,0.35)]">
               <div className="relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/megadeal/hero/collage-pizza-480.webp"
                   srcSet="/megadeal/hero/collage-pizza-320.webp 320w, /megadeal/hero/collage-pizza-480.webp 480w"
-                  sizes="300px"
+                  sizes="220px"
                   width={480}
                   height={360}
                   alt=""
@@ -245,13 +243,13 @@ function BusinessBand() {
             <img
               src="/megadeal/mascot/megadeal-mascot-hero-240.webp"
               srcSet="/megadeal/mascot/megadeal-mascot-hero-240.webp 240w, /megadeal/mascot/megadeal-mascot-hero-380.webp 380w"
-              sizes="120px"
+              sizes="100px"
               width={240}
               height={249}
               alt=""
               loading="lazy"
               decoding="async"
-              className="relative z-10 -mb-4 -ml-2 w-[118px] shrink-0 drop-shadow-[0_10px_18px_rgba(20,10,50,0.35)]"
+              className="relative z-10 -mb-4 -ml-2 w-[100px] shrink-0 drop-shadow-[0_10px_18px_rgba(20,10,50,0.35)]"
             />
           </div>
         </div>

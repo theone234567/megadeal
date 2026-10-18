@@ -108,8 +108,7 @@ export default function Footer({
 
       <div className="mx-auto max-w-[1200px] px-4 pb-12 pt-10 sm:px-6 lg:px-8">
         {/* Email sign-up for shoppers, with the social links: a full-width
-            strip, so the email box has room. The homepage hero's "Get
-            launch deals by email" lands here (#deal-alerts). The wording
+            strip, so the email box has room (#deal-alerts). The wording
             follows launch: before it there are no deal emails yet, only
             the launch announcement. */}
         <section
@@ -121,7 +120,7 @@ export default function Footer({
             <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-brand-600">
               {siteLaunched ? "Deals by email" : "Shopping for deals?"}
             </p>
-            <h2 id="footer-signup-heading" className="mt-1 font-display text-xl font-bold leading-tight text-slate-900 [text-wrap:balance] sm:text-2xl">
+            <h2 id="footer-signup-heading" className="mt-1 font-display text-[1.5rem] font-bold leading-tight text-slate-900 [text-wrap:balance] lg:text-[1.75rem]">
               {siteLaunched ? "Never miss a local deal" : "Get Auckland\u2019s launch deals by email"}
             </h2>
             <p className="mt-1.5 text-sm text-slate-600">
