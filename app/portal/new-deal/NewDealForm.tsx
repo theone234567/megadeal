@@ -53,6 +53,7 @@ import { contactOverrideError, effectiveContact, type ContactDetails, type Conta
 import { isContactMethod } from "@/lib/dealContact";
 import { cleanGallery } from "@/lib/dealGallery";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
+import { hasMarkup, NAME_MARKUP_MESSAGE } from "@/lib/nameRules";
 
 interface MerchantRecord {
   _id: string;
@@ -458,6 +459,7 @@ export default function NewDealForm({
     const list: { id: string; message: string; inline?: false }[] = [];
     if (isTest && !testBusiness.trim()) list.push({ id: "test-business", message: "Enter the business name to show." });
     if (!dealName.trim()) list.push({ id: "deal-name", message: "Enter a deal name." });
+    else if (hasMarkup(dealName)) list.push({ id: "deal-name", message: NAME_MARKUP_MESSAGE });
     if (!category) list.push({ id: "deal-category", message: "Choose a category." });
     if (!description.trim()) list.push({ id: "deal-description", message: "Describe what customers get." });
     const now = Number(priceNow);

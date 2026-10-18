@@ -86,7 +86,7 @@ export default function ContactBooking(p: ContactBookingProps) {
       )}
 
       {cells > 0 ? (
-        <ul className={`mt-3 grid grid-cols-1 gap-3 ${cells === 2 ? "sm:grid-cols-2" : cells === 3 ? "sm:grid-cols-3" : cells >= 4 ? "sm:grid-cols-2 lg:grid-cols-4" : ""}`}>
+        <ul className={`mt-3 grid grid-cols-1 gap-3 ${cells === 2 ? "sm:grid-cols-2" : cells === 3 ? "sm:grid-cols-3" : cells >= 4 ? "sm:grid-cols-2" : ""}`}>
           {p.phone && (
             <li className={cellClass}>
               <span className={label}>Phone</span>

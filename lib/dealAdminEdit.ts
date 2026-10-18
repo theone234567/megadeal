@@ -4,6 +4,7 @@ import { cleanDealTags } from "./dealTags";
 import { MAX_DEAL_GALLERY, cleanGallery } from "./dealGallery";
 import { isUploadedPhotoUrl } from "./photoUrl";
 import { SITE_URL } from "./siteConfig";
+import { hasMarkup, NAME_MARKUP_MESSAGE } from "./nameRules";
 
 /**
  * Admin edits to a submitted deal's content. Businesses can't change a deal
@@ -56,6 +57,7 @@ export function parseAdminContentEdit(
     const v = String(body.dealName).trim();
     // Wix Stores caps product names at 80 characters.
     if (!v || v.length > 80) return { changes: {}, error: "Deal name must be 1–80 characters." };
+    if (hasMarkup(v)) return { changes: {}, error: `Deal name: ${NAME_MARKUP_MESSAGE}` };
     next.dealName = v;
   }
   if (body.description !== undefined) {

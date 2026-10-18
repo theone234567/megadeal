@@ -31,7 +31,9 @@ export const FLASH_DURATION_OPTIONS = [
   { label: "30 minutes", minutes: 30 },
   { label: "1 hour", minutes: 60 },
   { label: "2 hours", minutes: 120 },
+  { label: "3 hours", minutes: 180 },
   { label: "4 hours", minutes: 240 },
+  { label: "5 hours", minutes: 300 },
   { label: "6 hours", minutes: 360 },
 ] as const;
 

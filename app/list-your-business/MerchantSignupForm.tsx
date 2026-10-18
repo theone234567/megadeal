@@ -12,6 +12,7 @@ import { EyeOffIcon } from "@/components/icons";
 import { trackMetaPixelEvent, trackMetaCustomEvent } from "@/lib/metaPixel";
 import { getAttribution, getFbc, getFbp } from "@/lib/attribution";
 import { AUTH_TIMEOUT_MS, withTimeout } from "@/lib/withTimeout";
+import { NAME_MARKUP_MESSAGE, NO_MARKUP_PATTERN } from "@/lib/nameRules";
 
 function RequiredTag() {
   return <span className="ml-1 font-normal text-ember-600">Required</span>;
@@ -46,10 +47,10 @@ const HONEYPOT_RESET_MS = 2000;
  *  (keyed by input id, or name for a field without one). Anything not
  *  listed falls back to the browser's own message. */
 const FIELD_MESSAGES: Record<string, { missing: string; invalid?: string }> = {
-  "signup-contactName": { missing: "Enter your name." },
+  "signup-contactName": { missing: "Enter your name.", invalid: NAME_MARKUP_MESSAGE },
   "signup-email": { missing: "Enter your email address.", invalid: "Enter a valid email address, like you@business.co.nz." },
   "signup-password": { missing: "Create a password." },
-  "signup-businessName": { missing: "Enter your business name." },
+  "signup-businessName": { missing: "Enter your business name.", invalid: NAME_MARKUP_MESSAGE },
   "signup-agreedToTerms": { missing: "Tick the box to agree to the terms and privacy policy." },
 };
 
@@ -816,6 +817,7 @@ export default function MerchantSignupForm({
               autoComplete="organization"
               type="text"
               maxLength={300}
+              pattern={NO_MARKUP_PATTERN}
               placeholder="e.g. Harbourside Bistro"
               className={inputClass}
               {...errorProps("signup-businessName")}
@@ -840,6 +842,7 @@ export default function MerchantSignupForm({
               autoComplete="name"
               type="text"
               maxLength={300}
+              pattern={NO_MARKUP_PATTERN}
               placeholder="Full name"
               className={inputClass}
               {...errorProps("signup-contactName")}

@@ -1,4 +1,5 @@
 import { availableMethods } from "@/lib/contactOverride";
+import { hasMarkup, NAME_MARKUP_MESSAGE } from "@/lib/nameRules";
 import { isContactMethod } from "@/lib/dealContact";
 import { NextRequest, NextResponse } from "next/server";
 import { isBookingChoice } from "@/lib/booking";
@@ -60,13 +61,16 @@ export async function POST(req: NextRequest) {
 
   const businessName = cleanText(body.businessName, MAX_TEXT_LENGTH);
   if (!businessName) fieldErrors.businessName = "Business name is required.";
+  else if (hasMarkup(businessName)) fieldErrors.businessName = NAME_MARKUP_MESSAGE;
 
   const contactName = cleanText(body.contactName, MAX_TEXT_LENGTH);
   if (!contactName) fieldErrors.contactName = "Contact name is required.";
+  else if (hasMarkup(contactName)) fieldErrors.contactName = NAME_MARKUP_MESSAGE;
   const contactPhone = cleanText(body.contactPhone, MAX_TEXT_LENGTH);
   if (!contactPhone) fieldErrors.contactPhone = "Contact phone is required.";
   const legalBusinessName = cleanText(body.legalBusinessName, MAX_TEXT_LENGTH);
   if (!legalBusinessName) fieldErrors.legalBusinessName = "Legal business name is required.";
+  else if (hasMarkup(legalBusinessName)) fieldErrors.legalBusinessName = NAME_MARKUP_MESSAGE;
 
   // Same required set as signup (app/api/merchants/apply/route.ts) — without
   // this, a merchant could blank out their public phone/address/city here

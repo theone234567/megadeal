@@ -1,4 +1,5 @@
 import { cleanContactOverride, contactOverrideError, type ContactOverride } from "./contactOverride";
+import { hasMarkup, NAME_MARKUP_MESSAGE } from "./nameRules";
 import { bookingConflict, isBookingChoice, websiteCodeError, type BookingRequirement } from "./booking";
 import { CATEGORY_ID_BY_NAME } from "./categories";
 import { dealCodeError, normaliseDealCode } from "./dealCode";
@@ -77,6 +78,7 @@ export function checkDealFields(body: any, rules: DealFieldRules): DealFieldsRes
   // Wix Stores caps product names at 80 characters; past that the product
   // create failed and the business saw only "Couldn't create your deal".
   if (dealName.length > 80) return fail("Keep the deal name to 80 characters or fewer.");
+  if (hasMarkup(dealName)) return fail(`Deal name: ${NAME_MARKUP_MESSAGE}`);
   if (description.length > 5000 || terms.length > 2000) return fail("The description or conditions are too long.");
   if (customDealCode) {
     const codeError = dealCodeError(customDealCode);

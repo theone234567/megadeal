@@ -144,7 +144,7 @@ describe("deal types and durations", () => {
     expect(everydayOptionsUpTo(10).map((o) => o.days)).toEqual([1, 3, 7, 10]);
     expect(everydayOptionsUpTo(10).at(-1)?.label).toBe("10 days");
     expect(everydayOptionsUpTo(1).map((o) => o.days)).toEqual([1]);
-    expect(flashOptionsUpTo(360).map((o) => o.minutes)).toEqual([30, 60, 120, 240, 360]);
+    expect(flashOptionsUpTo(360).map((o) => o.minutes)).toEqual([30, 60, 120, 180, 240, 300, 360]);
     expect(flashOptionsUpTo(180).map((o) => o.minutes)).toEqual([30, 60, 120, 180]);
     expect(flashOptionsUpTo(180).at(-1)?.label).toBe("3 hours");
     expect(flashOptionsUpTo(60).map((o) => o.minutes)).toEqual([30, 60]);

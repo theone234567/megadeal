@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { hasMarkup, NAME_MARKUP_MESSAGE } from "@/lib/nameRules";
 import { phoneLink } from "@/lib/booking";
 import { NextRequest, NextResponse } from "next/server";
 import { afterResponse } from "@/lib/afterResponse";
@@ -99,8 +100,10 @@ export async function POST(req: NextRequest) {
 
   const businessName = cleanText(body.businessName, MAX_TEXT_LENGTH);
   if (!businessName) fieldErrors.businessName = "Business name is required.";
+  else if (hasMarkup(businessName)) fieldErrors.businessName = NAME_MARKUP_MESSAGE;
   const contactName = cleanText(body.contactName, MAX_TEXT_LENGTH);
   if (!contactName) fieldErrors.contactName = "Contact name is required.";
+  else if (hasMarkup(contactName)) fieldErrors.contactName = NAME_MARKUP_MESSAGE;
   // The phones and the legal name are asked on the listing page in the
   // portal, not at sign-up (which is only business name, your name, email
   // and password): required there, by the profile route, before the
@@ -108,6 +111,7 @@ export async function POST(req: NextRequest) {
   // "finish your signup" form sends them).
   const contactPhone = cleanText(body.contactPhone, MAX_TEXT_LENGTH);
   const legalBusinessName = cleanText(body.legalBusinessName, MAX_TEXT_LENGTH);
+  if (legalBusinessName && hasMarkup(legalBusinessName)) fieldErrors.legalBusinessName = NAME_MARKUP_MESSAGE;
   const phone = cleanText(body.phone, MAX_TEXT_LENGTH);
   // It's shown to customers as a tap-to-call booking number, so it has to
   // be a real one — "12" used to be accepted and then silently hidden.
