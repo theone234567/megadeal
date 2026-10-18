@@ -342,6 +342,15 @@ describe("page addresses", () => {
     expect(await q("select slug from public.deals where id = $1", [draft.id])).toEqual([{ slug: "sushi-for-two-sushi-ten-mt-eden" }]);
   });
 
+  it("a draft saved before it had a name gets its name in the address when submitted with it", async () => {
+    // app/api/deals/create claims a draft with its status and name in one
+    // update, so the address is made from the name, not the blank draft.
+    const m = await business("Mt Eden Cleaners", "Mt Eden", "cleaners@x.nz");
+    const [draft] = await q<{ id: string }>("insert into public.deals (merchant_id, status, name) values ($1, 'Draft', '') returning id", [m.id]);
+    await q("update public.deals set status = 'Pending Approval', name = 'Three hour home clean' where id = $1", [draft.id]);
+    expect(await q("select slug from public.deals where id = $1", [draft.id])).toEqual([{ slug: "three-hour-home-clean-mt-eden-cleaners-mt-eden" }]);
+  });
+
   it("redirects are for the server only", async () => {
     await expect(t.as({ role: "anon" }, "select * from public.slug_redirects")).rejects.toThrow(/permission denied/);
     await expect(t.as({ role: "authenticated", uid: "00000000-0000-0000-0000-000000000001" }, "select * from public.slug_redirects")).rejects.toThrow(/permission denied/);

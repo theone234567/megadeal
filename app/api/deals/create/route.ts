@@ -225,7 +225,11 @@ export async function POST(req: NextRequest) {
       adminClient,
       "Deals",
       draftRow._id,
-      { status: "Pending Approval" },
+      // The name goes in with the status: the database gives a deal its
+      // page address (slug) the moment it leaves Draft, from its name then,
+      // and a draft saved before the name was typed would otherwise get an
+      // address without it.
+      { status: "Pending Approval", dealName },
       { status: { $eq: "Draft" } }
     );
     if (!claimed) {
