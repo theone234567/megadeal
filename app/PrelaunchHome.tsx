@@ -227,7 +227,6 @@ function BusinessBand() {
                 <span className="absolute left-2 top-2 rounded-md bg-[#BAE6FD] px-2 py-0.5 text-[0.6875rem] font-extrabold uppercase tracking-wide text-hp-ink">
                   Your deal here
                 </span>
-                <span className="absolute right-2 top-2 rounded-md bg-white px-2 py-0.5 text-xs font-bold text-hp-ink">37% off</span>
               </div>
               <div className="px-3 pb-3 pt-2.5">
                 <span className="rounded bg-hp-lavender px-1.5 py-0.5 text-[0.6875rem] font-semibold text-hp-purple">Everyday</span>
@@ -236,6 +235,7 @@ function BusinessBand() {
                 <p className="mt-1.5 leading-none">
                   <span className="font-display text-lg font-bold text-hp-purple">$49</span>
                   <span className="ml-1.5 text-xs text-hp-muted line-through">$78</span>
+                  <span className="ml-1.5 text-xs font-bold text-hp-ink">37% off</span>
                 </p>
               </div>
             </div>
