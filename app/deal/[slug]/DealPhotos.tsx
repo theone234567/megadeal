@@ -11,11 +11,12 @@ import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
  * arrows or the thumbnails on a computer, or the arrow keys once focused.
  * Plain CSS scroll snapping, no slider library, so it costs almost nothing.
  * Only the first photo loads straight away; the rest load as they're
- * reached.
+ * reached. Tapping or clicking a photo opens it full screen (PhotoViewer).
  */
 export default function DealPhotos({ images, alt }: { images: string[]; alt: string }) {
   const track = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(0);
+  const [viewing, setViewing] = useState<number | null>(null);
   const many = images.length > 1;
 
   useEffect(() => {
@@ -52,8 +53,34 @@ export default function DealPhotos({ images, alt }: { images: string[]; alt: str
     />
   );
 
+  // The whole photo is the button that opens it full screen.
+  const opener = (i: number) => (
+    <button
+      type="button"
+      onClick={() => setViewing(i)}
+      aria-label={many ? `View photo ${i + 1} of ${images.length} full screen` : "View the photo full screen"}
+      className="absolute inset-0 cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600"
+    >
+      {img(images[i], i)}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/60 text-white"
+      >
+        <ExpandIcon />
+      </span>
+    </button>
+  );
+
+  const viewer =
+    viewing === null ? null : <PhotoViewer images={images} alt={alt} start={viewing} onClose={() => setViewing(null)} />;
+
   if (!many) {
-    return <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-brand-50">{img(images[0], 0)}</div>;
+    return (
+      <>
+        <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-brand-50">{opener(0)}</div>
+        {viewer}
+      </>
+    );
   }
 
   const arrow =
@@ -76,7 +103,7 @@ export default function DealPhotos({ images, alt }: { images: string[]; alt: str
               aria-label={`${i + 1} of ${images.length}`}
               className="relative h-full w-full shrink-0 snap-center"
             >
-              {img(url, i)}
+              {opener(i)}
             </div>
           ))}
         </div>
@@ -112,6 +139,127 @@ export default function DealPhotos({ images, alt }: { images: string[]; alt: str
           </button>
         ))}
       </div>
+      {viewer}
     </section>
+  );
+}
+
+/**
+ * A deal's photos full screen, the whole photo shown (not cropped), on a
+ * dark background: swipe or the arrows (and arrow keys) for the next one,
+ * and close with the button, Escape, or a tap on the background. A native
+ * <dialog>, so focus stays inside and returns to the photo on closing.
+ */
+function PhotoViewer({ images, alt, start, onClose }: { images: string[]; alt: string; start: number; onClose: () => void }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  const track = useRef<HTMLDivElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  const [current, setCurrent] = useState(start);
+  const many = images.length > 1;
+
+  useEffect(() => {
+    const d = dialog.current;
+    const el = track.current;
+    if (!d) return;
+    d.showModal();
+    closeButton.current?.focus();
+    // The page behind doesn't scroll while the photos are open.
+    document.documentElement.style.overflow = "hidden";
+    if (el) el.scrollLeft = start * el.clientWidth;
+    return () => {
+      document.documentElement.style.removeProperty("overflow");
+    };
+  }, [start]);
+
+  useEffect(() => {
+    const el = track.current;
+    if (!el || !many) return;
+    const onScroll = () => setCurrent(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)));
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [many]);
+
+  function go(i: number) {
+    const el = track.current;
+    if (!el) return;
+    const index = (i + images.length) % images.length;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    el.scrollTo({ left: index * el.clientWidth, behavior: reduce ? "auto" : "smooth" });
+  }
+
+  const round =
+    "flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-2xl font-bold text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white";
+
+  return (
+    <dialog
+      ref={dialog}
+      aria-label={many ? `Photos of this deal, ${images.length} in all` : "Photo of this deal"}
+      onClose={onClose}
+      onKeyDown={(e) => {
+        if (!many) return;
+        if (e.key === "ArrowRight") go(current + 1);
+        if (e.key === "ArrowLeft") go(current - 1);
+      }}
+      className="m-0 h-[100dvh] max-h-none w-screen max-w-none bg-slate-950/95 p-0 text-white backdrop:bg-slate-950/80"
+    >
+      <div
+        ref={track}
+        // A tap on the dark area around a photo closes the viewer.
+        onClick={(e) => {
+          if (!(e.target instanceof HTMLImageElement)) dialog.current?.close();
+        }}
+        className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {images.map((url, i) => (
+          <div key={url} className="flex h-full w-full shrink-0 snap-center items-center justify-center p-2 sm:p-14">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={wixImageUrl(url, 1200, 800)}
+              srcSet={wixImageSrcSet(url, [750, 1200], 3 / 2)}
+              sizes="100vw"
+              alt={many ? `${alt} (photo ${i + 1} of ${images.length})` : alt}
+              loading={Math.abs(i - start) <= 1 ? "eager" : "lazy"}
+              decoding="async"
+              draggable={false}
+              className="max-h-full max-w-full rounded-lg object-contain"
+            />
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        ref={closeButton}
+        onClick={() => dialog.current?.close()}
+        aria-label="Close photos"
+        className={`${round} absolute right-3 top-[calc(0.75rem+env(safe-area-inset-top))]`}
+      >
+        <span aria-hidden="true">×</span>
+      </button>
+      {many && (
+        <>
+          <button type="button" onClick={() => go(current - 1)} aria-label="Previous photo" className={`${round} absolute left-3 top-1/2 hidden -translate-y-1/2 sm:flex`}>
+            ‹
+          </button>
+          <button type="button" onClick={() => go(current + 1)} aria-label="Next photo" className={`${round} absolute right-3 top-1/2 hidden -translate-y-1/2 sm:flex`}>
+            ›
+          </button>
+          <span
+            aria-live="polite"
+            className="pointer-events-none absolute bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold tabular-nums"
+          >
+            {current + 1} / {images.length}
+          </span>
+        </>
+      )}
+    </dialog>
+  );
+}
+
+/** Four arrows out to the corners: "see it bigger". */
+function ExpandIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+    </svg>
   );
 }
