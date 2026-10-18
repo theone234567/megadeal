@@ -239,14 +239,23 @@ function textToNum(value: string): number | null {
  * draft survives on its own even if `draftData` is silently dropped.
  */
 export function draftToRow(draft: DealDraftData, merchantEmail: string) {
+  // A draft is half-typed: a negative price or quantity, or a "was" price
+  // below the deal price, stays as typed in draftData (and is flagged when
+  // the deal is previewed) but leaves the column empty, as the database
+  // refuses those values and the save would fail.
+  const nonNegative = (n: number | null) => (n !== null && n >= 0 ? n : null);
+  const priceNow = nonNegative(textToNum(draft.priceNow));
+  const wasTyped = nonNegative(textToNum(draft.priceWas));
+  const priceWas = wasTyped !== null && priceNow !== null && wasTyped < priceNow ? null : wasTyped;
+  const quantity = textToNum(draft.quantityAvailable);
   return {
     dealName: draft.dealName,
     description: draft.description,
     terms: draft.terms,
     photoUrl: draft.photoUrl,
-    priceNow: textToNum(draft.priceNow),
-    priceWas: textToNum(draft.priceWas),
-    quantityAvailable: textToNum(draft.quantityAvailable),
+    priceNow,
+    priceWas,
+    quantityAvailable: quantity !== null && quantity >= 0 && Number.isInteger(quantity) ? quantity : null,
     isFlash: draft.isFlash,
     bookingRequirement: draft.bookingRequirement || null,
     tags: draft.tags,

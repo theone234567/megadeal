@@ -104,6 +104,19 @@ describe("draftToRow / parseDraft", () => {
     expect(parseDraft(row).priceNow).toBe("");
   });
 
+  it("saves a half-typed draft the database would refuse, keeping what was typed", () => {
+    const odd = { ...EMPTY_DRAFT, dealName: "Odd numbers", priceNow: "-5", priceWas: "3", quantityAvailable: "-2" };
+    const row = draftToRow(odd, "merchant@example.co.nz") as any;
+    expect(row.priceNow).toBeNull();
+    expect(row.priceWas).toBe(3);
+    expect(row.quantityAvailable).toBeNull();
+    expect(parseDraft(row).priceNow).toBe("-5");
+    const below = draftToRow({ ...EMPTY_DRAFT, priceNow: "50", priceWas: "20" }, "m@example.co.nz") as any;
+    expect(below.priceNow).toBe(50);
+    expect(below.priceWas).toBeNull();
+    expect(parseDraft(below).priceWas).toBe("20");
+  });
+
   it("ignores a statusNote that isn't one of ours", () => {
     // statusNote is also the admin's rejection-note field. A human note
     // must never be parsed as draft state.
