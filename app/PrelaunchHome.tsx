@@ -38,7 +38,7 @@ export default function PrelaunchHome({
     <main className="bg-hp-page">
       <SearchAwareHero initialSearch={initialSearch}>
         <PrelaunchHero />
-        <div className="mx-auto max-w-[1200px] px-4 pt-10 sm:px-6 lg:px-8 lg:pt-12">
+        <div className="mx-auto max-w-[1200px] px-4 pt-8 sm:px-6 lg:px-8 lg:pt-10">
           <DealRail
             id="example-deals"
             title="Example deals"

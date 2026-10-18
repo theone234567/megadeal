@@ -78,12 +78,16 @@ export default function CategoryNav(props: Props) {
 
   return (
     <nav aria-label="Categories" className="lg:border-b lg:border-hp-line">
-      <ul className="flex flex-wrap justify-center gap-2 sm:flex-nowrap lg:flex-wrap lg:justify-between lg:gap-0">
+      {/* One line on a computer, whatever the zoom: the labels' size
+          follows the screen's width (13–15px), so the row always fits. It
+          never wraps; only with very large text would labels be shortened
+          ("Health & Fitn…") rather than one dropping to a second line. */}
+      <ul className="flex flex-wrap justify-center gap-2 sm:flex-nowrap lg:justify-between lg:gap-1">
         {items.map(({ slug, label, Icon }) => {
           const selected = active === slug;
           const href = pageHref(slug);
           return (
-            <li key={slug || "all"} className="w-[calc((100%-1.5rem)/4)] sm:w-auto sm:min-w-0 sm:flex-1 lg:flex-none">
+            <li key={slug || "all"} className="w-[calc((100%-1.5rem)/4)] sm:w-auto sm:min-w-0 sm:flex-1 lg:flex-initial">
               <Link
                 href={href}
                 scroll={false}
@@ -95,14 +99,14 @@ export default function CategoryNav(props: Props) {
                 prefetch={false}
                 onClick={(e) => handleClick(e, filterHref(slug))}
                 aria-current={selected ? "true" : undefined}
-                className={`flex h-full min-h-[64px] flex-col items-center justify-center gap-1 rounded-xl border px-1 py-2 text-center text-[0.75rem] font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple sm:text-[0.8125rem] lg:-mb-px lg:h-[52px] lg:min-h-0 lg:flex-row lg:gap-1.5 lg:whitespace-nowrap lg:rounded-none lg:border-0 lg:border-b-[3px] lg:px-1.5 lg:py-0 lg:text-sm xl:gap-2 xl:px-2 xl:text-[0.9375rem] lg:focus-visible:ring-inset ${
+                className={`flex h-full min-h-[64px] flex-col items-center justify-center gap-1 rounded-xl border px-1 py-2 text-center text-[0.75rem] font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple sm:text-[0.8125rem] lg:-mb-px lg:h-[52px] lg:min-h-0 lg:min-w-0 lg:flex-row lg:gap-1.5 lg:whitespace-nowrap lg:rounded-none lg:border-0 lg:border-b-[3px] lg:px-1.5 lg:py-0 lg:text-[clamp(0.8125rem,1.3vw,0.9375rem)] xl:gap-2 xl:px-2 lg:focus-visible:ring-inset ${
                   selected
                     ? "border-hp-purple/40 bg-hp-lavender text-hp-purple lg:border-hp-purple lg:bg-transparent"
                     : "border-hp-line bg-white text-hp-muted hover:border-hp-boundary hover:text-hp-ink lg:border-transparent lg:bg-transparent lg:hover:border-hp-line"
                 }`}
               >
                 <Icon className="h-[22px] w-[22px] shrink-0 lg:h-[18px] lg:w-[18px] xl:h-5 xl:w-5" />
-                {label}
+                <span className="lg:truncate">{label}</span>
               </Link>
             </li>
           );

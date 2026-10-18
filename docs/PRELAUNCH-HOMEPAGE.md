@@ -13,12 +13,13 @@ looks like the marketplace, without launching the site.
    ("Advertise free" where it's narrower) and goes to /list-your-business.
 3. Hero (`components/PrelaunchHero.tsx`), a purple card like the business
    card (white text, light-blue accents), kept short so the example deals
-   show on the first screen: "Launching in Auckland", the one `<h1>` "Big local deals are coming to
-   Auckland.", the offer, "0% commission", "No lock-in", "No credit card"
-   as bold round ticks, "Claim my free advertising". Beside
-   it, three example deals as small deal cards (`public/megadeal/hero/
-   collage-*`), each in front of the one to its left so every saving, name
-   and price shows, and the current mascot,
+   show on the first screen on a computer: "Launching in
+   Auckland" (not on a phone), the one `<h1>` "Big local deals are coming to Auckland.", the
+   offer, "0% commission", "No lock-in", "No credit card" as bold round
+   ticks, "Claim my free advertising". Beside it on a computer (on a phone,
+   a compact strip under the button), three example deals as small deal cards (`public/megadeal/hero/collage-*`),
+   each in front of the one to its left so every saving, name and price
+   shows, and the current mascot,
    `public/megadeal/mascot/megadeal-mascot-hero.webp`, at its own
    proportions, bottom right, his open hand towards them.
 4. Example deals: the fixed examples in `lib/demoDeals.ts`, the first six
