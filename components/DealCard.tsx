@@ -31,7 +31,9 @@ const PLACEHOLDER_ICONS: Record<string, ComponentType<{ className?: string }>> =
 /**
  * One card for Flash and Everyday Deals: photo with the saving on it, then
  * the deal type (a Flash Deal adds its real time left), title, business,
- * place and price. The whole card is the link to the deal.
+ * place and price. The whole card is the link to the deal. Its text sizes
+ * follow the card's own width (card-md/card-lg, tailwind.config.ts): larger
+ * on a wide card in a homepage row, compact in a phone's two-column grid.
  *
  * Deliberately not shown, though the Deal type carries them:
  * - businessRating: typed in by an admin, not aggregated from customer
@@ -122,7 +124,7 @@ export default function DealCard({
       // relative: the screen-reader-only price label is absolutely
       // positioned, and without a positioned card around it, it escaped the
       // Flash row's scroll area and made the whole page scroll sideways.
-      className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border border-hp-line bg-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 ${
+      className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border [container-type:inline-size] border-hp-line bg-white transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 ${
         linked ? "hover:border-hp-purple/40 hover:shadow-card" : ""
       }`}
     >
@@ -183,10 +185,10 @@ export default function DealCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-1 px-3 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5">
+      <div className="flex flex-1 flex-col gap-1 px-3 pb-3 pt-2.5 card-md:gap-1.5 card-md:px-4 card-md:pb-4 card-md:pt-3">
         {/* The deal type, and for a Flash Deal its real time left. Wraps
             under the label on a narrow card rather than squeezing. */}
-        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold leading-5">
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold leading-5 card-md:text-[0.8125rem]">
           {deal.isTest && (
             // Only ever seen by an admin before launch (lib/useTestDeals.ts).
             <span className="rounded bg-hp-ink px-1.5 text-white">Test deal · preview only</span>
@@ -209,7 +211,7 @@ export default function DealCard({
         {/* Two lines at most, and always two lines tall, so the rows of
             metadata and prices line up across a row of cards. */}
         <h3
-          className={`line-clamp-2 min-h-[2.7em] font-display text-[0.9375rem] font-semibold leading-[1.35] text-hp-ink sm:text-base lg:text-[1.0625rem] ${
+          className={`line-clamp-2 min-h-[2.7em] font-display text-[0.9375rem] font-bold leading-[1.35] text-hp-ink card-md:text-[1.0625rem] card-lg:text-lg ${
             linked ? "group-hover:text-hp-purple" : ""
           }`}
         >
@@ -217,7 +219,7 @@ export default function DealCard({
           {deal.name}
         </h3>
         {metaLine && (
-          <p className="flex min-w-0 items-center gap-1 text-[0.8125rem] text-hp-muted">
+          <p className="flex min-w-0 items-center gap-1 text-[0.8125rem] text-hp-muted card-md:text-sm">
             <MapPinIcon className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{metaLine}</span>
           </p>
@@ -225,11 +227,11 @@ export default function DealCard({
 
         {/* mt-auto keeps prices level across a row of cards. */}
         <div className="mt-auto flex flex-wrap items-baseline gap-x-2 pt-1.5">
-          <span className="font-display text-xl font-semibold leading-none tracking-[-0.02em] text-hp-purple sm:text-[1.375rem] lg:text-2xl">
+          <span className="font-display text-xl font-semibold leading-none tracking-[-0.02em] text-hp-purple card-md:text-2xl">
             {formatMoney(deal.now, deal.currency, deal.formattedNow)}
           </span>
           {savingPct !== null && (
-            <span className="text-sm text-hp-muted line-through">
+            <span className="text-sm text-hp-muted line-through card-md:text-[0.9375rem]">
               <span className="sr-only">Usual price </span>
               {formatMoney(deal.was, deal.currency, deal.formattedWas)}
             </span>
@@ -242,7 +244,7 @@ export default function DealCard({
             Flash Deal's time left is on its label line instead. */}
         {/* Always rendered, empty or not, so every card in a row keeps
             this line's height and the prices above it stay level. */}
-        <p className="truncate text-xs text-hp-muted" aria-hidden={footLine ? undefined : true}>
+        <p className="truncate text-xs text-hp-muted card-md:text-[0.8125rem]" aria-hidden={footLine ? undefined : true}>
           {footLine || "\u00a0"}
         </p>
       </div>

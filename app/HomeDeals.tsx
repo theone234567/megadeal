@@ -195,7 +195,7 @@ export default function HomeDeals({
         showMap={!pagesPrivate}
       />
 
-      {allDeals.length > 0 && filters.sort !== "nearest" && filters.view !== "map" && (
+      {filters.sort !== "nearest" && filters.view !== "map" && (
         <NearMePill
           onClick={() => {
             set({ sort: "nearest" });
@@ -372,6 +372,8 @@ function NearMeButton({ active, onClick }: { active: boolean; onClick: () => voi
  * screen once the visitor has scrolled past the top of the page, so the
  * feature is in reach wherever they are. It steps aside over the footer,
  * and isn't shown once deals are already nearest first or on the map.
+ * Shown even while there are no live deals yet (the owner's call), so the
+ * feature is visible from the start.
  * Hidden, it's out of the tab order and the accessibility tree.
  */
 function NearMePill({ onClick }: { onClick: () => void }) {

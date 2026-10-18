@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
@@ -68,6 +69,15 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Sizes that follow a deal card's own width, not the screen's
+    // (components/DealCard.tsx, a CSS container): the same card is a
+    // narrow half-screen tile in a phone's grid and a wide card in a
+    // homepage row, and its text should suit each.
+    plugin(({ addVariant }) => {
+      addVariant("card-md", "@container (min-width: 13.5rem)");
+      addVariant("card-lg", "@container (min-width: 19rem)");
+    }),
+  ],
 };
 export default config;
