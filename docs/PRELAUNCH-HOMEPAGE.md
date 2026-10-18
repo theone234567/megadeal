@@ -34,7 +34,12 @@ looks like the marketplace, without launching the site.
 6. Categories (`components/CategoryNav.tsx`), all always on screen: one row
    on a computer, equal tiles on a tablet and phone. While deals are live
    they link to the real category pages (`/auckland/<category>`). Then deal
-   type, Filters, Sort and the map, right above the live deals.
+   type, "Near me", Filters, Sort and the map, right above the live deals.
+   "Near me" puts the nearest deals first with each one's distance (the
+   same as Sort's "Nearest to me"); on a phone a "Deals near me" button
+   also floats at the bottom of the screen once you've scrolled past the
+   top, and steps aside over the footer. Location is asked for only when
+   one of them is pressed.
 7. Live deals: real approved deals in a row (`components/DealRail.tsx`).
 8. "How MegaDeal works" for shoppers (3 steps) and 5 questions, also given
    to search engines as FAQPage data.

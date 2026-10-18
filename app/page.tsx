@@ -18,7 +18,7 @@ const HOME_DESCRIPTION =
 // Before launch (PRELAUNCH_HOME): what the page really is, a launch lineup
 // being built, not deals to claim today.
 const PRELAUNCH_TITLE = `${SITE_NAME} — Big local deals are coming to Auckland`;
-const PRELAUNCH_DESCRIPTION = `Auckland's new local deals site. Businesses can advertise free now, with up to ${PRELAUNCH_PROMO.months} months free from launch. Deals from restaurants, spas, activities and more.`;
+const PRELAUNCH_DESCRIPTION = `Auckland's new local deals site. Businesses advertise free during prelaunch, then up to ${PRELAUNCH_PROMO.months} months free from launch. Restaurants, spas, activities and more.`;
 
 // Before launch this is the public prelaunch homepage (PRELAUNCH_HOME,
 // app/PrelaunchHome.tsx), or, with that switched off, reachable only by an

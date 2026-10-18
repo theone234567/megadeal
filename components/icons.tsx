@@ -218,6 +218,15 @@ export function DumbbellIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
+/** The "my location" arrow, for "near me" (MapPinIcon is a place). */
+export function LocateIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M3 11 21 3l-8 18-2-8-8-2Z" />
+    </svg>
+  );
+}
+
 export function CompassIcon({ className = "h-4 w-4" }: IconProps) {
   return (
     <svg {...base} className={className}>

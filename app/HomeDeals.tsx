@@ -32,7 +32,7 @@ import DealRail from "@/components/DealRail";
 import SortSelect from "@/components/SortSelect";
 import ViewToggle from "@/components/ViewToggle";
 import { BROWSE_CONTROL } from "@/components/browseControls";
-import { ChevronDownIcon, CloseIcon, SlidersIcon } from "@/components/icons";
+import { ChevronDownIcon, CloseIcon, LocateIcon, SlidersIcon } from "@/components/icons";
 
 const DealsMap = dynamic(() => import("@/components/DealsMap"), {
   ssr: false,
@@ -195,6 +195,16 @@ export default function HomeDeals({
         showMap={!pagesPrivate}
       />
 
+      {allDeals.length > 0 && filters.sort !== "nearest" && filters.view !== "map" && (
+        <NearMePill
+          onClick={() => {
+            set({ sort: "nearest" });
+            const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            document.getElementById("deals")?.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
+          }}
+        />
+      )}
+
       {needsLocation && !coords && <LocationNote status={locationStatus} onRequest={requestLocation} />}
 
       <ActiveFilters
@@ -313,7 +323,10 @@ function Toolbar({
         })}
       </div>
 
-      <div className={`grid gap-2 md:ml-auto md:flex md:items-center md:gap-2.5 ${showMap ? "grid-cols-3" : "grid-cols-2"}`}>
+      {/* On a phone, four equal buttons in one row: text only, so each
+          fits from 360px; the icons come back from a tablet up. */}
+      <div className={`grid gap-1.5 md:ml-auto md:flex md:items-center md:gap-2.5 ${showMap ? "grid-cols-4" : "grid-cols-3"}`}>
+        <NearMeButton active={filters.sort === "nearest"} onClick={() => set({ sort: filters.sort === "nearest" ? "ending" : "nearest" })} />
         <FilterPanel
           filters={filters}
           onApply={(panel) => set(panel)}
@@ -323,10 +336,81 @@ function Toolbar({
           openerRef={filtersButtonRef}
         />
 
-        <SortSelect value={filters.sort} onChange={(sort) => set({ sort })} />
+        <SortSelect value={filters.sort} onChange={(sort) => set({ sort })} shortOnPhone />
         {showMap && <ViewToggle value={filters.view} onChange={(view) => set({ view })} />}
       </div>
     </div>
+  );
+}
+
+/**
+ * "Near me", beside Filters: deals nearest first, with the distance on each
+ * card. The same as "Nearest to me" in Sort, put where people look; pressed
+ * again, back to the usual order. Asks for the location only when pressed.
+ */
+function NearMeButton({ active, onClick }: { active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      // Its own fill, so not BROWSE_CONTROL's white.
+      className={`${BROWSE_CONTROL.replace("bg-white", "")} ${
+        active
+          ? "border-hp-purple bg-hp-purple text-white"
+          : "border-hp-purple/30 bg-hp-lavender text-hp-purple hover:border-hp-purple"
+      }`}
+    >
+      <LocateIcon className="hidden h-4 w-4 shrink-0 md:block" />
+      <span className="truncate">Near me</span>
+    </button>
+  );
+}
+
+/**
+ * Phones only: a "Deals near me" button floating at the bottom of the
+ * screen once the visitor has scrolled past the top of the page, so the
+ * feature is in reach wherever they are. It steps aside over the footer,
+ * and isn't shown once deals are already nearest first or on the map.
+ * Hidden, it's out of the tab order and the accessibility tree.
+ */
+function NearMePill({ onClick }: { onClick: () => void }) {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const footer = document.querySelector("footer");
+      const footerInView = footer ? footer.getBoundingClientRect().top < window.innerHeight - 24 : false;
+      setShow(window.scrollY > 400 && !footerInView);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-hidden={!show}
+      tabIndex={show ? 0 : -1}
+      className={`fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-30 flex h-12 -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-hp-purple px-5 text-[0.9375rem] font-bold text-white shadow-[0_10px_28px_rgba(33,26,53,0.35)] transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 motion-reduce:transition-none md:hidden ${
+        show ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
+      }`}
+    >
+      <LocateIcon className="h-[18px] w-[18px]" />
+      Deals near me
+    </button>
   );
 }
 
@@ -393,9 +477,8 @@ function FilterPanel({
         aria-haspopup="dialog"
         className={`${BROWSE_CONTROL} ${applied ? "border-hp-purple text-hp-purple" : "border-hp-line text-hp-ink hover:border-hp-boundary"}`}
       >
-        {/* With a count, a phone's narrow button drops the icon rather
-            than cutting off the text. */}
-        <SlidersIcon className={`h-[18px] w-[18px] shrink-0 ${applied ? "hidden min-[430px]:block" : ""}`} />
+        {/* A phone's narrow button is text only (see Toolbar). */}
+        <SlidersIcon className="hidden h-[18px] w-[18px] shrink-0 md:block" />
         <span className="truncate">Filters</span>
         {applied > 0 && (
           <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-hp-purple px-1.5 text-xs font-bold text-white">

@@ -15,10 +15,14 @@ export default function SortSelect({
   value,
   onChange,
   className = "",
+  shortOnPhone = false,
 }: {
   value: SortOption;
   onChange: (value: SortOption) => void;
   className?: string;
+  /** Reads just "Sort" on a phone whatever is picked (the purple outline
+   *  shows it's changed): for a row of narrow buttons. */
+  shortOnPhone?: boolean;
 }) {
   return (
     <label
@@ -30,6 +34,11 @@ export default function SortSelect({
         {value === "ending" ? (
           <>
             Sort<span className="hidden md:inline">: {label(value)}</span>
+          </>
+        ) : shortOnPhone ? (
+          <>
+            <span className="md:hidden">Sort</span>
+            <span className="hidden md:inline">{label(value)}</span>
           </>
         ) : (
           label(value)

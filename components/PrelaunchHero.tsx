@@ -34,8 +34,8 @@ export default function PrelaunchHero() {
             <span className="block text-hp-purple">coming to Auckland.</span>
           </h1>
           <p className="mt-3 max-w-[31rem] text-base leading-relaxed text-[#4B4560] sm:text-[1.0625rem]">
-            Auckland&apos;s new local deals site is building its launch lineup. Businesses can advertise free now,
-            with up to {PRELAUNCH_PROMO.months} months free from launch.*
+            Auckland&apos;s new local deals site is building its launch lineup. Businesses advertise free during
+            prelaunch, then get up to {PRELAUNCH_PROMO.months} months free from launch.*
           </p>
           <p className="mt-4 font-display text-lg font-bold leading-snug text-hp-ink sm:text-xl">
             {/* Wraps only between the phrases. */}
