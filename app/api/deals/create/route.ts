@@ -5,6 +5,7 @@ import { parseScheduledStart } from "@/lib/dealSchedule";
 import { safeWebHref } from "@/lib/socialLinks";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
+import { checkRateLimit } from "@/lib/rateLimit";
 import { createDataClient } from "@/lib/dataClient";
 import { isUploadedPhotoUrl } from "@/lib/photoUrl";
 import { getOrClaimMerchant } from "@/lib/merchant";
@@ -184,6 +185,18 @@ export async function POST(req: NextRequest) {
     const mine = await queryAllByEmail((email) => adminClient.items.query("Deals").eq("merchantEmail", email), member.email, "Deals (allowance)");
     const blocked = prelaunchAllowanceBlock(mine, isFlash, Date.now());
     if (blocked) return NextResponse.json({ error: blocked }, { status: 403 });
+    // The check above reads the business's deals and the new one is saved
+    // further down, so submissions sent at the same instant all passed it
+    // (five free Everyday Deals at once, end-to-end test of 19 Oct 2026).
+    // Counted in one database step: only one submission of each type gets
+    // through in any 20 seconds, and after that the check above refuses.
+    const busy = await checkRateLimit(`prelaunch-submit:${merchant._id}:${isFlash ? "flash" : "everyday"}`, 1, 20, { failClosed: true });
+    if (busy.limited) {
+      return NextResponse.json(
+        { error: "We're still saving your last deal. Check My deals in a few seconds before trying again." },
+        { status: 429 }
+      );
+    }
   }
   const cost = PRELAUNCH_FREE_DEALS ? 0 : dealCreditCost(isFlash, settings);
   const credits = Number(merchant.creditsBalance) || 0;
