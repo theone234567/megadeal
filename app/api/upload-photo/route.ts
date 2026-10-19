@@ -5,6 +5,7 @@ import { checkRateLimit } from "@/lib/rateLimit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { newPhotoKey, photoBucket, putPhoto } from "@/lib/photoStorage";
 import { SITE_URL } from "@/lib/siteConfig";
+import { stripImageMetadata } from "@/lib/stripImageMetadata";
 
 // Generous cap on the decoded image — the client already resizes/compresses
 // before sending, this just guards against an oversized/malicious payload.
@@ -141,7 +142,9 @@ export async function POST(req: NextRequest) {
     }
     const ext = mimeType === "image/jpeg" ? "jpg" : mimeType.split("/")[1];
     const key = newPhotoKey(slugify(label), ext);
-    const url = await putPhoto(bucket, key, bytes, mimeType, SITE_URL);
+    // Without the camera's details: a phone's photo carries the GPS
+    // position it was taken at (lib/stripImageMetadata.ts).
+    const url = await putPhoto(bucket, key, stripImageMetadata(mimeType, bytes), mimeType, SITE_URL);
     return NextResponse.json({ url, id: key });
   } catch (err) {
     console.error("[upload-photo] storage failed", err);
