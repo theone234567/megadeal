@@ -12,7 +12,7 @@ import { businessEmailChoices } from "@/lib/businessEmailChoices";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { DEALS_OPEN, SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { currentPromo, promoForCode } from "@/lib/promo";
-import { incrementCreditsAtomically } from "@/lib/creditsAtomic";
+import { incrementCreditsAtomically, setFieldsIf } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
@@ -316,7 +316,17 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     return NextResponse.json({ error: "Merchant not found." }, { status: 404 });
   }
 
-  const becomingApproved = patch.status === "Approved" && existing.status !== "Approved";
+  let becomingApproved = patch.status === "Approved" && existing.status !== "Approved";
+  // Approving is claimed in one step, conditioned on the business not being
+  // approved already, so only one request does it. Approve pressed several
+  // times at once used to run the first-approval grants and emails in each
+  // (the welcome offer twice, the intro credits three times and five
+  // "you're approved" emails, end-to-end test of 19 Oct 2026). A request
+  // that loses the claim saves its other changes as an ordinary edit.
+  if (becomingApproved) {
+    const claimed = await setFieldsIf(adminClient, "Merchants", existing._id, { status: "Approved" }, { status: { $ne: "Approved" } });
+    if (!claimed) becomingApproved = false;
+  }
   // A business that edits its name, legal details, category or photos goes
   // back to Pending (lib/merchant.ts), and a suspended one can be
   // reinstated. Approving either again isn't a first approval: no second
@@ -487,8 +497,13 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       : existing;
   }
 
+  // The one-time grant flags are only ever set by their atomic claims
+  // above, never written back from a read: a copy read before another
+  // request's claim landed would turn the flag off again and let the grant
+  // be paid a second time.
+  const { promoRewarded: _promo, referralRewarded: _referral, ...unclaimed } = base;
   const updated = await adminClient.items.update("Merchants", {
-    ...base,
+    ...unclaimed,
     ...patch,
   });
 

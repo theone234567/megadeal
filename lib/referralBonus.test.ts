@@ -28,11 +28,17 @@ describe("signupCodes", () => {
 // Approval against a fake data client: a referred business that also used WELCOME6.
 const merchants: Record<string, any> = {};
 const increments = vi.fn(async (..._a: unknown[]) => true);
+// The one-step "approve if not approved yet" claim: true while it's still
+// this request's to make.
+let approvalClaimWins = true;
 vi.mock("./adminSession", () => ({ isAdminRequest: async () => true }));
 vi.mock("./adminAudit", () => ({ logAdminAction: vi.fn(), auditTarget: (n: string) => n }));
 vi.mock("./sendEmail", () => ({ sendTransactionalEmail: vi.fn(async () => true) }));
 vi.mock("./merchantActivity", () => ({ logMerchantActivity: vi.fn() }));
-vi.mock("./creditsAtomic", () => ({ incrementCreditsAtomically: (...a: unknown[]) => increments(...a) }));
+vi.mock("./creditsAtomic", () => ({
+  incrementCreditsAtomically: (...a: unknown[]) => increments(...a),
+  setFieldsIf: async () => (approvalClaimWins ? {} : null),
+}));
 vi.mock("./dataClient", () => ({
   createDataClient: () => ({
     items: {
@@ -62,6 +68,7 @@ vi.mock("./dataClient", () => ({
 describe("approving a referred business", () => {
   beforeEach(() => {
     increments.mockClear();
+    approvalClaimWins = true;
     merchants.ref = { _id: "ref", email: "ref@example.com", businessName: "Referrer Cafe", status: "Approved", referralCode: "MDREF001", creditsBalance: 0 };
     merchants.new = { _id: "new", email: "new@example.com", businessName: "New Spa", status: "Pending", creditsBalance: 0, couponCode: "WELCOME6", referredByCode: "MDREF001" };
   });
@@ -100,5 +107,19 @@ describe("approving a referred business", () => {
     vi.mocked(sendTransactionalEmail).mockResolvedValue(true);
     const fine = await approve();
     expect(fine.warnings.join(" ")).not.toMatch(/failed to send/);
+  });
+
+  it("pays nothing when another approve request got there first", async () => {
+    const { sendTransactionalEmail } = await import("./sendEmail");
+    vi.mocked(sendTransactionalEmail).mockClear();
+    approvalClaimWins = false;
+    const { PATCH } = await import("@/app/api/admin/merchants/[id]/route");
+    const res = await PATCH(
+      new NextRequest("http://x/api/admin/merchants/new", { method: "PATCH", body: JSON.stringify({ status: "Approved" }) }),
+      { params: Promise.resolve({ id: "new" }) }
+    );
+    expect(res.status).toBe(200);
+    expect(increments).not.toHaveBeenCalled();
+    expect(sendTransactionalEmail).not.toHaveBeenCalled();
   });
 });
