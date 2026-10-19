@@ -38,6 +38,9 @@ interface DealManageCardProps {
   onChangePhoto: (deal: DealRecord, dataUrl: string) => Promise<void>;
   /** Before launch an approved deal isn't visible to anyone yet. */
   siteLaunched?: boolean;
+  /** The business isn't approved right now (suspended, or a change under
+   *  review), so none of its deals are showing, live or not. */
+  hiddenFromCustomers?: boolean;
   /** The business's profile photos, offered when changing the deal's. */
   profilePhotos?: string[];
 }
@@ -47,6 +50,7 @@ export default function DealManageCard({
   onChangeStatus,
   onChangePhoto,
   siteLaunched = true,
+  hiddenFromCustomers = false,
   profilePhotos = [],
 }: DealManageCardProps) {
   const [open, setOpen] = useState(false);
@@ -112,7 +116,11 @@ export default function DealManageCard({
           <span
             className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${DEAL_STATUS_STYLES[status]}`}
           >
-            {status === "Live" && !siteLaunched ? "Approved — shows at launch" : status}
+            {status === "Live" && hiddenFromCustomers
+              ? "Live — hidden for now"
+              : status === "Live" && !siteLaunched
+              ? "Approved — shows at launch"
+              : status}
           </span>
           <span className={`text-sm ${endingSoon || missedStart ? "font-semibold text-ember-600" : "text-slate-500"}`}>
             {status === "Scheduled"

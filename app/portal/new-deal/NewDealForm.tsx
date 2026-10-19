@@ -1071,9 +1071,21 @@ export default function NewDealForm({
         ) : (
           !businessApproved && (
             <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-              ⏳ We&apos;re still reviewing your business, so deals can&apos;t be
-              submitted yet. Save this one as a draft — you can submit it as
-              soon as you&apos;re approved, and we&apos;ll email you when that happens.
+              {merchant.status === "Suspended" ? (
+                <>
+                  Your account is suspended, so deals can&apos;t be submitted.{" "}
+                  <Link href="/contact" className="underline">
+                    Contact us
+                  </Link>{" "}
+                  and we&apos;ll help sort it out.
+                </>
+              ) : (
+                <>
+                  ⏳ We&apos;re still reviewing your business, so deals can&apos;t be
+                  submitted yet. Save this one as a draft — you can submit it as
+                  soon as you&apos;re approved, and we&apos;ll email you when that happens.
+                </>
+              )}
             </p>
           )
         )}
@@ -1175,9 +1187,21 @@ export default function NewDealForm({
       ) : (
         !businessApproved && (
           <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-            ⏳ We&apos;re still reviewing your business. Build your deal below and
-            save it as a draft — you can submit it as soon as you&apos;re approved
-            (usually within 12 hours), and we&apos;ll email you when that happens.
+            {merchant.status === "Suspended" ? (
+              <>
+                Your account is suspended, so deals can&apos;t be submitted.{" "}
+                <Link href="/contact" className="underline">
+                  Contact us
+                </Link>{" "}
+                and we&apos;ll help sort it out.
+              </>
+            ) : (
+              <>
+                ⏳ We&apos;re still reviewing your business. Build your deal below and
+                save it as a draft — you can submit it as soon as you&apos;re approved
+                (usually within 12 hours), and we&apos;ll email you when that happens.
+              </>
+            )}
           </p>
         )
       )}

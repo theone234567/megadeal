@@ -402,7 +402,7 @@ export default function PortalPage() {
           </p>
         </div>
       )}
-      {siteLaunched && prelaunch && merchant && (
+      {siteLaunched && prelaunch && merchant && merchant.status !== "Suspended" && (
         <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-4">
           <p className="text-sm font-extrabold text-emerald-900">Prelaunch: your deals can go live now</p>
           <p className="mt-1 text-sm text-emerald-800">
@@ -531,6 +531,18 @@ export default function PortalPage() {
                 </p>
               </div>
             )}
+            {merchant.status === "Suspended" && (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                <h2 className="text-base font-extrabold text-amber-900">Your account is suspended</h2>
+                <p className="mt-1.5 text-sm text-amber-800">
+                  Your deals are hidden from customers and new deals can&apos;t be submitted for now.{" "}
+                  <Link href="/contact" className="font-semibold underline">
+                    Contact us
+                  </Link>{" "}
+                  and we&apos;ll help sort it out.
+                </p>
+              </div>
+            )}
             {(merchant.status || "Pending") === "Pending" && !inReReview && (
               <div className="rounded-2xl border border-brand-100 bg-brand-50 p-5">
                 <h2 className="text-base font-extrabold text-brand-900">
@@ -589,6 +601,8 @@ export default function PortalPage() {
                 <p className="mt-1 text-sm text-slate-500">
                   {(merchant.status || "Pending") === "Approved"
                     ? "You're approved — you can list deals whenever you're ready."
+                    : merchant.status === "Suspended"
+                    ? "Your deals are hidden from customers. Contact us to sort it out."
                     : inReReview
                     ? "We're reviewing your recent changes — your deals are hidden until then."
                     : "We'll email you as soon as you're approved, usually within 12 hours."}
@@ -739,6 +753,7 @@ export default function PortalPage() {
                           onChangeStatus={handleChangeDealStatus}
                           onChangePhoto={handleChangeDealPhoto}
                           siteLaunched={siteLaunched}
+                          hiddenFromCustomers={merchant.status !== "Approved"}
                           profilePhotos={parseBusinessPhotos(merchant?.photos)}
                         />
                       ))}
