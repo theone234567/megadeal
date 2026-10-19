@@ -97,6 +97,7 @@ export default function DealManageCard({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
         className="flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3 text-left"
       >
         <span className="font-medium text-slate-800">
