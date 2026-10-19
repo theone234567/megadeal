@@ -813,10 +813,16 @@ async function conditionalPatch(db: Sql, c: Collection, id: string, body: Row): 
     }
   }
   // The update can't join, so conditions on a joined field use a subquery.
+  // FOR UPDATE makes that subquery wait for a write to the same row by
+  // another request and then check the conditions again on what it saved.
+  // Without it the conditions were read from before that write, so two
+  // requests at once could both pass "only if not approved yet" or "only if
+  // still a draft" (end-to-end test of 19 Oct 2026: approve pressed five
+  // times at once paid the welcome offer twice).
   const where = `${c.idWhere}${conds.length ? ` and ${conds.join(" and ")}` : ""}`;
   try {
     const rows = await db.query(
-      `update public.${c.table} t set ${sets.join(", ")} where t.${c.pk ?? "id"} in (select t.${c.pk ?? "id"} from ${c.from} where ${where}) returning ${c.idExpr} as "_id"`,
+      `update public.${c.table} t set ${sets.join(", ")} where t.${c.pk ?? "id"} in (select t.${c.pk ?? "id"} from ${c.from} where ${where} for update of t) returning ${c.idExpr} as "_id"`,
       params
     );
     if (rows.length) {
