@@ -6,6 +6,7 @@ import { isBookingChoice } from "./booking";
 import { clampEverydayDays, clampFlashMinutes } from "./dealDuration";
 import { cleanDealTags } from "./dealTags";
 import { cleanGallery } from "./dealGallery";
+import { MAX_DEAL_PRICE } from "./priceLimit";
 
 /**
  * A deal the merchant hasn't submitted yet.
@@ -239,13 +240,14 @@ function textToNum(value: string): number | null {
  * draft survives on its own even if `draftData` is silently dropped.
  */
 export function draftToRow(draft: DealDraftData, merchantEmail: string) {
-  // A draft is half-typed: a negative price or quantity, or a "was" price
-  // below the deal price, stays as typed in draftData (and is flagged when
-  // the deal is previewed) but leaves the column empty, as the database
-  // refuses those values and the save would fail.
-  const nonNegative = (n: number | null) => (n !== null && n >= 0 ? n : null);
-  const priceNow = nonNegative(textToNum(draft.priceNow));
-  const wasTyped = nonNegative(textToNum(draft.priceWas));
+  // A draft is half-typed: a negative or impossibly large price, a negative
+  // quantity, or a "was" price below the deal price, stays as typed in
+  // draftData (and is flagged when the deal is previewed) but leaves the
+  // column empty, as the database refuses those values and the save would
+  // fail.
+  const price = (n: number | null) => (n !== null && n >= 0 && n <= MAX_DEAL_PRICE ? n : null);
+  const priceNow = price(textToNum(draft.priceNow));
+  const wasTyped = price(textToNum(draft.priceWas));
   const priceWas = wasTyped !== null && priceNow !== null && wasTyped < priceNow ? null : wasTyped;
   const quantity = textToNum(draft.quantityAvailable);
   return {

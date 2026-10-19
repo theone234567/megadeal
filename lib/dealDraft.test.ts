@@ -98,6 +98,14 @@ describe("draftToRow / parseDraft", () => {
     expect(parsed.category).toBe(FULL.category);
   });
 
+  it("leaves an impossibly large price out of the columns but keeps it as typed", () => {
+    const huge = { ...FULL, priceNow: "9000000000", priceWas: "9500000000" };
+    const row = draftToRow(huge, "merchant@example.co.nz") as any;
+    expect(row.priceNow).toBeNull();
+    expect(row.priceWas).toBeNull();
+    expect(parseDraft(row).priceNow).toBe("9000000000");
+  });
+
   it("keeps a blank price blank rather than inventing a zero", () => {
     const sparse = { ...EMPTY_DRAFT, dealName: "No price yet" };
     const row = draftToRow(sparse, "merchant@example.co.nz");

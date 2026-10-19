@@ -6,6 +6,7 @@ import { dealCodeError, normaliseDealCode } from "./dealCode";
 import { durationError } from "./dealDuration";
 import { cleanDealTags } from "./dealTags";
 import { MAX_DEAL_GALLERY, cleanGallery } from "./dealGallery";
+import { MAX_DEAL_PRICE, PRICE_TOO_HIGH_MESSAGE } from "./priceLimit";
 
 /**
  * The checks on a deal's own fields when it's submitted, in one place:
@@ -112,6 +113,7 @@ export function checkDealFields(body: any, rules: DealFieldRules): DealFieldsRes
   if (priceWas !== undefined && (!Number.isFinite(priceWas) || priceWas < priceNow)) {
     return fail("Original price must be at least the deal price.");
   }
+  if (priceNow > MAX_DEAL_PRICE || (priceWas !== undefined && priceWas > MAX_DEAL_PRICE)) return fail(PRICE_TOO_HIGH_MESSAGE);
   const typeBlocked = rules.typeBlocked(isFlash);
   if (typeBlocked) return fail(`${typeBlocked} Save this deal as a draft for now.`, 403);
   // Flash up to 6 hours, Everyday up to 30 days (lib/dealDuration.ts), or

@@ -5,6 +5,7 @@ import { MAX_DEAL_GALLERY, cleanGallery } from "./dealGallery";
 import { isUploadedPhotoUrl } from "./photoUrl";
 import { SITE_URL } from "./siteConfig";
 import { hasMarkup, NAME_MARKUP_MESSAGE } from "./nameRules";
+import { MAX_DEAL_PRICE, PRICE_TOO_HIGH_MESSAGE } from "./priceLimit";
 
 /**
  * Admin edits to a submitted deal's content. Businesses can't change a deal
@@ -73,6 +74,7 @@ export function parseAdminContentEdit(
   if (body.priceNow !== undefined) {
     const v = Number(body.priceNow);
     if (!Number.isFinite(v) || v <= 0) return { changes: {}, error: "Price must be more than $0." };
+    if (v > MAX_DEAL_PRICE) return { changes: {}, error: PRICE_TOO_HIGH_MESSAGE };
     next.priceNow = Math.round(v * 100) / 100;
   }
   if (body.priceWas !== undefined) {
@@ -83,6 +85,7 @@ export function parseAdminContentEdit(
     if (v !== null && (!Number.isFinite(v) || v <= 0)) {
       return { changes: {}, error: "Usual price must be a number." };
     }
+    if (v !== null && v > MAX_DEAL_PRICE) return { changes: {}, error: PRICE_TOO_HIGH_MESSAGE };
     next.priceWas = v === null ? null : Math.round(v * 100) / 100;
   }
   if (body.bookingRequirement !== undefined) {

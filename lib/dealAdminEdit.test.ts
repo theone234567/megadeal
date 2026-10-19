@@ -14,6 +14,11 @@ const row = {
 };
 
 describe("parseAdminContentEdit", () => {
+  it("refuses a price more than the database can hold", () => {
+    expect(parseAdminContentEdit({ priceNow: 9e9 }, row).error).toBe("That price is too high. Check the number and try again.");
+    expect(parseAdminContentEdit({ priceWas: "100000000" }, row).error).toBe("That price is too high. Check the number and try again.");
+  });
+
   it("returns only the fields that change", () => {
     const { changes, error } = parseAdminContentEdit({ dealName: "Pizza for two", priceNow: "45" }, row);
     expect(error).toBeNull();
