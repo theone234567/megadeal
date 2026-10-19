@@ -77,5 +77,9 @@ export const MIGRATION_FILES: MigrationFile[] = [
   {
     "file": "20261024000000_mark_test_businesses.sql",
     "sql": "-- Marks every business that existed on 17 Oct 2026 as a test business\n-- (the owner's request: all of them were tests). A test business is never\n-- public (20261023000000_test_businesses.sql). Only businesses created\n-- before the cutoff below are touched, so a real business that signs up\n-- later is never marked, whenever this update is applied.\n--\n-- The log table records which businesses were marked, and marks that this\n-- ran (lib/db/migrationMarkers.ts). To undo for one business, untick\n-- \"Test business\" on its admin page.\n\ncreate table public.test_business_marks (\n  merchant_id  uuid primary key references public.merchants (id) on delete cascade,\n  marked_at    timestamptz not null default now()\n);\nalter table public.test_business_marks enable row level security;\n\ninsert into public.test_business_marks (merchant_id)\nselect id from public.merchants\n where created_at < timestamptz '2026-10-17 03:45:00+00'\n   and not is_test;\n\nupdate public.merchants m\n   set is_test = true\n  from public.test_business_marks t\n where t.merchant_id = m.id;\n"
+  },
+  {
+    "file": "20261025000000_table_grants.sql",
+    "sql": "-- Two tables added after the first schema missed the \"revoke all\" every\n-- other table gets (audit of 19 Oct 2026): credit_rescale_log and\n-- test_business_marks. Row level security already kept their rows from the\n-- public roles, but the table grants themselves stayed, TRUNCATE among\n-- them, which row level security doesn't cover. Nothing reads or writes\n-- these tables except the server.\nrevoke all on public.credit_rescale_log from anon, authenticated;\ndo $$\nbegin\n  if to_regclass('public.test_business_marks') is not null then\n    revoke all on public.test_business_marks from anon, authenticated;\n  end if;\nend $$;\n"
   }
 ];

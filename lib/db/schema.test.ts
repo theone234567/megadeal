@@ -118,6 +118,22 @@ describe("the public", () => {
     await db.exec("drop function public.added_later()");
   });
 
+  it("has no table rights beyond reading the categories and the two views", async () => {
+    // Every table added later needs its own "revoke all": a missing one left
+    // full rights (TRUNCATE included, which row level security doesn't stop)
+    // on two tables until the audit of 19 Oct 2026.
+    const rights = (role: string) =>
+      as<{ t: string }>(SERVER, `select c.relname || ' ' || string_agg(priv, ',' order by priv) as t
+                   from pg_class c join pg_namespace n on n.oid = c.relnamespace,
+                        unnest(array['DELETE', 'INSERT', 'SELECT', 'TRUNCATE', 'UPDATE']) priv
+                  where n.nspname = 'public' and c.relkind in ('r', 'v') and has_table_privilege($1, c.oid, priv)
+                  group by c.relname order by 1`, [role]);
+    expect((await rights("anon")).map((r) => r.t)).toEqual(["categories SELECT", "public_businesses SELECT", "public_deals SELECT"]);
+    expect((await rights("authenticated")).map((r) => r.t)).toEqual([
+      "categories SELECT", "deals SELECT", "merchant_activity SELECT", "merchants SELECT", "public_businesses SELECT", "public_deals SELECT",
+    ]);
+  });
+
   it("can't read the tables behind the views", async () => {
     for (const table of ["merchants", "deals", "merchant_activity", "email_signups", "contact_messages", "api_usage_counters"]) {
       await expect(as(PUBLIC, `select * from public.${table}`), table).rejects.toThrow(/permission denied/);

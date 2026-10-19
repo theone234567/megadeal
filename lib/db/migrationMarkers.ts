@@ -22,4 +22,5 @@ export const MIGRATION_MARKERS: { file: string; sql: string }[] = [
   { file: "20261022000000_credit_rescale.sql", sql: "to_regclass('public.credit_rescale_log') is not null" },
   { file: "20261023000000_test_businesses.sql", sql: "exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'merchants' and column_name = 'is_test')" },
   { file: "20261024000000_mark_test_businesses.sql", sql: "to_regclass('public.test_business_marks') is not null" },
+  { file: "20261025000000_table_grants.sql", sql: "not has_table_privilege('anon', 'public.credit_rescale_log', 'truncate')" },
 ];
