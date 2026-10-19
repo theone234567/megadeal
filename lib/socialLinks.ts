@@ -11,7 +11,9 @@ const SOCIAL_HOST_PATTERNS: Record<"facebook" | "instagram", RegExp> = {
  * "facebook.com/yourbusiness" without a leading https://. */
 export function isValidSocialUrl(url: string, platform: "facebook" | "instagram"): boolean {
   if (!url) return true;
-  const candidate = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  // Same scheme rule as isSafeOptionalUrl (and the database).
+  const candidate = /^[a-z][a-z0-9+.-]*:/i.test(url) ? url : `https://${url}`;
+  if (/\s/.test(candidate)) return false;
   let parsed: URL;
   try {
     parsed = new URL(candidate);
@@ -30,7 +32,12 @@ export function isValidSocialUrl(url: string, platform: "facebook" | "instagram"
  * relying on how a display page happens to render the value. */
 export function isSafeOptionalUrl(url: string): boolean {
   if (!url) return true;
-  const candidate = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  // The rule the database applies when it stores a link (lib/db/wixShim.ts
+  // `link`): anything that starts like a scheme ("javascript:", "data:")
+  // has to be http(s) itself, and no spaces. "javascript://%0a…" used to
+  // pass here (as https://javascript//…) and then fail the save with a 500.
+  const candidate = /^[a-z][a-z0-9+.-]*:/i.test(url) ? url : `https://${url}`;
+  if (/\s/.test(candidate)) return false;
   try {
     const parsed = new URL(candidate);
     return parsed.protocol === "https:" || parsed.protocol === "http:";
