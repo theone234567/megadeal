@@ -52,6 +52,7 @@ export default function PrelaunchHome({
         <HomeDeals initialDeals={deals} initialSearch={initialSearch} prelaunch dealsLive={dealsLive} />
       </div>
       <HowItWorks />
+      <LocalDealsIntro />
       <BusinessBand />
     </main>
   );
@@ -141,6 +142,47 @@ function HowItWorks() {
               </details>
             ))}
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * What MegaDeal is, in plain words a search engine or an AI tool can quote:
+ * the city, the kinds of deal, the places, how it works and that it's free.
+ * Before this the page said little a shopper would search for (SEO audit
+ * of 19 Oct 2026).
+ */
+function LocalDealsIntro() {
+  return (
+    <section aria-labelledby="local-deals-heading" className="mx-auto max-w-[1200px] px-4 pt-10 sm:px-6 lg:px-8 lg:pt-12">
+      <div className="max-w-3xl">
+        <h2 id="local-deals-heading" className="font-display text-[1.5rem] font-bold leading-tight text-hp-ink lg:text-[1.75rem]">
+          Local deals across Auckland
+        </h2>
+        <div className="mt-3 space-y-3 text-sm leading-relaxed text-hp-muted sm:text-[0.9375rem]">
+          <p>
+            MegaDeal is a new deals site for Auckland, made for finding good-value offers from local businesses near you:
+            restaurant and café deals, spa and beauty treatments, things to do, getaways, fitness classes, and home and car
+            services. From the CBD and Ponsonby to Takapuna, Newmarket, Mt Eden, Parnell, Devonport, Henderson, Botany and
+            Manukau.
+          </p>
+          <p>
+            It&apos;s free for shoppers and there are no vouchers to buy. Pick a deal, get its code, then book or visit the
+            business and quote the code. You pay the business at the deal price, so your money goes straight to them. Flash
+            Deals run for a few hours and Everyday Deals for up to a month, and Near me shows what&apos;s close by.{" "}
+            <Link href="/how-it-works" className="font-semibold text-hp-purple underline-offset-2 hover:underline">
+              How MegaDeal works
+            </Link>
+          </p>
+          <p>
+            We&apos;re building our launch line-up now. Run a local business?{" "}
+            <Link href="/list-your-business" className="font-semibold text-hp-purple underline-offset-2 hover:underline">
+              List your deals free during prelaunch
+            </Link>
+            .
+          </p>
         </div>
       </div>
     </section>

@@ -4,7 +4,6 @@ import HomeDeals from "./HomeDeals";
 import { fetchAllLiveDealsServer, fetchTestBusinessDeals } from "@/lib/fetchDealServer";
 import type { Metadata } from "next";
 import { SITE_URL, SITE_NAME, SITE_LAUNCHED, PRELAUNCH_HOME, DEALS_OPEN } from "@/lib/siteConfig";
-import { PRELAUNCH_PROMO } from "@/lib/promo";
 import PrelaunchHome from "./PrelaunchHome";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { hasFilterParams, toSearchString } from "@/lib/homeFilters";
@@ -15,10 +14,14 @@ const HOME_TITLE = `${SITE_NAME} — Local Deals Up to 50% Off in Auckland & NZ`
 const HOME_DESCRIPTION =
   "Local deals up to 50% off at Auckland restaurants, spas, activities and getaways. No vouchers to buy — contact the business directly and pay them, not us.";
 
-// Before launch (PRELAUNCH_HOME): what the page really is, a launch lineup
-// being built, not deals to claim today.
-const PRELAUNCH_TITLE = `${SITE_NAME} — Big local deals are coming to Auckland`;
-const PRELAUNCH_DESCRIPTION = `Auckland's new local deals site. Businesses advertise free during prelaunch, then up to ${PRELAUNCH_PROMO.months} months free from launch. Restaurants, spas, activities and more.`;
+// Before launch (PRELAUNCH_HOME): what shoppers search for first (Auckland,
+// the kinds of deal), then what's true now: free to use, and businesses
+// list free. The earlier "coming to Auckland" title and a description
+// written for businesses gave a shopper's search nothing to match (SEO
+// audit of 19 Oct 2026).
+const PRELAUNCH_TITLE = `Auckland Local Deals: Restaurants, Spas & More | ${SITE_NAME}`;
+const PRELAUNCH_DESCRIPTION =
+  "Auckland's new local deals site: restaurants, cafés, spas, activities and getaways near you. Free for shoppers, no vouchers to buy. Businesses list free now.";
 
 // Before launch this is the public prelaunch homepage (PRELAUNCH_HOME,
 // app/PrelaunchHome.tsx), or, with that switched off, reachable only by an

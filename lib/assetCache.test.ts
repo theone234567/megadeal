@@ -62,9 +62,10 @@ describe("page edge cache", () => {
   const page = (body = "<html>terms</html>", headers: Record<string, string> = {}) =>
     new Response(body, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache, must-revalidate", ...headers } });
 
-  it("keeps fixed pages an hour and the deal listings a minute, nothing private", () => {
+  it("keeps fixed pages an hour, the homepage five minutes, the Auckland listings a minute, nothing private", () => {
     for (const p of ["/terms", "/help", "/list-your-business", "/advertise/home-car", "/robots.txt"]) expect(pageEdgeSeconds(p), p).toBe(3600);
-    for (const p of ["/", "/auckland", "/auckland/food-drink"]) expect(pageEdgeSeconds(p), p).toBe(60);
+    expect(pageEdgeSeconds("/")).toBe(300);
+    for (const p of ["/auckland", "/auckland/food-drink"]) expect(pageEdgeSeconds(p), p).toBe(60);
     for (const p of ["/portal", "/admin", "/api/version", "/deal/pizza", "/business/x", "/reset-password", "/stop-emails", "/unsubscribe", "/auckland/x/y"]) {
       expect(pageEdgeSeconds(p), p).toBe(0);
     }

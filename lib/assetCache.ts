@@ -57,8 +57,11 @@ export async function withEdgeCache(
  * Search Console reporting a server error (audit of 19 Oct 2026).
  *
  * The fixed pages (built once per deploy) are kept for an hour; the
- * homepage and the Auckland pages, which list live deals, for a minute,
- * the same as the deal listing's own cache. Each copy belongs to one
+ * Auckland pages, which list live deals, for a minute, the same as the
+ * deal listing's own cache; the homepage for five minutes, since it's
+ * where most visits start and on a quiet site a one-minute copy has
+ * usually expired before the next visitor (owner's choice, 19 Oct 2026),
+ * so a newly approved deal can take up to five minutes to show there. Each copy belongs to one
  * deploy (`version`), so a new deploy never serves a page pointing at
  * scripts that are gone.
  */
@@ -73,6 +76,7 @@ const LISTING_PAGES = /^\/(?:auckland(?:\/[a-z-]+)?)?$/;
 /** How long a page may be served from the edge, in seconds, or 0 for never. */
 export function pageEdgeSeconds(pathname: string): number {
   if (FIXED_PAGES.has(pathname)) return 60 * 60;
+  if (pathname === "/") return 5 * 60;
   if (LISTING_PAGES.test(pathname)) return 60;
   return 0;
 }
