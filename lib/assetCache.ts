@@ -130,3 +130,40 @@ export async function withPageEdgeCache(
   }
   return res;
 }
+
+/** Share images, icons and the favicon that Next draws at build time. */
+export const PREBUILT_PATH = /(?:^|\/)(?:opengraph-image|twitter-image)$|^\/(?:apple-)?icon\.png$|^\/favicon\.ico$/;
+
+interface AssetFetcher {
+  fetch(req: Request): Promise<Response>;
+}
+
+/**
+ * Answers a share image or icon with the copy drawn at build time
+ * (scripts/prebuilt-images.mjs puts them in the Worker's static assets),
+ * so it's never drawn on a visit. Drawing a PNG is the heaviest work the
+ * site does, and on Cloudflare's CPU limit it sometimes failed: Search
+ * Console reported /opengraph-image as a server error (Oct 2026). Anything
+ * without a copy (a deal's own share image) goes on to `handle`.
+ */
+export async function withPrebuiltImage(
+  req: Request,
+  assets: AssetFetcher | undefined,
+  handle: (req: Request) => Promise<Response>
+): Promise<Response> {
+  const url = new URL(req.url);
+  if (!assets || (req.method !== "GET" && req.method !== "HEAD") || !PREBUILT_PATH.test(url.pathname)) return handle(req);
+  const file = /\.(?:png|ico)$/.test(url.pathname) ? url.pathname : `${url.pathname}.png`;
+  const found = await assets.fetch(new Request(new URL(`/cdn-cgi/_prebuilt${file}`, url.origin))).catch(() => undefined);
+  if (!found || found.status !== 200) {
+    await found?.body?.cancel().catch(() => {});
+    return handle(req);
+  }
+  const res = new Response(req.method === "HEAD" ? null : found.body, { status: 200 });
+  res.headers.set("Content-Type", file.endsWith(".ico") ? "image/x-icon" : "image/png");
+  res.headers.set("Cache-Control", `public, max-age=${ONE_DAY}`);
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  // Shows in a response which copy answered (checking a deploy).
+  res.headers.set("X-MegaDeal-Image", "prebuilt");
+  return res;
+}

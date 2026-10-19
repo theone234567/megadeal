@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EDGE_CACHED_PATH, pageEdgeSeconds, withEdgeCache, withPageEdgeCache } from "./assetCache";
+import { EDGE_CACHED_PATH, pageEdgeSeconds, withEdgeCache, withPageEdgeCache, withPrebuiltImage } from "./assetCache";
 
 /** Share images and icons, kept at the edge for a day (worker.mjs). */
 
@@ -120,5 +120,41 @@ describe("page edge cache", () => {
     for (const a of answers) await withPageEdgeCache(new Request("https://megadeal.co.nz/"), c, cache, "v1", async () => a);
     await Promise.all(c.pending);
     expect(cache.store.size).toBe(0);
+  });
+});
+
+describe("prebuilt images", () => {
+  const assets = (files: Record<string, string>) => {
+    const asked: string[] = [];
+    return {
+      asked,
+      fetch: async (r: Request) => {
+        const p = new URL(r.url).pathname;
+        asked.push(p);
+        return p in files ? new Response(files[p], { status: 200 }) : new Response("", { status: 404 });
+      },
+    };
+  };
+
+  it("answers share images and icons with the copy drawn at build time, without drawing", async () => {
+    const a = assets({ "/cdn-cgi/_prebuilt/opengraph-image.png": "og", "/cdn-cgi/_prebuilt/advertise/home-car/opengraph-image.png": "car", "/cdn-cgi/_prebuilt/icon.png": "icon", "/cdn-cgi/_prebuilt/favicon.ico": "ico" });
+    const draw = async () => new Response("drawn");
+    const og = await withPrebuiltImage(new Request("https://megadeal.co.nz/opengraph-image?9ccc"), a, draw);
+    expect(await og.text()).toBe("og");
+    expect(og.headers.get("content-type")).toBe("image/png");
+    expect(og.headers.get("cache-control")).toBe("public, max-age=86400");
+    expect(await (await withPrebuiltImage(new Request("https://megadeal.co.nz/advertise/home-car/opengraph-image"), a, draw)).text()).toBe("car");
+    expect(await (await withPrebuiltImage(new Request("https://megadeal.co.nz/icon.png"), a, draw)).text()).toBe("icon");
+    const ico = await withPrebuiltImage(new Request("https://megadeal.co.nz/favicon.ico"), a, draw);
+    expect(ico.headers.get("content-type")).toBe("image/x-icon");
+  });
+
+  it("draws as before when there's no copy, and leaves everything else alone", async () => {
+    const a = assets({});
+    const draw = async () => new Response("drawn");
+    expect(await (await withPrebuiltImage(new Request("https://megadeal.co.nz/deal/pizza/opengraph-image"), a, draw)).text()).toBe("drawn");
+    expect(await (await withPrebuiltImage(new Request("https://megadeal.co.nz/terms"), a, draw)).text()).toBe("drawn");
+    expect(await (await withPrebuiltImage(new Request("https://megadeal.co.nz/opengraph-image"), undefined, draw)).text()).toBe("drawn");
+    expect(a.asked).toEqual(["/cdn-cgi/_prebuilt/deal/pizza/opengraph-image.png"]);
   });
 });

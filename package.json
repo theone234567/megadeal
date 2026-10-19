@@ -9,9 +9,9 @@
     "build": "node scripts/generate-megadeal-manifest.mjs && next build",
     "start": "next start",
     "lint": "eslint .",
-    "cf:build": "node scripts/generate-megadeal-manifest.mjs && opennextjs-cloudflare build",
-    "cf:preview": "node scripts/generate-megadeal-manifest.mjs && opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "cf:deploy": "node scripts/generate-megadeal-manifest.mjs && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf:build": "node scripts/generate-megadeal-manifest.mjs && opennextjs-cloudflare build && node scripts/prebuilt-images.mjs",
+    "cf:preview": "node scripts/generate-megadeal-manifest.mjs && opennextjs-cloudflare build && node scripts/prebuilt-images.mjs && opennextjs-cloudflare preview",
+    "cf:deploy": "node scripts/generate-megadeal-manifest.mjs && opennextjs-cloudflare build && node scripts/prebuilt-images.mjs && opennextjs-cloudflare deploy",
     "screenshots": "node scripts/capture-screenshots.mjs"
   },
   "dependencies": {
