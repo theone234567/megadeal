@@ -187,6 +187,8 @@ export default function Footer({
               <li><Link prefetch={false} href="/help" className="inline-block py-1 hover:text-brand-700">Help centre</Link></li>
               <li><Link prefetch={false} href="/redeem" className="inline-block py-1 hover:text-brand-700">How to redeem a deal</Link></li>
               <li><Link prefetch={false} href="/refund-policy" className="inline-block py-1 hover:text-brand-700">Refund policy</Link></li>
+              <li><Link prefetch={false} href="/privacy" className="inline-block py-1 hover:text-brand-700">Privacy policy</Link></li>
+              <li><Link prefetch={false} href="/terms" className="inline-block py-1 hover:text-brand-700">Terms of service</Link></li>
               <li><Link prefetch={false} href="/contact" className="inline-block py-1 hover:text-brand-700">Contact us</Link></li>
               {/* No visible link to /developers: the deals feed is for AI tools and
                   search engines, which find it through llms.txt, the sitemap and
