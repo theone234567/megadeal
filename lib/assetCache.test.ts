@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EDGE_CACHED_PATH, withEdgeCache } from "./assetCache";
+import { EDGE_CACHED_PATH, pageEdgeSeconds, withEdgeCache, withPageEdgeCache } from "./assetCache";
 
 /** Share images and icons, kept at the edge for a day (worker.mjs). */
 
@@ -55,5 +55,70 @@ describe("edge cache", () => {
   it("works without a cache (local development)", async () => {
     const res = await withEdgeCache(new Request("https://megadeal.co.nz/icon.png"), ctx(), undefined, async () => new Response("icon"));
     expect(await res.text()).toBe("icon");
+  });
+});
+
+describe("page edge cache", () => {
+  const page = (body = "<html>terms</html>", headers: Record<string, string> = {}) =>
+    new Response(body, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache, must-revalidate", ...headers } });
+
+  it("keeps fixed pages an hour and the deal listings a minute, nothing private", () => {
+    for (const p of ["/terms", "/help", "/list-your-business", "/advertise/home-car", "/robots.txt"]) expect(pageEdgeSeconds(p), p).toBe(3600);
+    for (const p of ["/", "/auckland", "/auckland/food-drink"]) expect(pageEdgeSeconds(p), p).toBe(60);
+    for (const p of ["/portal", "/admin", "/api/version", "/deal/pizza", "/business/x", "/reset-password", "/stop-emails", "/unsubscribe", "/auckland/x/y"]) {
+      expect(pageEdgeSeconds(p), p).toBe(0);
+    }
+  });
+
+  it("renders a page once per deploy, and gives the browser the page's own caching rule", async () => {
+    const cache = fakeCache();
+    let rendered = 0;
+    const handle = async () => (rendered++, page());
+    const c = ctx();
+    await withPageEdgeCache(new Request("https://megadeal.co.nz/terms"), c, cache, "v1", handle);
+    await Promise.all(c.pending);
+    const again = await withPageEdgeCache(new Request("https://megadeal.co.nz/terms"), ctx(), cache, "v1", handle);
+    expect(await again.text()).toBe("<html>terms</html>");
+    expect(again.headers.get("cache-control")).toBe("no-cache, must-revalidate");
+    expect(again.headers.get("x-md-browser-cache-control")).toBeNull();
+    expect(rendered).toBe(1);
+    // A new deploy starts afresh.
+    await withPageEdgeCache(new Request("https://megadeal.co.nz/terms"), ctx(), cache, "v2", handle);
+    expect(rendered).toBe(2);
+  });
+
+  it("goes straight to the site for anyone signed in, any query, Next's navigation, and without a deploy id", async () => {
+    const cache = fakeCache();
+    let rendered = 0;
+    const handle = async () => (rendered++, page());
+    const c = ctx();
+    const asks = [
+      new Request("https://megadeal.co.nz/", { headers: { cookie: "theme=x; admin_session=abc" } }),
+      new Request("https://megadeal.co.nz/", { headers: { cookie: "md_access=jwt" } }),
+      new Request("https://megadeal.co.nz/?q=pizza"),
+      new Request("https://megadeal.co.nz/list-your-business?ref=MD123456"),
+      new Request("https://megadeal.co.nz/terms", { headers: { rsc: "1" } }),
+      new Request("https://megadeal.co.nz/terms", { method: "POST", body: "x" }),
+    ];
+    for (const r of asks) await withPageEdgeCache(r, c, cache, "v1", handle);
+    await withPageEdgeCache(new Request("https://megadeal.co.nz/terms"), c, cache, undefined, handle);
+    await Promise.all(c.pending);
+    expect(cache.store.size).toBe(0);
+    expect(rendered).toBe(7);
+  });
+
+  it("never keeps an error, a redirect, a private answer or one setting a cookie", async () => {
+    const cache = fakeCache();
+    const c = ctx();
+    const answers = [
+      new Response("err", { status: 503 }),
+      new Response(null, { status: 307, headers: { Location: "/coming-soon" } }),
+      page("x", { "Cache-Control": "private, no-store" }),
+      page("x", { "Set-Cookie": "a=b" }),
+      new Response("png", { status: 200, headers: { "Content-Type": "image/png" } }),
+    ];
+    for (const a of answers) await withPageEdgeCache(new Request("https://megadeal.co.nz/"), c, cache, "v1", async () => a);
+    await Promise.all(c.pending);
+    expect(cache.store.size).toBe(0);
   });
 });

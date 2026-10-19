@@ -8,7 +8,7 @@
 
 import site from "./.open-next/worker.js";
 import { runScheduledJob } from "./lib/scheduledJobs.ts";
-import { withEdgeCache } from "./lib/assetCache.ts";
+import { withEdgeCache, withPageEdgeCache } from "./lib/assetCache.ts";
 
 // OpenNext's Durable Object classes, re-exported as its docs ask of a
 // custom entry (unused unless bound in wrangler.toml).
@@ -17,7 +17,9 @@ export { DOQueueHandler, DOShardedTagCache, BucketCachePurge } from "./.open-nex
 export default {
   fetch(req, env, ctx) {
     const cache = globalThis.caches?.default;
-    return withEdgeCache(req, ctx, cache, (r) => site.fetch(r, env, ctx));
+    // This deploy's id (wrangler.toml version_metadata): page copies are kept per deploy.
+    const version = env.CF_VERSION_METADATA?.id;
+    return withEdgeCache(req, ctx, cache, (r) => withPageEdgeCache(r, ctx, cache, version, (p) => site.fetch(p, env, ctx)));
   },
 
   async scheduled(controller, env, ctx) {

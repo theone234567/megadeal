@@ -59,6 +59,11 @@ binding = "HYPERDRIVE"
 id = "acdb74bed4044d03a2152af6d690f126"
 localConnectionString = "postgresql://postgres:postgres@localhost:5432/postgres"
 
+# The id of the deploy a request runs on: the edge copies of pages are kept
+# per deploy (lib/assetCache.ts withPageEdgeCache).
+[version_metadata]
+binding = "CF_VERSION_METADATA"
+
 [observability]
 enabled = true
 head_sampling_rate = 1
