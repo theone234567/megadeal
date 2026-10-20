@@ -8,7 +8,8 @@ import type { Deal } from "@/lib/types";
 import { useWithTestDeals } from "@/lib/useTestDeals";
 import { useUserLocation, type Coords, type LocationStatus } from "@/lib/geo";
 import { pushUrl, useUrlSearch } from "@/lib/useUrlSearch";
-import { categoryBySlug } from "@/lib/categories";
+import { CATEGORIES, categoryBySlug } from "@/lib/categories";
+import { HOME_SORT_OPTIONS } from "@/lib/sortDeals";
 import { DEFAULT_CITY } from "@/lib/cities";
 import {
   DISTANCE_OPTIONS,
@@ -165,6 +166,13 @@ export default function HomeDeals({
           .filter((d) => d.inStock !== false)
           .slice(0, 4)
       : [];
+  // Live deals in each category, for the category row's order (busiest
+  // first). Counted over everything live, not the current search, so the
+  // row doesn't reshuffle as the visitor filters.
+  const live = matchDeals(allDeals, parseHomeFilters(new URLSearchParams()), now);
+  const categoryCounts = Object.fromEntries(
+    CATEGORIES.map((c) => [c.slug, live.filter((d) => d.categories.includes(c.name)).length])
+  );
   const countFor = (panel: PanelFilters) =>
     filterByType(matchDeals(allDeals, { ...filters, ...panel }, now, coords), filters.type).length;
 
@@ -181,7 +189,14 @@ export default function HomeDeals({
       {filters.q && <h1 className="sr-only">Search results for {filters.q}</h1>}
 
       <div className="mt-2 lg:mt-3">
-        <CategoryNav mode="filter" filters={filters} basePath={basePath} onNavigate={navigate} homeLinks={prelaunch && !dealsLive} />
+        <CategoryNav
+          mode="filter"
+          filters={filters}
+          basePath={basePath}
+          onNavigate={navigate}
+          homeLinks={prelaunch && !dealsLive}
+          counts={categoryCounts}
+        />
       </div>
 
       <Toolbar
@@ -326,7 +341,7 @@ function Toolbar({
       {/* On a phone, four equal buttons in one row: text only, so each
           fits from 360px; the icons come back from a tablet up. */}
       <div className={`grid gap-1.5 md:ml-auto md:flex md:items-center md:gap-2.5 ${showMap ? "grid-cols-4" : "grid-cols-3"}`}>
-        <NearMeButton active={filters.sort === "nearest"} onClick={() => set({ sort: filters.sort === "nearest" ? "ending" : "nearest" })} />
+        <NearMeButton active={filters.sort === "nearest"} onClick={() => set({ sort: filters.sort === "nearest" ? "recommended" : "nearest" })} />
         <FilterPanel
           filters={filters}
           onApply={(panel) => set(panel)}
@@ -336,7 +351,7 @@ function Toolbar({
           openerRef={filtersButtonRef}
         />
 
-        <SortSelect value={filters.sort} onChange={(sort) => set({ sort })} shortOnPhone />
+        <SortSelect value={filters.sort} onChange={(sort) => set({ sort })} shortOnPhone options={HOME_SORT_OPTIONS} />
         {showMap && <ViewToggle value={filters.view} onChange={(view) => set({ view })} />}
       </div>
     </div>

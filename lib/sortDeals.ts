@@ -1,14 +1,22 @@
 import type { Deal } from "./types";
 import { haversineDistanceKm, type Coords } from "./geo";
 
-export type SortOption = "ending" | "discount" | "priceAsc" | "priceDesc" | "nearest";
+export type SortOption = "recommended" | "ending" | "discount" | "priceAsc" | "priceDesc" | "nearest";
 
+/** The category and flash-deal pages' sorts. */
 export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "ending", label: "Ending soon" },
   { value: "discount", label: "Biggest discount" },
   { value: "priceAsc", label: "Price: low to high" },
   { value: "priceDesc", label: "Price: high to low" },
   { value: "nearest", label: "📍 Nearest to me" },
+];
+
+/** The homepage's sorts: "Recommended" (every category taking turns, see
+ *  `mixCategories`) first, as its default, then the rest. */
+export const HOME_SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "recommended", label: "Recommended" },
+  ...SORT_OPTIONS,
 ];
 
 /** Distance from the user to a deal's business, in km — null if either side
@@ -26,7 +34,37 @@ export function soldOutLast<T extends Pick<Deal, "inStock">>(deals: T[]): T[] {
   return [...deals.filter((d) => d.inStock !== false), ...deals.filter((d) => d.inStock === false)];
 }
 
+const endsAt = (d: Deal) => (d.expiresAt ? new Date(d.expiresAt).getTime() : Infinity);
+
+/**
+ * Every category taking turns, so the first screen of deals shows each
+ * category with something live rather than whichever one has the most
+ * deals or the shortest ones. Each round takes the next deal from every
+ * category, soonest-ending first within the round, so Flash Deals still
+ * come early. A deal counts under its first category.
+ */
+export function mixCategories(deals: Deal[]): Deal[] {
+  const groups = new Map<string, Deal[]>();
+  for (const d of [...deals].sort((a, b) => endsAt(a) - endsAt(b))) {
+    const key = d.categories?.[0] ?? "";
+    const group = groups.get(key);
+    if (group) group.push(d);
+    else groups.set(key, [d]);
+  }
+  const mixed: Deal[] = [];
+  for (let round = 0; mixed.length < deals.length; round++) {
+    const heads = [...groups.values()].flatMap((g) => (g[round] ? [g[round]] : []));
+    mixed.push(...heads.sort((a, b) => endsAt(a) - endsAt(b)));
+  }
+  return mixed;
+}
+
 export function sortDeals(deals: Deal[], sort: SortOption, userLocation: Coords | null = null): Deal[] {
+  if (sort === "recommended") {
+    // Mixed separately, so a sold-out deal never takes its category's turn.
+    const [available, soldOut] = [deals.filter((d) => d.inStock !== false), deals.filter((d) => d.inStock === false)];
+    return [...mixCategories(available), ...mixCategories(soldOut)];
+  }
   const sorted = [...deals];
   switch (sort) {
     case "priceAsc":
@@ -49,11 +87,7 @@ export function sortDeals(deals: Deal[], sort: SortOption, userLocation: Coords 
       break;
     case "ending":
     default:
-      sorted.sort((a, b) => {
-        const aTime = a.expiresAt ? new Date(a.expiresAt).getTime() : Infinity;
-        const bTime = b.expiresAt ? new Date(b.expiresAt).getTime() : Infinity;
-        return aTime - bTime;
-      });
+      sorted.sort((a, b) => endsAt(a) - endsAt(b));
       break;
   }
   return soldOutLast(sorted);

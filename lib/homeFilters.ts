@@ -42,7 +42,7 @@ export const PRICE_BANDS: { value: PriceBand; label: string; min: number; max: n
 
 export const DISTANCE_OPTIONS = [2, 5, 10, 25] as const;
 
-const SORTS: SortOption[] = ["ending", "discount", "priceAsc", "priceDesc", "nearest"];
+const SORTS: SortOption[] = ["recommended", "ending", "discount", "priceAsc", "priceDesc", "nearest"];
 const TYPES: DealType[] = ["all", "everyday", "flash"];
 
 type ParamSource = { get(name: string): string | null };
@@ -60,7 +60,7 @@ export function parseHomeFilters(params: ParamSource): HomeFilters {
     category: categoryBySlug(category) ? category : "",
     type: TYPES.includes(type) ? type : "all",
     price: PRICE_BANDS.some((b) => b.value === price) ? price : "",
-    sort: SORTS.includes(sort) ? sort : "ending",
+    sort: SORTS.includes(sort) ? sort : "recommended",
     within: (DISTANCE_OPTIONS as readonly number[]).includes(within) ? within : null,
     view: get("view") === "map" ? "map" : "grid",
   };
@@ -78,7 +78,7 @@ export function homeHref(filters: HomeFilters, patch: Partial<HomeFilters> = {},
   if (f.type !== "all") params.set("type", f.type);
   if (f.price) params.set("price", f.price);
   if (f.within) params.set("within", String(f.within));
-  if (f.sort !== "ending") params.set("sort", f.sort);
+  if (f.sort !== "recommended") params.set("sort", f.sort);
   if (f.view === "map") params.set("view", "map");
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;

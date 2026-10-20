@@ -60,7 +60,7 @@ describe("parseHomeFilters", () => {
     const f = parseHomeFilters(params("q=pizza&category=food-drink&type=flash&price=under25&sort=priceAsc&within=5"));
     expect(f).toMatchObject({ q: "pizza", category: "food-drink", type: "flash", price: "under25", sort: "priceAsc", within: 5 });
     const junk = parseHomeFilters(params("category=megashop&type=saved&price=cheap&sort=random&within=7"));
-    expect(junk).toMatchObject({ category: "", type: "all", price: "", sort: "ending", within: null });
+    expect(junk).toMatchObject({ category: "", type: "all", price: "", sort: "recommended", within: null });
   });
 });
 
