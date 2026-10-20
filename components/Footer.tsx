@@ -197,12 +197,10 @@ export default function Footer({
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-slate-200 pt-6 sm:flex-row">
+        {/* Terms and Privacy live in the Support column above, where people
+            look for them; one link each keeps the footer from repeating. */}
+        <div className="mt-10 border-t border-slate-200 pt-6">
           <p className="text-center text-sm text-slate-500 sm:text-left">© {new Date().getFullYear()} {LEGAL_ENTITY_NAME}. All rights reserved.</p>
-          <div className="flex gap-4 text-sm text-slate-500">
-            <Link prefetch={false} href="/terms" className="inline-block py-1 hover:text-brand-700">Terms</Link>
-            <Link prefetch={false} href="/privacy" className="inline-block py-1 hover:text-brand-700">Privacy</Link>
-          </div>
         </div>
       </div>
     </footer>
