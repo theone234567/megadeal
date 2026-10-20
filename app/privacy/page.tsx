@@ -28,9 +28,12 @@ export default function PrivacyPage() {
       <h2>Information we collect</h2>
       <ul>
         <li>
-          <strong>Usage data</strong> — pages viewed, deals browsed, and
-          general device/browser information, used to keep the site working
-          well and to improve which deals we feature.
+          <strong>Usage data</strong> — pages viewed, deals browsed, general
+          device/browser information, and your IP address, used to keep the
+          site working well and to improve which deals we feature. We also
+          use IP addresses to stop repeated or automated sign-up, sign-in
+          and contact-form attempts; for that they&apos;re kept only in
+          scrambled (hashed) form, and only for a short time.
         </li>
         <li>
           <strong>Account and business details</strong> — if you sign up to
@@ -89,11 +92,14 @@ export default function PrivacyPage() {
         We use a small number of specialist providers to run the site, and
         some personal information is processed by them on our behalf. This
         includes our database and business-login provider (Supabase, which
-        stores our data in Sydney, Australia), Wix.com (our previous
-        provider, which keeps a copy of our earlier records until our account
-        with it closes), our email delivery provider (Resend), our website
-        hosting, security and photo
-        storage provider (Cloudflare), Google&apos;s Places API
+        stores our data in Sydney, Australia), our email delivery provider
+        (Resend), our website hosting, security and photo storage provider
+        (Cloudflare, which also runs the bot check on our forms), Anthropic,
+        whose AI gives every new deal and deal photo a first check before it
+        goes live (it receives the deal&apos;s wording, its photo and the
+        business&apos;s trading name, which are all shown publicly once the
+        deal is approved, and processes them in the United States),
+        Google&apos;s Places API
         for business-address autocomplete, Google Analytics for site
         traffic reporting, and Meta (Facebook/Instagram) for ad measurement
         — see &quot;Cookies, analytics and advertising&quot; below.
@@ -159,10 +165,11 @@ export default function PrivacyPage() {
       <p>
         Alongside the Pixel, we may also send Meta a small amount of
         signup information directly from our own servers when a business
-        registers — known as Meta&apos;s Conversions API. Meta only ever
-        receives your email address and phone number in hashed
-        (non-readable) form, never as plain text, along with which ad
-        campaign (if any) brought you to the site. Because this runs on
+        registers — known as Meta&apos;s Conversions API. Meta receives your
+        email address and phone number only in hashed (non-readable) form,
+        never as plain text. It also receives your IP address and browser
+        type, Meta&apos;s own cookie IDs if your browser has them, and which
+        ad campaign (if any) brought you to the site. Because this runs on
         our server rather than in your browser, it isn&apos;t affected by
         browser tracking-protection or ad-blocking tools the way the Pixel
         is — the{" "}
