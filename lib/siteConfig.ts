@@ -113,6 +113,9 @@ export const LEGAL_ENTITY_NAME = "MegaDeal Limited";
 /** MegaDeal Limited's NZBN. Left empty, the pages name the company
  *  without one. */
 export const LEGAL_ENTITY_NZBN = "9429052744594";
+/** MegaDeal's founder, as he signs the note on /list-your-business
+ *  (components/FounderNote.tsx), /about and the Organization data. */
+export const FOUNDER_NAME = "Nick White";
 
 /**
  * Which coming-soon design /coming-soon shows: "v2" (the Coming Soon pack

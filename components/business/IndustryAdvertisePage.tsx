@@ -3,7 +3,7 @@ import Link from "next/link";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
 import { MapPinIcon, MegaphoneIcon, PercentIcon, UnlockIcon } from "@/components/icons";
-import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { ORGANIZATION_ID, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
@@ -139,7 +139,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
             serviceType: c.service.type,
             name: `${SITE_NAME} ${c.service.type.toLowerCase()}`,
             description: c.service.description,
-            provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+            provider: { "@id": ORGANIZATION_ID, "@type": "Organization", name: SITE_NAME, url: SITE_URL },
             areaServed: { "@type": "City", name: "Auckland" },
             audience: { "@type": "BusinessAudience", audienceType: c.service.audience },
             url: `${SITE_URL}${c.path}`,

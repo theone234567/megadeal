@@ -286,7 +286,9 @@ export default async function BusinessProfilePage(
         <div className="relative mt-4 aspect-[3/1] w-full overflow-hidden rounded-2xl bg-slate-100 sm:aspect-[4/1] lg:mt-5">
           <Image
             src={wixImageUrl(cover, 1200, 800)}
-            alt=""
+            // The business's own photo, named for image search and screen
+            // readers: "Forno Ponsonby, Ponsonby, Auckland".
+            alt={[business.businessName, place].filter(Boolean).join(", ")}
             fill
             priority
             sizes="(min-width: 1200px) 1136px, 100vw"

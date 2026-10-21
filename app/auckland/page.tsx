@@ -32,7 +32,7 @@ const PER_SECTION = 4;
 
 export async function generateMetadata(): Promise<Metadata> {
   const deals = await fetchAllLiveDealsServer();
-  const title = SAVING_CLAIM ? `Deals in ${CITY} — Local Offers Up to 50% Off` : `Deals in ${CITY} — Local Offers from ${CITY} Businesses`;
+  const title = SAVING_CLAIM ? `Deals in ${CITY} — Local Offers Up to 50% Off` : `Deals in ${CITY} from Local Businesses`;
   // Under 160 characters, so search results show it whole.
   const description = `Today's deals from ${CITY} businesses: food, beauty, activities, getaways, fitness and home services. Claim directly with the business; no coupons to buy.`;
   const url = `${SITE_URL}${cityPath()}`;

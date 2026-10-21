@@ -7,7 +7,7 @@ import EmailSignupForm from "@/components/EmailSignupForm";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
 import MerchantSignupForm from "./MerchantSignupForm";
-import { SITE_URL, SITE_NAME, SITE_LAUNCHED, LIST_BUSINESS_DESIGN } from "@/lib/siteConfig";
+import { ORGANIZATION_ID, SITE_URL, SITE_NAME, SITE_LAUNCHED, LIST_BUSINESS_DESIGN } from "@/lib/siteConfig";
 import BusinessLandingV2 from "@/components/business/BusinessLandingV2";
 import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
@@ -329,7 +329,7 @@ export default async function MerchantsPage() {
             name: `${SITE_NAME} business advertising`,
             description:
               "Zero-commission advertising for local New Zealand businesses — customers pay the business directly, and MegaDeal is paid in advertising credits, never a cut of sales.",
-            provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+            provider: { "@id": ORGANIZATION_ID, "@type": "Organization", name: SITE_NAME, url: SITE_URL },
             areaServed: { "@type": "Country", name: "New Zealand" },
             audience: {
               "@type": "BusinessAudience",

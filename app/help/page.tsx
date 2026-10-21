@@ -9,7 +9,7 @@ import { currentPromo } from "@/lib/promo";
 import OpenHashedDetails from "@/components/OpenHashedDetails";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Help Centre",
+  title: "Help Centre: Deals, Codes & Redeeming",
   description:
     "Answers to the most common MegaDeal questions — how deals work, redeeming without a voucher, refunds, and listing a business.",
   path: "/help",

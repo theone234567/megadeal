@@ -17,7 +17,7 @@ import {
   UnlockIcon,
   UsersIcon,
 } from "@/components/icons";
-import { SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { ORGANIZATION_ID, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
@@ -259,7 +259,7 @@ export default function ThingsToDoAdvertisingPage() {
             name: `${SITE_NAME} activity & experience advertising`,
             description:
               "Zero-commission advertising for Auckland tours, outdoor adventures, indoor activities, family experiences, workshops, cruises and day trips. Customers book and pay the business directly.",
-            provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+            provider: { "@id": ORGANIZATION_ID, "@type": "Organization", name: SITE_NAME, url: SITE_URL },
             areaServed: { "@type": "City", name: "Auckland" },
             audience: {
               "@type": "BusinessAudience",

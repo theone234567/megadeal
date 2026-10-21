@@ -24,6 +24,8 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "*", allow: "/", disallow: DISALLOWED },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
-    host: SITE_URL,
+    // No "Host:" line: it was Yandex's, and Google and Bing ignore it. The
+    // preferred address is set by the canonical links and the www → apex
+    // redirect.
   };
 }

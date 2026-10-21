@@ -5,9 +5,10 @@ import { DEALS_OPEN, SITE_LAUNCHED, SITE_NAME } from "@/lib/siteConfig";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { pageMetadata } from "@/lib/pageMetadata";
+import { CATEGORIES } from "@/lib/categories";
 
 export const metadata: Metadata = pageMetadata({
-  title: "How MegaDeal Works",
+  title: "How It Works: Free Local Deals, No Vouchers",
   description:
     "How MegaDeal works: browse local deals for free and contact the business directly to redeem, or list your own deal and reach new customers.",
   path: "/how-it-works",
@@ -26,7 +27,9 @@ const CUSTOMER_STEPS: Step[] = [
   {
     number: "1",
     title: "Find a deal",
-    text: "Browse by category — Food & Drink, Beauty & Spa, Things To Do, Travel & Getaways, Health & Fitness — or search for exactly what you're after. Every deal card shows the discount percentage, the price, and a countdown to when it ends, so you can tell at a glance whether it's worth a closer look.",
+    // From lib/categories.ts, so a new category can't be left out again
+    // (Home & Car was).
+    text: `Browse by category — ${CATEGORIES.map((c) => c.name).join(", ")} — or search for exactly what you're after. Every deal card shows the discount percentage, the price, and a countdown to when it ends, so you can tell at a glance whether it's worth a closer look.`,
   },
   {
     number: "2",

@@ -3,12 +3,12 @@ import Link from "next/link";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { PercentIcon, ClockIcon, EyeIcon, CheckIcon } from "@/components/icons";
 import { pageMetadata } from "@/lib/pageMetadata";
-import { SITE_LAUNCHED } from "@/lib/siteConfig";
+import { FOUNDER_NAME, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN, SITE_LAUNCHED } from "@/lib/siteConfig";
 
 export const metadata: Metadata = pageMetadata({
-  title: "About Us",
+  title: "About Us: Kiwi-Owned Local Deals Site",
   description:
-    "MegaDeal is a New Zealand-owned advertising platform connecting Kiwis with real local businesses across food, beauty, activities, travel and fitness.",
+    "MegaDeal is a New Zealand-owned advertising platform connecting Kiwis with local businesses across food, beauty, activities, travel, fitness, and home & car.",
   path: "/about",
 });
 
@@ -124,24 +124,37 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Where we operate */}
+      {/* Where we operate, and who's behind it */}
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
-            Where we operate
-          </h2>
-          <p className="mt-3 text-slate-600">
-            {SITE_LAUNCHED ? "We're live in Auckland first" : "We're launching in Auckland first"}, with the rest of
-            New Zealand following shortly after — Wellington,
-            Christchurch, Hamilton and Queenstown are next on the list. If
-            there&apos;s a business you love that you&apos;d like to
-            see on MegaDeal, let their owner know — or point them to
-            our{" "}
-            <Link href="/list-your-business" className="font-semibold text-brand-600 hover:underline">
-              business page
-            </Link>
-            .
-          </p>
+        <div className="mx-auto max-w-2xl space-y-10">
+          <div>
+            <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+              Where we operate
+            </h2>
+            <p className="mt-3 text-slate-600">
+              {SITE_LAUNCHED ? "We're live in Auckland first" : "We're launching in Auckland first"}, with the rest of
+              New Zealand following shortly after — Wellington,
+              Christchurch, Hamilton and Queenstown are next on the list. If
+              there&apos;s a business you love that you&apos;d like to
+              see on MegaDeal, let their owner know — or point them to
+              our{" "}
+              <Link href="/list-your-business" className="font-semibold text-brand-600 hover:underline">
+                business page
+              </Link>
+              .
+            </p>
+          </div>
+          {/* Who runs the site: a named founder and a registered company are
+              what customers, businesses and search engines check for. */}
+          <div>
+            <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+              Who&apos;s behind MegaDeal
+            </h2>
+            <p className="mt-3 text-slate-600">
+              MegaDeal is Kiwi-owned. It was founded by {FOUNDER_NAME} and is run by {LEGAL_ENTITY_NAME}, a New Zealand
+              company{LEGAL_ENTITY_NZBN ? ` (NZBN ${LEGAL_ENTITY_NZBN})` : ""}.
+            </p>
+          </div>
         </div>
       </section>
 

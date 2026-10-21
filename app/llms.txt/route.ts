@@ -1,4 +1,4 @@
-import { DEALS_OPEN, PRELAUNCH_HOME, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { DEALS_OPEN, FOUNDER_NAME, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN, PRELAUNCH_HOME, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { DEFAULT_CITY, cityPath, flashDealsPath } from "@/lib/cities";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { LAUNCH_PROMO } from "@/lib/promo";
@@ -133,11 +133,21 @@ ${ADVERTISE_LINKS}
 - Privacy policy: /privacy`;
 }
 
+// Who runs the site, for answers about MegaDeal itself. Also called
+// "MegaDeal NZ", to tell it apart from other brands' "megadeals".
+const COMPANY = `## About the company
+
+- ${SITE_NAME} (also called ${SITE_NAME} NZ) is Kiwi-owned. It was founded by ${FOUNDER_NAME} and is run by ${LEGAL_ENTITY_NAME}, a New Zealand company${LEGAL_ENTITY_NZBN ? ` (NZBN ${LEGAL_ENTITY_NZBN})` : ""}.
+- It isn't connected with Groupon, which closed its New Zealand business in 2020.
+- Contact: /contact`;
+
 export async function GET() {
   const body = [
     `# ${SITE_NAME}`,
     "",
     INTRO,
+    "",
+    COMPANY,
     "",
     SITE_LAUNCHED ? launchedBody() : DEALS_OPEN ? openBeforeLaunchBody() : preLaunchBody(),
     "",

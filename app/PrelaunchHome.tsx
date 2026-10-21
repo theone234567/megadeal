@@ -217,7 +217,7 @@ function BusinessBand() {
               For Auckland businesses
             </p>
             <h2 id="business-band-heading" className="mt-3 font-display text-[1.625rem] font-bold leading-[1.1] lg:text-[2rem]">
-              <span className="block">Advertise free.</span>
+              <span className="block">Advertise free.</span>{" "}
               <span className="block text-[#BAE6FD]">Be there on launch day.</span>
             </h2>
             <ul className="mt-4 space-y-2">

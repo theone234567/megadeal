@@ -8,7 +8,7 @@ import StaleBuildRecovery from "@/components/StaleBuildRecovery";
 import PreviewBanner from "@/components/PreviewBanner";
 import PrelaunchBar from "@/components/PrelaunchBar";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
-import { DEALS_OPEN, LEGAL_ENTITY_NAME, ORGANIZATION_ID, PRELAUNCH_HOME, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/siteConfig";
+import { DEALS_OPEN, FOUNDER_NAME, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN, ORGANIZATION_ID, PRELAUNCH_HOME, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { SEARCH_LOGO } from "@/lib/brand";
 import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
@@ -105,8 +105,17 @@ export default function RootLayout({
               "@type": "Organization",
               "@id": ORGANIZATION_ID,
               name: SITE_NAME,
+              // "MegaDeal" alone is shared with other brands' "megadeals"
+              // offers; the NZ name (its social handles) and the company's
+              // NZBN tell search engines and AI tools which one this is.
+              alternateName: `${SITE_NAME} NZ`,
               // The registered company behind the brand (lib/siteConfig.ts).
               legalName: LEGAL_ENTITY_NAME,
+              ...(LEGAL_ENTITY_NZBN
+                ? { identifier: { "@type": "PropertyValue", propertyID: "NZBN", value: LEGAL_ENTITY_NZBN } }
+                : {}),
+              // As he signs the note on /list-your-business.
+              founder: { "@type": "Person", name: FOUNDER_NAME },
               url: SITE_URL,
               description: SITE_DESCRIPTION,
               areaServed: { "@type": "Country", name: "New Zealand" },
@@ -143,7 +152,13 @@ export default function RootLayout({
               // Deal pages point back to this (lib/dealJsonLd.ts isPartOf).
               "@id": `${SITE_URL}/#website`,
               name: SITE_NAME,
+              // Google reads the site name it shows in results from here;
+              // "MegaDeal NZ" is the fallback it can use if "MegaDeal" alone
+              // is ambiguous.
+              alternateName: `${SITE_NAME} NZ`,
               url: SITE_URL,
+              inLanguage: "en-NZ",
+              publisher: { "@id": ORGANIZATION_ID },
               ...(DEALS_OPEN
                 ? {
                     potentialAction: {

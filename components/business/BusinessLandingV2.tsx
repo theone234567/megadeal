@@ -23,7 +23,7 @@ import { EXAMPLE_BURGER_DEAL } from "@/lib/exampleDeals";
 import { businessPageCopy, OFFER_TERMS_HREF } from "@/lib/businessPageContent";
 import { ADVERTISE_PAGES } from "@/lib/businessLinks";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { ORGANIZATION_ID, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 
 /**
  * The redesigned /list-your-business (Business Page pack, 4 Oct 2026),
@@ -64,7 +64,7 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
             serviceType: "Local business advertising",
             name: `${SITE_NAME} business advertising`,
             description: copy.intro,
-            provider: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+            provider: { "@id": ORGANIZATION_ID, "@type": "Organization", name: SITE_NAME, url: SITE_URL },
             areaServed: { "@type": "City", name: "Auckland" },
             url: `${SITE_URL}/list-your-business`,
           }),

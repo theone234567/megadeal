@@ -6,7 +6,7 @@ import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { pageMetadata } from "@/lib/pageMetadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Contact Us",
+  title: "Contact Us: Help With Deals & Listings",
   description:
     "Get in touch with MegaDeal — questions about a deal, a business listing, or anything else. A real person reads every message.",
   path: "/contact",
