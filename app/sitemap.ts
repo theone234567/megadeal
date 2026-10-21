@@ -5,6 +5,7 @@ import { contentUpdated } from "@/lib/sitemapDates";
 import {
   fetchAllLiveDealSlugsForSitemap,
   fetchAllBusinessSlugsForSitemap,
+  fetchAllLiveDealsServer,
 } from "@/lib/fetchDealServer";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { businessPageIsThin } from "@/lib/businessIndexing";
@@ -118,10 +119,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // /flash-deals draws from the same live-deal catalog as the pages above,
   // and carries the same pre-launch robots:{index:false} gate — belongs
-  // here, not in the unconditional staticPages list above.
-  const flashDealsPage: MetadataRoute.Sitemap = [
-    { url: `${SITE_URL}${flashDealsPath()}`, changeFrequency: "hourly", priority: 0.6 },
-  ];
+  // here, not in the unconditional staticPages list above. Left out while
+  // no flash deal is live: the page is noindexed then, like an empty
+  // category. (The listing read is the page's own, kept for a minute.)
+  const hasFlash = (await fetchAllLiveDealsServer().catch(() => [])).some((d) => d.isFlash);
+  const flashDealsPage: MetadataRoute.Sitemap = hasFlash
+    ? [{ url: `${SITE_URL}${flashDealsPath()}`, changeFrequency: "hourly", priority: 0.6 }]
+    : [];
 
   // The city page lists every live deal in the city, so it's dated by the
   // newest of them, and left out while there are none (it's noindexed

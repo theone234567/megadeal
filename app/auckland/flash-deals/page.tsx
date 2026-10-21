@@ -19,34 +19,41 @@ export const dynamic = "force-dynamic";
 // No "| SITE_NAME" suffix on `title` — the root layout's title.template
 // already appends "| MegaDeal". openGraph/twitter titles aren't run
 // through that template, so those keep the brand-inclusive version.
-export const metadata: Metadata = {
-  title: `Flash Deals in ${DEFAULT_CITY.name} — Short-Burst Offers`,
-  description: `All of ${SITE_NAME}'s current flash deals in one place — short-burst offers that end fast, so grab them while they last.`,
-  alternates: { canonical: `${SITE_URL}${flashDealsPath()}` },
-  // Pre-launch, "/" redirects to /coming-soon so visitors never see a
-  // demo-data-filled deal grid (see DEALS_OPEN in lib/siteConfig.ts)
-  // — but this page is reachable directly regardless, so it needs the
-  // same protection: no browse page should get indexed while the
-  // catalog might still hold pre-launch test data.
-  robots: DEALS_OPEN ? undefined : { index: false, follow: true },
-  openGraph: {
-    title: `Flash Deals | ${SITE_NAME}`,
-    description: "Short-burst offers that end fast — grab them while they last.",
-    url: `${SITE_URL}${flashDealsPath()}`,
-    siteName: SITE_NAME,
-    type: "website",
-    // Named explicitly. Every other page picks up app/opengraph-image.tsx
-    // automatically, but this route's own openGraph block was resolving
-    // without any image, so a shared link came through as a bare grey card
-    // — the one context where the picture is most of the click.
-    images: [`${SITE_URL}/opengraph-image`],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `Flash Deals | ${SITE_NAME}`,
-    images: [`${SITE_URL}/opengraph-image`],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  // Indexed only while there's a live flash deal to show, like the city
+  // and category pages: an empty listing is a thin page. The same cached
+  // read the page itself makes.
+  const deals = await fetchAllLiveDealsServer().catch(() => []);
+  const hasFlash = deals.some((d) => d.isFlash);
+  return {
+    title: `Flash Deals in ${DEFAULT_CITY.name} — Short-Burst Offers`,
+    description: `All of ${SITE_NAME}'s current flash deals in one place — short-burst offers that end fast, so grab them while they last.`,
+    alternates: { canonical: `${SITE_URL}${flashDealsPath()}` },
+    // Pre-launch, "/" redirects to /coming-soon so visitors never see a
+    // demo-data-filled deal grid (see DEALS_OPEN in lib/siteConfig.ts)
+    // — but this page is reachable directly regardless, so it needs the
+    // same protection: no browse page should get indexed while the
+    // catalog might still hold pre-launch test data.
+    robots: DEALS_OPEN && hasFlash ? undefined : { index: false, follow: true },
+    openGraph: {
+      title: `Flash Deals | ${SITE_NAME}`,
+      description: "Short-burst offers that end fast — grab them while they last.",
+      url: `${SITE_URL}${flashDealsPath()}`,
+      siteName: SITE_NAME,
+      type: "website",
+      // Named explicitly. Every other page picks up app/opengraph-image.tsx
+      // automatically, but this route's own openGraph block was resolving
+      // without any image, so a shared link came through as a bare grey card
+      // — the one context where the picture is most of the click.
+      images: [`${SITE_URL}/opengraph-image`],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Flash Deals | ${SITE_NAME}`,
+      images: [`${SITE_URL}/opengraph-image`],
+    },
+  };
+}
 
 export default async function FlashDealsPage() {
   const deals = await fetchAllLiveDealsServer();

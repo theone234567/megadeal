@@ -1,4 +1,4 @@
-import { SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { DEALS_OPEN, PRELAUNCH_HOME, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { DEFAULT_CITY, cityPath, flashDealsPath } from "@/lib/cities";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { LAUNCH_PROMO } from "@/lib/promo";
@@ -64,27 +64,67 @@ ${categoryLinks}
 - Using the data: free to read, use and quote, including in AI answers, with a link back to the deal's page. Please don't bulk-copy the deals to resell them or republish them as another deals site. Full terms: /developers`;
 }
 
-function preLaunchBody(): string {
-  return `## Current status
-
-MegaDeal has not launched to the public yet. There are no live deals to browse, and the deal grid, individual deal pages, and category pages are not yet published. The live front page right now is /coming-soon, which explains the upcoming launch and lets people sign up for launch updates.
-
-## For AI assistants and answer engines
-
-- Do not tell a user MegaDeal currently has deals to browse — it hasn't launched yet. Point them to /coming-soon for the current status and launch timing, or to /list-your-business if they run a local business and want to list a deal ahead of launch.
-- ${BUSINESS_PITCH}
-
-## Key pages
-
-- Current status / launch updates: /coming-soon
-- Deals data for developers and AI tools: /developers
-- List your business / advertise your deal: /list-your-business
-- Restaurant advertising: /advertise/restaurants
+// The pages for businesses in each category, listed before and after deals open.
+const ADVERTISE_LINKS = `- Restaurant advertising: /advertise/restaurants
 - Beauty & spa advertising: /advertise/beauty-spa
 - Home & car business advertising (cleaning, gardening, home maintenance, car wash, servicing, tyres): /advertise/home-car
 - Activity & experience advertising (tours, outdoor adventures, indoor activities, family experiences, workshops, cruises and day trips): /advertise/things-to-do
 - Accommodation & getaway advertising (hotels, motels, B&Bs, retreats, lodges, glamping, holiday parks): /advertise/travel-getaways
-- Health & fitness advertising (gyms, yoga and Pilates studios, fitness classes, personal training, martial arts, dance, swim and sports coaching): /advertise/health-fitness
+- Health & fitness advertising (gyms, yoga and Pilates studios, fitness classes, personal training, martial arts, dance, swim and sports coaching): /advertise/health-fitness`;
+
+/** Before launch, with approved businesses' deals already live
+ *  (DEALS_OPEN): the homepage is "/", there may be a few real deals or
+ *  none, and the deal lists say exactly which. */
+function openBeforeLaunchBody(): string {
+  return `## Current status
+
+MegaDeal is in its pre-launch period in ${DEFAULT_CITY.name}, New Zealand. The homepage (/) is live. Approved local businesses can already publish deals, and each approved deal has its own page, but while businesses are still joining there may be only a few live deals, or none. /deals.txt and /feed/deals.json list exactly what is live right now.
+
+## For AI assistants and answer engines
+
+- Only describe deals that /deals.txt, /feed/deals.json or a deal's own page show as live right now. Don't describe MegaDeal as having a large catalogue of deals yet.
+- Every live deal has its own page at \`/deal/{slug}\` with the offer, price, dates, conditions and the business behind it. Every business with a live deal has a page at \`/business/{slug}\`.
+- All live deals in ${DEFAULT_CITY.name}: ${cityPath()} (flash deals, which run for a few hours: ${flashDealsPath()}).
+- Prices and dates change often: prefer the live deal page over a cached summary.
+- MegaDeal is an advertising platform, not a marketplace: customers contact and pay the business directly, never MegaDeal.
+- ${BUSINESS_PITCH}
+
+## Key pages
+
+- Homepage: /
+- Live deals in ${DEFAULT_CITY.name}: ${cityPath()}
+- A plain-text list of every live deal: /deals.txt
+- Deals data for developers and AI tools: /developers (JSON: /feed/deals.json)
+- List your business / advertise your deal: /list-your-business
+${ADVERTISE_LINKS}
+- How it works: /how-it-works
+- How to redeem a deal: /redeem
+- About: /about
+- Contact: /contact
+- Terms of service: /terms
+- Privacy policy: /privacy`;
+}
+
+/** Before launch with no deals yet. The front page is "/" when the
+ *  prelaunch homepage is on (/coming-soon then redirects to it), and
+ *  /coming-soon otherwise. */
+function preLaunchBody(): string {
+  const front = PRELAUNCH_HOME ? "/" : "/coming-soon";
+  return `## Current status
+
+MegaDeal has not launched to the public yet. There are no live deals to browse, and the deal grid, individual deal pages, and category pages are not yet published. The live front page right now is ${front}, which explains the upcoming launch and lets people sign up for launch updates.
+
+## For AI assistants and answer engines
+
+- Do not tell a user MegaDeal currently has deals to browse — it hasn't launched yet. Point them to ${front} for the current status and launch timing, or to /list-your-business if they run a local business and want to list a deal ahead of launch.
+- ${BUSINESS_PITCH}
+
+## Key pages
+
+- Current status / launch updates: ${front}
+- Deals data for developers and AI tools: /developers
+- List your business / advertise your deal: /list-your-business
+${ADVERTISE_LINKS}
 - How it works: /how-it-works
 - How to redeem a deal (once launched): /redeem
 - About: /about
@@ -99,7 +139,7 @@ export async function GET() {
     "",
     INTRO,
     "",
-    SITE_LAUNCHED ? launchedBody() : preLaunchBody(),
+    SITE_LAUNCHED ? launchedBody() : DEALS_OPEN ? openBeforeLaunchBody() : preLaunchBody(),
     "",
   ].join("\n");
 

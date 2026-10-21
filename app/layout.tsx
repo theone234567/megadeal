@@ -30,7 +30,11 @@ export const metadata: Metadata = {
     "x-build-sha": process.env.NEXT_PUBLIC_BUILD_SHA ?? "unknown",
     "x-build-time": process.env.NEXT_PUBLIC_BUILD_TIME ?? "unknown",
   },
-  alternates: { canonical: "/" },
+  // No site-wide canonical: every indexable page names its own (the
+  // homepage in app/page.tsx). A default of "/" here was inherited by
+  // every page that didn't, so 404s, ended deals and the noindexed
+  // utility pages (portal, unsubscribe…) all told search engines they
+  // were copies of the homepage.
   robots: { index: true, follow: true },
   // Google/Bing verification codes, once you have them (see below), go in
   // Cloudflare's runtime variables — no redeploy needed to pick them up.
