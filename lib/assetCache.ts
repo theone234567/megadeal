@@ -67,7 +67,7 @@ export async function withEdgeCache(
  */
 const FIXED_PAGES = new Set([
   "/about", "/careers", "/contact", "/developers", "/help", "/how-it-works", "/list-your-business",
-  "/privacy", "/redeem", "/refund-policy", "/terms", "/llms.txt", "/robots.txt", "/feed/openapi.json",
+  "/privacy", "/redeem", "/refund-policy", "/terms", "/llms.txt", "/llms-full.txt", "/robots.txt", "/feed/openapi.json",
   "/advertise/restaurants", "/advertise/beauty-spa", "/advertise/home-car", "/advertise/things-to-do",
   "/advertise/travel-getaways", "/advertise/health-fitness",
 ]);

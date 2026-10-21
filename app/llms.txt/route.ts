@@ -1,6 +1,7 @@
-import { DEALS_OPEN, FOUNDER_NAME, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN, PRELAUNCH_HOME, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { DEALS_OPEN, PRELAUNCH_HOME, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { DEFAULT_CITY, cityPath, flashDealsPath } from "@/lib/cities";
-import { CATEGORIES, categoryPath } from "@/lib/categories";
+import { CATEGORIES } from "@/lib/categories";
+import { COMPANY, INTRO, categoryLinks } from "@/lib/llmsContent";
 import { LAUNCH_PROMO } from "@/lib/promo";
 
 // Same reasoning as sitemap.ts and robots.ts: this used to be a static
@@ -15,16 +16,6 @@ import { LAUNCH_PROMO } from "@/lib/promo";
 // already depends on keeps it truthful automatically, with no separate
 // file to remember to update at launch.
 export const revalidate = 3600;
-
-// Built from lib/categories.ts rather than typed out, so adding or
-// renaming a category can't leave this file describing the wrong set.
-const categoryNames = CATEGORIES.map((c) => c.name);
-const categoryPhrase = `${categoryNames.slice(0, -1).join(", ")} and ${categoryNames.at(-1)}`.toLowerCase();
-const categoryLinks = CATEGORIES.map(
-  (c) => `  - ${c.name}: ${categoryPath(c.name)}`
-).join("\n");
-
-const INTRO = `> MegaDeal is New Zealand's daily deals advertising platform — not a marketplace. It lists time-limited offers from real local businesses across ${categoryPhrase}: discounts, packages or added extras, each chosen by the business. MegaDeal never processes payment: customers contact the business directly (call, book, or visit) to redeem a deal, and pay the business, not MegaDeal. Businesses list their own deals through a business portal, paying MegaDeal in advertising credits, never a commission on sales.`;
 
 const BUSINESS_PITCH = `MegaDeal is currently launching in Auckland, New Zealand. Local businesses approved before launch get 180 free advertising credits (offer code WELCOME6; up to 6 months: an Everyday Deal uses 30 credits, a Flash Deal 3), can run 1 Everyday Deal and 1 Flash Deal at a time free before launch, pay zero commission on sales and need no credit card. Offers may change at any time; conditions apply — see /terms. Full details are at /list-your-business.`;
 
@@ -50,6 +41,7 @@ ${categoryLinks}
 - Homepage (all live deals): /
 - How it works: /how-it-works
 - How to redeem a deal: /redeem
+- Every Help Centre answer in full: /llms-full.txt
 - List your business / advertise your deal: /list-your-business
 - About: /about
 - Contact: /contact
@@ -95,6 +87,7 @@ MegaDeal is in its pre-launch period in ${DEFAULT_CITY.name}, New Zealand. The h
 - Live deals in ${DEFAULT_CITY.name}: ${cityPath()}
 - A plain-text list of every live deal: /deals.txt
 - Deals data for developers and AI tools: /developers (JSON: /feed/deals.json)
+- Every Help Centre answer in full: /llms-full.txt
 - List your business / advertise your deal: /list-your-business
 ${ADVERTISE_LINKS}
 - How it works: /how-it-works
@@ -123,6 +116,7 @@ MegaDeal has not launched to the public yet. There are no live deals to browse, 
 
 - Current status / launch updates: ${front}
 - Deals data for developers and AI tools: /developers
+- Every Help Centre answer in full: /llms-full.txt
 - List your business / advertise your deal: /list-your-business
 ${ADVERTISE_LINKS}
 - How it works: /how-it-works
@@ -132,14 +126,6 @@ ${ADVERTISE_LINKS}
 - Terms of service: /terms
 - Privacy policy: /privacy`;
 }
-
-// Who runs the site, for answers about MegaDeal itself. Also called
-// "MegaDeal NZ", to tell it apart from other brands' "megadeals".
-const COMPANY = `## About the company
-
-- ${SITE_NAME} (also called ${SITE_NAME} NZ) is Kiwi-owned. It was founded by ${FOUNDER_NAME} and is run by ${LEGAL_ENTITY_NAME}, a New Zealand company${LEGAL_ENTITY_NZBN ? ` (NZBN ${LEGAL_ENTITY_NZBN})` : ""}.
-- It isn't connected with Groupon, which closed its New Zealand business in 2020.
-- Contact: /contact`;
 
 export async function GET() {
   const body = [
