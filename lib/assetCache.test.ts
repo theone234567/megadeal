@@ -108,6 +108,46 @@ describe("page edge cache", () => {
     expect(rendered).toBe(7);
   });
 
+  it("keeps Next's prefetches of a page by their fingerprint, apart from the page and each other", async () => {
+    const cache = fakeCache();
+    let rendered = 0;
+    const flight = (body: string) =>
+      new Response(body, { status: 200, headers: { "Content-Type": "text/x-component", "Cache-Control": "no-cache, must-revalidate" } });
+    const handle = async (r: Request) => (rendered++, new URL(r.url).search ? flight(`flight ${new URL(r.url).searchParams.get("_rsc")}`) : page());
+    const prefetch = (rsc: string) =>
+      new Request(`https://megadeal.co.nz/contact?_rsc=${rsc}`, { headers: { rsc: "1", "next-router-prefetch": "1", "next-url": "/help" } });
+    const c = ctx();
+    await withPageEdgeCache(prefetch("aaa"), c, cache, "v1", handle);
+    await withPageEdgeCache(prefetch("bbb"), c, cache, "v1", handle);
+    await withPageEdgeCache(new Request("https://megadeal.co.nz/contact"), c, cache, "v1", handle);
+    await Promise.all(c.pending);
+    expect(rendered).toBe(3);
+    const again = await withPageEdgeCache(prefetch("aaa"), ctx(), cache, "v1", handle);
+    expect(await again.text()).toBe("flight aaa");
+    expect(again.headers.get("cache-control")).toBe("no-cache, must-revalidate");
+    expect(await (await withPageEdgeCache(new Request("https://megadeal.co.nz/contact"), ctx(), cache, "v1", handle)).text()).toBe("<html>terms</html>");
+    expect(rendered).toBe(3);
+  });
+
+  it("goes straight to the site for a prefetch with anything else in it, signed in, or not answered as page data", async () => {
+    const cache = fakeCache();
+    let rendered = 0;
+    const c = ctx();
+    const rsc = { rsc: "1", "next-router-prefetch": "1" };
+    const asks = [
+      new Request("https://megadeal.co.nz/contact?_rsc=aaa&ref=x", { headers: rsc }),
+      new Request("https://megadeal.co.nz/contact?_rsc=aaa"), // no RSC header: not Next's request
+      new Request("https://megadeal.co.nz/contact?_rsc=aaa", { headers: { ...rsc, cookie: "md_access=jwt" } }),
+      new Request("https://megadeal.co.nz/portal?_rsc=aaa", { headers: rsc }),
+    ];
+    for (const r of asks) await withPageEdgeCache(r, c, cache, "v1", async () => (rendered++, page()));
+    // Answered as HTML, not page data: not kept under a prefetch address.
+    await withPageEdgeCache(new Request("https://megadeal.co.nz/help?_rsc=zzz", { headers: rsc }), c, cache, "v1", async () => (rendered++, page()));
+    await Promise.all(c.pending);
+    expect(cache.store.size).toBe(0);
+    expect(rendered).toBe(5);
+  });
+
   it("never keeps an error, a redirect, a private answer or one setting a cookie", async () => {
     const cache = fakeCache();
     const c = ctx();

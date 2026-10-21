@@ -85,6 +85,22 @@ export function pageEdgeSeconds(pathname: string): number {
 const SIGNED_IN = /(?:^|;\s*)(?:admin_session|md_access|md_refresh)=/;
 /** Next's in-page navigation asks for a different form of the same page. */
 const NEXT_NAVIGATION = ["rsc", "next-router-state-tree", "next-router-prefetch", "next-router-segment-prefetch"];
+
+/**
+ * That different form, when it can be kept like the page: Next's request
+ * for a page's data (`RSC: 1`) carries `?_rsc=`, a fingerprint of every
+ * request header the answer depends on (the router state, prefetch,
+ * segment and the page asking), so one address is one answer. These were
+ * rendered afresh every time, and a computer's view of any page sends
+ * several as it prefetches the links on screen: under Cloudflare's CPU
+ * limit about one in eighty was refused (503, 21 Oct 2026). Only `_rsc`
+ * may be in the query, so nothing else can vary the answer.
+ */
+function prefetchFingerprint(req: Request, url: URL): string | null {
+  const fingerprint = url.searchParams.get("_rsc");
+  if (req.headers.get("rsc") !== "1" || !fingerprint || [...url.searchParams.keys()].length !== 1) return null;
+  return fingerprint;
+}
 const BROWSER_CACHE_HEADER = "x-md-browser-cache-control";
 
 export async function withPageEdgeCache(
@@ -96,19 +112,23 @@ export async function withPageEdgeCache(
 ): Promise<Response> {
   const url = new URL(req.url);
   const seconds = pageEdgeSeconds(url.pathname);
+  const prefetch = prefetchFingerprint(req, url);
   if (
     !cache ||
     !version ||
     !seconds ||
     req.method !== "GET" ||
-    url.search ||
+    (url.search && !prefetch) ||
     SIGNED_IN.test(req.headers.get("cookie") ?? "") ||
-    NEXT_NAVIGATION.some((h) => req.headers.has(h))
+    (!prefetch && NEXT_NAVIGATION.some((h) => req.headers.has(h)))
   ) {
     return handle(req);
   }
 
-  const key = new Request(`${url.origin}${url.pathname}?v=${encodeURIComponent(version)}`, { method: "GET" });
+  const key = new Request(
+    `${url.origin}${url.pathname}?v=${encodeURIComponent(version)}${prefetch ? `&_rsc=${encodeURIComponent(prefetch)}` : ""}`,
+    { method: "GET" }
+  );
   const hit = await cache.match(key).catch(() => undefined);
   if (hit) {
     // As the page itself would have answered, for the browser.
@@ -125,7 +145,7 @@ export async function withPageEdgeCache(
     res.status === 200 &&
     !res.headers.has("set-cookie") &&
     !/private|no-store/i.test(browserCache) &&
-    /^(?:text\/html|text\/plain|application\/json)/.test(type)
+    (prefetch ? /^text\/x-component/ : /^(?:text\/html|text\/plain|application\/json)/).test(type)
   ) {
     const copy = new Response(res.clone().body, res);
     copy.headers.set(BROWSER_CACHE_HEADER, browserCache || "no-cache, must-revalidate");
