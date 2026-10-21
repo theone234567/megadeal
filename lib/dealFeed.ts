@@ -21,7 +21,7 @@ import type { Deal } from "./types";
  * FEED_VERSION follows semver: adding a field is a minor change; renaming
  * or removing one is a major change, announced on /developers first.
  */
-export const FEED_VERSION = "1.1.0";
+export const FEED_VERSION = "1.1.1";
 
 /** Most deals one request returns; ?limit= can ask for fewer. */
 export const FEED_MAX_LIMIT = 500;
@@ -221,7 +221,24 @@ export type FeedDeal = ReturnType<typeof feedDeal>;
 export interface FeedOptions {
   siteUrl: string;
   siteName: string;
+  /** Deals are open to the public: from launch, or before it while
+   *  approved businesses' deals are live (DEALS_OPEN). */
   launched: boolean;
+  /** Before the public launch. With `launched`, deals are live but there
+   *  may be few, and `message` says so. */
+  prelaunch?: boolean;
+  /** Where the site's front page is before deals open ("/" with the
+   *  prelaunch homepage; /coming-soon redirects there). */
+  frontPage?: string;
+}
+
+/** What `message` says, if anything. */
+function feedMessage(o: FeedOptions): string | undefined {
+  if (!o.launched)
+    return `${o.siteName} hasn't launched yet, so there are no live deals. See ${o.siteUrl}${o.frontPage ?? "/coming-soon"}.`;
+  if (o.prelaunch)
+    return `${o.siteName} is in its pre-launch period: deals from approved businesses are live, but there may be only a few, or none.`;
+  return undefined;
 }
 
 /** The whole response body, less the time it was generated (added by the
@@ -251,7 +268,7 @@ export function buildFeed(deals: Deal[], filters: FeedFilters, o: FeedOptions) {
     country: "NZ",
     currency: "NZD",
     launched: o.launched,
-    ...(o.launched ? {} : { message: `${o.siteName} hasn't launched yet, so there are no live deals. See ${o.siteUrl}/coming-soon.` }),
+    ...(feedMessage(o) ? { message: feedMessage(o) } : {}),
     filters: {
       city: filters.city ?? null,
       category: filters.category ?? null,

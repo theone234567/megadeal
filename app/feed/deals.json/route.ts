@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { buildFeed, parseFeedFilters } from "@/lib/dealFeed";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
-import { DEALS_OPEN, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { DEALS_OPEN, PRELAUNCH_HOME, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 
 /**
  * The public deals feed: every live deal as JSON, with filters
@@ -42,7 +42,13 @@ export async function GET(req: NextRequest) {
     return json({ error: "The deals feed is unavailable right now. Please try again shortly." }, 503, { "Retry-After": "60", "Cache-Control": "no-store" });
   }
 
-  const feed = buildFeed(deals, parsed.filters, { siteUrl: SITE_URL, siteName: SITE_NAME, launched: DEALS_OPEN });
+  const feed = buildFeed(deals, parsed.filters, {
+    siteUrl: SITE_URL,
+    siteName: SITE_NAME,
+    launched: DEALS_OPEN,
+    prelaunch: !SITE_LAUNCHED,
+    frontPage: PRELAUNCH_HOME ? "/" : "/coming-soon",
+  });
   // The ETag covers the deals and filters, not the time below, so a
   // client asking again gets "304 Not Modified" until something changes.
   const etag = await etagOf(JSON.stringify(feed));

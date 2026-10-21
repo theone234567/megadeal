@@ -185,7 +185,7 @@ describe("the feed", () => {
   it("says who publishes it, its terms, docs and schema", () => {
     const feed = buildFeed([base], all, opts);
     expect(feed).toMatchObject({
-      version: "1.1.0",
+      version: "1.1.1",
       publisher: { name: "MegaDeal", url: SITE },
       docs: `${SITE}/developers`,
       schema: `${SITE}/feed/openapi.json`,
@@ -201,5 +201,17 @@ describe("the feed", () => {
     const feed = buildFeed([base], all, { ...opts, launched: false });
     expect(feed).toMatchObject({ launched: false, total: 0, count: 0, deals: [] });
     expect(feed.message).toMatch(/hasn't launched/);
+    expect(feed.message).toMatch(/\/coming-soon\.$/);
+    // With the prelaunch homepage, it points there instead of a redirect.
+    expect(buildFeed([], all, { ...opts, launched: false, frontPage: "/" }).message).toBe(
+      `MegaDeal hasn't launched yet, so there are no live deals. See ${SITE}/.`
+    );
+  });
+
+  it("says when deals are open before the public launch, and nothing from launch", () => {
+    const feed = buildFeed([base], all, { ...opts, prelaunch: true });
+    expect(feed).toMatchObject({ launched: true, total: 1 });
+    expect(feed.message).toMatch(/pre-launch period/);
+    expect(buildFeed([base], all, opts)).not.toHaveProperty("message");
   });
 });
