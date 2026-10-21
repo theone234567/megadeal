@@ -5,6 +5,7 @@ import { formatMoney, formatOfferEndDate } from "@/lib/format";
 import { dealSavingPercent } from "@/lib/dealSaving";
 import { keyRestrictions } from "@/lib/dealTerms";
 import { CATEGORIES } from "@/lib/categories";
+import { staticImageSrcSet } from "@/lib/staticImages";
 import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 import CountdownBadge from "./CountdownBadge";
 import {
@@ -137,7 +138,8 @@ export default function DealCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={wixImageUrl(deal.image, 750, 500)}
-            srcSet={wixImageSrcSet(deal.image, [360, 540, 750], 3 / 2)}
+            // The site's own example photos have a 640px copy instead.
+            srcSet={wixImageSrcSet(deal.image, [360, 540, 750], 3 / 2) ?? staticImageSrcSet(deal.image)}
             // A phone's two columns are half the screen less the page
             // margins and gap: "50vw" made a 3x phone take the 750px copy
             // for a 173px card instead of the 540px one.

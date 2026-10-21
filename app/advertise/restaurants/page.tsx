@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
@@ -22,6 +21,7 @@ import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
 import { INDEXABLE } from "@/lib/robotsMeta";
+import { staticImageSrcSet } from "@/lib/staticImages";
 
 // Was noindex/nofollow while the page was still built from spec docs
 // alone (no real photo, approximated layout details). Flipped to
@@ -371,14 +371,18 @@ export default function RestaurantAdvertisingPage() {
                 className="relative h-[280px] overflow-hidden rounded-[28px] shadow-[0_24px_48px_rgba(20,3,50,.4)] sm:h-[340px] lg:h-[427px]"
                 style={{ transform: "rotate(2deg)" }}
               >
-                <Image
+                {/* A plain <img> with the 640px copy as an option (next/image
+                    makes no srcset while images are unoptimized). */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src="/megadeal/restaurants/restaurant-hero-bright.webp"
-                  alt="A wood-fired pizza and a burrata salad on a restaurant table"
-                  fill
+                  srcSet={staticImageSrcSet("/megadeal/restaurants/restaurant-hero-bright.webp")}
                   sizes="(min-width: 1024px) 420px, 90vw"
-                  className="object-cover"
+                  alt="A wood-fired pizza and a burrata salad on a restaurant table"
                   loading="eager"
                   fetchPriority="high"
+                  decoding="async"
+                  className="absolute inset-0 h-full w-full object-cover"
                 />
               </div>
 

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
@@ -21,6 +20,7 @@ import { ORGANIZATION_ID, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteC
 import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { staticImageSrcSet } from "@/lib/staticImages";
 
 /**
  * /advertise/things-to-do — the Things To Do pack (4 Oct 2026), consolidated
@@ -441,12 +441,18 @@ export default function ThingsToDoAdvertisingPage() {
               {CATEGORIES.map((c) => (
                 <article key={c.id} id={c.id} className="flex scroll-mt-[100px] flex-col overflow-hidden rounded-xl border bg-white" style={LINE}>
                   <div className="relative aspect-[3/2] w-full">
-                    <Image
+                    {/* A plain <img> with the 640px copy as an option: next/image
+                        makes no srcset while images are unoptimized, so a card
+                        400px wide fetched the 1200px original. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={c.image.src}
-                      alt={c.image.alt}
-                      fill
+                      srcSet={staticImageSrcSet(c.image.src)}
                       sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover"
+                      alt={c.image.alt}
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover"
                     />
                   </div>
                   <div className="flex flex-1 flex-col p-5 sm:p-6">
