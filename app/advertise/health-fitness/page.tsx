@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import IndustryAdvertisePage, { type IndustryPageContent } from "@/components/business/IndustryAdvertisePage";
 import { CalendarIcon, ClockIcon, DumbbellIcon, FlameIcon, FlowerIcon, SparklesIcon, UnlockIcon, UserIcon, UsersIcon, ZapIcon } from "@/components/icons";
-import { SITE_URL } from "@/lib/siteConfig";
+import { SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 
 /**
  * /advertise/health-fitness: for Auckland gyms, studios and fitness
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}${PATH}` },
-  openGraph: { title: `${TITLE} | MegaDeal`, description: DESCRIPTION, url: `${SITE_URL}${PATH}`, type: "website" },
+  openGraph: { siteName: SITE_NAME, locale: "en_NZ", title: `${TITLE} | MegaDeal`, description: DESCRIPTION, url: `${SITE_URL}${PATH}`, type: "website" },
   twitter: { card: "summary_large_image", title: `${TITLE} | MegaDeal`, description: DESCRIPTION },
 };
 

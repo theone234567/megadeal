@@ -36,6 +36,7 @@ import {
 } from "@/lib/businessHours";
 import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 import { businessPageIsThin } from "@/lib/businessIndexing";
+import { INDEXABLE } from "@/lib/robotsMeta";
 
 // Every other page that fetches live Wix data (homepage, category pages,
 // the deal page, flash deals) sets an explicit revalidate window — this
@@ -90,7 +91,7 @@ export async function generateMetadata(
     // Also kept out until it has something on it (lib/businessIndexing.ts).
     robots:
       DEALS_OPEN && !businessPageIsThin({ liveDeals: deals.length, bio: business.bio, photos: business.photos.length })
-        ? undefined
+        ? INDEXABLE
         : { index: false, follow: true },
     openGraph: {
       title,

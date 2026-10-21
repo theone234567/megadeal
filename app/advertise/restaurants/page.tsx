@@ -21,6 +21,7 @@ import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
+import { INDEXABLE } from "@/lib/robotsMeta";
 
 // Was noindex/nofollow while the page was still built from spec docs
 // alone (no real photo, approximated layout details). Flipped to
@@ -47,8 +48,10 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/advertise/restaurants` },
-  robots: PAGE_LIVE_FOR_SEARCH ? undefined : { index: false, follow: false },
+  robots: PAGE_LIVE_FOR_SEARCH ? INDEXABLE : { index: false, follow: false },
   openGraph: {
+    siteName: SITE_NAME,
+    locale: "en_NZ",
     title: `${TITLE} | MegaDeal`,
     description: DESCRIPTION,
     url: `${SITE_URL}/advertise/restaurants`,

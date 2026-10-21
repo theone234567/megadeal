@@ -9,6 +9,7 @@ import { safeJsonLd } from "@/lib/safeJsonLd";
 import { hasFilterParams, toSearchString } from "@/lib/homeFilters";
 import { toCardDeal } from "@/lib/listingDeal";
 import { isAdminViewer } from "@/lib/adminViewer";
+import { INDEXABLE } from "@/lib/robotsMeta";
 
 const HOME_TITLE = `${SITE_NAME} — Local Deals Up to 50% Off in Auckland & NZ`;
 const HOME_DESCRIPTION =
@@ -46,7 +47,7 @@ export async function generateMetadata(props: {
     title: { absolute: title },
     description,
     alternates: { canonical: SITE_URL },
-    robots: filtered ? { index: false, follow: true } : undefined,
+    robots: filtered ? { index: false, follow: true } : INDEXABLE,
     openGraph: {
       title,
       description,

@@ -39,6 +39,8 @@ const LEGACY_METADATA: Metadata = {
   // opengraph-image.tsx built for this page, which already says "Up to 6
   // months free advertising".
   openGraph: {
+    siteName: SITE_NAME,
+    locale: "en_NZ",
     title: LIST_YOUR_BUSINESS_SOCIAL_TITLE,
     description: LIST_YOUR_BUSINESS_DESCRIPTION,
     url: `${SITE_URL}/list-your-business`,
@@ -68,6 +70,8 @@ const V2_METADATA: Metadata = {
   description: V2_DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/list-your-business` },
   openGraph: {
+    siteName: SITE_NAME,
+    locale: "en_NZ",
     title: `${V2_TITLE} | MegaDeal`,
     description: V2_DESCRIPTION,
     url: `${SITE_URL}/list-your-business`,

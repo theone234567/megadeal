@@ -12,6 +12,7 @@ import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { CATEGORY_COPY, SEO_REGION } from "@/lib/categoryCopy";
 import { toCardDeal } from "@/lib/listingDeal";
+import { INDEXABLE } from "@/lib/robotsMeta";
 
 // See app/page.tsx for why this is a short revalidate window rather than
 // force-dynamic.
@@ -66,7 +67,7 @@ export async function generateMetadata(
     // — but this page is reachable directly regardless, so it needs the
     // same protection: no category page should get indexed while the
     // catalog might still hold pre-launch test data.
-    robots: DEALS_OPEN && hasDeals ? undefined : { index: false, follow: true },
+    robots: DEALS_OPEN && hasDeals ? INDEXABLE : { index: false, follow: true },
     // The image named, as on flash deals: a page's own openGraph replaces
     // the layout's whole, so without it a shared link has no picture.
     openGraph: { title: socialTitle, description, url, siteName: SITE_NAME, type: "website", images: [`${SITE_URL}/opengraph-image`] },

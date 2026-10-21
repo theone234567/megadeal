@@ -8,6 +8,7 @@ import { SITE_URL, SITE_NAME, DEALS_OPEN } from "@/lib/siteConfig";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { toCardDeal } from "@/lib/listingDeal";
+import { INDEXABLE } from "@/lib/robotsMeta";
 
 // Rendered for each request, never at build time: the build can't see the
 // switches in wrangler.toml [vars] (DATA_BACKEND is runtime-only) or reach
@@ -34,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
     // — but this page is reachable directly regardless, so it needs the
     // same protection: no browse page should get indexed while the
     // catalog might still hold pre-launch test data.
-    robots: DEALS_OPEN && hasFlash ? undefined : { index: false, follow: true },
+    robots: DEALS_OPEN && hasFlash ? INDEXABLE : { index: false, follow: true },
     openGraph: {
       title: `Flash Deals | ${SITE_NAME}`,
       description: "Short-burst offers that end fast — grab them while they last.",

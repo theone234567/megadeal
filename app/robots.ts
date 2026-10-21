@@ -9,7 +9,13 @@ import { SITE_URL } from "@/lib/siteConfig";
 // here as well as by its noindex header. (/login-callback, Wix's sign-in
 // return page, is gone: left crawlable so search engines see it's gone
 // and drop it.)
-const DISALLOWED = ["/admin", "/admin/*", "/portal", "/portal/*", "/api/*", "/reset-password"];
+//
+// /portal isn't here: it's linked from every page ("Business sign in"), and
+// a blocked URL can still be listed ("indexed, though blocked by
+// robots.txt") because crawlers can't read the page's own noindex. Left
+// crawlable, they see app/portal/layout.tsx's noindex and drop it. It's a
+// sign-in screen to anyone not signed in, with nothing private on it.
+const DISALLOWED = ["/admin", "/admin/*", "/api/*", "/reset-password"];
 
 export default function robots(): MetadataRoute.Robots {
   return {

@@ -10,6 +10,7 @@ import PrelaunchBar from "@/components/PrelaunchBar";
 import { SOCIAL_URLS } from "@/components/SocialLinks";
 import { DEALS_OPEN, FOUNDER_NAME, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN, ORGANIZATION_ID, PRELAUNCH_HOME, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
+import { INDEXABLE } from "@/lib/robotsMeta";
 import { SEARCH_LOGO } from "@/lib/brand";
 import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
@@ -35,7 +36,9 @@ export const metadata: Metadata = {
   // every page that didn't, so 404s, ended deals and the noindexed
   // utility pages (portal, unsubscribe…) all told search engines they
   // were copies of the homepage.
-  robots: { index: true, follow: true },
+  // Large image previews and full snippets (lib/robotsMeta.ts). Pages
+  // that set their own robots replace this whole.
+  robots: INDEXABLE,
   // Google/Bing verification codes, once you have them (see below), go in
   // Cloudflare's runtime variables — no redeploy needed to pick them up.
   verification: {

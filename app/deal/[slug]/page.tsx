@@ -13,6 +13,7 @@ import { dealTitles } from "@/lib/dealTitle";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { dealJsonLd } from "@/lib/dealJsonLd";
 import { wixImageUrl } from "@/lib/wixImageUrl";
+import { INDEXABLE } from "@/lib/robotsMeta";
 
 // See app/page.tsx for why this is a short revalidate window rather than
 // force-dynamic. Kept tighter than the browse pages since this is the
@@ -103,7 +104,7 @@ export async function generateMetadata(
     // — but this page is reachable directly regardless, so it needs the
     // same protection: no deal page should get indexed while the catalog
     // might still hold pre-launch test data.
-    robots: DEALS_OPEN ? undefined : { index: false, follow: true },
+    robots: DEALS_OPEN ? INDEXABLE : { index: false, follow: true },
     openGraph: {
       title: socialTitle,
       description,

@@ -151,6 +151,9 @@ const nextConfig = {
         "https://www.facebook.com",                       // Pixel beacon
         "https://www.google.com",                         // GA4
         "https://www.google-analytics.com",
+        // GA4 can fall back to image beacons, on its regional hosts and
+        // through Tag Manager (Google's documented GA4 policy).
+        "https://*.google-analytics.com https://*.googletagmanager.com",
         // Leaflet tiles. Both maps — the deals map, and the address pin a
         // merchant drags during signup — load tiles as plain <img>.
         // Leaflet itself is bundled from npm and its markers are emoji
@@ -165,6 +168,12 @@ const nextConfig = {
         "https://www.google.com",                         // GA4
         "https://www.facebook.com",
         "https://www.google-analytics.com https://*.analytics.google.com",
+        // The rest of Google's documented GA4 hosts: regional collectors
+        // (region1.google-analytics.com), analytics.google.com itself
+        // (*.analytics.google.com doesn't cover it), Tag Manager, and the
+        // Google Signals endpoint. Without them some hits were refused and
+        // GA4 undercounted.
+        "https://*.google-analytics.com https://analytics.google.com https://*.googletagmanager.com https://stats.g.doubleclick.net",
         "https://cloudflareinsights.com",                 // where the beacon reports to
       ].join(" "),
       // Turnstile draws its challenge, when it shows one, in an iframe:

@@ -11,6 +11,7 @@ import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { DEALS_OPEN, SAVING_CLAIM, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import type { Deal } from "@/lib/types";
+import { INDEXABLE } from "@/lib/robotsMeta";
 
 /**
  * Every live deal in the city, by category: the page for searches like
@@ -41,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: { canonical: url },
     // Empty, or before launch: kept out of search, like an empty category.
-    robots: DEALS_OPEN && deals.length > 0 ? undefined : { index: false, follow: true },
+    robots: DEALS_OPEN && deals.length > 0 ? INDEXABLE : { index: false, follow: true },
     // The image named, as on flash deals: a page's own openGraph replaces
     // the layout's whole, so without it a shared link has no picture.
     openGraph: { title: `${title} | ${SITE_NAME}`, description, url, siteName: SITE_NAME, type: "website", images: [`${SITE_URL}/opengraph-image`] },

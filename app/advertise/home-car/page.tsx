@@ -43,6 +43,8 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: PAGE_URL },
   openGraph: {
+    siteName: SITE_NAME,
+    locale: "en_NZ",
     title: `${TITLE} | ${SITE_NAME}`,
     description: DESCRIPTION,
     url: PAGE_URL,

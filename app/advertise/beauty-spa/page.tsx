@@ -25,6 +25,7 @@ import { ORGANIZATION_ID, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteC
 import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { INDEXABLE } from "@/lib/robotsMeta";
 
 // Same "was noindex while built from spec docs alone" precedent as
 // /advertise/restaurants — flip to false only if this needs to go back to
@@ -45,8 +46,10 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/advertise/beauty-spa` },
-  robots: PAGE_LIVE_FOR_SEARCH ? undefined : { index: false, follow: false },
+  robots: PAGE_LIVE_FOR_SEARCH ? INDEXABLE : { index: false, follow: false },
   openGraph: {
+    siteName: SITE_NAME,
+    locale: "en_NZ",
     title: `${TITLE} | MegaDeal`,
     description: DESCRIPTION,
     url: `${SITE_URL}/advertise/beauty-spa`,
