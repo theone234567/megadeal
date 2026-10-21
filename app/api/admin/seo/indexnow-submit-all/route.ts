@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cityPath, flashDealsPath } from "@/lib/cities";
+import sitemap from "@/app/sitemap";
 import { logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { submitUrlsToIndexNow } from "@/lib/indexNow";
-import { SITE_URL, DEALS_OPEN } from "@/lib/siteConfig";
-import {
-  fetchAllLiveDealSlugsForSitemap,
-  fetchAllBusinessSlugsForSitemap,
-} from "@/lib/fetchDealServer";
-import { CATEGORIES, categoryPath } from "@/lib/categories";
-import { businessPageIsThin } from "@/lib/businessIndexing";
 
 // One-off bulk push of every currently-live URL to IndexNow — for kicking
 // off indexing of pages that were already up before IndexNow submission
@@ -22,47 +15,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Matches app/sitemap.ts's own unconditional (pre-launch-safe) bucket —
-    // /flash-deals used to be here instead, but it's robots:{index:false}
-    // until DEALS_OPEN, so pushing it via IndexNow just asked Bing to
-    // recrawl a page it would then correctly skip indexing anyway.
-    const staticUrls = [
-      `${SITE_URL}/`,
-      `${SITE_URL}/coming-soon`,
-      `${SITE_URL}/list-your-business`,
-      `${SITE_URL}/advertise/restaurants`,
-      `${SITE_URL}/advertise/beauty-spa`,
-      `${SITE_URL}/advertise/home-car`,
-      `${SITE_URL}/advertise/things-to-do`,
-      `${SITE_URL}/advertise/travel-getaways`,
-      `${SITE_URL}/advertise/health-fitness`,
-      `${SITE_URL}/how-it-works`,
-      `${SITE_URL}/redeem`,
-      `${SITE_URL}/help`,
-      `${SITE_URL}/about`,
-      `${SITE_URL}/contact`,
-      `${SITE_URL}/careers`,
-      `${SITE_URL}/terms`,
-      `${SITE_URL}/privacy`,
-      `${SITE_URL}/refund-policy`,
-    ];
-    // Before launch, category, deal and business pages are admin-only
-    // previews that redirect everyone else to /coming-soon (middleware.ts)
-    // — same split as app/sitemap.ts, so only the public pages go out.
-    let urls = staticUrls;
-    if (DEALS_OPEN) {
-      const deals = await fetchAllLiveDealSlugsForSitemap();
-      const dealUrls = deals.map((d) => `${SITE_URL}/deal/${d.slug}`);
-      // Same as the sitemap: only categories that have a live deal.
-      const categoryUrls = CATEGORIES.filter((c) => deals.some((d) => d.categories.includes(c.name))).map(
-        (c) => `${SITE_URL}${categoryPath(c.name)}`
-      );
-      const businesses = await fetchAllBusinessSlugsForSitemap();
-      const businessUrls = businesses
-        .filter((b) => !businessPageIsThin({ liveDeals: deals.filter((d) => d.merchantEmail === b.email).length, bio: b.bio, photos: b.photos }))
-        .map((b) => `${SITE_URL}/business/${b.slug}`);
-      urls = [...staticUrls, `${SITE_URL}${cityPath()}`, `${SITE_URL}${flashDealsPath()}`, ...categoryUrls, ...dealUrls, ...businessUrls];
-    }
+    // Exactly the sitemap's pages (app/sitemap.ts): the public pages, and
+    // the city, category, flash, deal and business pages only when they're
+    // indexable. A hand-kept copy of the list here had drifted from it,
+    // sending /coming-soon (a redirect since the prelaunch homepage) and
+    // empty, noindexed listings, and leaving out /developers.
+    const urls = (await sitemap()).map((entry) => entry.url);
     await submitUrlsToIndexNow(urls);
 
     await logAdminAction({ action: "Submitted all pages to search engines", detail: `${urls.length} URLs` });
