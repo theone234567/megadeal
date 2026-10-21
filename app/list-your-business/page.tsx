@@ -53,11 +53,16 @@ const LEGACY_METADATA: Metadata = {
 
 // The redesign (LIST_BUSINESS_DESIGN=v2): the pack's title and
 // description, launch-aware so a cached page never advertises the ended
-// pre-launch offer.
-const V2_TITLE = "Advertise Your Auckland Business";
+// pre-launch offer. Before launch the title leads with "Free Advertising",
+// what business owners search for, and true then: approved businesses
+// list deals free until launch (lib/prelaunchAllowance.ts). From launch
+// it's the launch offer's months.
+const V2_TITLE = SITE_LAUNCHED
+  ? `Advertise in Auckland: Up to ${currentPromo(true).months} Months Free`
+  : "Free Advertising for Auckland Businesses";
 const V2_DESCRIPTION = SITE_LAUNCHED
   ? `Reach local customers with MegaDeal. Eligible new businesses can get up to ${currentPromo(true).months} months of free advertising. No commission. Terms apply.`
-  : "Reach local customers with MegaDeal. Eligible Auckland businesses can get up to six months of free advertising from launch. No commission. Terms apply.";
+  : "Advertise your Auckland business free on MegaDeal before launch, then get up to six months free from launch. 0% commission, no credit card. Terms apply.";
 const V2_METADATA: Metadata = {
   title: V2_TITLE,
   description: V2_DESCRIPTION,
