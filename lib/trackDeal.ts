@@ -37,6 +37,19 @@ export function trackEvent(
   data: { dealId?: string | null; businessSlug?: string | null; source?: string; method?: string },
 ) {
   if (typeof window === "undefined") return;
+  // The same action in Google Analytics too, so it can be marked as a
+  // conversion there (a code copy, a call or booking tap). Only what's
+  // public on the page: which deal, which business, which button.
+  try {
+    window.gtag?.("event", event, {
+      deal_id: data.dealId ?? undefined,
+      business_slug: data.businessSlug ?? undefined,
+      source: data.source,
+      method: data.method,
+    });
+  } catch {
+    // ignore
+  }
   const payload = { eventId: newId(), event, sessionId: visitId(), ...visitSource(), ...data };
   const send = () =>
     fetch("/api/deals/events", {

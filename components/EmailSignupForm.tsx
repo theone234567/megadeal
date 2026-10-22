@@ -90,6 +90,8 @@ export default function EmailSignupForm({
       }
       setState("done");
       trackMetaPixelEvent("Lead", { content_name: `email-signup-${audience}`, content_category: audience });
+      // For Google Analytics too (a conversion there); never the address.
+      window.gtag?.("event", "email_signup", { audience, source });
       // Remembers the signup, so any future "join our list" prompt can skip
       // people who already joined — a signup via any form on the site counts.
       try {
