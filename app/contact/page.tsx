@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import Link from "next/link";
 import ContactForm from "@/components/ContactForm";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
@@ -31,13 +30,9 @@ export default function ContactPage() {
       {/* Form */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
-          {/* ContactForm reads ?deal= to seed a report from a deal page,
-              and useSearchParams needs a boundary or this statically
-              prerendered page falls back to client-side rendering for the
-              whole route. */}
-          <Suspense fallback={null}>
-            <ContactForm />
-          </Suspense>
+          {/* In the page as sent: ContactForm reads ?deal= itself once
+              it's on screen (see there). */}
+          <ContactForm />
         </div>
       </section>
 

@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { getTurnstileToken, preloadTurnstile, turnstileProblemMessage } from "@/lib/turnstileClient";
 
 // Cloudflare's robot check, once its keys are set (lib/turnstile.ts).
@@ -32,12 +31,22 @@ function reportPrefill(params: URLSearchParams): string {
 }
 
 export default function ContactForm() {
-  const searchParams = useSearchParams();
-  const prefill = reportPrefill(new URLSearchParams(searchParams?.toString() ?? ""));
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const checkSlotRef = useRef<HTMLDivElement>(null);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
+
+  // Seeds the message from ?deal= or ?change= once the page is on screen,
+  // read here rather than with useSearchParams: that made the whole form
+  // render only in the browser, so the page arrived without it and then
+  // jumped by about 300px when it appeared (a layout shift of 0.16,
+  // Lighthouse mobile, Oct 2026). Now the form is in the page as sent.
+  // Only into an empty box, so nothing anyone has typed is replaced.
+  useEffect(() => {
+    const prefill = reportPrefill(new URLSearchParams(window.location.search));
+    if (prefill && messageRef.current && !messageRef.current.value) messageRef.current.value = prefill;
+  }, []);
 
   if (sent) {
     return (
@@ -117,9 +126,9 @@ export default function ContactForm() {
           required
           name="message"
           rows={5}
-          // defaultValue, not value: this seeds the box and then gets out
-          // of the way, so the person can rewrite any of it.
-          defaultValue={prefill}
+          // Uncontrolled: seeded once (above), then the person can rewrite
+          // any of it.
+          ref={messageRef}
           className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
         />
       </div>
