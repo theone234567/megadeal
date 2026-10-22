@@ -33,6 +33,13 @@ declare global {
  * Fires a page_view on first load and again on every client-side route
  * change, since Next.js App Router navigation doesn't reload the page
  * (gtag's own automatic pageview only covers the first one).
+ *
+ * Google's script itself waits until the page has finished loading and
+ * the browser is idle (lazyOnload): it was the heaviest thing on a
+ * phone's first view, blocking the page for about 150 ms (Lighthouse,
+ * Oct 2026). The small setup below still runs straight away, so window.gtag
+ * exists from the start; anything sent before the script arrives (the
+ * first page_view, a code copy) waits in dataLayer and goes once it loads.
  */
 export default function GoogleAnalytics() {
   const pathname = usePathname();
@@ -48,7 +55,7 @@ export default function GoogleAnalytics() {
 
   return (
     <>
-      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+      <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="lazyOnload" />
       <Script id="ga4-init" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];

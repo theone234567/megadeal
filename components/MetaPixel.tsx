@@ -25,6 +25,13 @@ const PIXEL_ID = "1478448350759686";
  * skips its own first run (isFirstRender) rather than also firing then;
  * without that guard the initial page load fired two PageViews for the
  * one visit, inflating counts before a campaign ever got to see them.
+ *
+ * Meta's script (fbevents.js) waits until the page has finished loading
+ * and the browser is idle (lazyOnload): it blocked a phone's first view
+ * for about 140 ms (Lighthouse, Oct 2026). The setup is Meta's own
+ * snippet without the line that fetches the script, so fbq exists from the
+ * start and queues the PageView and any events until the script arrives,
+ * as it would on a slow connection.
  */
 export default function MetaPixel() {
   const pathname = usePathname();
@@ -43,18 +50,16 @@ export default function MetaPixel() {
     <>
       <Script id="meta-pixel" strategy="afterInteractive">
         {`
-          !function(f,b,e,v,n,t,s)
+          !function(f,n)
           {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
           n.callMethod.apply(n,arguments):n.queue.push(arguments)};
           if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-          n.queue=[];t=b.createElement(e);t.async=!0;
-          t.src=v;s=b.getElementsByTagName(e)[0];
-          s.parentNode.insertBefore(t,s)}(window, document,'script',
-          'https://connect.facebook.net/en_US/fbevents.js');
+          n.queue=[]}(window);
           fbq('init', '${PIXEL_ID}');
           fbq('track', 'PageView');
         `}
       </Script>
+      <Script src="https://connect.facebook.net/en_US/fbevents.js" strategy="lazyOnload" />
       <noscript>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
