@@ -46,6 +46,10 @@ export interface IndustryPageContent {
   bookStep: { title: string; body: string };
   /** Category FAQs, shown after cost and commission; the shared ones close. */
   faqs: { q: string; a: string }[];
+  /** The section headings, in the category's own words: identical
+   *  headings on every advertise page made them read as one template to
+   *  search engines (SEO pack T20). */
+  headings: { how: string; why: string; faq: string };
   /** Fills "Eligible local … can use their own websites for bookings and payments." */
   eligibleNoun: string;
   service: { type: string; description: string; audience: string };
@@ -339,7 +343,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
               Simple. Direct. Local.
             </p>
             <h2 id="how-heading" className={H2} style={INK}>
-              How MegaDeal works.
+              {c.headings.how}
             </h2>
             <ol className="mt-8 grid grid-cols-1 gap-8 text-left sm:grid-cols-3">
               {steps.map((s) => (
@@ -375,7 +379,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
                 Why MegaDeal
               </p>
               <h2 id="why-heading" className={H2} style={INK}>
-                More local customers. No commission on your sales.
+                {c.headings.why}
               </h2>
             </div>
             <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -424,7 +428,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
         <section id="questions" aria-labelledby="faq-heading" className="scroll-mt-[100px] bg-white px-4 pb-12 sm:px-6 sm:pb-14 lg:px-8">
           <div className="mx-auto max-w-3xl">
             <h2 id="faq-heading" className={`${fredoka.className} text-center text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={INK}>
-              Frequently asked questions
+              {c.headings.faq}
             </h2>
             <div className="mt-7 space-y-3">
               {faqs.map((f) => (

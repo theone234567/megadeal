@@ -224,6 +224,14 @@ const FAQS: { q: string; a: string }[] = [
     a: "You decide which dates, sessions and availability apply to your offer. Explain any booking requirements and restrictions clearly. Manage confirmed bookings through your own process; MegaDeal does not automatically synchronise your booking calendar.",
   },
   {
+    q: "Can I promote a weather-dependent activity?",
+    a: "Yes. Say in your conditions what happens if a trip is cancelled because of the weather, for example rebooking on another date. Customers book with you, so you handle changes as you normally would.",
+  },
+  {
+    q: "Can I offer a group or family price?",
+    a: "Yes. Set the offer for a group size or a family pass, and state the ages and numbers it covers.",
+  },
+  {
     q: "What happens after the free advertising period?",
     // Top-ups are arranged with us for now: no purchase screen in the
     // portal yet (same wording as /list-your-business).
@@ -496,7 +504,7 @@ export default function ThingsToDoAdvertisingPage() {
               Simple. Direct. Local.
             </p>
             <h2 id="how-heading" className={H2} style={INK}>
-              How MegaDeal works.
+              How MegaDeal works for tours and activities.
             </h2>
 
             <ol className="mt-8 grid grid-cols-1 gap-8 text-left sm:grid-cols-3">
@@ -534,7 +542,7 @@ export default function ThingsToDoAdvertisingPage() {
                 Why MegaDeal
               </p>
               <h2 id="why-heading" className={H2} style={INK}>
-                More local customers. No commission on your sales.
+                More local adventurers. No commission on your bookings.
               </h2>
             </div>
 
@@ -586,7 +594,7 @@ export default function ThingsToDoAdvertisingPage() {
         <section id="questions" aria-labelledby="faq-heading" className="scroll-mt-[100px] bg-white px-4 pb-12 sm:px-6 sm:pb-14 lg:px-8">
           <div className="mx-auto max-w-3xl">
             <h2 id="faq-heading" className={`${fredoka.className} text-center text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={INK}>
-              Frequently asked questions
+              Activity advertising: your questions
             </h2>
 
             <div className="mt-7 space-y-3">

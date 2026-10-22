@@ -117,7 +117,16 @@ const CONTENT: IndustryPageContent = {
       q: "Can I choose the dates and availability?",
       a: "You decide which nights, rooms and availability apply to your offer. Explain any minimum stays, blackout dates and restrictions clearly. Manage confirmed bookings through your own process; MegaDeal does not automatically synchronise your booking calendar.",
     },
+    {
+      q: "Can I add extras instead of discounting the room?",
+      a: "Yes. A late checkout, breakfast or a welcome hamper can be the offer, as long as it's genuine value and you say exactly what's included.",
+    },
   ],
+  headings: {
+    how: "How MegaDeal works for places to stay.",
+    why: "More local guests. No commission on your bookings.",
+    faq: "Accommodation advertising: your questions",
+  },
   eligibleNoun: "accommodation and getaway businesses",
   service: {
     type: "Accommodation and getaway advertising",

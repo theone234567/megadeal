@@ -118,7 +118,22 @@ const CONTENT: IndustryPageContent = {
       q: "Can I limit the offer to new customers?",
       a: "Yes. You can make your offer for new customers only and set any other conditions, such as an age limit or the times it can be used. Explain them clearly in the offer.",
     },
+    {
+      q: "Can I offer a free trial instead of a discount?",
+      a: "Yes. Your offer can be a discount, a package or something complimentary, like a free first class or an extra session with a pass, as long as it's genuine value. Say exactly what's included and any limits.",
+    },
+    {
+      // The limits are FLASH_MAX_MINUTES and EVERYDAY_MAX_DAYS
+      // (lib/dealDuration.ts); admin can only lower them.
+      q: "Can I run a short offer to fill tomorrow's empty classes?",
+      a: "Yes. A Flash deal runs for up to six hours, so you can promote spaces in upcoming classes. Everyday deals run for up to 30 days.",
+    },
   ],
+  headings: {
+    how: "How MegaDeal works for gyms and studios.",
+    why: "More local members. No commission on your memberships.",
+    faq: "Gym and fitness advertising: your questions",
+  },
   eligibleNoun: "health and fitness businesses",
   service: {
     type: "Health and fitness advertising",
