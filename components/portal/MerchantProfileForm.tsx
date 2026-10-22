@@ -23,6 +23,36 @@ const MAX_BIO_LENGTH = 600;
 /** Required fields carry a star (the form says "* required" once at the
  *  top): most fields are optional, so marking each of those "(optional)"
  *  made every label longer. */
+/** One thing stopping the form from being sent, and the field it's about. */
+type FormProblem = { id: string; message: string };
+
+/**
+ * Everything the browser's own checks would refuse, as a list, in the
+ * form's order. Left to the browser, a missing box was a small bubble
+ * beside the first one only, easy to miss on a long form on a phone, and
+ * pressing "Submit for approval" looked as if it had done nothing (local
+ * test, Oct 2026). The deal form already lists its problems this way.
+ */
+function formProblems(form: HTMLFormElement): FormProblem[] {
+  const problems: FormProblem[] = [];
+  for (const el of Array.from(form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input, select, textarea"))) {
+    if (!el.id || !el.willValidate || el.validity.valid) continue;
+    const label = (form.querySelector(`label[for="${el.id}"]`)?.textContent ?? "")
+      .replace(/\(required\)|\*/g, "")
+      .trim();
+    const name = label ? `“${label}”` : "This box";
+    const message = el.validity.valueMissing
+      ? el instanceof HTMLInputElement && el.type === "checkbox"
+        ? `Tick ${name}`
+        : `Fill in ${name}`
+      : el.validity.tooShort
+      ? `${name} needs at least ${(el as HTMLInputElement).minLength} characters`
+      : `Check ${name}: ${el.validationMessage}`;
+    problems.push({ id: el.id, message });
+  }
+  return problems;
+}
+
 function RequiredTag() {
   return (
     <>
@@ -107,6 +137,12 @@ export default function MerchantProfileForm({
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [editing, setEditing] = useState(startEditing);
   const [saving, setSaving] = useState(false);
+  const [problems, setProblems] = useState<FormProblem[]>([]);
+  /** Set once Submit has been pressed with something missing: from then
+   *  the list keeps up as each box is filled in. */
+  const [triedToSend, setTriedToSend] = useState(false);
+  const problemSummaryRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string | null>(null);
   // Keyed by the same name used in each field's id (e.g. "businessName" for
   // #profile-businessName) — set from the server's per-field validation
@@ -176,8 +212,52 @@ export default function MerchantProfileForm({
    *  Auckland"); the city on its own there says nothing. */
   const suburbIsCity = Boolean(suburb.trim()) && city !== "Other" && suburb.trim().toLowerCase() === city.toLowerCase();
 
-  async function handleSave(e: React.FormEvent) {
+  /** What's missing, from the browser's checks plus the photo (its own
+   *  field, outside them) for a listing being sent in. */
+  function currentProblems(form: HTMLFormElement): FormProblem[] {
+    const list = formProblems(form);
+    if (onPhotosConfirm && parseBusinessPhotos(merchant.photos).length === 0) {
+      list.push({ id: "profile-photos", message: "Add at least one business photo" });
+    }
+    // In the order they come on the form, the photo among them.
+    const at = (id: string) => document.getElementById(id);
+    return list.sort((a, b) => {
+      const x = at(a.id), y = at(b.id);
+      return x && y && x.compareDocumentPosition(y) & Node.DOCUMENT_POSITION_PRECEDING ? 1 : -1;
+    });
+  }
+
+  // A photo saves through its own route, not as a change to the form, so
+  // the list is brought up to date when the photos do.
+  useEffect(() => {
+    if (triedToSend && formRef.current) setProblems(currentProblems(formRef.current));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [merchant.photos, triedToSend]);
+
+  function goToField(id: string) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    const target = el.matches("input, select, textarea, button")
+      ? el
+      : el.querySelector<HTMLElement>("input:not([disabled]), select, textarea, button");
+    target?.focus({ preventScroll: true });
+  }
+
+  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const found = currentProblems(e.currentTarget);
+    setProblems(found);
+    if (found.length > 0) {
+      setTriedToSend(true);
+      setError(null);
+      // After React has drawn the list.
+      requestAnimationFrame(() => {
+        problemSummaryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        problemSummaryRef.current?.focus({ preventScroll: true });
+      });
+      return;
+    }
     if (suburbIsCity) {
       setFieldErrors({ suburb: `Enter your suburb (e.g. Glenfield), not the city.` });
       setError(null);
@@ -402,7 +482,45 @@ export default function MerchantProfileForm({
         </p>
       )}
 
-      <form onSubmit={handleSave} className="mt-4 space-y-4">
+      <form
+        ref={formRef}
+        noValidate
+        onSubmit={handleSave}
+        onChange={(e) => {
+          if (triedToSend) setProblems(currentProblems(e.currentTarget));
+        }}
+        className="mt-4 space-y-4"
+      >
+        {problems.length > 0 && (
+          <div
+            ref={problemSummaryRef}
+            tabIndex={-1}
+            role="alert"
+            aria-labelledby="profile-problems-title"
+            className="scroll-mt-24 rounded-xl border-2 border-red-300 bg-red-50 p-4 outline-none focus:ring-2 focus:ring-red-400"
+          >
+            <h2 id="profile-problems-title" className="font-display text-base font-bold text-red-800">
+              {problems.length === 1 ? "1 thing to fix" : `${problems.length} things to fix`} before you can{" "}
+              {createMode || startEditing ? "submit" : "save"}
+            </h2>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-red-700">
+              {problems.map((p) => (
+                <li key={`${p.id}:${p.message}`}>
+                  <a
+                    href={`#${p.id}`}
+                    onClick={(ev) => {
+                      ev.preventDefault();
+                      goToField(p.id);
+                    }}
+                    className="font-semibold underline underline-offset-2 hover:text-red-900"
+                  >
+                    {p.message}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {/* The public set is mapMerchantToBusiness in lib/business.ts
             (lib/businessPrivacy.test.ts); everything in the private part
             stays off the site. */}
@@ -457,7 +575,7 @@ export default function MerchantProfileForm({
                 the listing back for review), which is why it keeps its own
                 confirm step rather than riding along with the main Save. */}
             {onPhotosConfirm && (
-              <div>
+              <div id="profile-photos" className="scroll-mt-24">
                 <p className={labelClass}>
                   Business photo
                   <RequiredTag />
