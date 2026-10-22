@@ -9,6 +9,7 @@ import {
 } from "@/lib/fetchDealServer";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { businessPageIsThin } from "@/lib/businessIndexing";
+import { hubIsIndexable } from "@/lib/robotsMeta";
 
 // Deals are created/edited by merchants continuously, so a build-time-only
 // static sitemap would go stale between deploys.
@@ -90,12 +91,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const newest = (dates: (string | null)[]) =>
     dates.filter((d): d is string => Boolean(d)).sort().at(-1) ?? undefined;
 
-  // Only categories with a live deal — an empty one is noindexed on its
-  // own page (app/category/[category]/page.tsx), so listing it here
-  // would hand Google a URL it's told not to index.
+  // Only categories with enough live deals to be indexed (hubIsIndexable)
+  // — a thinner one is noindexed on its own page
+  // (app/auckland/[category]/page.tsx), so listing it here would hand
+  // Google a URL it's told not to index.
   const categoryPages: MetadataRoute.Sitemap = CATEGORIES.flatMap((c) => {
     const inCategory = deals.filter((d) => d.categories.includes(c.name));
-    if (inCategory.length === 0) return [];
+    if (!hubIsIndexable(inCategory.length)) return [];
     return [
       {
         url: `${SITE_URL}${categoryPath(c.name)}`,
@@ -128,9 +130,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     : [];
 
   // The city page lists every live deal in the city, so it's dated by the
-  // newest of them, and left out while there are none (it's noindexed
-  // then, like an empty category).
-  const cityPages: MetadataRoute.Sitemap = deals.length
+  // newest of them, and left out while it has too few to be indexed
+  // (hubIsIndexable), like a thin category.
+  const cityPages: MetadataRoute.Sitemap = hubIsIndexable(deals.length)
     ? [{ url: `${SITE_URL}${cityPath()}`, lastModified: newest(deals.map((d) => d.updatedAt)), changeFrequency: "daily", priority: 0.8 }]
     : [];
 

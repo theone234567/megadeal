@@ -12,3 +12,16 @@ export const INDEXABLE: NonNullable<Metadata["robots"]> = {
   follow: true,
   googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
 };
+
+/**
+ * A listing page (/auckland and each /auckland/<category>) is shown to
+ * search engines once it lists at least this many live deals. With one or
+ * two it's mostly the page's template, and thin pages count against the
+ * whole site (SEO pack T03, 22 Oct 2026). The page's robots and the
+ * sitemap both ask hubIsIndexable, so they always agree.
+ */
+export const HUB_MIN_DEALS = 3;
+
+export function hubIsIndexable(liveDeals: number): boolean {
+  return liveDeals >= HUB_MIN_DEALS;
+}
