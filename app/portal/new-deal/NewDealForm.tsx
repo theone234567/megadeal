@@ -968,10 +968,9 @@ export default function NewDealForm({
       ? FLASH_DURATIONS.find((d) => d.minutes === durationMinutes)?.label
       : DURATIONS.find((d) => d.days === durationDays)?.label;
 
-    // Not wrapped in <main>: DealDetail below renders the real page, main
-    // landmark and h1 included, and nesting a second set inside it would
-    // be invalid and leave two of each. The banner is chrome around the
-    // real thing rather than a page of its own.
+    // Not wrapped in <main>: PortalShell's is the page's, and DealDetail
+    // below draws in a <div> (inMain) rather than adding a second. The
+    // banner is chrome around the real thing rather than a page of its own.
     return (
       <div className="pb-10">
         <div className="border-b border-slate-200 bg-white">
@@ -1019,7 +1018,7 @@ export default function NewDealForm({
         </div>
 
         <div className="mt-8 border-t border-slate-200 pt-2">
-          <DealDetail deal={previewDeal} preview />
+          <DealDetail deal={previewDeal} preview inMain />
         </div>
 
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">

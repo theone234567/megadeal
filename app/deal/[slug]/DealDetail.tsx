@@ -61,9 +61,13 @@ export default function DealDetail({
   /** An example deal (lib/demoDeals.ts, /example/[slug]): the page as a
    *  preview, under an "Example only" banner, without breadcrumbs. */
   example = false,
+  /** Inside a page that already has its main landmark (the portal's
+   *  PortalShell): drawn in a <div> so there aren't two. */
+  inMain = false,
 }: {
   deal: Deal;
   moreDeals?: ReactNode;
+  inMain?: boolean;
   preview?: boolean;
   example?: boolean;
 }) {
@@ -76,6 +80,19 @@ export default function DealDetail({
     const id = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(id);
   }, [preview]);
+  // And once more the moment it ends: on the 30s check alone a Flash
+  // deal's box read "Offer ends in Ended", with the code still on offer,
+  // for up to half a minute after its end (local test, Oct 2026). Only
+  // when the end is within a day: further out, the 30s check catches it
+  // long before, and a timer that far ahead isn't worth keeping.
+  const endsAt = deal.expiresAt ? new Date(deal.expiresAt).getTime() : NaN;
+  useEffect(() => {
+    if (preview || !Number.isFinite(endsAt)) return;
+    const msLeft = endsAt - Date.now();
+    if (msLeft <= 0 || msLeft > 24 * 60 * 60 * 1000) return;
+    const id = setTimeout(() => setNow(Date.now()), msLeft + 250);
+    return () => clearTimeout(id);
+  }, [preview, endsAt]);
   const live = preview || isDealLive(deal, now);
 
   const tracker = useDealActionTracker(deal.id, preview, deal.businessSlug);
@@ -171,8 +188,9 @@ export default function DealDetail({
     ...(deal.businessAddressHidden ? ["The exact address is given when you book."] : []),
   ];
 
+  const Landmark = inMain ? "div" : "main";
   return (
-    <main className="mx-auto max-w-[1200px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
+    <Landmark className="mx-auto max-w-[1200px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
       {example ? (
         <div role="note" className="mb-4 flex flex-col gap-2 rounded-xl border border-hp-border bg-hp-lavender px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-hp-ink">
@@ -439,6 +457,6 @@ export default function DealDetail({
       <div id="deal-end" aria-hidden="true" />
 
       {moreDeals}
-    </main>
+    </Landmark>
   );
 }
