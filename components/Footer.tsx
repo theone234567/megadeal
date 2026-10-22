@@ -143,9 +143,13 @@ export default function Footer({
           </div>
         </section>
 
+        {/* Link lists, not page sections: their titles are labels rather
+            than headings, so every page's outline is its own content and
+            not "Categories, Company, Support" (SEO pack T11). Each list is
+            a named navigation landmark for screen readers instead. */}
         <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-          <div>
-            <h2 className="mb-3 text-sm font-bold text-slate-900">Categories</h2>
+          <nav aria-labelledby="footer-categories">
+            <p id="footer-categories" className="mb-3 text-sm font-bold text-slate-900">Categories</p>
             <ul className="space-y-1 text-sm text-slate-600">
               {FOOTER_CATEGORIES.map((category) => (
                 <li key={category.name}>
@@ -155,10 +159,10 @@ export default function Footer({
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
           {/* The advertise pages, linked from every page (lib/businessLinks.ts). */}
-          <div>
-            <h2 className="mb-3 text-sm font-bold text-slate-900">Advertise with us</h2>
+          <nav aria-labelledby="footer-advertise">
+            <p id="footer-advertise" className="mb-3 text-sm font-bold text-slate-900">Advertise with us</p>
             <ul className="space-y-1 text-sm text-slate-600">
               {ADVERTISE_PAGES.map((l) => (
                 <li key={l.href}>
@@ -168,9 +172,9 @@ export default function Footer({
                 </li>
               ))}
             </ul>
-          </div>
-          <div>
-            <h2 className="mb-3 text-sm font-bold text-slate-900">Company</h2>
+          </nav>
+          <nav aria-labelledby="footer-company">
+            <p id="footer-company" className="mb-3 text-sm font-bold text-slate-900">Company</p>
             <ul className="space-y-1 text-sm text-slate-600">
               <li><Link prefetch={false} href="/list-your-business" className="inline-block py-1 hover:text-brand-700">List your business</Link></li>
               <li><Link prefetch={false} href="/about" className="inline-block py-1 hover:text-brand-700">About MegaDeal</Link></li>
@@ -180,9 +184,9 @@ export default function Footer({
                 <li><Link prefetch={false} href="/coming-soon" className="inline-block py-1 hover:text-brand-700">Coming soon</Link></li>
               )}
             </ul>
-          </div>
-          <div>
-            <h2 className="mb-3 text-sm font-bold text-slate-900">Support</h2>
+          </nav>
+          <nav aria-labelledby="footer-support">
+            <p id="footer-support" className="mb-3 text-sm font-bold text-slate-900">Support</p>
             <ul className="space-y-1 text-sm text-slate-600">
               <li><Link prefetch={false} href="/help" className="inline-block py-1 hover:text-brand-700">Help centre</Link></li>
               <li><Link prefetch={false} href="/redeem" className="inline-block py-1 hover:text-brand-700">How to redeem a deal</Link></li>
@@ -194,7 +198,7 @@ export default function Footer({
                   search engines, which find it through llms.txt, the sitemap and
                   the <link rel="alternate"> in every page's head. */}
             </ul>
-          </div>
+          </nav>
         </div>
 
         {/* Terms and Privacy live in the Support column above, where people

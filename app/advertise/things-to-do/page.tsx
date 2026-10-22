@@ -286,14 +286,20 @@ export default function ThingsToDoAdvertisingPage() {
         <section id="hero" className="px-4 pt-5 sm:px-6 sm:pt-7 lg:px-8">
           <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-8 rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-5 py-7 sm:rounded-3xl sm:px-9 sm:py-10 md:grid-cols-[1.12fr_1fr] md:gap-8 lg:grid-cols-2 lg:gap-12 lg:px-12 lg:py-12">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.08em] text-hp-purple">
-                For Auckland activity &amp; experience businesses
-              </p>
-              <h1
-                className={`${fredoka.className} mt-3 text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
-              >
-                Fill quiet times.{" "}
-                <span className="block text-hp-purple">Welcome more local adventurers.</span>
+              {/* The small label is part of the heading, as on Home & Car:
+                  the big line alone says nothing about what the page is,
+                  and the page's one heading is what search engines and AI
+                  answers lean on most after the title (SEO pack T11). */}
+              <h1>
+                <span className="block text-xs font-bold uppercase tracking-[0.08em] text-hp-purple">
+                  Activity &amp; experience advertising in Auckland
+                </span>{" "}
+                <span
+                  className={`${fredoka.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
+                >
+                  Fill quiet times.{" "}
+                  <span className="block text-hp-purple">Welcome more local adventurers.</span>
+                </span>
               </h1>
               <p className="mt-4 max-w-[34rem] text-base leading-relaxed sm:text-lg md:text-base lg:text-lg" style={{ color: "#334155" }}>
                 Put your tours, activities and experiences in front of Auckland locals looking for

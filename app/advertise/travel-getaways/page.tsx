@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 const CONTENT: IndustryPageContent = {
   path: PATH,
   trackingName: "advertise_travel_getaways",
-  audience: "For Auckland accommodation & getaway businesses",
+  audience: "Accommodation advertising in Auckland",
   headline: "Fill quieter nights.",
   headlineAccent: "Welcome more local getaways.",
   intro:

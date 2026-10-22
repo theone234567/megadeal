@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 const CONTENT: IndustryPageContent = {
   path: PATH,
   trackingName: "advertise_health_fitness",
-  audience: "For Auckland health & fitness businesses",
+  audience: "Gym & fitness advertising in Auckland",
   headline: "Fill off-peak classes.",
   headlineAccent: "Welcome new local members.",
   intro:

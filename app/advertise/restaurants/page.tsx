@@ -322,14 +322,20 @@ export default function RestaurantAdvertisingPage() {
         >
           <div className="mx-auto grid max-w-[1184px] grid-cols-1 items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.08fr_1fr] lg:gap-[60px] lg:px-8 lg:pb-[85px] lg:pt-[78px]">
             <div>
-              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/80">
-                <UtensilsIcon className="h-3.5 w-3.5" /> For Auckland restaurants &amp; cafés
-              </p>
-              <h1
-                className={`${fredoka.className} mt-3 text-[40px] font-semibold leading-[1.08] sm:text-[52px] lg:text-[62px]`}
-              >
-                Turn Auckland&rsquo;s quieter restaurant tables into{" "}
-                <span style={{ color: "#ADDFFF" }}>new regulars.</span>
+              {/* The small label is part of the heading, as on Home & Car:
+                  the big line alone says nothing about what the page is,
+                  and the page's one heading is what search engines and AI
+                  answers lean on most after the title (SEO pack T11). */}
+              <h1>
+                <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/80">
+                  <UtensilsIcon className="h-3.5 w-3.5" /> Restaurant &amp; café advertising in Auckland
+                </span>{" "}
+                <span
+                  className={`${fredoka.className} mt-3 block text-[40px] font-semibold leading-[1.08] sm:text-[52px] lg:text-[62px]`}
+                >
+                  Turn Auckland&rsquo;s quieter restaurant tables into{" "}
+                  <span style={{ color: "#ADDFFF" }}>new regulars.</span>
+                </span>
               </h1>
               <p className="mt-5 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
                 {LAUNCHED
