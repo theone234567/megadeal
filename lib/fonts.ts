@@ -19,6 +19,12 @@ export const fredoka = Fredoka({
   weight: ["600", "700"],
   display: "swap",
   variable: "--font-fredoka",
+  // Stand-ins sized to match, for computers with Arial and for Android
+  // without it (app/globals.css), then any sans-serif, never the browser's
+  // default serif. The first is Next's own Arial stand-in, which can't
+  // be told about Roboto, so Next's is turned off.
+  fallback: ["FredokaFallbackArial", "FredokaFallbackRoboto", "sans-serif"],
+  adjustFontFallback: false,
 });
 
 export const plusJakartaSans = Plus_Jakarta_Sans({
@@ -26,6 +32,8 @@ export const plusJakartaSans = Plus_Jakarta_Sans({
   weight: ["400", "500", "600", "700"],
   display: "swap",
   variable: "--font-jakarta",
+  fallback: ["JakartaFallbackArial", "JakartaFallbackRoboto", "sans-serif"],
+  adjustFontFallback: false,
 });
 
 export const caveat = Caveat({

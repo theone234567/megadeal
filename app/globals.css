@@ -2,6 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Stand-ins for the brand fonts while they download (lib/fonts.ts), sized
+ * so the page doesn't move when the real font arrives. Next's own
+ * stand-in uses Arial only, and Android has no Arial (nor does Linux):
+ * there the page was first drawn in an unadjusted system font and jumped
+ * by up to 100px on the swap, a layout shift of 0.27 on the homepage
+ * (Lighthouse mobile, Oct 2026; Google wants under 0.1). So these replace
+ * it (lib/fonts.ts turns Next's off): Arial, or Liberation Sans which has
+ * Arial's measurements, with Next's own numbers; then Roboto for Android,
+ * worked out the same way (node_modules/next/dist/server/font-utils.js):
+ * scaled to the brand font's average letter width, with its line height.
+ */
+@font-face {
+  font-family: JakartaFallbackArial;
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans");
+  ascent-override: 98.88%;
+  descent-override: 21.15%;
+  line-gap-override: 0%;
+  size-adjust: 104.98%;
+}
+@font-face {
+  font-family: JakartaFallbackRoboto;
+  src: local("Roboto"), local("Roboto-Regular");
+  ascent-override: 98.66%;
+  descent-override: 21.1%;
+  line-gap-override: 0%;
+  size-adjust: 105.21%;
+}
+@font-face {
+  font-family: FredokaFallbackArial;
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans");
+  ascent-override: 95.64%;
+  descent-override: 23.17%;
+  line-gap-override: 0%;
+  size-adjust: 101.84%;
+}
+@font-face {
+  font-family: FredokaFallbackRoboto;
+  src: local("Roboto"), local("Roboto-Regular");
+  ascent-override: 95.43%;
+  descent-override: 23.12%;
+  line-gap-override: 0%;
+  size-adjust: 102.06%;
+}
+
 html {
   scroll-behavior: smooth;
 }
