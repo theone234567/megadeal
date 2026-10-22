@@ -3,6 +3,7 @@ import type { Coords } from "./geo";
 import { isDealLive } from "./dealVisibility";
 import { categoryBySlug } from "./categories";
 import { dealDistanceKm, sortDeals, type SortOption } from "./sortDeals";
+import { dealMatchesSearch, searchWords } from "./dealSearch";
 
 /**
  * The homepage's filter state, kept in the URL so it survives back/forward
@@ -90,26 +91,16 @@ export function homeHref(filters: HomeFilters, patch: Partial<HomeFilters> = {},
  * nothing to measure from, so no deal is dropped for it.
  */
 export function matchDeals(deals: Deal[], f: HomeFilters, now: number, coords: Coords | null = null): Deal[] {
-  const q = f.q.toLowerCase();
+  const words = searchWords(f.q);
   const city = f.city.toLowerCase();
   const categoryName = f.category ? categoryBySlug(f.category)?.name ?? null : null;
   const band = PRICE_BANDS.find((b) => b.value === f.price);
 
   const matching = deals.filter((d) => {
     if (!isDealLive(d, now)) return false;
-    if (
-      q &&
-      !(
-        d.name.toLowerCase().includes(q) ||
-        d.description.toLowerCase().includes(q) ||
-        (d.businessName ?? "").toLowerCase().includes(q) ||
-        // Searching a suburb ("Takapuna") finds the deals there.
-        (d.businessSuburb ?? "").toLowerCase().includes(q) ||
-        d.categories.some((c) => c.toLowerCase().includes(q))
-      )
-    ) {
-      return false;
-    }
+    // Each word somewhere in the deal: its text, business, suburb
+    // ("Takapuna") or category (lib/dealSearch.ts).
+    if (!dealMatchesSearch(d, words)) return false;
     // Same exact-city match as before: a deal's town, not a region.
     if (city && (d.businessCity ?? "").toLowerCase() !== city) return false;
     if (categoryName && !d.categories.includes(categoryName)) return false;
