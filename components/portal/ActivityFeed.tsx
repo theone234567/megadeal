@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatNzDateTime } from "@/lib/nzTime";
 
 interface ActivityItem {
   _id: string;
@@ -50,7 +51,7 @@ export default function ActivityFeed() {
                 <p className="text-slate-700">{item.description}</p>
                 {item._createdDate && (
                   <p className="text-xs text-slate-500">
-                    {new Date(item._createdDate).toLocaleDateString()}
+                    {formatNzDateTime(item._createdDate)}
                   </p>
                 )}
               </div>

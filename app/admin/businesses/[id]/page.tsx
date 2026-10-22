@@ -10,6 +10,7 @@ import { listingMissing, type AdminMerchant } from "@/components/admin/MerchantR
 import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { EyeOffIcon, GlobeIcon } from "@/components/icons";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
+import { formatNzDateTime } from "@/lib/nzTime";
 
 const STATUSES = ["Pending", "Approved", "Suspended"];
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
@@ -693,7 +694,7 @@ export default function AdminBusinessDetailPage() {
                       <p className="text-slate-700">{item.description}</p>
                       {item._createdDate && (
                         <p className="text-xs text-slate-500">
-                          {new Date(item._createdDate).toLocaleString()}
+                          {formatNzDateTime(item._createdDate)}
                         </p>
                       )}
                     </div>

@@ -1,3 +1,5 @@
+import { formatOfferEndDate } from "@/lib/format";
+
 export interface AdminSubscriber {
   _id: string;
   email?: string;
@@ -13,7 +15,7 @@ function formatDate(iso?: string) {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString();
+  return formatOfferEndDate(iso);
 }
 
 export default function SubscriberRow({ subscriber }: { subscriber: AdminSubscriber }) {

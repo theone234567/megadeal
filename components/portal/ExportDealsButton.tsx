@@ -3,6 +3,7 @@
 import type { DealRecord } from "./DealManageCard";
 import { dealDisplayStatus } from "@/lib/dealStatus";
 import { csvCell } from "@/lib/csv";
+import { nzDate } from "@/lib/dealOffer";
 
 const COLUMNS: { header: string; get: (d: DealRecord) => string | number }[] = [
   { header: "Deal name", get: (d) => d.dealName || "" },
@@ -17,7 +18,7 @@ const COLUMNS: { header: string; get: (d: DealRecord) => string | number }[] = [
   { header: "Call taps", get: (d) => d.callClickCount || 0 },
   { header: "Email taps", get: (d) => d.emailClickCount || 0 },
   { header: "Directions taps", get: (d) => d.directionsClickCount || 0 },
-  { header: "Expires", get: (d) => (d.expiresAt ? new Date(d.expiresAt).toLocaleDateString() : "") },
+  { header: "Expires", get: (d) => nzDate(d.expiresAt) ?? "" },
 ];
 
 

@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { DealStatus } from "@/lib/types";
 import { DEAL_STATUS_STYLES, allowedDealActions, dealDisplayStatus, withdrawalRefundsCredit } from "@/lib/dealStatus";
 import { describeMinutes } from "@/lib/dealDuration";
+import { formatOfferEndDate } from "@/lib/format";
 import { creditsLabel, creditsToRefund } from "@/lib/platformSettingsRules";
 import PhotoUploadField from "./PhotoUploadField";
 import DealChangeRequest from "./DealChangeRequest";
@@ -130,7 +131,10 @@ export default function DealManageCard({
               : status === "Pending Approval" && deal.scheduledStartAt
               ? `${startLabel(deal.scheduledStartAt)} if approved`
               : deal.expiresAt
-              ? `${isEnded ? "Ended" : "Ends"} ${new Date(deal.expiresAt).toLocaleDateString()}`
+              ? // NZ date (and time, for a Flash deal), as the deal page shows it: the
+              // phone's own format printed "10/22/2026" for a deal that ended on
+              // the 23rd in Auckland.
+              `${isEnded ? "Ended" : "Ends"} ${formatOfferEndDate(deal.expiresAt, Boolean(deal.isFlash))}`
               : Number(deal.requestedDurationMinutes) > 0
               ? `Runs ${describeMinutes(Number(deal.requestedDurationMinutes))} once approved`
               : "—"}
