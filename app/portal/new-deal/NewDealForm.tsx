@@ -7,6 +7,7 @@ import { useSession } from "@/context/SessionProvider";
 import { uploadPhoto } from "@/lib/imageUpload";
 import { CATEGORIES } from "@/lib/categories";
 import { parseDraft, MAX_DRAFT_TEXT, draftRevisionOf } from "@/lib/dealDraft";
+import { prelaunchAllowanceBlock } from "@/lib/prelaunchAllowance";
 import { STANDARD_TERMS, renderTerms, parseTerms } from "@/lib/dealTerms";
 import { buildPreviewDeal } from "@/lib/previewDeal";
 import { DEAL_CODE_MAX, dealCodeError, isGeneratedDealCode, normaliseDealCode } from "@/lib/dealCode";
@@ -127,6 +128,26 @@ export default function NewDealForm({
   // Before launch deals are free (lib/prelaunchAllowance.ts): shown as
   // costing nothing, as the server charges.
   const platformSettings = isTest ? null : liveSettings && prelaunchFree ? { ...liveSettings, chargeCredits: false } : liveSettings;
+  // Before launch, a type with a deal already running can't take another
+  // (the same rule the server applies, lib/prelaunchAllowance.ts). Said at
+  // the type choice, before the form is filled in: it used to appear only
+  // under "Submit deal for approval", once everything was done.
+  const [typeInUse, setTypeInUse] = useState<{ everyday: string | null; flash: string | null } | null>(null);
+  useEffect(() => {
+    if (isTest || !prelaunchFree) return;
+    let cancelled = false;
+    fetch("/api/deals/mine")
+      .then((res) => (res.ok ? res.json() : { items: [] }))
+      .then(({ items }) => {
+        if (cancelled || !Array.isArray(items)) return;
+        const now = Date.now();
+        setTypeInUse({ everyday: prelaunchAllowanceBlock(items, false, now), flash: prelaunchAllowanceBlock(items, true, now) });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isTest, prelaunchFree]);
   // Flash up to 6 hours, Everyday up to 30 days (lib/dealDuration.ts), or
   // less if an admin has set a shorter maximum.
   const maxDays = platformSettings?.everydayMaxDays ?? EVERYDAY_MAX_DAYS;
@@ -1296,6 +1317,7 @@ export default function NewDealForm({
               const selected = isFlash === flash;
               const typeCost = platformSettings ? dealCreditCost(flash, platformSettings) : null;
               const paused = platformSettings ? dealTypeBlocked(flash, platformSettings) !== null : false;
+              const running = !paused && Boolean(typeInUse?.[flash ? "flash" : "everyday"]);
               const longest = flash
                 ? FLASH_DURATIONS[FLASH_DURATIONS.length - 1].label
                 : DURATIONS[DURATIONS.length - 1].label;
@@ -1330,6 +1352,11 @@ export default function NewDealForm({
                           Paused
                         </span>
                       )}
+                      {running && (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">
+                          You have one running
+                        </span>
+                      )}
                     </span>
                     <span className="mt-0.5 block text-xs leading-relaxed text-slate-600">
                       {flash
@@ -1351,6 +1378,12 @@ export default function NewDealForm({
           {typePaused ? (
             <p role="status" className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
               {typePaused} You can still build it and save it as a draft.
+            </p>
+          ) : typeInUse?.[isFlash ? "flash" : "everyday"] ? (
+            <p role="status" className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
+              {typeInUse[isFlash ? "flash" : "everyday"]}{" "}
+              {!typeInUse[isFlash ? "everyday" : "flash"] && `A ${dealTypeName(!isFlash)} is free to add now. `}
+              You can still build this one and save it as a draft.
             </p>
           ) : (
             cost !== null &&
