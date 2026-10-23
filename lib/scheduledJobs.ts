@@ -23,8 +23,10 @@ export const SCHEDULED_JOBS: Record<string, string[]> = {
   // Hourly: tell search engines about deals that just ended
   // (app/api/cron/expired-deals), check the database answers
   // (app/api/cron/watch), and email the owner about businesses and deals
-  // newly waiting for a decision (app/api/cron/review-queue).
-  "17 * * * *": ["/api/cron/expired-deals", "/api/cron/watch", "/api/cron/review-queue"],
+  // newly waiting for a decision (app/api/cron/review-queue), and, from
+  // launch, the weekly new-deals email on Thursday evenings
+  // (app/api/cron/weekly-deals; it works out the day itself).
+  "17 * * * *": ["/api/cron/expired-deals", "/api/cron/watch", "/api/cron/review-queue", "/api/cron/weekly-deals"],
 };
 
 type FetchSite = (req: Request) => Promise<Response>;
