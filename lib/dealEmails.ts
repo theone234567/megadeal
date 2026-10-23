@@ -54,35 +54,62 @@ export function dealLiveEmail(
 /** "1 time" / "12 times". */
 const times = (n: number) => `${n.toLocaleString("en-NZ")} time${n === 1 ? "" : "s"}`;
 
+/** What running a deal again costs, for the deal-ended email. */
+export type RunAgainCost =
+  | { kind: "prelaunch" }
+  | { kind: "credits"; cost: number; balance: number };
+
+/** Views that make the subject line worth leading with. */
+export const VIEWS_IN_SUBJECT = 5;
+
 /**
  * A deal whose run has finished (lib/dealEndedNotices.ts): how it did,
  * and one tap to run it again. Carries the business-email unsubscribe
  * (lib/businessEmailOptOut.ts), since the "run it again" makes it more
- * than a plain notice.
+ * than a plain notice. Says what another run costs (opts.cost), the usual
+ * reason a business doesn't, and leads the subject with the views once
+ * there are enough to be worth it.
  */
 export function dealEndedEmail(
   deal: { id: string; name: string; endedAt: string; views: number; codeCopies: number },
-  opts: { businessName: string; siteUrl: string; stopUrl: string }
+  opts: { businessName: string; siteUrl: string; stopUrl: string; cost?: RunAgainCost | null }
 ): DealEmail {
   const name = escapeHtml(deal.name || "Your deal");
   const base = opts.siteUrl.replace(/\/$/, "");
   const again = `${base}/portal/new-deal?duplicate=${encodeURIComponent(deal.id)}`;
+  const fresh = `${base}/portal/new-deal`;
   const stats =
     deal.views > 0
       ? `<p style="margin:0 0 16px;">While it ran, people viewed it ${times(deal.views)}${
           deal.codeCopies > 0 ? ` and copied its code ${times(deal.codeCopies)}` : ""
         }.</p>`
       : "";
+  // What it costs is the usual reason not to: say so.
+  const c = opts.cost;
+  const cost = !c
+    ? ""
+    : c.kind === "prelaunch"
+    ? "It's free before launch: you can run 1 Everyday Deal and 1 Flash Deal at a time."
+    : c.cost === 0
+    ? "Running another deal is free at the moment."
+    : c.balance >= c.cost
+    ? `You have ${c.balance.toLocaleString("en-NZ")} credits; running it again takes ${c.cost}.`
+    : `Running it again takes ${c.cost} credits, and you have ${c.balance.toLocaleString("en-NZ")}.`;
+  const subject =
+    deal.views >= VIEWS_IN_SUBJECT
+      ? `${deal.name || "Your deal"} ended with ${deal.views.toLocaleString("en-NZ")} views. Run it again?`
+      : `Your deal has ended: ${deal.name || "your deal"}`;
   return {
-    subject: `Your deal has ended: ${deal.name || "your deal"}`.slice(0, 150),
+    subject: subject.slice(0, 150),
     html: brandedEmailHtml(`
       ${greeting(opts.businessName)}
       <p style="margin:0 0 16px;"><strong>${name}</strong> finished on ${escapeHtml(formatOfferEndDate(deal.endedAt))}, so customers can't see it any more.</p>
       ${stats}
-      <p style="margin:0 0 16px;">Want to run it again? We'll copy it into a new deal for you to check, change if you like, and submit.</p>
-      <p style="margin:0 0 16px;text-align:center;">
+      <p style="margin:0 0 16px;">Want to run it again? We'll copy it into a new deal for you to check, change if you like, and submit.${cost ? ` ${cost}` : ""}</p>
+      <p style="margin:0 0 8px;text-align:center;">
         <a href="${again}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Run this deal again</a>
       </p>
+      <p style="margin:0 0 16px;text-align:center;font-size:14px;"><a href="${fresh}" style="color:#6D28D9;font-weight:600;">Or create a different deal</a></p>
       <p style="margin:0 0 16px;font-size:13px;color:#8b8494;">Questions? Just reply to this email.</p>
       <p style="margin:0;font-size:12px;color:#8b8494;border-top:1px solid #f1f0f4;padding-top:12px;">You're getting this because your business runs deals on MegaDeal. Don't want emails like this? <a href="${opts.stopUrl}" style="color:#8b8494;">Unsubscribe</a>.</p>
     `),

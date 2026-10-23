@@ -92,7 +92,9 @@ describe("deal ended email", () => {
 
   it("names the deal, links straight to running it again, and offers an unsubscribe", () => {
     const { subject, html } = dealEndedEmail(deal, opts);
-    expect(subject).toBe("Your deal has ended: Two <i>brunches</i>");
+    expect(subject).toBe("Two <i>brunches</i> ended with 124 views. Run it again?");
+    expect(dealEndedEmail({ ...deal, views: 4 }, opts).subject).toBe("Your deal has ended: Two <i>brunches</i>");
+    expect(html).toContain('href="https://megadeal.co.nz/portal/new-deal"');
     expect(html).toContain('href="https://megadeal.co.nz/portal/new-deal?duplicate=0b9c7c1e-0000-4000-8000-000000000001"');
     expect(html).toContain(opts.stopUrl);
     expect(html).toContain("22 October");
@@ -103,6 +105,14 @@ describe("deal ended email", () => {
     expect(html).not.toContain("<i>brunches");
     expect(html).not.toContain("<b>Light");
     expect(html).toContain("Two &lt;i&gt;brunches&lt;/i&gt;");
+  });
+
+  it("says what running it again costs", () => {
+    expect(dealEndedEmail(deal, opts).html).not.toContain("credits;");
+    expect(dealEndedEmail(deal, { ...opts, cost: { kind: "prelaunch" } }).html).toContain("It's free before launch: you can run 1 Everyday Deal and 1 Flash Deal at a time.");
+    expect(dealEndedEmail(deal, { ...opts, cost: { kind: "credits", cost: 30, balance: 150 } }).html).toContain("You have 150 credits; running it again takes 30.");
+    expect(dealEndedEmail(deal, { ...opts, cost: { kind: "credits", cost: 30, balance: 10 } }).html).toContain("Running it again takes 30 credits, and you have 10.");
+    expect(dealEndedEmail(deal, { ...opts, cost: { kind: "credits", cost: 0, balance: 0 } }).html).toContain("Running another deal is free at the moment.");
   });
 
   it("gives the numbers when there are any, in plain English", () => {
