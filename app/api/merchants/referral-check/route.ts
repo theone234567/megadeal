@@ -23,7 +23,8 @@ export async function GET(req: NextRequest) {
   }
   try {
     const found = await createDataClient().items.query("Merchants").eq("referralCode", code).limit(1).find();
-    return answer((found.items ?? []).length > 0);
+    // A suspended business's code earns nothing (/api/admin/merchants/[id]).
+    return answer((found.items ?? []).some((m: any) => m.status !== "Suspended"));
   } catch (err) {
     console.error("[referral-check] lookup failed", err);
     return NextResponse.json({ error: "Couldn't check that code just now." }, { status: 500 });

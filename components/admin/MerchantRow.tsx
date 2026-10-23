@@ -33,7 +33,6 @@ export interface AdminMerchant {
   referredBy?: string;
   referralRewarded?: boolean;
   promoRewarded?: boolean;
-  notifyReferralBonus?: boolean;
   website?: string;
   contactName?: string;
   contactPhone?: string;

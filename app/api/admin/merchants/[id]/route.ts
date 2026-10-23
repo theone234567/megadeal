@@ -432,7 +432,10 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       .query("Merchants")
       .eq("referralCode", enteredReferral)
       .find();
-    const candidate = (referrerResult.items ?? []).find((m: any) => m._id !== existing._id) || null;
+    // Not a suspended business: suspension takes a business off MegaDeal,
+    // so its link shouldn't keep earning it credits.
+    const candidate =
+      (referrerResult.items ?? []).find((m: any) => m._id !== existing._id && m.status !== "Suspended") || null;
     if (candidate && (await claimReferralAtomically(adminClient, existing._id))) {
       referrer = candidate;
       referralBonusGranted = REFERRAL_BONUS_CREDITS;

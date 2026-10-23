@@ -53,7 +53,6 @@ interface MerchantRecord {
   photos?: string;
   emailVerified?: boolean;
   referralCode?: string;
-  notifyReferralBonus?: boolean;
   [key: string]: any;
 }
 
