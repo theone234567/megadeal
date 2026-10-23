@@ -35,6 +35,34 @@ function cleanText(value: unknown, maxLength: number): string {
 }
 
 const INTRO_CREDITS = 2;
+
+/**
+ * What a first approval adds by itself: the launch offer (lib/promo.ts),
+ * and the referral bonus when the business signed up with another active
+ * business's code. Worked out the way the approval below grants them, for
+ * the admin page to say before approving, and to stop credits being typed
+ * in on top by mistake (a live test added the welcome 180 by hand as well,
+ * 23 Oct 2026). Null once the business has been approved before.
+ */
+async function approvalCreditsPreview(adminClient: any, m: Record<string, any>): Promise<{ credits: number; parts: string[] } | null> {
+  if (m.firstApprovedAt || m.status === "Approved") return null;
+  const { promoCode, referralCode } = signupCodes(m, (c) => promoForCode(c, SITE_LAUNCHED) !== null);
+  const promo = (promoCode ? promoForCode(promoCode, SITE_LAUNCHED) : null) ?? currentPromo(SITE_LAUNCHED);
+  const parts: string[] = [];
+  let credits = 0;
+  if (promo && !m.promoRewarded) {
+    credits += promo.credits;
+    parts.push(`${promo.credits} from the ${promo.code} offer`);
+  }
+  if (referralCode && !m.referralRewarded) {
+    const found = await adminClient.items.query("Merchants").eq("referralCode", referralCode).find();
+    if ((found.items ?? []).some((o: any) => o._id !== m._id && o.status !== "Suspended")) {
+      credits += REFERRAL_BONUS_CREDITS;
+      parts.push(`${REFERRAL_BONUS_CREDITS} referral bonus`);
+    }
+  }
+  return { credits, parts };
+}
 // The free-advertising offer advertised on /list-your-business: WELCOME6
 // (up to 6 months, 180 credits) before launch, WELCOME3 (up to 3 months,
 // 90 credits) from launch — see lib/promo.ts, which decides by
@@ -135,7 +163,8 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
     const emailChoices = item.email
       ? await businessEmailChoices(adminClient, { _id: item._id, email: item.email }).catch(() => null)
       : null;
-    return NextResponse.json({ item, referralMatch, emailChoices });
+    const approvalCredits = await approvalCreditsPreview(adminClient, item).catch(() => null);
+    return NextResponse.json({ item, referralMatch, emailChoices, approvalCredits });
   } catch (err) {
     console.error("[admin/merchants/[id]] GET failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
@@ -314,6 +343,23 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   const existing = await adminClient.items.get("Merchants", params.id);
   if (!existing) {
     return NextResponse.json({ error: "Merchant not found." }, { status: 404 });
+  }
+
+  // Credits typed in while approving a business for the first time, when
+  // approving already adds some: confirmed first (confirmExtraCredits), or
+  // the business ends up with both.
+  const typedCredits = patch.creditsBalance !== undefined ? Number(patch.creditsBalance) - (Number(existing.creditsBalance) || 0) : 0;
+  if (patch.status === "Approved" && existing.status !== "Approved" && typedCredits > 0 && body.confirmExtraCredits !== true) {
+    const preview = await approvalCreditsPreview(adminClient, existing);
+    if (preview && preview.credits > 0) {
+      return NextResponse.json(
+        {
+          error: `Approving adds ${preview.credits} credits by itself (${preview.parts.join(" and ")}). Add ${typedCredits} more on top as well?`,
+          code: "extra_credits",
+        },
+        { status: 409 }
+      );
+    }
   }
 
   let becomingApproved = patch.status === "Approved" && existing.status !== "Approved";
@@ -575,6 +621,8 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         const sent = await sendTransactionalEmail({
           to: referrerFresh.email,
           subject: "You earned referral credits on MegaDeal!",
+          // Replies reach a person, as with every email to a business.
+          replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
           html: brandedEmailHtml(`
             <p style="margin:0 0 16px;">Hi ${safeReferrerName},</p>
             <p style="margin:0 0 16px;">Great news — a business you referred, <strong>${safeReferredName}</strong>, has been approved on MegaDeal. We've added
@@ -591,38 +639,14 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     }
   }
 
-  // Credits an admin added by hand (a top-up, a refund, a goodwill
-  // gesture): the business is told, with the reason it already sees in its
-  // activity. A reduction isn't emailed; it's on the activity line.
-  if (creditsApplied && adminAdjustDelta > 0 && existing.email) {
-    try {
-      const safeName = escapeHtml(existing.businessName || "there");
-      const balance = existingCredits + creditsDelta;
-      const sent = await sendTransactionalEmail({
-        to: existing.email,
-        subject: `We've added ${adminAdjustDelta} deal credit${adminAdjustDelta === 1 ? "" : "s"} to your MegaDeal account`,
-        html: brandedEmailHtml(`
-          <p style="margin:0 0 16px;">Hi ${safeName},</p>
-          <p style="margin:0 0 16px;">We've added <strong>${adminAdjustDelta} deal credit${adminAdjustDelta === 1 ? "" : "s"}</strong> to your account: ${escapeHtml(creditsReason.replace(/[.!?\s]+$/, ""))}.</p>
-          <p style="margin:0 0 16px;">Your balance is now ${balance.toLocaleString("en-NZ")} credit${balance === 1 ? "" : "s"}, ready for your next deal.</p>
-          <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6D28D9;font-weight:700;">Go to your portal</a></p>
-        `),
-        // Questions about it go to a person.
-        replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
-      });
-      if (!sent) throw new Error("not sent");
-    } catch (err) {
-      console.error("[admin/merchants] credits email failed", err);
-      warnings.push(`Credits were added, but the email telling ${existing.email} failed to send.`);
-    }
-  }
-
   if (becomingApproved && !firstApproval && existing.email) {
     try {
       const safeName = escapeHtml(existing.businessName || "there");
       const sent = await sendTransactionalEmail({
         to: existing.email,
         subject: "You're back on MegaDeal",
+        // Replies reach a person, as with every email to a business.
+        replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
         html: brandedEmailHtml(`
           <p style="margin:0 0 16px;">Hi ${safeName},</p>
           <p style="margin:0 0 16px;">We've checked your business details and you're approved again${
@@ -657,6 +681,8 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
       const sent = await sendTransactionalEmail({
         to: existing.email,
         subject: "You're approved! Welcome to MegaDeal",
+        // Replies reach a person, as with every email to a business.
+        replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
         html: brandedEmailHtml(`
           <p style="margin:0 0 16px;">Hi ${safeName},</p>
           <p style="margin:0 0 16px;">Good news — your business is approved on MegaDeal. ${
@@ -672,6 +698,33 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     } catch (err) {
       console.error("[admin/merchants] approval email failed", err);
       warnings.push(`Merchant was approved, but the notification email to ${existing.email} failed to send.`);
+    }
+  }
+
+  // Credits an admin added by hand (a top-up, a refund, a goodwill
+  // gesture): the business is told, with the reason it already sees in its
+  // activity. A reduction isn't emailed; it's on the activity line. After
+  // the approval email, when both go in one save: it used to arrive first.
+  if (creditsApplied && adminAdjustDelta > 0 && existing.email) {
+    try {
+      const safeName = escapeHtml(existing.businessName || "there");
+      const balance = existingCredits + creditsDelta;
+      const sent = await sendTransactionalEmail({
+        to: existing.email,
+        subject: `We've added ${adminAdjustDelta} deal credit${adminAdjustDelta === 1 ? "" : "s"} to your MegaDeal account`,
+        html: brandedEmailHtml(`
+          <p style="margin:0 0 16px;">Hi ${safeName},</p>
+          <p style="margin:0 0 16px;">We've added <strong>${adminAdjustDelta} deal credit${adminAdjustDelta === 1 ? "" : "s"}</strong> to your account: ${escapeHtml(creditsReason.replace(/[.!?\s]+$/, ""))}.</p>
+          <p style="margin:0 0 16px;">Your balance is now ${balance.toLocaleString("en-NZ")} credit${balance === 1 ? "" : "s"}, ready for your next deal.</p>
+          <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6D28D9;font-weight:700;">Go to your portal</a></p>
+        `),
+        // Questions about it go to a person.
+        replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
+      });
+      if (!sent) throw new Error("not sent");
+    } catch (err) {
+      console.error("[admin/merchants] credits email failed", err);
+      warnings.push(`Credits were added, but the email telling ${existing.email} failed to send.`);
     }
   }
 

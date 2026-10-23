@@ -333,6 +333,25 @@ describe("admin work and the rest of the business portal", () => {
     ]);
   });
 
+  it("credits typed in while approving, when approving adds its own, need confirming", async () => {
+    const apply = await import("@/app/api/merchants/apply/route");
+    const { body } = await call(apply.POST, request("POST", SIGNUP));
+    admin = true;
+    const route = await import("@/app/api/admin/merchants/[id]/route");
+    // The admin page is told beforehand what approving adds.
+    const shown = await call(route.GET, request("GET"), params(body.item._id));
+    expect(shown.body.approvalCredits).toEqual({ credits: 90, parts: ["90 from the WELCOME3 offer"] });
+    // Typing the same credits in as well is stopped, and nothing changes...
+    const asked = await call(route.PATCH, request("PATCH", { status: "Approved", creditsBalance: 90, creditsReason: "Welcome" }), params(body.item._id));
+    expect(asked.status).toBe(409);
+    expect(asked.body.code).toBe("extra_credits");
+    expect(await db.query("select status, credits_balance from public.merchants")).toEqual([{ status: "Pending", credits_balance: 0 }]);
+    // ...unless it's confirmed: then both, as asked.
+    const confirmed = await call(route.PATCH, request("PATCH", { status: "Approved", creditsBalance: 90, creditsReason: "Welcome", confirmExtraCredits: true }), params(body.item._id));
+    expect(confirmed.status).toBe(200);
+    expect(await db.query("select status, credits_balance from public.merchants")).toEqual([{ status: "Approved", credits_balance: 180 }]);
+  });
+
   it("a referral pays both businesses once, and records who referred", async () => {
     const apply = await import("@/app/api/merchants/apply/route");
     const first = (await call(apply.POST, request("POST", SIGNUP))).body.item;

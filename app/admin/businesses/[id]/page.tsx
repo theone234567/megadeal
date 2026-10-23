@@ -75,6 +75,9 @@ export default function AdminBusinessDetailPage() {
   /** The business whose referral code this one signed up with (null: no
    *  business has that code). */
   const [referralMatch, setReferralMatch] = useState<{ id: string; name: string } | null>(null);
+  // What approving this business adds by itself (null once it has been
+  // approved before), from the server's own rules.
+  const [approvalCredits, setApprovalCredits] = useState<{ credits: number; parts: string[] } | null>(null);
   const [emailChoices, setEmailChoices] = useState<{ news: boolean; announcements: boolean } | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -177,6 +180,7 @@ export default function AdminBusinessDetailPage() {
       const item: AdminMerchant = data.item;
       setMerchant(item);
       setReferralMatch(data.referralMatch ?? null);
+      setApprovalCredits(data.approvalCredits ?? null);
       setEmailChoices(data.emailChoices ?? null);
       seedFrom(item);
 
@@ -270,11 +274,16 @@ export default function AdminBusinessDetailPage() {
     }
   }
 
-  async function save() {
+  async function save(confirmExtraCredits = false) {
     if (!merchant) return;
     setSaving(true);
     setSaveError(null);
     setWarnings([]);
+    // A field the business hasn't filled in yet, left empty, isn't sent:
+    // the server refuses an empty required field, which made a business
+    // with an unfinished listing impossible to approve (the page says it
+    // can be). Clearing one that was filled in is still refused.
+    const unlessStillEmpty = (value: string, before: unknown) => (value === "" && !before ? undefined : value);
     try {
       const res = await fetch(`/api/admin/merchants/${merchant._id}`, {
         method: "PATCH",
@@ -283,17 +292,18 @@ export default function AdminBusinessDetailPage() {
           status,
           creditsBalance: credits,
           creditsReason,
+          confirmExtraCredits: confirmExtraCredits || undefined,
           rating: rating === "" ? null : rating,
           reviewCount: reviewCount === "" ? null : reviewCount,
           rudenessCheck,
-          businessName,
-          legalBusinessName,
+          businessName: unlessStillEmpty(businessName, merchant.businessName),
+          legalBusinessName: unlessStillEmpty(legalBusinessName, merchant.legalBusinessName),
           nzbn,
-          contactName,
-          contactPhone,
-          phone,
-          address,
-          city,
+          contactName: unlessStillEmpty(contactName, merchant.contactName),
+          contactPhone: unlessStillEmpty(contactPhone, merchant.contactPhone),
+          phone: unlessStillEmpty(phone, merchant.phone),
+          address: unlessStillEmpty(address, merchant.address),
+          city: unlessStillEmpty(city, merchant.city),
           suburb,
           hideAddress,
           isTest,
@@ -312,9 +322,18 @@ export default function AdminBusinessDetailPage() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        // Approving already adds credits: typed-in ones go on top only
+        // when that's what was meant.
+        if (res.status === 409 && data.code === "extra_credits") {
+          setSaving(false);
+          if (window.confirm(data.error)) return save(true);
+          setSaveError("Not saved. Set Credits back if approving's own credits are all this business should get.");
+          return;
+        }
         throw new Error(data.error || "Save failed.");
       }
       const data = await res.json();
+      setApprovalCredits(null);
       const updated: AdminMerchant = { ...merchant, ...data.item };
       setMerchant(updated);
       seedFrom(updated);
@@ -732,6 +751,12 @@ export default function AdminBusinessDetailPage() {
               approve it, but its portal will keep asking it to finish, and its deals will look bare until it does.
             </p>
           )}
+          {status === "Approved" && merchant.status !== "Approved" && approvalCredits && approvalCredits.credits > 0 && (
+            <p role="status" className="mt-3 rounded-lg border border-brand-100 bg-brand-50 px-3 py-2 text-sm text-brand-800">
+              Approving adds <strong>{approvalCredits.credits} credits</strong> by itself ({approvalCredits.parts.join(" and ")}), so
+              there&apos;s no need to add them in Credits. Balance after approving: {(merchant.creditsBalance ?? 0) + approvalCredits.credits}.
+            </p>
+          )}
           <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <label className="text-sm">
               <span className="mb-1 block text-slate-500">Status</span>
@@ -813,7 +838,7 @@ export default function AdminBusinessDetailPage() {
           </div>
 
           <button
-            onClick={save}
+            onClick={() => save()}
             disabled={!dirty || saving}
             className="mt-5 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-40"
           >
