@@ -106,6 +106,10 @@ export default function NewDealForm({
 
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
   const [duplicatedFrom, setDuplicatedFrom] = useState(false);
+  // Until the deal being copied has filled the form (or turned out not to
+  // be there), the form isn't shown: it flashed up empty first, which read
+  // as the deal not having copied.
+  const [duplicateLoaded, setDuplicateLoaded] = useState(!duplicateId);
 
   const [dealName, setDealName] = useState("");
   const [category, setCategory] = useState("");
@@ -223,6 +227,12 @@ export default function NewDealForm({
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
   const [autosaveError, setAutosaveError] = useState<string | null>(null);
   const savingRef = useRef(false);
+  // The save in progress, so a submit can wait for it. A submit sent while
+  // the first autosave was still uploading the photo and creating the
+  // draft went out without the draft's id: it made a new deal, with its
+  // own code, and the save then left a draft of it behind (two copies of
+  // one deal in the portal, and a code that changed; 23 Oct 2026).
+  const saveInFlight = useRef<Promise<void> | null>(null);
   // The draft's save count as this form last loaded or saved it; sent with
   // each save so one from another tab or device in between is flagged
   // instead of silently overwritten (lib/dealDraft.ts isDraftConflict).
@@ -239,6 +249,12 @@ export default function NewDealForm({
   /** Set once a draft exists server-side, so every later save updates that
    *  row instead of leaving a trail of near-identical drafts behind. */
   const [draftId, setDraftId] = useState<string | null>(isTest ? null : searchParams.get("draft"));
+  // The same, current even inside a handler that started before the save
+  // that set it finished (handleSubmit waits on saveInFlight, then reads it).
+  const draftIdRef = useRef(draftId);
+  useEffect(() => {
+    draftIdRef.current = draftId;
+  }, [draftId]);
   /** The draft id we arrived with, captured once. Restoring must not key
    *  off `draftId`, because saving sets that — the effect would refire the
    *  moment a new draft was created and overwrite the form with the row it
@@ -249,6 +265,10 @@ export default function NewDealForm({
    *  when one was saved. `photo` holds a newly picked File that hasn't been
    *  sent anywhere yet; this holds the Wix Media URL once it has. */
   const [uploaded, setUploaded] = useState<{ url: string; id: string } | null>(null);
+  const uploadedRef = useRef(uploaded);
+  useEffect(() => {
+    uploadedRef.current = uploaded;
+  }, [uploaded]);
 
   // A test deal has no business to book with; the preview shows how the
   // page handles that.
@@ -373,7 +393,8 @@ export default function NewDealForm({
       })
       .catch(() => {
         // Not fatal — the merchant just starts from a blank form instead.
-      });
+      })
+      .finally(() => setDuplicateLoaded(true));
   }, [duplicateId, merchant]);
 
   // Reopen a saved draft, arriving as ?draft=<id> from the portal. Never
@@ -609,6 +630,16 @@ export default function NewDealForm({
   /** `force` saves over a newer version from another tab or device: the
    *  business chose "Keep my version". */
   async function saveDraft(auto = false, force = false) {
+    const run = saveDraftNow(auto, force);
+    saveInFlight.current = run;
+    try {
+      await run;
+    } finally {
+      if (saveInFlight.current === run) saveInFlight.current = null;
+    }
+  }
+
+  async function saveDraftNow(auto: boolean, force: boolean) {
     // One save at a time: two overlapping first saves would create two
     // drafts. A change made meanwhile is picked up by the next autosave.
     if (savingRef.current) return;
@@ -627,6 +658,7 @@ export default function NewDealForm({
       if (photo && !media) {
         media = await uploadPhoto(photo, dealName);
         setUploaded(media);
+        uploadedRef.current = media;
       }
 
       const res = await fetch("/api/deals/draft", {
@@ -679,7 +711,10 @@ export default function NewDealForm({
       const { item } = await res.json();
       // Held on to so the next save updates this draft rather than
       // creating another one beside it.
-      if (item?._id) setDraftId(item._id);
+      if (item?._id) {
+        setDraftId(item._id);
+        draftIdRef.current = item._id;
+      }
       revisionRef.current = draftRevisionOf(item);
       setConflict(false);
       if (isGeneratedDealCode(item?.dealCode)) setSavedCode(item.dealCode);
@@ -741,20 +776,24 @@ export default function NewDealForm({
     setError(null);
     setSubmitting(true);
     try {
+      // An autosave still running finishes first, so this submits the
+      // draft it saved (its id, code and photo) rather than making another.
+      if (saveInFlight.current) await saveInFlight.current.catch(() => {});
       // Reuses the already-uploaded image where there is one: a draft
       // reopened from the portal has a photo but no File, and re-uploading
       // on every submit would also leave a duplicate in the media library
       // each time.
-      let media = uploaded;
+      let media = uploadedRef.current;
       if (photo && !media) {
         media = await uploadPhoto(photo, dealName);
         setUploaded(media);
+        uploadedRef.current = media;
       }
       const res = await fetch("/api/deals/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          draftId,
+          draftId: draftIdRef.current,
           dealName,
           category,
           description,
@@ -838,6 +877,18 @@ export default function NewDealForm({
     );
   }
 
+  // An opened draft or a copied deal: the saved values, not an empty form
+  // that fills in a moment later (autosave already waits for the draft).
+  if ((openedDraftId && !draftLoaded) || !duplicateLoaded) {
+    return (
+      <Main className="mx-auto max-w-2xl px-4 py-16 text-center">
+        <p className="text-slate-500" role="status">
+          {openedDraftId ? "Opening your draft…" : "Copying your deal…"}
+        </p>
+      </Main>
+    );
+  }
+
   if (submitted) {
     return (
       <Main className="mx-auto max-w-lg px-4 py-16 text-center">
@@ -862,7 +913,8 @@ export default function NewDealForm({
               {submitResult.creditsReturned > 0 && (
                 <>The {creditsLabel(submitResult.creditsReturned)} it used {submitResult.creditsReturned === 1 ? "has" : "have"} been returned. </>
               )}
-              Use <strong>Duplicate this deal</strong> in your portal to fix it and submit again.
+              {/* The button's own label on a turned-down deal (components/portal/DealManageCard.tsx). */}
+              Open it in your portal and use <strong>Run this deal again</strong> to fix it and submit it again.
             </p>
           </>
         ) : (
