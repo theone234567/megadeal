@@ -176,7 +176,7 @@ export default function CategoryNav(props: Props) {
   }
 
   return (
-    <nav aria-label="Categories" className="relative lg:[container-type:inline-size]">
+    <nav aria-label="Browse deals by category" className="relative lg:[container-type:inline-size]">
       {/* On a computer, one line with every label whole: the labels' size
           follows the row's own width (up to 15px), so the row always fits.
           Sized in rem alone, a browser set to larger text (Chrome's
