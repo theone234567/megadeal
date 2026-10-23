@@ -766,6 +766,15 @@ export default function MerchantSignupForm({
     : "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400";
   const hintClass = redesign ? "mt-1 text-xs leading-snug text-[#625D6B] lg:leading-tight" : "mt-1 text-sm text-slate-500";
   const mutedClass = redesign ? "text-[#625D6B]" : "text-slate-500";
+  // The business-name and password notes show once that field is in use
+  // (24 Oct 2026, "box still too big"): until then the box is just the
+  // fields. They stay once something's typed, so leaving the field doesn't
+  // shrink the box and move the next tap's target. Still read out by
+  // screen readers (aria-describedby), and a field's error message shows
+  // whatever the focus.
+  const hintWhileTyping = redesign
+    ? "sr-only group-focus-within:not-sr-only group-focus-within:block group-has-[input:not(:placeholder-shown)]:not-sr-only group-has-[input:not(:placeholder-shown)]:block"
+    : "";
   const primaryButtonClass = redesign
     ? "flex h-11 w-full items-center justify-center rounded-xl bg-brand-600 lg:h-10 px-5 text-center text-base font-bold text-white transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
     : "w-full rounded-full bg-brand-600 py-3.5 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60";
@@ -807,7 +816,7 @@ export default function MerchantSignupForm({
             the public listing's name; your name and email are only for
             the account. */}
         <div className={redesign ? "grid grid-cols-1 gap-x-3 gap-y-3 sm:grid-cols-2 lg:gap-y-2" : "space-y-4"}>
-          <div className={redesign ? "sm:col-span-2" : undefined}>
+          <div className={redesign ? "group sm:col-span-2" : undefined}>
             <label htmlFor="signup-businessName" className={labelClass}>
               Business name
               {!redesign && <RequiredTag />}
@@ -822,10 +831,11 @@ export default function MerchantSignupForm({
               pattern={NO_MARKUP_PATTERN}
               placeholder="e.g. Harbourside Bistro"
               className={inputClass}
+              aria-describedby="signup-businessName-hint"
               {...errorProps("signup-businessName")}
             />
             {fieldError("signup-businessName")}
-            <p className={hintClass}>
+            <p id="signup-businessName-hint" className={`${hintClass} ${hintWhileTyping}`}>
               The name customers know you by, shown on your listing. You&apos;ll add your registered
               company name (e.g. &ldquo;Harbourside Hospitality Limited&rdquo;) privately in your portal.
             </p>
@@ -871,7 +881,7 @@ export default function MerchantSignupForm({
             {fieldError("signup-email")}
           </div>
 
-          <div className={redesign ? "sm:col-span-2" : undefined}>
+          <div className={redesign ? "group sm:col-span-2" : undefined}>
             <label htmlFor="signup-password" className={labelClass}>
               Password
               {!redesign && <RequiredTag />}
@@ -888,7 +898,7 @@ export default function MerchantSignupForm({
               describedBy={fieldErrors["signup-password"] ? "signup-password-error" : "signup-password-hint"}
             />
             {fieldError("signup-password")}
-            <p id="signup-password-hint" className={hintClass}>
+            <p id="signup-password-hint" className={`${hintClass} ${hintWhileTyping}`}>
               At least {minPassword} characters. Tap the eye to check what you typed.
             </p>
             {redesign && privacyNote}
