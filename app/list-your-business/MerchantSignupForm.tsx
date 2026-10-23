@@ -676,7 +676,7 @@ export default function MerchantSignupForm({
         id="signup"
         className={
           redesign
-            ? "scroll-mt-[140px] rounded-xl border border-[#E4E2E8] bg-white p-4 sm:p-5 lg:rounded-2xl lg:px-6 lg:py-4"
+            ? "scroll-mt-[140px] rounded-xl border border-[#E4E2E8] bg-white px-4 py-3.5 sm:p-5 lg:rounded-2xl lg:px-6 lg:py-4"
             : "scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8"
         }
       >
@@ -749,30 +749,32 @@ export default function MerchantSignupForm({
   }
 
   // Redesigned page: its own type, spacing and controls, from the
-  // approved white design, made compact (17 Oct 2026): less padding,
-  // shorter controls on a computer (48px on a phone, for thumbs, and 16px
-  // text there so iPhones don't zoom in), tighter gaps. The older page
-  // keeps its existing look.
+  // approved white design, made compact (17 Oct 2026) and again (24 Oct
+  // 2026, "look easy to complete"): less padding, shorter controls (44px on
+  // a phone, still a full-size touch target, and 16px text there so
+  // iPhones don't zoom in; 38px on a computer), smaller print for the
+  // notes, tighter gaps. Every field and word stays. The older page keeps
+  // its existing look.
   const cardClass = redesign
-    ? "scroll-mt-[140px] rounded-xl border border-[#E4E2E8] bg-white p-4 sm:p-5 lg:rounded-2xl lg:px-6 lg:py-4"
+    ? "scroll-mt-[140px] rounded-xl border border-[#E4E2E8] bg-white px-4 py-3.5 sm:p-5 lg:rounded-2xl lg:px-6 lg:py-4"
     : "scroll-mt-[140px] rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8";
   const labelClass = redesign
-    ? "mb-1.5 block text-[13px] font-semibold text-[#222126] lg:mb-1 lg:leading-tight"
+    ? "mb-1 block text-[13px] font-semibold leading-tight text-[#222126]"
     : "mb-1 block text-base font-medium text-slate-700";
   const inputClass = redesign
-    ? "h-12 w-full rounded-[10px] border border-[#8F8999] bg-white px-3.5 text-base text-[#222126] outline-none lg:h-10 lg:text-[15px] transition placeholder:text-[#706B79] focus:border-brand-600 focus:ring-1 focus:ring-brand-600 aria-[invalid=true]:border-red-700 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-red-700"
+    ? "h-11 w-full rounded-[10px] border border-[#8F8999] bg-white px-3.5 text-base text-[#222126] outline-none lg:h-[38px] lg:text-[15px] transition placeholder:text-[#706B79] focus:border-brand-600 focus:ring-1 focus:ring-brand-600 aria-[invalid=true]:border-red-700 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-red-700"
     : "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base outline-none focus:border-brand-400";
-  const hintClass = redesign ? "mt-1 text-[13px] leading-snug text-[#625D6B] lg:text-xs lg:leading-tight" : "mt-1 text-sm text-slate-500";
+  const hintClass = redesign ? "mt-1 text-xs leading-snug text-[#625D6B] lg:leading-tight" : "mt-1 text-sm text-slate-500";
   const mutedClass = redesign ? "text-[#625D6B]" : "text-slate-500";
   const primaryButtonClass = redesign
-    ? "flex h-12 w-full items-center justify-center rounded-xl bg-brand-600 lg:h-10 px-5 text-center text-base font-bold text-white transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+    ? "flex h-11 w-full items-center justify-center rounded-xl bg-brand-600 lg:h-10 px-5 text-center text-base font-bold text-white transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
     : "w-full rounded-full bg-brand-600 py-3.5 text-center font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60";
 
   // Checked against lib/business.ts: the public listing is built from the
   // business name, phone, website and address only
   // (lib/businessPrivacy.test.ts).
   const privacyNote = (
-    <p className={`flex items-start gap-2 ${redesign ? "mt-2 text-[13px] leading-snug" : "text-sm"} ${mutedClass}`}>
+    <p className={`flex items-start gap-2 ${redesign ? "mt-1.5 text-xs leading-snug" : "text-sm"} ${mutedClass}`}>
       <EyeOffIcon className="mt-0.5 h-4 w-4 shrink-0" />
       <span>Your name and email are private: they&apos;re never shown on MegaDeal.</span>
     </p>
@@ -788,14 +790,14 @@ export default function MerchantSignupForm({
         // controlled password box, losing a pasted or autofilled value.
         onInput={redesign ? (e) => clearFieldError(e.target) : undefined}
         noValidate={redesign}
-        className={redesign ? "space-y-3.5 lg:space-y-2.5" : "space-y-4"}
+        className={redesign ? "space-y-3 lg:space-y-2" : "space-y-4"}
       >
         {redesign && (
           <div>
-            <h3 className="text-[22px] font-bold leading-tight text-[#222126] lg:text-[22px]">
+            <h3 className="text-xl font-bold leading-tight text-[#222126]">
               Create your business account
             </h3>
-            <p className="mt-1 text-sm text-[#625D6B] lg:text-[13px]">
+            <p className="mt-0.5 text-[13px] leading-snug text-[#625D6B]">
               Takes a minute. We&apos;ll email you a code, then you finish your listing in your portal.
             </p>
           </div>
@@ -804,7 +806,7 @@ export default function MerchantSignupForm({
         {/* What's private and what isn't, up front: the business name is
             the public listing's name; your name and email are only for
             the account. */}
-        <div className={redesign ? "grid grid-cols-1 gap-x-3 gap-y-3.5 sm:grid-cols-2 lg:gap-y-2.5" : "space-y-4"}>
+        <div className={redesign ? "grid grid-cols-1 gap-x-3 gap-y-3 sm:grid-cols-2 lg:gap-y-2" : "space-y-4"}>
           <div className={redesign ? "sm:col-span-2" : undefined}>
             <label htmlFor="signup-businessName" className={labelClass}>
               Business name
@@ -899,7 +901,7 @@ export default function MerchantSignupForm({
             [id]/route.ts) is in the hidden field below unless they change
             it, and a ?ref= link fills the referral. Both boxes are behind
             "Have a code?", so most people never see them. */}
-        <div className={redesign ? "rounded-[10px] bg-[#F6F5F8] px-3 py-2.5 text-[13px] leading-snug text-[#37343D] lg:py-2" : "rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700"}>
+        <div className={redesign ? "rounded-[10px] bg-[#F6F5F8] px-3 py-2 text-[13px] leading-snug text-[#37343D] lg:py-1.5 lg:text-xs" : "rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700"}>
           {promoState === "welcome" && (
             <p className={redesign ? "inline" : undefined}>
               🎁 <strong>{trimmedCoupon}</strong> applied: up to {promo.months} months free advertising{beforeLaunch}.
@@ -982,9 +984,9 @@ export default function MerchantSignupForm({
           )}
         </div>
 
-        <div className={redesign ? "space-y-2.5 lg:space-y-2" : "space-y-4"}>
+        <div className={redesign ? "space-y-2 lg:space-y-1.5" : "space-y-4"}>
         <div>
-          <label className={`flex items-start gap-2 ${redesign ? "text-[15px] leading-snug text-[#37343D] lg:text-sm" : "text-base text-slate-600"}`}>
+          <label className={`flex items-start gap-2 ${redesign ? "text-sm leading-snug text-[#37343D] lg:text-[13px]" : "text-base text-slate-600"}`}>
             <input
               required
               id="signup-agreedToTerms"
@@ -1016,7 +1018,7 @@ export default function MerchantSignupForm({
         {/* Asked, never assumed (NZ's Unsolicited Electronic Messages Act):
             only a tick here puts the business on the business-news list.
             Emails about its account and deals are sent either way. */}
-        <label className={`flex items-start gap-2 ${redesign ? "text-[15px] leading-snug text-[#37343D] lg:text-sm" : "text-base text-slate-600"}`}>
+        <label className={`flex items-start gap-2 ${redesign ? "text-sm leading-snug text-[#37343D] lg:text-[13px]" : "text-base text-slate-600"}`}>
           <input
             id="signup-marketingOptIn"
             type="checkbox"
@@ -1043,10 +1045,10 @@ export default function MerchantSignupForm({
           <button type="submit" disabled={submitting} aria-busy={submitting || undefined} className={primaryButtonClass}>
             {submitting ? "Creating your account…" : redesign ? "Create account" : "Claim my free advertising →"}
           </button>
-          <p className={`text-center ${redesign ? "mt-2 text-[13px] lg:mt-1.5" : "mt-4 text-sm"} ${mutedClass}`}>
+          <p className={`text-center ${redesign ? "mt-1.5 text-[13px] lg:mt-1 lg:text-xs" : "mt-4 text-sm"} ${mutedClass}`}>
             No credit card required • No obligation
           </p>
-          <p className={`text-center ${redesign ? "mt-2 text-[13px] lg:mt-1" : "mt-4 text-sm"} ${mutedClass}`}>
+          <p className={`text-center ${redesign ? "mt-1 text-[13px] lg:text-xs" : "mt-4 text-sm"} ${mutedClass}`}>
             Already signed up?{" "}
             <a href="/portal" className="font-semibold text-brand-600 hover:underline">
               Sign in to your business portal
