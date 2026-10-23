@@ -662,12 +662,6 @@ export default function AdminBusinessDetailPage() {
                   .join(" · ") || "Not yet granted"}
               </dd>
             </div>
-            <div>
-              <dt className="text-slate-500">Referral-bonus emails</dt>
-              <dd className="font-medium text-slate-800">
-                {merchant.notifyReferralBonus === false ? "🔕 Opted out" : "Enabled"}
-              </dd>
-            </div>
           </dl>
         </section>
 

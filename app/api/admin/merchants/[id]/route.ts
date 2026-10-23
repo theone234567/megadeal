@@ -558,33 +558,32 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         amount: REFERRAL_BONUS_CREDITS,
         description: `Referral bonus for referring "${existing.businessName || "a new business"}"`,
       });
-      // Referral bonus emails are the one notification a merchant can opt
-      // out of (notifyReferralBonus) — the credit and ledger entry above
-      // always happen regardless, only this email is conditional.
-      if (referrerFresh.notifyReferralBonus !== false) {
-        try {
-          // Both names here are merchant-supplied — existing.businessName is
-          // the *referred* business's own choice of name, which this email
-          // sends to a completely different merchant (the referrer). Escape
-          // both, not just the recipient's own.
-          const safeReferrerName = escapeHtml(referrerFresh.businessName || "there");
-          const safeReferredName = escapeHtml(existing.businessName || "a new business");
-          const sent = await sendTransactionalEmail({
-            to: referrerFresh.email,
-            subject: "You earned referral credits on MegaDeal!",
-            html: brandedEmailHtml(`
-              <p style="margin:0 0 16px;">Hi ${safeReferrerName},</p>
-              <p style="margin:0 0 16px;">Great news — a business you referred, <strong>${safeReferredName}</strong>, has been approved on MegaDeal. We've added
-              ${referralCreditsLabel} to your account. Thanks for spreading the word!</p>
-              <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6D28D9;font-weight:700;">View your portal</a></p>
-            `),
-          });
-          // A send that fails says so by returning false, not by throwing.
-          if (!sent) throw new Error("not sent");
-        } catch (err) {
-          console.error("[admin/merchants] referral bonus email failed", err);
-          warnings.push(`Referral bonus was credited, but the notification email to ${referrerFresh.email} failed to send.`);
-        }
+      // Sent to every referrer. It used to skip anyone whose
+      // notifyReferralBonus was false, as an opt-out, but the database
+      // stores false for every business (the column's default) and nothing
+      // in the portal ever sets it, so no referrer was ever told.
+      try {
+        // Both names here are merchant-supplied — existing.businessName is
+        // the *referred* business's own choice of name, which this email
+        // sends to a completely different merchant (the referrer). Escape
+        // both, not just the recipient's own.
+        const safeReferrerName = escapeHtml(referrerFresh.businessName || "there");
+        const safeReferredName = escapeHtml(existing.businessName || "a new business");
+        const sent = await sendTransactionalEmail({
+          to: referrerFresh.email,
+          subject: "You earned referral credits on MegaDeal!",
+          html: brandedEmailHtml(`
+            <p style="margin:0 0 16px;">Hi ${safeReferrerName},</p>
+            <p style="margin:0 0 16px;">Great news — a business you referred, <strong>${safeReferredName}</strong>, has been approved on MegaDeal. We've added
+            ${referralCreditsLabel} to your account. Thanks for spreading the word!</p>
+            <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6D28D9;font-weight:700;">View your portal</a></p>
+          `),
+        });
+        // A send that fails says so by returning false, not by throwing.
+        if (!sent) throw new Error("not sent");
+      } catch (err) {
+        console.error("[admin/merchants] referral bonus email failed", err);
+        warnings.push(`Referral bonus was credited, but the notification email to ${referrerFresh.email} failed to send.`);
       }
     }
   }
