@@ -28,6 +28,8 @@ export default function ReferralCard({ referralCode }: { referralCode?: string }
       <p className="mt-1 text-sm text-slate-600">
         Know another business that would fit MegaDeal? Share your link — when
         they sign up and get approved, you both get {referralCreditsLabel}.
+        They&apos;re added automatically the moment we approve them, and
+        we&apos;ll email you.
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
         <input

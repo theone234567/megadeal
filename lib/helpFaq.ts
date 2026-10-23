@@ -1,5 +1,6 @@
 import { SITE_LAUNCHED } from "./siteConfig";
 import { currentPromo } from "./promo";
+import { referralCreditsLabel } from "./referralBonus";
 
 /**
  * The Help Centre's answers as plain text: the page's FAQPage structured
@@ -11,6 +12,7 @@ import { currentPromo } from "./promo";
 // Everyday + 1 Flash Deal at a time, lib/prelaunchAllowance.ts) and the
 // offer's months start at launch; after it, pay-as-you-go credits.
 const PROMO = currentPromo(SITE_LAUNCHED);
+export const REFERRAL_ANSWER = `Your business portal has your own referral link. Share it with another business: when they sign up with it and we approve them, you both get ${referralCreditsLabel}, added automatically, and we'll email you when yours arrive. They work like any other deal credits, but have no cash value and can't be transferred.`;
 export const BUSINESS_COST = SITE_LAUNCHED
   ? `you advertise with pay-as-you-go credits (eligible new businesses get up to ${PROMO.months} months free), and customers pay you directly when they redeem.`
   : `advertising is free while we prelaunch (1 Everyday Deal and 1 Flash Deal at a time), eligible businesses get up to ${PROMO.months} months free from launch, and customers pay you directly when they redeem. Conditions apply.`;
@@ -33,4 +35,5 @@ export const HELP_FAQ_TEXT = [
   { q: "Is Groupon still in New Zealand?", a: "No. Groupon closed its New Zealand business in 2020, and MegaDeal isn't connected with it. MegaDeal is a New Zealand-owned local deals site, starting in Auckland. It works differently: there's no voucher to buy. You get a free deal code, contact the business, and pay them directly at the deal price." },
   { q: "How do I stop MegaDeal emails?", a: "Every MegaDeal email that isn't about your account has an Unsubscribe link at the bottom: one click and those emails stop. Businesses can also choose which MegaDeal emails they get under \"Emails from MegaDeal\" in the business portal. Emails about your account and your deals, like sign-in codes and approvals, always come." },
   { q: "I'm a business — how do I list a deal?", a: `Head to our business page to find out how listing works — ${BUSINESS_COST}` },
+  { q: "I'm a business — how do referral credits work?", a: `${REFERRAL_ANSWER} See section 9 of our terms.` },
 ];

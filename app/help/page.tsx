@@ -4,7 +4,7 @@ import Link from "next/link";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { pageMetadata } from "@/lib/pageMetadata";
-import { BUSINESS_COST, HELP_FAQ_TEXT } from "@/lib/helpFaq";
+import { BUSINESS_COST, HELP_FAQ_TEXT, REFERRAL_ANSWER } from "@/lib/helpFaq";
 import OpenHashedDetails from "@/components/OpenHashedDetails";
 
 export const metadata: Metadata = pageMetadata({
@@ -140,6 +140,18 @@ const FAQS: Faq[] = [
           business page
         </Link>{" "}
         to find out how listing works — {BUSINESS_COST}
+      </>
+    ),
+  },
+  {
+    q: "I'm a business — how do referral credits work?",
+    a: (
+      <>
+        {REFERRAL_ANSWER} See section 9 of our{" "}
+        <Link href="/terms" className="font-semibold text-brand-600 hover:underline">
+          terms
+        </Link>
+        .
       </>
     ),
   },
