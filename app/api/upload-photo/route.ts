@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { isAdminRequest } from "@/lib/adminSession";
-import { newPhotoKey, photoBucket, putPhoto } from "@/lib/photoStorage";
+import { newPhotoKey, photoContentId, photoBucket, putPhoto } from "@/lib/photoStorage";
 import { SITE_URL } from "@/lib/siteConfig";
 import { stripImageMetadata } from "@/lib/stripImageMetadata";
 
@@ -141,10 +141,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Couldn't start the upload." }, { status: 502 });
     }
     const ext = mimeType === "image/jpeg" ? "jpg" : mimeType.split("/")[1];
-    const key = newPhotoKey(slugify(label), ext);
     // Without the camera's details: a phone's photo carries the GPS
     // position it was taken at (lib/stripImageMetadata.ts).
-    const url = await putPhoto(bucket, key, stripImageMetadata(mimeType, bytes), mimeType, SITE_URL);
+    const clean = stripImageMetadata(mimeType, bytes);
+    // Named by its content: the same photo uploaded twice comes back with
+    // the same address, so a deal's "More photos" can say it's already
+    // there (a live test added one picture twice, 23 Oct 2026).
+    const key = newPhotoKey(slugify(label), ext, new Date(), await photoContentId(clean));
+    const url = await putPhoto(bucket, key, clean, mimeType, SITE_URL);
     return NextResponse.json({ url, id: key });
   } catch (err) {
     console.error("[upload-photo] storage failed", err);

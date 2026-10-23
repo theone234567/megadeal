@@ -49,11 +49,14 @@ export async function photoResizer(): Promise<PhotoResizer | null> {
   }
 }
 
-/** A key that's new every time (so cached copies never go stale) and
- *  readable (the business or deal name it was uploaded for). */
-export function newPhotoKey(slug: string, ext: string, now = new Date()): string {
+/** A key that's new for every new image (so cached copies never go
+ *  stale) and readable (the business or deal name it was uploaded for).
+ *  With `contentId` (photoContentId), the same picture uploaded again for
+ *  the same name gets the same key, so a form can tell it's already there;
+ *  without, a random one. */
+export function newPhotoKey(slug: string, ext: string, now = new Date(), contentId?: string): string {
   const random = crypto.getRandomValues(new Uint8Array(6));
-  const suffix = Array.from(random, (b) => b.toString(16).padStart(2, "0")).join("");
+  const suffix = contentId || Array.from(random, (b) => b.toString(16).padStart(2, "0")).join("");
   const month = now.toISOString().slice(0, 7);
   return `photos/${month}/${slug || "megadeal-photo"}-${suffix}.${ext}`;
 }
@@ -62,4 +65,13 @@ export function newPhotoKey(slug: string, ext: string, now = new Date()): string
 export async function putPhoto(bucket: PhotoBucket, key: string, bytes: Uint8Array, contentType: string, siteUrl: string): Promise<string> {
   await bucket.put(key, bytes, { httpMetadata: { contentType, cacheControl: "public, max-age=31536000, immutable" } });
   return `${siteUrl.replace(/\/$/, "")}${MEDIA_PATH}${key}`;
+}
+
+/** The first 12 hex characters of the image's SHA-256: as unguessable as
+ *  the random suffix without the picture itself, and the same for the same
+ *  picture. Photos are never deleted by key, so two uploads sharing one is
+ *  harmless (it's the same image). */
+export async function photoContentId(bytes: Uint8Array): Promise<string> {
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes as BufferSource));
+  return Array.from(digest.slice(0, 6), (b) => b.toString(16).padStart(2, "0")).join("");
 }

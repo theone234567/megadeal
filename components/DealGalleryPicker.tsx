@@ -40,6 +40,12 @@ export default function DealGalleryPicker({
     setError(null);
     try {
       const { url } = await uploadPhoto(file, label);
+      // The same picture comes back with the same address (named by its
+      // content, app/api/upload-photo), so a repeat is caught here.
+      if (url === mainUrl || value.includes(url)) {
+        setError(url === mainUrl ? "That's already the main photo." : "That photo is already added.");
+        return;
+      }
       onChange([...value, url].slice(0, MAX_DEAL_GALLERY));
     } catch (err: any) {
       setError(err?.message || "Couldn't upload that photo. Please try again.");
