@@ -14,6 +14,9 @@ import type { VerifiedMember } from "./memberAuth";
  *  - the refresh token (30 days), sent only to /api, which renews the
  *    access token when it runs out.
  *
+ * A sign-in that keeps being used stays signed in, up to SIGN_IN_MAX_DAYS
+ * after the password was last entered.
+ *
  * Every request checks the token's signature, audience and expiry, then
  * looks the account up in the database: a deleted or banned account is
  * locked out at once, not an hour later, and "email verified" comes from
@@ -24,6 +27,11 @@ import type { VerifiedMember } from "./memberAuth";
 export const ACCESS_COOKIE = "md_access";
 export const REFRESH_COOKIE = "md_refresh";
 const REFRESH_DAYS = 30;
+// However often it's used, a sign-in lasts at most this long, then the
+// password is asked for again: a lost phone or a shared computer left
+// signed in doesn't stay in someone's account for good. (The refresh
+// cookie alone renews itself on every use.)
+export const SIGN_IN_MAX_DAYS = 90;
 
 const secure = process.env.NODE_ENV === "production";
 
@@ -62,9 +70,10 @@ export async function verifyAccessToken(token: string): Promise<(JWTPayload & { 
 }
 
 /** The account behind a token, from the database: null if it's gone,
- *  banned or not confirmed, or if this session has ended (signed out, or
- *  every session ended by a password reset), so those take effect at once
- *  rather than when the token runs out. */
+ *  banned or not confirmed, or if this session has ended (signed out,
+ *  every session ended by a password reset, or SIGN_IN_MAX_DAYS since the
+ *  password was entered), so those take effect at once rather than when
+ *  the token runs out. */
 async function accountFor(userId: string, sessionId: unknown): Promise<VerifiedMember | null> {
   if (typeof sessionId !== "string" || !/^[0-9a-f-]{36}$/i.test(sessionId)) return null;
   const [row] = await withDb((db) =>
@@ -73,8 +82,9 @@ async function accountFor(userId: string, sessionId: unknown): Promise<VerifiedM
               coalesce(u.banned_until > now(), false) as banned
          from auth.users u
          join auth.sessions s on s.user_id = u.id and s.id = $2 and (s.not_after is null or s.not_after > now())
+                            and s.created_at > now() - make_interval(days => $3)
         where u.id = $1 and u.deleted_at is null`,
-      [userId, sessionId]
+      [userId, sessionId, SIGN_IN_MAX_DAYS]
     )
   );
   if (!row || row.banned || !row.confirmed) return null;
