@@ -206,6 +206,26 @@ export default function PortalPage() {
     return loadMerchant();
   }, [member, isLoggedIn, loadMerchant]);
 
+  // Coming back to this tab (or to it from the browser's history) gets the
+  // deals again: a portal left open in one tab while a deal was created,
+  // approved or went live in another kept showing the old list ("DEALS 0",
+  // "Create your first deal") until it was reloaded (23 Oct 2026).
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const refresh = () => {
+      if (document.visibilityState === "visible") loadDeals();
+    };
+    const fromHistory = (e: PageTransitionEvent) => {
+      if (e.persisted) loadDeals();
+    };
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("pageshow", fromHistory);
+    return () => {
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("pageshow", fromHistory);
+    };
+  }, [isLoggedIn, loadDeals]);
+
   async function handleChangeDealStatus(deal: DealRecord, target: DealStatus) {
     // Goes through a server route rather than a direct client write: the
     // route re-verifies who's calling and only allows the specific status
