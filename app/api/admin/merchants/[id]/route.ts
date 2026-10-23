@@ -635,11 +635,11 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
           <p style="margin:0 0 16px;">Hi ${safeName},</p>
           <p style="margin:0 0 16px;">Good news — your business is approved on MegaDeal. ${
             DEALS_OPEN
-              ? "Log in to your business portal to submit your first deal:"
-              : "MegaDeal hasn&#39;t launched to customers yet, so for now you can set up your listing and build your deals as drafts in your business portal. We&#39;ll email you the moment we go live, and you can submit them straight away:"
+              ? "Log in to your business portal to submit your first deal."
+              : "MegaDeal hasn&#39;t launched to customers yet, so for now you can set up your listing and build your deals as drafts in your business portal. We&#39;ll email you the moment we go live, and you can submit them straight away."
           }</p>
-          <p style="margin:0 0 16px;"><a href="${SITE_URL}/portal" style="color:#6D28D9;font-weight:700;">Go to your portal</a></p>
-          ${creditsNote ? `<p style="margin:0;">${creditsNote}</p>` : ""}
+          ${creditsNote ? `<p style="margin:0 0 16px;">${creditsNote}</p>` : ""}
+          <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6D28D9;font-weight:700;">Go to your portal</a></p>
         `),
       });
       if (!sent) throw new Error("not sent");

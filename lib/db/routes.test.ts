@@ -640,11 +640,23 @@ describe("the AI review and housekeeping on the new database", () => {
     await call(create.POST, request("POST", DEAL));
     await db.query("update public.deals set expires_at = now() - interval '10 minutes'");
     process.env.CRON_SECRET = "test-secret";
+    // The deal-ended emails (lib/dealEndedNotices.ts) query the database
+    // directly: this test's, for this route only (rate limits elsewhere in
+    // this file rely on there being none).
+    vi.doMock("@/lib/db/connection", async (orig) => ({ ...(await orig<typeof import("./connection")>()), withDb: (fn: (d: Sql) => unknown) => fn(db) }));
     const cron = await import("@/app/api/cron/expired-deals/route");
     const req = new NextRequest("https://megadeal.co.nz/api/cron/expired-deals", { method: "POST", headers: { authorization: "Bearer test-secret" } });
+    process.env.ADMIN_SESSION_SECRET = "test-session-secret-at-least-32-characters";
     const res = await call(cron.POST, req);
     expect(res.status).toBe(200);
     expect(JSON.stringify(res.body)).not.toContain("error");
+    // The business is told once (lib/dealEndedNotices.ts), not every hour.
+    const again = await call(cron.POST, req);
+    expect((res.body as any).emails).toEqual({ sent: 1, failed: 0 });
+    expect((again.body as any).emails).toEqual({ sent: 0, failed: 0 });
+    expect(await db.query("select key from public.site_settings where key like 'deal-ended-email:%'")).toHaveLength(1);
     delete process.env.CRON_SECRET;
+    delete process.env.ADMIN_SESSION_SECRET;
+    vi.doUnmock("@/lib/db/connection");
   });
 });

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
-import { dealLiveEmail, dealStoppedEmail } from "./dealEmails";
+import { dealEndedEmail, dealLiveEmail, dealStoppedEmail } from "./dealEmails";
 
 /** The business hears when MegaDeal decides about its deal (app/api/admin/deals/[id]). */
 
@@ -76,5 +76,38 @@ describe("the emails themselves", () => {
     const e = dealStoppedEmail("<script>x</script>", "Paused", null, { siteUrl: "https://megadeal.co.nz" });
     expect(e.html).not.toContain("<script>");
     expect(e.html).not.toContain("The reason");
+  });
+
+  it("greets the business and says when a live deal ends", () => {
+    const e = dealLiveEmail("Spa day", { launched: true, siteUrl: "https://megadeal.co.nz", businessName: "Kowhai <Spa>", endsAt: "2026-11-20T10:00:00Z" });
+    expect(e.html).toContain("Hi Kowhai &lt;Spa&gt;,");
+    expect(e.html).toContain("It runs until 20 November.");
+    expect(dealLiveEmail("Spa day", { launched: true, siteUrl: "https://megadeal.co.nz" }).html).toContain("Hi there,");
+  });
+});
+
+describe("deal ended email", () => {
+  const opts = { businessName: "Harbour <b>Light</b>", siteUrl: "https://megadeal.co.nz/", stopUrl: "https://megadeal.co.nz/stop-emails?m=x&s=y" };
+  const deal = { id: "0b9c7c1e-0000-4000-8000-000000000001", name: "Two <i>brunches</i>", endedAt: "2026-10-22T10:00:00Z", views: 124, codeCopies: 1 };
+
+  it("names the deal, links straight to running it again, and offers an unsubscribe", () => {
+    const { subject, html } = dealEndedEmail(deal, opts);
+    expect(subject).toBe("Your deal has ended: Two <i>brunches</i>");
+    expect(html).toContain('href="https://megadeal.co.nz/portal/new-deal?duplicate=0b9c7c1e-0000-4000-8000-000000000001"');
+    expect(html).toContain(opts.stopUrl);
+    expect(html).toContain("22 October");
+  });
+
+  it("escapes what the business typed", () => {
+    const { html } = dealEndedEmail(deal, opts);
+    expect(html).not.toContain("<i>brunches");
+    expect(html).not.toContain("<b>Light");
+    expect(html).toContain("Two &lt;i&gt;brunches&lt;/i&gt;");
+  });
+
+  it("gives the numbers when there are any, in plain English", () => {
+    expect(dealEndedEmail(deal, opts).html).toContain("viewed it 124 times and copied its code 1 time.");
+    expect(dealEndedEmail({ ...deal, codeCopies: 0 }, opts).html).toContain("viewed it 124 times.");
+    expect(dealEndedEmail({ ...deal, views: 0, codeCopies: 0 }, opts).html).not.toContain("viewed it");
   });
 });

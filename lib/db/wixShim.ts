@@ -240,6 +240,8 @@ const DEALS: Collection = {
     // The deal is its own product once it has a page address.
     f("productId", null, { expr: "case when t.slug is not null then t.id::text end" }),
     f("merchantEmail", null, { expr: "m.email" }),
+    // For the emails about a deal ("Hi <business>"): read only, like merchantEmail.
+    f("merchantBusinessName", null, { expr: "m.business_name" }),
     f("dealName", "name", { keepBlank: true, write: (v: any) => v ?? "" }),
     f("description", "description", { keepBlank: true, write: (v: any) => v ?? "" }),
     f("category", "category_slug", category),

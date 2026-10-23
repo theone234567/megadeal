@@ -292,9 +292,15 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     let email: DealEmail | null = null;
     if (statusChanged && existing.merchantEmail) {
       if (patch.status === "Live" && !existing.everLive) {
-        email = dealLiveEmail(dealName, { launched: DEALS_OPEN, siteUrl: SITE_URL });
+        email = dealLiveEmail(dealName, {
+          launched: DEALS_OPEN,
+          siteUrl: SITE_URL,
+          businessName: existing.merchantBusinessName,
+          endsAt: updated.expiresAt,
+          isFlash: Boolean(updated.isFlash),
+        });
       } else if ((patch.status === "Paused" || patch.status === "Cancelled") && (existing.status === "Live" || existing.status === "Pending Approval")) {
-        email = dealStoppedEmail(dealName, patch.status, patch.statusNote ?? existing.statusNote, { siteUrl: SITE_URL });
+        email = dealStoppedEmail(dealName, patch.status, patch.statusNote ?? existing.statusNote, { siteUrl: SITE_URL, businessName: existing.merchantBusinessName });
       }
     }
     let warning: string | undefined;

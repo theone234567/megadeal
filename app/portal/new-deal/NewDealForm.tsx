@@ -808,7 +808,16 @@ export default function NewDealForm({
       <PortalAuthScreen
         title="Create a deal"
         intro="Sign in to your business account to write your next deal. Only your own account can create deals on it."
-        redirectTo="/portal/new-deal"
+        // Back to the deal they came to copy or the draft they came to
+        // open (the "Run this deal again" email links here): signing in
+        // used to drop it and leave an empty form.
+        redirectTo={
+          duplicateId
+            ? `/portal/new-deal?duplicate=${encodeURIComponent(duplicateId)}`
+            : openedDraftId
+            ? `/portal/new-deal?draft=${encodeURIComponent(openedDraftId)}`
+            : "/portal/new-deal"
+        }
       />
     );
   }
