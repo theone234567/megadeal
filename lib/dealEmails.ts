@@ -1,6 +1,7 @@
 import { brandedEmailHtml } from "./emailTemplate";
 import { escapeHtml } from "./escapeHtml";
 import { formatOfferEndDate } from "./format";
+import { nzDateTimeParts } from "./nzTime";
 
 /**
  * Emails a business gets when MegaDeal decides about one of its deals
@@ -110,6 +111,53 @@ export function dealEndedEmail(
         <a href="${again}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Run this deal again</a>
       </p>
       <p style="margin:0 0 16px;text-align:center;font-size:14px;"><a href="${fresh}" style="color:#6D28D9;font-weight:600;">Or create a different deal</a></p>
+      <p style="margin:0 0 16px;font-size:13px;color:#8b8494;">Questions? Just reply to this email.</p>
+      <p style="margin:0;font-size:12px;color:#8b8494;border-top:1px solid #f1f0f4;padding-top:12px;">You're getting this because your business runs deals on MegaDeal. Don't want emails like this? <a href="${opts.stopUrl}" style="color:#8b8494;">Unsubscribe</a>.</p>
+    `),
+  };
+}
+
+/** "9:00 pm" in NZ time. */
+const nzTime = (ms: number) =>
+  new Intl.DateTimeFormat("en-NZ", { timeZone: "Pacific/Auckland", hour: "numeric", minute: "2-digit" }).format(new Date(ms));
+
+/** True when `endsAt` falls on tomorrow's date in New Zealand. */
+export function endsTomorrowInNz(endsAt: string, now: number = Date.now()): boolean {
+  return nzDateTimeParts(Date.parse(endsAt)).date === nzDateTimeParts(now + 24 * 60 * 60 * 1000).date;
+}
+
+/**
+ * An Everyday deal with about a day to go (lib/dealEndedNotices.ts): a
+ * nudge to give it a last push while it's still on, and, from launch, to
+ * line up the next one (before launch a second deal of the same type has
+ * to wait until this one ends). Business-email unsubscribe, like the
+ * deal-ended email.
+ */
+export function dealEndingEmail(
+  deal: { id: string; name: string; slug: string; endsAt: string; views: number; codeCopies: number },
+  opts: { businessName: string; siteUrl: string; stopUrl: string; launched: boolean; now?: number }
+): DealEmail {
+  const name = escapeHtml(deal.name || "Your deal");
+  const base = opts.siteUrl.replace(/\/$/, "");
+  const tomorrow = endsTomorrowInNz(deal.endsAt, opts.now);
+  const when = tomorrow ? `tomorrow at ${nzTime(Date.parse(deal.endsAt))}` : `on ${formatOfferEndDate(deal.endsAt, true)}`;
+  const stats =
+    deal.views > 0
+      ? ` So far people have viewed it ${times(deal.views)}${deal.codeCopies > 0 ? ` and copied its code ${times(deal.codeCopies)}` : ""}.`
+      : "";
+  const next = opts.launched
+    ? `<p style="margin:0 0 16px;text-align:center;font-size:14px;"><a href="${base}/portal/new-deal?duplicate=${encodeURIComponent(deal.id)}" style="color:#6D28D9;font-weight:600;">Line up your next deal</a></p>`
+    : `<p style="margin:0 0 16px;">When it ends you can run it again, free before launch. We'll email you a one-tap link.</p>`;
+  return {
+    subject: `${deal.name || "Your deal"} ends ${tomorrow ? "tomorrow" : "soon"}: give it a last push`.slice(0, 150),
+    html: brandedEmailHtml(`
+      ${greeting(opts.businessName)}
+      <p style="margin:0 0 16px;"><strong>${name}</strong> ends ${escapeHtml(when)}.${stats}</p>
+      <p style="margin:0 0 16px;">A quick post today (social media, your website, a sign at the counter) saying it ends ${tomorrow ? "tomorrow" : "soon"} is a good way to bring in customers who've been meaning to come.</p>
+      <p style="margin:0 0 8px;text-align:center;">
+        <a href="${base}/deal/${encodeURIComponent(deal.slug)}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Open your deal to share it</a>
+      </p>
+      ${next}
       <p style="margin:0 0 16px;font-size:13px;color:#8b8494;">Questions? Just reply to this email.</p>
       <p style="margin:0;font-size:12px;color:#8b8494;border-top:1px solid #f1f0f4;padding-top:12px;">You're getting this because your business runs deals on MegaDeal. Don't want emails like this? <a href="${opts.stopUrl}" style="color:#8b8494;">Unsubscribe</a>.</p>
     `),

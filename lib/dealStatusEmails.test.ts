@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
-import { dealEndedEmail, dealLiveEmail, dealStoppedEmail } from "./dealEmails";
+import { dealEndedEmail, dealEndingEmail, dealLiveEmail, dealStoppedEmail, endsTomorrowInNz } from "./dealEmails";
 
 /** The business hears when MegaDeal decides about its deal (app/api/admin/deals/[id]). */
 
@@ -119,5 +119,39 @@ describe("deal ended email", () => {
     expect(dealEndedEmail(deal, opts).html).toContain("viewed it 124 times and copied its code 1 time.");
     expect(dealEndedEmail({ ...deal, codeCopies: 0 }, opts).html).toContain("viewed it 124 times.");
     expect(dealEndedEmail({ ...deal, views: 0, codeCopies: 0 }, opts).html).not.toContain("viewed it");
+  });
+});
+
+describe("deal ends tomorrow email", () => {
+  // 2 pm on 23 Oct 2026 in Auckland (UTC+13).
+  const now = Date.parse("2026-10-23T01:00:00Z");
+  const opts = { businessName: "Harbour Light", siteUrl: "https://megadeal.co.nz", stopUrl: "https://megadeal.co.nz/stop-emails?m=x&s=y", now };
+  const deal = { id: "0b9c7c1e-0000-4000-8000-000000000001", name: "Two brunches", slug: "two-brunches", endsAt: "2026-10-24T08:00:00Z", views: 64, codeCopies: 9 };
+
+  it("knows tomorrow in New Zealand, not in UTC", () => {
+    expect(endsTomorrowInNz("2026-10-24T08:00:00Z", now)).toBe(true); // 9 pm on the 24th
+    expect(endsTomorrowInNz("2026-10-24T11:30:00Z", now)).toBe(false); // 12:30 am on the 25th
+  });
+
+  it("says when, how it's done, and links to the deal to share it", () => {
+    const { subject, html } = dealEndingEmail(deal, { ...opts, launched: false });
+    expect(subject).toBe("Two brunches ends tomorrow: give it a last push");
+    expect(html).toContain("ends tomorrow at 9:00 pm.");
+    expect(html).toContain("viewed it 64 times and copied its code 9 times");
+    expect(html).toContain('href="https://megadeal.co.nz/deal/two-brunches"');
+    expect(html).toContain(opts.stopUrl);
+  });
+
+  it("before launch says the next one waits; from launch offers to line it up", () => {
+    expect(dealEndingEmail(deal, { ...opts, launched: false }).html).toContain("free before launch");
+    const launched = dealEndingEmail(deal, { ...opts, launched: true }).html;
+    expect(launched).toContain("portal/new-deal?duplicate=0b9c7c1e-0000-4000-8000-000000000001");
+    expect(launched).not.toContain("free before launch");
+  });
+
+  it("isn't 'tomorrow' when it isn't", () => {
+    const { subject, html } = dealEndingEmail({ ...deal, endsAt: "2026-10-24T11:30:00Z" }, { ...opts, launched: false });
+    expect(subject).toBe("Two brunches ends soon: give it a last push");
+    expect(html).toContain("ends on 25 October at 12:30 am.");
   });
 });

@@ -4,7 +4,7 @@ import { notifyDealChanged } from "@/lib/indexNowDeal";
 import { DEALS_OPEN, SITE_URL } from "@/lib/siteConfig";
 import { cronCaller } from "@/lib/cronAuth";
 import { withDb } from "@/lib/db/connection";
-import { sendDealEndedEmails } from "@/lib/dealEndedNotices";
+import { sendDealEndedEmails, sendDealEndingEmails } from "@/lib/dealEndedNotices";
 
 /**
  * Hourly (Cloudflare's Cron Trigger, lib/scheduledJobs.ts): tells Bing and the
@@ -14,7 +14,7 @@ import { sendDealEndedEmails } from "@/lib/dealEndedNotices";
  * their next crawl. Every other change already notifies them as it
  * happens (lib/indexNowDeal.ts); running out of time is the one with no
  * event behind it. For the same reason it also emails each business whose
- * deal has just ended (lib/dealEndedNotices.ts).
+ * deal ends tomorrow or has just ended (lib/dealEndedNotices.ts).
  *
  * Only the site's own scheduler, or CRON_SECRET, can call it (lib/cronAuth.ts).
  * It only reads deals and sends public URLs to IndexNow, but there's no
@@ -33,15 +33,22 @@ export async function POST(req: NextRequest) {
   // Its own try: a failed email run mustn't stop the search engines
   // hearing, nor the other way round.
   let emails: { sent: number; failed: number } | { error: string };
+  let endingEmails: { sent: number; failed: number } | { error: string };
   try {
     emails = await withDb((db) => sendDealEndedEmails(db, SITE_URL));
   } catch (err) {
     console.error("[cron/expired-deals] deal-ended emails failed", err);
     emails = { error: "deal-ended emails failed" };
   }
+  try {
+    endingEmails = await withDb((db) => sendDealEndingEmails(db, SITE_URL));
+  } catch (err) {
+    console.error("[cron/expired-deals] deal-ending emails failed", err);
+    endingEmails = { error: "deal-ending emails failed" };
+  }
 
   // Before launch deal pages aren't public, so there's nothing to tell.
-  if (!DEALS_OPEN) return NextResponse.json({ notified: 0, skipped: "not launched", emails });
+  if (!DEALS_OPEN) return NextResponse.json({ notified: 0, skipped: "not launched", emails, endingEmails });
 
   try {
     const adminClient = createDataClient();
@@ -60,7 +67,7 @@ export async function POST(req: NextRequest) {
       return Number.isFinite(start) && start <= now && start > now - LOOKBACK_MS && d.productId;
     });
     for (const deal of [...ended, ...started]) notifyDealChanged(adminClient, deal);
-    return NextResponse.json({ notified: ended.length + started.length, emails });
+    return NextResponse.json({ notified: ended.length + started.length, emails, endingEmails });
   } catch (err) {
     console.error("[cron/expired-deals] failed", err);
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
