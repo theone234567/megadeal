@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
+import type { SignupSource } from "@/lib/signupSource";
 
 export interface AdminMerchant {
   _id: string;
@@ -32,6 +33,8 @@ export interface AdminMerchant {
   referralCode?: string;
   referredBy?: string;
   referralRewarded?: boolean;
+  /** Where it came from when it signed up (lib/signupSource.ts). */
+  signupSource?: SignupSource | null;
   promoRewarded?: boolean;
   website?: string;
   contactName?: string;

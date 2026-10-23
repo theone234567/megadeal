@@ -11,6 +11,7 @@ import BusinessHoursEditor from "@/components/BusinessHoursEditor";
 import { EyeOffIcon, GlobeIcon } from "@/components/icons";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
 import { formatNzDateTime } from "@/lib/nzTime";
+import { describeSignupSource } from "@/lib/signupSource";
 
 const STATUSES = ["Pending", "Approved", "Suspended"];
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
@@ -649,6 +650,18 @@ export default function AdminBusinessDetailPage() {
               <dd className="font-medium text-slate-800">
                 {merchant.referralCode || "—"}
                 {merchant.referredBy && ` · Referred by ${merchant.referredBy}`}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">Came from</dt>
+              <dd className="font-medium text-slate-800">
+                {describeSignupSource(merchant.signupSource) ?? "Not known (no ad or other site recorded)"}
+                {merchant.signupSource?.landingPage && (
+                  <span className="block text-xs font-normal text-slate-500">
+                    Landed on {merchant.signupSource.landingPage}
+                    {merchant.signupSource.firstVisit && `, first visit ${formatNzDateTime(merchant.signupSource.firstVisit)}`}
+                  </span>
+                )}
               </dd>
             </div>
             <div>

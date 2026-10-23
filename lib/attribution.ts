@@ -5,6 +5,8 @@ export interface Attribution {
   utm_content?: string;
   utm_term?: string;
   fbclid?: string;
+  /** Google Ads' click id. */
+  gclid?: string;
   landingPage?: string;
   referrer?: string;
   capturedAt?: string;
@@ -15,7 +17,8 @@ const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "ut
 
 /**
  * First-touch attribution: captured once, on whichever page a visitor
- * first lands on with utm_ or fbclid params in the URL, then read back
+ * first lands on with utm_, fbclid or gclid params in the URL (or, with
+ * none, from another site, by its referrer), then read back
  * whenever they eventually sign up — even if that's days later and
  * several pages past the one their ad actually landed them on.
  * Overwriting on every visit would credit whichever ad someone clicked
@@ -35,7 +38,13 @@ export function captureAttribution(search: URLSearchParams): void {
     }
     const fbclid = search.get("fbclid");
     if (fbclid) data.fbclid = fbclid.slice(0, 200);
-    if (Object.keys(data).length === 0) return; // nothing worth remembering
+    const gclid = search.get("gclid");
+    if (gclid) data.gclid = gclid.slice(0, 200);
+    // No ad, but they came from another site (a Google search, a post):
+    // worth knowing too. Arriving from this site, or typing the address,
+    // isn't a source.
+    const fromElsewhere = Boolean(document.referrer) && !document.referrer.startsWith(window.location.origin);
+    if (Object.keys(data).length === 0 && !fromElsewhere) return; // nothing worth remembering
 
     data.landingPage = window.location.pathname;
     data.referrer = document.referrer || undefined;

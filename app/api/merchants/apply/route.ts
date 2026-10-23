@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { hasMarkup, NAME_MARKUP_MESSAGE } from "@/lib/nameRules";
 import { phoneLink } from "@/lib/booking";
 import { NextRequest, NextResponse } from "next/server";
+import { signupSourceFrom } from "@/lib/signupSource";
 import { afterResponse } from "@/lib/afterResponse";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
@@ -251,6 +252,9 @@ export async function POST(req: NextRequest) {
         // Who referred them, from the signup form's own box (or a ?ref=
         // link). Applies alongside the promo code (lib/referralBonus.ts).
         referredByCode: cleanText(body.referredByCode, 20).toUpperCase(),
+        // Which ad or site brought them (lib/signupSource.ts), for the
+        // admin page.
+        signupSource: signupSourceFrom(body.attribution),
         creditsBalance: 0,
         status: "Pending",
         logoUrl: "",

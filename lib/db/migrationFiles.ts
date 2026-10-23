@@ -81,5 +81,9 @@ export const MIGRATION_FILES: MigrationFile[] = [
   {
     "file": "20261025000000_table_grants.sql",
     "sql": "-- Two tables added after the first schema missed the \"revoke all\" every\n-- other table gets (audit of 19 Oct 2026): credit_rescale_log and\n-- test_business_marks. Row level security already kept their rows from the\n-- public roles, but the table grants themselves stayed, TRUNCATE among\n-- them, which row level security doesn't cover. Nothing reads or writes\n-- these tables except the server.\nrevoke all on public.credit_rescale_log from anon, authenticated;\ndo $$\nbegin\n  if to_regclass('public.test_business_marks') is not null then\n    revoke all on public.test_business_marks from anon, authenticated;\n  end if;\nend $$;\n"
+  },
+  {
+    "file": "20261026000000_signup_source.sql",
+    "sql": "-- Where a business came from when it signed up (lib/signupSource.ts): the\n-- campaign tags, which ad network's click it was, the page it landed on and\n-- the other site's name. Private: the public view (public_businesses) lists\n-- its columns one by one and this isn't one of them.\nalter table public.merchants\n  add column if not exists signup_source jsonb\n  check (signup_source is null or jsonb_typeof(signup_source) = 'object');\n"
   }
 ];

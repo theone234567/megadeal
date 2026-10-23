@@ -212,6 +212,9 @@ const MERCHANTS: Collection = {
       newColumn: true,
     }),
     f("serviceArea", "service_area", { expr: "(to_jsonb(t)->>'service_area')", newColumn: true }),
+    // Where it came from when it signed up (lib/signupSource.ts;
+    // 20261026000000_signup_source.sql).
+    f("signupSource", "signup_source", { expr: "(to_jsonb(t)->'signup_source')", newColumn: true }),
     // A test business, never public (20261023000000_test_businesses.sql).
     f("isTest", "is_test", {
       expr: "coalesce((to_jsonb(t)->>'is_test')::boolean, false)",
