@@ -103,6 +103,26 @@ function prefetchFingerprint(req: Request, url: URL): string | null {
 }
 const BROWSER_CACHE_HEADER = "x-md-browser-cache-control";
 
+/**
+ * Ad and campaign tags that don't change the page: every click from an ad
+ * carries some (?fbclid=…, ?gclid=…, ?utm_source=…), and any query used to
+ * send the visit past the edge copy, so paid visitors were the ones always
+ * waiting for a fresh render, and the ones Cloudflare's CPU limit could
+ * refuse. The tags are read in the browser from its own address bar
+ * (lib/attribution.ts), never from the page, so the page is the same with
+ * or without them. Anything else in the query still skips the copy.
+ */
+const TRACKING_PARAM = /^(?:utm_[a-z_]+|fbclid|gclid|gbraid|wbraid|dclid|msclkid|ttclid|twclid|li_fat_id|igshid|mc_cid|mc_eid|_gl)$/i;
+
+/** The address with the ad tags taken off, or null if there were none. */
+export function withoutTrackingParams(url: URL): URL | null {
+  const keys = [...url.searchParams.keys()];
+  if (!keys.some((k) => TRACKING_PARAM.test(k))) return null;
+  const clean = new URL(url);
+  for (const k of keys) if (TRACKING_PARAM.test(k)) clean.searchParams.delete(k);
+  return clean;
+}
+
 export async function withPageEdgeCache(
   req: Request,
   ctx: { waitUntil(p: Promise<unknown>): void },
@@ -110,8 +130,14 @@ export async function withPageEdgeCache(
   version: string | undefined,
   handle: (req: Request) => Promise<Response>
 ): Promise<Response> {
-  const url = new URL(req.url);
-  const seconds = pageEdgeSeconds(url.pathname);
+  const asked = new URL(req.url);
+  const seconds = pageEdgeSeconds(asked.pathname);
+  // An ad click on a page kept at the edge is that page without its tags,
+  // rendered and kept without them too, so one visitor's click id is never
+  // in another's copy. Other pages are left exactly as asked for.
+  const untagged = seconds && req.method === "GET" ? withoutTrackingParams(asked) : null;
+  const url = untagged ?? asked;
+  if (untagged) req = new Request(untagged.toString(), req);
   const prefetch = prefetchFingerprint(req, url);
   if (
     !cache ||

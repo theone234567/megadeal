@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EDGE_CACHED_PATH, pageEdgeSeconds, withEdgeCache, withPageEdgeCache, withPrebuiltImage } from "./assetCache";
+import { EDGE_CACHED_PATH, pageEdgeSeconds, withEdgeCache, withPageEdgeCache, withPrebuiltImage, withoutTrackingParams } from "./assetCache";
 
 /** Share images and icons, kept at the edge for a day (worker.mjs). */
 
@@ -69,6 +69,45 @@ describe("page edge cache", () => {
     for (const p of ["/portal", "/admin", "/api/version", "/deal/pizza", "/business/x", "/reset-password", "/stop-emails", "/unsubscribe", "/auckland/x/y"]) {
       expect(pageEdgeSeconds(p), p).toBe(0);
     }
+  });
+
+  it("serves an ad click (fbclid, gclid, utm_…) the page's edge copy, rendered without the tags", async () => {
+    const cache = fakeCache();
+    const seen: string[] = [];
+    const handle = async (r: Request) => (seen.push(r.url), page());
+    const c = ctx();
+    await withPageEdgeCache(new Request("https://megadeal.co.nz/list-your-business?fbclid=AAA&utm_source=facebook&utm_campaign=launch"), c, cache, "v1", handle);
+    await Promise.all(c.pending);
+    await withPageEdgeCache(new Request("https://megadeal.co.nz/list-your-business?gclid=BBB"), ctx(), cache, "v1", handle);
+    await withPageEdgeCache(new Request("https://megadeal.co.nz/list-your-business"), ctx(), cache, "v1", handle);
+    // Rendered once, from the address without its tags; the other two from that copy.
+    expect(seen).toEqual(["https://megadeal.co.nz/list-your-business"]);
+    expect([...cache.store.keys()].join()).not.toMatch(/fbclid|gclid|utm_/);
+  });
+
+  it("still renders afresh for anything else in the query, tags or not", async () => {
+    const cache = fakeCache();
+    const seen: string[] = [];
+    const handle = async (r: Request) => (seen.push(r.url), page());
+    for (const u of ["https://megadeal.co.nz/list-your-business?ref=ABC123&fbclid=AAA", "https://megadeal.co.nz/?q=pizza&utm_source=x"]) {
+      const c = ctx();
+      await withPageEdgeCache(new Request(u), c, cache, "v1", handle);
+      await Promise.all(c.pending);
+    }
+    expect(seen).toEqual(["https://megadeal.co.nz/list-your-business?ref=ABC123", "https://megadeal.co.nz/?q=pizza"]);
+    expect(cache.store.size).toBe(0);
+  });
+
+  it("leaves pages that aren't kept at the edge exactly as asked for", async () => {
+    const seen: string[] = [];
+    await withPageEdgeCache(new Request("https://megadeal.co.nz/deal/pizza?fbclid=AAA"), ctx(), fakeCache(), "v1", async (r) => (seen.push(r.url), page()));
+    expect(seen).toEqual(["https://megadeal.co.nz/deal/pizza?fbclid=AAA"]);
+  });
+
+  it("takes off only ad and campaign tags", () => {
+    expect(withoutTrackingParams(new URL("https://megadeal.co.nz/about"))).toBeNull();
+    expect(withoutTrackingParams(new URL("https://megadeal.co.nz/about?q=x"))).toBeNull();
+    expect(withoutTrackingParams(new URL("https://megadeal.co.nz/about?utm_source=a&utm_medium=b&gbraid=c&msclkid=d&_gl=e&q=x"))?.toString()).toBe("https://megadeal.co.nz/about?q=x");
   });
 
   it("renders a page once per deploy, and gives the browser the page's own caching rule", async () => {
