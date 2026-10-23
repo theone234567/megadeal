@@ -7,6 +7,10 @@
  *
  * Same layout as DealDetail — breadcrumb, title, business, then the photo
  * beside the price panel — so the page doesn't jump when the deal arrives.
+ * At least a screen tall, so the footer isn't in view while it shows: on a
+ * slow connection it used to sit just below this shell and be pushed down
+ * when the deal arrived, a layout shift of 0.17 on a computer screen
+ * (Lighthouse, Oct 2026).
  *
  * The trade-off, as on /business/[slug]: the response starts before the
  * deal is read, so a deal that's gone (expired, paused, withdrawn) is
@@ -16,7 +20,7 @@
  */
 export default function DealLoading() {
   return (
-    <main className="mx-auto max-w-[1200px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-7" aria-busy="true">
+    <main className="mx-auto min-h-[100svh] max-w-[1200px] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-7" aria-busy="true">
       <span className="sr-only">Loading deal…</span>
       <div aria-hidden>
         <div className="animate-shimmer h-4 w-40 rounded" />

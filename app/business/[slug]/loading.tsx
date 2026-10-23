@@ -1,6 +1,6 @@
 export default function BusinessProfileLoading() {
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+    <main className="mx-auto min-h-[100svh] max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="animate-shimmer h-4 w-28 rounded" />
 
       <div className="mt-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
