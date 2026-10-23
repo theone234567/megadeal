@@ -591,6 +591,32 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     }
   }
 
+  // Credits an admin added by hand (a top-up, a refund, a goodwill
+  // gesture): the business is told, with the reason it already sees in its
+  // activity. A reduction isn't emailed; it's on the activity line.
+  if (creditsApplied && adminAdjustDelta > 0 && existing.email) {
+    try {
+      const safeName = escapeHtml(existing.businessName || "there");
+      const balance = existingCredits + creditsDelta;
+      const sent = await sendTransactionalEmail({
+        to: existing.email,
+        subject: `We've added ${adminAdjustDelta} deal credit${adminAdjustDelta === 1 ? "" : "s"} to your MegaDeal account`,
+        html: brandedEmailHtml(`
+          <p style="margin:0 0 16px;">Hi ${safeName},</p>
+          <p style="margin:0 0 16px;">We've added <strong>${adminAdjustDelta} deal credit${adminAdjustDelta === 1 ? "" : "s"}</strong> to your account: ${escapeHtml(creditsReason.replace(/[.!?\s]+$/, ""))}.</p>
+          <p style="margin:0 0 16px;">Your balance is now ${balance.toLocaleString("en-NZ")} credit${balance === 1 ? "" : "s"}, ready for your next deal.</p>
+          <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6D28D9;font-weight:700;">Go to your portal</a></p>
+        `),
+        // Questions about it go to a person.
+        replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
+      });
+      if (!sent) throw new Error("not sent");
+    } catch (err) {
+      console.error("[admin/merchants] credits email failed", err);
+      warnings.push(`Credits were added, but the email telling ${existing.email} failed to send.`);
+    }
+  }
+
   if (becomingApproved && !firstApproval && existing.email) {
     try {
       const safeName = escapeHtml(existing.businessName || "there");
