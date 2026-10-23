@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   const productId = body?.productId ? String(body.productId) : "";
   const event = body?.event;
 
-  if (!productId || !isDealEvent(event)) {
+  if (!/^[A-Za-z0-9-]{1,64}$/.test(productId) || !isDealEvent(event)) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
   // An admin checking a deal isn't a customer: not counted.
@@ -43,8 +43,17 @@ export async function POST(req: NextRequest) {
   // Returns the same ok:true as every other path rather than a 429: this
   // is fire-and-forget analytics that must never affect what the visitor
   // sees, and a 429 would only tell an abuser exactly where the line is.
-  const { limited } = await checkRateLimit(`dealstrack-ip:${getClientIp(req)}`, 300, 60 * 60);
+  const ip = getClientIp(req);
+  const { limited } = await checkRateLimit(`dealstrack-ip:${ip}`, 300, 60 * 60);
   if (limited) {
+    return NextResponse.json({ ok: true });
+  }
+  // One visitor counts once per deal and action each half hour, so these
+  // numbers (the business's stats, and "ended with 87 views" in its
+  // emails) are people, not reloads: one visitor hitting this repeatedly
+  // used to add a view every time.
+  const once = await checkRateLimit(`dealstrack-once:${ip}:${productId}:${event}`, 1, 30 * 60);
+  if (once.limited) {
     return NextResponse.json({ ok: true });
   }
 
