@@ -1233,7 +1233,7 @@ export default function NewDealForm({
               disabled={submitting}
               className="rounded-full bg-brand-600 px-8 py-3 text-center text-sm font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60 sm:ml-auto"
             >
-              {submitting ? (checkingDeal ? "Checking your deal…" : "Submitting…") : "Submit deal for approval"}
+              {submitting ? (checkingDeal ? "Checking your deal…" : "Submitting…") : changeNeeded ? "Resubmit for review" : "Submit deal for approval"}
             </button>
           ) : (
             <div className="flex flex-col items-end gap-2 sm:ml-auto">
@@ -1289,6 +1289,9 @@ export default function NewDealForm({
         <p role="status" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           <span className="font-bold">What to change before submitting again: </span>
           {changeNeeded}
+          <span className="mt-1 block text-xs text-amber-800">
+            Make the change, then preview and press <strong>Resubmit for review</strong>: we&apos;ll check it again.
+          </span>
         </p>
       )}
       <p className="mt-1 text-sm text-slate-600">

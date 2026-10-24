@@ -10,6 +10,8 @@ import { wixImageUrl } from "@/lib/wixImageUrl";
 import { nzLongDate } from "@/lib/dealVerification";
 import { cleanDealTags, dealTagLabel } from "@/lib/dealTags";
 import { aiSummary, effectiveVerdict } from "@/lib/aiReview";
+import SendBackPanel from "./SendBackPanel";
+import { sendBackRounds } from "@/lib/dealSendBackRules";
 import { describeMinutes } from "@/lib/dealDuration";
 import { dealDisplayStatus } from "@/lib/dealStatus";
 import { isScheduledFuture, missedScheduledStart, startLabel } from "@/lib/dealSchedule";
@@ -61,6 +63,11 @@ export default function DealRow({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sendBackOpen, setSendBackOpen] = useState(false);
+  const [sentBack, setSentBack] = useState(false);
+  // Pause is for a deal that has been on the site; one still waiting for
+  // review is sent back for changes or rejected instead (T181).
+  const statuses = STATUSES.filter((s) => s !== "Paused" || deal.everLive || deal.status === "Paused");
 
   const statusChangedToPausedOrCancelled =
     status !== (deal.status || "Live") && (status === "Paused" || status === "Cancelled");
@@ -147,6 +154,9 @@ export default function DealRow({
               <p className="text-xs font-bold text-amber-700">New photo to approve</p>
             )}
             {readRevision(deal) && <p className="text-xs font-bold text-amber-700">Change requested</p>}
+            {deal.status === "Pending Approval" && sendBackRounds(deal) > 0 && (
+              <p className="text-xs font-bold text-amber-700">Resubmitted ({sendBackRounds(deal)})</p>
+            )}
             {aiSummary(deal.aiReview) && (
               <p
                 className={`text-xs font-semibold ${
@@ -216,7 +226,7 @@ export default function DealRow({
           aria-label="Status"
           className="rounded-lg border border-slate-200 px-2 py-1 text-sm"
         >
-          {STATUSES.map((s) => (
+          {statuses.map((s) => (
             <option key={s} value={s}>
               {s}
             </option>
@@ -235,13 +245,31 @@ export default function DealRow({
         )}
       </td>
       <td className="py-3">
-        <button
-          onClick={save}
-          disabled={!dirty || saving}
-          className="rounded-full bg-brand-600 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-40"
-        >
-          {saving ? "Saving…" : saved ? "Saved ✓" : "Save"}
-        </button>
+        {sentBack ? (
+          <p role="status" className="max-w-[9rem] text-xs font-semibold text-amber-800">
+            Sent back for changes ✓
+          </p>
+        ) : (
+          <>
+            <button
+              onClick={save}
+              disabled={!dirty || saving}
+              className="rounded-full bg-brand-600 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-40"
+            >
+              {saving ? "Saving…" : saved ? "Saved ✓" : "Save"}
+            </button>
+            {deal.status === "Pending Approval" && (
+              <button
+                type="button"
+                onClick={() => setSendBackOpen((v) => !v)}
+                aria-expanded={sendBackOpen}
+                className="mt-1 block text-xs font-semibold text-amber-800 underline-offset-2 hover:underline"
+              >
+                Send back for changes
+              </button>
+            )}
+          </>
+        )}
         {error && (
           // break-words: the note can carry a long email address, which
           // otherwise runs out past the card's edge.
@@ -259,6 +287,23 @@ export default function DealRow({
         )}
       </td>
     </tr>
+    {sendBackOpen && !sentBack && (
+      <tr className="border-b border-slate-100">
+        <td colSpan={5} className="px-4 py-3">
+          <SendBackPanel
+            dealId={deal._id}
+            suggestedNote={deal.aiReview?.messageToBusiness}
+            onCancel={() => setSendBackOpen(false)}
+            onSent={(warning) => {
+              setSentBack(true);
+              setSendBackOpen(false);
+              if (warning) setError(warning);
+              onSaved?.({ ...deal, status: "Draft" });
+            }}
+          />
+        </td>
+      </tr>
+    )}
     {detailsOpen && (
       <tr className="border-b border-slate-100 bg-slate-50">
         <td colSpan={5} className="px-4 py-3 text-sm text-slate-600">

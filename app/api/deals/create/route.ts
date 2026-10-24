@@ -23,6 +23,7 @@ import { isGeneratedDealCode } from "@/lib/dealCode";
 import { newDealCode } from "@/lib/db/dealCodes";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
 import { draftFromSubmission } from "@/lib/dealDraft";
+import { ROUNDS_BEFORE_A_PERSON, resubmittedEntry, sendBackRounds } from "@/lib/dealSendBack";
 import { changeNeededFor, dealForBusiness } from "@/lib/dealForBusiness";
 import { DEALS_OPEN, PRELAUNCH_FREE_DEALS, SITE_URL } from "@/lib/siteConfig";
 import { prelaunchAllowanceBlock } from "@/lib/prelaunchAllowance";
@@ -367,6 +368,9 @@ export async function POST(req: NextRequest) {
   // into an end date at publication (firstPublicationFields).
   const requestedDurationMinutes = toRequestedMinutes(isFlash, isFlash ? durationMinutes : durationDays);
 
+  const resubmitted = draftRow
+    ? resubmittedEntry(draftRow, { dealName, description, terms, photoUrl, priceNow, priceWas: priceWas ?? priceNow, quantityAvailable: quantityAvailable ?? null, bookingRequirement, gallery })
+    : null;
   const fields = {
     dealName,
     description,
@@ -403,10 +407,12 @@ export async function POST(req: NextRequest) {
     // machine text in the field an admin uses to explain a rejection.
     draftData: "",
     statusNote: "",
-    // A deal the check sent back to Draft (lib/aiReviewApply.ts) starts
-    // afresh: last time's review and refund belong to last time.
+    // A deal sent back to Draft (lib/dealSendBack.ts) starts afresh: last
+    // time's review and refund belong to last time. Its history gains the
+    // round, with what the business changed, for the admin.
     aiReview: null,
     creditRefunded: false,
+    ...(resubmitted ? { contentHistory: [resubmitted, ...(draftRow.contentHistory ?? [])].slice(0, 25) } : {}),
   };
 
   // Submitting a draft promotes that row rather than inserting a second
@@ -474,7 +480,8 @@ export async function POST(req: NextRequest) {
     merchant,
     {
       category,
-      apply: settings.requireApproval ? "noPublish" : true,
+      // Sent back this many times already: a person looks at it this time.
+      apply: draftRow && sendBackRounds(draftRow) >= ROUNDS_BEFORE_A_PERSON ? false : settings.requireApproval ? "noPublish" : true,
       // What was sent, tidied, so a deal sent back reopens as it was typed
       // (a blank "was" price stays blank rather than becoming the price).
       submitted: draftFromSubmission({ ...body, ...checked.fields, priceWas: body.priceWas, dealCode: customDealCode || "" }),

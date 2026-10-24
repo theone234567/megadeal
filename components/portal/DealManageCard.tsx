@@ -298,7 +298,9 @@ export default function DealManageCard({
                 any time before it ends. Pausing doesn&apos;t stop the clock: the end date stays the same.
               </p>
             )}
-            {status === "Paused" && (
+            {/* "Make live" is only mentioned where the button is shown: a
+                deal MegaDeal paused has none, and says so above (T181). */}
+            {status === "Paused" && deal.pausedBy !== "admin" && (
               <p className="mt-2 text-xs text-slate-600">
                 Paused: customers can&apos;t see this deal on MegaDeal. Choose &ldquo;Make live&rdquo; to show it
                 again

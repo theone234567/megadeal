@@ -1,14 +1,13 @@
 import { decideAiOutcome, limitAiOutcome, reviewWithAi, type AiApplyMode, type AiOutcome, type AiReview } from "./aiReview";
-import { incrementCreditsAtomically, setFieldsIf } from "./creditsAtomic";
-import { withdrawalRefundsCredit } from "./dealStatus";
-import { creditsToRefund } from "./platformSettingsRules";
 import { withHistory } from "./dealAdminEdit";
 import { logMerchantActivity } from "./merchantActivity";
 import { DEALS_OPEN } from "./siteConfig";
 import { getSiteRudenessCheck, rudenessCheckApplies } from "./rudenessSetting";
 import { notifyDealChanged } from "./indexNowDeal";
 import { firstPublicationFields } from "./dealDuration";
-import { draftFromSubmission, draftRevisionOf, draftToRow, type DealDraftData } from "./dealDraft";
+import type { DealDraftData } from "./dealDraft";
+import { sendDealBackToDraft } from "./dealSendBack";
+import { emailChangesNeeded } from "./dealSendBackEmail";
 import { FALLBACK_CHANGE_NEEDED } from "./dealForBusiness";
 
 /** Whether swearing/crude humour is held back for this business. */
@@ -102,45 +101,15 @@ export async function reviewSubmittedDeal(
     }
 
     if (outcome === "reject" && waiting) {
-      const message = review.messageToBusiness || FALLBACK_REJECTION;
-      const amount = creditsToRefund(deal);
-      const refund = withdrawalRefundsCredit(deal) && amount > 0;
-      // Only one request may move the deal out of review: if the business
-      // withdraws it at the same moment, the withdrawal stands (it isn't
-      // brought back as a draft) and just one of the two gives the
-      // credits back.
-      const claimed = await setFieldsIf(
-        adminClient,
-        "Deals",
-        deal._id,
-        { status: "Draft", ...(refund ? { creditRefunded: true } : {}) },
-        { status: { $eq: "Pending Approval" } },
-      );
-      if (!claimed) {
-        const now = (await adminClient.items.get("Deals", deal._id)) ?? deal;
-        return { outcome, review, item: now, creditsReturned: 0 };
-      }
-      const draft = opts.submitted ?? draftFromSubmission({ ...deal, category: opts.category });
-      const item = await adminClient.items.update("Deals", {
-        ...deal,
-        ...draftToRow(draft, deal.merchantEmail),
-        // The code it was submitted with, whether chosen or generated.
-        dealCode: deal.dealCode,
-        // Read by the portal (lib/dealForBusiness.ts) for the reason.
-        aiReview: { ...review, returnedToDraft: true },
-        draftRevision: draftRevisionOf(deal) + 1,
-        ...(refund ? { creditRefunded: true } : {}),
+      const sent = await sendDealBackToDraft(adminClient, deal, merchant, {
+        message: review.messageToBusiness || FALLBACK_REJECTION,
+        by: "ai",
+        review,
+        category: opts.category,
+        submitted: opts.submitted,
       });
-      const refunded = refund && merchant?._id ? await incrementCreditsAtomically(adminClient, merchant._id, amount) : false;
-      await logMerchantActivity(adminClient, {
-        merchantEmail: deal.merchantEmail,
-        type: refunded ? "credit" : "deal",
-        ...(refunded ? { amount } : {}),
-        description: `"${deal.dealName}" needs a change before it can go live${
-          refunded ? ` (${amount} credit${amount === 1 ? "" : "s"} returned)` : ""
-        }: ${message.trim().replace(/[.!?]+$/, "")}. It's back in your drafts to fix and submit again.`,
-      });
-      return { outcome, review, item, creditsReturned: refunded ? amount : 0 };
+      if (sent.ok) await emailChangesNeeded(sent.item, merchant, review.messageToBusiness || FALLBACK_REJECTION, sent.creditsReturned);
+      return { outcome, review, item: sent.item, creditsReturned: sent.ok ? sent.creditsReturned : 0 };
     }
 
     const item = await adminClient.items.update("Deals", { ...deal, aiReview: review });

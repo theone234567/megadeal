@@ -23,11 +23,13 @@ const member = { id: login(1), email: "owner@harbourbistro.co.nz", loginEmailVer
 let signedIn: typeof member | null = member;
 let admin = false;
 let aiReview: Record<string, unknown> | null = null;
+/** Every email the routes sent, newest last. */
+const mail: { to: string; subject: string; html: string }[] = [];
 
 vi.mock("@/lib/memberAuth", () => ({ getVerifiedMember: async () => signedIn }));
 vi.mock("@/lib/adminSession", () => ({ isAdminRequest: async () => admin }));
 vi.mock("@/lib/dataClient", () => ({ createDataClient: () => createPgAdminClient((fn) => fn(db)) }));
-vi.mock("@/lib/sendEmail", () => ({ sendTransactionalEmail: async () => ({ ok: true }) }));
+vi.mock("@/lib/sendEmail", () => ({ sendTransactionalEmail: async (m: { to: string; subject: string; html: string }) => (mail.push(m), { ok: true }) }));
 vi.mock("@/lib/metaCapi", () => ({ sendMetaCapiEvent: async () => {} }));
 vi.mock("@/lib/adminAudit", () => ({ logAdminAction: async () => {}, auditTarget: (n: unknown) => String(n) }));
 vi.mock("@/lib/indexNowDeal", () => ({ notifyDealChanged: () => {}, notifyBusinessChanged: () => {} }));
@@ -47,6 +49,7 @@ beforeEach(async () => {
   await pglite.exec("delete from public.merchant_activity; delete from public.deals; delete from public.merchants; delete from public.email_signups;");
   signedIn = member;
   admin = false;
+  mail.length = 0;
   aiReview = null;
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
@@ -599,6 +602,89 @@ describe("the AI review and housekeeping on the new database", () => {
     expect(rows).toEqual([{ status: "Live", deal_code: "DINNER20", credit_refunded: false, verdict: "approve" }]);
     const [{ credits_balance }] = await db.query<{ credits_balance: number }>("select credits_balance from public.merchants");
     expect(credits_balance).toBeLessThan(100);
+  });
+
+  it("an admin sends a waiting deal back for changes; the business fixes and resubmits the same deal (T181)", async () => {
+    await signUpApprovedWithCredits(100);
+    aiReview = null; // no automatic decision: it waits for a person
+    const create = await import("@/app/api/deals/create/route");
+    const { body } = await call(create.POST, request("POST", { ...DEAL, dealCode: "SCONE5" }));
+    const id = body.item._id;
+    const [{ credits_balance: charged }] = await db.query<{ credits_balance: number }>("select credits_balance from public.merchants");
+    expect(charged).toBeLessThan(100);
+
+    admin = true;
+    // Pause isn't for a deal that was never live.
+    const patch = await import("@/app/api/admin/deals/[id]/route");
+    expect((await call(patch.PATCH, request("PATCH", { status: "Paused", note: "deal photo" }), params(id))).status).toBe(400);
+    // A note is required: it's what the business reads.
+    const sendBack = await import("@/app/api/admin/deals/[id]/send-back/route");
+    expect((await call(sendBack.POST, request("POST", { presets: ["photo"], note: "" }), params(id))).status).toBe(400);
+    const sent = await call(sendBack.POST, request("POST", { presets: ["photo"], note: "Use a photo of the scone itself." }), params(id));
+    expect(sent.status).toBe(200);
+    expect(await db.query("select status, deal_code from public.deals")).toEqual([{ status: "Draft", deal_code: "SCONE5" }]);
+    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 100 }]);
+    // The email: what to change and how, never "paused".
+    const email = mail.find((m) => m.subject === "Your deal needs a small change before it goes live")!;
+    expect(email.to).toBe("owner@harbourbistro.co.nz");
+    expect(email.html).toContain("Please change the photo. Use a photo of the scone itself.");
+    expect(email.html).toContain(`/portal/new-deal?draft=${id}`);
+    expect(email.html).not.toMatch(/paused|at the moment/i);
+    // Sending back twice doesn't work: it's no longer waiting.
+    expect((await call(sendBack.POST, request("POST", { note: "again please" }), params(id))).status).toBe(409);
+
+    // The business sees it, fixes the photo and resubmits.
+    admin = false;
+    const mine = await import("@/app/api/deals/mine/route");
+    const [draft] = (await call(mine.GET, request("GET"))).body.items;
+    expect(draft).toMatchObject({ _id: id, status: "Draft", changeNeeded: "Please change the photo. Use a photo of the scone itself." });
+    const again = await call(create.POST, request("POST", { ...DEAL, dealCode: "SCONE5", photoUrl: "https://static.wixstatic.com/media/scone.jpg", draftId: id }));
+    expect(again.status).toBe(200);
+    expect(again.body.item).toMatchObject({ _id: id, status: "Pending Approval", dealCode: "SCONE5", changeNeeded: null });
+    // The admin sees both rounds, and what changed.
+    const [{ content_history: history }] = await db.query<{ content_history: any[] }>("select content_history from public.deals");
+    expect(history.map((h) => h.event)).toEqual(["resubmitted", "sent-back"]);
+    expect(history[0].changed).toEqual(["photoUrl"]);
+    expect(history[1]).toMatchObject({ by: "admin", reason: "Please change the photo. Use a photo of the scone itself." });
+
+    // Approved: live, the same deal.
+    admin = true;
+    expect((await call(patch.PATCH, request("PATCH", { status: "Live" }), params(id))).status).toBe(200);
+    expect(await db.query("select id::text, status, deal_code from public.deals")).toEqual([{ id, status: "Live", deal_code: "SCONE5" }]);
+  });
+
+  it("a deal with a code MegaDeal made reopens without it in the code box, and keeps it", async () => {
+    await signUpApprovedWithCredits(100);
+    aiReview = null;
+    const create = await import("@/app/api/deals/create/route");
+    const { body } = await call(create.POST, request("POST", DEAL));
+    const code = body.item.dealCode;
+    admin = true;
+    const sendBack = await import("@/app/api/admin/deals/[id]/send-back/route");
+    expect((await call(sendBack.POST, request("POST", { note: "Please add the price." }), params(body.item._id))).status).toBe(200);
+    admin = false;
+    const mine = await import("@/app/api/deals/mine/route");
+    const [draft] = (await call(mine.GET, request("GET"))).body.items;
+    const { parseDraft } = await import("@/lib/dealDraft");
+    expect(parseDraft(draft).dealCode).toBe("");
+    expect(draft.dealCode).toBe(code);
+    const again = await call(create.POST, request("POST", { ...DEAL, draftId: draft._id }));
+    expect(again.body.item.dealCode).toBe(code);
+  });
+
+  it("after three rounds, a resubmitted deal waits for a person instead of the automatic check", async () => {
+    await signUpApprovedWithCredits(100);
+    aiReview = review("reject", { offensive: true });
+    const create = await import("@/app/api/deals/create/route");
+    let id = (await call(create.POST, request("POST", DEAL))).body.item._id;
+    for (let round = 2; round <= 3; round++) {
+      const res = await call(create.POST, request("POST", { ...DEAL, draftId: id }));
+      expect(res.body.outcome).toBe("rejected");
+      id = res.body.item._id;
+    }
+    const fourth = await call(create.POST, request("POST", { ...DEAL, draftId: id }));
+    expect(fourth.body.outcome).toBe("pending");
+    expect(await db.query("select status from public.deals")).toEqual([{ status: "Pending Approval" }]);
   });
 
   it("a deal withdrawn while the AI was still reviewing it isn't refunded twice when the review turns it down", async () => {

@@ -93,7 +93,7 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
     if (await patch(changed, "content")) setEditing(false);
   }
 
-  const history: { at: string; previous: Record<string, unknown> }[] = Array.isArray(deal.contentHistory)
+  const history: { at: string; previous: Record<string, unknown>; event?: string; by?: string; reason?: string; changed?: string[] }[] = Array.isArray(deal.contentHistory)
     ? deal.contentHistory
     : [];
   const input = "w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm";
@@ -285,10 +285,30 @@ export default function DealContentEditor({ deal, onSaved }: { deal: AdminDeal; 
           <ul className="mt-2 space-y-2">
             {history.map((h, i) => (
               <li key={i}>
-                <span className="font-semibold">{new Date(h.at).toLocaleString("en-NZ")}</span> — replaced:{" "}
-                {Object.entries(h.previous)
-                  .map(([k, v]) => `${FIELD_LABELS[k] ?? k}: ${v === null || v === "" ? "(empty)" : String(v).slice(0, 120)}`)
-                  .join(" · ")}
+                <span className="font-semibold">{new Date(h.at).toLocaleString("en-NZ")}</span>
+                {/* Moderation rounds (lib/dealSendBack.ts, T181). */}
+                {h.event === "sent-back" ? (
+                  <> — sent back for changes{h.by === "ai" ? " by the AI check" : ""}: {h.reason}</>
+                ) : h.event === "resubmitted" ? (
+                  <>
+                    {" "}
+                    — resubmitted;{" "}
+                    {h.changed?.length ? `changed ${h.changed.map((k) => FIELD_LABELS[k] ?? k).join(", ")} (before: ` : "nothing changed"}
+                    {h.changed?.length
+                      ? `${Object.entries(h.previous)
+                          .map(([k, v]) => `${FIELD_LABELS[k] ?? k}: ${v === null || v === "" ? "(empty)" : String(v).slice(0, 120)}`)
+                          .join(" · ")})`
+                      : ""}
+                  </>
+                ) : (
+                  <>
+                    {" "}
+                    — replaced:{" "}
+                    {Object.entries(h.previous)
+                      .map(([k, v]) => `${FIELD_LABELS[k] ?? k}: ${v === null || v === "" ? "(empty)" : String(v).slice(0, 120)}`)
+                      .join(" · ")}
+                  </>
+                )}
               </li>
             ))}
           </ul>

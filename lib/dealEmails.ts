@@ -181,3 +181,33 @@ export function dealStoppedEmail(dealName: string, status: "Paused" | "Cancelled
     `),
   };
 }
+
+/**
+ * A deal sent back for changes before it went live (lib/dealSendBack.ts),
+ * by an admin or the automatic check (T181, T155). Never says "paused":
+ * it was never on the site.
+ */
+export function dealChangesNeededEmail(
+  dealName: string,
+  reason: string,
+  opts: { siteUrl: string; draftId: string; businessName?: string | null; contactName?: string | null; creditsReturned?: number },
+): DealEmail {
+  const name = escapeHtml(dealName || "Your deal");
+  const credits = opts.creditsReturned
+    ? ` The ${opts.creditsReturned} credit${opts.creditsReturned === 1 ? "" : "s"} it used ${opts.creditsReturned === 1 ? "has" : "have"} been returned.`
+    : "";
+  const fixUrl = `${opts.siteUrl}/portal/new-deal?draft=${encodeURIComponent(opts.draftId)}`;
+  return {
+    subject: "Your deal needs a small change before it goes live",
+    html: brandedEmailHtml(`
+      ${greeting(opts)}
+      <p style="margin:0 0 16px;"><strong>${name}</strong> needs a small change before it can go live on MegaDeal.</p>
+      <p style="margin:0 0 16px;padding:12px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;">${escapeHtml(reason.trim().slice(0, 600))}</p>
+      <p style="margin:0 0 16px;">It's saved in your drafts with the same deal code.${credits} Make the change, then press <strong>Resubmit for review</strong> and we'll check it again.</p>
+      <p style="margin:0 0 16px;text-align:center;">
+        <a href="${fixUrl}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Fix and resubmit</a>
+      </p>
+      <p style="margin:0;font-size:13px;color:#8b8494;">Questions? Just reply to this email.</p>
+    `),
+  };
+}

@@ -65,6 +65,16 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     if (!existing) {
       return NextResponse.json({ error: "Deal not found." }, { status: 404 });
     }
+    // Pausing is for a deal that has been on the site (T181): a deal still
+    // waiting for review is sent back for changes or rejected instead.
+    // Pausing one used to email the business "your deal was paused ... at
+    // the moment" about a deal nobody had ever seen.
+    if (patch.status === "Paused" && existing.status !== "Paused" && !existing.everLive) {
+      return NextResponse.json(
+        { error: "This deal hasn't been live yet, so it can't be paused. Send it back for changes, or reject it." },
+        { status: 400 },
+      );
+    }
 
     // End date typed in by an admin. Only a real change counts — the admin
     // form sends its date field back on every save, and re-saving it used
