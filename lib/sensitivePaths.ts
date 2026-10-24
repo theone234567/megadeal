@@ -9,6 +9,15 @@ export function isTrackingFreePath(pathname: string | null | undefined): boolean
   return /^\/(?:reset-password|login-callback|stop-emails|admin)(?:\/|$)/.test(pathname ?? "");
 }
 
+/** Pages the Meta (Facebook) Pixel stays off, though Google Analytics
+ *  still runs: the business portal. Ads are aimed at people who haven't
+ *  signed up yet, so the pixel learns nothing useful there, and a signed-in
+ *  business's pages are nobody else's business. A new sign-up still
+ *  reaches Meta from the server (Conversions API, app/api/merchants/apply). */
+export function isPixelFreePath(pathname: string | null | undefined): boolean {
+  return isTrackingFreePath(pathname) || /^\/portal(?:\/|$)/.test(pathname ?? "");
+}
+
 /** The password-reset link's token, moved out of the address into this
  *  HttpOnly cookie by middleware.ts before the page loads. */
 export const RESET_COOKIE = "md_reset";
