@@ -17,17 +17,36 @@ import { SITE_URL } from "@/lib/siteConfig";
 // sign-in screen to anyone not signed in, with nothing private on it.
 const DISALLOWED = ["/admin", "/admin/*", "/api/*", "/reset-password"];
 
+/** Search and answer engines, and the agents that fetch a page when a
+ *  person asks them to: named so the intent is explicit (SEO pack T02),
+ *  with the same rules as everyone else. A crawler follows only its own
+ *  group, so each repeats the disallows. */
+const SEARCH_AND_ANSWER_BOTS = [
+  "Googlebot",
+  "Bingbot",
+  "OAI-SearchBot",
+  "ChatGPT-User",
+  "PerplexityBot",
+  "Perplexity-User",
+  "Claude-SearchBot",
+  "Claude-User",
+  "Applebot",
+  "DuckDuckBot",
+];
+
+/** Crawlers that collect pages to train AI models. Allowed, so the
+ *  assistants people ask know MegaDeal (the owner's call: MANUAL-STEPS
+ *  M05). To opt out, change this group's allow to disallow "/". */
+const AI_TRAINING_BOTS = ["GPTBot", "Google-Extended", "ClaudeBot", "Applebot-Extended", "CCBot"];
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      // General crawlers, including AI answer-engine crawlers that respect
-      // robots.txt (GPTBot/ChatGPT-User for OpenAI, ClaudeBot/anthropic-ai
-      // for Claude, PerplexityBot, Google-Extended for Gemini/AI Overviews)
-      // — allowed by default here since organic AI-search visibility is
-      // wanted, not blocked. Only the merchant/admin back-office and API
-      // routes are off-limits: no public content lives there, and nothing
-      // there should be indexable regardless of crawler.
+      // Everyone else. Only the admin back office, the API and the reset
+      // page are off-limits: no public content lives there.
       { userAgent: "*", allow: "/", disallow: DISALLOWED },
+      { userAgent: SEARCH_AND_ANSWER_BOTS, allow: "/", disallow: DISALLOWED },
+      { userAgent: AI_TRAINING_BOTS, allow: "/", disallow: DISALLOWED },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
     // No "Host:" line: it was Yandex's, and Google and Bing ignore it. The
