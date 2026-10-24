@@ -5,7 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { useSession } from "@/context/SessionProvider";
 import { currentPromo, promoForCode } from "@/lib/promo";
 import { referralCreditsLabel } from "@/lib/referralBonus";
-import { loginMember, registerMember, submitVerificationCode, type AuthOutcome } from "@/lib/siteAuth";
+import { loginMember, registerMember, resendCode, submitVerificationCode, type AuthOutcome } from "@/lib/siteAuth";
+import { clearPendingSignup, readPendingSignup, savePendingSignup } from "@/lib/pendingSignup";
 import { getTurnstileToken, preloadTurnstile } from "@/lib/turnstileClient";
 import PasswordField from "@/components/PasswordField";
 import { EyeOffIcon } from "@/components/icons";
@@ -350,6 +351,7 @@ export default function MerchantSignupForm({
       return;
     }
     const metaEventId = await submitApplication(values);
+    clearPendingSignup();
     window.gtag?.("event", "form_complete", { form_name: "merchant_signup" });
     // The real conversion event for business-recruitment ad campaigns — a
     // completed application, not just a click or an email signup. Shares
@@ -367,6 +369,8 @@ export default function MerchantSignupForm({
     } else if (outcome.status === "verify") {
       setPendingState(outcome.pendingState);
       setPendingEmail(outcome.email);
+      // So Refresh or Back doesn't lose the code screen (lib/pendingSignup.ts).
+      savePendingSignup(outcome.email, applicationRef.current);
     } else {
       setSubmitError(outcome.message);
     }
@@ -528,6 +532,34 @@ export default function MerchantSignupForm({
     }
   }
 
+  // Back on the code screen after a Refresh, or Back then Forward (T172):
+  // the sign-up this tab was confirming. Not once signed in: then the
+  // email is confirmed and the code screen has nothing left to do.
+  useEffect(() => {
+    if (!authResolved) return;
+    if (isLoggedIn) {
+      clearPendingSignup();
+      return;
+    }
+    if (pendingState) return;
+    const pending = readPendingSignup<ApplicationValues>();
+    if (!pending) return;
+    applicationRef.current = pending.application;
+    setPendingState({ email: pending.email });
+    setPendingEmail(pending.email);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authResolved, isLoggedIn]);
+
+  /** Back to the form, to sign up with a different email. */
+  function changeEmail() {
+    clearPendingSignup();
+    setPendingState(null);
+    setPendingEmail("");
+    setCode("");
+    setSubmitError(null);
+    setResendNotice(null);
+  }
+
   // Counts the cooldown down once a second while it is running.
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -545,6 +577,24 @@ export default function MerchantSignupForm({
     setSubmitError(null);
     setResendNotice(null);
     setSubmitting(true);
+    // Back after a Refresh, the password is gone (it's never kept): the
+    // email alone asks for a new code.
+    if (!password) {
+      try {
+        const sent = await withTimeout(resendCode(pendingEmail), AUTH_TIMEOUT_MS, "That took too long. Please try again.");
+        if (sent) {
+          setResendNotice(`New code sent to ${pendingEmail}. It can take a minute to arrive.`);
+          setResendCooldown(30);
+        } else {
+          setSubmitError("We couldn't send a new code just yet. Please wait half a minute and try again.");
+        }
+      } catch (err: any) {
+        setSubmitError(friendlyError(err, "We couldn't send a new code. Please try again."));
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
     try {
       const outcome = await withTimeout(
         (async () => loginMember(pendingEmail, password, await captchaToken()))(),
@@ -650,6 +700,13 @@ export default function MerchantSignupForm({
           <p className="text-center text-xs text-slate-500">
             Check your spam folder too — it sometimes lands there.
           </p>
+          <button
+            type="button"
+            onClick={changeEmail}
+            className="w-full text-center text-xs font-semibold text-slate-600 underline underline-offset-2 hover:text-slate-800"
+          >
+            Use a different email
+          </button>
           {/* One business per email: an address that already has an
               account gets a "sign in instead" email, not a code
               (app/api/auth/register). */}
