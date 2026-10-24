@@ -200,7 +200,7 @@ export default async function BusinessProfilePage(
             // specifically recommend multiple angles when available.
             image: business.photos.length > 0 ? business.photos : undefined,
             url: `${SITE_URL}/business/${business.slug}`,
-            telephone: business.phone || undefined,
+            telephone: phone?.display || undefined,
             priceRange: business.priceRange || undefined,
             // A home-based or mobile business: its suburb and city, no
             // street, no pin, and the area it covers.
@@ -233,12 +233,8 @@ export default async function BusinessProfilePage(
             // Its live deals, by the @id each deal page gives its Offer
             // (lib/dealJsonLd.ts), so the business and its offers connect.
             makesOffer: deals.length > 0 ? deals.map((d) => ({ "@id": `${SITE_URL}/deal/${d.slug}#offer` })) : undefined,
-            sameAs: [
-              business.website,
-              business.bookingUrl,
-              business.facebookUrl,
-              business.instagramUrl,
-            ].filter(Boolean),
+            // Only links that pass the same check as the page's own (T140).
+            sameAs: [websiteRaw, bookingHref, facebook, instagram].filter(Boolean),
           }),
         }}
       />

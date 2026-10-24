@@ -1,3 +1,4 @@
+import { phoneLink } from "./booking";
 import { dealOffer } from "./dealOffer";
 import { htmlToText } from "./htmlText";
 import { dealRedemption } from "./dealRedemption";
@@ -50,7 +51,7 @@ export function dealSeller(deal: Deal, siteUrl: string) {
       ? { "@id": `${siteUrl}/business/${deal.businessSlug}#business`, url: `${siteUrl}/business/${deal.businessSlug}` }
       : {}),
     name: deal.businessName,
-    telephone: deal.businessPhone || undefined,
+    telephone: phoneLink(deal.businessPhone)?.display || undefined,
     image: deal.businessLogoUrl || undefined,
     address:
       deal.businessAddress || deal.businessCity || deal.businessSuburb

@@ -30,6 +30,16 @@ export function isValidSocialUrl(url: string, platform: "facebook" | "instagram"
  * so anything that passes here renders exactly as validated. Rejects
  * dangerous schemes (javascript:, data:, etc.) explicitly rather than
  * relying on how a display page happens to render the value. */
+/**
+ * A host a public link can point at (security pack T140): a real domain
+ * name with a dot and a top-level domain ("yourcafe.co.nz"), not
+ * "example", "localhost", an IP address or a host made of stray
+ * characters.
+ */
+export function isPublicWebHost(hostname: string): boolean {
+  return /^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,63}|xn--[a-z0-9-]{1,59})$/i.test(hostname);
+}
+
 export function isSafeOptionalUrl(url: string): boolean {
   if (!url) return true;
   // The rule the database applies when it stores a link (lib/db/wixShim.ts
@@ -40,7 +50,7 @@ export function isSafeOptionalUrl(url: string): boolean {
   if (/\s/.test(candidate)) return false;
   try {
     const parsed = new URL(candidate);
-    return parsed.protocol === "https:" || parsed.protocol === "http:";
+    return (parsed.protocol === "https:" || parsed.protocol === "http:") && isPublicWebHost(parsed.hostname);
   } catch {
     return false;
   }
@@ -55,7 +65,7 @@ export function safeWebHref(url: string | null | undefined): string | null {
   const candidate = /^https?:\/\//i.test(value) ? value : `https://${value}`;
   try {
     const parsed = new URL(candidate);
-    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : null;
+    return (parsed.protocol === "https:" || parsed.protocol === "http:") && isPublicWebHost(parsed.hostname) ? parsed.href : null;
   } catch {
     return null;
   }

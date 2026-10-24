@@ -25,7 +25,7 @@ describe("resolveDealContact", () => {
 
   it("phone only: Call business is the main button and the copy says to call", () => {
     const c = resolveDealContact({ ...base, phone: "09 123 4567" });
-    expect(c.primary).toMatchObject({ method: "phone", href: "tel:091234567", detail: "09 123 4567" });
+    expect(c.primary).toMatchObject({ method: "phone", href: "tel:+6491234567", detail: "09 123 4567" });
     expect(c.instruction).toBe("Call to check availability and quote LAKEAB.");
     expect(methods(c)).toEqual(["phone"]);
   });

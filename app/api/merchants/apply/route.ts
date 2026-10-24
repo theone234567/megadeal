@@ -113,6 +113,7 @@ export async function POST(req: NextRequest) {
   // listing goes for approval. Checked here only when given (the portal's
   // "finish your signup" form sends them).
   const contactPhone = cleanText(body.contactPhone, MAX_TEXT_LENGTH);
+  if (contactPhone && !phoneLink(contactPhone)) fieldErrors.contactPhone = "Enter a full phone number, including the area code.";
   const legalBusinessName = cleanText(body.legalBusinessName, MAX_TEXT_LENGTH);
   if (legalBusinessName && hasMarkup(legalBusinessName)) fieldErrors.legalBusinessName = NAME_MARKUP_MESSAGE;
   const phone = cleanText(body.phone, MAX_TEXT_LENGTH);

@@ -68,6 +68,9 @@ export async function POST(req: NextRequest) {
   else if (hasMarkup(contactName)) fieldErrors.contactName = NAME_MARKUP_MESSAGE;
   const contactPhone = cleanText(body.contactPhone, MAX_TEXT_LENGTH);
   if (!contactPhone) fieldErrors.contactPhone = "Contact phone is required.";
+  // A real number (security pack T140): the deal form offers it as the
+  // deal's call button ("Use my phone"), so "abc" mustn't get that far.
+  else if (!phoneLink(contactPhone)) fieldErrors.contactPhone = "Enter a full phone number, including the area code.";
   const legalBusinessName = cleanText(body.legalBusinessName, MAX_TEXT_LENGTH);
   if (!legalBusinessName) fieldErrors.legalBusinessName = "Legal business name is required.";
   else if (hasMarkup(legalBusinessName)) fieldErrors.legalBusinessName = NAME_MARKUP_MESSAGE;

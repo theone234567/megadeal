@@ -50,7 +50,7 @@ describe("contact helpers", () => {
   it("builds a tel link and keeps the readable number", () => {
     expect(phoneLink("09 123 4567")).toEqual({
       display: "09 123 4567",
-      href: "tel:091234567",
+      href: "tel:+6491234567",
     });
     expect(phoneLink("+64 21 555 1234")?.href).toBe("tel:+64215551234");
     expect(phoneLink("123")).toBeNull();

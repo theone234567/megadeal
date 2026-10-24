@@ -1,6 +1,7 @@
 import { isMemorableCode } from "./memorableCode";
 import { splitTermsForDisplay, STANDARD_TERMS } from "./dealTerms";
 import { safeWebHref } from "./socialLinks";
+import { phoneE164 } from "./phoneNumber";
 
 /**
  * Whether a customer has to book to use a particular deal, and which
@@ -113,14 +114,13 @@ export interface Phone {
   href: string;
 }
 
-/** A tappable phone link, or null when there aren't enough digits for a
- *  real number (a live call button needs a callable number). */
+/** A tappable phone link, or null when it isn't a real phone number
+ *  (lib/phoneNumber.ts): a live call button needs a callable number. The
+ *  link dials the E.164 form; the number shows as the business typed it. */
 export function phoneLink(phone: string | null | undefined): Phone | null {
   const display = (phone ?? "").trim();
-  if (!display) return null;
-  const digits = display.replace(/[^0-9+]/g, "");
-  if (digits.replace(/\D/g, "").length < 7) return null;
-  return { display, href: `tel:${digits}` };
+  const e164 = phoneE164(display);
+  return e164 ? { display, href: `tel:${e164}` } : null;
 }
 
 const EMAIL_RE = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[^\s@<>()[\]\\,;:"]+$/;
