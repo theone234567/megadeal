@@ -126,8 +126,15 @@ export default function AdminDashboardPage() {
     }
   }
 
-  async function handleLogout() {
-    await fetch("/api/admin/logout", { method: "POST" });
+  /** "Sign out" ends this device's admin session; "everywhere" ends
+   *  every admin session, e.g. after using a shared computer. */
+  async function handleLogout(everywhere = false) {
+    if (everywhere && !window.confirm("Sign out of admin on every device, including this one?")) return;
+    await fetch("/api/admin/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ everywhere }),
+    });
     router.push("/admin/login");
   }
 
@@ -287,10 +294,16 @@ export default function AdminDashboardPage() {
             Deal results
           </Link>
           <button
-            onClick={handleLogout}
+            onClick={() => handleLogout()}
             className="text-sm font-medium text-slate-500 hover:text-brand-700"
           >
             Sign out
+          </button>
+          <button
+            onClick={() => handleLogout(true)}
+            className="text-sm font-medium text-slate-500 hover:text-brand-700"
+          >
+            Sign out everywhere
           </button>
         </div>
       </div>

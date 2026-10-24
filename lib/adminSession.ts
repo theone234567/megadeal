@@ -64,8 +64,11 @@ export async function verifyAdminSessionToken(token: string | undefined | null):
   // Ended by a log-out: the database (one place, read straight back) and
   // KV, where log-outs were recorded before (it can take a while to reach
   // every Cloudflare location).
-  const revokedInDb = await (await import("./securityStore")).adminSessionsRevokedBefore();
+  const store = await import("./securityStore");
+  const [revokedInDb, endedHere] = await Promise.all([store.adminSessionsRevokedBefore(), store.adminSessionEnded(sig)]);
   if (typeof revokedInDb === "number" && issuedAt < revokedInDb) return false;
+  // Signed out on this device (endAdminSession below).
+  if (endedHere === true) return false;
   const kv = await getRateLimitKv();
   if (kv) {
     const revokedBefore = Number(await kv.get(REVOKED_BEFORE_KEY));
@@ -92,6 +95,19 @@ export async function revokeAllAdminSessions(): Promise<void> {
   await kv.put(REVOKED_BEFORE_KEY, String(Date.now()), {
     expirationTtl: REVOKED_BEFORE_TTL_SECONDS,
   });
+}
+
+/**
+ * Ends just this one session ("Sign out" on this device): the token stops
+ * working everywhere it was copied, and the admin's other devices stay
+ * signed in. Only for a token that verifies, so nobody else can call it
+ * to sign the admin out (security pack T164).
+ */
+export async function endAdminSession(token: string): Promise<boolean> {
+  const [, expiresStr, sig] = token.split(".");
+  const expires = Number(expiresStr);
+  if (!sig || !Number.isFinite(expires)) return false;
+  return (await import("./securityStore")).endAdminSession(sig, expires);
 }
 
 /** Constant-time comparison for the admin password itself. */

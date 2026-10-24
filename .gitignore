@@ -42,3 +42,6 @@ screenshot-artifacts/
 # Wix data exports for the database move (scripts/wix-export.mjs): personal
 # details of businesses and subscribers, never committed.
 /wix-export/
+
+# SEO / launch work pack from the owner: notes only, never committed (public repo).
+/claude-code-pack/

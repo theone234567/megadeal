@@ -189,3 +189,46 @@ export async function revokeAdminSessionsNow(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * One admin session ended by "Sign out" on its own device (security pack
+ * T164): its signature, kept until the session would have expired anyway.
+ * "Sign out everywhere" still uses revokeAdminSessionsNow.
+ */
+const SESSION_ENDED_PREFIX = "security:admin-session-ended:";
+
+function endedKey(signature: string): string {
+  return SESSION_ENDED_PREFIX + createHash("sha256").update(signature).digest("hex").slice(0, 32);
+}
+
+export async function endAdminSession(signature: string, expiresAt: number): Promise<boolean> {
+  try {
+    await withDb(async (db) => {
+      // Sessions that have run out by now don't need remembering.
+      await db.query(
+        `delete from public.site_settings where key like $1 and value ~ '^[0-9]+$' and value::bigint < $2`,
+        [SESSION_ENDED_PREFIX + "%", Date.now()],
+      );
+      await db.query(
+        `insert into public.site_settings (key, value) values ($1, $2) on conflict (key) do update set value = excluded.value`,
+        [endedKey(signature), String(expiresAt)],
+      );
+    });
+    return true;
+  } catch (err) {
+    console.error("[securityStore] session end write failed", err);
+    return false;
+  }
+}
+
+export async function adminSessionEnded(signature: string): Promise<boolean | "unavailable"> {
+  try {
+    return await withDb(async (db) => {
+      const rows = await db.query(`select 1 from public.site_settings where key = $1`, [endedKey(signature)]);
+      return rows.length > 0;
+    });
+  } catch (err) {
+    console.error("[securityStore] session end read failed", err);
+    return "unavailable";
+  }
+}
