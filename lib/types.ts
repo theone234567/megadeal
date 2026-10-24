@@ -71,6 +71,10 @@ export interface Deal {
   businessRating: number | null;
   businessReviewCount: number | null;
   dealCode: string | null;
+  /** The public deal page leaves the code out (it's fetched when "Get deal
+   *  code" is pressed, app/api/deals/code, T208) and says only whether
+   *  there is one. Undefined elsewhere: there `dealCode` is the code. */
+  hasDealCode?: boolean;
   /** Whether the customer must book to use this deal — see lib/booking.ts.
    *  "unknown" for deals written before the field existed. */
   bookingRequirement: BookingRequirement;

@@ -164,6 +164,9 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
         // the page's HTML for spam bots to find (lib/hiddenEmail.ts).
         deal={{
           ...deal,
+          // Not in the page: fetched when "Get deal code" is pressed (T208).
+          dealCode: null,
+          hasDealCode: Boolean(deal.dealCode),
           businessBookingEmail: hideEmail(deal.businessBookingEmail),
           // A deal's own email is kept out of the HTML the same way.
           ...(deal.contactOverride?.email ? { contactOverride: { ...deal.contactOverride, email: hideEmail(deal.contactOverride.email) } } : {}),

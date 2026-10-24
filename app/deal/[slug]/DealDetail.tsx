@@ -11,7 +11,7 @@ import { getDirectionsUrl } from "@/lib/mapLinks";
 import { revealEmail } from "@/lib/hiddenEmail";
 import CountdownBadge from "@/components/CountdownBadge";
 import ShareButtons from "@/components/ShareButtons";
-import DealCodeReveal from "./DealCodeReveal";
+import DealCodeReveal, { type CodeState } from "./DealCodeReveal";
 import ContactBooking from "./ContactBooking";
 import BusinessSummary from "./BusinessSummary";
 import { CheckIcon } from "@/components/icons";
@@ -126,6 +126,32 @@ export default function DealDetail({
   const directionsUrl = hasPlace
     ? getDirectionsUrl({ lat: deal.businessLat, lng: deal.businessLng, address: streetLine, city: deal.businessCity })
     : null;
+  // The code: in the deal for a preview, otherwise fetched when "Get deal
+  // code" is pressed (T208), and only then in the contact text below.
+  const needsFetch = !preview && !deal.dealCode && deal.hasDealCode === true;
+  const [fetchedCode, setFetchedCode] = useState<string | null>(null);
+  const [codeState, setCodeState] = useState<CodeState>("idle");
+  async function loadCode() {
+    if (!needsFetch || fetchedCode || codeState === "loading") return;
+    setCodeState("loading");
+    try {
+      const res = await fetch("/api/deals/code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug: deal.slug }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && typeof json.code === "string") {
+        setFetchedCode(json.code);
+        setCodeState("idle");
+      } else {
+        setCodeState(res.status === 404 || res.status === 409 ? "unavailable" : "error");
+      }
+    } catch {
+      setCodeState("error");
+    }
+  }
+  const dealCode = deal.dealCode ?? fetchedCode;
   // The business's details, or this deal's own where it has them.
   const details = effectiveContact(
     {
@@ -141,7 +167,7 @@ export default function DealDetail({
     requirement,
     businessName: deal.businessName,
     dealName: deal.name,
-    code: deal.dealCode,
+    code: dealCode,
     phone: details.phone,
     email: revealEmail(details.email),
     website: details.website,
@@ -327,7 +353,10 @@ export default function DealDetail({
               ) : (
                 <DealCodeReveal
                   slug={deal.slug}
-                  code={deal.dealCode}
+                  code={dealCode}
+                  codePending={needsFetch && !fetchedCode}
+                  codeState={codeState}
+                  onNeedCode={loadCode}
                   instruction={contact.instruction}
                   note={contact.footer.replace(/^Pay the business directly\.\s*/, "") || null}
                   ownWords={deal.customerInstructions?.trim() || null}

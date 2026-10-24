@@ -8,13 +8,19 @@ import { CopyIcon } from "@/components/icons";
  * place, and it stays there (no pop-up): for the rest of this visit the
  * code is shown on the deal page straight away, even after a reload. It's
  * the deal's one fixed code, the same for everyone; nothing is copied or
- * opened by itself. The code isn't in the page's HTML until it's asked for.
+ * opened by itself. On the public page the code isn't in the HTML or the
+ * page's data at all: it's fetched from the server when asked for
+ * (app/api/deals/code, T208), so scrapers don't get it and the reveal
+ * counts businesses see are real presses.
  *
  * "Reveal code & booking options" does the same and scrolls to Contact &
  * booking. On a phone, a bar with the price and the button stays at the
  * bottom of the screen while the price card is out of view; once the code
  * is shown, the bar shows the code.
  */
+
+/** Fetching the code: "unavailable" when the deal stopped being live. */
+export type CodeState = "idle" | "loading" | "error" | "unavailable";
 
 const EVENT = "megadeal:code-revealed";
 const key = (slug: string) => `md_code_${slug}`;
@@ -40,6 +46,9 @@ function useRevealed(slug: string, preview: boolean): boolean {
 export default function DealCodeReveal({
   slug,
   code,
+  codePending = false,
+  codeState = "idle",
+  onNeedCode,
   instruction,
   note,
   ownWords,
@@ -51,6 +60,11 @@ export default function DealCodeReveal({
 }: {
   slug: string;
   code: string | null;
+  /** There is a code, still to be fetched (codeState says how that's going). */
+  codePending?: boolean;
+  codeState?: CodeState;
+  /** Fetches the code (DealDetail): on reveal, or when the page reopens revealed. */
+  onNeedCode?: () => void;
   /** How to use the code (lib/dealContact.ts). */
   instruction: string;
   /** "A code is not a confirmed booking." and the like. */
@@ -68,6 +82,10 @@ export default function DealCodeReveal({
   // A preview reveals for this view only, and remembers nothing.
   const [shownHere, setShownHere] = useState(false);
   const revealed = stored || shownHere;
+  // Revealed (now, or earlier in this visit): fetch the code once.
+  useEffect(() => {
+    if (revealed && codePending && codeState === "idle") onNeedCode?.();
+  }, [revealed, codePending, codeState, onNeedCode]);
   const [copied, setCopied] = useState<"" | "Copied" | "failed">("");
   const cardRef = useRef<HTMLDivElement>(null);
   const codeRef = useRef<HTMLSpanElement>(null);
@@ -162,18 +180,29 @@ export default function DealCodeReveal({
           >
             Reveal code &amp; booking options
           </button>
-          {code && (
-            <noscript>
-              <p className="mt-2 text-center text-sm">
-                Your deal code: <strong className="font-mono">{code}</strong>
-              </p>
-            </noscript>
-          )}
+          <noscript>
+            <p className="mt-2 text-center text-sm">Turn on JavaScript or call the business to get this deal.</p>
+          </noscript>
         </>
       ) : (
         <div aria-live="polite">
           <p className="text-sm font-semibold text-hp-ink">Your deal code</p>
-          {code ? (
+          {codePending && codeState === "unavailable" ? (
+            <p className="mt-1.5 rounded-lg bg-hp-code px-4 py-3 text-sm font-semibold text-hp-ink">This deal isn&apos;t available right now.</p>
+          ) : codePending && codeState === "error" ? (
+            <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-hp-code px-4 py-2.5">
+              <p className="text-sm font-semibold text-hp-ink">We couldn&apos;t get the code just now.</p>
+              <button
+                type="button"
+                onClick={() => onNeedCode?.()}
+                className="inline-flex min-h-11 items-center rounded-lg border border-hp-purple bg-white px-3.5 text-sm font-bold text-hp-purple hover:bg-hp-lavender"
+              >
+                Try again
+              </button>
+            </div>
+          ) : codePending ? (
+            <p className="mt-1.5 rounded-lg bg-hp-code px-4 py-3 text-sm font-semibold text-hp-muted">Getting your code…</p>
+          ) : code ? (
             <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-lg bg-hp-code py-2.5 pl-4 pr-2.5">
               <span ref={codeRef} className={`select-all whitespace-nowrap font-display font-semibold leading-tight tracking-[0.03em] text-hp-purple ${size}`}>
                 {code}
@@ -236,7 +265,7 @@ export default function DealCodeReveal({
             </>
           ) : (
             <>
-              <span className="min-w-0 truncate font-display text-xl font-semibold tracking-[0.03em] text-hp-purple">{code ?? "MegaDeal offer"}</span>
+              <span className="min-w-0 truncate font-display text-xl font-semibold tracking-[0.03em] text-hp-purple">{codePending ? "Getting your code…" : (code ?? "MegaDeal offer")}</span>
               <span className="ml-auto shrink-0 text-sm font-semibold text-green-700">Code saved</span>
             </>
           )}

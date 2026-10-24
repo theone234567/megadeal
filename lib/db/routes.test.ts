@@ -311,6 +311,28 @@ describe("a business on the new database", () => {
     expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 100 }]);
   });
 
+  it("hands out a live deal's code only when asked, and never for one that isn't live (T208)", async () => {
+    await signUpApprovedWithCredits(100);
+    const create = await import("@/app/api/deals/create/route");
+    const { body } = await call(create.POST, request("POST", { ...DEAL, dealCode: "SCONE5" }));
+    const id = body.item._id;
+    admin = true;
+    const adminDeal = await import("@/app/api/admin/deals/[id]/route");
+    await call(adminDeal.PATCH, request("PATCH", { status: "Live" }), params(id));
+    admin = false;
+    const [{ slug }] = await db.query<{ slug: string }>("select slug from public.deals");
+    const codeRoute = await import("@/app/api/deals/code/route");
+    const res = await codeRoute.POST(request("POST", { slug }));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toBe("private, no-store");
+    expect(await res.json()).toEqual({ code: "SCONE5" });
+    // Paused: refused, so a page left open can't hand it out.
+    await db.query("update public.deals set status = 'Paused', paused_by = 'business'");
+    expect((await call(codeRoute.POST, request("POST", { slug }))).status).toBe(409);
+    expect((await call(codeRoute.POST, request("POST", { slug: "no-such-deal" }))).status).toBe(404);
+    expect((await call(codeRoute.POST, request("POST", { slug: "../x" }))).status).toBe(400);
+  });
+
   it("counts a customer's view of a live deal, and lists the business's deals and activity", async () => {
     await signUpApprovedWithCredits(100);
     const create = await import("@/app/api/deals/create/route");
