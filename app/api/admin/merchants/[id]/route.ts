@@ -18,6 +18,7 @@ import { escapeHtml } from "@/lib/escapeHtml";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
+import { greetingName } from "@/lib/emailGreeting";
 
 const ALLOWED_STATUSES = ["Pending", "Approved", "Suspended"];
 const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
@@ -616,7 +617,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         // the *referred* business's own choice of name, which this email
         // sends to a completely different merchant (the referrer). Escape
         // both, not just the recipient's own.
-        const safeReferrerName = escapeHtml(referrerFresh.businessName || "there");
+        const safeReferrerName = escapeHtml(greetingName(referrerFresh.contactName, referrerFresh.businessName));
         const safeReferredName = escapeHtml(existing.businessName || "a new business");
         const sent = await sendTransactionalEmail({
           to: referrerFresh.email,
@@ -641,7 +642,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
 
   if (becomingApproved && !firstApproval && existing.email) {
     try {
-      const safeName = escapeHtml(existing.businessName || "there");
+      const safeName = escapeHtml(greetingName(updated.contactName ?? existing.contactName, existing.businessName));
       const sent = await sendTransactionalEmail({
         to: existing.email,
         subject: "You're back on MegaDeal",
@@ -665,7 +666,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   if (firstApproval && existing.email) {
     try {
       const totalGranted = creditsApplied ? introGranted + referralBonusGranted + promoGranted : 0;
-      const safeName = escapeHtml(existing.businessName || "there");
+      const safeName = escapeHtml(greetingName(updated.contactName ?? existing.contactName, existing.businessName));
       const creditsNote =
         totalGranted > 0
           ? `We've added ${totalGranted} free deal credit${totalGranted === 1 ? "" : "s"} to your account${
@@ -707,7 +708,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   // the approval email, when both go in one save: it used to arrive first.
   if (creditsApplied && adminAdjustDelta > 0 && existing.email) {
     try {
-      const safeName = escapeHtml(existing.businessName || "there");
+      const safeName = escapeHtml(greetingName(updated.contactName ?? existing.contactName, existing.businessName));
       const balance = existingCredits + creditsDelta;
       const sent = await sendTransactionalEmail({
         to: existing.email,

@@ -19,6 +19,7 @@ import { escapeHtml } from "@/lib/escapeHtml";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { sendMetaCapiEvent } from "@/lib/metaCapi";
 import { getClientIp } from "@/lib/rateLimit";
+import { greetingName } from "@/lib/emailGreeting";
 
 const MAX_TEXT_LENGTH = 300;
 // businessHours holds a serialized structured-hours JSON blob (7 days,
@@ -35,10 +36,11 @@ function cleanText(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
-function welcomeEmailHtml(businessName: string): string {
+function welcomeEmailHtml(businessName: string, contactName: string): string {
   const safeName = escapeHtml(businessName);
+  const hello = escapeHtml(greetingName(contactName, businessName));
   return brandedEmailHtml(`
-        <p style="margin:0 0 16px;">Hi ${safeName || "there"},</p>
+        <p style="margin:0 0 16px;">Hi ${hello},</p>
         <p style="margin:0 0 16px;">🎉 You're in! Thanks for signing up to MegaDeal — we're genuinely excited to have ${safeName || "your business"} on board.</p>
         <p style="margin:0 0 8px;">Here's what happens next:</p>
         <ul style="margin:0 0 16px;padding-left:20px;">
@@ -291,7 +293,7 @@ export async function POST(req: NextRequest) {
       sendTransactionalEmail({
         to: welcomeTo,
         subject: `Welcome to MegaDeal, ${businessName}! 🎉`,
-        html: welcomeEmailHtml(businessName),
+        html: welcomeEmailHtml(businessName, contactName),
         // The copy above says "hit reply" — without this, "from" is a
         // fixed no-reply@ mailbox and any reply just bounces.
         replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,

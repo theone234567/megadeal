@@ -33,12 +33,12 @@ const PER_RUN = 25;
 
 type Row = {
   id: string; name: string; slug: string; expires_at: string; views: number; code_copies: number; is_flash: boolean;
-  merchant_id: string; business_name: string; email: string; credits: number;
+  merchant_id: string; business_name: string; contact_name: string | null; email: string; credits: number;
 };
 
 // The deal and its business, for a deal not yet emailed under `prefix` ($1).
 const SELECT = `select d.id::text, d.name, d.slug, d.expires_at::text, d.view_count as views, d.code_copy_count as code_copies, d.is_flash,
-            m.id::text as merchant_id, m.business_name, lower(m.email) as email, m.credits_balance as credits
+            m.id::text as merchant_id, m.business_name, m.contact_name, lower(m.email) as email, m.credits_balance as credits
        from public.deals d
        join public.merchants m on m.id = d.merchant_id
       where d.status = 'Live' and not d.is_test and d.ever_live
@@ -102,7 +102,7 @@ export async function sendDealEndedEmails(db: Sql, siteUrl: string): Promise<{ s
   return sendOnce(db, siteUrl, rows, ENDED_PREFIX, (r, stopUrl) =>
     dealEndedEmail(
       { id: r.id, name: r.name, endedAt: r.expires_at, views: Number(r.views) || 0, codeCopies: Number(r.code_copies) || 0 },
-      { businessName: r.business_name, siteUrl, stopUrl, cost: costOf(r) }
+      { businessName: r.business_name, contactName: r.contact_name, siteUrl, stopUrl, cost: costOf(r) }
     )
   );
 }
@@ -126,7 +126,7 @@ export async function sendDealEndingEmails(db: Sql, siteUrl: string): Promise<{ 
   return sendOnce(db, siteUrl, rows, ENDING_PREFIX, (r, stopUrl) =>
     dealEndingEmail(
       { id: r.id, name: r.name, slug: r.slug, endsAt: r.expires_at, views: Number(r.views) || 0, codeCopies: Number(r.code_copies) || 0 },
-      { businessName: r.business_name, siteUrl, stopUrl, launched: SITE_LAUNCHED }
+      { businessName: r.business_name, contactName: r.contact_name, siteUrl, stopUrl, launched: SITE_LAUNCHED }
     )
   );
 }

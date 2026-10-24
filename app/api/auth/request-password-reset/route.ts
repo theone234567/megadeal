@@ -12,6 +12,7 @@ import { readJsonBody } from "@/lib/readJsonBody";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { accountIdForEmail } from "@/lib/authSession";
 import { noteSignupCodeProblem, noteSignupCodeSent } from "@/lib/signupHealth";
+import { greetingName } from "@/lib/emailGreeting";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // The found/not-found paths below cost very different amounts of real
@@ -26,8 +27,8 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function resetEmailHtml(businessName: string, resetUrl: string): string {
-  const safeName = escapeHtml(businessName || "there");
+function resetEmailHtml(merchant: { contactName?: string | null; businessName?: string | null } | undefined, resetUrl: string): string {
+  const safeName = escapeHtml(greetingName(merchant?.contactName, merchant?.businessName));
   return brandedEmailHtml(`
     <p style="margin:0 0 16px;">Hi ${safeName},</p>
     <p style="margin:0 0 16px;">We got a request to reset the password on your MegaDeal business account. Tap below to set a new one:</p>
@@ -98,7 +99,7 @@ export async function POST(req: NextRequest) {
           const sent = await sendTransactionalEmail({
             to,
             subject: "Reset your MegaDeal password",
-            html: resetEmailHtml(merchant?.businessName ?? "", resetUrl),
+            html: resetEmailHtml(merchant, resetUrl),
           });
           // The answer stays the same either way (it never says whether an
           // account exists), but a failed send is logged.

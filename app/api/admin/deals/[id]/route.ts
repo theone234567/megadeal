@@ -296,11 +296,16 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
           launched: DEALS_OPEN,
           siteUrl: SITE_URL,
           businessName: existing.merchantBusinessName,
+          contactName: existing.merchantContactName,
           endsAt: updated.expiresAt,
           isFlash: Boolean(updated.isFlash),
         });
       } else if ((patch.status === "Paused" || patch.status === "Cancelled") && (existing.status === "Live" || existing.status === "Pending Approval")) {
-        email = dealStoppedEmail(dealName, patch.status, patch.statusNote ?? existing.statusNote, { siteUrl: SITE_URL, businessName: existing.merchantBusinessName });
+        email = dealStoppedEmail(dealName, patch.status, patch.statusNote ?? existing.statusNote, {
+          siteUrl: SITE_URL,
+          businessName: existing.merchantBusinessName,
+          contactName: existing.merchantContactName,
+        });
       }
     }
     let warning: string | undefined;

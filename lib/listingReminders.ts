@@ -6,6 +6,7 @@ import { brandedEmailHtml } from "./emailTemplate";
 import { escapeHtml } from "./escapeHtml";
 import { looksLikeTest } from "./launchChecklist";
 import { businessOptOutLinks, optedOutBusinesses } from "./businessEmailOptOut";
+import { greetingName } from "./emailGreeting";
 
 /**
  * "Finish your listing" reminders: a business that signed up and has a
@@ -18,6 +19,7 @@ import { businessOptOutLinks, optedOutBusinesses } from "./businessEmailOptOut";
 export interface ReminderCandidate {
   id: string;
   businessName: string;
+  contactName?: string | null;
   email: string;
   missing: string[];
 }
@@ -40,10 +42,10 @@ export function listingGaps(m: { address: string | null; phone: string | null; l
 /** Who would get a reminder now. */
 export async function reminderCandidates(db: Sql): Promise<ReminderCandidate[]> {
   const rows = await db.query<{
-    id: string; business_name: string; email: string;
+    id: string; business_name: string; contact_name: string | null; email: string;
     address: string | null; phone: string | null; legal_business_name: string | null; bio: string | null; photo_count: number;
   }>(
-    `select m.id::text, m.business_name, lower(m.email) as email, m.address, m.phone, m.legal_business_name, m.bio,
+    `select m.id::text, m.business_name, m.contact_name, lower(m.email) as email, m.address, m.phone, m.legal_business_name, m.bio,
             jsonb_array_length(m.photos) as photo_count
        from public.merchants m
       where m.status = 'Pending' and m.owner_id is not null
@@ -63,7 +65,7 @@ export async function reminderCandidates(db: Sql): Promise<ReminderCandidate[]> 
     const sent = await readSent(db, kv, r.id);
     if (sent.count >= MAX_REMINDERS) continue;
     if (sent.last && Date.now() - Date.parse(sent.last) < MIN_DAYS_BETWEEN * 86_400_000) continue;
-    out.push({ id: r.id, businessName: r.business_name, email: r.email, missing });
+    out.push({ id: r.id, businessName: r.business_name, contactName: r.contact_name, email: r.email, missing });
   }
   return out;
 }
@@ -112,9 +114,9 @@ function joinList(items: string[]): string {
   return items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
-export function reminderEmailHtml(businessName: string, missing: string[], portalUrl: string, stopUrl: string): string {
+export function reminderEmailHtml(businessName: string, missing: string[], portalUrl: string, stopUrl: string, contactName?: string | null): string {
   return brandedEmailHtml(`
-    <p style="margin:0 0 16px;">Hi ${escapeHtml(businessName || "there")},</p>
+    <p style="margin:0 0 16px;">Hi ${escapeHtml(greetingName(contactName, businessName))},</p>
     <p style="margin:0 0 16px;">Thanks for signing up to MegaDeal. Your listing is nearly ready: it just needs ${escapeHtml(joinList(missing))}. Once that's in, we can check and approve your business so you can start running deals.</p>
     <p style="margin:0 0 16px;text-align:center;">
       <a href="${portalUrl}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Finish my listing</a>
@@ -139,7 +141,7 @@ export async function sendListingReminders(db: Sql, siteUrl: string, limit = 25)
     const ok = await sendTransactionalEmail({
       to: c.email,
       subject: "Your MegaDeal listing is nearly ready",
-      html: reminderEmailHtml(c.businessName, c.missing, portalUrl, links.page),
+      html: reminderEmailHtml(c.businessName, c.missing, portalUrl, links.page, c.contactName),
       replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
       unsubscribeUrl: links.oneClick,
     }).catch(() => false);

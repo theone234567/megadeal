@@ -5,6 +5,7 @@ import { getRateLimitKv } from "./rateLimit";
 import { sendEmail } from "./sendEmail";
 import { brandedEmailHtml } from "./emailTemplate";
 import { escapeHtml } from "./escapeHtml";
+import { greetingName } from "./emailGreeting";
 
 /**
  * When business logins move off Wix (docs/WIX-MIGRATION.md, stage 3),
@@ -26,6 +27,7 @@ import { escapeHtml } from "./escapeHtml";
 export interface InviteCandidate {
   id: string;
   businessName: string;
+  contactName?: string | null;
   email: string;
 }
 
@@ -33,7 +35,7 @@ export interface InviteCandidate {
  *  login on the new system yet. */
 export async function businessesWithoutLogin(db: Sql): Promise<InviteCandidate[]> {
   return db.query<InviteCandidate>(
-    `select m.id::text as id, m.business_name as "businessName", lower(m.email) as email
+    `select m.id::text as id, m.business_name as "businessName", m.contact_name as "contactName", lower(m.email) as email
        from public.merchants m
       where m.status in ('Approved', 'Pending') and m.owner_id is null and m.email is not null and m.email <> ''
         and not exists (select 1 from auth.users u where lower(u.email) = lower(m.email) and u.deleted_at is null)
@@ -46,9 +48,9 @@ const FAILED_PREFIX = "login-invite-failed:";
 /** How long an address that couldn't be sent to is passed over. */
 const RETRY_FAILED_AFTER_SECONDS = 60 * 60;
 
-export function inviteEmailHtml(businessName: string, link: string): string {
+export function inviteEmailHtml(businessName: string, link: string, contactName?: string | null): string {
   return brandedEmailHtml(`
-    <p style="margin:0 0 16px;">Hi ${escapeHtml(businessName || "there")},</p>
+    <p style="margin:0 0 16px;">Hi ${escapeHtml(greetingName(contactName, businessName))},</p>
     <p style="margin:0 0 16px;">MegaDeal has a new, faster sign-in. Your business, deals and credits are all still here; you just need to choose a password, once.</p>
     <p style="margin:0 0 16px;text-align:center;">
       <a href="${link}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Set my password</a>
@@ -89,7 +91,7 @@ export async function sendLoginInvites(db: Sql, siteUrl: string, opts: { limit?:
       ? await sendEmail({
           to: b.email,
           subject: "Set your password for MegaDeal's new sign-in",
-          html: inviteEmailHtml(b.businessName, `${siteUrl.replace(/\/$/, "")}/reset-password?token=${token}`),
+          html: inviteEmailHtml(b.businessName, `${siteUrl.replace(/\/$/, "")}/reset-password?token=${token}`, b.contactName),
           // "Just reply": to a person, as the welcome email does.
           replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
         }).catch(() => ({ ok: false as const }))
