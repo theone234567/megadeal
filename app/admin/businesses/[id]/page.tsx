@@ -12,6 +12,7 @@ import { EyeOffIcon, GlobeIcon } from "@/components/icons";
 import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHours";
 import { formatNzDateTime } from "@/lib/nzTime";
 import { describeSignupSource } from "@/lib/signupSource";
+import { OTHER_CREDIT_REASON, creditReasonsFor } from "@/lib/creditReasons";
 
 const STATUSES = ["Pending", "Approved", "Suspended"];
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
@@ -87,6 +88,8 @@ export default function AdminBusinessDetailPage() {
   const [status, setStatus] = useState("Pending");
   const [credits, setCredits] = useState(0);
   const [creditsReason, setCreditsReason] = useState("");
+  /** The reason picked from the list, or OTHER_CREDIT_REASON to write one. */
+  const [creditsReasonChoice, setCreditsReasonChoice] = useState("");
   const [rating, setRating] = useState<number | "">("");
   const [reviewCount, setReviewCount] = useState<number | "">("");
   const [rudenessCheck, setRudenessCheck] = useState<RudenessOverride>("default");
@@ -131,6 +134,7 @@ export default function AdminBusinessDetailPage() {
     setStatus(item.status || "Pending");
     setCredits(item.creditsBalance ?? 0);
     setCreditsReason("");
+    setCreditsReasonChoice("");
     setRating(item.rating ?? "");
     setReviewCount(item.reviewCount ?? "");
     setRudenessCheck(parseRudenessOverride(item.rudenessCheck));
@@ -284,6 +288,13 @@ export default function AdminBusinessDetailPage() {
     // with an unfinished listing impossible to approve (the page says it
     // can be). Clearing one that was filled in is still refused.
     const unlessStillEmpty = (value: string, before: unknown) => (value === "" && !before ? undefined : value);
+    // A reason picked for adding no longer fits once the change is a
+    // removal (the list shows nothing picked then), so it isn't sent.
+    const reasonChoice =
+      creditsReasonChoice === OTHER_CREDIT_REASON ||
+      creditReasonsFor(credits - (merchant.creditsBalance ?? 0)).includes(creditsReasonChoice)
+        ? creditsReasonChoice
+        : "";
     try {
       const res = await fetch(`/api/admin/merchants/${merchant._id}`, {
         method: "PATCH",
@@ -291,7 +302,7 @@ export default function AdminBusinessDetailPage() {
         body: JSON.stringify({
           status,
           creditsBalance: credits,
-          creditsReason,
+          creditsReason: reasonChoice === OTHER_CREDIT_REASON ? creditsReason : reasonChoice,
           confirmExtraCredits: confirmExtraCredits || undefined,
           rating: rating === "" ? null : rating,
           reviewCount: reviewCount === "" ? null : reviewCount,
@@ -782,15 +793,40 @@ export default function AdminBusinessDetailPage() {
                 className="w-full rounded-lg border border-slate-200 px-2 py-2 text-sm"
               />
               {credits !== (merchant.creditsBalance ?? 0) && (
-                <input
-                  type="text"
-                  value={creditsReason}
-                  maxLength={200}
-                  onChange={(e) => setCreditsReason(e.target.value)}
-                  placeholder="Reason (the business sees this)"
-                  aria-label="Reason for the credit change"
-                  className="mt-1 w-full rounded-lg border border-amber-300 px-2 py-2 text-sm"
-                />
+                <>
+                  {/* The business sees this (lib/creditReasons.ts). Picked
+                      again if the change flips from adding to removing. */}
+                  <select
+                    value={
+                      creditsReasonChoice === OTHER_CREDIT_REASON ||
+                      creditReasonsFor(credits - (merchant.creditsBalance ?? 0)).includes(creditsReasonChoice)
+                        ? creditsReasonChoice
+                        : ""
+                    }
+                    onChange={(e) => setCreditsReasonChoice(e.target.value)}
+                    aria-label="Reason for the credit change"
+                    className="mt-1 w-full rounded-lg border border-amber-300 px-2 py-2 text-sm"
+                  >
+                    <option value="">Reason (the business sees this)…</option>
+                    {creditReasonsFor(credits - (merchant.creditsBalance ?? 0)).map((r) => (
+                      <option key={r} value={r}>
+                        {r.charAt(0).toUpperCase() + r.slice(1)}
+                      </option>
+                    ))}
+                    <option value={OTHER_CREDIT_REASON}>Other: write your own</option>
+                  </select>
+                  {creditsReasonChoice === OTHER_CREDIT_REASON && (
+                    <input
+                      type="text"
+                      value={creditsReason}
+                      maxLength={200}
+                      onChange={(e) => setCreditsReason(e.target.value)}
+                      placeholder="Your reason (the business sees this)"
+                      aria-label="Your reason for the credit change"
+                      className="mt-1 w-full rounded-lg border border-amber-300 px-2 py-2 text-sm"
+                    />
+                  )}
+                </>
               )}
             </label>
             <label className="text-sm">
