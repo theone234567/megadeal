@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { generateTotpSecret, totpUri, verifyTotp } from "@/lib/totp";
+import { adminSignInMode } from "@/lib/adminSignIn";
 
 export const dynamic = "force-dynamic";
 
@@ -12,15 +13,28 @@ const NO_STORE = { "Cache-Control": "private, no-store" };
  * it only takes effect once saved as ADMIN_TOTP_SECRET in Cloudflare).
  * POST { secret, code }: checks the app is showing the right codes for
  * that secret before it's saved anywhere.
+ *
+ * Signed out too, but only while the live site has no ADMIN_TOTP_SECRET
+ * ("setup-needed", lib/adminSignIn.ts): admin sign-in is refused then, so
+ * this is the way to set it up. Nothing here reads or changes a stored
+ * secret, so it gives nobody a way in.
  */
+async function allowed(req: NextRequest): Promise<boolean> {
+  return adminSignInMode() === "setup-needed" || (await isAdminRequest(req));
+}
 export async function GET(req: NextRequest) {
-  if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers: NO_STORE });
+  if (!(await allowed(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers: NO_STORE });
   const secret = generateTotpSecret();
-  return NextResponse.json({ enabled: Boolean(process.env.ADMIN_TOTP_SECRET), secret, uri: totpUri(secret) }, { headers: NO_STORE });
+  // The variable's name comes from here, so it isn't in the page's code
+  // for anyone to read (security pack T152).
+  return NextResponse.json(
+    { enabled: Boolean(process.env.ADMIN_TOTP_SECRET), secret, uri: totpUri(secret), variable: "ADMIN_TOTP_SECRET" },
+    { headers: NO_STORE },
+  );
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers: NO_STORE });
+  if (!(await allowed(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers: NO_STORE });
   const body = await req.json().catch(() => null);
   const ok = verifyTotp(String(body?.secret ?? ""), String(body?.code ?? "")) !== null;
   if (!ok) {

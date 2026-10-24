@@ -142,6 +142,19 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
+  // Admin pages (security pack T36/T152): without an admin session, sign in
+  // first, so the dashboard's code isn't sent to just anyone. Every admin
+  // API checks the full session itself; this only keeps the pages private.
+  // The two-factor setup page stays reachable: it opens signed out only
+  // while two-factor isn't set up (app/api/admin/two-factor).
+  if (/^\/admin(?:\/|$)/.test(path) && !/^\/admin\/(?:login|two-factor)\/?$/.test(path)) {
+    if (!(await hasValidAdminSignature(request.cookies.get(ADMIN_COOKIE_NAME)?.value))) {
+      const res = NextResponse.redirect(new URL("/admin/login", request.url), 307);
+      res.headers.set("Cache-Control", "no-store");
+      return res;
+    }
+  }
+
   // After launch the coming-soon page has nothing left to say, and it's
   // the page search engines were told (by the 308 below) to index in
   // place of "/". Sending it back to "/" permanently hands that standing

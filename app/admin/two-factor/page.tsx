@@ -7,13 +7,16 @@ interface Setup {
   enabled: boolean;
   secret: string;
   uri: string;
+  /** The Cloudflare variable to save it as. */
+  variable: string;
 }
 
 /**
  * Turning on two-factor sign-in for the admin dashboard (lib/totp.ts).
- * Nothing changes until the secret is saved in Cloudflare as
- * ADMIN_TOTP_SECRET, and deleting it there turns it off again: the way
- * back in if the phone with the authenticator app is lost.
+ * Nothing changes until the secret is saved in Cloudflare under the name
+ * the API gives, and deleting it there turns it off again (then this page
+ * opens signed out, to set it up afresh): the way back in if the phone
+ * with the authenticator app is lost.
  */
 export default function TwoFactorPage() {
   const [setup, setSetup] = useState<Setup | null>(null);
@@ -159,13 +162,13 @@ export default function TwoFactorPage() {
                     Secrets → Add → type <strong>Secret</strong>:
                   </p>
                   <p>
-                    Name <code className="rounded bg-white px-1.5 py-0.5 font-mono">ADMIN_TOTP_SECRET</code>, value the key
+                    Name <code className="rounded bg-white px-1.5 py-0.5 font-mono">{setup.variable}</code>, value the key
                     above (<code className="rounded bg-white px-1.5 py-0.5 font-mono">{setup.secret}</code>). Deploy.
                   </p>
-                  <p>Your next admin sign-in will ask for a code. You stay signed in on this browser until then.</p>
+                  <p>Admin sign-in will then ask for your password and a code. Until it&apos;s set, the live site doesn&apos;t allow admin sign-in at all.</p>
                   <p className="text-slate-600">
-                    Lost your phone? Delete <code className="font-mono">ADMIN_TOTP_SECRET</code> in Cloudflare to sign in with
-                    just your password, then set it up again.
+                    Lost your phone? Delete <code className="font-mono">{setup.variable}</code> in Cloudflare and deploy,
+                    then come back to this page (it opens without signing in while no secret is set) and set it up again.
                   </p>
                 </div>
               ) : (
