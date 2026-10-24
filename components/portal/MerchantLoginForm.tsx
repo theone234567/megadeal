@@ -119,7 +119,7 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     setError(null);
     setSubmitting(true);
     try {
-      const outcome = await submitVerificationCode(code, pendingState);
+      const outcome = await submitVerificationCode(code, pendingState, password);
       if (outcome.status === "success") {
         window.location.href = redirectTo;
       } else if (outcome.status === "error") {

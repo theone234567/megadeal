@@ -22,7 +22,7 @@ export interface AuthSession {
   access_token: string;
   refresh_token: string;
   expires_in: number;
-  user: { id: string; email?: string };
+  user: { id: string; email?: string; app_metadata?: Record<string, unknown> };
 }
 
 export type AuthOutcome<T> = { ok: true; data: T } | { ok: false; status: number; code: string };
@@ -118,6 +118,53 @@ export async function adminSetPassword(email: string, password: string, userId: 
   return userId
     ? call<{ id: string }>(`/admin/users/${encodeURIComponent(userId)}`, { method: "PUT", service: true, body: { password, email_confirm: true } })
     : call<{ id: string }>("/admin/users", { service: true, body: { email, password, email_confirm: true } });
+}
+
+/**
+ * Pre-account takeover (SEO pack T241): someone signs up with another
+ * person's email and a password of their own, and the account waits
+ * unconfirmed. Whoever proves the address with the emailed code must end
+ * up with the password *they* chose, never the earlier one.
+ *
+ * So the code screen sends the password with the code, and once the code
+ * checks out it becomes the password (setPasswordAfterCode). A sign-up for
+ * an address that already has an unconfirmed account marks it (in
+ * app_metadata, which only this server can write) as signed up more than
+ * once. Not the password itself at sign-up: Supabase cancels the emailed
+ * code whenever an admin changes the password.
+ */
+export const SIGNED_UP_AGAIN = "signup_repeated_at";
+
+export function markSignedUpAgain(userId: string): Promise<AuthOutcome<{ id: string }>> {
+  return call<{ id: string }>(`/admin/users/${encodeURIComponent(userId)}`, {
+    method: "PUT",
+    service: true,
+    body: { app_metadata: { [SIGNED_UP_AGAIN]: new Date().toISOString() } },
+  });
+}
+
+/**
+ * After the code checked out on an account signed up more than once: the
+ * password the person who proved the address typed. Without one (the code
+ * screen came back after a Refresh), a random one nobody knows, so an
+ * earlier sign-up's password can't sign in; "Forgot password" sets one.
+ * Clears the mark. Changing the password ends the account's sessions, the
+ * one the code just made too, so this signs in again and returns the new
+ * session (null if that failed).
+ */
+export async function setPasswordAfterCode(email: string, userId: string, password: string | null, ip?: string): Promise<AuthSession | null> {
+  const chosen = password ?? Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
+  const set = await call<{ id: string }>(`/admin/users/${encodeURIComponent(userId)}`, {
+    method: "PUT",
+    service: true,
+    body: { password: chosen, app_metadata: { [SIGNED_UP_AGAIN]: null } },
+  });
+  if (!set.ok) {
+    console.error("[supabaseAuth] couldn't set the password after the code", set.status, set.code);
+    return null;
+  }
+  const fresh = await signInWithPassword(email, chosen, ip);
+  return fresh.ok ? fresh.data : null;
 }
 
 /** Deletes a login outright (Admin > a business > Delete, for test

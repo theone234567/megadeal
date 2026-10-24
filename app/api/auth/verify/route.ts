@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authPreflight } from "@/lib/authRoutes";
+import { authPreflight, passwordOk } from "@/lib/authRoutes";
 import { setSessionCookies } from "@/lib/authSession";
-import { verifySignupCode } from "@/lib/supabaseAuth";
+import { SIGNED_UP_AGAIN, setPasswordAfterCode, verifySignupCode } from "@/lib/supabaseAuth";
 import { MAX_WRONG_CODES, TOO_MANY_WRONG_CODES, clearWrongCodes, noteWrongCode, wrongCodesSoFar } from "@/lib/signupCodeAttempts";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +9,12 @@ export const dynamic = "force-dynamic";
 /** The 6-digit sign-up code from the email: confirms the account and
  *  signs it in. Limited per address and IP (lib/authRoutes.ts), and a code
  *  stops working after 5 wrong tries (lib/signupCodeAttempts.ts); each
- *  code works once and runs out after 10 minutes. */
+ *  code works once and runs out after 10 minutes.
+ *
+ *  `password`: the one the code screen still has, if any. On an address
+ *  signed up more than once it becomes the account's password: whoever
+ *  proves the address chooses it, not an earlier sign-up by someone else
+ *  (T241, lib/supabaseAuth.ts). */
 export async function POST(req: NextRequest) {
   const pre = await authPreflight(req, { limitKey: "verify", perIp: 30, captcha: false, perEmailAndIp: true });
   if ("stop" in pre) return pre.stop;
@@ -31,7 +36,15 @@ export async function POST(req: NextRequest) {
     );
   }
   await clearWrongCodes(pre.email);
+  let session = res.data;
+  if (session.user?.app_metadata?.[SIGNED_UP_AGAIN]) {
+    const password = typeof pre.body.password === "string" && passwordOk(pre.body.password) ? pre.body.password : null;
+    const fresh = await setPasswordAfterCode(pre.email, session.user.id, password, pre.ip);
+    // The email is confirmed either way; the sign-in page takes it from here.
+    if (!fresh) return NextResponse.json({ error: "Your email is confirmed. Please sign in to carry on." }, { status: 409 });
+    session = fresh;
+  }
   const out = NextResponse.json({ status: "success" });
-  setSessionCookies(out, res.data);
+  setSessionCookies(out, session);
   return out;
 }

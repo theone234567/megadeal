@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authPreflight, PASSWORD_RULE, passwordOk } from "@/lib/authRoutes";
-import { signUp, signUpHitExistingAccount } from "@/lib/supabaseAuth";
+import { markSignedUpAgain, signUp, signUpHitExistingAccount } from "@/lib/supabaseAuth";
+import { withDb } from "@/lib/db/connection";
+import { unconfirmedAccountId } from "@/lib/unconfirmedSignups";
 import { clearWrongCodes } from "@/lib/signupCodeAttempts";
 import { afterResponse } from "@/lib/afterResponse";
 import { checkRateLimit } from "@/lib/rateLimit";
@@ -23,6 +25,9 @@ export async function POST(req: NextRequest) {
   if ("stop" in pre) return pre.stop;
   if (!passwordOk(pre.body.password)) return NextResponse.json({ error: PASSWORD_RULE }, { status: 400 });
   if (await passwordSeenInBreaches(pre.body.password)) return NextResponse.json({ error: BREACHED_PASSWORD_MESSAGE }, { status: 400 });
+  // An earlier sign-up nobody confirmed, maybe someone else's: whoever
+  // enters the code chooses the password (T241, lib/supabaseAuth.ts).
+  const unconfirmed = await withDb((db) => unconfirmedAccountId(db, pre.email)).catch(() => null);
   const res = await signUp(pre.email, pre.body.password, pre.ip);
   if (!res.ok && res.code === "weak_password") return NextResponse.json({ error: "Choose a stronger password: longer, and not a common one." }, { status: 400 });
   if (!res.ok && !["user_already_exists", "email_exists", "over_email_send_rate_limit"].includes(res.code)) {
@@ -46,7 +51,13 @@ export async function POST(req: NextRequest) {
     });
   }
   // A new code went out: its wrong tries start again (lib/signupCodeAttempts.ts).
-  if (res.ok && !signUpHitExistingAccount(res.data)) await clearWrongCodes(pre.email);
+  if (res.ok && !signUpHitExistingAccount(res.data)) {
+    if (unconfirmed) {
+      const marked = await markSignedUpAgain(unconfirmed);
+      if (!marked.ok) console.error("[auth/register] couldn't mark the repeated sign-up", marked.status, marked.code);
+    }
+    await clearWrongCodes(pre.email);
+  }
   return NextResponse.json({ status: "verify" });
 }
 

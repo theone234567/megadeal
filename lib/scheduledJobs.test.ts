@@ -16,7 +16,7 @@ describe("scheduled jobs", () => {
   it("calls the route with CRON_SECRET, inside the Worker", async () => {
     const seen: Request[] = [];
     const result = await runScheduledJob("23 14 * * *", { CRON_SECRET: "s3cret" }, async (req) => (seen.push(req), new Response("{}", { status: 200 })));
-    expect(result).toBe("/api/cron/backup: 200");
+    expect(result).toBe("/api/cron/backup: 200, /api/cron/purge-unconfirmed: 200");
     expect(seen[0].method).toBe("POST");
     expect(seen[0].url).toBe("https://megadeal.co.nz/api/cron/backup");
     expect(seen[0].headers.get("authorization")).toBe("Bearer s3cret");

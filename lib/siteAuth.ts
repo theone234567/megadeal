@@ -58,9 +58,11 @@ export async function loginMember(email: string, password: string, captchaToken?
   return checkDidNotRun(captchaToken) ?? toOutcome(await post("/api/auth/login", { email, password, captchaToken: captchaToken ?? "" }), email);
 }
 
-export async function submitVerificationCode(code: string, pendingState: { email: string } | null): Promise<AuthOutcome> {
+/** `password`: the one just typed, if the screen still has it (it becomes
+ *  the account's password once the code checks out: app/api/auth/verify). */
+export async function submitVerificationCode(code: string, pendingState: { email: string } | null, password?: string): Promise<AuthOutcome> {
   const email = String(pendingState?.email ?? "");
-  return toOutcome(await post("/api/auth/verify", { email, code }), email);
+  return toOutcome(await post("/api/auth/verify", { email, code, ...(password ? { password } : {}) }), email);
 }
 
 /** Sends the sign-up code again. */

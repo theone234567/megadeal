@@ -18,8 +18,9 @@ import { internalCallToken } from "./internalCall";
 
 /** Cron expression (UTC, as in wrangler.toml) → the routes it runs, in order. */
 export const SCHEDULED_JOBS: Record<string, string[]> = {
-  // Nightly copy of the database, 14:23 UTC: 3:23am in Auckland in summer, 2:23am in winter (app/api/cron/backup).
-  "23 14 * * *": ["/api/cron/backup"],
+  // Nightly copy of the database, 14:23 UTC: 3:23am in Auckland in summer, 2:23am in winter (app/api/cron/backup),
+  // then delete sign-ups nobody confirmed within a day (app/api/cron/purge-unconfirmed).
+  "23 14 * * *": ["/api/cron/backup", "/api/cron/purge-unconfirmed"],
   // Hourly: tell search engines about deals that just ended
   // (app/api/cron/expired-deals), check the database answers
   // (app/api/cron/watch), and email the owner about businesses and deals

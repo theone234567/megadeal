@@ -627,7 +627,7 @@ export default function MerchantSignupForm({
     setSubmitting(true);
     try {
       const outcome = await withTimeout(
-        submitVerificationCode(code, pendingState),
+        submitVerificationCode(code, pendingState, password),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try entering your code again."
       );
