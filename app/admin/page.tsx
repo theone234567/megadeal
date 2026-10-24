@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import MerchantRow, { type AdminMerchant } from "@/components/admin/MerchantRow";
 import DealRow, { type AdminDeal } from "@/components/admin/DealRow";
+import { DEAL_STATUS_FILTERS, matchesDealStatusFilter, type DealStatusFilter } from "@/lib/adminDealFilters";
 import SubscriberRow, { type AdminSubscriber } from "@/components/admin/SubscriberRow";
 import PlatformSettingsPanel from "@/components/admin/PlatformSettingsPanel";
 import TestDealsPanel from "@/components/admin/TestDealsPanel";
@@ -32,6 +33,8 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [merchantSearch, setMerchantSearch] = useState("");
   const [dealSearch, setDealSearch] = useState("");
+  /** Status filter for the deals list (T242 adds Rejected). */
+  const [dealStatusFilter, setDealStatusFilter] = useState<DealStatusFilter>("all");
   const [bulkApproving, setBulkApproving] = useState(false);
   // null until loaded; the switch is hidden rather than shown in a guessed state.
   const [rudenessCheck, setRudenessCheck] = useState<boolean | null>(null);
@@ -191,6 +194,7 @@ export default function AdminDashboardPage() {
   const businessFor = (d: AdminDeal) => businessByEmail.get(String(d.merchantEmail || "").toLowerCase()) ?? null;
 
   const filteredDeals = deals?.filter((d) => {
+    if (!matchesDealStatusFilter(d, dealStatusFilter)) return false;
     if (!dealQuery) return true;
     return (
       (d.dealName || "").toLowerCase().includes(dealQuery) ||
@@ -515,6 +519,18 @@ export default function AdminDashboardPage() {
                   placeholder="Search by deal, business name or email…"
                   className="w-full max-w-sm rounded-full border border-slate-200 px-4 py-2 text-sm outline-none focus:border-brand-400"
                 />
+                <select
+                  value={dealStatusFilter}
+                  onChange={(e) => setDealStatusFilter(e.target.value as DealStatusFilter)}
+                  aria-label="Show deals"
+                  className="rounded-full border border-slate-200 px-3 py-2 text-sm"
+                >
+                  {DEAL_STATUS_FILTERS.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.label}
+                    </option>
+                  ))}
+                </select>
                 {pendingDeals > 0 && (
                   <button
                     onClick={handleBulkApprove}
@@ -567,7 +583,9 @@ export default function AdminDashboardPage() {
                 </div>
               )}
               {filteredDeals && filteredDeals.length === 0 ? (
-                <p className="text-sm text-slate-500">No deals match &quot;{dealSearch}&quot;.</p>
+                <p className="text-sm text-slate-500">
+                  {dealQuery ? <>No deals match &quot;{dealSearch}&quot;.</> : "No deals in this list."}
+                </p>
               ) : (
                 <table className="w-full min-w-[720px] text-left text-sm">
                   <thead>

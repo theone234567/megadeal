@@ -30,6 +30,8 @@ export interface DealRecord {
   /** A draft the automatic check sent back: what to change before
    *  submitting it again (lib/dealForBusiness.ts). */
   changeNeeded?: string | null;
+  /** Rejected by MegaDeal: why, shown on the card (lib/dealReject.ts, T242). */
+  rejectedReason?: string | null;
   dealCode?: string | null;
   /** Who paused it: only the business's own pause can be lifted here. */
   pausedBy?: "business" | "admin" | null;
@@ -120,7 +122,9 @@ export default function DealManageCard({
           <span
             className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${DEAL_STATUS_STYLES[status]}`}
           >
-            {status === "Live" && hiddenFromCustomers
+            {deal.rejectedReason
+              ? "Not approved"
+              : status === "Live" && hiddenFromCustomers
               ? "Live — hidden for now"
               : status === "Live" && !siteLaunched
               ? "Approved — shows at launch"
@@ -138,7 +142,7 @@ export default function DealManageCard({
               // phone's own format printed "10/22/2026" for a deal that ended on
               // the 23rd in Auckland.
               `${isEnded ? "Ended" : "Ends"} ${formatOfferEndDate(deal.expiresAt, Boolean(deal.isFlash))}`
-              : Number(deal.requestedDurationMinutes) > 0
+              : Number(deal.requestedDurationMinutes) > 0 && !isCancelled
               ? `Runs ${describeMinutes(Number(deal.requestedDurationMinutes))} once approved`
               : "—"}
             {endingSoon && " ⏰"}
@@ -146,6 +150,21 @@ export default function DealManageCard({
           <span className="text-slate-500">{open ? "▲" : "▼"}</span>
         </span>
       </button>
+
+      {/* Rejected (T242): why, without opening the card, and the way to try again. */}
+      {deal.rejectedReason && (
+        <div className="mx-4 mb-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-red-800">
+          <p>
+            <span className="font-semibold">Why it wasn&apos;t approved:</span> {deal.rejectedReason}
+          </p>
+          <a
+            href={`/portal/new-deal?duplicate=${encodeURIComponent(deal._id)}`}
+            className="mt-2 inline-block rounded-full bg-brand-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-brand-700"
+          >
+            Fix and resubmit
+          </a>
+        </div>
+      )}
 
       {open && (
         <div className="space-y-4 border-t border-slate-100 px-4 py-4">
@@ -192,7 +211,7 @@ export default function DealManageCard({
             </div>
           )}
 
-          {deal.statusNote && (status === "Paused" || status === "Cancelled") && (
+          {deal.statusNote && !deal.rejectedReason && (status === "Paused" || status === "Cancelled") && (
             <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
               <span className="font-semibold">Note from MegaDeal:</span> {deal.statusNote}
             </p>

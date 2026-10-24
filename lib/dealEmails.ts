@@ -166,15 +166,22 @@ export function dealEndingEmail(
 }
 
 /** A deal an admin paused or cancelled, with the reason if one was given. */
-export function dealStoppedEmail(dealName: string, status: "Paused" | "Cancelled", note: string | null | undefined, opts: { siteUrl: string; businessName?: string | null; contactName?: string | null }): DealEmail {
+export function dealStoppedEmail(
+  dealName: string,
+  status: "Paused" | "Cancelled",
+  note: string | null | undefined,
+  opts: { siteUrl: string; businessName?: string | null; contactName?: string | null; neverLive?: boolean },
+): DealEmail {
   const name = escapeHtml(dealName || "Your deal");
   const reason = note?.trim() ? `<p style="margin:0 0 16px;">The reason: ${escapeHtml(note.trim().slice(0, 500))}</p>` : "";
   const what = status === "Paused" ? "paused" : "cancelled";
+  // A deal nobody had seen yet (T242): not "customers can't see it at the moment".
+  const effect = opts.neverLive && status === "Cancelled" ? "before it went live" : "so customers can't see it at the moment";
   return {
     subject: `Your deal was ${what}: ${dealName || "your deal"}`.slice(0, 150),
     html: brandedEmailHtml(`
       ${greeting(opts)}
-      <p style="margin:0 0 16px;">MegaDeal has ${what} <strong>${name}</strong>, so customers can't see it at the moment.</p>
+      <p style="margin:0 0 16px;">MegaDeal has ${what} <strong>${name}</strong>${opts.neverLive && status === "Cancelled" ? " " : ", "}${effect}.</p>
       ${reason}
       <p style="margin:0 0 16px;">Questions, or want to fix something and run it again? Just reply to this email.</p>
       ${portalLink(opts.siteUrl, "Go to your portal")}
@@ -206,6 +213,35 @@ export function dealChangesNeededEmail(
       <p style="margin:0 0 16px;">It's saved in your drafts with the same deal code.${credits} Make the change, then press <strong>Resubmit for review</strong> and we'll check it again.</p>
       <p style="margin:0 0 16px;text-align:center;">
         <a href="${fixUrl}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Fix and resubmit</a>
+      </p>
+      <p style="margin:0;font-size:13px;color:#8b8494;">Questions? Just reply to this email.</p>
+    `),
+  };
+}
+
+/**
+ * A deal an admin rejected (lib/dealReject.ts, T242): final, with this
+ * action's reason only, and the way to try again as a new deal.
+ */
+export function dealRejectedEmail(
+  dealName: string,
+  reason: string,
+  opts: { siteUrl: string; dealId: string; businessName?: string | null; contactName?: string | null; creditsReturned?: number; wasLive?: boolean },
+): DealEmail {
+  const name = escapeHtml(dealName || "Your deal");
+  const credits = opts.creditsReturned
+    ? ` The ${opts.creditsReturned} credit${opts.creditsReturned === 1 ? "" : "s"} it used ${opts.creditsReturned === 1 ? "has" : "have"} been returned.`
+    : "";
+  const again = `${opts.siteUrl}/portal/new-deal?duplicate=${encodeURIComponent(opts.dealId)}`;
+  return {
+    subject: `Your deal “${dealName || "your deal"}” wasn't approved`.slice(0, 150),
+    html: brandedEmailHtml(`
+      ${greeting(opts)}
+      <p style="margin:0 0 16px;">We couldn't approve <strong>${name}</strong>${opts.wasLive ? ", so it's been taken off MegaDeal" : ""}.${credits}</p>
+      <p style="margin:0 0 16px;padding:12px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;">${escapeHtml(reason.trim().slice(0, 600))}</p>
+      <p style="margin:0 0 16px;">You're welcome to submit a new deal that fixes this. The button below starts one with this deal's details filled in.</p>
+      <p style="margin:0 0 16px;text-align:center;">
+        <a href="${again}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Fix and submit a new deal</a>
       </p>
       <p style="margin:0;font-size:13px;color:#8b8494;">Questions? Just reply to this email.</p>
     `),

@@ -728,6 +728,41 @@ describe("the AI review and housekeeping on the new database", () => {
     expect(await db.query("select id::text, status, deal_code from public.deals")).toEqual([{ id, status: "Live", deal_code: "SCONE5" }]);
   });
 
+  it("an admin rejects a deal with a reason: final, credits back, one email, the reason on the portal card (T242)", async () => {
+    await signUpApprovedWithCredits(100);
+    aiReview = null; // waits for a person
+    const create = await import("@/app/api/deals/create/route");
+    const { body } = await call(create.POST, request("POST", { ...DEAL, dealCode: "SCONE5" }));
+    const id = body.item._id;
+    admin = true;
+    const reject = await import("@/app/api/admin/deals/[id]/reject/route");
+    // The reason is required: it's what the business reads.
+    expect((await call(reject.POST, request("POST", { presets: ["price"], note: "too short" }), params(id))).status).toBe(400);
+    // An earlier note on the deal must not reach this email.
+    await db.query("update public.deals set status_note = 'an old note from before'");
+    const res = await call(reject.POST, request("POST", { presets: ["price", "nope"], note: "The usual price doesn't match your menu." }), params(id));
+    expect(res).toMatchObject({ status: 200, body: { ok: true, creditsReturned: expect.any(Number) } });
+    expect(await db.query("select status from public.deals")).toEqual([{ status: "Cancelled" }]);
+    expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 100 }]);
+    const reason = "The usual price or saving doesn't look right. The usual price doesn't match your menu.";
+    const emails = mail.filter((m) => m.subject.includes("wasn't approved"));
+    expect(emails).toHaveLength(1);
+    expect(emails[0].to).toBe("owner@harbourbistro.co.nz");
+    expect(emails[0].html).toContain("The usual price or saving doesn&#39;t look right. The usual price doesn&#39;t match your menu.");
+    expect(emails[0].html).toContain(`/portal/new-deal?duplicate=${id}`);
+    expect(emails[0].html).not.toMatch(/old note|at the moment/);
+    // Final: a second reject, or one on a draft, is refused.
+    expect((await call(reject.POST, request("POST", { note: "again, please stop" }), params(id))).status).toBe(409);
+    // The business sees why, on its list of deals.
+    admin = false;
+    const mine = await import("@/app/api/deals/mine/route");
+    const [deal] = (await call(mine.GET, request("GET"))).body.items;
+    expect(deal).toMatchObject({ _id: id, status: "Cancelled", rejectedReason: reason });
+    expect(deal.aiReview).toBeUndefined();
+    const activity = await db.query<{ description: string }>("select description from public.merchant_activity order by created_at desc limit 1");
+    expect(activity[0].description).toMatch(/wasn't approved/);
+  });
+
   it("a deal with a code MegaDeal made reopens without it in the code box, and keeps it", async () => {
     await signUpApprovedWithCredits(100);
     aiReview = null;

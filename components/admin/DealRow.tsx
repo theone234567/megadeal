@@ -11,6 +11,8 @@ import { nzLongDate } from "@/lib/dealVerification";
 import { cleanDealTags, dealTagLabel } from "@/lib/dealTags";
 import { aiSummary, effectiveVerdict } from "@/lib/aiReview";
 import SendBackPanel from "./SendBackPanel";
+import RejectPanel from "./RejectPanel";
+import { rejectedReason } from "@/lib/dealRejectRules";
 import { sendBackRounds } from "@/lib/dealSendBackRules";
 import { describeMinutes } from "@/lib/dealDuration";
 import { dealDisplayStatus } from "@/lib/dealStatus";
@@ -65,6 +67,10 @@ export default function DealRow({
   const [error, setError] = useState<string | null>(null);
   const [sendBackOpen, setSendBackOpen] = useState(false);
   const [sentBack, setSentBack] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejected, setRejected] = useState(false);
+  // Reject (T242): from waiting for review, or live or paused.
+  const canReject = ["Pending Approval", "Live", "Paused"].includes(deal.status || "Live");
   // Pause is for a deal that has been on the site; one still waiting for
   // review is sent back for changes or rejected instead (T181).
   const statuses = STATUSES.filter((s) => s !== "Paused" || deal.everLive || deal.status === "Paused");
@@ -154,6 +160,7 @@ export default function DealRow({
               <p className="text-xs font-bold text-amber-700">New photo to approve</p>
             )}
             {readRevision(deal) && <p className="text-xs font-bold text-amber-700">Change requested</p>}
+            {rejectedReason(deal) !== null && <p className="text-xs font-bold text-red-700">Rejected (not approved)</p>}
             {deal.status === "Pending Approval" && sendBackRounds(deal) > 0 && (
               <p className="text-xs font-bold text-amber-700">Resubmitted ({sendBackRounds(deal)})</p>
             )}
@@ -245,9 +252,9 @@ export default function DealRow({
         )}
       </td>
       <td className="py-3">
-        {sentBack ? (
-          <p role="status" className="max-w-[9rem] text-xs font-semibold text-amber-800">
-            Sent back for changes ✓
+        {sentBack || rejected ? (
+          <p role="status" className={`max-w-[9rem] text-xs font-semibold ${rejected ? "text-red-800" : "text-amber-800"}`}>
+            {rejected ? "Rejected ✓" : "Sent back for changes ✓"}
           </p>
         ) : (
           <>
@@ -261,11 +268,27 @@ export default function DealRow({
             {deal.status === "Pending Approval" && (
               <button
                 type="button"
-                onClick={() => setSendBackOpen((v) => !v)}
+                onClick={() => {
+                  setSendBackOpen((v) => !v);
+                  setRejectOpen(false);
+                }}
                 aria-expanded={sendBackOpen}
                 className="mt-1 block text-xs font-semibold text-amber-800 underline-offset-2 hover:underline"
               >
                 Send back for changes
+              </button>
+            )}
+            {canReject && (
+              <button
+                type="button"
+                onClick={() => {
+                  setRejectOpen((v) => !v);
+                  setSendBackOpen(false);
+                }}
+                aria-expanded={rejectOpen}
+                className="mt-1 block text-xs font-semibold text-red-700 underline-offset-2 hover:underline"
+              >
+                Reject…
               </button>
             )}
           </>
@@ -299,6 +322,27 @@ export default function DealRow({
               setSendBackOpen(false);
               if (warning) setError(warning);
               onSaved?.({ ...deal, status: "Draft" });
+            }}
+          />
+        </td>
+      </tr>
+    )}
+    {rejectOpen && !rejected && (
+      <tr className="border-b border-slate-100">
+        <td colSpan={5} className="px-4 py-3">
+          <RejectPanel
+            dealId={deal._id}
+            wasLive={deal.status === "Live" || deal.status === "Paused"}
+            onCancel={() => setRejectOpen(false)}
+            onRejected={(warning) => {
+              setRejected(true);
+              setRejectOpen(false);
+              if (warning) setError(warning);
+              const at = new Date().toISOString();
+              const savedDeal = { ...deal, status: "Cancelled" as DealStatus, contentHistory: [{ at, event: "rejected", by: "admin", reason: "" }, ...(deal.contentHistory ?? [])] };
+              setDeal(savedDeal);
+              setStatus("Cancelled");
+              onSaved?.(savedDeal);
             }}
           />
         </td>

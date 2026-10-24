@@ -311,10 +311,12 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
           isFlash: Boolean(updated.isFlash),
         });
       } else if ((patch.status === "Paused" || patch.status === "Cancelled") && (existing.status === "Live" || existing.status === "Pending Approval")) {
-        email = dealStoppedEmail(dealName, patch.status, patch.statusNote ?? existing.statusNote, {
+        // Only the note written with this action, never an earlier one (T242).
+        email = dealStoppedEmail(dealName, patch.status, patch.statusNote, {
           siteUrl: SITE_URL,
           businessName: existing.merchantBusinessName,
           contactName: existing.merchantContactName,
+          neverLive: !existing.everLive && existing.status === "Pending Approval",
         });
       }
     }
