@@ -57,6 +57,11 @@ describe("the launch checklist", () => {
     expect(looksLikeTest("Browser Bistro", "browser+1@bistro.test")).toBe(true);
     expect(looksLikeTest("Testarossa Cafe", "hello@testarossa.co.nz")).toBe(false);
     expect(looksLikeTest("Harbour Bistro", "owner@harbourbistro.co.nz")).toBe(false);
+    // The live QA accounts of 24 Oct (T66), and reserved test domains.
+    expect(looksLikeTest("MegaDeal Test Business (QA)", "owner@gmail.com")).toBe(true);
+    expect(looksLikeTest("MegaDeal QA Bakery Ponsonby", "owner@gmail.com")).toBe(true);
+    expect(looksLikeTest("Kowhai Corner Cafe", "owner+e2e2@kowhai.invalid")).toBe(true);
+    expect(looksLikeTest("Quality Auto Repairs", "qa@qualityauto.co.nz")).toBe(false);
   });
 });
 

@@ -20,6 +20,7 @@ import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { sendMetaCapiEvent } from "@/lib/metaCapi";
 import { getClientIp } from "@/lib/rateLimit";
 import { greetingName } from "@/lib/emailGreeting";
+import { looksLikeTest } from "@/lib/launchChecklist";
 
 const MAX_TEXT_LENGTH = 300;
 // businessHours holds a serialized structured-hours JSON blob (7 days,
@@ -225,6 +226,11 @@ export async function POST(req: NextRequest) {
       // lookup) stays accurate.
       emailVerified: member.loginEmailVerified,
     };
+    // A sign-up that looks like a test ("QA" or "test" in the name, a test
+    // email domain) starts as a test business, never public, until an admin
+    // unticks it (security pack T66). Only a new application: an existing
+    // business keeps whatever an admin set.
+    const startsAsTest = looksLikeTest(businessName, member.email ?? "");
 
     if (existing) {
       isNewApplication = false;
@@ -251,6 +257,7 @@ export async function POST(req: NextRequest) {
     } else {
       item = await adminClient.items.insert("Merchants", {
         ...fields,
+        ...(startsAsTest ? { isTest: true } : {}),
         couponCode: cleanText(body.couponCode, 50),
         // Who referred them, from the signup form's own box (or a ?ref=
         // link). Applies alongside the promo code (lib/referralBonus.ts).

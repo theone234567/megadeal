@@ -13,6 +13,7 @@ import { parseBusinessHours, formatBusinessHoursLines } from "@/lib/businessHour
 import { formatNzDateTime } from "@/lib/nzTime";
 import { describeSignupSource } from "@/lib/signupSource";
 import { OTHER_CREDIT_REASON, creditReasonsFor } from "@/lib/creditReasons";
+import { looksLikeTest } from "@/lib/launchChecklist";
 
 const STATUSES = ["Pending", "Approved", "Suspended"];
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
@@ -547,6 +548,12 @@ export default function AdminBusinessDetailPage() {
                   Never shown to the public: its profile and all its deals stay off the website, listings, search,
                   feeds and the sitemap, whatever their status. Admins still see everything here.
                 </span>
+                {merchant.isTest === true && looksLikeTest(merchant.businessName ?? "", merchant.email ?? "") && (
+                  <span className="mt-1 block text-xs font-semibold text-amber-900">
+                    Its name or email looks like a test, so it was marked as one when it signed up. Untick this if it&apos;s a
+                    real business.
+                  </span>
+                )}
               </span>
             </label>
             <label className="flex items-start gap-2 text-sm sm:col-span-2">

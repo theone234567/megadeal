@@ -118,6 +118,25 @@ describe("a business on the new database", () => {
     expect(await db.query("select audience from public.email_signups")).toEqual([]);
   });
 
+  it("a sign-up that looks like a test starts as a test business, never public (T66)", async () => {
+    const apply = await import("@/app/api/merchants/apply/route");
+    expect((await call(apply.POST, request("POST", { ...SIGNUP, businessName: "MegaDeal QA Bakery Ponsonby" }))).status).toBe(200);
+    expect(await db.query("select is_test from public.merchants")).toEqual([{ is_test: true }]);
+    // Approved with a live deal, it still isn't shown anywhere public.
+    await db.query("update public.merchants set status = 'Approved', credits_balance = 100");
+    aiReview = null;
+    const create = await import("@/app/api/deals/create/route");
+    const { body } = await call(create.POST, request("POST", DEAL));
+    await db.query("update public.deals set status = 'Live', first_published_at = now(), expires_at = now() + interval '1 day', ever_live = true where id::text = $1", [body.item._id]);
+    expect(await loadLiveDeals(db)).toEqual([]);
+    expect(await db.query("select count(*)::int as n from public.public_businesses")).toEqual([{ n: 0 }]);
+  });
+
+  it("a real-looking sign-up isn't marked as a test", async () => {
+    await signUpApprovedWithCredits();
+    expect(await db.query("select is_test from public.merchants")).toEqual([{ is_test: false }]);
+  });
+
   it("joins the business mailing list only when they tick the box", async () => {
     const apply = await import("@/app/api/merchants/apply/route");
     expect((await call(apply.POST, request("POST", { ...SIGNUP, marketingOptIn: true }))).status).toBe(200);

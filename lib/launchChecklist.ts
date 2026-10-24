@@ -69,9 +69,16 @@ export const MANUAL_ITEMS = [
 export type ManualItem = (typeof MANUAL_ITEMS)[number];
 export const isManualItem = (id: unknown): id is ManualItem => typeof id === "string" && (MANUAL_ITEMS as readonly string[]).includes(id);
 
-/** A business that looks like a test, by its name or email. */
+/** A business that looks like a test, by its name or email: "test" or
+ *  "QA" in the name, or an address at a domain reserved for testing
+ *  (.test, .invalid, .example, .localhost, example.com). A new sign-up
+ *  like this is marked as a test business automatically, so it's never
+ *  public (security pack T66; app/api/merchants/apply). */
 export function looksLikeTest(name: string, email: string): boolean {
-  return /\btest(s|ing)?\b|test\d|\+test|demo\b/i.test(name) || /\+test|test\d*@|@(example\.(com|nz|co\.nz)|[^@]*\.test)$/i.test(email);
+  return (
+    /\btest(s|ing)?\b|test\d|\+test|demo\b|\bqa\b/i.test(name) ||
+    /\+test|\+qa\b|test\d*@|@(example\.(com|nz|co\.nz)|[^@]*\.(test|invalid|example|localhost))$/i.test(email)
+  );
 }
 
 const RESEND_FREE_DAILY = 100;
