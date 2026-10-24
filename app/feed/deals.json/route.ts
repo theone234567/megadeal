@@ -52,7 +52,9 @@ export async function GET(req: NextRequest) {
   // The ETag covers the deals and filters, not the time below, so a
   // client asking again gets "304 Not Modified" until something changes.
   const etag = await etagOf(JSON.stringify(feed));
-  const caching = { "Cache-Control": "public, max-age=60, stale-while-revalidate=300", ETag: etag };
+  // Asked again each time (the ETag makes that cheap): a paused deal leaves
+  // the feed at once (T214).
+  const caching = { "Cache-Control": "public, max-age=0, must-revalidate", ETag: etag };
   const ifNoneMatch = req.headers.get("if-none-match");
   if (ifNoneMatch && ifNoneMatch.split(",").some((t) => t.trim() === etag)) {
     return new Response(null, { status: 304, headers: { ...BASE_HEADERS, ...caching } });

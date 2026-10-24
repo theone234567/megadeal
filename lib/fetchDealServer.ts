@@ -8,6 +8,7 @@ import type { Deal } from "./types";
 import { withDb } from "./db/connection";
 import * as pg from "./db/publicReads";
 import { soldOutLast } from "./sortDeals";
+import { readListingVersion } from "./listingVersion";
 
 /**
  * Server-only lookup for a deal page (its metadata, JSON-LD and body).
@@ -21,8 +22,8 @@ import { soldOutLast } from "./sortDeals";
  * visitor gets the "Something went sideways / Try again" page rather than
  * being told a live deal doesn't exist.
  *
- * Tried first: the deal from a listing read in the last minute (see
- * liveDealFromListing), which needs no database read.
+ * Tried first: the deal from a listing read in the last minute that is
+ * still current (see liveDealFromListing), which needs no full read.
  */
 export const fetchDealForSEO = cache(async (slug: string): Promise<Deal | null> => {
   const fromListing = await liveDealFromListing(slug);
@@ -101,20 +102,37 @@ const LISTING_FRESH_MS = 60 * 1000;
 const LISTING_STALE_MS = 15 * 60 * 1000;
 // Bump when the shape of a stored Deal changes, so a deploy never reads a
 // copy stored by the previous version.
-const LISTING_CACHE_KEY = "live-deals-v1-postgres";
+const LISTING_CACHE_KEY = "live-deals-v2-postgres";
 
 // The deals are kept whole — contact details, deal code and all — so the
 // deal page can use them (fetchDealForSEO). Listings get them trimmed by
-// toListingDeal on the way out.
-type Listing = { at: number; deals: Deal[] };
+// toListingDeal on the way out. `version` is what they were built from
+// (lib/listingVersion.ts): a copy whose version is out of date is never
+// used, so a deal paused, cancelled or newly published shows on the very
+// next request (T214), not after the minute.
+type Listing = { at: number; version: string | null; deals: Deal[] };
 let lastListing: Listing | null = null;
 
-/** A copy of the listing no older than a minute, without reading the database. */
+/** The listing version now: one tiny read per request. null if it can't
+ *  be read, and then a copy under a minute old is used as before. */
+const currentVersion = cache(async (): Promise<string | null> => {
+  try {
+    return await withDb((db) => readListingVersion(db));
+  } catch (err) {
+    console.error("[fetchDealServer] listing version unavailable", err);
+    return null;
+  }
+});
+
+/** A copy of the listing no older than a minute and still current, without a full read. */
 async function freshListing(now: number): Promise<Listing | null> {
-  if (lastListing && now - lastListing.at < LISTING_FRESH_MS) return lastListing;
-  const shared = await readEdgeCache<Deal[]>(LISTING_CACHE_KEY);
-  if (shared && now - shared.at < LISTING_FRESH_MS) {
-    lastListing = { at: shared.at, deals: shared.value };
+  const version = await currentVersion();
+  const usable = (l: Listing | null) => l && now - l.at < LISTING_FRESH_MS && (version === null || l.version === version);
+  if (usable(lastListing)) return lastListing;
+  const shared = await readEdgeCache<{ version: string | null; deals: Deal[] }>(LISTING_CACHE_KEY);
+  const fromShared = shared ? { at: shared.at, version: shared.value.version, deals: shared.value.deals } : null;
+  if (usable(fromShared)) {
+    lastListing = fromShared;
     return lastListing;
   }
   return null;
@@ -126,9 +144,10 @@ async function currentListing(): Promise<Listing | null> {
   if (fresh) return fresh;
   try {
     const at = Date.now();
+    const version = await currentVersion();
     const deals = await loadAllLiveDeals();
-    lastListing = { at, deals };
-    await writeEdgeCache(LISTING_CACHE_KEY, deals, at, LISTING_STALE_MS / 1000);
+    lastListing = { at, version, deals };
+    await writeEdgeCache(LISTING_CACHE_KEY, { version, deals }, at, LISTING_STALE_MS / 1000);
     return lastListing;
   } catch (err) {
     console.error("[fetchAllLiveDealsServer] failed", err);
@@ -148,11 +167,12 @@ async function fetchAllLiveDeals(): Promise<Deal[]> {
 }
 
 /**
- * A deal straight from a listing read in the last minute, if it's in it:
- * the listing already holds every live deal whole (built the same way as
- * readDeal), so opening a deal from the homepage needs no database read.
- * null when there's no fresh listing or the deal isn't in it (new in the
- * last minute, or not live), and the caller reads the database.
+ * A deal straight from a listing read in the last minute and still
+ * current, if it's in it: the listing already holds every live deal whole
+ * (built the same way as readDeal), so opening a deal from the homepage
+ * needs no full read. null when there's no such listing or the deal isn't
+ * in it, and the caller reads the database. A deal paused since the copy
+ * was made has changed the version, so its page isn't shown from it.
  */
 async function liveDealFromListing(slug: string): Promise<Deal | null> {
   const now = Date.now();

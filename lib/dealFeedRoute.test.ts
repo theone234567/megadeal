@@ -41,7 +41,7 @@ describe("GET /feed/deals.json", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toMatch(/application\/json/);
     expect(res.headers.get("access-control-allow-origin")).toBe("*");
-    expect(res.headers.get("cache-control")).toMatch(/public, max-age=60/);
+    expect(res.headers.get("cache-control")).toMatch(/public, max-age=0, must-revalidate/);
     expect(res.headers.get("x-robots-tag")).toBe("noindex");
     expect(res.headers.get("link")).toMatch(/openapi\.json>; rel="describedby"/);
     const body = await res.json();

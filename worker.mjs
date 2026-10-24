@@ -9,6 +9,7 @@
 import site from "./.open-next/worker.js";
 import { runScheduledJob } from "./lib/scheduledJobs.ts";
 import { withEdgeCache, withPageEdgeCache, withPrebuiltImage } from "./lib/assetCache.ts";
+import { readListingVersionFromHyperdrive } from "./lib/listingVersion.ts";
 
 // OpenNext's Durable Object classes, re-exported as its docs ask of a
 // custom entry (unused unless bound in wrangler.toml).
@@ -19,8 +20,11 @@ export default {
     const cache = globalThis.caches?.default;
     // This deploy's id (wrangler.toml version_metadata): page copies are kept per deploy.
     const version = env.CF_VERSION_METADATA?.id;
+    // The pages that list deals are kept per listing version too, so a
+    // paused or new deal shows at once (lib/listingVersion.ts).
+    const listingVersion = () => readListingVersionFromHyperdrive(env.HYPERDRIVE?.connectionString);
     return withPrebuiltImage(req, env.ASSETS, (q) =>
-      withEdgeCache(q, ctx, cache, (r) => withPageEdgeCache(r, ctx, cache, version, (p) => site.fetch(p, env, ctx)))
+      withEdgeCache(q, ctx, cache, (r) => withPageEdgeCache(r, ctx, cache, version, (p) => site.fetch(p, env, ctx), listingVersion))
     );
   },
 

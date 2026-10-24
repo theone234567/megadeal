@@ -31,7 +31,7 @@ function line(d: Deal): string {
 export async function GET() {
   // Not for search results: the deal pages are what should rank. AI
   // crawlers read it regardless; search engines just don't list it.
-  const headers = { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=60", "X-Robots-Tag": "noindex" };
+  const headers = { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=0, must-revalidate", "X-Robots-Tag": "noindex" };
   if (!DEALS_OPEN) {
     return new Response(`# ${SITE_NAME} live deals\n\n${SITE_NAME} hasn't launched yet, so there are no live deals. See ${SITE_URL}/coming-soon.\n`, { headers });
   }

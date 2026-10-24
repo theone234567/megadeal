@@ -85,6 +85,36 @@ describe("page edge cache", () => {
     expect([...cache.store.keys()].join()).not.toMatch(/fbclid|gclid|utm_/);
   });
 
+  it("keeps the pages that list deals per listing version: a paused deal is gone at once (T214)", async () => {
+    const cache = fakeCache();
+    let renders = 0;
+    let listing = "a";
+    let asked = 0;
+    const handle = async () => (renders++, page());
+    const version = async () => (asked++, listing);
+    const visit = async (path: string) => {
+      const c = ctx();
+      await withPageEdgeCache(new Request(`https://megadeal.co.nz${path}`), c, cache, "v1", handle, version);
+      await Promise.all(c.pending);
+    };
+    await visit("/auckland");
+    await visit("/auckland");
+    expect(renders).toBe(1);
+    listing = "b"; // a deal was paused
+    await visit("/auckland");
+    expect(renders).toBe(2);
+    // Fixed pages don't ask.
+    asked = 0;
+    await visit("/about");
+    expect(asked).toBe(0);
+    // Version unknown: the copy for the deploy alone, as before.
+    listing = null as unknown as string;
+    await visit("/");
+    const afterFirst = renders;
+    await visit("/");
+    expect([afterFirst, renders]).toEqual([4, 4]); // /about was the third
+  });
+
   it("still renders afresh for anything else in the query, tags or not", async () => {
     const cache = fakeCache();
     const seen: string[] = [];

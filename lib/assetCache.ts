@@ -64,6 +64,11 @@ export async function withEdgeCache(
  * so a newly approved deal can take up to five minutes to show there. Each copy belongs to one
  * deploy (`version`), so a new deploy never serves a page pointing at
  * scripts that are gone.
+ *
+ * The pages that list deals are also kept per listing version
+ * (lib/listingVersion.ts, T214): a deal paused, cancelled or published
+ * changes it, so their copies stop being used at once, everywhere, rather
+ * than when they run out.
  */
 const FIXED_PAGES = new Set([
   "/about", "/careers", "/contact", "/developers", "/help", "/how-it-works", "/list-your-business",
@@ -72,6 +77,11 @@ const FIXED_PAGES = new Set([
   "/advertise/travel-getaways", "/advertise/health-fitness",
 ]);
 const LISTING_PAGES = /^\/(?:auckland(?:\/[a-z-]+)?)?$/;
+
+/** A page that lists live deals: kept per listing version too. */
+export function listsDeals(pathname: string): boolean {
+  return pathname === "/" || LISTING_PAGES.test(pathname);
+}
 
 /** How long a page may be served from the edge, in seconds, or 0 for never. */
 export function pageEdgeSeconds(pathname: string): number {
@@ -128,7 +138,11 @@ export async function withPageEdgeCache(
   ctx: { waitUntil(p: Promise<unknown>): void },
   cache: EdgeCache | undefined,
   version: string | undefined,
-  handle: (req: Request) => Promise<Response>
+  handle: (req: Request) => Promise<Response>,
+  /** The listing version (lib/listingVersion.ts), read only when a page
+   *  that lists deals is about to use or keep a copy. null: unknown, and
+   *  the copy is kept for its usual time only. */
+  listingVersion?: () => Promise<string | null>
 ): Promise<Response> {
   const asked = new URL(req.url);
   const seconds = pageEdgeSeconds(asked.pathname);
@@ -151,8 +165,11 @@ export async function withPageEdgeCache(
     return handle(req);
   }
 
+  const listing = listingVersion && listsDeals(url.pathname) ? await listingVersion() : null;
   const key = new Request(
-    `${url.origin}${url.pathname}?v=${encodeURIComponent(version)}${prefetch ? `&_rsc=${encodeURIComponent(prefetch)}` : ""}`,
+    `${url.origin}${url.pathname}?v=${encodeURIComponent(version)}${listing ? `&l=${encodeURIComponent(listing)}` : ""}${
+      prefetch ? `&_rsc=${encodeURIComponent(prefetch)}` : ""
+    }`,
     { method: "GET" }
   );
   const hit = await cache.match(key).catch(() => undefined);
