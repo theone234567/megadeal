@@ -8,6 +8,7 @@ import { logMerchantActivity } from "@/lib/merchantActivity";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { reviewPendingPhoto } from "@/lib/aiReviewApply";
 import { dealDisplayStatus } from "@/lib/dealStatus";
+import { dealForBusiness } from "@/lib/dealForBusiness";
 
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         photoUrl,
         pendingPhotoUrl: null,
       });
-      return NextResponse.json({ item: updated });
+      return NextResponse.json({ item: dealForBusiness(updated) });
     }
 
     // Live or paused: the new photo waits for an admin to approve it and
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         description: `New photo for "${deal.dealName || "your deal"}" sent for approval`,
       });
     }
-    return NextResponse.json({ item, photoOutcome: outcome, photoMessage: message ?? null });
+    return NextResponse.json({ item: dealForBusiness(item), photoOutcome: outcome, photoMessage: message ?? null });
   } catch (err) {
     console.error("[deals/[id]/photo] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

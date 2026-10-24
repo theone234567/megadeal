@@ -10,6 +10,7 @@ import { logMerchantActivity } from "@/lib/merchantActivity";
 import { notifyDealChanged } from "@/lib/indexNowDeal";
 import { firstPublicationFields } from "@/lib/dealDuration";
 import type { DealStatus } from "@/lib/types";
+import { dealForBusiness } from "@/lib/dealForBusiness";
 
 /**
  * Merchant-facing status changes (pause/resume/cancel/withdraw) go through here
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
           return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 503 });
         }
         // Someone else got there first: it's already withdrawn or decided.
-        return NextResponse.json({ item: now ?? deal, creditRefunded: false, creditsRefunded: 0 });
+        return NextResponse.json({ item: dealForBusiness(now ?? deal), creditRefunded: false, creditsRefunded: 0 });
       }
     }
     const updated = await adminClient.items.update("Deals", {
@@ -136,7 +137,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
         console.error(`[deals/[id]/status] CREDITS NOT REFUNDED (${refundAmount}) for withdrawn deal ${deal._id}`);
       }
     }
-    return NextResponse.json({ item: updated, creditRefunded: refund, creditsRefunded: refund ? refundAmount : 0 });
+    return NextResponse.json({ item: dealForBusiness(updated), creditRefunded: refund, creditsRefunded: refund ? refundAmount : 0 });
   } catch (err) {
     console.error("[deals/[id]/status] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

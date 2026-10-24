@@ -22,6 +22,8 @@ import { logMerchantActivity } from "@/lib/merchantActivity";
 import { isGeneratedDealCode } from "@/lib/dealCode";
 import { newDealCode } from "@/lib/db/dealCodes";
 import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
+import { draftFromSubmission } from "@/lib/dealDraft";
+import { changeNeededFor, dealForBusiness } from "@/lib/dealForBusiness";
 import { DEALS_OPEN, PRELAUNCH_FREE_DEALS, SITE_URL } from "@/lib/siteConfig";
 import { prelaunchAllowanceBlock } from "@/lib/prelaunchAllowance";
 import { queryAllByEmail } from "@/lib/queryAll";
@@ -401,6 +403,10 @@ export async function POST(req: NextRequest) {
     // machine text in the field an admin uses to explain a rejection.
     draftData: "",
     statusNote: "",
+    // A deal the check sent back to Draft (lib/aiReviewApply.ts) starts
+    // afresh: last time's review and refund belong to last time.
+    aiReview: null,
+    creditRefunded: false,
   };
 
   // Submitting a draft promotes that row rather than inserting a second
@@ -466,13 +472,19 @@ export async function POST(req: NextRequest) {
     adminClient,
     deal,
     merchant,
-    { category, apply: settings.requireApproval ? "noPublish" : true }
+    {
+      category,
+      apply: settings.requireApproval ? "noPublish" : true,
+      // What was sent, tidied, so a deal sent back reopens as it was typed
+      // (a blank "was" price stays blank rather than becoming the price).
+      submitted: draftFromSubmission({ ...body, ...checked.fields, priceWas: body.priceWas, dealCode: customDealCode || "" }),
+    }
   );
 
   return NextResponse.json({
-    item: review.item,
+    item: dealForBusiness(review.item),
     outcome: review.outcome === "publish" ? "live" : review.outcome === "reject" ? "rejected" : "pending",
-    message: review.outcome === "reject" ? review.item.statusNote ?? null : null,
+    message: review.outcome === "reject" ? changeNeededFor(review.item) : null,
     // What a turned-down deal gave back: what it was charged.
     creditsReturned: review.outcome === "reject" && review.creditsReturned ? review.creditsReturned : 0,
   });

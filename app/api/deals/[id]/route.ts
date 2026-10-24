@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
+import { dealForBusiness } from "@/lib/dealForBusiness";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
     if ((deal.merchantEmail || "").toLowerCase() !== member.email.toLowerCase()) {
       return NextResponse.json({ error: "This isn't your deal." }, { status: 403 });
     }
-    return NextResponse.json({ item: deal });
+    return NextResponse.json({ item: dealForBusiness(deal) });
   } catch (err) {
     console.error("[deals/[id]] GET failed", err);
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });

@@ -4,6 +4,7 @@ import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
 import { canRequestRevision, parseRevisionRequest } from "@/lib/dealRevision";
 import { logMerchantActivity } from "@/lib/merchantActivity";
+import { dealForBusiness } from "@/lib/dealForBusiness";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       type: "deal",
       description: `Change requested for "${deal.dealName || "your deal"}" — waiting for review`,
     });
-    return NextResponse.json({ item: updated });
+    return NextResponse.json({ item: dealForBusiness(updated) });
   } catch (err) {
     console.error("[deals/revision] failed", err);
     return NextResponse.json({ error: "Couldn't send your request. Please try again." }, { status: 500 });
@@ -65,7 +66,7 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
     const { adminClient, deal } = own;
     if (!deal.pendingRevision) return NextResponse.json({ error: "There's no change request to withdraw." }, { status: 409 });
     const updated = await adminClient.items.update("Deals", { ...deal, pendingRevision: null });
-    return NextResponse.json({ item: updated });
+    return NextResponse.json({ item: dealForBusiness(updated) });
   } catch (err) {
     console.error("[deals/revision] withdraw failed", err);
     return NextResponse.json({ error: "Couldn't withdraw your request. Please try again." }, { status: 500 });

@@ -548,15 +548,38 @@ describe("the AI review and housekeeping on the new database", () => {
     expect(row).toEqual({ verdict: "approve", ever_live: true, published: true });
   });
 
-  it("an offensive deal is turned down with its credits back", async () => {
+  it("an offensive deal goes back to the drafts with the reason and its credits back, to fix and submit again", async () => {
     await signUpApprovedWithCredits(100);
     aiReview = review("reject", { offensive: true });
     const create = await import("@/app/api/deals/create/route");
-    const res = await call(create.POST, request("POST", DEAL));
+    const res = await call(create.POST, request("POST", { ...DEAL, dealCode: "DINNER20" }));
     expect(res.body.outcome).toBe("rejected");
+    expect(res.body.message).toBe("Please change the wording.");
     expect(res.body.creditsReturned).toBeGreaterThan(0);
+    // What the business is sent: the reason, never the check's notes for admin.
+    expect(res.body.item).toMatchObject({ status: "Draft", changeNeeded: "Please change the wording.", dealCode: "DINNER20" });
+    expect(res.body.item.aiReview).toBeUndefined();
     expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 100 }]);
-    expect(await db.query("select status from public.deals")).toEqual([{ status: "Cancelled" }]);
+    expect(await db.query("select status, deal_code from public.deals")).toEqual([{ status: "Draft", deal_code: "DINNER20" }]);
+
+    // The portal lists it with the reason, and it reopens as it was sent.
+    const mine = await import("@/app/api/deals/mine/route");
+    const listed = (await call(mine.GET, request("GET"))).body.items;
+    expect(listed).toHaveLength(1);
+    expect(listed[0].changeNeeded).toBe("Please change the wording.");
+    expect(listed[0].aiReview).toBeUndefined();
+    const { parseDraft } = await import("@/lib/dealDraft");
+    expect(parseDraft(listed[0])).toMatchObject({ dealName: "Two-course dinner", category: "Food & Drink", priceNow: "49", priceWas: "80", durationDays: 14, dealCode: "DINNER20", photoMediaId: "m1" });
+
+    // Fixed and submitted again: the same deal, charged again, reviewed afresh.
+    aiReview = review("approve");
+    const again = await call(create.POST, request("POST", { ...DEAL, dealCode: "DINNER20", description: "Any main and dessert, dine in.", draftId: listed[0]._id }));
+    expect(again.body.outcome).toBe("live");
+    expect(again.body.item.changeNeeded).toBeNull();
+    const rows = await db.query("select status, deal_code, credit_refunded, ai_review->>'verdict' as verdict from public.deals");
+    expect(rows).toEqual([{ status: "Live", deal_code: "DINNER20", credit_refunded: false, verdict: "approve" }]);
+    const [{ credits_balance }] = await db.query<{ credits_balance: number }>("select credits_balance from public.merchants");
+    expect(credits_balance).toBeLessThan(100);
   });
 
   it("a deal withdrawn while the AI was still reviewing it isn't refunded twice when the review turns it down", async () => {
@@ -581,6 +604,7 @@ describe("the AI review and housekeeping on the new database", () => {
     const result = await reviewSubmittedDeal(client, stale, merchant, { apply: true });
     expect(result.creditsReturned ?? 0).toBe(0);
     expect(await db.query("select credits_balance from public.merchants")).toEqual([{ credits_balance: 100 }]);
+    // The withdrawal stands: it isn't brought back as a draft.
     expect(await db.query("select status, credit_refunded from public.deals")).toEqual([{ status: "Cancelled", credit_refunded: true }]);
   });
 

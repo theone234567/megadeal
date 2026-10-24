@@ -8,19 +8,22 @@ import { DEALS_OPEN } from "./siteConfig";
 import { getSiteRudenessCheck, rudenessCheckApplies } from "./rudenessSetting";
 import { notifyDealChanged } from "./indexNowDeal";
 import { firstPublicationFields } from "./dealDuration";
+import { draftFromSubmission, draftRevisionOf, draftToRow, type DealDraftData } from "./dealDraft";
+import { FALLBACK_CHANGE_NEEDED } from "./dealForBusiness";
 
 /** Whether swearing/crude humour is held back for this business. */
 async function rudenessCheckFor(adminClient: any, merchant: Record<string, any> | null): Promise<boolean> {
   return rudenessCheckApplies(await getSiteRudenessCheck(adminClient), merchant?.rudenessCheck);
 }
 
-const FALLBACK_REJECTION =
-  "This deal couldn't be approved as written. Please check the wording and photo are suitable for a family-friendly site and submit it again.";
+const FALLBACK_REJECTION = FALLBACK_CHANGE_NEEDED;
 
 /**
- * Reviews a submitted deal and acts on the result: publishes it, rejects
- * it (with the credit returned and the reason shown to the business), or
- * leaves it in "Pending Approval" with the AI's notes for an admin.
+ * Reviews a submitted deal and acts on the result: publishes it, sends it
+ * back to the business as a draft (with the credit returned and the reason
+ * shown), or leaves it in "Pending Approval" with the AI's notes for an
+ * admin. A deal sent back keeps its id and code, so the business fixes
+ * what was asked and submits the same deal again.
  *
  * `apply: "publishOnly"` is the admin's "AI check" button: a clean deal
  * from an approved business goes live, but nothing is turned down — the
@@ -35,7 +38,14 @@ export async function reviewSubmittedDeal(
   /** true: act on the outcome. "publishOnly": publish but never reject.
    *  "noPublish": reject but never publish (platform setting "every deal
    *  waits for admin approval"). false: review only. */
-  opts: { category?: string; apply: AiApplyMode }
+  opts: {
+    category?: string;
+    apply: AiApplyMode;
+    /** The deal as the business submitted it, in the form's shape; it
+     *  becomes the draft if the check sends the deal back. Read off the
+     *  deal itself when not given. */
+    submitted?: DealDraftData;
+  }
 ): Promise<{ outcome: AiOutcome; review: AiReview | null; item: Record<string, any>; creditsReturned?: number }> {
   try {
     const rudenessCheck = await rudenessCheckFor(adminClient, merchant);
@@ -92,35 +102,43 @@ export async function reviewSubmittedDeal(
     }
 
     if (outcome === "reject" && waiting) {
+      const message = review.messageToBusiness || FALLBACK_REJECTION;
       const amount = creditsToRefund(deal);
       const refund = withdrawalRefundsCredit(deal) && amount > 0;
       // Only one request may move the deal out of review: if the business
-      // withdraws it at the same moment, just one of the two gives the
+      // withdraws it at the same moment, the withdrawal stands (it isn't
+      // brought back as a draft) and just one of the two gives the
       // credits back.
-      const claimed = refund
-        ? (await setFieldsIf(
-            adminClient,
-            "Deals",
-            deal._id,
-            { status: "Cancelled", creditRefunded: true },
-            { status: { $eq: "Pending Approval" } },
-          )) !== null
-        : false;
+      const claimed = await setFieldsIf(
+        adminClient,
+        "Deals",
+        deal._id,
+        { status: "Draft", ...(refund ? { creditRefunded: true } : {}) },
+        { status: { $eq: "Pending Approval" } },
+      );
+      if (!claimed) {
+        const now = (await adminClient.items.get("Deals", deal._id)) ?? deal;
+        return { outcome, review, item: now, creditsReturned: 0 };
+      }
+      const draft = opts.submitted ?? draftFromSubmission({ ...deal, category: opts.category });
       const item = await adminClient.items.update("Deals", {
         ...deal,
-        aiReview: review,
-        status: "Cancelled",
-        statusNote: review.messageToBusiness || FALLBACK_REJECTION,
+        ...draftToRow(draft, deal.merchantEmail),
+        // The code it was submitted with, whether chosen or generated.
+        dealCode: deal.dealCode,
+        // Read by the portal (lib/dealForBusiness.ts) for the reason.
+        aiReview: { ...review, returnedToDraft: true },
+        draftRevision: draftRevisionOf(deal) + 1,
         ...(refund ? { creditRefunded: true } : {}),
       });
-      const refunded = claimed && merchant?._id ? await incrementCreditsAtomically(adminClient, merchant._id, amount) : false;
+      const refunded = refund && merchant?._id ? await incrementCreditsAtomically(adminClient, merchant._id, amount) : false;
       await logMerchantActivity(adminClient, {
         merchantEmail: deal.merchantEmail,
         type: refunded ? "credit" : "deal",
         ...(refunded ? { amount } : {}),
-        description: `"${deal.dealName}" wasn't approved${refunded ? ` (${amount} credit${amount === 1 ? "" : "s"} returned)` : ""}: ${
-          review.messageToBusiness || FALLBACK_REJECTION
-        }`,
+        description: `"${deal.dealName}" needs a change before it can go live${
+          refunded ? ` (${amount} credit${amount === 1 ? "" : "s"} returned)` : ""
+        }: ${message.trim().replace(/[.!?]+$/, "")}. It's back in your drafts to fix and submit again.`,
       });
       return { outcome, review, item, creditsReturned: refunded ? amount : 0 };
     }

@@ -678,16 +678,20 @@ export default function PortalPage() {
                           <p className="truncate font-display text-base font-bold text-slate-900">
                             {draft.dealName || "Untitled deal"}
                           </p>
-                          <p className="text-xs text-slate-500">
-                            Last saved {formatSavedAt(draft._updatedDate)}
-                          </p>
+                          {draft.changeNeeded ? (
+                            <p className="text-xs font-semibold text-amber-700">Needs a change before it can go live</p>
+                          ) : (
+                            <p className="text-xs text-slate-500">
+                              Last saved {formatSavedAt(draft._updatedDate)}
+                            </p>
+                          )}
                         </div>
                         <div className="ml-auto flex items-center gap-2">
                           <Link
                             href={`/portal/new-deal?draft=${draft._id}`}
                             className="rounded-full bg-ember-600 px-5 py-2.5 text-xs font-extrabold text-white shadow-card transition hover:bg-ember-700 active:scale-95"
                           >
-                            Keep going →
+                            {draft.changeNeeded ? "Fix and resubmit →" : "Keep going →"}
                           </Link>
                           <button
                             onClick={() => handleDeleteDraft(draft)}
@@ -696,6 +700,12 @@ export default function PortalPage() {
                             Delete
                           </button>
                         </div>
+                        {draft.changeNeeded && (
+                          <p className="w-full rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900 ring-1 ring-inset ring-amber-200">
+                            <span className="font-bold">What to change: </span>
+                            {draft.changeNeeded}
+                          </p>
+                        )}
                       </li>
                     ))}
                   </ul>

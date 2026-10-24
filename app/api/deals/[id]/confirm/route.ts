@@ -3,6 +3,7 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
 import { dealDisplayStatus } from "@/lib/dealStatus";
+import { dealForBusiness } from "@/lib/dealForBusiness";
 
 /**
  * "Still running as listed": the business confirms a live deal is still
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     if (!updated?.merchantConfirmedAt) {
       return NextResponse.json({ error: "Confirming deals isn't switched on yet. Please try again later." }, { status: 503 });
     }
-    return NextResponse.json({ item: updated });
+    return NextResponse.json({ item: dealForBusiness(updated) });
   } catch (err) {
     console.error("[deals/[id]/confirm] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

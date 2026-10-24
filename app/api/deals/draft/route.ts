@@ -8,6 +8,7 @@ import { isUploadedPhotoUrl } from "@/lib/photoUrl";
 import { SITE_URL } from "@/lib/siteConfig";
 import { sanitizeDraft, draftToRow, draftRevisionOf, isDraftConflict } from "@/lib/dealDraft";
 import { getOrClaimMerchant } from "@/lib/merchant";
+import { dealForBusiness } from "@/lib/dealForBusiness";
 
 export const dynamic = "force-dynamic";
 
@@ -111,7 +112,7 @@ export async function POST(req: NextRequest) {
         ),
         draftRevision: draftRevisionOf(existing) + 1,
       });
-      return NextResponse.json({ item: updated });
+      return NextResponse.json({ item: dealForBusiness(updated) });
     }
 
     const mine = await adminClient.items
@@ -132,7 +133,7 @@ export async function POST(req: NextRequest) {
       dealCode: codeForDraft(draft.dealCode, null, draftNeedsNewCode(draft.dealCode, null) ? await newDealCode(draft.category) : undefined),
       draftRevision: 1,
     });
-    return NextResponse.json({ item: created });
+    return NextResponse.json({ item: dealForBusiness(created) });
   } catch (err) {
     console.error("[deals/draft] failed", err);
     return NextResponse.json({ error: "Couldn't save your draft. Please try again." }, { status: 500 });

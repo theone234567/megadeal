@@ -275,6 +275,26 @@ export function draftToRow(draft: DealDraftData, merchantEmail: string) {
   };
 }
 
+/**
+ * The draft a submitted deal goes back to when the automatic check turns
+ * it down (lib/aiReviewApply.ts): what was submitted, in the form's
+ * shape, so the business reopens it exactly as they sent it, fixes it and
+ * submits it again. Prices and quantity come back as the text the form
+ * holds; the ticked conditions are read back out of the rendered terms.
+ */
+export function draftFromSubmission(input: Record<string, any>): DealDraftData {
+  const asText = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? String(v) : typeof v === "string" ? v : "");
+  const fromTerms = parseTerms(typeof input.terms === "string" ? input.terms : "");
+  return sanitizeDraft({
+    ...input,
+    priceNow: asText(input.priceNow),
+    priceWas: asText(input.priceWas),
+    quantityAvailable: asText(input.quantityAvailable),
+    selectedTerms: fromTerms.selectedIds,
+    customTerms: fromTerms.custom,
+  });
+}
+
 /** Reads a draft back off a Deals row, falling back to the row's own
  *  columns so a draft is still usable if draftData is ever missing. */
 export function parseDraft(row: any): DealDraftData {

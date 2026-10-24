@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { createDataClient } from "@/lib/dataClient";
 import { queryAllByEmail } from "@/lib/queryAll";
+import { dealForBusiness } from "@/lib/dealForBusiness";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
       member.email,
       "Deals (mine)"
     );
-    return NextResponse.json({ items });
+    return NextResponse.json({ items: items.map(dealForBusiness) });
   } catch (err) {
     console.error("[deals/mine] failed", err);
     return NextResponse.json({ error: "Couldn't load your deals." }, { status: 500 });

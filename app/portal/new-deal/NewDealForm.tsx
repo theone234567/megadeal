@@ -210,6 +210,12 @@ export default function NewDealForm({
 
   const [step, setStep] = useState<"form" | "preview">("form");
   const [submitting, setSubmitting] = useState(false);
+  /** The submit has been with the server a moment: by then it is the
+   *  automatic check (lib/aiReviewApply.ts) that's taking the time. */
+  const [checkingDeal, setCheckingDeal] = useState(false);
+  /** Why the automatic check sent this deal back to the drafts, shown
+   *  above the form until it's submitted again. */
+  const [changeNeeded, setChangeNeeded] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   /** What happened on submit: published straight away, turned down by the
    *  automatic check (with the reason), or waiting for a person. */
@@ -434,6 +440,7 @@ export default function NewDealForm({
         }
         const draft = parseDraft(item);
         revisionRef.current = draftRevisionOf(item);
+        setChangeNeeded(typeof item.changeNeeded === "string" ? item.changeNeeded : null);
         setBaselineTick((t) => t + 1);
         setDealName(draft.dealName);
         setCategory(draft.category);
@@ -775,6 +782,7 @@ export default function NewDealForm({
   async function handleSubmit() {
     setError(null);
     setSubmitting(true);
+    let checkingTimer: ReturnType<typeof setTimeout> | undefined;
     try {
       // An autosave still running finishes first, so this submits the
       // draft it saved (its id, code and photo) rather than making another.
@@ -789,6 +797,7 @@ export default function NewDealForm({
         setUploaded(media);
         uploadedRef.current = media;
       }
+      checkingTimer = setTimeout(() => setCheckingDeal(true), 1500);
       const res = await fetch("/api/deals/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -821,6 +830,16 @@ export default function NewDealForm({
       if (!res.ok) {
         throw new Error(data.error || "Something went wrong submitting your deal.");
       }
+      // Sent back to the drafts: the same deal, now a draft again, which
+      // this form carries on editing if the business fixes it straight away.
+      if (data.outcome === "rejected" && data.item?.status === "Draft" && data.item?._id) {
+        setDraftId(data.item._id);
+        draftIdRef.current = data.item._id;
+        revisionRef.current = draftRevisionOf(data.item);
+        if (isGeneratedDealCode(data.item.dealCode)) setSavedCode(data.item.dealCode);
+        setSavedSnapshot(snapshot);
+        setChangeNeeded(typeof data.item.changeNeeded === "string" ? data.item.changeNeeded : "");
+      }
       setSubmitResult({
         outcome: data.outcome === "live" || data.outcome === "rejected" ? data.outcome : "pending",
         message: typeof data.message === "string" ? data.message : null,
@@ -830,6 +849,8 @@ export default function NewDealForm({
     } catch (err: any) {
       setError(err?.message || "Something went wrong submitting your deal.");
     } finally {
+      clearTimeout(checkingTimer);
+      setCheckingDeal(false);
       setSubmitting(false);
     }
   }
@@ -913,9 +934,22 @@ export default function NewDealForm({
               {submitResult.creditsReturned > 0 && (
                 <>The {creditsLabel(submitResult.creditsReturned)} it used {submitResult.creditsReturned === 1 ? "has" : "have"} been returned. </>
               )}
-              {/* The button's own label on a turned-down deal (components/portal/DealManageCard.tsx). */}
-              Open it in your portal and use <strong>Run this deal again</strong> to fix it and submit it again.
+              {changeNeeded !== null &&
+                "It's back in your drafts with the same deal code, so you can fix it now or later from your portal."}
             </p>
+            {changeNeeded !== null && (
+            <button
+              type="button"
+              onClick={() => {
+                setSubmitted(false);
+                setStep("form");
+                window.scrollTo({ top: 0 });
+              }}
+              className="mt-6 inline-block rounded-full bg-ember-600 px-6 py-3 text-sm font-bold text-white shadow-card hover:bg-ember-700"
+            >
+              Fix it now
+            </button>
+            )}
           </>
         ) : (
           <>
@@ -930,7 +964,11 @@ export default function NewDealForm({
         )}
         <Link
           href="/portal"
-          className="mt-6 inline-block rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white shadow-card hover:bg-brand-700"
+          className={
+            submitResult.outcome === "rejected"
+              ? "mt-3 block text-sm font-bold text-brand-700 underline-offset-2 hover:underline"
+              : "mt-6 inline-block rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white shadow-card hover:bg-brand-700"
+          }
         >
           Back to portal
         </Link>
@@ -1195,7 +1233,7 @@ export default function NewDealForm({
               disabled={submitting}
               className="rounded-full bg-brand-600 px-8 py-3 text-center text-sm font-bold text-white shadow-card transition hover:bg-brand-700 active:scale-95 disabled:opacity-60 sm:ml-auto"
             >
-              {submitting ? "Submitting…" : "Submit deal for approval"}
+              {submitting ? (checkingDeal ? "Checking your deal…" : "Submitting…") : "Submit deal for approval"}
             </button>
           ) : (
             <div className="flex flex-col items-end gap-2 sm:ml-auto">
@@ -1247,6 +1285,12 @@ export default function NewDealForm({
       ) : (
       <>
       <h1 className="mt-3 text-2xl font-extrabold text-slate-900">Create a deal</h1>
+      {changeNeeded && (
+        <p role="status" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          <span className="font-bold">What to change before submitting again: </span>
+          {changeNeeded}
+        </p>
+      )}
       <p className="mt-1 text-sm text-slate-600">
         {/* Not enough for this type: the note by the Flash choice says so. */}
         {cost === null || credits < cost

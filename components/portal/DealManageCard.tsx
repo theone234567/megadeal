@@ -27,6 +27,9 @@ export interface DealRecord {
   photoUrl?: string | null;
   merchantEmail?: string;
   statusNote?: string | null;
+  /** A draft the automatic check sent back: what to change before
+   *  submitting it again (lib/dealForBusiness.ts). */
+  changeNeeded?: string | null;
   dealCode?: string | null;
   /** Who paused it: only the business's own pause can be lifted here. */
   pausedBy?: "business" | "admin" | null;
