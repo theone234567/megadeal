@@ -165,7 +165,7 @@ export default function TwoFactorPage() {
                     Name <code className="rounded bg-white px-1.5 py-0.5 font-mono">{setup.variable}</code>, value the key
                     above (<code className="rounded bg-white px-1.5 py-0.5 font-mono">{setup.secret}</code>). Deploy.
                   </p>
-                  <p>Admin sign-in will then ask for your password and a code. Until it&apos;s set, the live site doesn&apos;t allow admin sign-in at all.</p>
+                  <p>Admin sign-in will then ask for your password and a code.</p>
                   <p className="text-slate-600">
                     Lost your phone? Delete <code className="font-mono">{setup.variable}</code> in Cloudflare and deploy,
                     then come back to this page (it opens without signing in while no secret is set) and set it up again.

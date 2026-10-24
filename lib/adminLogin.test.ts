@@ -54,15 +54,15 @@ afterEach(() => {
 });
 
 describe("admin sign-in", () => {
-  it("in development without ADMIN_TOTP_SECRET: the password alone", async () => {
+  it("without ADMIN_TOTP_SECRET (and not required): the password alone", async () => {
     expect((await (await GET()).json()).mode).toBe("password");
     const res = await login({ password: "pw-123" });
     expect(res.status).toBe(200);
     expect(res.headers.get("set-cookie")).toMatch(/admin_session=/);
   });
 
-  it("on the live site without ADMIN_TOTP_SECRET: refused, even with the right password", async () => {
-    process.env.ADMIN_REQUIRE_TOTP = "true"; // as NODE_ENV=production does
+  it("with ADMIN_REQUIRE_TOTP but no ADMIN_TOTP_SECRET: refused, even with the right password", async () => {
+    process.env.ADMIN_REQUIRE_TOTP = "true";
     expect((await (await GET()).json()).mode).toBe("setup-needed");
     const res = await login({ password: "pw-123" });
     expect(res.status).toBe(503);

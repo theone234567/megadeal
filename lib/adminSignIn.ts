@@ -3,19 +3,21 @@
  *
  * - "password-and-code": ADMIN_TOTP_SECRET is set, so the password and a
  *   code from the authenticator app are both needed.
- * - "setup-needed": the live site without ADMIN_TOTP_SECRET. Admin sign-in
- *   is refused until two-factor sign-in is set up (app/admin/two-factor,
- *   which works signed out in this state only). It used to fall back to
- *   the password alone.
- * - "password": local development (next dev) without a secret.
- *   ADMIN_REQUIRE_TOTP=true makes development behave like the live site.
+ * - "setup-needed": ADMIN_REQUIRE_TOTP=true but no ADMIN_TOTP_SECRET yet.
+ *   Admin sign-in is refused until two-factor sign-in is set up
+ *   (app/admin/two-factor, which works signed out in this state only).
+ * - "password": no secret and not required: the password alone.
+ *
+ * Requiring it is the owner's switch (ADMIN_REQUIRE_TOTP=true in
+ * Cloudflare), not the default on the live site yet: the owner hasn't set
+ * up the authenticator (24 Oct), and failing closed then would lock them
+ * out of admin. Once ADMIN_TOTP_SECRET is set, the code is always needed.
  */
 export type AdminSignInMode = "password" | "password-and-code" | "setup-needed";
 
 export function adminSignInMode(): AdminSignInMode {
   if (process.env.ADMIN_TOTP_SECRET?.trim()) return "password-and-code";
-  const required = process.env.NODE_ENV === "production" || process.env.ADMIN_REQUIRE_TOTP === "true";
-  return required ? "setup-needed" : "password";
+  return process.env.ADMIN_REQUIRE_TOTP === "true" ? "setup-needed" : "password";
 }
 
 /** Failed admin sign-ins from every address together, per hour, before
