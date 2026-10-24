@@ -23,4 +23,11 @@ describe("prelaunchAllowanceBlock", () => {
     expect(prelaunchAllowanceBlock([{ status: "Cancelled", isFlash: false, expiresAt: later }], false, NOW)).toBeNull();
     expect(prelaunchAllowanceBlock([{ status: "Draft", isFlash: false }], false, NOW)).toBeNull();
   });
+
+  it("a paused deal counts until its time runs out, then frees the slot (T130)", () => {
+    expect(prelaunchAllowanceBlock([{ status: "Paused", isFlash: true, expiresAt: later }], true, NOW)).toMatch(/1 Flash Deal/);
+    expect(prelaunchAllowanceBlock([{ status: "Paused", isFlash: true, expiresAt: earlier }], true, NOW)).toBeNull();
+    // Paused before it ever went live (no end yet): still counts.
+    expect(prelaunchAllowanceBlock([{ status: "Paused", isFlash: true, expiresAt: null }], true, NOW)).toMatch(/1 Flash Deal/);
+  });
 });
