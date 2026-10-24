@@ -319,9 +319,19 @@ export default function PortalPage() {
   }
 
   if (member === undefined || (merchant === undefined && !merchantLoadError)) {
+    // What the server sends before the browser takes over (security pack
+    // T65): a heading and a status even before anything loads, and a
+    // plain message where JavaScript is off rather than a page stuck on
+    // "Loading…".
     return (
       <main className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <p className="text-slate-500">Loading…</p>
+        <h1 className="sr-only">Business portal</h1>
+        <p role="status" className="text-slate-500">
+          Loading…
+        </p>
+        <noscript>
+          <p className="mt-2 text-sm text-slate-600">The business portal needs JavaScript. Please turn it on and reload.</p>
+        </noscript>
       </main>
     );
   }

@@ -57,7 +57,7 @@ export default function PortalShell({ children }: { children: React.ReactNode })
           this needs account/sign-out controls Header doesn't have at all. */}
       <header className={`sticky top-0 z-30 border-b ${P.bar}`}>
         <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/portal" aria-label="MegaDeal business portal" className="flex shrink-0 items-center gap-2">
+          <Link href="/portal" aria-label="MegaDeal for business: portal home" className="flex shrink-0 items-center gap-2">
             <BrandLogo placement="portal" tone={P.logo} />
             <span className={`hidden text-sm sm:inline ${P.muted}`}>for business</span>
           </Link>
