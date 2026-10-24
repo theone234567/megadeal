@@ -737,6 +737,40 @@ describe("the AI review and housekeeping on the new database", () => {
     expect(await db.query("select id::text, status, deal_code from public.deals")).toEqual([{ id, status: "Live", deal_code: "SCONE5" }]);
   });
 
+  it("the automatic check sees every published field; an unrecognised link holds the deal for a person (T207)", async () => {
+    await signUpApprovedWithCredits(500);
+    aiReview = review("approve"); // the model is happy every time: the rules below still hold
+    const create = await import("@/app/api/deals/create/route");
+    const submit = async (extra: Record<string, unknown>) => {
+      await db.query("delete from public.deals");
+      const res = await call(create.POST, request("POST", { ...DEAL, ...extra }));
+      expect(res.status, JSON.stringify(res.body)).toBe(200);
+      const [{ ai_review }] = await db.query<{ ai_review: any }>("select ai_review from public.deals");
+      return { outcome: res.body.outcome, heldFor: ai_review?.heldFor ?? [], autoPosted: ai_review?.autoPosted === true };
+    };
+    // Clean, with the business's own site and a known booking platform: live.
+    expect(await submit({ contactOverride: { bookingUrl: "https://www.bookme.co.nz/harbour-bistro", website: "https://harbourbistro.co.nz/menu" } })).toEqual({
+      outcome: "live",
+      heldFor: [],
+      autoPosted: true,
+    });
+    // A lookalike of the business's own site, only in the deal's booking link.
+    expect(await submit({ contactOverride: { bookingUrl: "https://harbourbistr0.co.nz/login" } })).toMatchObject({
+      outcome: "pending",
+      heldFor: ["booking link domain not recognised (harbourbistr0.co.nz)"],
+    });
+    // A shortener as the page the code is used on.
+    expect(await submit({ codeOnWebsite: true, codeTested: true, dealCode: "BISTRO10", codeWebsiteUrl: "https://bit.ly/abc" })).toMatchObject({
+      outcome: "pending",
+      heldFor: ["redeem link is a link shortener (bit.ly)"],
+    });
+    // A link only in what customers are told to do.
+    expect(await submit({ customerInstructions: "Book at www.cheap-deals.example.com first" })).toMatchObject({
+      outcome: "pending",
+      heldFor: ['"What customers do" contains a web address'],
+    });
+  });
+
   it("'every deal waits for admin approval' holds the very next submission, on every path (T211)", async () => {
     await signUpApprovedWithCredits(100);
     aiReview = review("approve");

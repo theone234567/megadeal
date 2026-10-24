@@ -10,6 +10,7 @@ import { sendDealBackToDraft } from "./dealSendBack";
 import { emailChangesNeeded } from "./dealSendBackEmail";
 import { FALLBACK_CHANGE_NEEDED } from "./dealForBusiness";
 import { getPlatformSettings } from "./platformSettings";
+import { publishedFieldsFor } from "./dealPublishedFields";
 
 /** The approval switch ("Every deal waits for admin approval", T211), read
  *  fresh. If it can't be read, as if it were on: nothing is published
@@ -64,7 +65,11 @@ export async function reviewSubmittedDeal(
 ): Promise<{ outcome: AiOutcome; review: AiReview | null; item: Record<string, any>; creditsReturned?: number }> {
   try {
     const rudenessCheck = await rudenessCheckFor(adminClient, merchant);
-    const review = await reviewWithAi({
+    // Every published field, and the plain rules that hold whatever the
+    // check says (T207).
+    const published = await publishedFieldsFor(deal, merchant);
+    const answer = await reviewWithAi({
+      ...published.extras,
       allowRudeLanguage: !rudenessCheck,
       kind: "deal",
       dealName: deal.dealName,
@@ -78,8 +83,9 @@ export async function reviewSubmittedDeal(
       photoUrl: deal.photoUrl || null,
       dealCode: deal.dealCode || null,
     });
-    if (!review) return { outcome: "hold", review: null, item: deal };
-    if (opts.gate) review.gate = opts.gate;
+    if (!answer) return { outcome: "hold", review: null, item: deal };
+    const heldFor = [...published.heldFor, ...(answer.heldFor ?? [])];
+    const review: AiReview = { ...answer, ...(opts.gate ? { gate: opts.gate } : {}), ...(heldFor.length ? { heldFor } : {}) };
 
     let outcome = limitAiOutcome(
       opts.apply ? decideAiOutcome(review, merchant?.status === "Approved", rudenessCheck) : "hold",
@@ -102,7 +108,7 @@ export async function reviewSubmittedDeal(
       const item = await adminClient.items.update("Deals", {
         ...deal,
         ...publication.fields,
-        aiReview: review,
+        aiReview: { ...review, autoPosted: true },
         status: "Live",
         everLive: true,
       });
@@ -149,18 +155,25 @@ export async function reviewPendingPhoto(
   try {
     if (!deal.pendingPhotoUrl) return { outcome: "hold", item: deal };
     const rudenessCheck = await rudenessCheckFor(adminClient, merchant);
-    const review = await reviewWithAi({
+    // The same review as the deal itself had, with the new photo (T207):
+    // judged against the whole deal, not on its own.
+    const answer = await reviewWithAi({
       allowRudeLanguage: !rudenessCheck,
       kind: "photo",
       dealName: deal.dealName,
       description: deal.description,
+      terms: deal.terms,
+      priceNow: deal.priceNow != null ? Number(deal.priceNow) : undefined,
+      priceWas: deal.priceWas != null ? Number(deal.priceWas) : null,
+      bookingRequirement: deal.bookingRequirement,
+      businessName: merchant?.businessName ?? null,
       photoUrl: deal.pendingPhotoUrl,
     });
-    if (!review) return { outcome: "hold", item: deal };
+    if (!answer) return { outcome: "hold", item: deal };
     // With "every deal waits for admin approval" on, a new photo waits for
     // a person too; the current photo stays up meanwhile (T211).
-    review.gate = await approvalGate();
-    const outcome = limitAiOutcome(decideAiOutcome(review, merchant?.status === "Approved", rudenessCheck), review.gate.requireApproval ? "noPublish" : true);
+    const review: AiReview = { ...answer, gate: await approvalGate() };
+    const outcome = limitAiOutcome(decideAiOutcome(review, merchant?.status === "Approved", rudenessCheck), review.gate?.requireApproval ? "noPublish" : true);
 
     if (outcome === "publish") {
       const item = await adminClient.items.update("Deals", {

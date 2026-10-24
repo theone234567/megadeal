@@ -160,6 +160,12 @@ export default function DealRow({
               <p className="text-xs font-bold text-amber-700">New photo to approve</p>
             )}
             {readRevision(deal) && <p className="text-xs font-bold text-amber-700">Change requested</p>}
+            {deal.aiReview?.autoPosted && ["Live", "Paused"].includes(deal.status || "Live") && (
+              <p className="text-xs font-bold text-sky-700">Auto-posted by AI</p>
+            )}
+            {Array.isArray(deal.aiReview?.heldFor) && deal.aiReview.heldFor.length > 0 && deal.status === "Pending Approval" && (
+              <p className="max-w-[16rem] text-xs font-semibold text-amber-700">Held: {deal.aiReview.heldFor.join("; ")}</p>
+            )}
             {rejectedReason(deal) !== null && <p className="text-xs font-bold text-red-700">Rejected (not approved)</p>}
             {deal.status === "Pending Approval" && sendBackRounds(deal) > 0 && (
               <p className="text-xs font-bold text-amber-700">Resubmitted ({sendBackRounds(deal)})</p>
