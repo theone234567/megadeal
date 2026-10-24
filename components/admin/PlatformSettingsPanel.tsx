@@ -136,7 +136,7 @@ export default function PlatformSettingsPanel() {
       }
       apply(data);
       setSavedNote(
-        `Saved. ${changes.length} change${changes.length === 1 ? "" : "s"} recorded in the history. It can take up to a minute to reach every part of the site.`,
+        `Saved. ${changes.length} change${changes.length === 1 ? "" : "s"} recorded in the history. Takes effect immediately for new submissions.`,
       );
     } catch {
       setSaveError({ message: "Couldn't save the settings. Check your connection and try again.", stale: false });

@@ -21,6 +21,8 @@ let admin = false;
 vi.mock("@/lib/memberAuth", () => ({ getVerifiedMember: async () => member }));
 vi.mock("@/lib/adminSession", () => ({ isAdminRequest: async () => admin }));
 vi.mock("@/lib/dataClient", () => ({ createDataClient: () => createPgAdminClient((fn) => fn(db)) }));
+// Platform settings and the rest read the same test database (T211).
+vi.mock("@/lib/db/connection", async (orig) => ({ ...(await orig<typeof import("./connection")>()), withDb: (fn: (d: Sql) => unknown) => fn(db) }));
 vi.mock("@/lib/sendEmail", () => ({ sendTransactionalEmail: async () => ({ ok: true }) }));
 vi.mock("@/lib/metaCapi", () => ({ sendMetaCapiEvent: async () => {} }));
 vi.mock("@/lib/adminAudit", () => ({ logAdminAction: async () => {}, auditTarget: (n: unknown) => String(n) }));
@@ -43,7 +45,7 @@ afterAll(async () => {
   await pglite?.close();
 });
 beforeEach(async () => {
-  await pglite.exec("delete from public.merchant_activity; delete from public.deals; delete from public.merchants;");
+  await pglite.exec("delete from public.merchant_activity; delete from public.deals; delete from public.merchants; delete from public.rate_limits; delete from public.site_settings;");
   admin = false;
   vi.spyOn(console, "error").mockImplementation(() => {});
 });

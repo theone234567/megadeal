@@ -67,8 +67,11 @@ export async function POST(req: NextRequest) {
   // types are open, how long they can run, what they cost. If they can't
   // be read, nothing is submitted rather than guessing at them.
   let settings;
+  let settingsVersion: number | null = null;
   try {
-    settings = (await getPlatformSettings()).settings;
+    const stored = await getPlatformSettings();
+    settings = stored.settings;
+    settingsVersion = stored.version;
   } catch (err) {
     console.error("[deals/create] platform settings unavailable", err);
     return NextResponse.json(
@@ -485,8 +488,10 @@ export async function POST(req: NextRequest) {
       // What was sent, tidied, so a deal sent back reopens as it was typed
       // (a blank "was" price stays blank rather than becoming the price).
       submitted: draftFromSubmission({ ...body, ...checked.fields, priceWas: body.priceWas, dealCode: customDealCode || "" }),
+      gate: { requireApproval: settings.requireApproval, settingsVersion },
     }
   );
+  console.log("[deals/create] decision", { outcome: review.outcome, requireApproval: settings.requireApproval, settingsVersion });
 
   return NextResponse.json({
     item: dealForBusiness(review.item),

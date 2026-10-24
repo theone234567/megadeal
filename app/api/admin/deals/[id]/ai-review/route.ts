@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
-import { reviewSubmittedDeal } from "@/lib/aiReviewApply";
+import { approvalGate, reviewSubmittedDeal } from "@/lib/aiReviewApply";
 
 /**
  * Runs the automatic review on one pending deal. A clean deal from an
  * approved business goes live, the same as a new submission; anything the
  * AI isn't happy with stays pending with its notes. It never rejects a
  * deal — the admin decides those. Used for deals submitted before the
- * review existed, or to re-check one.
+ * review existed, or to re-check one. With "every deal waits for admin
+ * approval" on, it only records the verdict: the admin approves (T211).
  */
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -32,8 +33,10 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     const merchants = deal.merchantEmail
       ? await adminClient.items.query("Merchants").eq("email", deal.merchantEmail).limit(1).find()
       : null;
+    const gate = await approvalGate();
     const { review, item, outcome } = await reviewSubmittedDeal(adminClient, deal, merchants?.items?.[0] ?? null, {
-      apply: "publishOnly",
+      apply: gate.requireApproval ? false : "publishOnly",
+      gate,
     });
     if (!review) {
       return NextResponse.json({ error: "The AI check didn't respond. Try again in a moment." }, { status: 502 });

@@ -9,6 +9,20 @@ import type { DealDraftData } from "./dealDraft";
 import { sendDealBackToDraft } from "./dealSendBack";
 import { emailChangesNeeded } from "./dealSendBackEmail";
 import { FALLBACK_CHANGE_NEEDED } from "./dealForBusiness";
+import { getPlatformSettings } from "./platformSettings";
+
+/** The approval switch ("Every deal waits for admin approval", T211), read
+ *  fresh. If it can't be read, as if it were on: nothing is published
+ *  without a person rather than guessing. */
+export async function approvalGate(): Promise<NonNullable<AiReview["gate"]>> {
+  try {
+    const stored = await getPlatformSettings();
+    return { requireApproval: stored.settings.requireApproval, settingsVersion: stored.version };
+  } catch (err) {
+    console.error("[aiReviewApply] platform settings unavailable; holding for a person", err);
+    return { requireApproval: true, settingsVersion: null };
+  }
+}
 
 /** Whether swearing/crude humour is held back for this business. */
 async function rudenessCheckFor(adminClient: any, merchant: Record<string, any> | null): Promise<boolean> {
@@ -44,6 +58,8 @@ export async function reviewSubmittedDeal(
      *  becomes the draft if the check sends the deal back. Read off the
      *  deal itself when not given. */
     submitted?: DealDraftData;
+    /** The approval switch as the caller read it, kept with the review. */
+    gate?: AiReview["gate"];
   }
 ): Promise<{ outcome: AiOutcome; review: AiReview | null; item: Record<string, any>; creditsReturned?: number }> {
   try {
@@ -63,6 +79,7 @@ export async function reviewSubmittedDeal(
       dealCode: deal.dealCode || null,
     });
     if (!review) return { outcome: "hold", review: null, item: deal };
+    if (opts.gate) review.gate = opts.gate;
 
     let outcome = limitAiOutcome(
       opts.apply ? decideAiOutcome(review, merchant?.status === "Approved", rudenessCheck) : "hold",
@@ -140,7 +157,10 @@ export async function reviewPendingPhoto(
       photoUrl: deal.pendingPhotoUrl,
     });
     if (!review) return { outcome: "hold", item: deal };
-    const outcome = decideAiOutcome(review, merchant?.status === "Approved", rudenessCheck);
+    // With "every deal waits for admin approval" on, a new photo waits for
+    // a person too; the current photo stays up meanwhile (T211).
+    review.gate = await approvalGate();
+    const outcome = limitAiOutcome(decideAiOutcome(review, merchant?.status === "Approved", rudenessCheck), review.gate.requireApproval ? "noPublish" : true);
 
     if (outcome === "publish") {
       const item = await adminClient.items.update("Deals", {

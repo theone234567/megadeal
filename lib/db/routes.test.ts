@@ -29,6 +29,12 @@ const mail: { to: string; subject: string; html: string }[] = [];
 vi.mock("@/lib/memberAuth", () => ({ getVerifiedMember: async () => signedIn }));
 vi.mock("@/lib/adminSession", () => ({ isAdminRequest: async () => admin }));
 vi.mock("@/lib/dataClient", () => ({ createDataClient: () => createPgAdminClient((fn) => fn(db)) }));
+// Platform settings and the rest read the same test database (T211).
+let dbDown = false;
+vi.mock("@/lib/db/connection", async (orig) => ({
+  ...(await orig<typeof import("./connection")>()),
+  withDb: (fn: (d: Sql) => unknown) => (dbDown ? Promise.reject(new Error("database unreachable")) : fn(db)),
+}));
 vi.mock("@/lib/sendEmail", () => ({ sendTransactionalEmail: async (m: { to: string; subject: string; html: string }) => (mail.push(m), { ok: true }) }));
 vi.mock("@/lib/metaCapi", () => ({ sendMetaCapiEvent: async () => {} }));
 vi.mock("@/lib/adminAudit", () => ({ logAdminAction: async () => {}, auditTarget: (n: unknown) => String(n) }));
@@ -46,9 +52,12 @@ afterAll(async () => {
   await pglite?.close();
 });
 beforeEach(async () => {
-  await pglite.exec("delete from public.merchant_activity; delete from public.deals; delete from public.merchants; delete from public.email_signups;");
+  await pglite.exec(
+    "delete from public.merchant_activity; delete from public.deals; delete from public.merchants; delete from public.email_signups; delete from public.rate_limits; delete from public.site_settings;",
+  );
   signedIn = member;
   admin = false;
+  dbDown = false;
   mail.length = 0;
   aiReview = null;
   vi.spyOn(console, "error").mockImplementation(() => {});
@@ -726,6 +735,60 @@ describe("the AI review and housekeeping on the new database", () => {
     admin = true;
     expect((await call(patch.PATCH, request("PATCH", { status: "Live" }), params(id))).status).toBe(200);
     expect(await db.query("select id::text, status, deal_code from public.deals")).toEqual([{ id, status: "Live", deal_code: "SCONE5" }]);
+  });
+
+  it("'every deal waits for admin approval' holds the very next submission, on every path (T211)", async () => {
+    await signUpApprovedWithCredits(100);
+    aiReview = review("approve");
+    admin = true;
+    const settingsRoute = await import("@/app/api/admin/platform-settings/route");
+    const saved = await call(settingsRoute.PUT, request("PUT", { settings: { requireApproval: true }, version: 0 }));
+    expect(saved.status).toBe(200);
+    // Saving again from the old version is refused: someone saved in between.
+    expect((await call(settingsRoute.PUT, request("PUT", { settings: { requireApproval: false }, version: 0 }))).status).toBe(409);
+
+    // Submitted straight after, no waiting: both types wait for a person.
+    admin = false;
+    const create = await import("@/app/api/deals/create/route");
+    const everyday = await call(create.POST, request("POST", DEAL));
+    expect(everyday.body.outcome).toBe("pending");
+    const id = everyday.body.item._id;
+    const [{ ai_review: kept }] = await db.query<{ ai_review: any }>("select ai_review from public.deals where id = $1", [id]);
+    expect(kept.gate).toEqual({ requireApproval: true, settingsVersion: 1 });
+
+    // The admin's "Run AI check" records the verdict but doesn't publish.
+    admin = true;
+    vi.stubEnv("ANTHROPIC_API_KEY", "test");
+    const aiCheck = await import("@/app/api/admin/deals/[id]/ai-review/route");
+    expect((await call(aiCheck.POST, request("POST"), params(id))).status).toBe(200);
+    expect(await db.query("select status from public.deals where id = $1", [id])).toEqual([{ status: "Pending Approval" }]);
+
+    // A replacement photo on a live deal waits too; the current one stays.
+    await db.query("update public.deals set status = 'Live', ever_live = true, pending_photo_url = 'https://megadeal.co.nz/photos/new.webp' where id = $1", [id]);
+    const client = createPgAdminClient((fn) => fn(db));
+    const [merchant] = (await client.items.query("Merchants").find()).items;
+    const { reviewPendingPhoto } = await import("@/lib/aiReviewApply");
+    const photo = await reviewPendingPhoto(client, (await client.items.get("Deals", id))!, merchant);
+    expect(photo.outcome).toBe("hold");
+    const [row] = await db.query<{ photo_url: string; pending_photo_url: string }>("select photo_url, pending_photo_url from public.deals where id = $1", [id]);
+    expect(row.pending_photo_url).toBe("https://megadeal.co.nz/photos/new.webp");
+    expect(row.photo_url).not.toBe("https://megadeal.co.nz/photos/new.webp");
+    vi.unstubAllEnvs();
+  });
+
+  it("if the settings can't be read, nothing is submitted or published (T211)", async () => {
+    await signUpApprovedWithCredits(100);
+    aiReview = review("approve");
+    const create = await import("@/app/api/deals/create/route");
+    dbDown = true;
+    const res = await call(create.POST, request("POST", DEAL));
+    expect(res.status).toBe(503);
+    dbDown = false;
+    expect(await db.query("select count(*)::int as n from public.deals where status <> 'Draft'")).toEqual([{ n: 0 }]);
+    // A replacement photo, likewise, waits for a person.
+    const { approvalGate } = await import("@/lib/aiReviewApply");
+    dbDown = true;
+    expect(await approvalGate()).toEqual({ requireApproval: true, settingsVersion: null });
   });
 
   it("an admin rejects a deal with a reason: final, credits back, one email, the reason on the portal card (T242)", async () => {

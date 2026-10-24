@@ -51,6 +51,9 @@ export interface AiReview {
   messageToBusiness: string;
   model: string;
   at: string;
+  /** What the approval switch was when this review was acted on (T211):
+   *  so "why did this go live?" can be answered later. */
+  gate?: { requireApproval: boolean; settingsVersion: number | null };
 }
 
 export interface AiReviewInput {

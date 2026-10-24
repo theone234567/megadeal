@@ -1,5 +1,6 @@
 import "server-only";
 import { getRateLimitKv, type MinimalKVNamespace } from "./rateLimit";
+import { withDb } from "./db/connection";
 import {
   DEFAULT_PLATFORM_SETTINGS,
   diffPlatformSettings,
@@ -9,22 +10,22 @@ import {
 } from "./platformSettingsRules";
 
 /**
- * Where the platform settings live: the Workers KV namespace the app
- * already has (RATE_LIMIT_KV), under their own keys. One record holds the
- * current settings and a version number; a second holds the change
- * history. Nothing in Wix changes.
+ * Where the platform settings live: the database (public.site_settings,
+ * two rows: the current settings with a version number, and the change
+ * history), read fresh on every request, so a switch like "Every deal
+ * waits for admin approval" takes effect for the very next submission,
+ * everywhere (SEO pack T211). They used to be in Workers KV, which can
+ * show an old value for a minute or more in another Cloudflare location.
  *
- * KV is eventually consistent: a save is visible at once where it was
- * made and everywhere within about a minute. Fine for admin switches.
+ * Until the first save to the database, the record KV holds is read
+ * (and is what that save starts from), so nothing changes on deploy.
  * Writes check the version first, so two admins saving at once can't
  * silently overwrite each other (the one that's out of date is told to
- * reload); with one admin that race is practically impossible anyway.
+ * reload).
  *
- * Without a KV binding the defaults are used and saving is refused
- * (`next dev` gets a local emulated namespace from Wrangler, kept in
- * .wrangler/state, never the live one). With one, a read that fails
- * throws: callers that gate a submission turn that into "try again
- * shortly" rather than guessing.
+ * A read that fails throws: callers that gate a submission turn that into
+ * "try again shortly" rather than guessing. The defaults are used only
+ * when nothing has ever been saved.
  */
 
 const SETTINGS_KEY = "platform-settings:v1";
@@ -74,16 +75,31 @@ function fromRaw(raw: string | null): StoredPlatformSettings {
   };
 }
 
-export async function getPlatformSettings(): Promise<StoredPlatformSettings> {
+/** The value a key has in the database, or undefined when there's no row. */
+async function dbValue(key: string): Promise<string | null | undefined> {
+  const [row] = await withDb((db) => db.query<{ value: string | null }>("select value from public.site_settings where key = $1", [key]));
+  return row ? row.value : undefined;
+}
+
+/** The record from before the move to the database, if any. */
+async function legacyValue(key: string): Promise<string | null> {
   const store = await kv();
-  if (!store) return fromRaw(null);
-  return fromRaw(await store.get(SETTINGS_KEY));
+  return store ? store.get(key) : null;
+}
+
+/** The database's copy, else KV's from before the move. Throws if the
+ *  database can't be read. */
+async function currentValue(key: string): Promise<string | null> {
+  const value = await dbValue(key);
+  return value === undefined ? legacyValue(key) : value;
+}
+
+export async function getPlatformSettings(): Promise<StoredPlatformSettings> {
+  return fromRaw(await currentValue(SETTINGS_KEY));
 }
 
 export async function getSettingsHistory(): Promise<SettingsHistoryEntry[]> {
-  const store = await kv();
-  if (!store) return [];
-  const raw = await store.get(HISTORY_KEY);
+  const raw = await currentValue(HISTORY_KEY).catch(() => null);
   if (!raw) return [];
   try {
     const list = JSON.parse(raw);
@@ -91,6 +107,19 @@ export async function getSettingsHistory(): Promise<SettingsHistoryEntry[]> {
   } catch {
     return [];
   }
+}
+
+/** site_settings values are at most 10,000 characters: the history keeps
+ *  as many recent entries as fit. */
+const MAX_VALUE = 10_000;
+function historyValue(history: SettingsHistoryEntry[]): string {
+  let list = history.slice(0, HISTORY_LIMIT);
+  let raw = JSON.stringify(list);
+  while (raw.length > MAX_VALUE && list.length > 1) {
+    list = list.slice(0, -1);
+    raw = JSON.stringify(list);
+  }
+  return raw;
 }
 
 export type SaveResult =
@@ -105,10 +134,13 @@ export async function savePlatformSettings(
   expectedVersion: unknown,
   by: string,
 ): Promise<SaveResult> {
-  const store = await kv();
-  if (!store) return { ok: false, status: 503, error: "Settings storage isn't available here." };
-
-  const current = fromRaw(await store.get(SETTINGS_KEY));
+  let current: StoredPlatformSettings;
+  try {
+    current = fromRaw(await currentValue(SETTINGS_KEY));
+  } catch (err) {
+    console.error("[platformSettings] couldn't read the settings to save", err);
+    return { ok: false, status: 503, error: "The settings couldn't be loaded just now. Please try again." };
+  }
   if (expectedVersion !== current.version) {
     return {
       ok: false,
@@ -124,11 +156,32 @@ export async function savePlatformSettings(
 
   const at = new Date().toISOString();
   const next = { version: current.version + 1, settings, updatedAt: at, creditScale: CREDIT_SCALE };
-  await store.put(SETTINGS_KEY, JSON.stringify(next));
-
   const history = await getSettingsHistory();
   history.unshift({ version: next.version, at, by, changes });
-  await store.put(HISTORY_KEY, JSON.stringify(history.slice(0, HISTORY_LIMIT)));
-
+  // One statement: written only if the stored version is still the one
+  // read (or there's no row yet), so a save in between isn't overwritten.
+  const written = await withDb((db) =>
+    db.query<{ key: string }>(
+      `with saved as (
+         insert into public.site_settings (key, value) values ($1, $2)
+         on conflict (key) do update set value = excluded.value
+           where (public.site_settings.value::jsonb ->> 'version')::int = $4
+         returning key
+       ), logged as (
+         insert into public.site_settings (key, value)
+         select $3, $5 where exists (select 1 from saved)
+         on conflict (key) do update set value = excluded.value
+       )
+       select key from saved`,
+      [SETTINGS_KEY, JSON.stringify(next), HISTORY_KEY, current.version, historyValue(history)],
+    ),
+  );
+  if (written.length === 0) {
+    return {
+      ok: false,
+      status: 409,
+      error: "These settings were changed since you opened them. Reload to see the latest, then make your change again.",
+    };
+  }
   return { ok: true, stored: { ...next, isDefault: false }, changes };
 }
