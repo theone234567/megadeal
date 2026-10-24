@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authPreflight, PASSWORD_RULE, passwordOk } from "@/lib/authRoutes";
 import { signUp, signUpHitExistingAccount } from "@/lib/supabaseAuth";
+import { clearWrongCodes } from "@/lib/signupCodeAttempts";
 import { afterResponse } from "@/lib/afterResponse";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
@@ -44,6 +45,8 @@ export async function POST(req: NextRequest) {
       if (!ok) console.error("[auth/register] 'already have an account' email failed");
     });
   }
+  // A new code went out: its wrong tries start again (lib/signupCodeAttempts.ts).
+  if (res.ok && !signUpHitExistingAccount(res.data)) await clearWrongCodes(pre.email);
   return NextResponse.json({ status: "verify" });
 }
 

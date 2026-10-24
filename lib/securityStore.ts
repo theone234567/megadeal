@@ -50,6 +50,32 @@ export async function countInDatabase(key: string, windowSeconds: number): Promi
   }
 }
 
+/** A count without adding to it: 0 when there's none or its window has
+ *  ended. "unavailable" as for countInDatabase. */
+export async function countSoFar(key: string): Promise<number | "unavailable"> {
+  try {
+    return await withDb(async (db) => {
+      const [row] = await db.query<{ count: number }>(
+        `select count from public.rate_limits where key = $1 and window_end > now()`,
+        [storedKey(key)],
+      );
+      return Number(row?.count ?? 0);
+    });
+  } catch (err) {
+    if ((err as { code?: string })?.code !== "42P01") console.error("[rateLimit] database read failed", key.split(":")[0], err);
+    return "unavailable";
+  }
+}
+
+/** Forgets a count (e.g. once the thing it guarded is replaced). */
+export async function clearCount(key: string): Promise<void> {
+  try {
+    await withDb((db) => db.query(`delete from public.rate_limits where key = $1`, [storedKey(key)]));
+  } catch {
+    // A count left behind runs out with its window.
+  }
+}
+
 /**
  * The database, when there is one with password_reset_tokens (security
  * audit of 10 Oct 2026, finding 2): reading and deleting a link there is

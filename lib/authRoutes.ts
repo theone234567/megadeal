@@ -10,7 +10,14 @@ import { readSmallJson } from "./readJsonBody";
  *  response to send instead, or the parsed body to carry on with. */
 export async function authPreflight(
   req: NextRequest,
-  opts: { limitKey: string; perIp: number; captcha: boolean }
+  opts: {
+    limitKey: string;
+    perIp: number;
+    captcha: boolean;
+    /** Count the per-address limit per address and IP together, so
+     *  someone else can't use up the owner's tries (security pack T157). */
+    perEmailAndIp?: boolean;
+  }
 ): Promise<{ stop: NextResponse } | { body: Record<string, unknown>; ip: string; email: string }> {
   const stop = (error: string, status: number) => ({ stop: NextResponse.json({ error }, { status }) });
   if (!fromOwnSite(req, SITE_URL)) return stop("Please use the form on megadeal.co.nz.", 403);
@@ -28,7 +35,8 @@ export async function authPreflight(
     return stop("The security check didn't pass. Please try again.", 400);
   }
   // Per address too, so one account can't be hammered from many places.
-  if ((await checkRateLimit(`${opts.limitKey}-email:${email}`, 10, 15 * 60, { failClosed: true })).limited) {
+  const emailKey = opts.perEmailAndIp ? `${opts.limitKey}-email:${email}|${ip}` : `${opts.limitKey}-email:${email}`;
+  if ((await checkRateLimit(emailKey, 10, 15 * 60, { failClosed: true })).limited) {
     return stop("Too many attempts for this email. Please wait a few minutes and try again.", 429);
   }
   return { body, ip, email };
