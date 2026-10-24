@@ -266,7 +266,7 @@ export async function fetchDealForAdminPreview(
  * What a deal or business address should answer before its page starts:
  * a permanent redirect to where it lives now (an old address), "missing"
  * for a real 404, or neither (show the page). Asked by the pages' layouts,
- * which run before the page starts streaming behind loading.tsx: from
+ * which run before the page starts streaming: from
  * inside the stream a redirect can only be a refresh and a "not found" is
  * sent with status 200, neither of which search engines treat as meant.
  *

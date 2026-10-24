@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { LOGO_STYLE } from "@/lib/brand";
-import { LOGO_VIEWBOX, MARK, WORDMARK, WORDMARK_TRANSFORM } from "./brand/logoPaths";
+import { LOGO_VIEWBOX } from "./brand/logoPaths";
 
 /** Where the logo sits. Each place keeps its own size, as before. */
 export type LogoPlacement = "site" | "landing" | "portal";
@@ -27,22 +27,21 @@ export default function BrandLogo({
 }) {
   if (LOGO_STYLE === "classic") return <ClassicLogo placement={placement} className={className} />;
 
+  // The logo files (public/brand/minimal), not the shapes inline: inline,
+  // the 10 KB of outlines came before every page's content in its HTML,
+  // pushing the deal itself back for search engines and AI answer bots
+  // that read the first part of a page (SEO pack T230). The browser keeps
+  // the file, so it's fetched once.
   return (
-    <svg
-      viewBox={`0 0 ${LOGO_VIEWBOX.width} ${LOGO_VIEWBOX.height}`}
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={tone === "onDark" ? "/brand/minimal/megadeal-logo-minimal-white.svg" : "/brand/minimal/megadeal-logo-minimal-purple.svg"}
+      alt=""
       width={LOGO_VIEWBOX.width}
       height={LOGO_VIEWBOX.height}
-      aria-hidden
-      focusable="false"
-      className={`block w-auto shrink-0 select-none ${MINIMAL_HEIGHT[placement]} ${
-        tone === "onDark" ? "text-white" : "text-brand-600"
-      } ${className}`}
-    >
-      <g fill="currentColor">
-        <path fillRule="evenodd" d={MARK} />
-        <path transform={WORDMARK_TRANSFORM} d={WORDMARK} />
-      </g>
-    </svg>
+      decoding="async"
+      className={`block w-auto shrink-0 select-none ${MINIMAL_HEIGHT[placement]} ${className}`}
+    />
   );
 }
 

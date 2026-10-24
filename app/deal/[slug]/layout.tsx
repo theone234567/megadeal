@@ -6,11 +6,13 @@ import { endedDealRedirect } from "@/lib/endedDealRedirect";
  * Sends an old deal address to its current one with a permanent (308)
  * redirect, so links and search standing carry over
  * (lib/db/publicReads.ts resolveDealRedirect), and answers an unknown one
- * with a real 404. Done here, not in the page: the page streams behind
- * loading.tsx, and from inside a stream a redirect can only be a refresh
- * (which search engines don't treat as a move) and a "not found" goes out
- * with status 200. The same goes for a deal that ended over 30 days ago,
- * which moves on to its business's page (lib/endedDealRedirect.ts).
+ * with a real 404. Done here, not in the page: the page streams its parts (the deal's
+ * "more deals", photos), and from inside a stream a redirect can only be a
+ * refresh (which search engines don't treat as a move) and a "not found"
+ * goes out with status 200. (The route's loading skeleton is gone, T230,
+ * so the deal itself is in the first HTML.) The same goes for a deal that
+ * ended over 30 days ago, which moves on to its business's page
+ * (lib/endedDealRedirect.ts).
  */
 export default async function Layout(props: { children: React.ReactNode; params: Promise<{ slug: string }> }) {
   const { slug } = await props.params;

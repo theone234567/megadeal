@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LinkPendingHint from "./LinkPendingHint";
 import type { ComponentType } from "react";
 import type { Deal } from "@/lib/types";
 import { formatMoney, formatOfferEndDate } from "@/lib/format";
@@ -129,6 +130,7 @@ export default function DealCard({
         linked ? "hover:border-hp-purple/40 hover:shadow-card" : ""
       }`}
     >
+      {linked && <LinkPendingHint />}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-hp-lavender">
         {deal.image ? (
           // A plain <img>: next/image makes no srcset while images are

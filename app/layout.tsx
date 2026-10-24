@@ -100,6 +100,24 @@ export default function RootLayout({
         {DEALS_OPEN && (
           <link rel="alternate" type="application/json" title={`${SITE_NAME} live deals (JSON)`} href={`${SITE_URL}/feed/deals.json`} />
         )}
+        <Suspense fallback={null}>
+          <Trackers />
+        </Suspense>
+        <MegadealArtProvider art={megadealArt}>
+          {/* No SessionProvider here: only the portal, admin and signup
+              pages need to know who's signed in, and they have it in their
+              own layouts. Here it would put a session check (/api/auth/me)
+              on every page, public or not. */}
+          <PreviewBanner siteLaunched={DEALS_OPEN} prelaunchHome={PRELAUNCH_HOME} />
+          {PRELAUNCH_HOME && <PrelaunchBar />}
+          <Header prelaunch={PRELAUNCH_HOME} />
+          {children}
+          <Footer siteLaunched={SITE_LAUNCHED} prelaunchHome={PRELAUNCH_HOME} dealsOpen={DEALS_OPEN} />
+        </MegadealArtProvider>
+        {/* The site's structured data, after the page itself: search
+            engines read it from anywhere, and ahead of the header it put
+            several KB before every page's content for crawlers that read
+            the first part of a page (SEO pack T230). */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -174,20 +192,6 @@ export default function RootLayout({
             }),
           }}
         />
-        <Suspense fallback={null}>
-          <Trackers />
-        </Suspense>
-        <MegadealArtProvider art={megadealArt}>
-          {/* No SessionProvider here: only the portal, admin and signup
-              pages need to know who's signed in, and they have it in their
-              own layouts. Here it would put a session check (/api/auth/me)
-              on every page, public or not. */}
-          <PreviewBanner siteLaunched={DEALS_OPEN} prelaunchHome={PRELAUNCH_HOME} />
-          {PRELAUNCH_HOME && <PrelaunchBar />}
-          <Header prelaunch={PRELAUNCH_HOME} />
-          {children}
-          <Footer siteLaunched={SITE_LAUNCHED} prelaunchHome={PRELAUNCH_HOME} dealsOpen={DEALS_OPEN} />
-        </MegadealArtProvider>
       </body>
     </html>
   );
