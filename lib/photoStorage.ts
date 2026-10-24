@@ -11,6 +11,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 export interface PhotoBucket {
   put(key: string, value: ArrayBuffer | Uint8Array, options?: { httpMetadata?: { contentType?: string; cacheControl?: string } }): Promise<unknown>;
   get(key: string): Promise<{ body: ReadableStream; httpMetadata?: { contentType?: string }; httpEtag?: string; size: number } | null>;
+  /** R2's metadata-only read; /api/health uses it to see the bucket answers. */
+  head?(key: string): Promise<unknown | null>;
 }
 
 declare global {

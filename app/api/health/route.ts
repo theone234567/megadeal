@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { withDb } from "@/lib/db/connection";
+import { photoBucket } from "@/lib/photoStorage";
 
 export const dynamic = "force-dynamic";
 
@@ -8,8 +9,10 @@ export const dynamic = "force-dynamic";
  * the site can serve pages, 503 when it can't, so the owner hears about an
  * outage from the monitor rather than from a business.
  *
- * Checks the database answers. Says only "ok" or "down", never why: an
- * error can name hosts and users.
+ * Checks the database and the photo storage answer (security pack T77),
+ * and how long that took. Says only "ok" or "down", never why: an error
+ * can name hosts and users. Storage is "none" where there's no bucket
+ * (local development) and doesn't fail the check there.
  *
  * Each answer is kept for 30 seconds at the edge, so however often this is
  * requested, the database is asked at most twice a minute per data centre.
@@ -17,20 +20,39 @@ export const dynamic = "force-dynamic";
 
 const TTL_SECONDS = 30;
 
-type Health = { ok: boolean; database: "ok" | "down"; checkedAt: string };
+type Health = { ok: boolean; database: "ok" | "down"; storage: "ok" | "down" | "none"; ms: number; checkedAt: string };
 
-async function check(): Promise<Health> {
-  const checkedAt = new Date().toISOString();
+const within = <T,>(p: Promise<T>, ms = 5000) =>
+  Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timed out")), ms))]);
+
+async function databaseOk(): Promise<boolean> {
   try {
-    await Promise.race([
-      withDb((db) => db.query("select 1")),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("timed out")), 5000)),
-    ]);
-    return { ok: true, database: "ok", checkedAt };
+    await within(withDb((db) => db.query("select 1")));
+    return true;
   } catch (err) {
     console.error("[health] database check failed", err);
-    return { ok: false, database: "down", checkedAt };
+    return false;
   }
+}
+
+async function storageState(): Promise<Health["storage"]> {
+  const bucket = await photoBucket();
+  if (!bucket?.head) return "none";
+  try {
+    // A key that never exists: R2 answers null, which is all this needs.
+    await within(bucket.head("health-check/none"));
+    return "ok";
+  } catch (err) {
+    console.error("[health] storage check failed", err);
+    return "down";
+  }
+}
+
+async function check(): Promise<Health> {
+  const started = Date.now();
+  const checkedAt = new Date().toISOString();
+  const [db, storage] = await Promise.all([databaseOk(), storageState()]);
+  return { ok: db && storage !== "down", database: db ? "ok" : "down", storage, ms: Date.now() - started, checkedAt };
 }
 
 function edgeCache(): Cache | null {
