@@ -25,7 +25,7 @@ export interface AuthSession {
   user: { id: string; email?: string; app_metadata?: Record<string, unknown> };
 }
 
-export type AuthOutcome<T> = { ok: true; data: T } | { ok: false; status: number; code: string };
+export type AuthOutcome<T> = { ok: true; data: T } | { ok: false; status: number; code: string; retryAfterSec?: number };
 
 export function authBase(): string {
   const direct = process.env.SUPABASE_AUTH_URL;
@@ -72,7 +72,14 @@ async function call<T>(
   }
   const json = (await res.json().catch(() => ({}))) as Record<string, any>;
   if (!res.ok) {
-    return { ok: false, status: res.status, code: String(json.error_code ?? json.code ?? json.error ?? "unknown") };
+    // "For security purposes, you can only request this after 57 seconds."
+    const wait = /after (\d+) seconds?/i.exec(String(json.msg ?? json.message ?? json.error_description ?? ""));
+    return {
+      ok: false,
+      status: res.status,
+      code: String(json.error_code ?? json.code ?? json.error ?? "unknown"),
+      ...(wait ? { retryAfterSec: Number(wait[1]) } : {}),
+    };
   }
   return { ok: true, data: json as T };
 }
@@ -165,6 +172,13 @@ export async function setPasswordAfterCode(email: string, userId: string, passwo
   }
   const fresh = await signInWithPassword(email, chosen, ip);
   return fresh.ok ? fresh.data : null;
+}
+
+/** An unconfirmed account, without an email: when Supabase's project-wide
+ *  email limit refused a new sign-up it creates nothing, so this keeps it
+ *  for Resend to send the code to once the limit passes (T240). */
+export function createUnconfirmedAccount(email: string, password: string): Promise<AuthOutcome<{ id: string }>> {
+  return call<{ id: string }>("/admin/users", { service: true, body: { email, password } });
 }
 
 /** Deletes a login outright (Admin > a business > Delete, for test

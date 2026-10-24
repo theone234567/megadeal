@@ -36,7 +36,7 @@ const register = (email: string) =>
 describe("signing up again with the same email", () => {
   it("answers the same as a new sign-up, emails the owner how to sign in, at most twice a day", async () => {
     for (let i = 0; i < 3; i++) {
-      expect(await (await register("Owner@Bistro.nz")).json()).toEqual({ status: "verify" });
+      expect(await (await register("Owner@Bistro.nz")).json()).toEqual({ status: "verify", sent: true });
       await new Promise((r) => setTimeout(r, 10));
     }
     expect(sent).toEqual([
@@ -48,7 +48,7 @@ describe("signing up again with the same email", () => {
   it("sends nothing extra for a genuinely new sign-up (Supabase sends the code)", async () => {
     existing = false;
     sent.length = 0;
-    expect(await (await register("new@bistro.nz")).json()).toEqual({ status: "verify" });
+    expect(await (await register("new@bistro.nz")).json()).toEqual({ status: "verify", sent: true });
     await new Promise((r) => setTimeout(r, 10));
     expect(sent).toEqual([]);
   });

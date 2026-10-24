@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authPreflight, PASSWORD_RULE, passwordOk } from "@/lib/authRoutes";
-import { markSignedUpAgain, signUp, signUpHitExistingAccount } from "@/lib/supabaseAuth";
+import { createUnconfirmedAccount, markSignedUpAgain, signUp, signUpHitExistingAccount } from "@/lib/supabaseAuth";
 import { withDb } from "@/lib/db/connection";
 import { unconfirmedAccountId } from "@/lib/unconfirmedSignups";
 import { clearWrongCodes } from "@/lib/signupCodeAttempts";
@@ -10,7 +10,7 @@ import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { SITE_URL } from "@/lib/siteConfig";
 import { BREACHED_PASSWORD_MESSAGE, passwordSeenInBreaches } from "@/lib/pwnedPassword";
-import { codeDidNotGoOut, noteSignupCodeProblem } from "@/lib/signupHealth";
+import { codeDidNotGoOut, noteSignupCodeProblem, projectEmailLimitHit, reportCodeSend } from "@/lib/signupHealth";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,10 @@ export const dynamic = "force-dynamic";
  * Creates a business account; Supabase then emails a 6-digit code
  * (app/api/auth/email-hook) to enter at /api/auth/verify. The answer is
  * the same whether or not the address already has an account, so this
- * can't be used to find out who has signed up.
+ * can't be used to find out who has signed up. `sent` says whether the
+ * code went out (lib/signupHealth.ts codeSendOf, T240): when Supabase
+ * refuses to send for now, the code screen says so, with when to try
+ * Resend, rather than "we've sent".
  */
 export async function POST(req: NextRequest) {
   const pre = await authPreflight(req, { limitKey: "register", perIp: 10, captcha: true });
@@ -50,15 +53,21 @@ export async function POST(req: NextRequest) {
       if (!ok) console.error("[auth/register] 'already have an account' email failed");
     });
   }
-  // A new code went out: its wrong tries start again (lib/signupCodeAttempts.ts).
-  if (res.ok && !signUpHitExistingAccount(res.data)) {
-    if (unconfirmed) {
-      const marked = await markSignedUpAgain(unconfirmed);
-      if (!marked.ok) console.error("[auth/register] couldn't mark the repeated sign-up", marked.status, marked.code);
-    }
-    await clearWrongCodes(pre.email);
+  // Marked whether or not this sign-up's email went out: Resend would
+  // send the code for the earlier password otherwise.
+  if (unconfirmed) {
+    const marked = await markSignedUpAgain(unconfirmed);
+    if (!marked.ok) console.error("[auth/register] couldn't mark the repeated sign-up", marked.status, marked.code);
+  } else if (!res.ok && projectEmailLimitHit(res)) {
+    // Supabase undoes a new sign-up whose email it won't send. Keep the
+    // account, so Resend can send its code once the limit passes and the
+    // answer is the same as for an address that has one.
+    const kept = await createUnconfirmedAccount(pre.email, pre.body.password);
+    if (!kept.ok && kept.status !== 422) console.error("[auth/register] couldn't keep the sign-up", kept.status, kept.code);
   }
-  return NextResponse.json({ status: "verify" });
+  // A new code went out: its wrong tries start again (lib/signupCodeAttempts.ts).
+  if (res.ok && !signUpHitExistingAccount(res.data)) await clearWrongCodes(pre.email);
+  return NextResponse.json({ status: "verify", ...(await reportCodeSend(res, "auth/register")) });
 }
 
 function alreadyHaveAccountHtml(): string {

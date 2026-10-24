@@ -41,3 +41,23 @@ describe("when the robot check didn't run in the browser", () => {
     vi.unstubAllEnvs();
   });
 });
+
+describe("sign-up code that couldn't be sent (T240)", async () => {
+  const { codeNotSentText, resendCode, waitText } = await import("./siteAuth");
+  it("reads the route's answer, never 'sent' when it wasn't", async () => {
+    answer(200, JSON.stringify({ status: "verify", sent: false, reason: "rate_limited", retryAfterSec: 57 }), "application/json");
+    expect(await registerMember("a@b.nz", "pw", "token")).toMatchObject({ status: "verify", codeSent: false, retryAfterSec: 57 });
+    answer(200, JSON.stringify({ status: "verify", sent: true }), "application/json");
+    expect(await loginMember("a@b.nz", "pw", "token")).toMatchObject({ status: "verify", codeSent: true });
+    answer(200, JSON.stringify({ status: "not-sent", sent: false, reason: "send_failed" }), "application/json");
+    expect(await resendCode("a@b.nz")).toEqual({ sent: false, retryAfterSec: undefined, message: undefined });
+    answer(200, JSON.stringify({ status: "sent" }), "application/json");
+    expect(await resendCode("a@b.nz")).toEqual({ sent: true });
+  });
+  it("says how long to wait in words", () => {
+    expect(waitText(45)).toBe("45 seconds");
+    expect(waitText(60)).toBe("1 minute");
+    expect(waitText(300)).toBe("5 minutes");
+    expect(codeNotSentText(300)).toBe("We couldn't send the email just now. Try Resend in 5 minutes.");
+  });
+});

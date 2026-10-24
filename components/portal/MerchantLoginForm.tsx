@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { loginMember, submitVerificationCode } from "@/lib/siteAuth";
+import { codeNotSentText, loginMember, resendCode, submitVerificationCode, waitText } from "@/lib/siteAuth";
 import { getTurnstileToken, preloadTurnstile } from "@/lib/turnstileClient";
 import PasswordField from "@/components/PasswordField";
 import { AUTH_TIMEOUT_MS, withTimeout } from "@/lib/withTimeout";
@@ -18,6 +18,9 @@ import { AUTH_TIMEOUT_MS, withTimeout } from "@/lib/withTimeout";
  * to tell apart from the page. A visible ring also means keyboard focus
  * is actually apparent, which a border colour change alone barely is.
  */
+/** Seconds between codes: the server's gap too (app/api/auth/resend-code). */
+const RESEND_SECONDS = 60;
+
 const INPUT_CLASS =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-200";
 
@@ -41,6 +44,8 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
    *  folders for everyone. */
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendNotice, setResendNotice] = useState<string | null>(null);
+  /** The code couldn't be emailed just now (T240): say so, not "we've emailed". */
+  const [codeNotSent, setCodeNotSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,7 +64,11 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
       if (outcome.status === "success") {
         window.location.href = redirectTo;
       } else if (outcome.status === "verify") {
+        // An account whose email was never confirmed: a new code, or why
+        // it couldn't go out (T240).
         setPendingState(outcome.pendingState);
+        setCodeNotSent(!outcome.codeSent);
+        setResendCooldown(outcome.codeSent ? RESEND_SECONDS : (outcome.retryAfterSec ?? RESEND_SECONDS));
       } else {
         setError(outcome.message);
       }
@@ -80,10 +89,8 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  /**
-   * Sends a fresh verification code: signing in again while the email is
-   * unconfirmed sends a new one.
-   */
+  /** Sends a fresh verification code, by email address alone (T240): no
+   *  password or robot check to go stale. */
   async function handleResendCode() {
     if (resendCooldown > 0 || submitting) return;
 
@@ -91,21 +98,14 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     setResendNotice(null);
     setSubmitting(true);
     try {
-      const outcome = await withTimeout(
-        (async () => loginMember(email, password, await captchaToken()))(),
-        AUTH_TIMEOUT_MS,
-        "That took too long. Please check your connection and try again."
-      );
-
-      if (outcome.status === "verify") {
-        setPendingState(outcome.pendingState);
+      const res = await withTimeout(resendCode(email), AUTH_TIMEOUT_MS, "That took too long. Please check your connection and try again.");
+      if (res.sent) {
+        setCodeNotSent(false);
         setResendNotice("New code sent. It can take a minute to arrive.");
-        setResendCooldown(30);
-      } else if (outcome.status === "success") {
-        // Verified elsewhere in the meantime — just let them in.
-        window.location.href = redirectTo;
+        setResendCooldown(RESEND_SECONDS);
       } else {
-        setError(outcome.message);
+        setResendCooldown(res.retryAfterSec ?? RESEND_SECONDS);
+        setError(res.message ?? codeNotSentText(res.retryAfterSec));
       }
     } catch {
       setError("We couldn't send a new code. Please try again.");
@@ -165,8 +165,17 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
   if (pendingState) {
     return (
       <form onSubmit={handleVerify} className="w-full space-y-3 text-left">
-        <p className="text-center text-sm text-slate-500">
-          Enter the code we just emailed to <strong>{email}</strong>.
+        <p className="text-center text-sm text-slate-500" role={codeNotSent ? "alert" : undefined}>
+          {codeNotSent ? (
+            <>
+              Your email isn&apos;t confirmed yet, and we couldn&apos;t send the code to <strong className="[overflow-wrap:anywhere]">{email}</strong> just now.{" "}
+              {resendCooldown > 0 ? `Try Resend in ${waitText(resendCooldown)}.` : "Try Resend below."}
+            </>
+          ) : (
+            <>
+              Enter the code we just emailed to <strong className="[overflow-wrap:anywhere]">{email}</strong>.
+            </>
+          )}
         </p>
         <label htmlFor="login-verify-code" className="sr-only">
           Verification code

@@ -58,3 +58,17 @@ describe("sign-up codes that can't be sent", () => {
     expect(sent[0].html).not.toMatch(/<img src=x|onerror=/);
   });
 });
+
+describe("whether a sign-up code went out (T240)", async () => {
+  const { codeSendOf, projectEmailLimitHit } = await import("./signupHealth");
+  it("tells the person's own wait from the whole project's limit", () => {
+    expect(codeSendOf({ ok: true })).toEqual({ sent: true });
+    expect(codeSendOf({ ok: false, status: 429, code: "over_email_send_rate_limit", retryAfterSec: 42 })).toEqual({ sent: false, reason: "rate_limited", retryAfterSec: 42 });
+    expect(projectEmailLimitHit({ ok: false, status: 429, code: "over_email_send_rate_limit", retryAfterSec: 42 })).toBe(false);
+    expect(projectEmailLimitHit({ ok: false, status: 429, code: "over_email_send_rate_limit" })).toBe(true);
+    expect(codeSendOf({ ok: false, status: 429, code: "over_email_send_rate_limit" })).toEqual({ sent: false, reason: "rate_limited", retryAfterSec: 300 });
+    expect(codeSendOf({ ok: false, status: 429, code: "hook_response_error" })).toEqual({ sent: false, reason: "rate_limited", retryAfterSec: 60 });
+    expect(codeSendOf({ ok: false, status: 500, code: "hook_timeout" })).toEqual({ sent: false, reason: "send_failed" });
+    expect(codeSendOf({ ok: false, status: 422, code: "user_already_exists" })).toEqual({ sent: true });
+  });
+});

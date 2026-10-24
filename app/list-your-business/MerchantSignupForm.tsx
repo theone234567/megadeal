@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useSession } from "@/context/SessionProvider";
 import { currentPromo, promoForCode } from "@/lib/promo";
 import { referralCreditsLabel } from "@/lib/referralBonus";
-import { loginMember, registerMember, resendCode, submitVerificationCode, type AuthOutcome } from "@/lib/siteAuth";
+import { codeNotSentText, registerMember, resendCode, submitVerificationCode, waitText, type AuthOutcome } from "@/lib/siteAuth";
 import { clearPendingSignup, readPendingSignup, savePendingSignup } from "@/lib/pendingSignup";
 import { getTurnstileToken, preloadTurnstile } from "@/lib/turnstileClient";
 import PasswordField from "@/components/PasswordField";
@@ -47,6 +47,9 @@ const HONEYPOT_RESET_MS = 2000;
 /** The redesigned form's messages, shown under the field they're about
  *  (keyed by input id, or name for a field without one). Anything not
  *  listed falls back to the browser's own message. */
+/** Seconds between codes: the server's gap too (app/api/auth/resend-code). */
+const RESEND_SECONDS = 60;
+
 const FIELD_MESSAGES: Record<string, { missing: string; invalid?: string }> = {
   "signup-contactName": { missing: "Enter your name.", invalid: NAME_MARKUP_MESSAGE },
   "signup-email": { missing: "Enter your email address.", invalid: "Enter a valid email address, like you@business.co.nz." },
@@ -314,6 +317,8 @@ export default function MerchantSignupForm({
    *  and can get a sending domain thrown into junk folders for everyone. */
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendNotice, setResendNotice] = useState<string | null>(null);
+  /** The code couldn't be emailed just now (T240): say so, not "we've sent". */
+  const [codeNotSent, setCodeNotSent] = useState(false);
   const [code, setCode] = useState("");
 
   // Warm the robot check while the visitor is still filling the form, so
@@ -369,6 +374,9 @@ export default function MerchantSignupForm({
     } else if (outcome.status === "verify") {
       setPendingState(outcome.pendingState);
       setPendingEmail(outcome.email);
+      // Never "we've sent" when it wasn't (T240): when Resend can try again.
+      setCodeNotSent(!outcome.codeSent);
+      setResendCooldown(outcome.codeSent ? RESEND_SECONDS : (outcome.retryAfterSec ?? RESEND_SECONDS));
       // So Refresh or Back doesn't lose the code screen (lib/pendingSignup.ts).
       savePendingSignup(outcome.email, applicationRef.current);
     } else {
@@ -558,6 +566,7 @@ export default function MerchantSignupForm({
     setCode("");
     setSubmitError(null);
     setResendNotice(null);
+    setCodeNotSent(false);
   }
 
   // Counts the cooldown down once a second while it is running.
@@ -567,52 +576,23 @@ export default function MerchantSignupForm({
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  /**
-   * Sends a fresh verification code: signing in again with the details
-   * just registered, while the email is unconfirmed, sends a new one.
-   */
+  /** Sends a fresh verification code, by email address alone (T240): no
+   *  password or robot check to go stale. */
   async function handleResendCode() {
     if (resendCooldown > 0 || submitting) return;
 
     setSubmitError(null);
     setResendNotice(null);
     setSubmitting(true);
-    // Back after a Refresh, the password is gone (it's never kept): the
-    // email alone asks for a new code.
-    if (!password) {
-      try {
-        const sent = await withTimeout(resendCode(pendingEmail), AUTH_TIMEOUT_MS, "That took too long. Please try again.");
-        if (sent) {
-          setResendNotice(`New code sent to ${pendingEmail}. It can take a minute to arrive.`);
-          setResendCooldown(30);
-        } else {
-          setSubmitError("We couldn't send a new code just yet. Please wait half a minute and try again.");
-        }
-      } catch (err: any) {
-        setSubmitError(friendlyError(err, "We couldn't send a new code. Please try again."));
-      } finally {
-        setSubmitting(false);
-      }
-      return;
-    }
     try {
-      const outcome = await withTimeout(
-        (async () => loginMember(pendingEmail, password, await captchaToken()))(),
-        AUTH_TIMEOUT_MS,
-        "That took too long. Please check your connection and try again."
-      );
-
-      if (outcome.status === "verify") {
-        setPendingState(outcome.pendingState);
+      const res = await withTimeout(resendCode(pendingEmail), AUTH_TIMEOUT_MS, "That took too long. Please try again.");
+      if (res.sent) {
+        setCodeNotSent(false);
         setResendNotice(`New code sent to ${pendingEmail}. It can take a minute to arrive.`);
-        setResendCooldown(30);
-      } else if (outcome.status === "success") {
-        // Already verified in another tab or on another device — nothing
-        // left to enter, so finish the application rather than sit on a
-        // code screen that can no longer be satisfied.
-        await finishAfterAuth();
+        setResendCooldown(RESEND_SECONDS);
       } else {
-        setSubmitError(outcome.message);
+        setResendCooldown(res.retryAfterSec ?? RESEND_SECONDS);
+        setSubmitError(res.message ?? codeNotSentText(res.retryAfterSec));
       }
     } catch (err: any) {
       setSubmitError(friendlyError(err, "We couldn't send a new code. Please try again."));
@@ -649,11 +629,20 @@ export default function MerchantSignupForm({
     return (
       <div className="mx-auto max-w-sm rounded-2xl border border-brand-100 bg-brand-50 p-6 text-center">
         <h3 className="text-lg font-bold text-brand-800">Almost there — check your email</h3>
-        <p className="mt-2 text-sm text-brand-700">
-          We&apos;ve sent a verification code to <strong>{pendingEmail}</strong>.
+        <p className="mt-2 text-sm text-brand-700" role={codeNotSent ? "alert" : undefined}>
+          {codeNotSent ? (
+            <>
+              We couldn&apos;t send the email to <strong className="[overflow-wrap:anywhere]">{pendingEmail}</strong> just now.{" "}
+              {resendCooldown > 0 ? `Try Resend in ${waitText(resendCooldown)}.` : "Try Resend below."}
+            </>
+          ) : (
+            <>
+              We&apos;ve sent a verification code to <strong className="[overflow-wrap:anywhere]">{pendingEmail}</strong>.
+            </>
+          )}
         </p>
         <p className="mt-1 text-sm text-brand-700">
-          Enter it below, then you&apos;ll finish your listing in your portal.
+          {codeNotSent ? "When it arrives, enter it below" : "Enter it below"}, then you&apos;ll finish your listing in your portal.
         </p>
         <form onSubmit={handleVerifySubmit} className="mx-auto mt-4 max-w-xs space-y-3">
           <input

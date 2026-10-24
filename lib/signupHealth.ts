@@ -86,3 +86,40 @@ export async function signupCodeProblem(): Promise<{ at: string; code: string; k
     return null;
   }
 }
+
+/** Whether a sign-up code went out (SEO pack T240), as the code screen is
+ *  told: it never says "sent" when it wasn't. An answer about the person
+ *  that isn't a sending problem (already has an account) reads as sent, as
+ *  before, so this can't be used to find out who has signed up. */
+export type CodeSend =
+  | { sent: true }
+  | { sent: false; reason: "rate_limited"; retryAfterSec: number }
+  | { sent: false; reason: "send_failed" };
+
+type SendOutcome = { ok: boolean; status?: number; code?: string; retryAfterSec?: number };
+
+/** Supabase's limit on account emails for the whole project (it gives no
+ *  "after N seconds"): nobody new gets a code until the hour is up (M41). */
+export function projectEmailLimitHit(res: SendOutcome): boolean {
+  return !res.ok && res.code === "over_email_send_rate_limit" && res.retryAfterSec === undefined;
+}
+
+export function codeSendOf(res: SendOutcome): CodeSend {
+  if (res.ok) return { sent: true };
+  if (res.status === 429 || res.code === "over_email_send_rate_limit") {
+    const wait = res.retryAfterSec ?? (projectEmailLimitHit(res) ? 300 : 60);
+    return { sent: false, reason: "rate_limited", retryAfterSec: Math.min(Math.max(Math.ceil(wait), 5), 3600) };
+  }
+  if (codeDidNotGoOut(res)) return { sent: false, reason: "send_failed" };
+  return { sent: true };
+}
+
+/** codeSendOf, and a failure that stops everyone's code (the service or
+ *  hook failing, or the project-wide limit) noted for Needs attention.
+ *  Logs the reason only, never the address. */
+export async function reportCodeSend(res: SendOutcome, where: string): Promise<CodeSend> {
+  const result = codeSendOf(res);
+  if (!result.sent) console.error(`[${where}] sign-up code not sent`, res.status, res.code);
+  if (codeDidNotGoOut(res) || projectEmailLimitHit(res)) await noteSignupCodeProblem(String(res.code ?? "unknown"));
+  return result;
+}
