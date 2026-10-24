@@ -1,5 +1,6 @@
 import type { Deal } from "./types";
 import { htmlToText } from "./htmlText";
+import { dealSearchText } from "./dealSearch";
 
 /**
  * A deal as the listings need it: the homepage, category pages, flash
@@ -41,8 +42,8 @@ export function toListingDeal(deal: Deal): Deal {
   };
 }
 
-/** Longest description a card-list keeps: enough for the search box to
- *  match on what a deal is, without a long write-up on every card. */
+/** Longest description a card-list keeps. The search box reads the card's
+ *  searchText (lib/dealSearch.ts), which covers the whole description. */
 export const CARD_DESCRIPTION_CHARS = 300;
 
 /**
@@ -70,5 +71,10 @@ export function toCardDeal(deal: Deal): Deal {
     customerInstructions: _instructions,
     ...card
   } = toListingDeal(deal);
-  return { ...card, description: htmlToText(deal.description).slice(0, CARD_DESCRIPTION_CHARS) };
+  return {
+    ...card,
+    description: htmlToText(deal.description).slice(0, CARD_DESCRIPTION_CHARS),
+    // From the full deal, before anything above was left off.
+    searchText: dealSearchText(deal),
+  };
 }

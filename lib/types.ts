@@ -82,6 +82,13 @@ export interface Deal {
   /** An admin test deal (lib/testDeals.ts): never in Wix, shown only on
    *  admin previews, linking to its private page. */
   isTest?: boolean;
+  /** Everything a customer can read about it, folded for the search box
+   *  (lib/dealSearch.ts dealSearchText): a card carries this instead of
+   *  the deal page's full text. */
+  searchText?: string;
+  /** Where its card opens instead of the deal page: an admin's preview of
+   *  a test business's deal (its example page) before launch. */
+  previewHref?: string;
 
   // Provenance (supabase/migrations/20261017000000_deal_provenance.sql,
   // lib/dealVerification.ts). Optional: previews and examples have none.

@@ -55,3 +55,52 @@ describe("deal search", () => {
     expect(finds(nails, "zzzz")).toBe(false);
   });
 });
+
+describe("deal search covers everything a customer can read (Flash and Everyday)", () => {
+  const flash = {
+    name: "Half-price flat white this afternoon",
+    description: "Pop in after 2pm for a half-price flat white. " + "Our beans are roasted in Auckland every week. ".repeat(10) + "Oat milk at no extra cost.",
+    categories: ["Food & Drink"],
+    isFlash: true,
+    terms: "Dine-in only. One per customer.",
+    tags: ["date-night"],
+    customerInstructions: "Show the code at the counter.",
+    bookingRequirement: "not_required" as const,
+    now: 3,
+    businessName: "Puriri Bakery",
+    businessSuburb: "Grey Lynn",
+    businessCity: "Auckland",
+    businessBio: "A family bakery known for sourdough and pies.",
+    businessAmenities: ["Wheelchair access"],
+  };
+  const everyday = { ...brunch, isFlash: false };
+  const q = (deal: object, text: string) => dealMatchesSearch(deal as typeof brunch, searchWords(text));
+
+  it("'flash' finds Flash deals and 'everyday' finds Everyday ones", () => {
+    expect(q(flash, "flash")).toBe(true);
+    expect(q(flash, "flash deals")).toBe(true);
+    expect(q(flash, "flash coffee")).toBe(true);
+    expect(q(everyday, "flash")).toBe(false);
+    expect(q(everyday, "everyday brunch")).toBe(true);
+  });
+
+  it("the whole description, conditions, tags, note, booking, price and the business", () => {
+    for (const t of ["oat milk", "dine-in", "one per customer", "date night", "counter", "walk-in", "half-price", "$3", "sourdough", "wheelchair", "grey lynn"]) {
+      expect(q(flash, t), t).toBe(true);
+    }
+    expect(q(flash, "takeaway pizza")).toBe(false);
+  });
+
+  it("a card carries the same search text, built from the full deal", async () => {
+    const { toCardDeal } = await import("./listingDeal");
+    const { dealSearchText } = await import("./dealSearch");
+    const card = toCardDeal({ ...flash, id: "1", slug: "x" } as never);
+    expect(card.description.length).toBeLessThanOrEqual(300);
+    expect(card.searchText).toBe(dealSearchText(flash));
+    expect(q(card, "oat milk")).toBe(true);
+    expect(q(card, "sourdough")).toBe(true);
+    // Never the deal code.
+    const coded = toCardDeal({ ...flash, id: "1", slug: "x", dealCode: "SECRET42" } as never);
+    expect(coded.searchText).not.toContain("secret42");
+  });
+});

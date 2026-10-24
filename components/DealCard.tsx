@@ -102,7 +102,7 @@ export default function DealCard({
   const wrapperProps = !linked
     ? {}
     : {
-        href: demo ? `/example/${deal.slug}` : deal.isTest ? `/admin/test-deals/${deal.id}` : `/deal/${deal.slug}`,
+        href: demo ? `/example/${deal.slug}` : deal.previewHref ?? (deal.isTest ? `/admin/test-deals/${deal.id}` : `/deal/${deal.slug}`),
         prefetch: false,
       };
 

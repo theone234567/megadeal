@@ -49,7 +49,16 @@ export default function PrelaunchHome({
         </div>
       </SearchAwareHero>
       <div className="mx-auto max-w-[1200px] px-4 pt-10 sm:px-6 lg:px-8 lg:pt-12">
-        <HomeDeals initialDeals={deals} initialSearch={initialSearch} prelaunch dealsLive={dealsLive} />
+        <HomeDeals
+          initialDeals={deals}
+          initialSearch={initialSearch}
+          prelaunch
+          dealsLive={dealsLive}
+          // The test businesses' deals the admin sees among the examples
+          // above: found by a search too, marked as previews, opening their
+          // example pages (the examples are hidden while searching).
+          previewDeals={testDeals.map((d) => ({ ...d, isTest: true, previewHref: `/example/${d.slug}` }))}
+        />
       </div>
       <HowItWorks />
       <LocalDealsIntro />

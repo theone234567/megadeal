@@ -100,8 +100,13 @@ export default function HomeDeals({
   testDeals = false,
   prelaunch = false,
   dealsLive = false,
+  previewDeals = [],
 }: {
   initialDeals: Deal[];
+  /** Deals only a signed-in admin sees before launch (a test business's,
+   *  shown among the examples): part of a search or filter's results, not
+   *  the plain view, where the examples already show them. */
+  previewDeals?: Deal[];
   /** The public prelaunch homepage (lib/siteConfig.ts PRELAUNCH_HOME):
    *  real deals are "Available at launch" and don't link to their
    *  (still private) pages; the plain view is a "Launch deals" row rather
@@ -156,7 +161,8 @@ export default function HomeDeals({
     return () => clearInterval(id);
   }, []);
 
-  const allDeals = useWithTestDeals(initialDeals, testDeals);
+  const withTests = useWithTestDeals(initialDeals, testDeals);
+  const allDeals = previewDeals.length && (hasNarrowingFilters(filters) || filters.type !== "all") ? [...previewDeals, ...withTests] : withTests;
   const results = filterByType(matchDeals(allDeals, filters, now, coords), filters.type);
   // When a search or filter finds nothing, a few of what's live anyway,
   // so the page is never a dead end.
@@ -279,6 +285,7 @@ export default function HomeDeals({
           suggestions={suggestions}
           prelaunch={prelaunch}
           dealsLive={dealsLive}
+          nothingLive={live.length === 0}
         />
       )}
     </div>
@@ -727,6 +734,7 @@ function Results({
   suggestions,
   prelaunch,
   dealsLive,
+  nothingLive,
 }: {
   href: HrefFor;
   filters: HomeFilters;
@@ -735,6 +743,8 @@ function Results({
   suggestions: Deal[];
   prelaunch: boolean;
   dealsLive: boolean;
+  /** No real deal is live at all yet, whatever the filters. */
+  nothingLive: boolean;
 }) {
   const [limit, setLimit] = useState(PAGE);
   // Only on the plain homepage view, not in the middle of a search. The
@@ -751,7 +761,12 @@ function Results({
           href={href}
           filters={filters}
           message={
-            filters.q
+            // Before launch with nothing live, a search finding nothing
+            // isn't the visitor's wording: say so, rather than "try a
+            // different word" (the examples on the homepage aren't searched).
+            prelaunch && nothingLive
+              ? "No deals are live yet. MegaDeal is launching in Auckland soon, and real deals from local businesses will show here. The example deals on the homepage show what they'll look like."
+              : filters.q
               ? `No deals match “${filters.q}” right now. Try a shorter or different word.`
               : narrowed
               ? "No deals match these filters right now."
@@ -761,7 +776,16 @@ function Results({
               ? "No Everyday Deals right now."
               : "New local deals are on the way — check back soon."
           }
-          alternative={filters.type !== "all" ? { href: href({ type: "all" }), label: `All deals, not just ${typeName}` } : undefined}
+          alternative={
+            prelaunch && nothingLive
+              ? [
+                  { href: "/#example-deals", label: "See the example deals" },
+                  { href: "#deal-alerts", label: "Get the deals email" },
+                ]
+              : filters.type !== "all"
+              ? { href: href({ type: "all" }), label: `All deals, not just ${typeName}` }
+              : undefined
+          }
         />
         {suggestions.length > 0 && (
           <section aria-labelledby="suggestions-heading" className="mt-8">
@@ -844,13 +868,13 @@ function EmptyState({
   href: HrefFor;
   filters: HomeFilters;
   message: string;
-  alternative?: { href: string; label: string };
+  alternative?: { href: string; label: string } | { href: string; label: string }[];
 }) {
   // The search elephant only while searching: the hero (and its elephant)
   // is hidden then, so the page never shows two.
   const searching = Boolean(filters.q);
   const ways = [
-    alternative,
+    ...(Array.isArray(alternative) ? alternative : [alternative]),
     filters.q ? { href: href({ q: "" }), label: "Clear search" } : undefined,
     panelFilterCount(filters) ? { href: href(NO_PANEL_FILTERS), label: "Clear filters" } : undefined,
     filters.category ? { href: href({ category: "" }), label: "All categories" } : undefined,
@@ -871,11 +895,19 @@ function EmptyState({
       <p className="text-hp-ink">{message}</p>
       {ways.length > 0 && (
         <div className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm font-semibold">
-          {ways.map((w) => (
-            <FilterLink key={w.label} href={w.href} className="inline-flex min-h-[44px] items-center text-hp-purple hover:underline">
-              {w.label}
-            </FilterLink>
-          ))}
+          {ways.map((w) =>
+            // A place on the page (the examples, the deals email): an
+            // ordinary link, so the browser scrolls to it.
+            w.href.includes("#") ? (
+              <a key={w.label} href={w.href} className="inline-flex min-h-[44px] items-center text-hp-purple hover:underline">
+                {w.label}
+              </a>
+            ) : (
+              <FilterLink key={w.label} href={w.href} className="inline-flex min-h-[44px] items-center text-hp-purple hover:underline">
+                {w.label}
+              </FilterLink>
+            ),
+          )}
         </div>
       )}
     </div>

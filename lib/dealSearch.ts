@@ -1,4 +1,6 @@
 import type { Deal } from "./types";
+import { dealTagLabel } from "./dealTags";
+import { htmlToText } from "./htmlText";
 
 /**
  * The homepage search (lib/homeFilters.ts matchDeals). It used to look for
@@ -54,16 +56,78 @@ function forms(word: string): string[] {
   return base.flatMap((w) => [w, ...(SAME_AS[w] ?? [])]);
 }
 
-type Searchable = Pick<Deal, "name" | "description" | "categories"> & {
-  businessName?: string | null;
-  businessSuburb?: string | null;
-  businessCity?: string | null;
+type Searchable = Pick<Deal, "name" | "description" | "categories"> &
+  Partial<
+    Pick<
+      Deal,
+      | "isFlash"
+      | "terms"
+      | "tags"
+      | "customerInstructions"
+      | "bookingRequirement"
+      | "businessName"
+      | "businessSuburb"
+      | "businessCity"
+      | "businessServiceArea"
+      | "businessAddress"
+      | "businessBio"
+      | "businessAmenities"
+      | "now"
+      | "searchText"
+    >
+  >;
+
+/** What each booking choice says on a deal, for "walk in" or "book". */
+const BOOKING_WORDS: Record<string, string> = {
+  required: "booking required book",
+  recommended: "booking recommended book",
+  not_required: "walk ins welcome walk-in no booking",
 };
 
-/** Every word of the query found in the deal (its text, place, business or category). */
+/** Longest search text kept per deal: the whole of a long write-up isn't
+ *  needed to find it, and every card in a list carries this. */
+const MAX_SEARCH_TEXT = 1500;
+
+/**
+ * Everything a customer can read about a deal, folded for matching: its
+ * name, the whole description, conditions, tags, the business's note on
+ * using it, booking, Flash or Everyday, price, and the business's name,
+ * suburb, city, area covered, address, About text and features. Built from
+ * the full deal on the server (lib/listingDeal.ts toCardDeal), because a
+ * card in the browser carries a shortened description and none of the
+ * rest; never the deal code or contact details.
+ */
+export function dealSearchText(deal: Searchable): string {
+  return foldText(
+    [
+      deal.name,
+      htmlToText(deal.description ?? ""),
+      deal.terms,
+      ...(deal.tags ?? []).map(dealTagLabel),
+      deal.customerInstructions,
+      deal.bookingRequirement ? BOOKING_WORDS[deal.bookingRequirement] : "",
+      deal.isFlash === undefined ? "" : deal.isFlash ? "flash" : "everyday",
+      typeof deal.now === "number" && deal.now > 0 ? `$${deal.now} ${deal.now}` : "",
+      deal.businessName,
+      deal.businessSuburb,
+      deal.businessCity,
+      deal.businessServiceArea,
+      deal.businessAddress,
+      deal.businessBio,
+      ...(deal.businessAmenities ?? []),
+      ...deal.categories,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .replace(/\s+/g, " "),
+  ).slice(0, MAX_SEARCH_TEXT);
+}
+
+/** Every word of the query found somewhere a customer can read about the
+ *  deal (dealSearchText), or in its category's everyday words. */
 export function dealMatchesSearch(deal: Searchable, words: string[]): boolean {
   if (words.length === 0) return true;
-  const text = foldText([deal.name, deal.description, deal.businessName, deal.businessSuburb, deal.businessCity, ...deal.categories].filter(Boolean).join(" "));
+  const text = deal.searchText ?? dealSearchText(deal);
   const categoryWords = deal.categories.flatMap((c) => CATEGORY_WORDS[c] ?? []);
   return words.every((word) => forms(word).some((f) => text.includes(f) || categoryWords.includes(f)));
 }
