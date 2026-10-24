@@ -15,6 +15,7 @@ import { parseBusinessPhotos } from "@/lib/businessPhotos";
 import type { AddressSuggestion } from "@/lib/googlePlaces";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
 import { getAttribution, getFbc, getFbp } from "@/lib/attribution";
+import { PROFILE_FIELD_LABELS } from "@/lib/profileReviewRules";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 const MIN_BIO_LENGTH = 50;
@@ -69,6 +70,9 @@ function OptionalTag() {
 
 interface MerchantRecord {
   _id: string;
+  /** Changes waiting for MegaDeal's check before they show (T161,
+   *  lib/profileReview.ts merchantForBusiness). */
+  pendingFields?: string[];
   businessName?: string;
   contactName?: string;
   contactPhone?: string;
@@ -383,6 +387,15 @@ export default function MerchantProfileForm({
     const photos = parseBusinessPhotos(merchant.photos);
     return (
       <div>
+        {(merchant.pendingFields?.length ?? 0) > 0 && (
+          <p role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+            <span className="font-bold">Your latest changes are waiting for a quick check</span> (
+            {(merchant.pendingFields ?? [])
+              .map((f) => PROFILE_FIELD_LABELS[f as keyof typeof PROFILE_FIELD_LABELS]?.toLowerCase() ?? f)
+              .join(", ")}
+            ). Customers see the previous version until then; we&apos;ll email you if anything needs changing.
+          </p>
+        )}
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-900">Business details</h2>
           <button

@@ -14,6 +14,8 @@ import { formatNzDateTime } from "@/lib/nzTime";
 import { describeSignupSource } from "@/lib/signupSource";
 import { OTHER_CREDIT_REASON, creditReasonsFor } from "@/lib/creditReasons";
 import { looksLikeTest } from "@/lib/launchChecklist";
+import ProfileChangesPanel from "@/components/admin/ProfileChangesPanel";
+import { placeholderBio } from "@/lib/profileReviewRules";
 
 const STATUSES = ["Pending", "Approved", "Suspended"];
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
@@ -758,11 +760,27 @@ export default function AdminBusinessDetailPage() {
           )}
         </section>
 
+        {merchant.pendingProfile && typeof merchant.pendingProfile === "object" && (
+          <ProfileChangesPanel
+            merchantId={merchant._id}
+            current={merchant}
+            pending={merchant.pendingProfile}
+            review={merchant.pendingProfileReview ?? null}
+            onDone={(approved) => setMerchant({ ...merchant, ...(approved ?? {}), pendingProfile: null, pendingProfileReview: null })}
+          />
+        )}
+
         <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-card sm:col-span-2">
           <h2 className="text-sm font-bold text-slate-900">Admin controls</h2>
           {/* Approving gives the welcome credits and lets deals go live, but
               the business's portal keeps asking it to finish its listing
               until these are in: worth knowing before approving. */}
+          {/* "Please do not publish" went live this way (T161). */}
+          {status === "Approved" && merchant.status !== "Approved" && placeholderBio(merchant.bio) && (
+            <p role="status" className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+              Check the About text before approving: it reads like placeholder or test wording (&ldquo;{String(merchant.bio).slice(0, 80)}&rdquo;).
+            </p>
+          )}
           {status === "Approved" && merchant.status !== "Approved" && listingMissing(merchant).length > 0 && (
             <p role="status" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               This business hasn&apos;t finished its listing yet (no {listingMissing(merchant).join(", ")}). You can still

@@ -54,7 +54,7 @@ export interface AiReview {
 }
 
 export interface AiReviewInput {
-  kind: "deal" | "photo";
+  kind: "deal" | "photo" | "profile";
   dealName: string;
   description?: string;
   terms?: string;
@@ -136,7 +136,16 @@ const REVIEW_TOOL = {
 
 function listingText(input: AiReviewInput): string {
   const lines =
-    input.kind === "photo"
+    input.kind === "profile"
+      ? [
+          `This is an approved business's public profile, changed by the business (lib/profileReview.ts). Review the About text and the contact details only.`,
+          `Web addresses, emails and phone numbers are expected in the contact details: don't hold the profile for having them. Hold it (verdict "review") if a link doesn't look like the business's own website, booking page or social page (another business, a link shortener, a file download, a login or payment page), or if the About text is placeholder or test wording rather than a real description of the business.`,
+          `Business: ${input.businessName || "(not given)"}`,
+          `Category: ${input.category || "(not given)"}`,
+          `About: ${input.description || "(empty)"}`,
+          input.terms ? `Contact details:\n${input.terms}` : "",
+        ]
+      : input.kind === "photo"
       ? [
           `This is a replacement photo for a deal that is already live. Review the photo only.`,
           `Deal: ${input.dealName}`,

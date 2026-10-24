@@ -3,6 +3,7 @@ import { getVerifiedMember } from "@/lib/memberAuth";
 import { createDataClient } from "@/lib/dataClient";
 import { getOrClaimMerchant } from "@/lib/merchant";
 import { DEALS_OPEN, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { merchantForBusiness } from "@/lib/profileReview";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
     // Server-only settings the portal needs: siteLaunched is whether
     // approved deals are public (DEALS_OPEN, which can be before launch);
     // prelaunch whether it's still before the official launch.
-    return NextResponse.json({ item: merchant, siteLaunched: DEALS_OPEN, prelaunch: !SITE_LAUNCHED });
+    return NextResponse.json({ item: merchantForBusiness(merchant), siteLaunched: DEALS_OPEN, prelaunch: !SITE_LAUNCHED });
   } catch (err) {
     console.error("[merchants/me] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

@@ -215,6 +215,25 @@ const MERCHANTS: Collection = {
     // Where it came from when it signed up (lib/signupSource.ts;
     // 20261026000000_signup_source.sql).
     f("signupSource", "signup_source", { expr: "(to_jsonb(t)->'signup_source')", newColumn: true }),
+    // Profile changes waiting for an admin (lib/profileReview.ts;
+    // 20261027000000_pending_profile.sql).
+    f("pendingProfile", "pending_profile", {
+      expr: "(to_jsonb(t)->'pending_profile')",
+      read: (v: any) => (v && typeof v === "object" && Object.keys(v).length ? v : null),
+      write: (v: any) => (v && typeof v === "object" && Object.keys(v).length ? JSON.stringify(v) : null),
+      newColumn: true,
+    }),
+    f("pendingProfileReview", "pending_profile_review", {
+      expr: "(to_jsonb(t)->'pending_profile_review')",
+      write: (v: any) => (v && typeof v === "object" ? JSON.stringify(v) : null),
+      newColumn: true,
+    }),
+    f("pendingProfileAt", "pending_profile_at", {
+      expr: "(to_jsonb(t)->>'pending_profile_at')",
+      read: asDate,
+      write: (v: any) => (v ? new Date(v).toISOString() : null),
+      newColumn: true,
+    }),
     // A test business, never public (20261023000000_test_businesses.sql).
     f("isTest", "is_test", {
       expr: "coalesce((to_jsonb(t)->>'is_test')::boolean, false)",

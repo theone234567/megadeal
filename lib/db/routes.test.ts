@@ -399,6 +399,8 @@ describe("admin work and the rest of the business portal", () => {
 
   it("edits the business profile and photos; a name change goes back for review", async () => {
     await signUpApprovedWithCredits();
+    // The About text is checked after approval (T161): this one passes.
+    aiReview = { verdict: "approve", flags: {}, reasons: [], messageToBusiness: "", model: "test", at: new Date().toISOString() };
     const profile = await import("@/app/api/merchants/profile/route");
     const res = await call(profile.POST, request("POST", { ...SIGNUP, bio: "Fresh seafood by the water, with views across the harbour.", businessHours: "Mon–Sun 11am–10pm" }));
     expect(res.body.error ?? null).toBeNull();
@@ -552,6 +554,79 @@ describe("admin work and the rest of the business portal", () => {
     expect(await unsubscribeEmailSignupByToken(first!.unsubscribeToken)).toBe(true);
     expect(await unsubscribeEmailSignupByToken(again!.unsubscribeToken)).toBe(true);
     expect(await db.query("select verified, unsubscribed from public.email_signups")).toEqual([{ verified: true, unsubscribed: true }]);
+  });
+});
+
+describe("profile edits after approval (T161)", () => {
+  const flags = { rude: false, offensive: false, sexual: false, unsafe: false, suspiciousPrice: false, contradictory: false, contactDetailsInText: false, photoProblem: false, sensitiveCategory: false, manipulation: false };
+  const approve = { verdict: "approve", flags, reasons: [], messageToBusiness: "", model: "test", at: new Date().toISOString() };
+  const BIO = "A harbourside bistro serving seasonal plates, local wine and the best fish and chips on the waterfront.";
+  const save = async (extra: Record<string, unknown>) => {
+    const profile = await import("@/app/api/merchants/profile/route");
+    return call(profile.POST, request("POST", { ...SIGNUP, bio: BIO, ...extra }));
+  };
+  beforeEach(() => {
+    process.env.ADMIN_NOTIFY_EMAIL = "owner@megadeal.invalid";
+  });
+  afterAll(() => {
+    delete process.env.ADMIN_NOTIFY_EMAIL;
+  });
+  const live = async () => (await db.query<{ bio: string; website: string | null; business_hours: string | null; pending_profile: Record<string, string> | null }>("select bio, website, business_hours, pending_profile from public.merchants"))[0];
+
+  it("a pending business edits freely; an approved one's hours need no check", async () => {
+    await call((await import("@/app/api/merchants/apply/route")).POST, request("POST", SIGNUP));
+    aiReview = null;
+    expect((await save({ bio: "please do not publish this " + BIO })).body.held).toEqual([]);
+    expect((await live()).bio).toMatch(/^please do not publish/);
+    await db.query("update public.merchants set status = 'Approved', bio = $1", [BIO]);
+    const res = await save({ businessHours: "Mon-Fri 9am-5pm" });
+    expect(res.body.held).toEqual([]);
+    expect(await live()).toMatchObject({ business_hours: "Mon-Fri 9am-5pm", pending_profile: null });
+  });
+
+  it("placeholder About text is held for an admin; the public page keeps the old one until it's approved", async () => {
+    await call((await import("@/app/api/merchants/apply/route")).POST, request("POST", SIGNUP));
+    await db.query("update public.merchants set status = 'Approved', bio = $1", [BIO]);
+    aiReview = approve; // even if the check would pass it
+    const res = await save({ bio: "QA test listing, please do not publish. " + BIO });
+    expect(res.body.held).toEqual(["About text"]);
+    // The business sees what it saved, marked as waiting; not the admin notes.
+    expect(res.body.item).toMatchObject({ bio: expect.stringMatching(/^QA test listing/), pendingFields: ["bio"] });
+    expect(res.body.item.pendingProfileReview).toBeUndefined();
+    const row = await live();
+    expect(row.bio).toBe(BIO);
+    expect(row.pending_profile).toEqual({ bio: expect.stringMatching(/^QA test listing/) });
+    expect(await db.query("select bio from public.public_businesses")).toEqual([{ bio: BIO }]);
+    expect(mail.some((m) => m.subject.startsWith("Profile change to check"))).toBe(true);
+
+    // The admin approves: live.
+    admin = true;
+    const [{ id }] = await db.query<{ id: string }>("select id::text from public.merchants");
+    const decide = await import("@/app/api/admin/merchants/[id]/profile-changes/route");
+    expect((await call(decide.POST, request("POST", { decision: "approve" }), params(id))).status).toBe(200);
+    expect(await live()).toMatchObject({ bio: expect.stringMatching(/^QA test listing/), pending_profile: null });
+  });
+
+  it("a new link the check passes goes live at once and the owner is told; one it can't check waits", async () => {
+    await call((await import("@/app/api/merchants/apply/route")).POST, request("POST", SIGNUP));
+    await db.query("update public.merchants set status = 'Approved', bio = $1", [BIO]);
+    aiReview = approve;
+    expect((await save({ website: "harbourbistro.nz" })).body.held).toEqual([]);
+    expect((await live()).website).toBe("https://harbourbistro.nz");
+    expect(mail.some((m) => m.subject.startsWith("Profile changed:"))).toBe(true);
+
+    aiReview = null; // the check isn't available
+    expect((await save({ website: "harbour-bistro-deals.example.com" })).body.held).toEqual(["Website"]);
+    expect((await live()).website).toBe("https://harbourbistro.nz");
+
+    // Declined: needs a note, then it's dropped and the business is told why.
+    admin = true;
+    const [{ id }] = await db.query<{ id: string }>("select id::text from public.merchants");
+    const decide = await import("@/app/api/admin/merchants/[id]/profile-changes/route");
+    expect((await call(decide.POST, request("POST", { decision: "decline" }), params(id))).status).toBe(400);
+    expect((await call(decide.POST, request("POST", { decision: "decline", note: "That link isn't your own website." }), params(id))).status).toBe(200);
+    expect(await live()).toMatchObject({ website: "https://harbourbistro.nz", pending_profile: null });
+    expect(mail.at(-1)!.html).toContain("That link isn&#39;t your own website.");
   });
 });
 

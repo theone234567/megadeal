@@ -21,6 +21,7 @@ import { sendMetaCapiEvent } from "@/lib/metaCapi";
 import { getClientIp } from "@/lib/rateLimit";
 import { greetingName } from "@/lib/emailGreeting";
 import { looksLikeTest } from "@/lib/launchChecklist";
+import { merchantForBusiness } from "@/lib/profileReview";
 
 const MAX_TEXT_LENGTH = 300;
 // businessHours holds a serialized structured-hours JSON blob (7 days,
@@ -363,5 +364,5 @@ export async function POST(req: NextRequest) {
     afterResponse(() => sendMetaCapiEvent(event).catch((err) => console.error("[merchants/apply] Meta CAPI event failed", err)));
   }
 
-  return NextResponse.json({ item, metaEventId });
+  return NextResponse.json({ item: merchantForBusiness(item), metaEventId });
 }

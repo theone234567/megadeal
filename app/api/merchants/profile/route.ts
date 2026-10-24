@@ -12,6 +12,8 @@ import { notifyBusinessChanged } from "@/lib/indexNowDeal";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { isBusinessCategory } from "@/lib/categories";
+import { PROFILE_FIELD_LABELS, merchantForBusiness, profileChanges, reviewProfileChanges, type ReviewedField } from "@/lib/profileReview";
+import { emailProfileChange } from "@/lib/profileReviewEmail";
 
 const MAX_TEXT_LENGTH = 300;
 // See apply/route.ts — businessHours is a structured-hours JSON blob, not
@@ -186,7 +188,17 @@ export async function POST(req: NextRequest) {
   const lat = Number.isFinite(body.lat) ? Number(body.lat) : null;
   const lng = Number.isFinite(body.lng) ? Number(body.lng) : null;
 
-  const updated = await adminClient.items.update("Merchants", {
+  // An approved business's new About text, links, booking email or phone
+  // are checked first (security pack T161, lib/profileReview.ts): clean
+  // ones go live, anything else waits for an admin while customers keep
+  // seeing the previous version.
+  const reviewed = { bio, website, bookingUrl, bookingEmail, phone, facebookUrl, instagramUrl };
+  const changes = merchant.status === "Approved" ? profileChanges(merchant, reviewed) : {};
+  const decision = Object.keys(changes).length ? await reviewProfileChanges(adminClient, merchant, changes) : null;
+  const held = decision?.hold ? changes : null;
+  const kept = held ? Object.fromEntries(Object.keys(held).map((f) => [f, merchant[f] ?? ""])) : {};
+
+  let updated = await adminClient.items.update("Merchants", {
     ...merchant,
     businessName,
     contactName,
@@ -232,10 +244,27 @@ export async function POST(req: NextRequest) {
     // Keep this in sync with Wix's real verified-email flag rather than
     // letting it go stale between visits.
     emailVerified: member.loginEmailVerified,
+    // Held changes: the live values stay, the new ones wait. A save that
+    // goes live clears anything waiting (it was saved over).
+    ...kept,
+    pendingProfile: held,
+    pendingProfileReview: held ? { reason: decision!.reason, review: decision!.review, at: new Date().toISOString() } : null,
+    pendingProfileAt: held ? new Date().toISOString() : null,
   });
+  if (held && !updated.pendingProfile) {
+    // Before the database update adding pending_profile is applied there's
+    // nowhere to hold them: saved as before rather than lost.
+    console.error("[merchants/profile] pending_profile isn't in the database yet (Admin > System); saved the changes directly");
+    updated = await adminClient.items.update("Merchants", { ...updated, ...held });
+  }
+  if (decision) await emailProfileChange(merchant, changes, held ? { reason: decision.reason ?? "" } : null);
   // New hours, phone or address on the public business page.
   notifyBusinessChanged(updated);
-  return NextResponse.json({ item: updated });
+  return NextResponse.json({
+    item: merchantForBusiness(updated),
+    // What's waiting for a check, for the form to say.
+    held: held && updated.pendingProfile ? Object.keys(held).map((f) => PROFILE_FIELD_LABELS[f as ReviewedField]) : [],
+  });
   } catch (err) {
     console.error("[merchants/profile] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

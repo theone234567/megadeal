@@ -160,12 +160,15 @@ export default function AdminDashboardPage() {
   // each needs a new start time before it can be approved.
   const missedStarts = deals?.filter((d) => missedScheduledStart(d)).length ?? 0;
   const changeRequests = deals?.filter((d) => readRevision(d)).length ?? 0;
+  // An approved business's profile edits waiting for a check (T161).
+  const profileChanges = merchants?.filter((m) => m.pendingProfile && typeof m.pendingProfile === "object").length ?? 0;
   const attention = [
     { count: pendingMerchants, label: pendingMerchants === 1 ? "business waiting for approval" : "businesses waiting for approval", tab: "merchants" as const },
     { count: pendingDeals, label: pendingDeals === 1 ? "deal waiting for review" : "deals waiting for review", tab: "deals" as const },
     { count: missedStarts, label: missedStarts === 1 ? "deal whose start time passed before review" : "deals whose start time passed before review", tab: "deals" as const },
     { count: changeRequests, label: changeRequests === 1 ? "change request from a business" : "change requests from businesses", tab: "deals" as const },
     { count: pendingPhotos, label: pendingPhotos === 1 ? "new photo to approve" : "new photos to approve", tab: "deals" as const },
+    { count: profileChanges, label: profileChanges === 1 ? "business profile change to check" : "business profile changes to check", tab: "merchants" as const },
     { count: unseenMessages, label: unseenMessages === 1 ? "new contact message" : "new contact messages", tab: "messages" as const },
   ].filter((a) => a.count > 0);
 

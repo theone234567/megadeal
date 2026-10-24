@@ -6,6 +6,7 @@ import { isUploadedPhotoUrl } from "@/lib/photoUrl";
 import { SITE_URL } from "@/lib/siteConfig";
 import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
 import { MAX_BUSINESS_PHOTOS, serializeBusinessPhotos } from "@/lib/businessPhotos";
+import { merchantForBusiness } from "@/lib/profileReview";
 
 /** Replaces app/api/merchants/logo/route.ts now that a listing carries up
  *  to MAX_BUSINESS_PHOTOS photos instead of one logo. Saves the whole set
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
       logoUrl: photos[0],
       status: statusAfterMerchantEdit(merchant, { photos: serializeBusinessPhotos(photos) }),
     });
-    return NextResponse.json({ item: updated });
+    return NextResponse.json({ item: merchantForBusiness(updated) });
   } catch (err) {
     console.error("[merchants/photos] failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });

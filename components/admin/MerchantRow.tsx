@@ -91,6 +91,9 @@ export default function MerchantRow({ merchant }: { merchant: AdminMerchant }) {
                 <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 align-middle text-[11px] font-bold text-amber-800">TEST</span>
               )}
             </p>
+            {merchant.pendingProfile && typeof merchant.pendingProfile === "object" && (
+              <p className="text-xs font-bold text-amber-700">Profile change to check</p>
+            )}
             {/* Same reason as the detail page: an empty field rendered
                 bare is indistinguishable from one nobody displayed. */}
             {merchant.email ? (

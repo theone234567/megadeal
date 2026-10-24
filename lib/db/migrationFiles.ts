@@ -85,5 +85,9 @@ export const MIGRATION_FILES: MigrationFile[] = [
   {
     "file": "20261026000000_signup_source.sql",
     "sql": "-- Where a business came from when it signed up (lib/signupSource.ts): the\n-- campaign tags, which ad network's click it was, the page it landed on and\n-- the other site's name. Private: the public view (public_businesses) lists\n-- its columns one by one and this isn't one of them.\nalter table public.merchants\n  add column if not exists signup_source jsonb\n  check (signup_source is null or jsonb_typeof(signup_source) = 'object');\n"
+  },
+  {
+    "file": "20261027000000_pending_profile.sql",
+    "sql": "-- Profile changes held for review (security pack T161): an approved\n-- business's new About text, links, booking email or public phone that the\n-- automatic check flagged (or couldn't check) wait here for an admin; the\n-- public page keeps showing the previous values until then\n-- (lib/profileReview.ts). Private: the public view (public_businesses)\n-- lists its columns one by one and these aren't among them.\n--\n-- Additive. To undo: drop the three columns.\nalter table public.merchants\n  add column if not exists pending_profile jsonb\n  check (pending_profile is null or jsonb_typeof(pending_profile) = 'object');\nalter table public.merchants\n  add column if not exists pending_profile_review jsonb\n  check (pending_profile_review is null or jsonb_typeof(pending_profile_review) = 'object');\nalter table public.merchants\n  add column if not exists pending_profile_at timestamptz;\n"
   }
 ];
