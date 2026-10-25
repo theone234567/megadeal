@@ -104,6 +104,7 @@ export default function PrelaunchHero() {
               height={249}
               alt=""
               loading="eager"
+              fetchPriority="low"
               decoding="async"
               className="absolute -bottom-5 -right-4 z-30 w-[15%] max-w-[130px] sm:-bottom-6 sm:-right-8 sm:w-[18%] lg:-right-6 lg:w-[22%] select-none drop-shadow-[0_12px_20px_rgba(33,26,53,0.25)] sm:-right-6"
             />

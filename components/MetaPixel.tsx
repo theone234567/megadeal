@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Script from "next/script";
+import { addScript, afterEngagement } from "@/lib/afterEngagement";
 
 const PIXEL_ID = "1478448350759686";
 
@@ -26,9 +27,10 @@ const PIXEL_ID = "1478448350759686";
  * without that guard the initial page load fired two PageViews for the
  * one visit, inflating counts before a campaign ever got to see them.
  *
- * Meta's script (fbevents.js) waits until the page has finished loading
- * and the browser is idle (lazyOnload): it blocked a phone's first view
- * for about 140 ms (Lighthouse, Oct 2026). The setup is Meta's own
+ * Meta's script (fbevents.js) waits for the visitor's first tap, key
+ * press or scroll, or 5 seconds after the page has loaded
+ * (lib/afterEngagement.ts, T244): it blocked a phone's first view for
+ * about 140 ms (Lighthouse, Oct 2026). The setup is Meta's own
  * snippet without the line that fetches the script, so fbq exists from the
  * start and queues the PageView and any events until the script arrives,
  * as it would on a slow connection.
@@ -46,6 +48,10 @@ export default function MetaPixel() {
     window.fbq?.("track", "PageView");
   }, [pathname, searchParams]);
 
+  useEffect(() => {
+    afterEngagement(() => addScript("https://connect.facebook.net/en_US/fbevents.js"));
+  }, []);
+
   return (
     <>
       <Script id="meta-pixel" strategy="afterInteractive">
@@ -59,7 +65,6 @@ export default function MetaPixel() {
           fbq('track', 'PageView');
         `}
       </Script>
-      <Script src="https://connect.facebook.net/en_US/fbevents.js" strategy="lazyOnload" />
       <noscript>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
