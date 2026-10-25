@@ -16,6 +16,16 @@ vi.mock("./siteConfig", async (orig) => ({
   },
 }));
 vi.mock("./fetchDealServer", () => ({ fetchAllLiveDealsServer: () => listing() }));
+// Requests counted per address (T247), without a database.
+const counts = new Map<string, number>();
+vi.mock("./rateLimit", () => ({
+  getClientIp: (req: NextRequest) => req.headers.get("cf-connecting-ip") || "unknown",
+  checkRateLimit: async (key: string, max: number) => {
+    const n = (counts.get(key) ?? 0) + 1;
+    counts.set(key, n);
+    return { limited: n > max };
+  },
+}));
 
 const deal = {
   id: "d1", slug: "two-course-dinner", name: "Two-course dinner", description: "<p>Mains.</p>", image: null, now: 49, was: 80,
@@ -31,6 +41,7 @@ async function get(query = "", headers: Record<string, string> = {}) {
 }
 
 beforeEach(() => {
+  counts.clear();
   launched = true;
   listing = async () => [deal];
 });
@@ -79,5 +90,30 @@ describe("GET /feed/deals.json", () => {
     const res = await get();
     expect(res.status).toBe(503);
     expect(res.headers.get("retry-after")).toBe("60");
+  });
+
+  it("ignores tracking parameters but still refuses unknown filters (T247)", async () => {
+    const plain = await (await get()).json();
+    const tracked = await get("?utm_source=x&utm_medium=social&fbclid=y&gclid=z&ref=a&_=123");
+    expect(tracked.status).toBe(200);
+    const body = await tracked.json();
+    expect({ ...body, generated_at: 0 }).toEqual({ ...plain, generated_at: 0 });
+    expect((await get("?colour=red")).status).toBe(400);
+  });
+
+  it("says outright whether it's the pre-launch period and the deals can be used (T247)", async () => {
+    const body = await (await get()).json();
+    expect(body).toMatchObject({ launched: true, prelaunch: false, redeemable: true });
+    launched = false;
+    expect(await (await get()).json()).toMatchObject({ launched: false, redeemable: false });
+  });
+
+  it("answers 429 after 120 requests a minute from one address, not from others (T247)", async () => {
+    const from = (ip: string) => get("", { "cf-connecting-ip": ip });
+    for (let i = 0; i < 120; i++) expect((await from("9.9.9.9")).status).toBe(200);
+    const over = await from("9.9.9.9");
+    expect(over.status).toBe(429);
+    expect(over.headers.get("Retry-After")).toBe("60");
+    expect((await from("8.8.8.8")).status).toBe(200);
   });
 });

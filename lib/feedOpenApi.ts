@@ -1,6 +1,6 @@
 import { CATEGORIES } from "./categories";
 import { DEAL_TAGS } from "./dealTags";
-import { FEED_MAX_LIMIT, FEED_TERMS, FEED_VERSION } from "./dealFeed";
+import { FEED_MAX_LIMIT, FEED_MAX_OFFSET, FEED_RATE_LIMIT, FEED_TERMS, FEED_VERSION } from "./dealFeed";
 import { NZ_CITIES } from "./nzPlaces";
 
 /**
@@ -140,7 +140,7 @@ export function feedOpenApi(siteUrl: string, siteName: string) {
             param("expires_before", "Only deals ending by then. A date (YYYY-MM-DD) means the end of that day in New Zealand.", { type: "string" }),
             param("expires_after", "Only deals still running then. A date (YYYY-MM-DD) means the start of that day in New Zealand.", { type: "string" }),
             param("limit", "Most deals to return.", { type: "integer", minimum: 1, maximum: FEED_MAX_LIMIT, default: FEED_MAX_LIMIT }),
-            param("offset", "Skip this many matching deals (for paging).", { type: "integer", minimum: 0, default: 0 }),
+            param("offset", "Skip this many matching deals (for paging).", { type: "integer", minimum: 0, maximum: FEED_MAX_OFFSET, default: 0 }),
           ],
           responses: {
             "200": {
@@ -153,6 +153,7 @@ export function feedOpenApi(siteUrl: string, siteName: string) {
             },
             "304": { description: "Not modified since the ETag sent in If-None-Match." },
             "400": { description: "A filter wasn't understood; the message says what's accepted.", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+            "429": { description: `More than ${FEED_RATE_LIMIT.max} requests a minute from one address; try again after Retry-After seconds.`, content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
             "503": { description: "Temporarily unavailable; try again after Retry-After seconds.", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
           },
         },
@@ -173,6 +174,8 @@ export function feedOpenApi(siteUrl: string, siteName: string) {
             country: { type: "string", const: "NZ" },
             currency: { type: "string", const: "NZD" },
             launched: { type: "boolean", description: "False until MegaDeal's deals are open to the public; there are no deals until then. True from then on, including MegaDeal's pre-launch period, when `message` says so." },
+            prelaunch: { type: "boolean", description: "True during MegaDeal's pre-launch period, when there may be only a few deals." },
+            redeemable: { type: "boolean", description: "True when the deals listed can be used now (every listed deal is live). False only before deals open, when the list is empty." },
             message: str("Present when there's something to explain, such as not having launched yet, or being in the pre-launch period with only a few deals."),
             filters: { type: "object", description: "The filters applied, as understood." },
             total: { type: "integer", description: "Deals matching the filters." },

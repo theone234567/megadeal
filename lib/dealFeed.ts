@@ -21,7 +21,7 @@ import type { Deal } from "./types";
  * FEED_VERSION follows semver: adding a field is a minor change; renaming
  * or removing one is a major change, announced on /developers first.
  */
-export const FEED_VERSION = "1.1.1";
+export const FEED_VERSION = "1.2.0";
 
 /** Most deals one request returns; ?limit= can ask for fewer. */
 export const FEED_MAX_LIMIT = 500;
@@ -48,6 +48,20 @@ export interface FeedFilters {
 export type FeedFilterResult = { ok: true; filters: FeedFilters } | { ok: false; error: string };
 
 const KNOWN_PARAMS = new Set(["city", "category", "tag", "type", "expires_before", "expires_after", "limit", "offset"]);
+
+/** Requests one address may make in a minute (T247). Far above what any
+ *  reader polling the feed needs (it changes when deals do, and a 304 is
+ *  cheap), low enough that a loop can't run up database reads. */
+export const FEED_RATE_LIMIT = { max: 120, windowSeconds: 60 };
+
+/** Highest ?offset= accepted. */
+export const FEED_MAX_OFFSET = 100_000;
+
+/** Added to links by ads, social sites and cache-busters, not filters: a
+ *  shared feed link carrying them used to get a 400 (T247). */
+export function isTrackingParam(key: string): boolean {
+  return /^utm_/i.test(key) || ["ref", "fbclid", "gclid", "gbraid", "wbraid", "msclkid", "_"].includes(key.toLowerCase());
+}
 
 /** A date ("2026-11-05", read as the end of that day in New Zealand when
  *  it's an upper bound, the start when it's a lower one) or a full ISO time. */
@@ -82,7 +96,7 @@ function nzOffsetMinutes(at: number): number {
 export function parseFeedFilters(params: URLSearchParams): FeedFilterResult {
   for (const key of params.keys()) {
     // Named back, but never more than a few characters of whatever was sent.
-    if (!KNOWN_PARAMS.has(key)) return { ok: false, error: `Unknown parameter "${key.slice(0, 40)}". See /developers for the ones you can use.` };
+    if (!KNOWN_PARAMS.has(key) && !isTrackingParam(key)) return { ok: false, error: `Unknown parameter "${key.slice(0, 40)}". See /developers for the ones you can use.` };
   }
   const filters: FeedFilters = { limit: FEED_MAX_LIMIT, offset: 0 };
   const get = (k: string) => params.get(k)?.trim().toLowerCase() || undefined;
@@ -122,7 +136,7 @@ export function parseFeedFilters(params: URLSearchParams): FeedFilterResult {
   }
   for (const [key, min, max] of [
     ["limit", 1, FEED_MAX_LIMIT],
-    ["offset", 0, 100_000],
+    ["offset", 0, FEED_MAX_OFFSET],
   ] as const) {
     const raw = params.get(key)?.trim();
     if (!raw) continue;
@@ -268,6 +282,10 @@ export function buildFeed(deals: Deal[], filters: FeedFilters, o: FeedOptions) {
     country: "NZ",
     currency: "NZD",
     launched: o.launched,
+    // Said outright, so tools reading the feed don't guess (T247): a deal
+    // listed here can be used now, pre-launch period or not.
+    prelaunch: Boolean(o.prelaunch),
+    redeemable: o.launched,
     ...(feedMessage(o) ? { message: feedMessage(o) } : {}),
     filters: {
       city: filters.city ?? null,

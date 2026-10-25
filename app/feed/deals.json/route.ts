@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
-import { buildFeed, parseFeedFilters } from "@/lib/dealFeed";
+import { buildFeed, FEED_RATE_LIMIT, parseFeedFilters } from "@/lib/dealFeed";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { DEALS_OPEN, PRELAUNCH_HOME, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 
@@ -31,6 +32,15 @@ async function etagOf(text: string): Promise<string> {
 }
 
 export async function GET(req: NextRequest) {
+  // Per address (T247). Lets requests through if no count can be kept.
+  const { limited } = await checkRateLimit(`feed:${getClientIp(req)}`, FEED_RATE_LIMIT.max, FEED_RATE_LIMIT.windowSeconds);
+  if (limited) {
+    return json(
+      { error: "Too many requests. Please try again in a minute.", docs: `${SITE_URL}/developers` },
+      429,
+      { "Retry-After": String(FEED_RATE_LIMIT.windowSeconds), "Cache-Control": "no-store" }
+    );
+  }
   const parsed = parseFeedFilters(req.nextUrl.searchParams);
   if (!parsed.ok) return json({ error: parsed.error, docs: `${SITE_URL}/developers` }, 400, { "Cache-Control": "public, max-age=300" });
 

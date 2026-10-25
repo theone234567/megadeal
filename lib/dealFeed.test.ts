@@ -185,7 +185,7 @@ describe("the feed", () => {
   it("says who publishes it, its terms, docs and schema", () => {
     const feed = buildFeed([base], all, opts);
     expect(feed).toMatchObject({
-      version: "1.1.1",
+      version: "1.2.0",
       publisher: { name: "MegaDeal", url: SITE },
       docs: `${SITE}/developers`,
       schema: `${SITE}/feed/openapi.json`,

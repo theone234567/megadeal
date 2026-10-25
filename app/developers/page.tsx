@@ -8,7 +8,7 @@ import { pageMetadata } from "@/lib/pageMetadata";
 import { CATEGORIES } from "@/lib/categories";
 import { DEAL_TAGS } from "@/lib/dealTags";
 import { NZ_CITIES } from "@/lib/nzPlaces";
-import { FEED_MAX_LIMIT, FEED_TERMS, FEED_VERSION, feedDeal } from "@/lib/dealFeed";
+import { FEED_MAX_LIMIT, FEED_RATE_LIMIT, FEED_TERMS, FEED_VERSION, feedDeal } from "@/lib/dealFeed";
 import type { Deal } from "@/lib/types";
 
 const DESCRIPTION =
@@ -200,7 +200,13 @@ export default function DevelopersPage() {
           <Code>GET {FEED}?city=auckland&amp;category=food-drink&amp;tag=date-night</Code>
           <p className="mt-3 text-sm text-slate-600">
             A filter the feed doesn&apos;t understand is refused with a 400 and a message listing what it accepts, rather than quietly
-            returning every deal.
+            returning every deal. Tracking tags added to shared links (<code>utm_*</code>, <code>fbclid</code>, <code>gclid</code>,{" "}
+            <code>ref</code>) are ignored. Up to {FEED_RATE_LIMIT.max} requests a minute from one address; after that, a 429 with{" "}
+            <code>Retry-After</code>.
+          </p>
+          <p className="mt-3 text-sm text-slate-600">
+            Each response also says <code>&quot;prelaunch&quot;</code> (true during {SITE_NAME}&apos;s pre-launch period, when there may be
+            only a few deals) and <code>&quot;redeemable&quot;</code> (true when the deals listed can be used now).
           </p>
           <h3 className="mt-6 font-semibold text-slate-900">Tags</h3>
           <p className="mt-1 text-sm text-slate-600">
