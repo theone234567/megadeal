@@ -95,11 +95,8 @@ export function dealJsonLd(deal: Deal, siteUrl: string) {
     areaServed: area,
     eligibleRegion: { "@type": "Country", name: "New Zealand", identifier: "NZ" },
     category,
-    // How many are left, when the business set a limit.
-    inventoryLevel:
-      typeof deal.quantityAvailable === "number"
-        ? { "@type": "QuantitativeValue", value: Math.max(0, deal.quantityAvailable) }
-        : undefined,
+    // No inventoryLevel: the page doesn't show how many are left (T107),
+    // and structured data must only say what the page does (T234).
   };
 
   return {

@@ -377,7 +377,7 @@ export default function BeautySpaAdvertisingPage() {
               audienceType: "Nail salons, day spas, hair salons, barbers, beauty therapists, lash and brow studios, massage businesses",
             },
             url: `${SITE_URL}/advertise/beauty-spa`,
-            makesOffer: {
+            offers: {
               "@type": "Offer",
               name: OFFER,
               description: LAUNCHED

@@ -21,6 +21,16 @@ import { INDEXABLE } from "@/lib/robotsMeta";
 // quantity state here is the highest-stakes case for it to be wrong.
 export const revalidate = 30;
 
+/** "{Offer} at {Business} (ended)", shortened so the whole title with
+ *  " | MegaDeal" stays within 65 characters (T234). */
+function endedTitle(name: string, business: string | null, expired: boolean): string {
+  const tag = expired ? " (ended)" : " (not available)";
+  const room = 65 - " | MegaDeal".length - tag.length;
+  const full = business ? `${name} at ${business}` : name;
+  const cut = (t: string) => (t.length <= room ? t : `${t.slice(0, room - 1).trimEnd()}…`);
+  return `${cut(full.length <= room ? full : name)}${tag}`;
+}
+
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -66,7 +76,9 @@ export async function generateMetadata(
       // As the page itself says (EndedDeal): run out, or paused for now.
       const expired = Boolean(ended.expiresAt && new Date(ended.expiresAt).getTime() <= Date.now());
       return {
-        title: `${ended.name}${ended.businessName ? ` at ${ended.businessName}` : ""} — ${expired ? "deal ended" : "not available right now"}`,
+        // Within 65 characters with " | MegaDeal" (T234).
+        title: endedTitle(ended.name, ended.businessName, expired),
+        alternates: { canonical: `${SITE_URL}/deal/${ended.slug}` },
         description: truncateForMeta(
           `${expired ? "This deal has ended." : "This deal isn't available right now."}${ended.businessName ? ` See ${ended.businessName}'s current deals` : " See current deals"} on ${SITE_NAME}.`
         ),
@@ -136,6 +148,24 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
     const ended = await fetchEndedDeal(params.slug);
     if (!ended) notFound();
     return (
+      <>
+      {/* Where it sits on the site; no Offer, it can't be claimed (T234). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: safeJsonLd({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
+              ...(ended.businessSlug && ended.businessName
+                ? [{ "@type": "ListItem", position: 2, name: ended.businessName, item: `${SITE_URL}/business/${ended.businessSlug}` }]
+                : []),
+              { "@type": "ListItem", position: ended.businessSlug && ended.businessName ? 3 : 2, name: ended.name, item: `${SITE_URL}/deal/${ended.slug}` },
+            ],
+          }),
+        }}
+      />
       <EndedDeal
         deal={ended}
         moreDeals={
@@ -146,6 +176,7 @@ export default async function DealPage(props: { params: Promise<{ slug: string }
           </Suspense>
         }
       />
+      </>
     );
   }
 

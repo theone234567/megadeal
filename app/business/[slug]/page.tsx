@@ -98,10 +98,12 @@ export async function generateMetadata(
         ? INDEXABLE
         : { index: false, follow: true },
     openGraph: {
-      title,
+      // Shown outside the site's own title template: with the brand (T234).
+      title: `${title} | ${SITE_NAME}`,
       description,
       url,
       siteName: SITE_NAME,
+      locale: "en_NZ",
       // Every photo, not just the first — social platforms that support
       // multiple OG images (Facebook, LinkedIn) pick whichever renders
       // best, and the rest cost nothing extra to list.
@@ -120,7 +122,7 @@ export async function generateMetadata(
             : [`${SITE_URL}/opengraph-image`],
       type: "website",
     },
-    twitter: { card: "summary", title, description },
+    twitter: { card: business.photos.length > 0 ? "summary_large_image" : "summary", title: `${title} | ${SITE_NAME}`, description },
   };
 }
 

@@ -286,7 +286,7 @@ export default function RestaurantAdvertisingPage() {
               audienceType: "Restaurants, cafés, bars, bakeries, takeaways and other food businesses",
             },
             url: `${SITE_URL}/advertise/restaurants`,
-            makesOffer: {
+            offers: {
               "@type": "Offer",
               name: OFFER,
               description: LAUNCHED

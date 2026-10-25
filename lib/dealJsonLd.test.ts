@@ -126,9 +126,9 @@ describe("what a deal is, when and where", () => {
     expect(node("Product").offers.eligibleRegion).toMatchObject({ identifier: "NZ" });
   });
 
-  it("says how many are left when there's a limit, and its category and tags", () => {
+  it("never says how many are left (the page doesn't, T234), and gives its category and tags", () => {
     const p = node("Product");
-    expect(p.offers.inventoryLevel).toEqual({ "@type": "QuantitativeValue", value: 20 });
+    expect(p.offers.inventoryLevel).toBeUndefined();
     expect(p).toMatchObject({ sku: deal.id, category: "Food & Drink", keywords: "Date night" });
   });
 

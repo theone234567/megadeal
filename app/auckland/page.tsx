@@ -46,7 +46,7 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: DEALS_OPEN && hubIsIndexable(deals.length) ? INDEXABLE : { index: false, follow: true },
     // The image named, as on flash deals: a page's own openGraph replaces
     // the layout's whole, so without it a shared link has no picture.
-    openGraph: { title: `${title} | ${SITE_NAME}`, description, url, siteName: SITE_NAME, type: "website", images: [`${SITE_URL}/opengraph-image`] },
+    openGraph: { title: `${title} | ${SITE_NAME}`, description, url, siteName: SITE_NAME, type: "website", locale: "en_NZ", images: [{ url: `${SITE_URL}/opengraph-image`, width: 1200, height: 630, alt: SITE_NAME }] },
     twitter: { card: "summary_large_image", title: `${title} | ${SITE_NAME}`, description, images: [`${SITE_URL}/opengraph-image`] },
   };
 }

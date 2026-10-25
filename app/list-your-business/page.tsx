@@ -350,7 +350,7 @@ export default async function MerchantsPage() {
             // it's attached to the Service entity itself, not just an FAQ
             // answer, for search engines/AI answer engines that read one
             // but not the other.
-            makesOffer: {
+            offers: {
               "@type": "Offer",
               name: "Up to 6 months free advertising",
               description:

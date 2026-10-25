@@ -26,9 +26,12 @@ export async function generateMetadata(): Promise<Metadata> {
   // read the page itself makes.
   const deals = await fetchAllLiveDealsServer().catch(() => []);
   const hasFlash = deals.some((d) => d.isFlash);
+  // The same title and description everywhere they're shown (T234).
+  const title = `Flash Deals in ${DEFAULT_CITY.name} — Short-Burst Offers`;
+  const description = `All of ${SITE_NAME}'s current flash deals in one place — short-burst offers that end fast, so grab them while they last.`;
   return {
-    title: `Flash Deals in ${DEFAULT_CITY.name} — Short-Burst Offers`,
-    description: `All of ${SITE_NAME}'s current flash deals in one place — short-burst offers that end fast, so grab them while they last.`,
+    title,
+    description,
     alternates: { canonical: `${SITE_URL}${flashDealsPath()}` },
     // Pre-launch, "/" redirects to /coming-soon so visitors never see a
     // demo-data-filled deal grid (see DEALS_OPEN in lib/siteConfig.ts)
@@ -37,8 +40,9 @@ export async function generateMetadata(): Promise<Metadata> {
     // catalog might still hold pre-launch test data.
     robots: DEALS_OPEN && hasFlash ? INDEXABLE : { index: false, follow: true },
     openGraph: {
-      title: `Flash Deals | ${SITE_NAME}`,
-      description: "Short-burst offers that end fast — grab them while they last.",
+      title: `${title} | ${SITE_NAME}`,
+      description,
+      locale: "en_NZ",
       url: `${SITE_URL}${flashDealsPath()}`,
       siteName: SITE_NAME,
       type: "website",
@@ -46,11 +50,12 @@ export async function generateMetadata(): Promise<Metadata> {
       // automatically, but this route's own openGraph block was resolving
       // without any image, so a shared link came through as a bare grey card
       // — the one context where the picture is most of the click.
-      images: [`${SITE_URL}/opengraph-image`],
+      images: [{ url: `${SITE_URL}/opengraph-image`, width: 1200, height: 630, alt: SITE_NAME }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `Flash Deals | ${SITE_NAME}`,
+      title: `${title} | ${SITE_NAME}`,
+      description,
       images: [`${SITE_URL}/opengraph-image`],
     },
   };

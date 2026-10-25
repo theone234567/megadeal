@@ -317,7 +317,7 @@ export default function HomeCarAdvertisingPage() {
                 "Cleaners, gardeners and landscapers, home-maintenance trades, car wash and detailing, car servicing and mechanics, tyre and wheel businesses",
             },
             url: PAGE_URL,
-            makesOffer: {
+            offers: {
               "@type": "Offer",
               name: `Up to ${PROMO_MONTHS} free advertising`,
               description: LAUNCHED
