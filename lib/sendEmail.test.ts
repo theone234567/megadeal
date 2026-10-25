@@ -151,3 +151,31 @@ describe("sending", () => {
     });
   });
 });
+
+describe("email text and links (T246)", () => {
+  it("decodes every entity in the text part", async () => {
+    const { emailHtmlToText } = await import("./emailText");
+    const text = emailHtmlToText(
+      "<p>Tap &ldquo;Forgot password&rdquo; &ndash; it&rsquo;s quick&hellip; T&#257;maki &amp; Ng&#x101;ti &copy; &frac12;&nbsp;off</p>"
+    );
+    expect(text).toBe("Tap “Forgot password” – it’s quick… Tāmaki & Ngāti © ½ off");
+    expect(text).not.toMatch(/&[a-z#0-9]+;/i);
+  });
+
+  it("tags links to the site, and only those, with UTM", async () => {
+    const { withEmailUtm } = await import("./emailLinks");
+    const html = withEmailUtm(
+      '<a href="https://megadeal.co.nz/portal">a</a><a href="https://megadeal.co.nz/deal/x?ref=1#code">b</a>' +
+        '<a href="https://other.example/">c</a><a href="mailto:hi@megadeal.co.nz">d</a>' +
+        '<a href="https://megadeal.co.nz/?utm_source=x">e</a><a href="https://megadeal.co.nz.evil.example/">f</a>',
+      "https://megadeal.co.nz",
+      "deal-live"
+    );
+    expect(html).toContain('href="https://megadeal.co.nz/portal?utm_source=email&amp;utm_medium=transactional&amp;utm_campaign=deal-live"');
+    expect(html).toContain('href="https://megadeal.co.nz/deal/x?ref=1&amp;utm_source=email&amp;utm_medium=transactional&amp;utm_campaign=deal-live#code"');
+    expect(html).toContain('href="https://other.example/"');
+    expect(html).toContain('href="mailto:hi@megadeal.co.nz"');
+    expect(html).toContain('href="https://megadeal.co.nz/?utm_source=x"');
+    expect(html).toContain('href="https://megadeal.co.nz.evil.example/"');
+  });
+});

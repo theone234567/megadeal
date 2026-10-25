@@ -64,3 +64,15 @@ export function formatMoney(amount: number, currency: string, formatted?: string
     return `$${amount.toFixed(2)}`;
   }
 }
+
+/** "NZDT" or "NZST": New Zealand's time zone at that moment, for times in
+ *  emails, which may be read anywhere (T246). */
+export function nzZoneName(at: string | number | Date): string {
+  const d = at instanceof Date ? at : new Date(at);
+  if (!Number.isFinite(d.getTime())) return "NZ time";
+  return (
+    new Intl.DateTimeFormat("en-NZ", { timeZone: "Pacific/Auckland", timeZoneName: "short" })
+      .formatToParts(d)
+      .find((p) => p.type === "timeZoneName")?.value ?? "NZ time"
+  );
+}

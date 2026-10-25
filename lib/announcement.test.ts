@@ -133,3 +133,15 @@ describe("failed list", () => {
     expect(failedListKey("launch", "customers")).not.toBe(sentListKey("launch", "customers"));
   });
 });
+
+describe("launch drafts follow the approval setting (T246)", () => {
+  it("only promises a person checks each deal when one does", async () => {
+    const { draftFor, DRAFTS } = await import("./announcement");
+    expect(draftFor("businesses", true)).toEqual(DRAFTS.businesses);
+    expect(draftFor("businesses", null)).toEqual(DRAFTS.businesses);
+    expect(draftFor("businesses", false).body).not.toMatch(/our team/i);
+    expect(draftFor("businesses", false).body).toMatch(/checked when you submit it/);
+    expect(draftFor("pending", false).body).not.toMatch(/our team has checked/i);
+    expect(draftFor("customers", false)).toEqual(DRAFTS.customers);
+  });
+});

@@ -10,7 +10,7 @@ import {
   AUDIENCES,
   BODY_MAX,
   CAMPAIGN_RE,
-  DRAFTS,
+  draftFor,
   SUBJECT_MAX,
   announcementHtml,
   dealsDigestBody,
@@ -22,6 +22,16 @@ import {
   type AnnouncementAudience,
 } from "@/lib/announcement";
 import { recipients, sendAnnouncementBatch } from "@/lib/announcementSend";
+import { getPlatformSettings } from "@/lib/platformSettings";
+
+/** Whether every deal waits for an admin now, or null if unknown. */
+async function requireApprovalNow(): Promise<boolean | null> {
+  try {
+    return (await getPlatformSettings()).settings.requireApproval;
+  } catch {
+    return null;
+  }
+}
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +83,7 @@ export async function GET(req: NextRequest) {
     const failedList = parseFailedList(kv ? await kv.get(failedListKey(campaign, audience)) : null);
     const alreadySent = list.filter((r) => sentList.has(addressHash(r.email))).length;
     const waiting = list.filter((r) => !sentList.has(addressHash(r.email)) && failedList.has(addressHash(r.email))).length;
-    return json({ audience, total: list.length, alreadySent, waiting, launched: SITE_LAUNCHED, testTo: Boolean(process.env.ADMIN_NOTIFY_EMAIL), draft: DRAFTS[audience] });
+    return json({ audience, total: list.length, alreadySent, waiting, launched: SITE_LAUNCHED, testTo: Boolean(process.env.ADMIN_NOTIFY_EMAIL), draft: draftFor(audience, await requireApprovalNow()) });
   } catch (err) {
     console.error("[admin/announcement] count failed", err);
     return json({ error: "Couldn't count the list. Please try again." }, 500);

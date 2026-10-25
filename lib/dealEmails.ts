@@ -1,7 +1,7 @@
 import { brandedEmailHtml } from "./emailTemplate";
 import { escapeHtml } from "./escapeHtml";
 import { greetingHtml } from "./emailGreeting";
-import { formatOfferEndDate } from "./format";
+import { formatOfferEndDate, nzZoneName } from "./format";
 import { nzDateTimeParts } from "./nzTime";
 
 /**
@@ -31,7 +31,7 @@ export function dealLiveEmail(
 ): DealEmail {
   const name = escapeHtml(dealName || "Your deal");
   const ends = opts.endsAt && Number.isFinite(Date.parse(opts.endsAt))
-    ? ` It runs until ${escapeHtml(formatOfferEndDate(opts.endsAt, Boolean(opts.isFlash)))}.`
+    ? ` It runs until ${escapeHtml(formatOfferEndDate(opts.endsAt, Boolean(opts.isFlash)))}${opts.isFlash ? ` ${nzZoneName(opts.endsAt)}` : ""}.`
     : "";
   return opts.launched
     ? {
@@ -141,7 +141,7 @@ export function dealEndingEmail(
   const name = escapeHtml(deal.name || "Your deal");
   const base = opts.siteUrl.replace(/\/$/, "");
   const tomorrow = endsTomorrowInNz(deal.endsAt, opts.now);
-  const when = tomorrow ? `tomorrow at ${nzTime(Date.parse(deal.endsAt))}` : `on ${formatOfferEndDate(deal.endsAt, true)}`;
+  const when = `${tomorrow ? `tomorrow at ${nzTime(Date.parse(deal.endsAt))}` : `on ${formatOfferEndDate(deal.endsAt, true)}`} ${nzZoneName(deal.endsAt)}`;
   const stats =
     deal.views > 0
       ? ` So far people have viewed it ${times(deal.views)}${deal.codeCopies > 0 ? ` and copied its code ${times(deal.codeCopies)}` : ""}.`

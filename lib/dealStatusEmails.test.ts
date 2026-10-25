@@ -136,7 +136,7 @@ describe("deal ends tomorrow email", () => {
   it("says when, how it's done, and links to the deal to share it", () => {
     const { subject, html } = dealEndingEmail(deal, { ...opts, launched: false });
     expect(subject).toBe("Two brunches ends tomorrow: give it a last push");
-    expect(html).toContain("ends tomorrow at 9:00 pm.");
+    expect(html).toContain("ends tomorrow at 9:00 pm NZDT.");
     expect(html).toContain("viewed it 64 times and copied its code 9 times");
     expect(html).toContain('href="https://megadeal.co.nz/deal/two-brunches"');
     expect(html).toContain(opts.stopUrl);
@@ -152,6 +152,6 @@ describe("deal ends tomorrow email", () => {
   it("isn't 'tomorrow' when it isn't", () => {
     const { subject, html } = dealEndingEmail({ ...deal, endsAt: "2026-10-24T11:30:00Z" }, { ...opts, launched: false });
     expect(subject).toBe("Two brunches ends soon: give it a last push");
-    expect(html).toContain("ends on 25 October at 12:30 am.");
+    expect(html).toContain("ends on 25 October at 12:30 am NZDT.");
   });
 });

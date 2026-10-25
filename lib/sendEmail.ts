@@ -1,5 +1,7 @@
 import { randomUUID } from "crypto";
 import { emailHtmlToText, headerSafe } from "./emailText";
+import { withEmailUtm } from "./emailLinks";
+import { SITE_URL } from "./siteConfig";
 
 const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
 
@@ -20,6 +22,7 @@ export async function sendEmail({
   replyTo,
   unsubscribeUrl,
   withinMs = 15_000,
+  campaign,
 }: {
   to: string;
   subject: string;
@@ -36,6 +39,9 @@ export async function sendEmail({
   /** How long sending may take in all, retries included (default 15 s).
    *  Supabase's email hook gets an answer within its 5-second limit. */
   withinMs?: number;
+  /** utm_campaign on links to the site (lib/emailLinks.ts); "notification"
+   *  when not given. */
+  campaign?: string;
 }): Promise<SendResult> {
   // One address, or a few separated by commas (ADMIN_NOTIFY_EMAIL may
   // list several). Each must be a plain address: nothing that could add
@@ -53,7 +59,8 @@ export async function sendEmail({
     console.error("[sendTransactionalEmail] refused: not an email address");
     return { ok: false };
   }
-  return sendWithResend({ to: recipients, subject: safeSubject, html, replyTo: safeReplyTo, unsubscribeUrl }, withinMs);
+  const tagged = withEmailUtm(html, SITE_URL, campaign);
+  return sendWithResend({ to: recipients, subject: safeSubject, html: tagged, replyTo: safeReplyTo, unsubscribeUrl }, withinMs);
 }
 
 /**

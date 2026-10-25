@@ -1,3 +1,5 @@
+import { decodeHtmlEntities } from "./htmlText";
+
 /**
  * The plain-text version of an HTML email. Sent alongside the HTML: mail
  * filters trust a message with a text part more, and some people read
@@ -16,12 +18,10 @@ export function emailHtmlToText(html: string): string {
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/(p|div|h[1-6]|ul|ol|li|tr)>/gi, "\n\n")
     .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, "&")
+    // Every entity, not just the five it used to know: curly quotes and
+    // dashes came through as "&ldquo;" and "&rsquo;" (T246).
+    .replace(/&[^;\s]+;/g, (m) => decodeHtmlEntities(m))
+    .replace(/\u00a0/g, " ")
     .replace(/[ \t]+/g, " ")
     .replace(/ *\n */g, "\n")
     .replace(/\n{3,}/g, "\n\n")

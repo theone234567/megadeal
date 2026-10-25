@@ -110,6 +110,32 @@ export const DRAFTS: Record<AnnouncementAudience, { subject: string; body: strin
   },
 };
 
+/** The first draft for an audience, worded for how deals are approved
+ *  right now (Platform settings): with "every deal waits for admin
+ *  approval" off, a deal that passes the automatic check goes live without
+ *  a person seeing it first, so "our team checks each one" wasn't true
+ *  (T246). Unknown (settings unreadable): the team wording, as before. */
+export function draftFor(
+  audience: AnnouncementAudience,
+  requireApproval: boolean | null,
+): { subject: string; body: string } {
+  const draft = DRAFTS[audience];
+  if (requireApproval !== false) return draft;
+  if (audience === "businesses") {
+    return {
+      ...draft,
+      body: "MegaDeal is now live in Auckland.\n\nYou can now submit the deals you've saved in your business portal. Each one is checked when you submit it, and most go live for customers straight away.",
+    };
+  }
+  if (audience === "pending") {
+    return {
+      ...draft,
+      body: "MegaDeal is now live in Auckland.\n\nWe're still reviewing your business application. Once you're approved, you can submit the deals you've saved in your business portal. Each one is checked when you submit it, and most go live straight away.",
+    };
+  }
+  return draft;
+}
+
 export const SUBJECT_MAX = 150;
 export const BODY_MAX = 4000;
 

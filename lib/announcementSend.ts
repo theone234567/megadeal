@@ -128,6 +128,7 @@ export async function sendAnnouncementBatch(opts: {
               html: announcementHtml({ audience, body, siteUrl: SITE_URL, unsubscribeUrl: unsub.footer }),
               unsubscribeUrl: unsub.header,
               replyTo: process.env.ADMIN_NOTIFY_EMAIL?.split(",")[0]?.trim() || undefined,
+              campaign: "announcement",
             }).catch(() => ({ ok: false as const }));
       if (result.ok) {
         sentList.add(addressHash(r.email));
