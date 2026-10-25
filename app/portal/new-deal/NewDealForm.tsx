@@ -43,6 +43,7 @@ import {
 } from "@/lib/platformSettingsRules";
 import { TEST_DEAL_PHOTOS, testDealDurationValue, type TestDeal } from "@/lib/testDeals";
 import { SCHEDULE_MAX_AHEAD_DAYS, parseScheduledStart, type StartMode } from "@/lib/dealSchedule";
+import { formatTime12h, minutesPastClosing, parseBusinessHours } from "@/lib/businessHours";
 import { formatNzDateTime, nzDateTimeParts } from "@/lib/nzTime";
 import { safeWebHref } from "@/lib/socialLinks";
 import DealTagPicker from "@/components/DealTagPicker";
@@ -1262,6 +1263,17 @@ export default function NewDealForm({
     );
   }
 
+  // A Flash deal that would run past today's closing time (T200): said
+  // here, before it's submitted. From the scheduled start, or from now.
+  const pastClosing = (() => {
+    const hours = isFlash && !isTest ? parseBusinessHours(merchant?.businessHours) : null;
+    if (!hours) return null;
+    const scheduled = startMode === "scheduled" && startDate && startTime ? parseScheduledStart(startDate, startTime) : null;
+    if (scheduled && !scheduled.iso) return null;
+    return minutesPastClosing(hours, new Date(scheduled?.iso ?? Date.now()), durationMinutes);
+  })();
+  const formatNzClock = (d: Date) => formatTime12h(nzDateTimeParts(d.getTime()).time);
+
   return (
     <Main className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
       <Link
@@ -1640,6 +1652,12 @@ export default function NewDealForm({
               The time starts
               when your deal goes live, not while it&apos;s being reviewed.
             </p>
+            {isFlash && pastClosing && (
+              <p role="status" className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-900">
+                Your Flash deal runs until {formatNzClock(pastClosing.endsAt)} but you close at {pastClosing.closes}. Customers may arrive
+                after you close.
+              </p>
+            )}
           </div>
           <div>
             <label htmlFor="deal-quantity" className="mb-1 block text-sm font-medium text-slate-700">

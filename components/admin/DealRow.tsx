@@ -13,6 +13,7 @@ import { aiSummary, effectiveVerdict } from "@/lib/aiReview";
 import SendBackPanel from "./SendBackPanel";
 import RejectPanel from "./RejectPanel";
 import { rejectedReason } from "@/lib/dealRejectRules";
+import { describePastClosing, minutesPastClosing, parseBusinessHours } from "@/lib/businessHours";
 import { sendBackRounds } from "@/lib/dealSendBackRules";
 import { describeMinutes } from "@/lib/dealDuration";
 import { dealDisplayStatus } from "@/lib/dealStatus";
@@ -52,7 +53,7 @@ export default function DealRow({
 }: {
   deal: AdminDeal;
   /** The business this deal belongs to, when one matches its email. */
-  business?: { id: string; name: string } | null;
+  business?: { id: string; name: string; hours?: string | null } | null;
   /** Called with the deal as saved, so the page's counts (Needs attention) update. */
   onSaved?: (deal: AdminDeal) => void;
 }) {
@@ -69,6 +70,18 @@ export default function DealRow({
   const [sentBack, setSentBack] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejected, setRejected] = useState(false);
+  // A Flash deal that runs past the business's closing time (T200): from
+  // when it went live (or will), for as long as it runs.
+  const pastClosing = (() => {
+    const hours = deal.isFlash ? parseBusinessHours(business?.hours) : null;
+    if (!hours) return null;
+    const start = deal.firstPublishedAt ?? deal.scheduledStartAt ?? null;
+    const minutes =
+      deal.firstPublishedAt && deal.expiresAt
+        ? Math.round((Date.parse(deal.expiresAt) - Date.parse(deal.firstPublishedAt)) / 60_000)
+        : Number(deal.requestedDurationMinutes);
+    return minutesPastClosing(hours, start ? new Date(start) : new Date(), minutes);
+  })();
   // Its run is over (stored as Live or Paused, shown as Ended).
   const ended = dealDisplayStatus(deal) === "Ended";
   // Reject (T242): from waiting for review, or live or paused, while it's
@@ -168,6 +181,11 @@ export default function DealRow({
             )}
             {Array.isArray(deal.aiReview?.heldFor) && deal.aiReview.heldFor.length > 0 && deal.status === "Pending Approval" && (
               <p className="max-w-[16rem] text-xs font-semibold text-amber-700">Held: {deal.aiReview.heldFor.join("; ")}</p>
+            )}
+            {pastClosing && dealDisplayStatus(deal) !== "Ended" && (
+              <p className="text-xs font-bold text-amber-700">
+                Runs {describePastClosing(pastClosing.minutes)} past closing ({pastClosing.closes})
+              </p>
             )}
             {rejectedReason(deal) !== null && <p className="text-xs font-bold text-red-700">Rejected (not approved)</p>}
             {deal.status === "Pending Approval" && sendBackRounds(deal) > 0 && (

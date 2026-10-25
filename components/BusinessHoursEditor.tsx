@@ -3,6 +3,9 @@
 import {
   TIME_OPTIONS,
   MAX_HOURS_EXCEPTIONS,
+  MAX_RANGES_PER_DAY,
+  OPEN_ALL_DAY,
+  isAllDay,
   emptySchedule,
   formatTime12h,
   nzToday,
@@ -149,6 +152,19 @@ export default function BusinessHoursEditor({
             </div>
 
             {!day.closed && (
+              <label className="mt-1.5 flex items-center gap-2 text-xs text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={day.ranges.length === 1 && isAllDay(day.ranges[0])}
+                  onChange={(e) =>
+                    updateDay(i, { ...day, ranges: e.target.checked ? [OPEN_ALL_DAY] : [{ open: "09:00", close: "17:00" }] })
+                  }
+                  className="h-4 w-4 rounded border-slate-300 accent-brand-600"
+                />
+                Open 24 hours
+              </label>
+            )}
+            {!day.closed && !(day.ranges.length === 1 && isAllDay(day.ranges[0])) && (
               <div className="mt-2 space-y-1.5">
                 {day.ranges.map((range, ri) => (
                   <div key={ri} className="flex items-center gap-2">
@@ -186,18 +202,20 @@ export default function BusinessHoursEditor({
                     )}
                   </div>
                 ))}
-                <button
-                  type="button"
-                  onClick={() =>
-                    updateDay(i, {
-                      ...day,
-                      ranges: [...day.ranges, { open: "17:30", close: "21:00" }],
-                    })
-                  }
-                  className="text-xs font-semibold text-brand-600 hover:underline"
-                >
-                  + Add another time range (e.g. lunch &amp; dinner)
-                </button>
+                {day.ranges.length < MAX_RANGES_PER_DAY && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateDay(i, {
+                        ...day,
+                        ranges: [...day.ranges, { open: "17:30", close: "21:00" }],
+                      })
+                    }
+                    className="text-xs font-semibold text-brand-600 hover:underline"
+                  >
+                    + Add another time range (e.g. lunch &amp; dinner)
+                  </button>
+                )}
               </div>
             )}
           </div>

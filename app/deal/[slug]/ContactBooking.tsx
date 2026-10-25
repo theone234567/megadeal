@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CloseIcon, GlobeIcon, MailIcon, PhoneIcon, CalendarIcon } from "@/components/icons";
-import { formatBusinessHoursLines, hoursToday, parseBusinessHours } from "@/lib/businessHours";
+import { formatBusinessHoursLines, nzToday, openStatus, parseBusinessHours } from "@/lib/businessHours";
 
 export const OPEN_ADDRESS_HOURS = "megadeal:address-hours";
 
@@ -46,9 +46,12 @@ export default function ContactBooking(p: ContactBookingProps) {
   useEffect(() => {
     const data = parseBusinessHours(p.hours);
     if (!data) return;
+    // The same line as the business page (lib/businessHours.ts openStatus,
+    // T200): "Open today 7am–4pm" after 4pm read as open now.
     const update = () => {
-      const t = hoursToday(data);
-      setToday(t ? (t.closed ? "Closed today" : `Open today ${t.label}`) + (t.note ? ` (${t.note})` : "") : null);
+      const status = openStatus(data);
+      const note = (data.exceptions ?? []).find((e) => e.date === nzToday())?.label;
+      setToday(status ? status.label + (note ? ` (${note})` : "") : null);
     };
     update();
     const id = setInterval(update, 60_000);

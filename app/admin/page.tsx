@@ -189,7 +189,7 @@ export default function AdminDashboardPage() {
   const businessByEmail = new Map(
     (merchants ?? [])
       .filter((m) => m.email)
-      .map((m) => [String(m.email).toLowerCase(), { id: m._id, name: m.businessName || m.email || "" }])
+      .map((m) => [String(m.email).toLowerCase(), { id: m._id, name: m.businessName || m.email || "", hours: m.businessHours ?? null }])
   );
   const businessFor = (d: AdminDeal) => businessByEmail.get(String(d.merchantEmail || "").toLowerCase()) ?? null;
 

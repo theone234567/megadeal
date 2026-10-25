@@ -14,6 +14,7 @@ import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { isBusinessCategory } from "@/lib/categories";
 import { PROFILE_FIELD_LABELS, merchantForBusiness, profileChanges, reviewProfileChanges, type ReviewedField } from "@/lib/profileReview";
 import { emailProfileChange } from "@/lib/profileReviewEmail";
+import { businessHoursError } from "@/lib/businessHours";
 
 const MAX_TEXT_LENGTH = 300;
 // See apply/route.ts — businessHours is a structured-hours JSON blob, not
@@ -157,6 +158,9 @@ export async function POST(req: NextRequest) {
     fieldErrors.preferredContact = "Choose the main button from the contact details you've added.";
   }
 
+  // Checked before they're stored (T243): never kept, or shown, unreadable.
+  const hoursProblem = businessHoursError(body.businessHours);
+  if (hoursProblem) fieldErrors.businessHours = hoursProblem;
   if (Object.keys(fieldErrors).length > 0) {
     const messages = Object.values(fieldErrors);
     return NextResponse.json(

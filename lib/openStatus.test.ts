@@ -29,15 +29,15 @@ describe("openStatus", () => {
   });
 
   it("says when a closed business next opens: later today, tomorrow, or a weekday", () => {
-    expect(openStatus(pizzeria, wed("15:00"))).toEqual({ open: false, label: "Closed · opens 5pm" });
-    expect(openStatus(pizzeria, wed("22:00"))).toEqual({ open: false, label: "Closed · opens tomorrow 11:30am" });
+    expect(openStatus(pizzeria, wed("15:00"))).toEqual({ open: false, label: "Closed now · opens 5pm today" });
+    expect(openStatus(pizzeria, wed("22:00"))).toEqual({ open: false, label: "Closed now · opens 11:30am tomorrow" });
     // Sunday night: Monday is closed, so Tuesday.
-    expect(openStatus(pizzeria, new Date("2026-10-18T21:00:00+13:00"))).toEqual({ open: false, label: "Closed · opens Tue 11:30am" });
+    expect(openStatus(pizzeria, new Date("2026-10-18T21:00:00+13:00"))).toEqual({ open: false, label: "Closed now · opens Tue 11:30am" });
   });
 
   it("follows a dated exception, such as a public holiday", () => {
     const holiday: BusinessHoursData = { ...pizzeria, exceptions: [{ date: "2026-10-15", closed: true, ranges: [], label: "Staff day" }] };
-    expect(openStatus(holiday, wed("22:00"))).toEqual({ open: false, label: "Closed · opens Fri 11:30am" });
+    expect(openStatus(holiday, wed("22:00"))).toEqual({ open: false, label: "Closed now · opens Fri 11:30am" });
   });
 
   it("says nothing when no hours were given", () => {
@@ -53,12 +53,12 @@ describe("late nights and today's hours (the deal code panel)", () => {
     expect(openStatus(bar, wed("21:00"))).toEqual({ open: true, label: "Open now · closes 2am" });
     expect(isOpenNow(bar, new Date("2026-10-15T01:30:00+13:00"))).toBe(true);
     expect(isOpenNow(bar, new Date("2026-10-15T02:30:00+13:00"))).toBe(false);
-    expect(openStatus(bar, wed("19:00"))).toEqual({ open: false, label: "Closed · opens 8pm" });
+    expect(openStatus(bar, wed("19:00"))).toEqual({ open: false, label: "Opens 8pm today" });
   });
 
   it("gives today's hours, split ranges, closed days and named exceptions", () => {
     expect(hoursToday(pizzeria, wed("09:00"))).toEqual({ label: "11:30am–2pm, 5pm–9:30pm", closed: false });
-    expect(hoursToday(bar, wed("09:00"))).toEqual({ label: "8pm–2am", closed: false });
+    expect(hoursToday(bar, wed("09:00"))).toEqual({ label: "8pm–2am (next day)", closed: false });
     expect(hoursToday(pizzeria, new Date("2026-10-12T12:00:00+13:00"))).toEqual({ label: "Closed today", closed: true });
     const holiday = { ...pizzeria, exceptions: [{ date: "2026-10-14", closed: true, ranges: [], label: "Staff day" }] };
     expect(hoursToday(holiday, wed("09:00"))).toEqual({ label: "Closed today", closed: true, note: "Staff day" });

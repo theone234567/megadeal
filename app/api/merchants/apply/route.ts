@@ -21,6 +21,7 @@ import { getClientIp } from "@/lib/rateLimit";
 import { greetingName } from "@/lib/emailGreeting";
 import { looksLikeTest } from "@/lib/launchChecklist";
 import { merchantForBusiness } from "@/lib/profileReview";
+import { businessHoursError } from "@/lib/businessHours";
 
 const MAX_TEXT_LENGTH = 300;
 // businessHours holds a serialized structured-hours JSON blob (7 days,
@@ -170,6 +171,9 @@ export async function POST(req: NextRequest) {
     fieldErrors.agreedToTerms = "You must agree to the Terms and Conditions to apply.";
   }
 
+  // Checked before they're stored (T243): never kept, or shown, unreadable.
+  const hoursProblem = businessHoursError(body.businessHours);
+  if (hoursProblem) fieldErrors.businessHours = hoursProblem;
   if (Object.keys(fieldErrors).length > 0) {
     const messages = Object.values(fieldErrors);
     return NextResponse.json(

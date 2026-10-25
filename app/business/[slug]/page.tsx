@@ -173,7 +173,10 @@ export default async function BusinessProfilePage(
   // its pin only approximate, lib/location.ts publicLocation).
   const directionsUrl = business.addressHidden ? null : getDirectionsUrl(mapTarget);
   const parsedHours = parseBusinessHours(business.businessHours);
-  const hoursLines = parsedHours ? formatBusinessHoursLines(parsedHours) : business.businessHours ? [business.businessHours] : [];
+  // Hours written as plain text before the hours editor existed are shown
+  // as written; anything else that can't be read is never printed (T243).
+  const legacyHours = !parsedHours && business.businessHours && !/^\s*[[{]/.test(business.businessHours) ? business.businessHours.slice(0, 300) : null;
+  const hoursLines = parsedHours ? formatBusinessHoursLines(parsedHours) : legacyHours ? [legacyHours] : [];
   const known = parsedHours ? hoursKnown(parsedHours) : false;
   const specialHours = parsedHours ? toSpecialOpeningHoursSpecification(parsedHours) : [];
   const status = parsedHours ? openStatus(parsedHours) : null;
