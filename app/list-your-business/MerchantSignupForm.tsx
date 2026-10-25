@@ -524,8 +524,12 @@ export default function MerchantSignupForm({
 
     setSubmitting(true);
     try {
+      // The robot check first, on its own clock: a challenge shown to the
+      // visitor can take a while, and timing it with the request blamed
+      // their connection for a check they hadn't finished.
+      const token = await captchaToken();
       const outcome = await withTimeout(
-        (async () => registerMember(email, password, await captchaToken()))(),
+        registerMember(email, password, token),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try again — if your account was created, you can sign in to your portal instead."
       );

@@ -69,8 +69,11 @@ export default function DealRow({
   const [sentBack, setSentBack] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejected, setRejected] = useState(false);
-  // Reject (T242): from waiting for review, or live or paused.
-  const canReject = ["Pending Approval", "Live", "Paused"].includes(deal.status || "Live");
+  // Its run is over (stored as Live or Paused, shown as Ended).
+  const ended = dealDisplayStatus(deal) === "Ended";
+  // Reject (T242): from waiting for review, or live or paused, while it's
+  // still running: an ended deal has nothing left to stop.
+  const canReject = ["Pending Approval", "Live", "Paused"].includes(deal.status || "Live") && !ended;
   // Pause is for a deal that has been on the site; one still waiting for
   // review is sent back for changes or rejected instead (T181).
   const statuses = STATUSES.filter((s) => s !== "Paused" || deal.everLive || deal.status === "Paused");
@@ -241,7 +244,9 @@ export default function DealRow({
         >
           {statuses.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {/* Ended is worked out from the end date, not stored: the
+                  deal's own status reads as Ended once its run is over. */}
+              {ended && s === (deal.status || "Live") && status === s ? "Ended" : s}
             </option>
           ))}
         </select>
@@ -339,6 +344,7 @@ export default function DealRow({
           <RejectPanel
             dealId={deal._id}
             wasLive={deal.status === "Live" || deal.status === "Paused"}
+            waiting={deal.status === "Pending Approval"}
             onCancel={() => setRejectOpen(false)}
             onRejected={(warning) => {
               setRejected(true);

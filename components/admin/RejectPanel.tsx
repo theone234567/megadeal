@@ -12,12 +12,15 @@ import { MAX_REJECT_NOTE, MIN_REJECT_NOTE, REJECT_PRESETS, rejectMessage } from 
 export default function RejectPanel({
   dealId,
   wasLive,
+  waiting,
   onRejected,
   onCancel,
 }: {
   dealId: string;
   /** Live or paused now: rejecting takes it off the site. */
   wasLive: boolean;
+  /** Waiting for review: then Send back for changes is the other choice. */
+  waiting: boolean;
   onRejected: (warning?: string) => void;
   onCancel: () => void;
 }) {
@@ -51,8 +54,8 @@ export default function RejectPanel({
       <p className="font-bold text-red-900">Reject this deal</p>
       <p className="mt-0.5 text-xs text-red-800">
         Final: it {wasLive ? "comes off MegaDeal and " : ""}can&apos;t be restarted, and the credits it used go back to the business. They
-        see the reason in their portal and by email, with a button to start a new deal from this one. To let them fix this one
-        instead, use Send back for changes.
+        see the reason in their portal and by email, with a button to start a new deal from this one.
+        {waiting && " To let them fix this one instead, use Send back for changes."}
       </p>
       <fieldset className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
         <legend className="sr-only">Why it can&apos;t be approved</legend>

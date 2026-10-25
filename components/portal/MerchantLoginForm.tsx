@@ -52,11 +52,13 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
     setError(null);
     setSubmitting(true);
     try {
-      // Timed: obtaining a token can take a while if Turnstile shows a
-      // challenge, and a stalled request mustn't leave the button on
-      // "Signing in…" with nothing on screen to explain it.
+      // The robot check first, on its own clock (a challenge can take a
+      // while, and isn't the connection's fault); then the request is
+      // timed, so a stalled one mustn't leave the button on "Signing in…"
+      // with nothing on screen to explain it.
+      const token = await captchaToken();
       const outcome = await withTimeout(
-        (async () => loginMember(email, password, await captchaToken()))(),
+        loginMember(email, password, token),
         AUTH_TIMEOUT_MS,
         "That took too long. Please check your connection and try again."
       );

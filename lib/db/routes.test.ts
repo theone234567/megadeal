@@ -880,6 +880,11 @@ describe("the AI review and housekeeping on the new database", () => {
     expect(deal.aiReview).toBeUndefined();
     const activity = await db.query<{ description: string }>("select description from public.merchant_activity order by created_at desc limit 1");
     expect(activity[0].description).toMatch(/wasn't approved/);
+    // A live deal whose run is over can't be rejected: nothing left to stop.
+    admin = true;
+    await db.query("insert into public.deals (merchant_id, name, status, price_now, category_slug, slug, expires_at, ever_live) select merchant_id, 'Old', 'Live', 10, category_slug, 'old-deal', now() - interval '1 day', true from public.deals limit 1");
+    const [{ id: oldId }] = await db.query<{ id: string }>("select id::text from public.deals where slug = 'old-deal'");
+    expect((await call(reject.POST, request("POST", { note: "This one has ended." }), params(oldId))).body.error).toBe("This deal has already ended.");
   });
 
   it("a deal with a code MegaDeal made reopens without it in the code box, and keeps it", async () => {

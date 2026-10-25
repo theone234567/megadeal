@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
+import { hasDealExpired } from "@/lib/dealStatus";
 import { MAX_REJECT_NOTE, MIN_REJECT_NOTE, REJECTABLE, REJECT_PRESETS, rejectDeal, rejectMessage } from "@/lib/dealReject";
 
 /**
@@ -30,6 +31,10 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     if (!deal) return NextResponse.json({ error: "Deal not found." }, { status: 404 });
     if (!REJECTABLE.includes(deal.status)) {
       return NextResponse.json({ error: "Only a deal waiting for review, live or paused can be rejected." }, { status: 409 });
+    }
+    // Its run is over: nothing left to stop, and no credits to give back.
+    if (deal.status !== "Pending Approval" && hasDealExpired(deal.expiresAt)) {
+      return NextResponse.json({ error: "This deal has already ended." }, { status: 409 });
     }
     const merchants = deal.merchantEmail
       ? await adminClient.items.query("Merchants").eq("email", deal.merchantEmail).limit(1).find()
