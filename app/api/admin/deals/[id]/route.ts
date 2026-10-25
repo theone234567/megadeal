@@ -11,7 +11,7 @@ import { isScheduledFuture, parseScheduledStart } from "@/lib/dealSchedule";
 import { PRODUCT_FIELDS, buildProductUpdate, parseAdminContentEdit, withHistory } from "@/lib/dealAdminEdit";
 import { readRevision } from "@/lib/dealRevision";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
-import { dealLiveEmail, dealStoppedEmail, type DealEmail } from "@/lib/dealEmails";
+import { dealLiveEmail, dealResumedEmail, dealStoppedEmail, type DealEmail } from "@/lib/dealEmails";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 
 const ALLOWED_STATUSES = ["Pending Approval", "Live", "Paused", "Cancelled"];
@@ -309,6 +309,18 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
           contactName: existing.merchantContactName,
           endsAt: updated.expiresAt,
           isFlash: Boolean(updated.isFlash),
+        });
+      } else if (patch.status === "Live" && existing.status === "Paused") {
+        // Back on after a pause (T246): before, the business was told it
+        // was paused but never that it was back.
+        email = dealResumedEmail(dealName, {
+          siteUrl: SITE_URL,
+          slug: updated.slug,
+          launched: DEALS_OPEN,
+          endsAt: updated.expiresAt,
+          isFlash: Boolean(updated.isFlash),
+          businessName: existing.merchantBusinessName,
+          contactName: existing.merchantContactName,
         });
       } else if ((patch.status === "Paused" || patch.status === "Cancelled") && (existing.status === "Live" || existing.status === "Pending Approval")) {
         // Only the note written with this action, never an earlier one (T242).

@@ -33,10 +33,12 @@ describe("emails about a deal", () => {
     expect(emailed).toHaveLength(1);
     expect(emailed[0]).toMatchObject({ to: "owner@cafe.nz", subject: expect.stringContaining("Pizza & a jug") });
 
-    // Paused and back again: no second "approved" email.
+    // Paused and back again: not a second "approved" email, but "back on"
+    // (T246).
     row = { ...pending(), status: "Paused", everLive: true, expiresAt: new Date(Date.now() + 86_400_000).toISOString() };
     await save({ status: "Live" });
-    expect(emailed).toHaveLength(1);
+    expect(emailed).toHaveLength(2);
+    expect(emailed[1].subject).toMatch(/^Your deal is back on: /);
   });
 
   it("tells the business when an admin pauses or cancels its deal, with the reason", async () => {

@@ -189,6 +189,33 @@ export function dealStoppedEmail(
   };
 }
 
+/** An admin lifted the pause on a deal that had been live (T246). Before
+ *  launch, deals only show from launch day, so it doesn't say customers can
+ *  see it. */
+export function dealResumedEmail(
+  dealName: string,
+  opts: { siteUrl: string; slug?: string | null; launched: boolean; endsAt?: string | null; isFlash?: boolean; businessName?: string | null; contactName?: string | null },
+): DealEmail {
+  const name = escapeHtml(dealName || "Your deal");
+  const ends =
+    opts.endsAt && Number.isFinite(Date.parse(opts.endsAt))
+      ? ` It runs until ${escapeHtml(formatOfferEndDate(opts.endsAt, Boolean(opts.isFlash)))}${opts.isFlash ? ` ${nzZoneName(opts.endsAt)}` : ""}.`
+      : "";
+  const link =
+    opts.launched && opts.slug
+      ? `<p style="margin:0 0 16px;"><a href="${opts.siteUrl}/deal/${encodeURIComponent(opts.slug)}" style="color:#6D28D9;font-weight:700;">See your deal</a></p>`
+      : portalLink(opts.siteUrl, "Go to your portal");
+  return {
+    subject: `Your deal is back on: ${dealName || "your deal"}`.slice(0, 150),
+    html: brandedEmailHtml(`
+      ${greeting(opts)}
+      <p style="margin:0 0 16px;">MegaDeal has lifted the pause on <strong>${name}</strong>${opts.launched ? ", so customers can see it again" : ""}.${ends}</p>
+      ${link}
+      <p style="margin:0;font-size:13px;color:#8b8494;">Questions? Just reply to this email.</p>
+    `),
+  };
+}
+
 /**
  * A deal sent back for changes before it went live (lib/dealSendBack.ts),
  * by an admin or the automatic check (T181, T155). Never says "paused":

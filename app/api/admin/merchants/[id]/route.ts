@@ -10,6 +10,7 @@ import { adminDeleteUser } from "@/lib/supabaseAuth";
 import { queryAllByEmail } from "@/lib/queryAll";
 import { businessEmailsOn } from "@/lib/businessEmailChoices";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
+import { businessSuspendedEmail, suspendReasonError } from "@/lib/businessStatusEmails";
 import { DEALS_OPEN, SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { currentPromo, promoForCode } from "@/lib/promo";
 import { incrementCreditsAtomically, setFieldsIf } from "@/lib/creditsAtomic";
@@ -348,6 +349,12 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     return NextResponse.json({ error: "Merchant not found." }, { status: 404 });
   }
 
+  // Suspending needs a reason, which is emailed to the business (T246).
+  if (patch.status === "Suspended" && existing.status !== "Suspended") {
+    const reasonProblem = suspendReasonError(body.statusReason);
+    if (reasonProblem) return NextResponse.json({ error: reasonProblem, code: "reason_required" }, { status: 400 });
+  }
+
   // Credits typed in while approving a business for the first time, when
   // approving already adds some: confirmed first (confirmExtraCredits), or
   // the business ends up with both.
@@ -639,6 +646,31 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         console.error("[admin/merchants] referral bonus email failed", err);
         warnings.push(`Referral bonus was credited, but the notification email to ${referrerFresh.email} failed to send.`);
       }
+    }
+  }
+
+  // Suspended (or an application turned down): the business is told why
+  // (lib/businessStatusEmails.ts, T246).
+  if (patch.status === "Suspended" && existing.status !== "Suspended" && existing.email) {
+    try {
+      const { subject, html } = businessSuspendedEmail({
+        from: existing.status || "Pending",
+        reason: String(body.statusReason),
+        businessName: existing.businessName,
+        contactName: updated.contactName ?? existing.contactName,
+      });
+      const sent = await sendTransactionalEmail({
+        to: existing.email,
+        subject,
+        html,
+        // Replies reach a person, as with every email to a business.
+        replyTo: process.env.ADMIN_NOTIFY_EMAIL || undefined,
+        campaign: "business-suspended",
+      });
+      if (!sent) throw new Error("not sent");
+    } catch (err) {
+      console.error("[admin/merchants] suspension email failed", err);
+      warnings.push(`The business was suspended, but the email telling ${existing.email} failed to send.`);
     }
   }
 

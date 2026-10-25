@@ -89,6 +89,8 @@ export default function AdminBusinessDetailPage() {
 
   // Admin controls
   const [status, setStatus] = useState("Pending");
+  // Why it's being suspended: required, and emailed to the business (T246).
+  const [statusReason, setStatusReason] = useState("");
   const [credits, setCredits] = useState(0);
   const [creditsReason, setCreditsReason] = useState("");
   /** The reason picked from the list, or OTHER_CREDIT_REASON to write one. */
@@ -308,6 +310,7 @@ export default function AdminBusinessDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status,
+          statusReason: status === "Suspended" && merchant.status !== "Suspended" ? statusReason : undefined,
           creditsBalance: credits,
           creditsReason: reasonChoice === OTHER_CREDIT_REASON ? creditsReason : reasonChoice,
           confirmExtraCredits: confirmExtraCredits || undefined,
@@ -796,6 +799,21 @@ export default function AdminBusinessDetailPage() {
               Approving adds <strong>{approvalCredits.credits} credits</strong> by itself ({approvalCredits.parts.join(" and ")}), so
               there&apos;s no need to add them in Credits. Balance after approving: {(merchant.creditsBalance ?? 0) + approvalCredits.credits}.
             </p>
+          )}
+          {status === "Suspended" && merchant.status !== "Suspended" && (
+            <label className="mt-3 block text-sm">
+              <span className="mb-1 block font-semibold text-slate-800">
+                Why? {merchant.status === "Approved" ? "The business is emailed that it's suspended, with this." : "The business is emailed that its application isn't approved, with this."}
+              </span>
+              <textarea
+                value={statusReason}
+                onChange={(e) => setStatusReason(e.target.value)}
+                rows={3}
+                maxLength={600}
+                placeholder={merchant.status === "Approved" ? "e.g. Customers have reported that deals weren't honoured." : "e.g. We couldn't confirm this is a registered business in Auckland."}
+                className="w-full rounded-lg border border-amber-300 px-3 py-2 text-sm"
+              />
+            </label>
           )}
           <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <label className="text-sm">
