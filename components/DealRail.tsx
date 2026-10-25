@@ -28,6 +28,7 @@ export default function DealRail({
   viewAll,
   empty,
   className = "",
+  eagerCount = 0,
 }: {
   /** For the heading's id and in-page links (#example-deals). */
   id: string;
@@ -38,6 +39,9 @@ export default function DealRail({
   viewAll?: { href: string; label: string; onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void };
   /** Shown in place of the row when there are no deals. */
   empty?: ReactNode;
+  /** The first cards that load at once (T245): the row at the top of a
+   *  page, whose first photo is often the largest thing on screen. */
+  eagerCount?: number;
   className?: string;
 }) {
   const listRef = useRef<HTMLUListElement>(null);
@@ -113,7 +117,7 @@ export default function DealRail({
           aria-label={title}
           className="scrollbar-hide -mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 pt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-hp-purple sm:-mx-6 sm:gap-4 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:scroll-px-0 lg:px-0"
         >
-          {deals.map((deal) => (
+          {deals.map((deal, i) => (
             <li
               key={deal.id}
               className="w-[78%] shrink-0 snap-start min-[480px]:w-[46%] md:w-[31%] lg:w-[calc((100%-3rem)/4.15)]"
@@ -121,6 +125,7 @@ export default function DealRail({
               <DealCard
                 deal={deal}
                 variant={variant}
+                priority={i < eagerCount}
                 imageSizes="(min-width: 1200px) 270px, (min-width: 1024px) 23vw, (min-width: 768px) 31vw, (min-width: 480px) 46vw, 78vw"
               />
             </li>

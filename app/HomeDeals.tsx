@@ -241,6 +241,7 @@ export default function HomeDeals({
         <DealRail
           id="live-deals"
           className="mt-6 lg:mt-7"
+          eagerCount={1}
           title={dealsLive ? "Live deals" : "Launch deals"}
           description={
             dealsLive

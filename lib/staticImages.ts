@@ -1,6 +1,6 @@
 /**
- * The site's own photos in public/ that also have a 640px-wide copy
- * (name-640.webp, made with sharp), each with its full width. A card shown
+ * The site's own photos in public/ that also have 360, 480 and 640px-wide
+ * copies (name-360.webp etc., made with sharp), each with its full width. A card shown
  * 260px wide fetched the 1200px original; with these as a srcset the
  * browser takes the 640px copy unless the screen needs more.
  */
@@ -19,9 +19,12 @@ const FULL_WIDTH: Record<string, number> = {
   "/megadeal/restaurants/restaurant-hero-bright.webp": 1000,
 };
 
-/** "x-640.webp 640w, x.webp 1200w" for a photo listed above, else undefined. */
+/** "x-360.webp 360w, x-480.webp 480w, x-640.webp 640w, x.webp 1200w" for
+ *  a photo listed above, else undefined. 360 and 480 for phones (T245):
+ *  a 360px-wide card took the 640px copy at least. */
 export function staticImageSrcSet(src: string): string | undefined {
   const width = FULL_WIDTH[src];
   if (!width) return undefined;
-  return `${src.replace(/\.webp$/, "-640.webp")} 640w, ${src} ${width}w`;
+  const copy = (w: number) => `${src.replace(/\.webp$/, `-${w}.webp`)} ${w}w`;
+  return `${copy(360)}, ${copy(480)}, ${copy(640)}, ${src} ${width}w`;
 }

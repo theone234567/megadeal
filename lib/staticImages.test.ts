@@ -4,9 +4,9 @@ import path from "node:path";
 import { staticImageSrcSet } from "./staticImages";
 
 describe("staticImageSrcSet", () => {
-  it("offers the 640px copy with the original for listed photos only", () => {
+  it("offers the 360, 480 and 640px copies with the original for listed photos only", () => {
     expect(staticImageSrcSet("/images/beauty-spa/beauty-massage.webp")).toBe(
-      "/images/beauty-spa/beauty-massage-640.webp 640w, /images/beauty-spa/beauty-massage.webp 900w"
+      "/images/beauty-spa/beauty-massage-360.webp 360w, /images/beauty-spa/beauty-massage-480.webp 480w, /images/beauty-spa/beauty-massage-640.webp 640w, /images/beauty-spa/beauty-massage.webp 900w"
     );
     expect(staticImageSrcSet("/images/somewhere-else.webp")).toBeUndefined();
     expect(staticImageSrcSet("https://static.wixstatic.com/media/x.jpg")).toBeUndefined();

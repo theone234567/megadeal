@@ -290,15 +290,19 @@ export default async function BusinessProfilePage(
       {/* One photo across the top, kept low so the details stay in view. */}
       {cover && (
         <div className="relative mt-4 aspect-[3/1] w-full overflow-hidden rounded-2xl bg-slate-100 sm:aspect-[4/1] lg:mt-5">
-          <Image
+          {/* A plain img with a srcset (T245): images are unoptimized on
+              Cloudflare, so next/image sent every phone the 1200px file. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={wixImageUrl(cover, 1200, 800)}
+            srcSet={wixImageSrcSet(cover, [750, 1200], 3 / 2)}
+            sizes="(min-width: 1200px) 1136px, 100vw"
             // The business's own photo, named for image search and screen
             // readers: "Forno Ponsonby, Ponsonby, Auckland".
             alt={[business.businessName, place].filter(Boolean).join(", ")}
-            fill
-            priority
-            sizes="(min-width: 1200px) 1136px, 100vw"
-            className="object-cover"
+            fetchPriority="high"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
       )}
