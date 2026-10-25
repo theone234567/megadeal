@@ -247,7 +247,7 @@ export default function DealDetail({
         ) : (
           category && <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-hp-purple">{category}</span>
         )}
-        <h1 className="text-balance font-display text-[1.75rem] font-bold leading-[1.15] text-hp-ink sm:text-[2.125rem] lg:text-[2.5rem]">
+        <h1 dir="auto" className="text-balance [overflow-wrap:anywhere] font-display text-[1.75rem] font-bold leading-[1.15] text-hp-ink sm:text-[2.125rem] lg:text-[2.5rem]">
           {deal.name}
         </h1>
         {(deal.businessName || place) && (

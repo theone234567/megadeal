@@ -90,7 +90,9 @@ export default function Header({
         <div className="mx-auto flex h-[74px] w-full max-w-[1184px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           {/* The logo always goes to the homepage (megadeal.co.nz); before
               launch that shows visitors the coming-soon page. */}
-          <Link href="/" aria-label="MegaDeal home" className="flex min-w-0 shrink items-center gap-3">
+          {/* The name starts with what's visible, "MegaDeal for business"
+              (WCAG 2.5.3 label in name, T253), then says where it goes. */}
+          <Link href="/" aria-label="MegaDeal for business, home" className="flex min-w-0 shrink items-center gap-3">
             <BrandLogo placement="landing" tone={T.logo} />
             <span className={`hidden h-5 w-px shrink-0 sm:block ${T.divider}`} aria-hidden />
             <span className={`hidden shrink-0 text-sm sm:inline-block ${T.muted}`}>

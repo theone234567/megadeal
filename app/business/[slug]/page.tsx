@@ -267,7 +267,7 @@ export default async function BusinessProfilePage(
           </span>
         )}
         <div className="min-w-0">
-          <h1 className="font-display text-2xl font-semibold leading-tight text-slate-900 sm:text-[2rem]">{business.businessName}</h1>
+          <h1 dir="auto" className="font-display text-2xl font-semibold leading-tight text-slate-900 [overflow-wrap:anywhere] sm:text-[2rem]">{business.businessName}</h1>
           {(category || place) && <p className="mt-0.5 text-base text-slate-600">{[category, place].filter(Boolean).join(" · ")}</p>}
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
             {business.claimed && (

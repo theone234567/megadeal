@@ -281,12 +281,6 @@ export default function ThingsToDoAdvertisingPage() {
         }}
       />
 
-      <a
-        href="#things-to-do-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#6D28D9] focus:shadow-card"
-      >
-        Skip to main content
-      </a>
 
       <div id="things-to-do-main">
         {/* 1 — Hero: lavender rounded panel, text left, photo right with the

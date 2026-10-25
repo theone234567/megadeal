@@ -127,12 +127,14 @@ export default function EmailSignupForm({
   // The "rounded" shape sits on the coming-soon page's soft-grey panel:
   // its colours come from that design (charcoal label, #625D6B supporting
   // text, purple links, a slightly firmer grey border, no button shadow).
+  // A ring as well as the border colour: on the dark footer the white
+  // border on a white box showed no focus at all (T253).
   const inputClass =
     rounded
-      ? "border border-[#D6D3DC] bg-white text-[#37343D] outline-none placeholder:text-[#625D6B] focus:border-brand-400"
+      ? "border border-[#D6D3DC] bg-white text-[#37343D] outline-none placeholder:text-[#625D6B] focus:border-brand-400 focus:ring-2 focus:ring-brand-200"
       : surface === "plain"
-      ? "border border-slate-200 bg-white text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400"
-      : "border border-white/40 bg-white/95 text-slate-800 outline-none placeholder:text-slate-400 focus:border-white";
+      ? "border border-slate-200 bg-white text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-200"
+      : "border border-white/40 bg-white/95 text-slate-800 outline-none placeholder:text-slate-400 focus:border-white focus:ring-4 focus:ring-white/60";
 
   const mutedTextClass = rounded ? "text-[#625D6B]" : surface === "plain" ? "text-slate-600" : "text-white/80";
   const linkClass = rounded

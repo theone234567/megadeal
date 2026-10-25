@@ -214,8 +214,12 @@ export default function DealCard({
         </p>
         {/* Two lines at most, and always two lines tall, so the rows of
             metadata and prices line up across a row of cards. */}
+        {/* dir="auto": names are the business's own text, in any script.
+            overflow-wrap: a long unbroken word wraps instead of spilling
+            out of the card (T253). */}
         <h3
-          className={`line-clamp-2 min-h-[2.7em] font-display text-[0.9375rem] font-bold leading-[1.35] text-hp-ink card-md:text-[1.0625rem] card-lg:text-lg ${
+          dir="auto"
+          className={`line-clamp-2 min-h-[2.7em] [overflow-wrap:anywhere] font-display text-[0.9375rem] font-bold leading-[1.35] text-hp-ink card-md:text-[1.0625rem] card-lg:text-lg ${
             linked ? "group-hover:text-hp-purple" : ""
           }`}
         >
@@ -225,7 +229,7 @@ export default function DealCard({
         {metaLine && (
           <p className="flex min-w-0 items-center gap-1 text-[0.8125rem] text-hp-muted card-md:text-sm">
             <MapPinIcon className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">{metaLine}</span>
+            <span dir="auto" className="truncate">{metaLine}</span>
           </p>
         )}
 

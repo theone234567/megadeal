@@ -14,7 +14,8 @@ import { formatMoney } from "@/lib/format";
 // that entirely and skips shipping extra marker image assets.
 function pinIcon(emoji: string) {
   return L.divIcon({
-    html: `<div style="font-size:26px;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))">${emoji}</div>`,
+    // The emoji is decoration; each marker's title is its name (T253).
+    html: `<div aria-hidden="true" style="font-size:26px;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))">${emoji}</div>`,
     className: "",
     iconSize: [26, 26],
     iconAnchor: [13, 24],
@@ -78,7 +79,9 @@ export default function DealsMap({
       <MapContainer
         center={fallbackCenter}
         zoom={6}
-        scrollWheelZoom
+        // Off so scrolling the page past the map doesn't zoom it instead
+        // (T253); the + and − buttons, pinch and double-click still zoom.
+        scrollWheelZoom={false}
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
@@ -87,12 +90,17 @@ export default function DealsMap({
         />
         <FitBounds points={points} />
         {userLocation && (
-          <Marker position={[userLocation.lat, userLocation.lng]} icon={YOU_ICON}>
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={YOU_ICON} title="You are here">
             <Popup>You are here</Popup>
           </Marker>
         )}
         {pinned.map((deal) => (
-          <Marker key={deal.id} position={[deal.businessLat, deal.businessLng]} icon={DEAL_ICON}>
+          <Marker
+            key={deal.id}
+            position={[deal.businessLat, deal.businessLng]}
+            icon={DEAL_ICON}
+            title={deal.businessName ? `${deal.name}, ${deal.businessName}` : deal.name}
+          >
             <Popup>
               <Link href={deal.isTest ? `/admin/test-deals/${deal.id}` : `/deal/${deal.slug}`} prefetch={false} className="font-semibold text-brand-700 hover:underline">
                 {deal.name}

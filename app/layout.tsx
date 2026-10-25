@@ -108,10 +108,20 @@ export default function RootLayout({
               pages need to know who's signed in, and they have it in their
               own layouts. Here it would put a session check (/api/auth/me)
               on every page, public or not. */}
+          {/* First tab stop on every page: past the banner and header
+              (about 8 stops) straight to the page itself (T253). */}
+          <a
+            href="#content"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-hp-purple focus:shadow-card focus:outline-none focus:ring-2 focus:ring-hp-purple"
+          >
+            Skip to main content
+          </a>
           <PreviewBanner siteLaunched={DEALS_OPEN} prelaunchHome={PRELAUNCH_HOME} />
           {PRELAUNCH_HOME && <PrelaunchBar />}
           <Header prelaunch={PRELAUNCH_HOME} />
-          {children}
+          <div id="content" tabIndex={-1} className="outline-none">
+            {children}
+          </div>
           <Footer siteLaunched={SITE_LAUNCHED} prelaunchHome={PRELAUNCH_HOME} dealsOpen={DEALS_OPEN} />
         </MegadealArtProvider>
         {/* The site's structured data, after the page itself: search

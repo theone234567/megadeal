@@ -112,10 +112,11 @@ export default function DealRail({
         <ul
           ref={listRef}
           id={`${id}-list`}
-          // Focusable so a keyboard can scroll it.
-          tabIndex={0}
+          // Not a tab stop of its own: each card is a link, and tabbing to
+          // one scrolls it into view, so the list was a duplicate stop
+          // before the first card (T253).
           aria-label={title}
-          className="scrollbar-hide -mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 pt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-hp-purple sm:-mx-6 sm:gap-4 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:scroll-px-0 lg:px-0"
+          className="scrollbar-hide -mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 pt-1 sm:-mx-6 sm:gap-4 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:scroll-px-0 lg:px-0"
         >
           {deals.map((deal, i) => (
             <li

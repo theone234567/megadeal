@@ -392,15 +392,6 @@ export default function BeautySpaAdvertisingPage() {
         }}
       />
 
-      {/* Skip link — no site-wide equivalent to inherit, same precedent as
-          /advertise/restaurants. */}
-      <a
-        href="#beauty-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#6D28D9] focus:shadow-card"
-      >
-        Skip to main content
-      </a>
-
       <div id="beauty-main">
         {/* Hero — the coming-soon page's treatment: a pale lavender rounded
             panel in white space, text left and photo right (text and the

@@ -151,12 +151,6 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
         }}
       />
 
-      <a
-        href={`#${mainId}`}
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-[#6D28D9] focus:shadow-card"
-      >
-        Skip to main content
-      </a>
 
       <div id={mainId}>
         {/* Hero: lavender panel, text left, photo right with the mascot at

@@ -361,3 +361,20 @@ div:has(> img[alt^="Auckland CBD skyline"]) {
 img[alt^="Auckland CBD skyline"] {
   opacity: 0 !important;
 }
+
+/* Visitors who ask their device for less motion (T253): the mascot's
+   idle loops, shimmer and slide-ins stop at their resting frame, hover
+   transitions are instant and in-page links jump instead of gliding. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+  }
+}
