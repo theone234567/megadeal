@@ -82,6 +82,11 @@ function finishedAt(deal: DealRecord): number {
 export default function PortalPage() {
   const { member, isLoggedIn, logout } = useSession();
   const [merchant, setMerchant] = useState<MerchantRecord | null | undefined>(undefined);
+  /** The finish-your-listing form is on screen: it stays until the
+   *  business presses Submit in it (T225). A photo saves as soon as it's
+   *  added, and used to swap the screen to the dashboard mid-edit,
+   *  throwing away anything typed but not yet submitted. */
+  const [finishing, setFinishing] = useState(false);
   // Assumed launched until the server says otherwise, so the pre-launch
   // notice never flashes up after launch.
   // Whether approved deals are public (before launch too, with live
@@ -492,7 +497,7 @@ export default function PortalPage() {
             />
           </div>
         </>
-      ) : !profileComplete ? (
+      ) : !profileComplete || finishing ? (
         /* Order follows what the merchant still has to do. Until the
            profile has an address and at least one photo, finishing it is
            the job — a deal without them can't appear on a map or look
@@ -510,9 +515,15 @@ export default function PortalPage() {
           <div className="mt-5 rounded-2xl bg-white p-5">
             <MerchantProfileForm
               merchant={merchant}
-              onSaved={(updated) => setMerchant(updated)}
+              onSaved={(updated) => {
+                setFinishing(false);
+                setMerchant(updated);
+              }}
               startEditing
-              onPhotosConfirm={handleChangePhotos}
+              onPhotosConfirm={async (photos) => {
+                setFinishing(true);
+                await handleChangePhotos(photos);
+              }}
               photosError={photosError}
             />
           </div>

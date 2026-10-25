@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import MerchantRow, { type AdminMerchant } from "@/components/admin/MerchantRow";
+import MerchantRow, { listingMissing, type AdminMerchant } from "@/components/admin/MerchantRow";
 import DealRow, { type AdminDeal } from "@/components/admin/DealRow";
 import { DEAL_STATUS_FILTERS, matchesDealStatusFilter, type DealStatusFilter } from "@/lib/adminDealFilters";
 import SubscriberRow, { type AdminSubscriber } from "@/components/admin/SubscriberRow";
@@ -156,7 +156,9 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const pendingMerchants = merchants?.filter((m) => (m.status || "Pending") === "Pending").length ?? 0;
+  // Waiting for a decision: applied and finished their listing (T225).
+  // One still being finished isn't, and its row says what's missing.
+  const pendingMerchants = merchants?.filter((m) => (m.status || "Pending") === "Pending" && listingMissing(m).length === 0).length ?? 0;
   const pendingDeals = deals?.filter((d) => (d.status || "Live") === "Pending Approval").length ?? 0;
   const pendingPhotos = deals?.filter((d) => d.pendingPhotoUrl && d.status !== "Cancelled").length ?? 0;
   // Waiting for approval past their requested start (lib/dealSchedule.ts):

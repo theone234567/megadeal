@@ -30,7 +30,7 @@ function TimeSelect({
       aria-label={ariaLabel}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm outline-none focus:border-brand-400"
+      className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm outline-none focus:border-brand-400"
     >
       {TIME_OPTIONS.map((t) => (
         <option key={t} value={t}>
@@ -124,9 +124,12 @@ export default function BusinessHoursEditor({
                   template. Toggling the state merchants actually think
                   about first (which days they're open) is also the more
                   natural direction for a checkbox-shaped control. */}
-              <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
-                Open
-                <span className="relative inline-block h-5 w-9 shrink-0">
+              {/* 44 x 24 px with a visible edge when off, and the state in
+                  words beside it (T225): the small grey switch was easy to
+                  miss on the white card. */}
+              <label className="flex min-h-[44px] cursor-pointer items-center gap-2 text-xs font-semibold text-slate-700">
+                <span className={day.closed ? "text-slate-500" : "text-brand-700"}>{day.closed ? "Closed" : "Open"}</span>
+                <span className="relative inline-block h-6 w-11 shrink-0">
                   <input
                     type="checkbox"
                     aria-label={`${day.day} open`}
@@ -143,10 +146,12 @@ export default function BusinessHoursEditor({
                           : day.ranges,
                       });
                     }}
+                    role="switch"
+                    aria-checked={!day.closed}
                     className="peer sr-only"
                   />
-                  <span className="absolute inset-0 rounded-full bg-slate-300 transition-colors peer-checked:bg-brand-600 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-400 peer-focus-visible:ring-offset-1" />
-                  <span className="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4" />
+                  <span className="absolute inset-0 rounded-full border-2 border-slate-500 bg-slate-200 transition-colors peer-checked:border-brand-600 peer-checked:bg-brand-600 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-400 peer-focus-visible:ring-offset-2" />
+                  <span className="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow ring-1 ring-slate-400 transition-transform peer-checked:translate-x-5 peer-checked:ring-0" />
                 </span>
               </label>
             </div>

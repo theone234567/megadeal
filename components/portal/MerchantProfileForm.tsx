@@ -223,6 +223,11 @@ export default function MerchantProfileForm({
     if (onPhotosConfirm && parseBusinessPhotos(merchant.photos).length === 0) {
       list.push({ id: "profile-photos", message: "Add at least one business photo" });
     }
+    // With everything else, not after it (T225): an unticked box used to
+    // be the only thing said until it was ticked.
+    if (createMode && !agreedToTerms) {
+      list.push({ id: "profile-agreedToTerms", message: "Agree to the Terms and Conditions" });
+    }
     // In the order they come on the form, the photo among them.
     const at = (id: string) => document.getElementById(id);
     return list.sort((a, b) => {
