@@ -50,8 +50,15 @@ const cookiesOf = (res: Response) =>
 function latestCode(email: string): string {
   const lines = readFileSync(`${DIR}/mail.log`, "utf8").trim().split("\n").reverse();
   for (const l of lines) {
-    const b = JSON.parse(JSON.parse(l).body);
-    if (b.user.email === email) return b.email_data.token;
+    const row = JSON.parse(l);
+    // The Auth server's hook body, or the local mail catcher's email.
+    if (row.body) {
+      const b = JSON.parse(row.body);
+      if (b.user.email === email) return b.email_data.token;
+    } else if ([].concat(row.to).includes(email as never)) {
+      const code = String(row.subject ?? "").match(/\b(\d{6})\b/)?.[1];
+      if (code) return code;
+    }
   }
   throw new Error(`no email for ${email}`);
 }
@@ -79,7 +86,7 @@ describe.skipIf(!ENABLED)("business logins on Supabase, end to end", () => {
   it("signs up with an emailed code, and is signed in", async () => {
     const register = await import("@/app/api/auth/register/route");
     const r = await register.POST(req("/api/auth/register", { email, password }));
-    expect(await r.json()).toEqual({ status: "verify" });
+    expect(await r.json()).toMatchObject({ status: "verify" });
 
     const verify = await import("@/app/api/auth/verify/route");
     expect((await verify.POST(req("/api/auth/verify", { email, code: "000000" }))).status).toBe(400);
@@ -101,7 +108,7 @@ describe.skipIf(!ENABLED)("business logins on Supabase, end to end", () => {
     const register = await import("@/app/api/auth/register/route");
     const before = sent.length;
     const again = await register.POST(req("/api/auth/register", { email: email.toUpperCase(), password: "another long password 9" }));
-    expect(await again.json()).toEqual({ status: "verify" });
+    expect(await again.json()).toMatchObject({ status: "verify" });
     await vi.waitFor(() => expect(sent.slice(before).map((m) => m.subject)).toEqual(["You already have a MegaDeal business account"]));
   });
 
@@ -184,7 +191,7 @@ describe.skipIf(!ENABLED)("business logins on Supabase, end to end", () => {
     expect((await (await me.GET(req("/api/auth/me", undefined, session))).json()).member).toBeNull();
   });
 
-  it("an admin can give a business a new password, which signs it out elsewhere", async () => {
+  it("an admin gives a business a one-time link to set its own password, never a password (T248)", async () => {
     vi.doMock("@/lib/adminSession", () => ({ isAdminRequest: async () => true }));
     vi.doMock("@/lib/adminAudit", () => ({ logAdminAction: async () => {}, auditTarget: (n: unknown) => String(n) }));
     const { withDb } = await import("./db/connection");
@@ -192,12 +199,23 @@ describe.skipIf(!ENABLED)("business logins on Supabase, end to end", () => {
     const login = await import("@/app/api/auth/login/route");
     const before = cookiesOf(await login.POST(req("/api/auth/login", { email, password: "another long new password" })));
     const route = await import("@/app/api/admin/merchants/[id]/reset-password/route");
-    const res = await route.POST(req(`/api/admin/merchants/${m.id}/reset-password`, {}), { params: Promise.resolve({ id: m.id }) });
-    const { password: fresh } = await res.json();
-    expect(fresh).toMatch(/^\S{16}$/);
+    const params = { params: Promise.resolve({ id: m.id }) };
+    expect((await route.POST(req(`/api/admin/merchants/${m.id}/reset-password`, {}), params)).status).toBe(400);
+    const res = await route.POST(req(`/api/admin/merchants/${m.id}/reset-password`, { send: "link" }), params);
+    const body = await res.json();
+    expect(body.password).toBeUndefined();
+    const token = String(body.link).match(/reset-password\?token=([0-9a-f]+)/)![1];
+    // Nothing changes until the business uses it.
     const me = await import("@/app/api/auth/me/route");
+    expect((await (await me.GET(req("/api/auth/me", undefined, before))).json()).member).not.toBeNull();
+    const confirm = await import("@/app/api/auth/confirm-password-reset/route");
+    expect((await confirm.POST(req("/api/auth/confirm-password-reset", { token, newPassword: "their own new password" }))).status).toBe(200);
     expect((await (await me.GET(req("/api/auth/me", undefined, before))).json()).member).toBeNull();
-    expect(await (await login.POST(req("/api/auth/login", { email, password: fresh }))).json()).toEqual({ status: "success" });
+    expect(await (await login.POST(req("/api/auth/login", { email, password: "their own new password" }))).json()).toEqual({ status: "success" });
+    // Emailed instead: the same kind of link, to the business.
+    sent.length = 0;
+    expect((await route.POST(req(`/api/admin/merchants/${m.id}/reset-password`, { send: "email" }), params)).status).toBe(200);
+    expect(sent[0]?.html).toMatch(/reset-password\?token=[0-9a-f]+/);
     vi.doUnmock("@/lib/adminSession");
     vi.doUnmock("@/lib/adminAudit");
   });

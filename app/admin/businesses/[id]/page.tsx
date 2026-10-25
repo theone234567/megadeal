@@ -130,7 +130,9 @@ export default function AdminBusinessDetailPage() {
   // lib/adminResetPassword.ts) — this is the stopgap until that's fixed:
   // set a new password directly and relay it to the business yourself.
   const [resettingPassword, setResettingPassword] = useState(false);
-  const [newPassword, setNewPassword] = useState<string | null>(null);
+  /** What the last "Account access" action gave: where it was emailed,
+   *  or the one-time link to pass on (T248: never a password). */
+  const [resetResult, setResetResult] = useState<{ emailedTo?: string; link?: string; hours?: number } | null>(null);
   const [resetPasswordError, setResetPasswordError] = useState<string | null>(null);
 
   function seedFrom(item: AdminMerchant) {
@@ -261,19 +263,21 @@ export default function AdminBusinessDetailPage() {
     }
   }
 
-  async function resetPassword() {
+  async function resetPassword(send: "email" | "link") {
     setResettingPassword(true);
     setResetPasswordError(null);
-    setNewPassword(null);
+    setResetResult(null);
     try {
       const res = await fetch(`/api/admin/merchants/${params.id}/reset-password`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ send }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || "Couldn't reset the password.");
+        throw new Error(data.error || "Couldn't make a link.");
       }
-      setNewPassword(data.password);
+      setResetResult(data);
     } catch (err: any) {
       setResetPasswordError(err?.message || "Couldn't reset the password. Please try again.");
     } finally {
@@ -458,28 +462,36 @@ export default function AdminBusinessDetailPage() {
       <section className="mt-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-card">
         <h2 className="text-sm font-bold text-slate-900">Account access</h2>
         <p className="mt-1 text-xs text-slate-500">
-          For a business that can&apos;t use &quot;Forgot password&quot; (no access to its
-          email, say). Sets a new password directly — nothing is emailed to the
-          business, so you&apos;ll need to pass it on to them yourself.
+          For a business that can&apos;t get in. Either way they choose their own password with a link that works once, for 24
+          hours; their current password keeps working until then. You never see a password.
         </p>
-        <button
-          onClick={resetPassword}
-          disabled={resettingPassword || !merchant.email}
-          className="mt-3 rounded-full border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 active:scale-95 disabled:opacity-40"
-        >
-          {resettingPassword ? "Generating…" : "Generate new password"}
-        </button>
-        {newPassword && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            onClick={() => resetPassword("email")}
+            disabled={resettingPassword || !merchant.email}
+            className="rounded-full border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 active:scale-95 disabled:opacity-40"
+          >
+            Email them a reset link
+          </button>
+          <button
+            onClick={() => resetPassword("link")}
+            disabled={resettingPassword || !merchant.email}
+            className="rounded-full border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-50 active:scale-95 disabled:opacity-40"
+          >
+            Get a link to pass on
+          </button>
+        </div>
+        {resetResult?.emailedTo && (
+          <p role="status" className="mt-3 text-sm font-semibold text-emerald-700">
+            Reset link emailed to {resetResult.emailedTo}.
+          </p>
+        )}
+        {resetResult?.link && (
           <div className="mt-3 rounded-xl border border-brand-100 bg-brand-50 p-3">
             <p className="text-xs font-semibold text-brand-900">
-              New password — shown once, won&apos;t be shown again:
+              One-time link for the business (works once, for {resetResult.hours ?? 24} hours). Send it to them yourself, e.g. by text:
             </p>
-            <p className="mt-1 select-all font-mono text-base font-bold text-brand-900">
-              {newPassword}
-            </p>
-            <p className="mt-1 text-xs text-brand-700/80">
-              This is already set — the business can sign in with it right away.
-            </p>
+            <p className="mt-1 select-all break-all font-mono text-sm text-brand-900">{resetResult.link}</p>
           </div>
         )}
         {resetPasswordError && (
