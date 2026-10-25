@@ -8,7 +8,7 @@ import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { fetchBusinessProfileBySlug } from "@/lib/fetchDealServer";
+import { fetchBusinessIndexFacts, fetchBusinessProfileBySlug } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME, DEALS_OPEN } from "@/lib/siteConfig";
 import { getDirectionsUrl } from "@/lib/mapLinks";
 import { phoneLink } from "@/lib/booking";
@@ -35,7 +35,7 @@ import {
   toSpecialOpeningHoursSpecification,
 } from "@/lib/businessHours";
 import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
-import { businessPageIsThin } from "@/lib/businessIndexing";
+import { businessPageIndexable } from "@/lib/businessIndexing";
 import { INDEXABLE } from "@/lib/robotsMeta";
 
 // Every other page that fetches live Wix data (homepage, category pages,
@@ -63,7 +63,9 @@ export async function generateMetadata(
   // for "<business> <town>" and "<service> near me" searches: "Harbour &
   // Hearth, Takapuna, Auckland — Deals & Offers", shortened for long
   // names to what search results show (lib/dealTitle.ts).
-  const title = businessTitle(business);
+  // "Deals & Offers" only while it has some (T232).
+  const title = businessTitle(business, deals.length > 0);
+  const facts = await fetchBusinessIndexFacts(business.id);
   // business.bio is merchant-written free text (up to 600 chars) —
   // truncated at a word boundary, same as deal descriptions on
   // /deal/[slug], so a long bio gets a clean SERP snippet instead of
@@ -88,9 +90,11 @@ export async function generateMetadata(
     // — but this page is reachable directly regardless, so it needs the
     // same protection: no business/deal page should get indexed while
     // the catalog might still hold pre-launch test data.
-    // Also kept out until it has something on it (lib/businessIndexing.ts).
+    // Also kept out until it has a real offer and a finished profile
+    // (lib/businessIndexing.ts, T232).
     robots:
-      DEALS_OPEN && !businessPageIsThin({ liveDeals: deals.length, bio: business.bio, photos: business.photos.length })
+      DEALS_OPEN &&
+      businessPageIndexable({ liveDeals: deals.length, recentDeals: facts.recentDeals, bio: business.bio, photos: business.photos.length, hasAddress: facts.hasAddress })
         ? INDEXABLE
         : { index: false, follow: true },
     openGraph: {

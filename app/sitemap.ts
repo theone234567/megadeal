@@ -8,7 +8,7 @@ import {
   fetchAllLiveDealsServer,
 } from "@/lib/fetchDealServer";
 import { CATEGORIES, categoryPath } from "@/lib/categories";
-import { businessPageIsThin } from "@/lib/businessIndexing";
+import { businessPageIndexable } from "@/lib/businessIndexing";
 import { hubIsIndexable } from "@/lib/robotsMeta";
 
 // Deals are created/edited by merchants continuously, so a build-time-only
@@ -111,7 +111,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const businesses = await fetchAllBusinessSlugsForSitemap();
   // Not the thin ones: no live deal, no bio, no photos (noindex too).
   const businessPages: MetadataRoute.Sitemap = businesses
-    .filter((b) => !businessPageIsThin({ liveDeals: deals.filter((d) => d.merchantEmail === b.email).length, bio: b.bio, photos: b.photos }))
+    .filter((b) =>
+      businessPageIndexable({ liveDeals: deals.filter((d) => d.merchantEmail === b.email).length, recentDeals: b.recentDeals, bio: b.bio, photos: b.photos, hasAddress: b.hasAddress })
+    )
     .map((b) => ({
     url: `${SITE_URL}/business/${b.slug}`,
     lastModified: newest([b.updatedAt, ...deals.filter((d) => d.merchantEmail === b.email).map((d) => d.updatedAt)]),
@@ -135,6 +137,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const cityPages: MetadataRoute.Sitemap = hubIsIndexable(deals.length)
     ? [{ url: `${SITE_URL}${cityPath()}`, lastModified: newest(deals.map((d) => d.updatedAt)), changeFrequency: "daily", priority: 0.8 }]
     : [];
+
+  // The homepage lists the live deals: dated by the newest of them (T232).
+  const home = staticPages[0];
+  const homeDate = newest(deals.map((d) => d.updatedAt));
+  if (homeDate && (SITE_LAUNCHED || PRELAUNCH_HOME) && home.url === SITE_URL) home.lastModified = homeDate;
 
   return [
     ...staticPages,

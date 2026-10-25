@@ -85,3 +85,9 @@ describe("businessTitle", () => {
     expect(businessTitle({ ...b, suburb: null, city: null })).toBe("Harbour & Hearth — Deals & Offers");
   });
 });
+
+describe("businessTitle with no live deals (T232)", () => {
+  it("says where it is, not 'Deals & Offers'", () => {
+    expect(businessTitle({ businessName: "Harbour & Hearth", suburb: "Takapuna", city: "Auckland" }, false)).toBe("Harbour & Hearth, Takapuna, Auckland");
+  });
+});

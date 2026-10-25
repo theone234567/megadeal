@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { businessPageIsThin } from "./businessIndexing";
+import { businessPageIndexable } from "./businessIndexing";
 
-describe("which business pages search engines get", () => {
-  it("leaves out only a page with no live deal, no bio and no photos", () => {
-    expect(businessPageIsThin({ liveDeals: 0, bio: null, photos: 0 })).toBe(true);
-    expect(businessPageIsThin({ liveDeals: 0, bio: "   ", photos: 0 })).toBe(true);
-    expect(businessPageIsThin({ liveDeals: 1, bio: null, photos: 0 })).toBe(false);
-    expect(businessPageIsThin({ liveDeals: 0, bio: "Neighbourhood pizzeria.", photos: 0 })).toBe(false);
-    expect(businessPageIsThin({ liveDeals: 0, bio: null, photos: 2 })).toBe(false);
+describe("which business pages search engines get (T232)", () => {
+  const full = { liveDeals: 1, recentDeals: 0, bio: "x".repeat(120), photos: 2, hasAddress: true };
+  it("a finished profile with a live deal, or one that ended lately", () => {
+    expect(businessPageIndexable(full)).toBe(true);
+    expect(businessPageIndexable({ ...full, liveDeals: 0, recentDeals: 1 })).toBe(true);
+  });
+  it("not a profile with a bio but no deal, a short bio, no photo or no address", () => {
+    expect(businessPageIndexable({ ...full, liveDeals: 0 })).toBe(false);
+    expect(businessPageIndexable({ ...full, bio: "Neighbourhood pizzeria." })).toBe(false);
+    expect(businessPageIndexable({ ...full, photos: 0 })).toBe(false);
+    expect(businessPageIndexable({ ...full, hasAddress: false })).toBe(false);
   });
 });

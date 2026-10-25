@@ -303,10 +303,12 @@ export async function resolveDealRedirect(db: Sql, slug: string): Promise<string
  *  sitemap. `email` is "" here: deals carry their business's slug. */
 export async function listBusinessesForSitemap(
   db: Sql
-): Promise<{ slug: string; email: string; updatedAt: string | null; bio: string | null; photos: number }[]> {
+): Promise<{ slug: string; email: string; updatedAt: string | null; bio: string | null; photos: number; hasAddress: boolean; recentDeals: number }[]> {
   const rows = await db.query(
     `select m.business_name, m.slug_id, m.slug, m.email, m.updated_at, m.bio,
-            jsonb_array_length(coalesce(m.photos, '[]'::jsonb)) as photo_count
+            jsonb_array_length(coalesce(m.photos, '[]'::jsonb)) as photo_count,
+            coalesce(m.address, '') <> '' as has_address,
+            (${RECENT_DEALS_SQL}) as recent_deals
        from public.merchants m where ${PUBLIC_BUSINESS} order by m.created_at`
   );
   return rows.map((r) => ({
@@ -315,7 +317,25 @@ export async function listBusinessesForSitemap(
     updatedAt: toIso(r.updated_at),
     bio: blankToNull(r.bio),
     photos: Number(r.photo_count ?? 0),
+    hasAddress: r.has_address === true,
+    recentDeals: Number(r.recent_deals ?? 0),
   }));
+}
+
+/** Deals of business `m` that were live and ended in the last 90 days
+ *  (lib/businessIndexing.ts RECENT_DEAL_DAYS). */
+const RECENT_DEALS_SQL = `select count(*)::int from public.deals d
+  where d.merchant_id = m.id and not d.is_test and d.ever_live
+    and d.expires_at <= now() and d.expires_at > now() - interval '90 days'`;
+
+/** The same, and whether it has an address on file, for one business's page. */
+export async function businessIndexFacts(db: Sql, businessId: string): Promise<{ recentDeals: number; hasAddress: boolean }> {
+  const [row] = await db.query<{ recent_deals: number; has_address: boolean }>(
+    `select (${RECENT_DEALS_SQL}) as recent_deals, coalesce(m.address, '') <> '' as has_address
+       from public.merchants m where m.id = $1::uuid`,
+    [businessId],
+  );
+  return { recentDeals: Number(row?.recent_deals ?? 0), hasAddress: row?.has_address === true };
 }
 
 /** Every live deal's address, last change, category and business email,

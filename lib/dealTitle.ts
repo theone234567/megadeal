@@ -48,13 +48,15 @@ export function dealTitles(deal: DealTitleInput): { title: string; full: string 
  * then "— Deals", then without the suburb. The place is left out where
  * the business name already says it ("Auckland Rapid Plumbing").
  */
-export function businessTitle(b: { businessName: string; suburb: string | null; city: string | null }): string {
+export function businessTitle(b: { businessName: string; suburb: string | null; city: string | null }, hasDeals = true): string {
   const name = b.businessName.trim();
   const lower = name.toLowerCase();
   const notInName = (v: string | null) => (v && v.trim() && !lower.includes(v.trim().toLowerCase()) ? v.trim() : null);
   const suburb = notInName(b.suburb);
   const place = placeLabel(suburb, notInName(b.city));
   const at = (p: string | null) => (p ? `${name}, ${p}` : name);
+  // No live deals: just where it is (T232), not a promise of offers.
+  if (!hasDeals) return [at(place), at(suburb ?? place), name].find((t) => t.length <= TITLE_MAX) ?? name;
   const ordered = [
     `${at(place)} — Deals & Offers`,
     `${at(suburb ?? place)} — Deals & Offers`,

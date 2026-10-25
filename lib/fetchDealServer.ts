@@ -205,6 +205,17 @@ export const fetchTestBusinessDeals = cache(async (): Promise<Deal[]> => {
   }
 });
 
+/** What decides whether a business page is indexed, beyond its live deals
+ *  (lib/businessIndexing.ts). On a failed read, as if it had none: the
+ *  page is left out of search for now rather than guessed in. */
+export const fetchBusinessIndexFacts = cache(async (businessId: string): Promise<{ recentDeals: number; hasAddress: boolean }> => {
+  try {
+    return await withDb((db) => pg.businessIndexFacts(db, businessId));
+  } catch {
+    return { recentDeals: 0, hasAddress: false };
+  }
+});
+
 export interface BusinessProfile extends PublicBusiness {
   id: string;
 }
@@ -239,7 +250,7 @@ async function loadBusinessProfileBySlug(
  * business page by its newest deal.
  */
 export async function fetchAllBusinessSlugsForSitemap(): Promise<
-  { slug: string; email: string; updatedAt: string | null; bio: string | null; photos: number }[]
+  { slug: string; email: string; updatedAt: string | null; bio: string | null; photos: number; hasAddress: boolean; recentDeals: number }[]
 > {
   try {
     return await withDb((db) => pg.listBusinessesForSitemap(db));
