@@ -64,6 +64,15 @@ export default function PrivacyPage() {
       <ul>
         <li>Show relevant deals and keep the site working well</li>
         <li>Review and publish business listings</li>
+        <li>
+          Email businesses about their account and deals, and send them
+          MegaDeal news, tips, announcements and reminders (a business can
+          unsubscribe from these any time; see{" "}
+          <a href="/terms#business-emails" className="text-brand-600 underline hover:text-brand-700">
+            our terms
+          </a>
+          )
+        </li>
         <li>Provide customer support and respond to enquiries</li>
         <li>Detect and prevent fraud, and keep the site secure</li>
         <li>Understand which deals and categories perform well, in aggregate</li>
@@ -197,7 +206,11 @@ export default function PrivacyPage() {
         Under the Privacy Act 2020 you can, at any time:
       </p>
       <ul>
-        <li>Unsubscribe from marketing emails using the link in any email</li>
+        <li>
+          Unsubscribe from marketing emails using the link in any of them
+          (a business can also do it in its portal, under &ldquo;Emails
+          from MegaDeal&rdquo;)
+        </li>
         <li>Request a copy of the personal data we hold about you</li>
         <li>Ask us to correct or delete your personal data</li>
       </ul>

@@ -114,7 +114,6 @@ type ApplicationValues = {
   honeypot: string;
   agreedToTerms: boolean;
   /** Ticked "Email me MegaDeal business news" (unticked to start). */
-  marketingOptIn: boolean;
 };
 
 function readApplicationValues(formData: FormData): ApplicationValues {
@@ -130,7 +129,6 @@ function readApplicationValues(formData: FormData): ApplicationValues {
     referredByCode: String(formData.get("referredByCode") ?? ""),
     honeypot: String(formData.get(HONEYPOT_FIELD) ?? ""),
     agreedToTerms: formData.get("agreedToTerms") === "on",
-    marketingOptIn: formData.get("marketingOptIn") === "on",
   };
 }
 
@@ -151,7 +149,6 @@ async function submitApplication(values: ApplicationValues): Promise<string | un
       referredByCode: values.referredByCode,
       mg_contact_ref: values.honeypot,
       agreedToTerms: values.agreedToTerms,
-      marketingOptIn: values.marketingOptIn,
       // First-touch ad attribution (see lib/attribution.ts) — carried
       // through to Meta's Conversions API as this conversion's custom_data
       // so ad campaigns can eventually be judged on actual registrations,
@@ -1075,20 +1072,13 @@ export default function MerchantSignupForm({
           {fieldError("signup-agreedToTerms")}
         </div>
 
-        {/* Asked, never assumed (NZ's Unsolicited Electronic Messages Act):
-            only a tick here puts the business on the business-news list.
-            Emails about its account and deals are sent either way. */}
-        <label className={`flex items-start gap-2 ${redesign ? "text-sm leading-snug text-[#37343D] lg:text-[13px]" : "text-base text-slate-600"}`}>
-          <input
-            id="signup-marketingOptIn"
-            type="checkbox"
-            name="marketingOptIn"
-            className="mt-0.5 h-5 w-5 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-400"
-          />
-          <span>
-            Email me business news and tips from MegaDeal (optional, unsubscribe any time).
-          </span>
-        </label>
+        {/* One email choice (owner's decision, 25 Oct 2026): a business is
+            subscribed to news and updates, said here and in the Terms
+            (section 3), and can unsubscribe any time in its portal or from
+            any of those emails (lib/businessEmailChoices.ts). */}
+        <p className={redesign ? "text-xs leading-snug text-[#6B6773]" : "text-sm text-slate-500"}>
+          We&apos;ll email you about your account and deals, plus MegaDeal news and tips. Unsubscribe from news any time.
+        </p>
         </div>
 
         {/* Where Turnstile shows a challenge, if it ever needs one. Hidden

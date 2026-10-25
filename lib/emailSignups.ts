@@ -203,6 +203,20 @@ export async function unsubscribeEmailSignupByToken(token: string): Promise<bool
       }
       allSaved &&= saved;
     }
+    // A business on the business news list: its one email choice is off
+    // too (lib/businessEmailChoices.ts), so nothing optional still comes.
+    if (signup.audience === "merchant" && signup.email) {
+      const businesses = await queryAllByEmail(
+        (e) => adminClient.items.query("Merchants").eq("email", e),
+        String(signup.email),
+        "Merchants (unsubscribe)"
+      ).catch(() => []);
+      for (const merchant of businesses) {
+        if (!merchant?._id) continue;
+        const { optOutBusiness } = await import("./businessEmailOptOut");
+        allSaved &&= await optOutBusiness(merchant._id);
+      }
+    }
     return allSaved;
   } catch (err) {
     console.error("[emailSignups] unsubscribeEmailSignupByToken failed", err);

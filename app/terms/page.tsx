@@ -140,6 +140,18 @@ export default function TermsPage() {
         &quot;Disclaimers and liability&quot; below. We may cancel or
         discontinue MegaDeal, or any part of it, at any time.
       </p>
+      <p id="business-emails">
+        <strong>Emails to businesses.</strong> When you create a business
+        account, we email you about your account and your deals (for
+        example sign-in codes, approvals, deal updates and credits). We
+        also send MegaDeal news, tips, announcements and reminders for
+        businesses. You can unsubscribe from news, tips, announcements and
+        reminders at any time, in your business portal under &ldquo;Emails
+        from MegaDeal&rdquo; or with the unsubscribe link in any of those
+        emails. Emails about your account and your deals aren&apos;t
+        optional while you have an account, because you need them to use
+        MegaDeal.
+      </p>
 
       <h2>4. Accuracy of listings</h2>
       <p>

@@ -32,7 +32,7 @@ beforeAll(async () => {
   db = { query: async (text, params) => (await pglite.query<any>(text, params as any[])).rows };
   await db.query("insert into auth.users (id) values ($1)", [member.id]);
   vi.spyOn(console, "error").mockImplementation(() => {});
-  // A business that signed up without ticking "business news".
+  // A business that has just signed up.
   const apply = await import("@/app/api/merchants/apply/route");
   const res = await apply.POST(
     new NextRequest("https://megadeal.co.nz/api/merchants/apply", {
@@ -56,29 +56,53 @@ async function prefs(body?: unknown) {
   return { status: res.status, body: await res.json() };
 }
 
-describe("a business's email choices", () => {
-  it("start with news off (no tick at sign-up) and announcements on", async () => {
-    expect((await prefs()).body).toEqual({ news: false, announcements: true });
+describe("a business's one email choice (owner's decision, 25 Oct 2026)", () => {
+  it("starts subscribed: no box to tick at sign-up, the Terms say so", async () => {
+    expect((await prefs()).body).toEqual({ subscribed: true });
+    expect(await db.query("select count(*)::int as n from public.email_signups")).toEqual([{ n: 0 }]);
   });
 
-  it("can join the news list, and leave it again", async () => {
-    expect((await prefs({ news: true })).body.news).toBe(true);
-    expect(await db.query("select verified, unsubscribed from public.email_signups where audience = 'merchant'")).toEqual([
-      { verified: true, unsubscribed: false },
-    ]);
-    expect((await prefs({ news: false })).body.news).toBe(false);
-    expect((await db.query<{ unsubscribed: boolean }>("select unsubscribed from public.email_signups"))[0].unsubscribed).toBe(true);
-    expect((await prefs({ news: true })).body.news).toBe(true);
-  });
-
-  it("can turn announcements and reminders off and on, the same switch the email links use", async () => {
-    expect((await prefs({ announcements: false })).body.announcements).toBe(false);
+  it("turns off and on in one go, the same switch the email links use", async () => {
+    expect((await prefs({ subscribed: false })).body).toEqual({ subscribed: false });
     expect([...kv.keys()].some((k) => k.startsWith("biz-email-opt-out:"))).toBe(true);
-    expect((await prefs({ announcements: true })).body.announcements).toBe(true);
+    expect((await prefs({ subscribed: true })).body).toEqual({ subscribed: true });
     expect([...kv.keys()].some((k) => k.startsWith("biz-email-opt-out:"))).toBe(false);
   });
 
+  it("on the business news list too: off there means off, and back on turns both on", async () => {
+    await db.query(
+      "insert into public.email_signups (email, audience, source, verified, unsubscribed) values ('owner@harbourbistro.co.nz', 'merchant', 'waitlist', true, true)",
+    );
+    expect((await prefs()).body).toEqual({ subscribed: false });
+    expect((await prefs({ subscribed: true })).body).toEqual({ subscribed: true });
+    expect(await db.query("select unsubscribed from public.email_signups")).toEqual([{ unsubscribed: false }]);
+    expect((await prefs({ subscribed: false })).body).toEqual({ subscribed: false });
+    expect(await db.query("select unsubscribed from public.email_signups")).toEqual([{ unsubscribed: true }]);
+  });
+
+  it("the unsubscribe link in a business email turns the one choice off, news list included", async () => {
+    await prefs({ subscribed: true });
+    vi.stubEnv("ADMIN_SESSION_SECRET", "test-secret");
+    const [{ id }] = await db.query<{ id: string }>("select id::text from public.merchants");
+    const { businessOptOutLinks } = await import("@/lib/businessEmailOptOut");
+    const link = new URL(businessOptOutLinks("https://megadeal.co.nz", id)!.oneClick);
+    const stop = await import("@/app/api/business-emails/stop/route");
+    expect((await stop.POST(new NextRequest(link, { method: "POST" }))).status).toBe(200);
+    expect((await prefs()).body).toEqual({ subscribed: false });
+    expect(await db.query("select unsubscribed from public.email_signups")).toEqual([{ unsubscribed: true }]);
+    vi.unstubAllEnvs();
+  });
+
+  it("unsubscribing from the business news list also turns the business's choice off", async () => {
+    await prefs({ subscribed: true });
+    const { unsubscribeEmailSignupByToken } = await import("@/lib/emailSignups");
+    const [row] = await createPgAdminClient((fn) => fn(db)).items.query("EmailSignups").find().then((r: any) => r.items);
+    expect(await unsubscribeEmailSignupByToken(row.unsubscribeToken)).toBe(true);
+    expect((await prefs()).body).toEqual({ subscribed: false });
+  });
+
   it("refuses anything but a yes or no", async () => {
-    expect((await prefs({ news: "yes" })).status).toBe(400);
+    expect((await prefs({ subscribed: "yes" })).status).toBe(400);
+    expect((await prefs({ news: true })).status).toBe(400);
   });
 });

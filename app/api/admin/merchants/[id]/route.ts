@@ -8,7 +8,7 @@ import { deleteBusinessCompletely } from "@/lib/db/deleteBusiness";
 import { accountIdForEmail, fromOwnSite } from "@/lib/authSession";
 import { adminDeleteUser } from "@/lib/supabaseAuth";
 import { queryAllByEmail } from "@/lib/queryAll";
-import { businessEmailChoices } from "@/lib/businessEmailChoices";
+import { businessEmailsOn } from "@/lib/businessEmailChoices";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { DEALS_OPEN, SITE_URL, SITE_LAUNCHED } from "@/lib/siteConfig";
 import { currentPromo, promoForCode } from "@/lib/promo";
@@ -159,10 +159,12 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
         referralMatch = { id: other._id, name: other.businessName || other.email || "a business" };
       }
     }
-    // Their own email choices (portal > Emails from MegaDeal), so it's
-    // clear before contacting them what they've said yes or no to.
+    // Their email choice (portal > Emails from MegaDeal), so it's clear
+    // before contacting them what they've said yes or no to.
     const emailChoices = item.email
-      ? await businessEmailChoices(adminClient, { _id: item._id, email: item.email }).catch(() => null)
+      ? await businessEmailsOn(adminClient, { _id: item._id, email: item.email })
+          .then((subscribed) => ({ subscribed }))
+          .catch(() => null)
       : null;
     const approvalCredits = await approvalCreditsPreview(adminClient, item).catch(() => null);
     return NextResponse.json({ item, referralMatch, emailChoices, approvalCredits });

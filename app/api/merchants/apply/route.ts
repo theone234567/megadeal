@@ -9,7 +9,6 @@ import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
 import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
-import { insertEmailSignup } from "@/lib/emailSignups";
 import { SITE_URL, DEALS_OPEN } from "@/lib/siteConfig";
 import { generateReferralCode } from "@/lib/referral";
 import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
@@ -313,19 +312,6 @@ export async function POST(req: NextRequest) {
         .catch((err) => console.error("[merchants/apply] welcome email failed", err))
     );
 
-    // Only with the business's say-so: the "Email me MegaDeal business
-    // news" tick on sign-up (NZ's Unsolicited Electronic Messages Act needs
-    // consent, and agreeing to the terms isn't that). Verified true
-    // immediately: the address belongs to a signed-in account whose email
-    // is already confirmed, so there's nothing left to confirm.
-    if (body?.marketingOptIn === true) afterResponse(() =>
-      insertEmailSignup({
-        email: welcomeTo,
-        audience: "merchant",
-        source: "merchant-signup",
-        verified: true,
-      }).catch((err) => console.error("[merchants/apply] EmailSignups sync failed", err))
-    );
   }
 
   // Only on a genuine first application — this route is also called when

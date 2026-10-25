@@ -149,10 +149,10 @@ describe("a business on the new database", () => {
     expect(await db.query("select is_test from public.merchants")).toEqual([{ is_test: false }]);
   });
 
-  it("joins the business mailing list only when they tick the box", async () => {
+  it("sign-up adds nobody to the waitlist news list: a business's one email choice is kept per business", async () => {
     const apply = await import("@/app/api/merchants/apply/route");
     expect((await call(apply.POST, request("POST", { ...SIGNUP, marketingOptIn: true }))).status).toBe(200);
-    await vi.waitFor(async () => expect(await db.query("select audience, verified from public.email_signups")).toEqual([{ audience: "merchant", verified: true }]));
+    expect(await db.query("select count(*)::int as n from public.email_signups")).toEqual([{ n: 0 }]);
   });
 
   it("the short sign-up (names only) is saved; phones and legal name come later, in the portal", async () => {

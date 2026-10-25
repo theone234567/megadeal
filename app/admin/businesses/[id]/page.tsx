@@ -82,7 +82,7 @@ export default function AdminBusinessDetailPage() {
   // What approving this business adds by itself (null once it has been
   // approved before), from the server's own rules.
   const [approvalCredits, setApprovalCredits] = useState<{ credits: number; parts: string[] } | null>(null);
-  const [emailChoices, setEmailChoices] = useState<{ news: boolean; announcements: boolean } | null>(null);
+  const [emailChoices, setEmailChoices] = useState<{ subscribed: boolean } | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activity, setActivity] = useState<ActivityItem[] | null>(null);
@@ -487,21 +487,13 @@ export default function AdminBusinessDetailPage() {
         )}
         {emailChoices && (
           <div className="mt-4 border-t border-slate-100 pt-3">
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Their email choices</p>
-            <ul className="mt-1.5 space-y-1 text-sm text-slate-700">
-              <li>
-                Business news and tips:{" "}
-                <span className={emailChoices.news ? "font-semibold text-emerald-700" : "font-semibold text-slate-600"}>
-                  {emailChoices.news ? "Subscribed" : "Not subscribed"}
-                </span>
-              </li>
-              <li>
-                Announcements and reminders:{" "}
-                <span className={emailChoices.announcements ? "font-semibold text-emerald-700" : "font-semibold text-amber-800"}>
-                  {emailChoices.announcements ? "On" : "Unsubscribed"}
-                </span>
-              </li>
-            </ul>
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Their email choice</p>
+            <p className="mt-1.5 text-sm text-slate-700">
+              News and updates from MegaDeal:{" "}
+              <span className={emailChoices.subscribed ? "font-semibold text-emerald-700" : "font-semibold text-amber-800"}>
+                {emailChoices.subscribed ? "Subscribed" : "Unsubscribed"}
+              </span>
+            </p>
             <p className="mt-1 text-xs text-slate-500">
               Set by the business in its portal or an email&apos;s unsubscribe link. Account and deal emails always go.
             </p>
