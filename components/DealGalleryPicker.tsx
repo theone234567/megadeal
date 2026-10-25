@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MAX_DEAL_GALLERY } from "@/lib/dealGallery";
 import { uploadPhoto } from "@/lib/imageUpload";
 import { wixImageUrl } from "@/lib/wixImageUrl";
@@ -32,6 +32,12 @@ export default function DealGalleryPicker({
   const [error, setError] = useState<string | null>(null);
   const full = value.length >= MAX_DEAL_GALLERY;
   const offered = profilePhotos.filter((p) => p !== mainUrl);
+  // The list as it is now, not when an upload started: a photo ticked
+  // while one uploads was dropped when the upload finished (T250).
+  const latest = useRef(value);
+  useEffect(() => {
+    latest.current = value;
+  }, [value]);
   const toggle = (url: string) => onChange(value.includes(url) ? value.filter((u) => u !== url) : full ? value : [...value, url]);
 
   async function upload(file: File | undefined) {
@@ -42,11 +48,18 @@ export default function DealGalleryPicker({
       const { url } = await uploadPhoto(file, label);
       // The same picture comes back with the same address (named by its
       // content, app/api/upload-photo), so a repeat is caught here.
-      if (url === mainUrl || value.includes(url)) {
+      const now = latest.current;
+      if (url === mainUrl || now.includes(url)) {
         setError(url === mainUrl ? "That's already the main photo." : "That photo is already added.");
         return;
       }
-      onChange([...value, url].slice(0, MAX_DEAL_GALLERY));
+      if (now.length >= MAX_DEAL_GALLERY) {
+        setError(`You've already added ${MAX_DEAL_GALLERY} photos. Remove one to add this.`);
+        return;
+      }
+      const next = [...now, url];
+      latest.current = next;
+      onChange(next);
     } catch (err: any) {
       setError(err?.message || "Couldn't upload that photo. Please try again.");
     } finally {

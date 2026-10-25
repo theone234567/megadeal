@@ -5,7 +5,7 @@ import { MAX_DEAL_GALLERY, cleanGallery } from "./dealGallery";
 import { isUploadedPhotoUrl } from "./photoUrl";
 import { SITE_URL } from "./siteConfig";
 import { hasMarkup, NAME_MARKUP_MESSAGE } from "./nameRules";
-import { MAX_DEAL_PRICE, PRICE_TOO_HIGH_MESSAGE } from "./priceLimit";
+import { parsePrice, priceError } from "./priceLimit";
 
 /**
  * Admin edits to a submitted deal's content. Businesses can't change a deal
@@ -72,21 +72,23 @@ export function parseAdminContentEdit(
     next.terms = v.slice(0, 2000);
   }
   if (body.priceNow !== undefined) {
-    const v = Number(body.priceNow);
-    if (!Number.isFinite(v) || v <= 0) return { changes: {}, error: "Price must be more than $0." };
-    if (v > MAX_DEAL_PRICE) return { changes: {}, error: PRICE_TOO_HIGH_MESSAGE };
-    next.priceNow = Math.round(v * 100) / 100;
+    const problem = priceError(body.priceNow);
+    if (problem) return { changes: {}, error: problem };
+    const v = parsePrice(body.priceNow);
+    if (v === null || v <= 0) return { changes: {}, error: "Price must be more than $0." };
+    next.priceNow = v;
   }
   if (body.priceWas !== undefined) {
     // Empty means "no comparison price", stored the way the create route
     // stores it: equal to the deal price.
     const raw = body.priceWas;
-    const v = raw === null || raw === "" ? null : Number(raw);
-    if (v !== null && (!Number.isFinite(v) || v <= 0)) {
+    const problem = priceError(raw);
+    if (problem) return { changes: {}, error: `Usual price: ${problem}` };
+    const v = raw === null || raw === "" ? null : parsePrice(raw);
+    if (v !== null && v <= 0) {
       return { changes: {}, error: "Usual price must be a number." };
     }
-    if (v !== null && v > MAX_DEAL_PRICE) return { changes: {}, error: PRICE_TOO_HIGH_MESSAGE };
-    next.priceWas = v === null ? null : Math.round(v * 100) / 100;
+    next.priceWas = v;
   }
   if (body.bookingRequirement !== undefined) {
     if (!isBookingChoice(body.bookingRequirement)) {

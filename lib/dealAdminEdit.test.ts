@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { PRICE_FORMAT_MESSAGE, PRICE_TOO_HIGH_MESSAGE } from "./priceLimit";
 import { buildProductUpdate, parseAdminContentEdit, textToHtml, withHistory } from "./dealAdminEdit";
 import { allowedDealActions, withdrawalRefundsCredit } from "./dealStatus";
 import { renderTerms } from "./dealTerms";
@@ -14,9 +15,12 @@ const row = {
 };
 
 describe("parseAdminContentEdit", () => {
-  it("refuses a price more than the database can hold", () => {
-    expect(parseAdminContentEdit({ priceNow: 9e9 }, row).error).toBe("That price is too high. Check the number and try again.");
-    expect(parseAdminContentEdit({ priceWas: "100000000" }, row).error).toBe("That price is too high. Check the number and try again.");
+  it("refuses a price over the $10,000 cap, or not in dollars and cents (T250)", () => {
+    expect(parseAdminContentEdit({ priceNow: 9e9 }, row).error).toBe(PRICE_TOO_HIGH_MESSAGE);
+    expect(parseAdminContentEdit({ priceWas: "100000000" }, row).error).toBe(`Usual price: ${PRICE_TOO_HIGH_MESSAGE}`);
+    expect(parseAdminContentEdit({ priceNow: "1e3" }, row).error).toBe(PRICE_FORMAT_MESSAGE);
+    expect(parseAdminContentEdit({ priceNow: "0.001" }, row).error).toBe(PRICE_FORMAT_MESSAGE);
+    expect(parseAdminContentEdit({ priceNow: "10000", priceWas: "10000" }, row).changes).toEqual({ priceNow: 10000, priceWas: 10000 });
   });
 
   it("returns only the fields that change", () => {

@@ -6,7 +6,7 @@ import { dealCodeError, normaliseDealCode } from "./dealCode";
 import { durationError } from "./dealDuration";
 import { cleanDealTags } from "./dealTags";
 import { MAX_DEAL_GALLERY, cleanGallery } from "./dealGallery";
-import { MAX_DEAL_PRICE, PRICE_TOO_HIGH_MESSAGE } from "./priceLimit";
+import { parsePrice, priceError } from "./priceLimit";
 
 /**
  * The checks on a deal's own fields when it's submitted, in one place:
@@ -60,8 +60,8 @@ export function checkDealFields(body: any, rules: DealFieldRules): DealFieldsRes
   const dealName = String(body?.dealName || "").trim();
   const description = String(body?.description || "").trim();
   const terms = String(body?.terms || "").trim();
-  const priceNow = Number(body?.priceNow);
-  const priceWas = body?.priceWas !== undefined && body?.priceWas !== "" && body?.priceWas !== null ? Number(body.priceWas) : undefined;
+  const priceNow = parsePrice(body?.priceNow) ?? NaN;
+  const priceWas = body?.priceWas !== undefined && body?.priceWas !== "" && body?.priceWas !== null ? (parsePrice(body.priceWas) ?? NaN) : undefined;
   const isFlash = Boolean(body?.isFlash);
   const durationDays = Number(body?.durationDays);
   const durationMinutes = Number(body?.durationMinutes);
@@ -109,11 +109,16 @@ export function checkDealFields(body: any, rules: DealFieldRules): DealFieldsRes
     return fail("A deal that needs booking can't be tagged \"Walk-ins welcome\".");
   }
   if (!categoryId) return fail("Choose a category.");
+  // Dollars and cents only, more than $0 and up to $10,000 (lib/priceLimit.ts):
+  // "1e3", "0.001" and 99999999 used to be taken and rounded or shown as-is.
+  const nowProblem = priceError(body?.priceNow);
+  if (nowProblem) return fail(`Deal price: ${nowProblem}`);
   if (!Number.isFinite(priceNow) || priceNow <= 0) return fail("Enter a valid deal price.");
+  const wasProblem = priceWas !== undefined ? priceError(body.priceWas) : null;
+  if (wasProblem) return fail(`Original price: ${wasProblem}`);
   if (priceWas !== undefined && (!Number.isFinite(priceWas) || priceWas < priceNow)) {
     return fail("Original price must be at least the deal price.");
   }
-  if (priceNow > MAX_DEAL_PRICE || (priceWas !== undefined && priceWas > MAX_DEAL_PRICE)) return fail(PRICE_TOO_HIGH_MESSAGE);
   const typeBlocked = rules.typeBlocked(isFlash);
   if (typeBlocked) return fail(`${typeBlocked} Save this deal as a draft for now.`, 403);
   // Flash up to 6 hours, Everyday up to 30 days (lib/dealDuration.ts), or

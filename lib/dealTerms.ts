@@ -98,13 +98,33 @@ export function parseTerms(rendered: string): { selectedIds: string[]; custom: s
  * against — every piece stays exactly where it was written.
  */
 export function splitTermsForDisplay(rendered: string): string[] {
-  return rendered
-    // Line breaks a business typed into its own conditions count as
-    // separate conditions too.
-    .split(/\.\s+|\s*\n+\s*/)
-    .map((piece) => piece.replace(/\.$/, "").trim())
-    .filter(Boolean);
+  const isLabel = (piece: string) => LABEL_SET.has(piece.toLowerCase());
+  const out: string[] = [];
+  // Line breaks a business typed into its own conditions count as
+  // separate conditions. Within a line only the standard conditions are
+  // split off: the business's own text stays together as typed (T250), so
+  // "Valid until 5 p.m. Mon–Fri" or "Max 6. Kids half price" isn't broken
+  // into pieces at every full stop.
+  for (const line of rendered.split(/\s*\n+\s*/)) {
+    let own: string[] = [];
+    const flush = () => {
+      if (own.length) out.push(own.join(". "));
+      own = [];
+    };
+    for (const raw of line.split(/\.\s+/)) {
+      const piece = raw.replace(/\.$/, "").trim();
+      if (!piece) continue;
+      if (isLabel(piece)) {
+        flush();
+        out.push(piece);
+      } else own.push(piece);
+    }
+    flush();
+  }
+  return out;
 }
+
+const LABEL_SET = new Set(STANDARD_TERMS.map((t) => t.label.toLowerCase()));
 
 /**
  * Short forms of the standard conditions that most change whether a deal

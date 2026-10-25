@@ -98,6 +98,14 @@ describe("splitTermsForDisplay", () => {
     ]);
   });
 
+  it("keeps a business's own sentences together as typed (T250)", () => {
+    const rendered = renderTerms(["bookings"], "Valid until 5 p.m. Mon–Fri, max 6 people. Kids half price");
+    expect(splitTermsForDisplay(rendered)).toEqual([
+      "Bookings essential",
+      "Valid until 5 p.m. Mon–Fri, max 6 people. Kids half price",
+    ]);
+  });
+
   it("returns a single bullet for a plain one-sentence legacy value", () => {
     expect(splitTermsForDisplay("Valid weekdays only")).toEqual(["Valid weekdays only"]);
   });

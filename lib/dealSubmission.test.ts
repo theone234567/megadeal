@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { checkDealFields, type DealFieldRules } from "./dealSubmission";
+import { PRICE_TOO_HIGH_MESSAGE } from "./priceLimit";
 
 // The submission checks /api/deals/create used to make inline, now shared
 // with admin test deals. Same messages, same order, same status codes.
@@ -39,9 +40,9 @@ describe("checkDealFields", () => {
     expect(err({ ...good, category: "Pets" })).toEqual([400, "Choose a category."]);
     expect(err({ ...good, priceNow: 0 })).toEqual([400, "Enter a valid deal price."]);
     expect(err({ ...good, priceWas: 10 })).toEqual([400, "Original price must be at least the deal price."]);
-    // More than the database can hold: a message, not a failed save.
-    expect(err({ ...good, priceNow: 9e9, priceWas: 9.5e9 })).toEqual([400, "That price is too high. Check the number and try again."]);
-    expect(err({ ...good, priceWas: 1e8 })).toEqual([400, "That price is too high. Check the number and try again."]);
+    // Over the $10,000 cap (lib/priceLimit.ts): a message, not a failed save.
+    expect(err({ ...good, priceNow: 9e9, priceWas: 9.5e9 })).toEqual([400, `Deal price: ${PRICE_TOO_HIGH_MESSAGE}`]);
+    expect(err({ ...good, priceWas: 1e8 })).toEqual([400, `Original price: ${PRICE_TOO_HIGH_MESSAGE}`]);
     expect(err({ ...good, durationDays: 31 })?.[0]).toBe(400);
     expect(err({ ...good, quantityAvailable: 1.5 })).toEqual([400, "Quantity available must be a positive number."]);
     expect(err({ ...good, photoUrl: "" })).toEqual([400, "Add a photo of your deal."]);

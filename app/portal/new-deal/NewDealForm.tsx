@@ -56,6 +56,7 @@ import { isContactMethod } from "@/lib/dealContact";
 import { cleanGallery } from "@/lib/dealGallery";
 import { parseBusinessPhotos } from "@/lib/businessPhotos";
 import { hasMarkup, NAME_MARKUP_MESSAGE } from "@/lib/nameRules";
+import { priceError } from "@/lib/priceLimit";
 
 interface MerchantRecord {
   _id: string;
@@ -228,6 +229,8 @@ export default function NewDealForm({
   const [error, setError] = useState<string | null>(null);
 
   const [draftRestored, setDraftRestored] = useState(false);
+  // ?draft= named a draft that isn't there for this business (T250).
+  const [draftMissing, setDraftMissing] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   // Autosave: the form's contents as last saved (or as loaded), so "saved"
   // is only ever shown when it's true. null until the form has loaded.
@@ -422,6 +425,7 @@ export default function NewDealForm({
           // Gone (deleted, or not this business's): the next save makes a
           // new draft rather than writing into an id that isn't there.
           setDraftId(null);
+          setDraftMissing(true);
           setDraftLoaded(true);
           return;
         }
@@ -436,6 +440,7 @@ export default function NewDealForm({
           // save a form they are allowed to fill in. Blank id means the
           // save creates a new draft, which is the right outcome.
           setDraftId(null);
+          setDraftMissing(true);
           setDraftLoaded(true);
           return;
         }
@@ -513,8 +518,14 @@ export default function NewDealForm({
     if (!category) list.push({ id: "deal-category", message: "Choose a category." });
     if (!description.trim()) list.push({ id: "deal-description", message: "Describe what customers get." });
     const now = Number(priceNow);
-    if (!priceNow.trim() || !Number.isFinite(now) || now <= 0) {
+    const nowProblem = priceError(priceNow);
+    const wasProblem = priceError(priceWas);
+    if (nowProblem) {
+      list.push({ id: "deal-price", message: nowProblem });
+    } else if (!priceNow.trim() || !Number.isFinite(now) || now <= 0) {
       list.push({ id: "deal-price", message: "Enter the deal price." });
+    } else if (wasProblem) {
+      list.push({ id: "deal-price-was", message: wasProblem });
     } else if (priceWas.trim() && !(Number(priceWas) >= now)) {
       list.push({ id: "deal-price-was", message: "The original price must be at least the deal price." });
     }
@@ -538,16 +549,28 @@ export default function NewDealForm({
     if (!isBookingChoice(bookingRequirement)) {
       list.push({ id: "deal-booking", message: "Choose whether customers need to book." });
     } else {
-      const bookingProblem =
-        bookingConflict(bookingRequirement, terms) ||
-        (bookingRequirement === "required" && !merchantCanTakeBookings
-          ? "This deal needs a booking, but your profile has no booking link, phone number or booking email. Add one in your profile first."
-          : null);
-      if (bookingProblem) list.push({ id: "deal-booking", message: bookingProblem, inline: false });
+      const conflict = bookingConflict(bookingRequirement, terms);
+      if (conflict) {
+        // Linked to what causes it (T250): the "Walk-ins welcome" box when
+        // that's ticked, otherwise the conditions, where "Bookings
+        // essential" or the business's own words are. Not the booking
+        // choice, which is usually the answer they meant.
+        const id = /walk-ins/i.test(conflict) && selectedTerms.includes("walk-ins") ? "deal-walk-ins" : "deal-terms";
+        list.push({ id, message: conflict, inline: false });
+      } else if (bookingRequirement === "required" && !merchantCanTakeBookings) {
+        list.push({
+          id: "deal-booking",
+          message: "This deal needs a booking, but your profile has no booking link, phone number or booking email. Add one in your profile first.",
+          inline: false,
+        });
+      }
     }
     // The textarea isn't `required` — most deals are described entirely
     // by tick-boxes — so this is what makes sure terms exist at all.
     if (!terms) list.push({ id: "deal-terms", message: "Tick at least one condition, or write your own." });
+    else if (terms.length > MAX_TERMS_TEXT) {
+      list.push({ id: "deal-terms", message: `The fine print is ${terms.length - MAX_TERMS_TEXT} characters too long. Shorten your own conditions.` });
+    }
     const codeProblem = dealCode ? dealCodeError(normaliseDealCode(dealCode)) : null;
     if (codeProblem) {
       list.push({ id: "deal-code", message: `Deal code: ${codeProblem}`, inline: false });
@@ -1162,7 +1185,7 @@ export default function NewDealForm({
             return start.iso ? (
               <div>
                 <dt className="text-slate-500">Starts</dt>
-                <dd className="font-semibold text-slate-800">{formatNzDateTime(start.iso)}, once approved</dd>
+                <dd className="font-semibold text-slate-800">{formatNzDateTime(start.iso)} NZ time, once approved</dd>
               </div>
             ) : null;
           })()}
@@ -1352,6 +1375,12 @@ export default function NewDealForm({
           old deal&apos;s dates: the new run starts when we approve it.
         </p>
       )}
+      {draftMissing && (
+        <p role="status" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          Draft not found. It may have been submitted or deleted; your deals are in{" "}
+          <Link href="/portal" className="font-semibold underline">your portal</Link>. You can start a new deal below.
+        </p>
+      )}
       {draftRestored && (
         <p className="mt-3 rounded-xl border border-brand-100 bg-brand-50 p-3 text-sm text-brand-700">
           📝 Picked up your saved draft, photo and all — carry on where you
@@ -1374,6 +1403,11 @@ export default function NewDealForm({
             <h2 id="deal-problems-title" className="font-display text-base font-bold text-red-800">
               {problems.length === 1 ? "1 thing to fix" : `${problems.length} things to fix`} before you can preview
             </h2>
+            {/* Autosave keeps going while the form is incomplete; say so,
+                rather than leaving the business to wonder (T250). */}
+            {!isTest && draftId && (
+              <p className="mt-1 text-sm text-red-800">Saved as a draft. Fix the highlighted fields to submit.</p>
+            )}
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-red-700">
               {problems.map((p) => (
                 <li key={`${p.id}:${p.message}`}>
@@ -1531,6 +1565,7 @@ export default function NewDealForm({
             className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-name")}`}
           />
           {fieldError("deal-name")}
+          <CharCount length={dealName.length} max={80} />
         </div>
 
         <div>
@@ -1569,6 +1604,7 @@ export default function NewDealForm({
             className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-description")}`}
           />
           {fieldError("deal-description")}
+          <CharCount length={description.length} max={MAX_DRAFT_TEXT} />
           {description.length > 0 && description.length < 60 && (
             <p className="mt-1 text-xs text-amber-600">
               💡 A bit more detail helps customers know exactly what they&apos;re
@@ -1762,7 +1798,7 @@ export default function NewDealForm({
                     {start?.error
                       ? start.error
                       : start?.iso
-                        ? `Shows from ${formatNzDateTime(start.iso)} until ${formatNzDateTime(Date.parse(start.iso) + runMs)}, once approved.`
+                        ? `Shows from ${formatNzDateTime(start.iso)} until ${formatNzDateTime(Date.parse(start.iso) + runMs)} (NZ time), once approved.`
                         : "Pick a date and time at least 2 hours away."}{" "}
                     {!start?.error && "If it can't be approved before then, we'll ask you for a new time rather than move it."}
                   </p>
@@ -1940,8 +1976,13 @@ export default function NewDealForm({
               only with "recommended" (a required booking rules them out).
               Stays visible if ticked, so a conflict is never hidden. */}
           {(bookingRequirement === "recommended" || selectedTerms.includes("walk-ins")) && (
-            <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-xl border border-slate-200 bg-white p-3">
+            <label
+              className={`mt-3 flex cursor-pointer items-start gap-2 rounded-xl border bg-white p-3 ${
+                bookingTermsConflict && selectedTerms.includes("walk-ins") ? "border-red-400" : "border-slate-200"
+              }`}
+            >
               <input
+                id="deal-walk-ins"
                 type="checkbox"
                 checked={selectedTerms.includes("walk-ins")}
                 onChange={(e) =>
@@ -2045,6 +2086,8 @@ export default function NewDealForm({
             className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${borderFor("deal-terms")}`}
           />
           {fieldError("deal-terms")}
+          {/* The ticked conditions count towards the limit too. */}
+          <CharCount length={terms.length} max={MAX_TERMS_TEXT} label="The fine print" />
           {bookingTermsConflict && !selectedTerms.includes("walk-ins") && (
             <p className="mt-3 text-sm text-red-600">{bookingTermsConflict}</p>
           )}
@@ -2316,6 +2359,23 @@ function SaveStatus({
   return (
     <p aria-live="polite" className="min-h-[1rem] text-xs font-semibold">
       {content}
+    </p>
+  );
+}
+
+/** The conditions as saved (ticked ones and the business's own) can be
+ *  this long (lib/dealSubmission.ts). */
+const MAX_TERMS_TEXT = 2000;
+
+/** "72 of 80 characters", shown from 80% of a field's limit (T250), so
+ *  text isn't cut off at the limit without warning. */
+function CharCount({ length, max, label }: { length: number; max: number; label?: string }) {
+  if (length < max * 0.8) return null;
+  const over = length > max;
+  return (
+    <p className={`mt-1 text-xs ${over ? "font-semibold text-red-600" : "text-slate-500"}`} aria-live="polite">
+      {label ? `${label}: ` : ""}
+      {length} of {max} characters{length === max ? " (the most it can hold)" : ""}
     </p>
   );
 }

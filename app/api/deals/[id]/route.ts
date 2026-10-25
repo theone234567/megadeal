@@ -25,11 +25,10 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
   try {
     const adminClient = createDataClient();
     const deal = await adminClient.items.get("Deals", params.id);
-    if (!deal) {
+    // Someone else's deal reads exactly like one that doesn't exist, so
+    // its id can't be confirmed from outside (T250).
+    if (!deal || (deal.merchantEmail || "").toLowerCase() !== member.email.toLowerCase()) {
       return NextResponse.json({ error: "Deal not found." }, { status: 404 });
-    }
-    if ((deal.merchantEmail || "").toLowerCase() !== member.email.toLowerCase()) {
-      return NextResponse.json({ error: "This isn't your deal." }, { status: 403 });
     }
     return NextResponse.json({ item: dealForBusiness(deal) });
   } catch (err) {
@@ -62,11 +61,10 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
   try {
     const adminClient = createDataClient();
     const deal = await adminClient.items.get("Deals", params.id);
-    if (!deal) {
+    // Someone else's deal reads exactly like one that doesn't exist, so
+    // its id can't be confirmed from outside (T250).
+    if (!deal || (deal.merchantEmail || "").toLowerCase() !== member.email.toLowerCase()) {
       return NextResponse.json({ error: "Deal not found." }, { status: 404 });
-    }
-    if ((deal.merchantEmail || "").toLowerCase() !== member.email.toLowerCase()) {
-      return NextResponse.json({ error: "This isn't your deal." }, { status: 403 });
     }
     if (deal.status !== "Draft") {
       return NextResponse.json(
