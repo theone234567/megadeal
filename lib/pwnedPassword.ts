@@ -38,4 +38,4 @@ export async function passwordSeenInBreaches(password: string, fetchFn: Fetch = 
 }
 
 export const BREACHED_PASSWORD_MESSAGE =
-  "That password has appeared in a data breach on another site, so it's one of the first that gets tried. Please choose a different one.";
+  "That password is too easy to guess. Please choose a different one.";
