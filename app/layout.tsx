@@ -16,6 +16,9 @@ import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
 import { MegadealArtProvider } from "@/context/MegadealArtProvider";
 
+/** Other ways people write the name (JSON-LD alternateName). */
+const SITE_ALTERNATE_NAMES = [`${SITE_NAME} NZ`, "Mega Deal", "Mega Deal NZ"];
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -139,7 +142,8 @@ export default function RootLayout({
               // "MegaDeal" alone is shared with other brands' "megadeals"
               // offers; the NZ name (its social handles) and the company's
               // NZBN tell search engines and AI tools which one this is.
-              alternateName: `${SITE_NAME} NZ`,
+              // "Mega Deal", spaced, is how many people type it.
+              alternateName: SITE_ALTERNATE_NAMES,
               // The registered company behind the brand (lib/siteConfig.ts).
               legalName: LEGAL_ENTITY_NAME,
               ...(LEGAL_ENTITY_NZBN
@@ -193,8 +197,8 @@ export default function RootLayout({
               name: SITE_NAME,
               // Google reads the site name it shows in results from here;
               // "MegaDeal NZ" is the fallback it can use if "MegaDeal" alone
-              // is ambiguous.
-              alternateName: `${SITE_NAME} NZ`,
+              // is ambiguous; "Mega Deal" ties the spaced search to this site.
+              alternateName: SITE_ALTERNATE_NAMES,
               url: SITE_URL,
               inLanguage: "en-NZ",
               publisher: { "@id": ORGANIZATION_ID },
