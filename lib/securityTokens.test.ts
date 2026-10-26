@@ -90,11 +90,12 @@ describe("password-reset links (finding 2)", () => {
 
   it("can be put back after a failed password change, and every other link dies after a successful one", async () => {
     const first = (await tokens.createPasswordResetToken("Owner@example.com"))!;
-    const second = (await tokens.createPasswordResetToken("owner@example.com", 7 * 24 * 3600))!;
     const used = (await tokens.consumePasswordResetToken(first))!;
     expect(used.email).toBe("Owner@example.com");
     await tokens.restorePasswordResetToken(first, used);
     expect(await tokens.consumePasswordResetToken(first)).not.toBeNull();
+    // A link made since (only the newest works, T255), then revoked.
+    const second = (await tokens.createPasswordResetToken("owner@example.com", 3 * 24 * 3600))!;
     await tokens.revokePasswordResetTokens("owner@example.com");
     expect(await tokens.consumePasswordResetToken(second)).toBeNull();
   });
@@ -133,5 +134,20 @@ describe("admin sign-in protections", () => {
     const before = await store.adminSessionsRevokedBefore();
     expect(typeof before).toBe("number");
     expect(Math.abs((before as number) - Date.now())).toBeLessThan(5000);
+  });
+});
+
+describe("reset links (T255)", () => {
+  it("only the newest link for an address works", async () => {
+    const first = await tokens.createPasswordResetToken("owner@cafe.invalid");
+    const second = await tokens.createPasswordResetToken("Owner@Cafe.invalid");
+    expect(first && second).toBeTruthy();
+    expect(await tokens.consumePasswordResetToken(first!)).toBeNull();
+    expect((await tokens.consumePasswordResetToken(second!))?.email).toBe("Owner@Cafe.invalid");
+  });
+
+  it("send one email a minute per address", async () => {
+    expect((await checkRateLimit("pwreset-gap:owner@cafe.invalid", 1, 60)).limited).toBe(false);
+    expect((await checkRateLimit("pwreset-gap:owner@cafe.invalid", 1, 60)).limited).toBe(true);
   });
 });

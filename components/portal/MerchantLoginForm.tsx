@@ -244,7 +244,9 @@ export default function MerchantLoginForm({ redirectTo = "/portal" }: { redirect
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="you@yourbusiness.co.nz"
-        autoComplete="email"
+        // "username": what password managers pair the saved password with
+        // (T255); with "email" some saved the password without it.
+        autoComplete="username"
         className={INPUT_CLASS}
       />
       <label htmlFor="login-password" className="sr-only">

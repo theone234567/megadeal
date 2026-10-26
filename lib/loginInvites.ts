@@ -1,4 +1,5 @@
 import "server-only";
+import { INVITE_LINK_HOURS } from "./resetLinkTimes";
 import type { Sql } from "./db/connection";
 import { createPasswordResetToken, INVITE_TTL_SECONDS } from "./passwordResetTokens";
 import { getRateLimitKv } from "./rateLimit";
@@ -11,7 +12,7 @@ import { greetingName } from "./emailGreeting";
  * When business logins move off Wix (docs/WIX-MIGRATION.md, stage 3),
  * Wix passwords can't come along: each business sets a new one, once.
  * This emails every business that hasn't yet a link to do that: the
- * same single-use link as "Forgot password", good for a week instead of
+ * same single-use link as "Forgot password", good for 3 days instead of
  * an hour. Setting the password makes the login, and the business is
  * theirs when they first sign in.
  *
@@ -55,7 +56,7 @@ export function inviteEmailHtml(businessName: string, link: string, contactName?
     <p style="margin:0 0 16px;text-align:center;">
       <a href="${link}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Set my password</a>
     </p>
-    <p style="margin:0 0 16px;">This link works once and expires in 7 days. After that, use "Forgot password" on the sign-in page.</p>
+    <p style="margin:0 0 16px;">This link works once and expires in ${INVITE_LINK_HOURS / 24} days. After that, use "Forgot password" on the sign-in page.</p>
     <p style="margin:0;font-size:13px;color:#8b8494;">Questions? Just reply to this email.</p>
   `);
 }

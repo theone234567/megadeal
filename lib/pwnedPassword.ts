@@ -25,14 +25,20 @@ export async function passwordSeenInBreaches(password: string, fetchFn: Fetch = 
       headers: { "Add-Padding": "true", "User-Agent": "MegaDeal (megadeal.co.nz)" },
       signal: AbortSignal.timeout(3000),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // Let through, but said (T255): a check that quietly stops working
+      // would look the same as one that passes.
+      console.warn("[pwnedPassword] check unavailable", res.status);
+      return null;
+    }
     for (const line of (await res.text()).split("\n")) {
       const [candidate, count] = line.trim().split(":");
       // Padding lines carry a count of 0.
       if (candidate === suffix) return Number(count) > 0;
     }
     return false;
-  } catch {
+  } catch (err) {
+    console.warn("[pwnedPassword] check unavailable", (err as Error)?.name ?? "error");
     return null;
   }
 }

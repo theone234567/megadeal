@@ -14,6 +14,7 @@ import { trackMetaPixelEvent, trackMetaCustomEvent } from "@/lib/metaPixel";
 import { getAttribution, getFbc, getFbp } from "@/lib/attribution";
 import { AUTH_TIMEOUT_MS, withTimeout } from "@/lib/withTimeout";
 import { NAME_MARKUP_MESSAGE, NO_MARKUP_PATTERN } from "@/lib/nameRules";
+import { passwordRuleProblem } from "@/lib/passwordRules";
 
 function RequiredTag() {
   return <span className="ml-1 font-normal text-ember-600">Required</span>;
@@ -403,6 +404,13 @@ export default function MerchantSignupForm({
     if (!errors["signup-password"] && password.length < minPassword) {
       errors["signup-password"] = `Use at least ${minPassword} characters.`;
     }
+    // The same rules as the server (lib/passwordRules.ts, T255), with the
+    // business name the server doesn't see at this step.
+    if (!errors["signup-password"] && password) {
+      const field = (name: string) => String(new FormData(form).get(name) ?? "");
+      const problem = passwordRuleProblem(password, { email: field("email"), businessName: field("businessName") });
+      if (problem) errors["signup-password"] = problem;
+    }
     return errors;
   }
 
@@ -476,6 +484,15 @@ export default function MerchantSignupForm({
     if (!isLoggedIn) {
       if (password.length < minPassword) {
         setSubmitError(`Your password needs to be at least ${minPassword} characters.`);
+        return;
+      }
+      const form = new FormData(e.currentTarget);
+      const passwordProblem = passwordRuleProblem(password, {
+        email: String(form.get("email") ?? ""),
+        businessName: String(form.get("businessName") ?? ""),
+      });
+      if (passwordProblem) {
+        setSubmitError(passwordProblem);
         return;
       }
     }

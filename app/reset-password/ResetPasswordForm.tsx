@@ -62,8 +62,8 @@ export default function ResetPasswordForm({ hasLink }: { hasLink: boolean }) {
       <main className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-4 text-center">
         <h1 className="text-xl font-extrabold text-slate-900">This link can&apos;t be used</h1>
         <p className="mt-2 text-sm text-slate-600">
-          This reset link is missing its code, or it was opened more than 30 minutes ago. Open the
-          link in your email again, or request a new one from the{" "}
+          This link is invalid or has expired. Reset links work once, for an hour from when we email them,
+          and asking again replaces the earlier one. Open the newest link in your email, or request a new one from the{" "}
           <a href="/portal" className="font-semibold text-brand-600 hover:underline">
             sign-in page
           </a>

@@ -3,6 +3,8 @@ import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
 import { queryAllItems } from "@/lib/queryAll";
 import { csvCell } from "@/lib/csv";
+import { logAdminAction } from "@/lib/adminAudit";
+import { getClientIp } from "@/lib/rateLimit";
 
 
 export async function GET(req: NextRequest) {
@@ -37,6 +39,13 @@ export async function GET(req: NextRequest) {
     const csv = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
 
     const filename = verifiedOnly ? "email-signups-verified.csv" : "email-signups.csv";
+    // A download of people's email addresses goes in the admin activity
+    // log, like every change does (T255, T215).
+    await logAdminAction({
+      action: "Exported email sign-ups",
+      detail: `${items.length} address${items.length === 1 ? "" : "es"}${verifiedOnly ? ", confirmed only" : ""}`,
+      ip: getClientIp(req),
+    });
     return new NextResponse(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",

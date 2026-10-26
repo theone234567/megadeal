@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { passwordRuleProblem } from "@/lib/passwordRules";
 import {
   consumePasswordResetToken,
   restorePasswordResetToken,
@@ -64,6 +65,13 @@ export async function POST(req: NextRequest) {
   const used = await consumePasswordResetToken(token);
   if (!used) return reply({ error: LINK_USED }, 400, true);
   const email = used.email;
+  // Now the address is known (T255): not the email, no spaces at the ends.
+  // The link is put back, so another password can be tried with it.
+  const ruleProblem = passwordRuleProblem(newPassword, { email });
+  if (ruleProblem) {
+    await restorePasswordResetToken(token, used).catch(() => {});
+    return reply({ error: ruleProblem }, 400);
+  }
 
   try {
     // The link proved the address: set the password (making the login

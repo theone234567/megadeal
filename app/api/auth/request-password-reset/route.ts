@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { RESET_LINK_MINUTES } from "@/lib/resetLinkTimes";
 import { createDataClient } from "@/lib/dataClient";
 import { queryAllByEmail } from "@/lib/queryAll";
 import { createPasswordResetToken } from "@/lib/passwordResetTokens";
@@ -35,7 +36,7 @@ function resetEmailHtml(merchant: { contactName?: string | null; businessName?: 
     <p style="margin:0 0 16px;text-align:center;">
       <a href="${resetUrl}" style="display:inline-block;background:#6D28D9;color:#ffffff;font-weight:700;padding:12px 28px;border-radius:999px;text-decoration:none;">Reset password</a>
     </p>
-    <p style="margin:0 0 16px;">This link works once and expires in an hour. If you didn't ask for this, you can safely ignore it — your password hasn't changed.</p>
+    <p style="margin:0 0 16px;">This link works once and expires in ${RESET_LINK_MINUTES === 60 ? "an hour" : `${RESET_LINK_MINUTES} minutes`}. Asking again replaces it. If you didn't ask for this, you can safely ignore it — your password hasn't changed.</p>
   `);
 }
 
@@ -68,7 +69,11 @@ export async function POST(req: NextRequest) {
   // And a generous cap per visitor, so one source can't send reset emails
   // to address after address.
   const { limited: busy } = await checkRateLimit(`pwreset-request-ip:${getClientIp(req)}`, 30, 60 * 60, { failClosed: true });
-  if (limited || busy) {
+  // One email a minute per address (T255): a double tap, or asking again
+  // straight away, doesn't send a second email (which would replace the
+  // first one's link while it was still arriving).
+  const { limited: tooSoon } = await checkRateLimit(`pwreset-gap:${email.toLowerCase()}`, 1, 60, { failClosed: true });
+  if (limited || busy || tooSoon) {
     // Same response as success — the limit itself isn't something to reveal.
     return NextResponse.json({ ok: true });
   }

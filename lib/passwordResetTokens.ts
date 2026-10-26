@@ -1,13 +1,14 @@
 import { createHash, randomBytes } from "crypto";
+import { INVITE_LINK_HOURS, RESET_LINK_MINUTES } from "./resetLinkTimes";
 import { getRateLimitKv } from "./rateLimit";
 import type { Sql } from "./db/sql";
 
 // 1 hour — tighter than Wix's own 3-hour reset links, since this is a
 // self-hosted equivalent and there's no reason to leave a live link
-// sitting in an inbox any longer than it needs to be.
-const TTL_SECONDS = 60 * 60;
+// sitting in an inbox any longer than it needs to be (lib/resetLinkTimes.ts).
+const TTL_SECONDS = RESET_LINK_MINUTES * 60;
 const KEY_PREFIX = "pwreset:";
-export const INVITE_TTL_SECONDS = 7 * 24 * 60 * 60;
+export const INVITE_TTL_SECONDS = INVITE_LINK_HOURS * 60 * 60;
 
 function hashToken(raw: string): string {
   return createHash("sha256").update(raw).digest("hex");
@@ -42,10 +43,13 @@ async function inDatabase<T>(fn: (db: Sql) => Promise<T>): Promise<T | null> {
  */
 export async function createPasswordResetToken(email: string, ttlSeconds: number = TTL_SECONDS): Promise<string | null> {
   const raw = randomBytes(32).toString("hex");
-  // At most a week (the invitation to set a password after the move off
+  // At most 3 days (the invitation to set a password after the move off
   // Wix, lib/loginInvites.ts); an hour for "Forgot password".
   const ttl = Math.min(Math.max(60, ttlSeconds), INVITE_TTL_SECONDS);
   const saved = await inDatabase(async (db) => {
+    // Only the newest link works (T255, T127): asking twice used to leave
+    // two live links in the inbox.
+    await db.query(`delete from public.password_reset_tokens where lower(email) = lower($1)`, [email]);
     await db.query(
       `insert into public.password_reset_tokens (token_hash, email, expires_at)
        values ($1, $2, now() + make_interval(secs => $3))`,

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { passwordRuleProblem } from "@/lib/passwordRules";
 import { authPreflight, PASSWORD_RULE, passwordOk } from "@/lib/authRoutes";
 import { createUnconfirmedAccount, markSignedUpAgain, signUp, signUpHitExistingAccount } from "@/lib/supabaseAuth";
 import { withDb } from "@/lib/db/connection";
@@ -27,6 +28,9 @@ export async function POST(req: NextRequest) {
   const pre = await authPreflight(req, { limitKey: "register", perIp: 10, captcha: true });
   if ("stop" in pre) return pre.stop;
   if (!passwordOk(pre.body.password)) return NextResponse.json({ error: PASSWORD_RULE }, { status: 400 });
+  // No spaces at the ends, not the email address (T255, lib/passwordRules.ts).
+  const ruleProblem = passwordRuleProblem(pre.body.password, { email: pre.email });
+  if (ruleProblem) return NextResponse.json({ error: ruleProblem }, { status: 400 });
   if (await passwordSeenInBreaches(pre.body.password)) return NextResponse.json({ error: BREACHED_PASSWORD_MESSAGE }, { status: 400 });
   // An earlier sign-up nobody confirmed, maybe someone else's: whoever
   // enters the code chooses the password (T241, lib/supabaseAuth.ts).
