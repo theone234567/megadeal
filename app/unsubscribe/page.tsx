@@ -23,6 +23,12 @@ export default function UnsubscribePage() {
           Unsubscribe
         </button>
       </form>
+      {/* Reached without an email's link (T251), the button can't know whose
+          emails to stop. */}
+      <p className="mt-6 text-xs text-slate-500">
+        This works from the unsubscribe link at the bottom of any MegaDeal email. If you came here another way, open that link
+        from one of our emails instead.
+      </p>
     </main>
   );
 }

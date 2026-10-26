@@ -53,7 +53,7 @@ export let lastTurnstileProblem: { kind: "blocked" | "error" | "timeout"; code?:
 /** What to tell someone whose robot check couldn't run. */
 export function turnstileProblemMessage(): string {
   const p = lastTurnstileProblem;
-  if (p?.kind === "timeout") return "Please complete the security check below the form, then press the button again.";
+  if (p?.kind === "timeout") return "Please complete the quick check above the button, then press the button again.";
   if (p?.kind === "blocked") {
     return "The security check couldn't load in your browser. If you use an ad or script blocker, allow megadeal.co.nz (and challenges.cloudflare.com), then try again.";
   }
@@ -99,10 +99,25 @@ async function turnstileTokenOnce(siteKey: string, timeoutMs: number, slot?: HTM
       lastTurnstileProblem = { kind: "timeout" };
       done(null);
     }, timeoutMs);
-    id = t.render(host, {
+    // Usually nothing shows. When Cloudflare does want a tick, it's
+    // brought into view with a word on what to do (T251): on a phone it
+    // could sit below the screen while the button just spun.
+    const widget = document.createElement("div");
+    host.appendChild(widget);
+    id = t.render(widget, {
       sitekey: siteKey,
       appearance: "interaction-only",
       execution: "render",
+      size: "flexible",
+      "before-interactive-callback": () => {
+        const prompt = document.createElement("p");
+        prompt.textContent = "Quick check: tick the box below to carry on.";
+        prompt.setAttribute("role", "status");
+        prompt.style.cssText = "margin:0 0 6px;font-size:14px;font-weight:600;";
+        host.insertBefore(prompt, widget);
+        const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+        host.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+      },
       callback: (token: string) => done(token),
       "error-callback": (code?: string | number) => {
         lastTurnstileProblem = { kind: "error", code: code === undefined ? undefined : String(code).slice(0, 12) };

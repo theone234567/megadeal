@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
 import { getTurnstileToken, preloadTurnstile, turnstileProblemMessage } from "@/lib/turnstileClient";
 
@@ -34,7 +34,13 @@ interface EmailSignupFormProps {
   /** A visible label for the email box (it then names the box for screen
    *  readers too). Without it the box keeps its hidden "Email address". */
   label?: string;
+  /** Where the form is on every page (the footer): once this browser has
+   *  signed up, say so instead of asking again on each page (T251), with a
+   *  way back to the form for another address. */
+  rememberSignup?: boolean;
 }
+
+const SIGNED_UP_KEY = "megadeal-email-subscribed";
 
 export default function EmailSignupForm({
   audience,
@@ -47,7 +53,18 @@ export default function EmailSignupForm({
   layout = "responsive",
   shape = "pill",
   label,
+  rememberSignup = false,
 }: EmailSignupFormProps) {
+  const [signedUpHere, setSignedUpHere] = useState(false);
+  useEffect(() => {
+    if (!rememberSignup) return;
+    try {
+      // Read after the first paint: the page is the same for everyone.
+      if (localStorage.getItem(SIGNED_UP_KEY) === "1") setSignedUpHere(true);
+    } catch {
+      // Blocked storage: the form shows as usual.
+    }
+  }, [rememberSignup]);
   const rounded = shape === "rounded";
   const corners = rounded ? "min-h-[52px] rounded-lg" : "rounded-full";
   const emailId = useId();
@@ -95,7 +112,7 @@ export default function EmailSignupForm({
       // Remembers the signup, so any future "join our list" prompt can skip
       // people who already joined — a signup via any form on the site counts.
       try {
-        localStorage.setItem("megadeal-email-subscribed", "1");
+        localStorage.setItem(SIGNED_UP_KEY, "1");
       } catch {
         // Private browsing / blocked storage — fine, just means a prompt
         // might ask again later. Not worth failing the signup over.
@@ -114,7 +131,20 @@ export default function EmailSignupForm({
           surface === "plain" ? "bg-brand-50 text-brand-700" : "bg-white/90 text-brand-700"
         }`}
       >
-        📬 Almost there — check your email to confirm!
+        {/* No "already subscribed" here: that would tell anyone typing
+            an address whether it's on the list (T251). */}
+        📬 Almost there — check your email to confirm. Already on the list? You&apos;re all set.
+      </p>
+    );
+  }
+
+  if (signedUpHere) {
+    return (
+      <p className={`text-sm ${surface === "plain" ? "text-slate-600" : "text-white/90"}`}>
+        You&apos;ve signed up for MegaDeal emails on this device.{" "}
+        <button type="button" onClick={() => setSignedUpHere(false)} className="font-semibold underline underline-offset-2">
+          Add another email
+        </button>
       </p>
     );
   }

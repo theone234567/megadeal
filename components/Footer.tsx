@@ -139,6 +139,7 @@ export default function Footer({
               source="footer"
               buttonLabel={siteLaunched ? "Sign me up" : "Notify me"}
               surface="plain"
+              rememberSignup
             />
           </div>
         </section>
