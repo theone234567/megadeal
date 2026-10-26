@@ -16,6 +16,7 @@ import { OTHER_CREDIT_REASON, creditReasonsFor } from "@/lib/creditReasons";
 import { looksLikeTest } from "@/lib/launchChecklist";
 import ProfileChangesPanel from "@/components/admin/ProfileChangesPanel";
 import { placeholderBio } from "@/lib/profileReviewRules";
+import type { DuplicateMatch } from "@/lib/duplicateBusiness";
 
 const STATUSES = ["Pending", "Approved", "Suspended"];
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
@@ -83,6 +84,11 @@ export default function AdminBusinessDetailPage() {
   // approved before), from the server's own rules.
   const [approvalCredits, setApprovalCredits] = useState<{ credits: number; parts: string[] } | null>(null);
   const [emailChoices, setEmailChoices] = useState<{ subscribed: boolean } | null>(null);
+  // Other businesses with the same NZBN, phone or address (T221); null
+  // when the check couldn't run. Approving one asks whether its free
+  // credits are given.
+  const [duplicates, setDuplicates] = useState<DuplicateMatch[] | null>([]);
+  const [duplicateCredits, setDuplicateCredits] = useState<"" | "withhold" | "grant">("");
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activity, setActivity] = useState<ActivityItem[] | null>(null);
@@ -193,6 +199,7 @@ export default function AdminBusinessDetailPage() {
       setReferralMatch(data.referralMatch ?? null);
       setApprovalCredits(data.approvalCredits ?? null);
       setEmailChoices(data.emailChoices ?? null);
+      setDuplicates(Array.isArray(data.duplicates) ? data.duplicates : null);
       seedFrom(item);
 
       fetch(`/api/admin/merchants/${params.id}/activity`)
@@ -314,6 +321,7 @@ export default function AdminBusinessDetailPage() {
           creditsBalance: credits,
           creditsReason: reasonChoice === OTHER_CREDIT_REASON ? creditsReason : reasonChoice,
           confirmExtraCredits: confirmExtraCredits || undefined,
+          duplicateCredits: duplicateCredits || undefined,
           rating: rating === "" ? null : rating,
           reviewCount: reviewCount === "" ? null : reviewCount,
           rudenessCheck,
@@ -345,6 +353,11 @@ export default function AdminBusinessDetailPage() {
         const data = await res.json().catch(() => ({}));
         // Approving already adds credits: typed-in ones go on top only
         // when that's what was meant.
+        // Looks like another business (T221): the choice is on the page.
+        if (res.status === 409 && data.code === "possible_duplicate") {
+          if (Array.isArray(data.duplicates)) setDuplicates(data.duplicates);
+          throw new Error(data.error);
+        }
         if (res.status === 409 && data.code === "extra_credits") {
           setSaving(false);
           if (window.confirm(data.error)) return save(true);
@@ -455,6 +468,26 @@ export default function AdminBusinessDetailPage() {
           </span>
         )}
       </div>
+
+      {/* T221: the same NZBN, phone or address as another business. */}
+      {duplicates && duplicates.length > 0 && (
+        <div role="status" className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+          <p className="font-semibold">Possible duplicate of:</p>
+          <ul className="mt-1 space-y-0.5">
+            {duplicates.map((d) => (
+              <li key={d.id}>
+                <Link href={`/admin/businesses/${d.id}`} className="font-semibold underline">
+                  {d.name}
+                </Link>{" "}
+                ({d.status}): {d.reasons.join(", ")}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1 text-xs">
+            One business gets one welcome offer. Approving this one asks whether its free credits are given.
+          </p>
+        </div>
+      )}
 
       <p className="mt-4 text-xs text-amber-700">
         ⚠️ Editing details here changes the business's live listing directly —
@@ -794,7 +827,33 @@ export default function AdminBusinessDetailPage() {
               approve it, but its portal will keep asking it to finish, and its deals will look bare until it does.
             </p>
           )}
-          {status === "Approved" && merchant.status !== "Approved" && approvalCredits && approvalCredits.credits > 0 && (
+          {status === "Approved" && merchant.status !== "Approved" && duplicates && duplicates.length > 0 && (
+            <fieldset className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+              <legend className="sr-only">Free credits for a possible duplicate</legend>
+              <p className="font-semibold">Free credits for this business?</p>
+              <p className="mt-0.5">
+                It may be the same business as one already on MegaDeal (above). One business gets one welcome offer: choose before approving.
+              </p>
+              <label className="mt-2 flex items-start gap-2">
+                <input type="radio" name="duplicate-credits" className="mt-1" checked={duplicateCredits === "withhold"} onChange={() => setDuplicateCredits("withhold")} />
+                <span>
+                  <strong>Approve without free credits</strong> (no welcome offer, intro credits or referral bonus). You can still add credits by hand.
+                </span>
+              </label>
+              <label className="mt-1 flex items-start gap-2">
+                <input type="radio" name="duplicate-credits" className="mt-1" checked={duplicateCredits === "grant"} onChange={() => setDuplicateCredits("grant")} />
+                <span>
+                  <strong>Give the free credits anyway</strong>, e.g. a franchise or a second site of a real business.
+                </span>
+              </label>
+            </fieldset>
+          )}
+          {status === "Approved" && merchant.status !== "Approved" && duplicates === null && (
+            <p role="status" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              Couldn&apos;t check for other businesses with the same NZBN, phone or address. Approving checks again.
+            </p>
+          )}
+          {status === "Approved" && merchant.status !== "Approved" && approvalCredits && approvalCredits.credits > 0 && duplicateCredits !== "withhold" && (
             <p role="status" className="mt-3 rounded-lg border border-brand-100 bg-brand-50 px-3 py-2 text-sm text-brand-800">
               Approving adds <strong>{approvalCredits.credits} credits</strong> by itself ({approvalCredits.parts.join(" and ")}), so
               there&apos;s no need to add them in Credits. Balance after approving: {(merchant.creditsBalance ?? 0) + approvalCredits.credits}.

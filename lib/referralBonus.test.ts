@@ -50,6 +50,7 @@ vi.mock("./dataClient", () => ({
           eq: (k: string, v: unknown) => ((filters[k] = v), q),
           isNotEmpty: () => q,
           limit: () => q,
+          skip: () => q,
           find: async () => ({
             items:
               collection === "Merchants"

@@ -23,6 +23,7 @@ import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { isValidSocialUrl, isSafeOptionalUrl, normaliseSocialUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { greetingName } from "@/lib/emailGreeting";
+import { describeDuplicates, possibleDuplicates } from "@/lib/duplicateBusiness";
 
 const ALLOWED_STATUSES = ["Pending", "Approved", "Suspended"];
 const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
@@ -171,7 +172,13 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
           .catch(() => null)
       : null;
     const approvalCredits = await approvalCreditsPreview(adminClient, item).catch(() => null);
-    return NextResponse.json({ item, referralMatch, emailChoices, approvalCredits });
+    // Other businesses with the same NZBN, phone or address (T221). Null:
+    // the check couldn't run.
+    const duplicates = await possibleDuplicates(adminClient, item).catch((err) => {
+      console.error("[admin/merchants/[id]] duplicate check failed", err);
+      return null;
+    });
+    return NextResponse.json({ item, referralMatch, emailChoices, approvalCredits, duplicates });
   } catch (err) {
     console.error("[admin/merchants/[id]] GET failed", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
@@ -358,11 +365,39 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     if (reasonProblem) return NextResponse.json({ error: reasonProblem, code: "reason_required" }, { status: 400 });
   }
 
+  // One business, one free allowance (T221): approving a business that
+  // looks like another one (same NZBN, phone or address) waits for the
+  // admin to say whether its free credits (the welcome offer, intro
+  // credits, a referral bonus for both sides) are given. Nothing is saved
+  // until they choose.
+  let withholdFreeCredits = false;
+  let duplicateNote = "";
+  const approvingNow = patch.status === "Approved" && existing.status !== "Approved";
+  const creditsStillToGive = !existing.promoRewarded || (!!existing.referredByCode && !existing.referralRewarded) || !existing.firstApprovedAt;
+  if (approvingNow && creditsStillToGive) {
+    const duplicates = await possibleDuplicates(adminClient, existing);
+    if (duplicates.length > 0) {
+      const choice = body.duplicateCredits;
+      if (choice !== "withhold" && choice !== "grant") {
+        return NextResponse.json(
+          {
+            error: `This may be the same business as ${describeDuplicates(duplicates)}. Choose whether it gets the free credits, then approve again.`,
+            code: "possible_duplicate",
+            duplicates,
+          },
+          { status: 409 }
+        );
+      }
+      withholdFreeCredits = choice === "withhold";
+      duplicateNote = `possible duplicate of ${describeDuplicates(duplicates)}: free credits ${withholdFreeCredits ? "withheld" : "given"}`;
+    }
+  }
+
   // Credits typed in while approving a business for the first time, when
   // approving already adds some: confirmed first (confirmExtraCredits), or
-  // the business ends up with both.
+  // the business ends up with both. Not when they're being withheld.
   const typedCredits = patch.creditsBalance !== undefined ? Number(patch.creditsBalance) - (Number(existing.creditsBalance) || 0) : 0;
-  if (patch.status === "Approved" && existing.status !== "Approved" && typedCredits > 0 && body.confirmExtraCredits !== true) {
+  if (approvingNow && !withholdFreeCredits && typedCredits > 0 && body.confirmExtraCredits !== true) {
     const preview = await approvalCreditsPreview(adminClient, existing);
     if (preview && preview.credits > 0) {
       return NextResponse.json(
@@ -453,8 +488,16 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   // waiting on a manual top-up. Only kicks in when the admin didn't also
   // set an explicit credits number in this same save (respecting a
   // deliberate manual entry) and the merchant currently has none.
-  if (firstApproval && !adminSetCredits && existingCredits === 0) {
+  if (firstApproval && !adminSetCredits && existingCredits === 0 && !withholdFreeCredits) {
     introGranted = INTRO_CREDITS;
+  }
+
+  // Withheld (T221): the one-time offer and referral claims are used up
+  // without paying, so approving it again later can't pay them either.
+  if (becomingApproved && withholdFreeCredits) {
+    if (await claimPromoAtomically(adminClient, existing._id)) patch.promoRewarded = true;
+    if (existing.referredByCode && (await claimReferralAtomically(adminClient, existing._id))) patch.referralRewarded = true;
+    warnings.push(`Approved without free credits: ${duplicateNote.replace(/: free credits withheld$/, "")}.`);
   }
 
   // The launch offer and a referral apply together (lib/referralBonus.ts
@@ -468,7 +511,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   // The free-advertising promo. After launch, WELCOME6 typed before launch
   // still counts, as the launch offer (lib/promo.ts).
   const promo = (enteredCode ? promoForCode(enteredCode, SITE_LAUNCHED) : null) ?? (firstApproval ? currentPromo(SITE_LAUNCHED) : null);
-  if (becomingApproved && promo) {
+  if (becomingApproved && promo && !withholdFreeCredits) {
     if (await claimPromoAtomically(adminClient, existing._id)) {
       promoGranted = promo.credits;
       patch.promoRewarded = true;
@@ -476,7 +519,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   }
   // The offer replaces the small introductory grant: one or the other.
   if (promoGranted > 0) introGranted = 0;
-  if (becomingApproved && enteredReferral) {
+  if (becomingApproved && enteredReferral && !withholdFreeCredits) {
     // Referral bonus: if this merchant signed up with someone else's referral
     // code, both sides get a bonus once this merchant is approved. The claim
     // itself is an atomic conditional patch (see claimReferralAtomically) so
@@ -771,6 +814,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     const parts: string[] = [];
     if (patch.status !== undefined && patch.status !== existing.status) parts.push(`${existing.status || "Pending"} → ${patch.status}`);
     if (adminAdjustDelta !== 0) parts.push(`credits ${adminAdjustDelta > 0 ? "+" : ""}${adminAdjustDelta}: ${creditsReason}`);
+    if (duplicateNote && becomingApproved) parts.push(duplicateNote);
     const fields = Object.keys(patch).filter((k) => k !== "status" && !k.startsWith("_") && (patch as any)[k] !== existing[k]);
     if (fields.length) parts.push(`edited ${fields.slice(0, 12).join(", ")}${fields.length > 12 ? "…" : ""}`);
     const toStatus = patch.status !== undefined && patch.status !== existing.status ? patch.status : null;

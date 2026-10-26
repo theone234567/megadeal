@@ -95,6 +95,20 @@ const SIGNUP = {
   agreedToTerms: true,
 };
 
+// A different business: its own phone numbers, address and NZBN (T221).
+const OTHER_BUSINESS = {
+  ...SIGNUP,
+  businessName: "New Cafe",
+  legalBusinessName: "New Cafe Limited",
+  nzbn: "9429000000002",
+  contactPhone: "022 765 4321",
+  phone: "09 765 4321",
+  address: "20 Ponsonby Road, Ponsonby, Auckland 1011",
+  suburb: "Ponsonby",
+  website: "newcafe.co.nz",
+  bookingEmail: "book@newcafe.co.nz",
+};
+
 const DEAL = {
   dealName: "Two-course dinner",
   description: "Any main and dessert.",
@@ -415,10 +429,10 @@ describe("admin work and the rest of the business portal", () => {
 
     admin = false;
     signedIn = { ...member, id: login(2), email: "new@cafe.nz" };
-    const second = (await call(apply.POST, request("POST", { ...SIGNUP, businessName: "New Cafe", nzbn: "9429000000002", referredByCode: first.referralCode }))).body.item;
+    const second = (await call(apply.POST, request("POST", { ...OTHER_BUSINESS, referredByCode: first.referralCode }))).body.item;
     admin = true;
     await call(route.PATCH, request("PATCH", { status: "Approved" }), params(second._id));
-    await call(route.PATCH, request("PATCH", { status: "Suspended" }), params(second._id));
+    await call(route.PATCH, request("PATCH", { status: "Suspended", statusReason: "Checking the listing with the owner." }), params(second._id));
     await call(route.PATCH, request("PATCH", { status: "Approved" }), params(second._id));
 
     const rows = await db.query("select business_name, credits_balance, referral_rewarded, referred_by from public.merchants order by created_at");
@@ -426,6 +440,55 @@ describe("admin work and the rest of the business portal", () => {
     expect(rows[1]).toMatchObject({ referral_rewarded: true, referred_by: "Harbour Bistro" });
     const [{ credits_balance: after }] = await db.query("select credits_balance from public.merchants where business_name = 'Harbour Bistro'");
     expect(after).toBe(rows[0].credits_balance);
+  });
+
+  it("a second sign-up of the same business waits for the admin, and gets no free credits when withheld (T221)", async () => {
+    const apply = await import("@/app/api/merchants/apply/route");
+    const first = (await call(apply.POST, request("POST", SIGNUP))).body.item;
+    admin = true;
+    const route = await import("@/app/api/admin/merchants/[id]/route");
+    await call(route.PATCH, request("PATCH", { status: "Approved" }), params(first._id));
+    const [{ credits_balance: before }] = await db.query("select credits_balance from public.merchants");
+
+    // The same phone and address under another email, "referred" by itself.
+    admin = false;
+    signedIn = { ...member, id: login(2), email: "second@cafe.nz" };
+    const second = (await call(apply.POST, request("POST", { ...SIGNUP, businessName: "Harbour Bistro Two", nzbn: "", referredByCode: first.referralCode }))).body.item;
+    admin = true;
+    const shown = await call(route.GET, request("GET"), params(second._id));
+    expect(shown.body.duplicates).toEqual([
+      { id: first._id, name: "Harbour Bistro", status: "Approved", reasons: ["same phone number", "same address", "signed up with its referral code"] },
+    ]);
+
+    const asked = await call(route.PATCH, request("PATCH", { status: "Approved" }), params(second._id));
+    expect(asked.status).toBe(409);
+    expect(asked.body.code).toBe("possible_duplicate");
+    expect(await db.query("select status from public.merchants where id = $1", [second._id])).toEqual([{ status: "Pending" }]);
+
+    const approved = await call(route.PATCH, request("PATCH", { status: "Approved", duplicateCredits: "withhold" }), params(second._id));
+    expect(approved.status).toBe(200);
+    expect(approved.body.warnings.join(" ")).toMatch(/Approved without free credits: possible duplicate of Harbour Bistro/);
+    // Approved again after a suspension: still nothing.
+    await call(route.PATCH, request("PATCH", { status: "Suspended", statusReason: "Checking the listing with the owner." }), params(second._id));
+    await call(route.PATCH, request("PATCH", { status: "Approved" }), params(second._id));
+    const rows = await db.query("select business_name, status, credits_balance, promo_rewarded, referral_rewarded from public.merchants order by created_at");
+    expect(rows[0].credits_balance).toBe(before);
+    expect(rows[1]).toMatchObject({ status: "Approved", credits_balance: 0, promo_rewarded: true, referral_rewarded: true });
+  });
+
+  it("a franchise can still be given the free credits (T221)", async () => {
+    const apply = await import("@/app/api/merchants/apply/route");
+    const first = (await call(apply.POST, request("POST", SIGNUP))).body.item;
+    admin = false;
+    signedIn = { ...member, id: login(2), email: "franchise@cafe.nz" };
+    const second = (await call(apply.POST, request("POST", { ...OTHER_BUSINESS, nzbn: SIGNUP.nzbn }))).body.item;
+    admin = true;
+    const route = await import("@/app/api/admin/merchants/[id]/route");
+    expect((await call(route.GET, request("GET"), params(second._id))).body.duplicates[0]).toMatchObject({ id: first._id, reasons: ["same NZBN"] });
+    expect((await call(route.PATCH, request("PATCH", { status: "Approved", duplicateCredits: "grant" }), params(second._id))).status).toBe(200);
+    const [given] = await db.query("select credits_balance, promo_rewarded from public.merchants where id = $1", [second._id]);
+    expect(given.promo_rewarded).toBe(true);
+    expect(given.credits_balance).toBeGreaterThan(0);
   });
 
   it("edits the business profile and photos; a name change goes back for review", async () => {
