@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { cleanAmenities } from "@/lib/amenities";
 import { hasMarkup, NAME_MARKUP_MESSAGE } from "@/lib/nameRules";
 import { phoneLink } from "@/lib/booking";
 import { NextRequest, NextResponse } from "next/server";
@@ -11,7 +12,7 @@ import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL, DEALS_OPEN } from "@/lib/siteConfig";
 import { generateReferralCode } from "@/lib/referral";
-import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
+import { isValidSocialUrl, isSafeOptionalUrl, normaliseSocialUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { isBusinessCategory } from "@/lib/categories";
 import { escapeHtml } from "@/lib/escapeHtml";
@@ -158,12 +159,16 @@ export async function POST(req: NextRequest) {
   const bookingUrl = cleanText(body.bookingUrl, MAX_TEXT_LENGTH);
   if (!isSafeOptionalUrl(bookingUrl)) fieldErrors.bookingUrl = "Enter a valid booking link.";
 
-  const facebookUrl = cleanText(body.facebookUrl, MAX_TEXT_LENGTH);
-  if (!isValidSocialUrl(facebookUrl, "facebook")) {
+  // Stored cleaned: "@handle" made a link, https, no tracking (T249).
+  const facebookUrlTyped = cleanText(body.facebookUrl, MAX_TEXT_LENGTH);
+  const facebookUrl = normaliseSocialUrl(facebookUrlTyped, "facebook") ?? facebookUrlTyped;
+  if (!isValidSocialUrl(facebookUrlTyped, "facebook")) {
     fieldErrors.facebookUrl = "Enter a valid Facebook page URL (e.g. facebook.com/yourbusiness).";
   }
-  const instagramUrl = cleanText(body.instagramUrl, MAX_TEXT_LENGTH);
-  if (!isValidSocialUrl(instagramUrl, "instagram")) {
+  // Stored cleaned: "@handle" made a link, https, no tracking (T249).
+  const instagramUrlTyped = cleanText(body.instagramUrl, MAX_TEXT_LENGTH);
+  const instagramUrl = normaliseSocialUrl(instagramUrlTyped, "instagram") ?? instagramUrlTyped;
+  if (!isValidSocialUrl(instagramUrlTyped, "instagram")) {
     fieldErrors.instagramUrl = "Enter a valid Instagram profile URL (e.g. instagram.com/yourbusiness).";
   }
 
@@ -221,7 +226,7 @@ export async function POST(req: NextRequest) {
       facebookUrl,
       instagramUrl,
       priceRange,
-      amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
+      amenities: cleanAmenities(cleanText(body.amenities, MAX_TEXT_LENGTH)),
       lat,
       lng,
       // Real Wix-verified status, not a token we invented — kept in sync

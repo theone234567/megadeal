@@ -1,6 +1,6 @@
 /** The profile fields re-checked after approval (lib/profileReview.ts),
  *  kept free of anything server-only for the admin page. */
-export const REVIEWED_PROFILE_FIELDS = ["bio", "website", "bookingUrl", "bookingEmail", "phone", "facebookUrl", "instagramUrl"] as const;
+export const REVIEWED_PROFILE_FIELDS = ["bio", "website", "bookingUrl", "bookingEmail", "phone", "facebookUrl", "instagramUrl", "photos"] as const;
 export type ReviewedField = (typeof REVIEWED_PROFILE_FIELDS)[number];
 
 export const PROFILE_FIELD_LABELS: Record<ReviewedField, string> = {
@@ -11,6 +11,9 @@ export const PROFILE_FIELD_LABELS: Record<ReviewedField, string> = {
   phone: "Phone",
   facebookUrl: "Facebook",
   instagramUrl: "Instagram",
+  // Saved through app/api/merchants/photos, always for a person to look at
+  // (T249): the page keeps its current photos until then.
+  photos: "Photos",
 };
 
 /** Wording that means a listing isn't ready for customers. */

@@ -31,5 +31,20 @@ export async function memberRateLimited(
   return limited;
 }
 
+/** How long until a member's count for `bucket` starts again, in whole
+ *  minutes (at least 1), or null when unknown. Only asked once they're
+ *  over the limit, to say when to try again (T249). */
+export async function memberRetryMinutes(bucket: string, memberId: string): Promise<number | null> {
+  const { windowSecondsLeft } = await import("./securityStore");
+  const seconds = await windowSecondsLeft(`${bucket}:${memberId}`);
+  return seconds === null ? null : Math.max(1, Math.ceil(seconds / 60));
+}
+
+/** "in 12 minutes", "in a minute", or "shortly" when unknown. */
+export function tryAgainIn(minutes: number | null): string {
+  if (minutes === null) return "shortly";
+  return minutes <= 1 ? "in a minute" : `in ${minutes} minutes`;
+}
+
 /** One hour, the window every caller here uses. */
 export const HOUR = 60 * 60;

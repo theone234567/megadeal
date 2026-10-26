@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { PROFILE_FIELD_LABELS, REVIEWED_PROFILE_FIELDS, type ReviewedField } from "@/lib/profileReviewRules";
+import { parseBusinessPhotos } from "@/lib/businessPhotos";
+import { wixImageUrl } from "@/lib/wixImageUrl";
 
 /**
  * Admin: an approved business's profile changes waiting for a check
@@ -67,8 +69,12 @@ export default function ProfileChangesPanel({
             {fields.map((f) => (
               <tr key={f} className="align-top">
                 <td className="py-1.5 pr-3 font-semibold text-slate-800">{PROFILE_FIELD_LABELS[f]}</td>
-                <td className="max-w-xs whitespace-pre-wrap break-words py-1.5 pr-3 text-slate-500">{String(current[f] ?? "") || "(empty)"}</td>
-                <td className="max-w-xs whitespace-pre-wrap break-words py-1.5 text-slate-900">{pending[f] || "(empty)"}</td>
+                <td className="max-w-xs whitespace-pre-wrap break-words py-1.5 pr-3 text-slate-500">
+                  {f === "photos" ? <Thumbs value={current[f]} /> : String(current[f] ?? "") || "(empty)"}
+                </td>
+                <td className="max-w-xs whitespace-pre-wrap break-words py-1.5 text-slate-900">
+                  {f === "photos" ? <Thumbs value={pending[f]} /> : pending[f] || "(empty)"}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -109,5 +115,19 @@ export default function ProfileChangesPanel({
         </button>
       </div>
     </section>
+  );
+}
+
+/** A set of business photos, small, in order (the first is the main one). */
+function Thumbs({ value }: { value: unknown }) {
+  const photos = parseBusinessPhotos(value);
+  if (photos.length === 0) return <>(none)</>;
+  return (
+    <span className="flex flex-wrap gap-1.5">
+      {photos.map((url, i) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img key={url} src={wixImageUrl(url, 360, 240)} alt={`Photo ${i + 1}`} className="h-12 w-[72px] rounded object-cover ring-1 ring-slate-200" />
+      ))}
+    </span>
   );
 }

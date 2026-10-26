@@ -5,7 +5,7 @@ import { createDataClient } from "@/lib/dataClient";
 import { isUploadedPhotoUrl } from "@/lib/photoUrl";
 import { SITE_URL } from "@/lib/siteConfig";
 import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
-import { MAX_BUSINESS_PHOTOS, serializeBusinessPhotos } from "@/lib/businessPhotos";
+import { MAX_BUSINESS_PHOTOS, parseBusinessPhotos, serializeBusinessPhotos } from "@/lib/businessPhotos";
 import { merchantForBusiness } from "@/lib/profileReview";
 
 /** Replaces app/api/merchants/logo/route.ts now that a listing carries up
@@ -44,15 +44,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No business application found for this account." }, { status: 404 });
     }
 
+    const next = serializeBusinessPhotos(photos);
+    // An approved business keeps its page, deals and current photos while
+    // new ones wait for a person (T249). Changing them used to send the
+    // whole business back to Pending, which took its page and live deals
+    // off the site until it was approved again.
+    if (merchant.status === "Approved") {
+      const waiting = merchant.pendingProfile && typeof merchant.pendingProfile === "object" ? { ...merchant.pendingProfile } : {};
+      const unchanged = next === serializeBusinessPhotos(parseBusinessPhotos(merchant.photos));
+      if (unchanged) delete waiting.photos;
+      else waiting.photos = next;
+      const any = Object.keys(waiting).length > 0;
+      const held = await adminClient.items.update("Merchants", {
+        ...merchant,
+        pendingProfile: any ? waiting : null,
+        pendingProfileReview: any
+          ? merchant.pendingProfileReview ?? { reason: "New photos are looked at by a person before they go on the page.", review: null, at: new Date().toISOString() }
+          : null,
+        pendingProfileAt: any ? merchant.pendingProfileAt ?? new Date().toISOString() : null,
+      });
+      // With the database update that adds pending_profile applied, done.
+      if (!any || held.pendingProfile) return NextResponse.json({ item: merchantForBusiness(held), held: any ? ["Photos"] : [] });
+      console.error("[merchants/photos] pending_profile isn't in the database yet (Admin > System); saved the photos directly");
+    }
+
     const updated = await adminClient.items.update("Merchants", {
       ...merchant,
-      photos: serializeBusinessPhotos(photos),
+      photos: next,
       // logoUrl stays in sync as the first photo — every place that still
       // shows one small square image (deal cards, the admin dashboard
       // row, JSON-LD) reads this field and is unaffected by the move to
       // a gallery.
       logoUrl: photos[0],
-      status: statusAfterMerchantEdit(merchant, { photos: serializeBusinessPhotos(photos) }),
+      status: statusAfterMerchantEdit(merchant, { photos: next }),
     });
     return NextResponse.json({ item: merchantForBusiness(updated) });
   } catch (err) {

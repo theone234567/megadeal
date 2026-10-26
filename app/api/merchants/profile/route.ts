@@ -1,15 +1,16 @@
 import { availableMethods } from "@/lib/contactOverride";
+import { cleanAmenities } from "@/lib/amenities";
 import { hasMarkup, NAME_MARKUP_MESSAGE } from "@/lib/nameRules";
 import { isContactMethod } from "@/lib/dealContact";
 import { NextRequest, NextResponse } from "next/server";
 import { isBookingChoice } from "@/lib/booking";
 import { phoneLink } from "@/lib/booking";
 import { getVerifiedMember } from "@/lib/memberAuth";
-import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
+import { memberRateLimited, memberRetryMinutes, tryAgainIn, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
 import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
 import { notifyBusinessChanged } from "@/lib/indexNowDeal";
-import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
+import { isValidSocialUrl, isSafeOptionalUrl, normaliseSocialUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { isBusinessCategory } from "@/lib/categories";
 import { PROFILE_FIELD_LABELS, merchantForBusiness, profileChanges, reviewProfileChanges, type ReviewedField } from "@/lib/profileReview";
@@ -46,9 +47,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (await memberRateLimited("merchant-profile", member.id, 20, HOUR)) {
+    // Says when (T249), rather than a vague "shortly".
+    const minutes = await memberRetryMinutes("merchant-profile", member.id);
     return NextResponse.json(
-      { error: "You've saved that a lot in a short time. Please try again shortly." },
-      { status: 429 }
+      { error: `You've saved your profile a lot in a short time. Please try again ${tryAgainIn(minutes)}.` },
+      { status: 429, headers: minutes ? { "Retry-After": String(minutes * 60) } : undefined }
     );
   }
 
@@ -141,12 +144,16 @@ export async function POST(req: NextRequest) {
   const bookingUrl = cleanText(body.bookingUrl, MAX_TEXT_LENGTH);
   if (!isSafeOptionalUrl(bookingUrl)) fieldErrors.bookingUrl = "Enter a valid booking link.";
 
-  const facebookUrl = cleanText(body.facebookUrl, MAX_TEXT_LENGTH);
-  if (!isValidSocialUrl(facebookUrl, "facebook")) {
+  // Stored cleaned: "@handle" made a link, https, no tracking (T249).
+  const facebookUrlTyped = cleanText(body.facebookUrl, MAX_TEXT_LENGTH);
+  const facebookUrl = normaliseSocialUrl(facebookUrlTyped, "facebook") ?? facebookUrlTyped;
+  if (!isValidSocialUrl(facebookUrlTyped, "facebook")) {
     fieldErrors.facebookUrl = "Enter a valid Facebook page URL (e.g. facebook.com/yourbusiness).";
   }
-  const instagramUrl = cleanText(body.instagramUrl, MAX_TEXT_LENGTH);
-  if (!isValidSocialUrl(instagramUrl, "instagram")) {
+  // Stored cleaned: "@handle" made a link, https, no tracking (T249).
+  const instagramUrlTyped = cleanText(body.instagramUrl, MAX_TEXT_LENGTH);
+  const instagramUrl = normaliseSocialUrl(instagramUrlTyped, "instagram") ?? instagramUrlTyped;
+  if (!isValidSocialUrl(instagramUrlTyped, "instagram")) {
     fieldErrors.instagramUrl = "Enter a valid Instagram profile URL (e.g. instagram.com/yourbusiness).";
   }
 
@@ -236,7 +243,7 @@ export async function POST(req: NextRequest) {
     facebookUrl,
     instagramUrl,
     priceRange,
-    amenities: cleanText(body.amenities, MAX_TEXT_LENGTH),
+    amenities: cleanAmenities(cleanText(body.amenities, MAX_TEXT_LENGTH)),
     lat: lat ?? (addressChanged ? null : merchant.lat ?? null),
     lng: lng ?? (addressChanged ? null : merchant.lng ?? null),
     status: statusAfterMerchantEdit(merchant, {
@@ -251,9 +258,20 @@ export async function POST(req: NextRequest) {
     // Held changes: the live values stay, the new ones wait. A save that
     // goes live clears anything waiting (it was saved over).
     ...kept,
-    pendingProfile: held,
-    pendingProfileReview: held ? { reason: decision!.reason, review: decision!.review, at: new Date().toISOString() } : null,
-    pendingProfileAt: held ? new Date().toISOString() : null,
+    // Photos waiting for a person (app/api/merchants/photos) stay waiting.
+    ...(() => {
+      const photos = merchant.pendingProfile && typeof merchant.pendingProfile === "object" ? merchant.pendingProfile.photos : undefined;
+      if (held) {
+        return {
+          pendingProfile: photos === undefined ? held : { ...held, photos },
+          pendingProfileReview: { reason: decision!.reason, review: decision!.review, at: new Date().toISOString() },
+          pendingProfileAt: new Date().toISOString(),
+        };
+      }
+      return photos === undefined
+        ? { pendingProfile: null, pendingProfileReview: null, pendingProfileAt: null }
+        : { pendingProfile: { photos }, pendingProfileReview: merchant.pendingProfileReview ?? null, pendingProfileAt: merchant.pendingProfileAt ?? null };
+    })(),
   });
   if (held && !updated.pendingProfile) {
     // Before the database update adding pending_profile is applied there's

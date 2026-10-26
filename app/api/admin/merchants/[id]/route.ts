@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cleanAmenities } from "@/lib/amenities";
 import { REFERRAL_BONUS_CREDITS, referralCreditsLabel, signupCodes } from "@/lib/referralBonus";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
@@ -17,7 +18,7 @@ import { incrementCreditsAtomically, setFieldsIf } from "@/lib/creditsAtomic";
 import { logMerchantActivity } from "@/lib/merchantActivity";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
-import { isValidSocialUrl, isSafeOptionalUrl } from "@/lib/socialLinks";
+import { isValidSocialUrl, isSafeOptionalUrl, normaliseSocialUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { greetingName } from "@/lib/emailGreeting";
 
@@ -315,7 +316,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         { status: 400 }
       );
     }
-    patch.facebookUrl = v;
+    patch.facebookUrl = normaliseSocialUrl(v, "facebook") ?? v;
   }
   if (body.instagramUrl !== undefined) {
     const v = cleanText(body.instagramUrl, MAX_TEXT_LENGTH);
@@ -325,7 +326,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         { status: 400 }
       );
     }
-    patch.instagramUrl = v;
+    patch.instagramUrl = normaliseSocialUrl(v, "instagram") ?? v;
   }
   if (body.priceRange !== undefined) {
     const v = cleanText(body.priceRange, 4);
@@ -334,7 +335,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     }
     patch.priceRange = v;
   }
-  if (body.amenities !== undefined) patch.amenities = cleanText(body.amenities, MAX_TEXT_LENGTH);
+  if (body.amenities !== undefined) patch.amenities = cleanAmenities(cleanText(body.amenities, MAX_TEXT_LENGTH));
   if (body.lat !== undefined) patch.lat = Number.isFinite(body.lat) ? Number(body.lat) : null;
   if (body.lng !== undefined) patch.lng = Number.isFinite(body.lng) ? Number(body.lng) : null;
 

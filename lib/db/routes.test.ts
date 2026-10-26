@@ -647,7 +647,7 @@ describe("profile edits after approval (T161)", () => {
     expect(mail.some((m) => m.subject.startsWith("Profile changed:"))).toBe(true);
 
     aiReview = null; // the check isn't available
-    expect((await save({ website: "harbour-bistro-deals.example.com" })).body.held).toEqual(["Website"]);
+    expect((await save({ website: "harbour-bistro-deals.co.nz" })).body.held).toEqual(["Website"]);
     expect((await live()).website).toBe("https://harbourbistro.nz");
 
     // Declined: needs a note, then it's dropped and the business is told why.

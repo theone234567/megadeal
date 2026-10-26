@@ -10,8 +10,15 @@ const MAX_DATA_URL_LENGTH = 2_500_000; // generous; final storage is a short URL
  */
 export function fileToCompressedDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    if (!file.type.startsWith("image/")) {
+    const heic = /image\/hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
+    if (!file.type.startsWith("image/") && !heic) {
       reject(new Error("Please choose an image file."));
+      return;
+    }
+    // Only its first frame would be kept, so an animation would silently
+    // become a still (T249): say so instead.
+    if (/image\/gif/i.test(file.type)) {
+      reject(new Error("GIFs can't be used. Save it as a JPG or PNG and try again."));
       return;
     }
 
@@ -33,6 +40,10 @@ export function fileToCompressedDataUrl(file: File): Promise<string> {
         reject(new Error("Couldn't process that image."));
         return;
       }
+      // JPEG has no transparency: without a background, the clear parts
+      // of a PNG logo came out black (T249).
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
       ctx.drawImage(img, 0, 0, width, height);
 
       const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
@@ -45,7 +56,14 @@ export function fileToCompressedDataUrl(file: File): Promise<string> {
 
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error("Couldn't read that image file."));
+      // iPhone photos (HEIC) open in Safari but not in most other browsers.
+      reject(
+        new Error(
+          heic
+            ? "This browser can't open iPhone (HEIC) photos. Save it as a JPG and try again, or upload it from Safari."
+            : "Couldn't read that image file."
+        )
+      );
     };
 
     img.src = objectUrl;

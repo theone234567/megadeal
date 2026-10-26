@@ -67,6 +67,23 @@ export async function countSoFar(key: string): Promise<number | "unavailable"> {
   }
 }
 
+/** Seconds until a count's window ends, or null when there's none (or
+ *  it can't be read). For "try again in N minutes" (T249). */
+export async function windowSecondsLeft(key: string): Promise<number | null> {
+  try {
+    return await withDb(async (db) => {
+      const [row] = await db.query<{ left: number }>(
+        `select ceil(extract(epoch from (window_end - now())))::int as left
+           from public.rate_limits where key = $1 and window_end > now()`,
+        [storedKey(key)],
+      );
+      return row ? Number(row.left) : null;
+    });
+  } catch {
+    return null;
+  }
+}
+
 /** Forgets a count (e.g. once the thing it guarded is replaced). */
 export async function clearCount(key: string): Promise<void> {
   try {

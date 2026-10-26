@@ -10,6 +10,7 @@ import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { escapeHtml } from "@/lib/escapeHtml";
 import { greetingHtml } from "@/lib/emailGreeting";
 import { SITE_URL } from "@/lib/siteConfig";
+import { parseBusinessPhotos } from "@/lib/businessPhotos";
 
 /**
  * Admin > a business > "Profile changes waiting" (security pack T161):
@@ -35,7 +36,13 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     const pending = merchant.pendingProfile && typeof merchant.pendingProfile === "object" ? merchant.pendingProfile : null;
     if (!pending) return NextResponse.json({ error: "There are no changes waiting." }, { status: 409 });
     const fields = (Object.keys(pending) as ReviewedField[]).filter((f) => (REVIEWED_PROFILE_FIELDS as readonly string[]).includes(f));
-    const applied = decision === "approve" ? Object.fromEntries(fields.map((f) => [f, pending[f]])) : {};
+    const applied: Record<string, unknown> = decision === "approve" ? Object.fromEntries(fields.map((f) => [f, pending[f]])) : {};
+    // New photos: the first is also the small square image (logoUrl) that
+    // deal cards and the admin list show, as when photos are saved.
+    if (typeof applied.photos === "string") {
+      const first = parseBusinessPhotos(applied.photos)[0];
+      if (first) applied.logoUrl = first;
+    }
     const updated = await adminClient.items.update("Merchants", {
       ...merchant,
       ...applied,

@@ -60,7 +60,7 @@ describe("checkDealFields", () => {
 
   it("only takes the website-code option with the business's own, tested code", () => {
     expect(err({ ...good, codeOnWebsite: true })).not.toBeNull();
-    const res = checkDealFields({ ...good, dealCode: "GLOW20", codeOnWebsite: true, codeWebsiteUrl: "https://spa.example/book", codeTested: true }, rules);
+    const res = checkDealFields({ ...good, dealCode: "GLOW20", codeOnWebsite: true, codeWebsiteUrl: "https://glow-spa-ponsonby.co.nz/book", codeTested: true }, rules);
     expect(res.ok && res.fields.codeOnWebsite).toBe(true);
   });
 });

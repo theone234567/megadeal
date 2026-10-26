@@ -1,3 +1,4 @@
+import { amenityList } from "./amenities";
 import { isContactMethod, type ContactMethod } from "./dealContact";
 import { businessSlug } from "./slug";
 import { parseBusinessPhotos } from "./businessPhotos";
@@ -70,10 +71,7 @@ export function mapMerchantToBusiness(merchant: any): PublicBusiness {
     facebookUrl: merchant.facebookUrl || null,
     instagramUrl: merchant.instagramUrl || null,
     priceRange: merchant.priceRange || null,
-    amenities: String(merchant.amenities || "")
-      .split(",")
-      .map((a: string) => a.trim())
-      .filter(Boolean),
+    amenities: amenityList(merchant.amenities),
     bookingUrl: merchant.bookingUrl || null,
     bookingEmail: merchant.bookingEmail || null,
     lat: place.lat,

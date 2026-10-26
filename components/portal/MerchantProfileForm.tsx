@@ -367,6 +367,41 @@ export default function MerchantProfileForm({
     }
   }
 
+  /** Cancel (T249, T115): every field back to what's saved, and the
+   *  problems cleared, so Edit next time starts from the saved listing
+   *  rather than the abandoned changes. */
+  function cancelEditing() {
+    setBusinessName(merchant.businessName || "");
+    setContactName(merchant.contactName || "");
+    setContactPhone(merchant.contactPhone || "");
+    setLegalBusinessName(merchant.legalBusinessName || "");
+    setNzbn(merchant.nzbn || "");
+    setWebsite(merchant.website || "");
+    setPhone(merchant.phone || "");
+    setAddress(merchant.address || "");
+    setCity(merchant.city || "");
+    setSuburb(merchant.suburb || "");
+    setHideAddress(merchant.hideAddress === true);
+    setServiceArea(merchant.serviceArea || "");
+    setPostcode(merchant.postcode || "");
+    setLat(merchant.lat ?? null);
+    setLon(merchant.lng ?? null);
+    setBio(merchant.bio || "");
+    setBusinessHours(merchant.businessHours || "");
+    setBookingUrl(merchant.bookingUrl || "");
+    setBookingEmail(merchant.bookingEmail || "");
+    setPreferredContact(merchant.preferredContact || "");
+    setFacebookUrl(merchant.facebookUrl || "");
+    setInstagramUrl(merchant.instagramUrl || "");
+    setPriceRange(merchant.priceRange || "");
+    setAmenities(merchant.amenities || "");
+    setProblems([]);
+    setTriedToSend(false);
+    setFieldErrors({});
+    setError(null);
+    setEditing(false);
+  }
+
   function errorBorderClass(name: string): string {
     return fieldErrors[name]
       ? "border-red-400 focus:border-red-500"
@@ -1070,7 +1105,7 @@ export default function MerchantProfileForm({
           </button>
           <button
             type="button"
-            onClick={() => setEditing(false)}
+            onClick={cancelEditing}
             disabled={saving}
             className="rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
           >
