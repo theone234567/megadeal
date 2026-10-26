@@ -34,7 +34,8 @@ describe("after launch, search engines see the launch offer only", () => {
 
   it("and it really is the launched page (3 months)", async () => {
     const { metadata } = await import("@/app/advertise/restaurants/page");
-    expect(metadata.title).toBe("Restaurant Advertising Auckland | 3 Months Free");
+    expect(metadata.title).toBe("Restaurant & Cafe Advertising Auckland");
+    expect(String(metadata.description)).toContain("up to 3 months of free advertising");
   });
 
   it("llms.txt", async () => {

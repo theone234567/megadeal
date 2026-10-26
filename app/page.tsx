@@ -10,6 +10,8 @@ import { hasFilterParams, toSearchString } from "@/lib/homeFilters";
 import { toCardDeal } from "@/lib/listingDeal";
 import { isAdminViewer } from "@/lib/adminViewer";
 import { INDEXABLE } from "@/lib/robotsMeta";
+import HomeHowItWorks, { SHOPPER_FAQS, type HomeFaq } from "@/components/HomeHowItWorks";
+import { BUSINESS_COST } from "@/lib/helpFaq";
 
 const HOME_TITLE = `${SITE_NAME} — Local Deals Up to 50% Off in Auckland & NZ`;
 const HOME_DESCRIPTION =
@@ -139,6 +141,18 @@ export default async function HomePage(props: { searchParams: Promise<Record<str
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
         <HomeDeals initialDeals={deals.map(toCardDeal)} initialSearch={initialSearch} testDeals={!SITE_LAUNCHED} />
       </div>
+      {/* Under the deals: how it works and the questions people ask, kept
+          after launch so the page still answers them (owner, 26 Oct 2026). */}
+      <HomeHowItWorks faqs={LIVE_FAQS} />
     </main>
   );
 }
+
+/** The home page's questions once deals are live (components/HomeHowItWorks.tsx). */
+const LIVE_FAQS: HomeFaq[] = [
+  SHOPPER_FAQS.howItWorks,
+  SHOPPER_FAQS.free,
+  { q: "How can my business join?", a: `Sign up free on our business page: ${BUSINESS_COST}` },
+  SHOPPER_FAQS.groupon,
+  SHOPPER_FAQS.grabone,
+];

@@ -16,6 +16,7 @@ import type { AddressSuggestion } from "@/lib/googlePlaces";
 import { trackMetaPixelEvent } from "@/lib/metaPixel";
 import { getAttribution, getFbc, getFbp } from "@/lib/attribution";
 import { PROFILE_FIELD_LABELS } from "@/lib/profileReviewRules";
+import { MIN_BIO_FOR_INDEX } from "@/lib/businessIndexing";
 
 const CITIES = ["Auckland", "Wellington", "Christchurch", "Queenstown", "Hamilton", "Other"];
 const MIN_BIO_LENGTH = 50;
@@ -620,7 +621,11 @@ export default function MerchantProfileForm({
               <p className="mt-1 text-xs text-slate-500">
                 {bio.length < MIN_BIO_LENGTH
                   ? `At least ${MIN_BIO_LENGTH} characters (${MIN_BIO_LENGTH - bio.length} to go)`
-                  : `${bio.length}/${MAX_BIO_LENGTH} characters`}
+                  : bio.trim().length < MIN_BIO_FOR_INDEX
+                    ? // Only a page with this much goes to search engines
+                      // (lib/businessIndexing.ts): said, not required.
+                      `${bio.length}/${MAX_BIO_LENGTH} characters. Write ${MIN_BIO_FOR_INDEX}+ characters so your page can show up in Google.`
+                    : `${bio.length}/${MAX_BIO_LENGTH} characters`}
               </p>
             </div>
 

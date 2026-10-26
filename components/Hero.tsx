@@ -61,7 +61,8 @@ export default function Hero() {
               id="hero-heading"
               className="font-display text-[1.75rem] font-semibold leading-[1.1] text-hp-ink sm:text-[2.125rem] lg:text-[clamp(2.25rem,3vw,2.75rem)]"
             >
-              Big local deals.{" "}
+              {/* "Auckland" in the heading: what people search for (owner, 26 Oct 2026). */}
+              Local deals in Auckland.{" "}
               <span className="block text-hp-purple">More to enjoy.</span>
             </h1>
             <p className="mt-2 text-[0.9375rem] leading-relaxed text-hp-ink sm:mt-3 sm:pr-4 sm:text-base">

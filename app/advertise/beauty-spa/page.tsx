@@ -39,7 +39,8 @@ const LAUNCHED = SITE_LAUNCHED;
 const PROMO = currentPromo(LAUNCHED);
 const OFFER = `Up to ${PROMO.months} months free advertising`;
 
-const TITLE = "Beauty & Spa Advertising Auckland";
+// "Massage" too: what a lot of these owners search for.
+const TITLE = "Spa, Massage & Beauty Advertising Auckland";
 const DESCRIPTION = `Reach Auckland customers with offers for nails, hair, spa, massage and more. 0% commission, and up to ${PROMO.months} months free advertising for eligible businesses.`;
 
 export const metadata: Metadata = {

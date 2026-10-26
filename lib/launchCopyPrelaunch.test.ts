@@ -8,7 +8,7 @@ vi.mock("@/lib/fonts", () => ({ fredoka: { className: "" }, plusJakartaSans: { c
 describe("before launch", () => {
   it("the business pages still offer up to 6 months", async () => {
     const { metadata } = await import("@/app/advertise/restaurants/page");
-    expect(metadata.title).toBe("Restaurant Advertising Auckland | 6 Months Free");
+    expect(metadata.title).toBe("Restaurant & Cafe Advertising Auckland");
     expect(String(metadata.description)).toContain("Apply before launch for up to six months");
   });
 

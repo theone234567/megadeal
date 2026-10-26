@@ -39,7 +39,9 @@ const LAUNCHED = SITE_LAUNCHED;
 const PROMO = currentPromo(LAUNCHED);
 const OFFER = `Up to ${PROMO.months} months free advertising`;
 
-const TITLE = `Restaurant Advertising Auckland | ${PROMO.months} Months Free`;
+// "Cafe" without the accent: how owners type it into a search. The free
+// months are in the description: with them the title passes 60 characters.
+const TITLE = "Restaurant & Cafe Advertising Auckland";
 const DESCRIPTION = LAUNCHED
   ? `Promote your Auckland restaurant or café with MegaDeal. Eligible new businesses get up to ${PROMO.months} months of free advertising and 0% commission. T&Cs apply.`
   : "Promote your Auckland restaurant or café with MegaDeal. Apply before launch for up to six months of free advertising and 0% commission. T&Cs apply.";
