@@ -50,6 +50,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/how-it-works`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/redeem`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/help`, changeFrequency: "monthly", priority: 0.3 },
+    // "Is Groupon still in NZ?", a dated answer (T254).
+    { url: `${SITE_URL}/groupon-nz`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${SITE_URL}/developers`, changeFrequency: "monthly", priority: 0.2 },
     { url: `${SITE_URL}/about`, changeFrequency: "monthly", priority: 0.3 },
     { url: `${SITE_URL}/contact`, changeFrequency: "monthly", priority: 0.3 },

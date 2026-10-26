@@ -115,7 +115,16 @@ const FAQS: Faq[] = [
     // a plain answer is useful to them and to search. Facts only: no
     // claim of any link with Groupon.
     q: "Is Groupon still in New Zealand?",
-    a: "No. Groupon closed its New Zealand business in 2020, and MegaDeal isn't connected with it. MegaDeal is a New Zealand-owned local deals site, starting in Auckland. It works differently: there's no voucher to buy. You get a free deal code, contact the business, and pay them directly at the deal price.",
+    a: (
+      <>
+        No. Groupon closed its New Zealand business in 2020, and MegaDeal isn&apos;t connected with it. MegaDeal is a
+        New Zealand-owned local deals site, starting in Auckland. It works differently: there&apos;s no voucher to
+        buy. You get a free deal code, contact the business, and pay them directly at the deal price.{" "}
+        <Link href="/groupon-nz" className="font-semibold text-brand-600 hover:underline">
+          What happened to Groupon NZ
+        </Link>
+      </>
+    ),
   },
   {
     // GrabOne sells prepaid vouchers; facts only, checked 26 Oct 2026 (T254).

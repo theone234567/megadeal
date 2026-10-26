@@ -46,6 +46,7 @@ ${categoryLinks}
 ${page(`Homepage`, "/", `all live deals`)}
 ${page(`How it works`, "/how-it-works")}
 ${page(`How to redeem a deal`, "/redeem")}
+${page(`Is Groupon still in New Zealand?`, "/groupon-nz", `no: it closed in 2020; dated and sourced`)}
 ${page(`Every Help Centre answer in full`, "/llms-full.txt")}
 ${page(`List your business / advertise your deal`, "/list-your-business")}
 ${page(`About`, "/about")}
@@ -97,6 +98,7 @@ ${page(`List your business / advertise your deal`, "/list-your-business")}
 ${ADVERTISE_LINKS}
 ${page(`How it works`, "/how-it-works")}
 ${page(`How to redeem a deal`, "/redeem")}
+${page(`Is Groupon still in New Zealand?`, "/groupon-nz", `no: it closed in 2020; dated and sourced`)}
 ${page(`About`, "/about")}
 ${page(`Contact`, "/contact")}
 ${page(`Terms of service`, "/terms")}

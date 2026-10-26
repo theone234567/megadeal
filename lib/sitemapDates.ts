@@ -23,6 +23,7 @@ export const CONTENT_UPDATED: Record<string, string> = {
   "/terms": "2026-10-04",
   "/privacy": "2026-09-27",
   "/refund-policy": "2026-09-27",
+  "/groupon-nz": "2026-10-26",
 };
 
 /**
