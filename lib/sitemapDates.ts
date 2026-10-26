@@ -15,7 +15,7 @@ export const CONTENT_UPDATED: Record<string, string> = {
   "/advertise/health-fitness": "2026-10-17",
   "/how-it-works": "2026-10-06",
   "/redeem": "2026-10-03",
-  "/help": "2026-10-17",
+  "/help": "2026-10-26",
   "/developers": "2026-10-13",
   "/about": "2026-09-27",
   "/contact": "2026-10-05",
