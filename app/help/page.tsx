@@ -118,6 +118,11 @@ const FAQS: Faq[] = [
     a: "No. Groupon closed its New Zealand business in 2020, and MegaDeal isn't connected with it. MegaDeal is a New Zealand-owned local deals site, starting in Auckland. It works differently: there's no voucher to buy. You get a free deal code, contact the business, and pay them directly at the deal price.",
   },
   {
+    // GrabOne sells prepaid vouchers; facts only, checked 26 Oct 2026 (T254).
+    q: "How is MegaDeal different from GrabOne?",
+    a: "With GrabOne, you buy a voucher online first, then use it at the business. MegaDeal works differently. The deal code is free, you contact the business, and you pay them directly at the deal price. You never pay up front, so there's no voucher money to lose if a website or business closes. MegaDeal isn't connected with GrabOne.",
+  },
+  {
     q: "How do I stop MegaDeal emails?",
     a: (
       <>

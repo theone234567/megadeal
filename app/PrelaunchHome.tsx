@@ -92,6 +92,10 @@ const FAQS = [
     q: "Is MegaDeal like Groupon?",
     a: "Not quite. Groupon closed its New Zealand business in 2020, and MegaDeal isn't connected with it. MegaDeal is a New Zealand-owned local deals site, and there's no voucher to buy: you get a free deal code, contact the business and pay them directly at the deal price.",
   },
+  {
+    q: "How is MegaDeal different from GrabOne?",
+    a: "With GrabOne, you buy a voucher online first, then use it at the business. MegaDeal works differently. The deal code is free, you contact the business, and you pay them directly at the deal price. You never pay up front, so there's no voucher money to lose if a website or business closes. MegaDeal isn't connected with GrabOne.",
+  },
 ];
 
 const STEPS = [
