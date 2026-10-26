@@ -99,6 +99,10 @@ export default function PlatformSettingsPanel() {
   const { settings: next, errors } = parsePlatformSettings({ ...draft, ...typed }, loaded.settings);
   const changes = errors.length === 0 ? diffPlatformSettings(loaded.settings, next) : [];
   const dirty = errors.length > 0 || changes.length > 0;
+  // Never saved: the starting settings can be saved as they are, so they're
+  // stored in the database (the button used to stay greyed out until a
+  // change was made).
+  const canSave = errors.length === 0 && (changes.length > 0 || Boolean(loaded?.isDefault));
 
   function setFlag(key: keyof PlatformSettings, value: boolean) {
     setDraft((d) => ({ ...d, [key]: value }));
@@ -136,7 +140,9 @@ export default function PlatformSettingsPanel() {
       }
       apply(data);
       setSavedNote(
-        `Saved. ${changes.length} change${changes.length === 1 ? "" : "s"} recorded in the history. Takes effect immediately for new submissions.`,
+        changes.length === 0
+          ? "Saved. The settings are stored, and the save is recorded in the history."
+          : `Saved. ${changes.length} change${changes.length === 1 ? "" : "s"} recorded in the history. Takes effect immediately for new submissions.`,
       );
     } catch {
       setSaveError({ message: "Couldn't save the settings. Check your connection and try again.", stale: false });
@@ -282,8 +288,13 @@ export default function PlatformSettingsPanel() {
       {confirming && (
         <div role="region" aria-labelledby="confirm-settings" className="mt-5 rounded-xl border-2 border-amber-200 bg-amber-50 p-4">
           <h3 id="confirm-settings" className="text-sm font-extrabold text-amber-900">
-            Save {confirming.length} change{confirming.length === 1 ? "" : "s"}?
+            {confirming.length === 0
+              ? "Save the starting settings as they are?"
+              : `Save ${confirming.length} change${confirming.length === 1 ? "" : "s"}?`}
           </h3>
+          {confirming.length === 0 && (
+            <p className="mt-2 text-sm text-amber-900">Nothing changes for businesses: this stores the settings shown, so they&apos;re kept from now on.</p>
+          )}
           <ul className="mt-2 space-y-2 text-sm text-amber-900">
             {confirming.map((c) => (
               <li key={c.key}>
@@ -338,7 +349,7 @@ export default function PlatformSettingsPanel() {
             setSavedNote(null);
             setConfirming(changes);
           }}
-          disabled={!dirty || errors.length > 0 || saving || confirming !== null}
+          disabled={!canSave || saving || confirming !== null}
           className="rounded-full bg-brand-600 px-5 py-2 text-sm font-bold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Save settings
@@ -374,6 +385,7 @@ export default function PlatformSettingsPanel() {
                     Version {h.version} · {formatWhen(h.at)} · {h.by}
                   </p>
                   <ul className="mt-0.5 text-slate-700">
+                    {h.changes.length === 0 && <li>Starting settings saved as they were</li>}
                     {h.changes.map((c) => (
                       <li key={c.key}>
                         {SETTING_LABELS[c.key] ?? c.key}: {formatSettingValue(c.key, c.from)} → {formatSettingValue(c.key, c.to)}

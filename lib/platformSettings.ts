@@ -152,7 +152,10 @@ export async function savePlatformSettings(
   if (errors.length > 0) return { ok: false, status: 400, error: errors[0], errors };
 
   const changes = diffPlatformSettings(current.settings, settings);
-  if (changes.length === 0) return { ok: true, stored: current, changes };
+  // Nothing changed: nothing to write, except the very first save, which
+  // stores the starting settings so they're kept in the database from then
+  // on (and the admin page stops saying nothing has been saved).
+  if (changes.length === 0 && !current.isDefault) return { ok: true, stored: current, changes };
 
   const at = new Date().toISOString();
   const next = { version: current.version + 1, settings, updatedAt: at, creditScale: CREDIT_SCALE };

@@ -832,6 +832,19 @@ describe("the AI review and housekeeping on the new database", () => {
     vi.unstubAllEnvs();
   });
 
+  it("the starting settings can be saved as they are, once, and are then stored", async () => {
+    admin = true;
+    const settingsRoute = await import("@/app/api/admin/platform-settings/route");
+    const before = await call(settingsRoute.GET, request("GET"));
+    expect(before.body.isDefault).toBe(true);
+    const saved = await call(settingsRoute.PUT, request("PUT", { settings: before.body.settings, version: 0 }));
+    expect(saved.status).toBe(200);
+    const after = await call(settingsRoute.GET, request("GET"));
+    expect(after.body).toMatchObject({ isDefault: false, version: 1 });
+    // Saving the same again changes nothing and writes nothing.
+    expect((await call(settingsRoute.PUT, request("PUT", { settings: after.body.settings, version: 1 }))).body).toMatchObject({ version: 1 });
+  });
+
   it("if the settings can't be read, nothing is submitted or published (T211)", async () => {
     await signUpApprovedWithCredits(100);
     aiReview = review("approve");
