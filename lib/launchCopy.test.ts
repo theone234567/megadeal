@@ -9,7 +9,7 @@ import { describe, expect, it, vi } from "vitest";
  */
 
 vi.mock("@/lib/siteConfig", async (orig) => ({ ...(await orig<typeof import("@/lib/siteConfig")>()), SITE_LAUNCHED: true }));
-vi.mock("@/lib/fonts", () => ({ fredoka: { className: "" }, plusJakartaSans: { className: "" }, caveat: { className: "" } }));
+vi.mock("@/lib/fonts", () => ({ displayFont: { className: "" }, plusJakartaSans: { className: "" }, caveat: { className: "" } }));
 
 const PRE_LAUNCH = /\b6 months\b|six months|WELCOME6|before launch|6 Months/i;
 

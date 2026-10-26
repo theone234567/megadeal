@@ -24,7 +24,7 @@ import {
 import { ORGANIZATION_ID, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { INDEXABLE } from "@/lib/robotsMeta";
 
 // Same "was noindex while built from spec docs alone" precedent as
@@ -411,7 +411,7 @@ export default function BeautySpaAdvertisingPage() {
                   Beauty &amp; spa advertising in Auckland
                 </span>{" "}
                 <span
-                  className={`${fredoka.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
+                  className={`${displayFont.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
                 >
                   Fill quiet times.{" "}
                   <span className="block text-hp-purple">Welcome new local clients.</span>
@@ -421,7 +421,7 @@ export default function BeautySpaAdvertisingPage() {
                 Put your salon, spa or beauty business in front of Auckland locals looking for their
                 next treatment. You choose the offer. Customers book and pay you directly.
               </p>
-              <p className={`${fredoka.className} mt-5 text-xl font-semibold text-hp-purple sm:text-2xl`}>
+              <p className={`${displayFont.className} mt-5 text-xl font-semibold text-hp-purple sm:text-2xl`}>
                 {OFFER}*
               </p>
 
@@ -522,7 +522,7 @@ export default function BeautySpaAdvertisingPage() {
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
               Beauty &amp; Spa Advertising in Auckland
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               An empty appointment can&rsquo;t be sold tomorrow.
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed" style={{ color: "#475569" }}>
@@ -541,7 +541,7 @@ export default function BeautySpaAdvertisingPage() {
                   >
                     <c.icon className="h-5 w-5" />
                   </span>
-                  <p className={`${fredoka.className} mt-4 font-semibold`} style={{ color: "#0F172A" }}>
+                  <p className={`${displayFont.className} mt-4 font-semibold`} style={{ color: "#0F172A" }}>
                     {c.title}
                   </p>
                   <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "#475569" }}>
@@ -561,7 +561,7 @@ export default function BeautySpaAdvertisingPage() {
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
                 Every kind of beauty business
               </p>
-              <h2 className={`${fredoka.className} mt-2 text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
+              <h2 className={`${displayFont.className} mt-2 text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
                 Built for beauty &amp; spa businesses.
               </h2>
               <p className="mt-3 text-base leading-relaxed" style={{ color: "#475569" }}>
@@ -588,7 +588,7 @@ export default function BeautySpaAdvertisingPage() {
                     />
                   </div>
                   <div className="p-7">
-                    <h3 className={`${fredoka.className} text-xl font-semibold`} style={{ color: "#0F172A" }}>
+                    <h3 className={`${displayFont.className} text-xl font-semibold`} style={{ color: "#0F172A" }}>
                       {s.heading}
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed" style={{ color: "#475569" }}>
@@ -622,7 +622,7 @@ export default function BeautySpaAdvertisingPage() {
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
               A smarter kind of promotion
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               Don&rsquo;t discount everything. Promote smarter.
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base" style={{ color: "#475569" }}>
@@ -659,7 +659,7 @@ export default function BeautySpaAdvertisingPage() {
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
               Need inspiration?
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               Beauty promotion ideas.
             </h2>
 
@@ -679,7 +679,7 @@ export default function BeautySpaAdvertisingPage() {
                     <p className="text-xs font-bold uppercase tracking-wide" style={{ color: "#6D28D9" }}>
                       {d.eyebrow}
                     </p>
-                    <p className={`${fredoka.className} mt-1 text-lg font-semibold`} style={{ color: "#0F172A" }}>
+                    <p className={`${displayFont.className} mt-1 text-lg font-semibold`} style={{ color: "#0F172A" }}>
                       {d.title}
                     </p>
                     <div className="mt-4 rounded-xl border border-dashed px-3 py-2.5" style={{ borderColor: "#E8E1EF" }}>
@@ -702,7 +702,7 @@ export default function BeautySpaAdvertisingPage() {
         {/* Section 5 — the first visit is the beginning, not the whole story */}
         <section className="bg-white px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[760px] text-center">
-            <h2 className={`${fredoka.className} text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               Give someone a reason to try you.
             </h2>
             <p className="mt-4 text-base leading-relaxed" style={{ color: "#475569" }}>
@@ -712,7 +712,7 @@ export default function BeautySpaAdvertisingPage() {
               relationship with the customer are what can turn that introduction into repeat
               business. MegaDeal helps with the introduction.
             </p>
-            <p className={`${fredoka.className} mt-5 text-2xl font-semibold`} style={{ color: "#0F172A" }}>
+            <p className={`${displayFont.className} mt-5 text-2xl font-semibold`} style={{ color: "#0F172A" }}>
               You take it from there.
             </p>
           </div>
@@ -724,7 +724,7 @@ export default function BeautySpaAdvertisingPage() {
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
               More opportunity. Less commission.
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               Why MegaDeal?
             </h2>
 
@@ -737,7 +737,7 @@ export default function BeautySpaAdvertisingPage() {
                   >
                     <w.icon className="h-5 w-5" />
                   </span>
-                  <p className={`${fredoka.className} mt-4 font-semibold`} style={{ color: "#0F172A" }}>
+                  <p className={`${displayFont.className} mt-4 font-semibold`} style={{ color: "#0F172A" }}>
                     {w.title}
                   </p>
                   <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "#475569" }}>
@@ -755,7 +755,7 @@ export default function BeautySpaAdvertisingPage() {
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
               Simple. Direct. Local.
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               How it works.
             </h2>
 
@@ -763,12 +763,12 @@ export default function BeautySpaAdvertisingPage() {
               {STEPS.map((s) => (
                 <div key={s.number}>
                   <span
-                    className={`${fredoka.className} flex h-12 w-12 items-center justify-center rounded-full text-2xl font-bold`}
+                    className={`${displayFont.className} flex h-12 w-12 items-center justify-center rounded-full text-2xl font-bold`}
                     style={{ backgroundColor: "#F1EBFB", color: "#6D28D9" }}
                   >
                     {s.number}
                   </span>
-                  <p className={`${fredoka.className} mt-3 font-semibold`} style={{ color: "#0F172A" }}>
+                  <p className={`${displayFont.className} mt-3 font-semibold`} style={{ color: "#0F172A" }}>
                     {s.title}
                   </p>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "#475569" }}>
@@ -792,7 +792,7 @@ export default function BeautySpaAdvertisingPage() {
         {/* Section 8 — made for local beauty businesses */}
         <section className="bg-white px-4 py-14 sm:py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[760px] text-center">
-            <h2 className={`${fredoka.className} text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               Made for local beauty businesses.
             </h2>
             <p className="mt-4 text-base leading-relaxed" style={{ color: "#475569" }}>
@@ -803,7 +803,7 @@ export default function BeautySpaAdvertisingPage() {
               facial, promote quieter massage sessions or attract more first-time salon clients,
               MegaDeal can help put your offer in front of local customers.
             </p>
-            <p className={`${fredoka.className} mt-5 text-xl font-semibold`} style={{ color: "#0F172A" }}>
+            <p className={`${displayFont.className} mt-5 text-xl font-semibold`} style={{ color: "#0F172A" }}>
               No commission. No need to discount everything. Just a good local offer from a good
               local business.
             </p>
@@ -820,7 +820,7 @@ export default function BeautySpaAdvertisingPage() {
                 <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
                   Auckland first
                 </p>
-                <h2 className={`${fredoka.className} mt-2 text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
+                <h2 className={`${displayFont.className} mt-2 text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
                   {LAUNCHED ? "Get discovered. Build your presence." : "Get in early. Build your presence."}
                 </h2>
                 <p className="mt-4 max-w-md text-sm leading-relaxed sm:text-base" style={{ color: "#475569" }}>
@@ -842,7 +842,7 @@ export default function BeautySpaAdvertisingPage() {
               </div>
 
               <div className="rounded-xl border bg-white p-6 text-center sm:p-8" style={{ borderColor: "#E8E1EF" }}>
-                <p className={`${fredoka.className} text-xl font-semibold sm:text-2xl`} style={{ color: "#6D28D9" }}>
+                <p className={`${displayFont.className} text-xl font-semibold sm:text-2xl`} style={{ color: "#6D28D9" }}>
                   {OFFER}
                 </p>
                 <a
@@ -882,7 +882,7 @@ export default function BeautySpaAdvertisingPage() {
             <p className="text-center text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
               Let&rsquo;s make it clear
             </p>
-            <h2 className={`${fredoka.className} mt-2 text-center text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} mt-2 text-center text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: "#0F172A" }}>
               A few things you might be wondering.
             </h2>
 
@@ -935,7 +935,7 @@ export default function BeautySpaAdvertisingPage() {
         {/* Final CTA — the hero's lavender panel again, closing the page. */}
         <section className="bg-white px-4 pb-14 sm:px-6 sm:pb-16 lg:px-8">
           <div className="mx-auto max-w-[1240px] rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-6 py-10 text-center sm:rounded-3xl sm:px-12 sm:py-12">
-            <h2 className={`${fredoka.className} mx-auto max-w-2xl text-[26px] font-semibold leading-tight text-hp-ink [text-wrap:balance] sm:text-[32px]`}>
+            <h2 className={`${displayFont.className} mx-auto max-w-2xl text-[26px] font-semibold leading-tight text-hp-ink [text-wrap:balance] sm:text-[32px]`}>
               Your next customer could be looking for a new salon right now.
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed sm:text-base" style={{ color: "#475569" }}>

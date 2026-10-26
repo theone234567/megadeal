@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ContactForm from "@/components/ContactForm";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { pageMetadata } from "@/lib/pageMetadata";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = pageMetadata({
   title: "Contact Us: Help With Deals & Listings",
@@ -15,17 +16,9 @@ export default function ContactPage() {
   return (
     <main className={plusJakartaSans.className}>
       {/* Hero */}
-      <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl">
-          <h1 className={`${fredoka.className} text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
-            Contact us
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            Questions about a deal, a listing, or something else —
-            we&apos;re happy to help.
-          </p>
-        </div>
-      </section>
+      <PageHero crumb="Contact" title="Contact us">
+        Questions about a deal, a listing, or something else — we&apos;re happy to help.
+      </PageHero>
 
       {/* Form */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
@@ -41,7 +34,7 @@ export default function ContactPage() {
           only a form). */}
       <section aria-labelledby="contact-quick-heading" className="bg-slate-50 px-4 py-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
-          <h2 id="contact-quick-heading" className={`${fredoka.className} text-2xl font-bold text-slate-900`}>
+          <h2 id="contact-quick-heading" className={`${displayFont.className} text-2xl font-bold text-slate-900`}>
             You might find your answer here
           </h2>
           <ul className="mt-5 space-y-4 text-base text-slate-600">

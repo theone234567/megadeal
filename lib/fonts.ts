@@ -1,4 +1,4 @@
-import { Caveat, Fredoka, Plus_Jakarta_Sans } from "next/font/google";
+import { Caveat, Plus_Jakarta_Sans } from "next/font/google";
 
 /**
  * Self-hosted via next/font (downloaded once at build time, served from
@@ -14,22 +14,15 @@ import { Caveat, Fredoka, Plus_Jakarta_Sans } from "next/font/google";
  * system sans, and `font-display` resolved to a platform stack that
  * differs on macOS, Windows and Android.
  */
-export const fredoka = Fredoka({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-  display: "swap",
-  variable: "--font-fredoka",
-  // Stand-ins sized to match, for computers with Arial and for Android
-  // without it (app/globals.css), then any sans-serif, never the browser's
-  // default serif. The first is Next's own Arial stand-in, which can't
-  // be told about Roboto, so Next's is turned off.
-  fallback: ["FredokaFallbackArial", "FredokaFallbackRoboto", "sans-serif"],
-  adjustFontFallback: false,
-});
+// Headings: the body face in its heavier weights with tighter spacing
+// (app/globals.css .font-display), for a cleaner, more established look
+// than the rounded Fredoka it replaced (owner, 27 Oct 2026). The same
+// font file as the body text, so one download fewer.
+export const displayFont = { className: "font-display" } as const;
 
 export const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
   variable: "--font-jakarta",
   fallback: ["JakartaFallbackArial", "JakartaFallbackRoboto", "sans-serif"],

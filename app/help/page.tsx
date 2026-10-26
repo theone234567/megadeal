@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { pageMetadata } from "@/lib/pageMetadata";
 import { BUSINESS_COST, HELP_FAQ_TEXT, REFERRAL_ANSWER } from "@/lib/helpFaq";
 import OpenHashedDetails from "@/components/OpenHashedDetails";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = pageMetadata({
   title: "Help Centre: Deals, Codes & Redeeming",
@@ -190,21 +191,14 @@ export default function HelpPage() {
       />
 
       {/* Hero */}
-      <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl">
-          <h1 className={`${fredoka.className} text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
-            Help centre
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            Answers to the questions we hear most often.
-          </p>
-        </div>
-      </section>
+      <PageHero crumb="Help centre" title="Help centre">
+        Answers to the questions we hear most often.
+      </PageHero>
 
       {/* FAQ */}
       <section aria-labelledby="help-faq-heading" className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <h2 id="help-faq-heading" className={`${fredoka.className} mb-6 text-2xl font-bold text-slate-900 sm:text-3xl`}>
+          <h2 id="help-faq-heading" className={`${displayFont.className} mb-6 text-2xl font-bold text-slate-900 sm:text-3xl`}>
             Questions about using MegaDeal
           </h2>
           <OpenHashedDetails />
@@ -231,7 +225,7 @@ export default function HelpPage() {
       {/* Still stuck? */}
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className={`${fredoka.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
+          <h2 className={`${displayFont.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
             Still stuck?
           </h2>
           <p className="mt-2 text-base text-slate-600">

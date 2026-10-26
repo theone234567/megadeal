@@ -30,25 +30,30 @@
   line-gap-override: 0%;
   size-adjust: 105.21%;
 }
-@font-face {
-  font-family: FredokaFallbackArial;
-  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans");
-  ascent-override: 95.64%;
-  descent-override: 23.17%;
-  line-gap-override: 0%;
-  size-adjust: 101.84%;
-}
-@font-face {
-  font-family: FredokaFallbackRoboto;
-  src: local("Roboto"), local("Roboto-Regular");
-  ascent-override: 95.43%;
-  descent-override: 23.12%;
-  line-gap-override: 0%;
-  size-adjust: 102.06%;
-}
 
 html {
   scroll-behavior: smooth;
+}
+
+/* The brand's purple band: the header's purple with a soft, lighter glow
+   (page banners, the business invitation). Bright and friendly, not
+   dark (owner, 27 Oct 2026). One definition so they all match. */
+.bg-brand-deep {
+  background-color: #6d28d9;
+  background-image:
+    radial-gradient(55% 75% at 85% 0%, rgba(167, 139, 250, 0.55), transparent 65%),
+    radial-gradient(50% 70% at 5% 100%, rgba(139, 44, 255, 0.45), transparent 70%);
+}
+
+/* Headings: tight and heavy, the look of an established brand. */
+.font-display {
+  letter-spacing: -0.025em;
+}
+.font-display.font-bold {
+  font-weight: 800;
+}
+.font-display.font-semibold {
+  font-weight: 700;
 }
 
 /* The two storefront buttons: one filled, one outlined. Same height,

@@ -1,4 +1,4 @@
-import { caveat, fredoka } from "@/lib/fonts";
+import { caveat, displayFont } from "@/lib/fonts";
 import { FOUNDER_NAME } from "@/lib/siteConfig";
 
 /**
@@ -13,7 +13,7 @@ import { FOUNDER_NAME } from "@/lib/siteConfig";
 export default function FounderNote() {
   return (
     <>
-      <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 [text-wrap:balance] sm:text-3xl`}>
+      <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 [text-wrap:balance] sm:text-3xl`}>
         Auckland businesses, get in early
       </h2>
       <p className="mt-2 text-lg font-semibold text-brand-700 [text-wrap:balance]">

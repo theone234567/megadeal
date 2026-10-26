@@ -12,7 +12,7 @@ import { DEFAULT_CITY, cityPath } from "@/lib/cities";
 import SocialLinks from "./SocialLinks";
 import { currentPromo } from "@/lib/promo";
 import EmailSignupForm from "./EmailSignupForm";
-import { LEGAL_ENTITY_NAME } from "@/lib/siteConfig";
+import { LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN } from "@/lib/siteConfig";
 
 /**
  * Before launch, the /auckland/* category pages render the full launched-site chrome
@@ -85,9 +85,9 @@ export default function Footer({
     <footer className={`${prelaunchHomePage ? "" : "mt-16 "}border-t border-slate-100 bg-slate-50`}>
       {!hideOwnABusinessCta && (
         <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-between gap-4 rounded-2xl bg-brand-700 px-6 py-6 text-center sm:flex-row sm:text-left">
+          <div className="bg-brand-deep flex flex-col items-center justify-between gap-4 rounded-2xl px-6 py-7 text-center sm:flex-row sm:px-8 sm:text-left">
             <div>
-              <h2 className="text-lg font-bold text-white">Own a local business?</h2>
+              <h2 className="font-display text-xl font-bold text-white">Own a local business?</h2>
               <p className="text-sm text-brand-100">
                 List your deal on MegaDeal and get up to {promo.months} months free advertising — use code <span className="font-bold">{promo.code}</span> at signup.{" "}
                 <Link prefetch={false} href="/terms" className="text-brand-200 underline hover:text-white">
@@ -98,7 +98,7 @@ export default function Footer({
             <Link
               prefetch={false}
               href="/list-your-business"
-              className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-full bg-white px-5 text-[0.9375rem] font-semibold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-700"
+              className="inline-flex min-h-[44px] shrink-0 items-center justify-center rounded-full bg-white px-5 text-[0.9375rem] font-semibold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-600"
             >
               Sign up &amp; list a deal
             </Link>
@@ -106,15 +106,16 @@ export default function Footer({
         </div>
       )}
 
-      <div className="mx-auto max-w-[1200px] px-4 pb-12 pt-10 sm:px-6 lg:px-8">
-        {/* Email sign-up for shoppers, with the social links: a full-width
-            strip, so the email box has room (#deal-alerts). The wording
+      <div className="mx-auto max-w-[1200px] px-4 pb-14 pt-10 sm:px-6 lg:px-8">
+        {/* Email sign-up for shoppers: a full-width strip, so the email
+            box has room (#deal-alerts). The social links are in the dark
+            band below. The wording
             follows launch: before it there are no deal emails yet, only
             the launch announcement. */}
         <section
           id="deal-alerts"
           aria-labelledby="footer-signup-heading"
-          className="mb-10 flex scroll-mt-24 flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10"
+          className="flex scroll-mt-24 flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10"
         >
           <div className="lg:max-w-md">
             <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-brand-600">
@@ -128,10 +129,6 @@ export default function Footer({
                 ? "The best new Auckland deals, straight to your inbox."
                 : "We'll email you when MegaDeal launches, then send the best new local deals."}
             </p>
-            <div className="mt-4 flex items-center gap-3">
-              <span className="text-sm font-semibold text-slate-700">Follow us</span>
-              <SocialLinks />
-            </div>
           </div>
           <div className="w-full lg:max-w-[520px]">
             <EmailSignupForm
@@ -143,71 +140,89 @@ export default function Footer({
             />
           </div>
         </section>
+      </div>
 
-        {/* Link lists, not page sections: their titles are labels rather
-            than headings, so every page's outline is its own content and
-            not "Categories, Company, Support" (SEO pack T11). Each list is
-            a named navigation landmark for screen readers instead. */}
-        <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-          <nav aria-labelledby="footer-categories">
-            <p id="footer-categories" className="mb-3 text-sm font-bold text-slate-900">Categories</p>
-            <ul className="space-y-1 text-sm text-slate-600">
-              {FOOTER_CATEGORIES.map((category) => (
-                <li key={category.name}>
-                  <Link prefetch={false} href={category.href} className="inline-block py-1 hover:text-brand-700">
-                    {category.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          {/* The advertise pages, linked from every page (lib/businessLinks.ts). */}
-          <nav aria-labelledby="footer-advertise">
-            <p id="footer-advertise" className="mb-3 text-sm font-bold text-slate-900">Advertise with us</p>
-            <ul className="space-y-1 text-sm text-slate-600">
-              {ADVERTISE_PAGES.map((l) => (
-                <li key={l.href}>
-                  <Link prefetch={false} href={l.href} className="inline-block py-1 hover:text-brand-700">
-                    {l.name} advertising
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <nav aria-labelledby="footer-company">
-            <p id="footer-company" className="mb-3 text-sm font-bold text-slate-900">Company</p>
-            <ul className="space-y-1 text-sm text-slate-600">
-              <li><Link prefetch={false} href="/list-your-business" className="inline-block py-1 hover:text-brand-700">List your business</Link></li>
-              <li><Link prefetch={false} href="/about" className="inline-block py-1 hover:text-brand-700">About MegaDeal</Link></li>
-              <li><Link prefetch={false} href="/how-it-works" className="inline-block py-1 hover:text-brand-700">How it works</Link></li>
-              <li><Link prefetch={false} href="/careers" className="inline-block py-1 hover:text-brand-700">Careers</Link></li>
-              {!siteLaunched && !prelaunchHome && (
-                <li><Link prefetch={false} href="/coming-soon" className="inline-block py-1 hover:text-brand-700">Coming soon</Link></li>
-              )}
-            </ul>
-          </nav>
-          <nav aria-labelledby="footer-support">
-            <p id="footer-support" className="mb-3 text-sm font-bold text-slate-900">Support</p>
-            <ul className="space-y-1 text-sm text-slate-600">
-              <li><Link prefetch={false} href="/help" className="inline-block py-1 hover:text-brand-700">Help centre</Link></li>
-              <li><Link prefetch={false} href="/redeem" className="inline-block py-1 hover:text-brand-700">How to redeem a deal</Link></li>
-              <li><Link prefetch={false} href="/refund-policy" className="inline-block py-1 hover:text-brand-700">Refund policy</Link></li>
-              <li><Link prefetch={false} href="/privacy" className="inline-block py-1 hover:text-brand-700">Privacy policy</Link></li>
-              <li><Link prefetch={false} href="/terms" className="inline-block py-1 hover:text-brand-700">Terms of service</Link></li>
-              <li><Link prefetch={false} href="/contact" className="inline-block py-1 hover:text-brand-700">Contact us</Link></li>
-              {/* No visible link to /developers: the deals feed is for AI tools and
-                  search engines, which find it through llms.txt, the sitemap and
-                  the <link rel="alternate"> in every page's head. */}
-            </ul>
-          </nav>
-        </div>
+      {/* The link area, with the brand and the company's details along the
+          bottom: how an established site signs off (owner, 27 Oct 2026). Link lists, not page sections: their titles
+          are labels rather than headings, so every page's outline is its
+          own content and not "Categories, Company, Support" (SEO pack T11).
+          Each list is a named navigation landmark for screen readers. */}
+      <div className="border-t border-hp-line bg-white">
+        <div className="mx-auto max-w-[1200px] px-4 pb-8 pt-12 sm:px-6 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,3fr)]">
+            <div>
+              <Link prefetch={false} href="/" className="inline-block rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/brand/minimal/megadeal-logo-minimal-purple.svg" alt="MegaDeal" width={150} height={32} className="h-8 w-auto" />
+              </Link>
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-600">
+                Local deals from real New Zealand businesses. Free deal codes, and you pay the business directly.
+              </p>
+              <SocialLinks className="mt-5" />
+            </div>
+            <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+              <FooterList id="footer-categories" title="Categories" links={FOOTER_CATEGORIES.map((c) => ({ name: c.name, href: c.href }))} />
+              {/* The advertise pages, linked from every page (lib/businessLinks.ts). */}
+              <FooterList id="footer-advertise" title="Advertise with us" links={ADVERTISE_PAGES.map((l) => ({ name: `${l.name} advertising`, href: l.href }))} />
+              <FooterList
+                id="footer-company"
+                title="Company"
+                links={[
+                  { name: "List your business", href: "/list-your-business" },
+                  { name: "About MegaDeal", href: "/about" },
+                  { name: "How it works", href: "/how-it-works" },
+                  { name: "Careers", href: "/careers" },
+                  ...(!siteLaunched && !prelaunchHome ? [{ name: "Coming soon", href: "/coming-soon" }] : []),
+                ]}
+              />
+              {/* No visible link to /developers: the deals feed is for AI tools
+                  and search engines, which find it through llms.txt, the
+                  sitemap and the <link rel="alternate"> in every page's head. */}
+              <FooterList
+                id="footer-support"
+                title="Support"
+                links={[
+                  { name: "Help centre", href: "/help" },
+                  { name: "How to redeem a deal", href: "/redeem" },
+                  { name: "Refund policy", href: "/refund-policy" },
+                  { name: "Privacy policy", href: "/privacy" },
+                  { name: "Terms of service", href: "/terms" },
+                  { name: "Contact us", href: "/contact" },
+                ]}
+              />
+            </div>
+          </div>
 
-        {/* Terms and Privacy live in the Support column above, where people
-            look for them; one link each keeps the footer from repeating. */}
-        <div className="mt-10 border-t border-slate-200 pt-6">
-          <p className="text-center text-sm text-slate-500 sm:text-left">© {new Date().getFullYear()} {LEGAL_ENTITY_NAME}. All rights reserved.</p>
+          {/* Terms and Privacy live in the Support column above, where people
+              look for them; the bottom line is the company itself. */}
+          <div className="mt-12 flex flex-col gap-2 border-t border-hp-line pt-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              © {new Date().getFullYear()} {LEGAL_ENTITY_NAME}. All rights reserved.
+            </p>
+            <p>New Zealand owned{LEGAL_ENTITY_NZBN ? ` · NZBN ${LEGAL_ENTITY_NZBN}` : ""}</p>
+          </div>
         </div>
       </div>
     </footer>
+  );
+}
+
+/** One column of footer links, a named navigation landmark. */
+function FooterList({ id, title, links }: { id: string; title: string; links: { name: string; href: string }[] }) {
+  return (
+    <nav aria-labelledby={id}>
+      <p id={id} className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-slate-900">
+        {title}
+      </p>
+      <ul className="space-y-1 text-sm text-slate-600">
+        {links.map((l) => (
+          <li key={l.href + l.name}>
+            <Link prefetch={false} href={l.href} className="inline-block rounded py-1 transition hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
+              {l.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }

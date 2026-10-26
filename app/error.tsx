@@ -23,8 +23,9 @@ export default function ErrorPage({
           200 status, so search engines are told not to index this one in
           its place (React puts the tag in <head>). */}
       <meta name="robots" content="noindex" />
-      <span className="text-4xl">🐘</span>
-      <h1 className="mt-3 text-xl font-bold text-slate-900">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/minimal/megadeal-elephant-minimal-purple.svg" alt="" width={72} height={51} className="h-auto w-[72px]" />
+      <h1 className="font-display mt-4 text-2xl font-bold text-slate-900">
         Something went sideways
       </h1>
       <p className="mt-2 text-sm text-slate-500">

@@ -60,7 +60,7 @@ const config: Config = {
         // be the fallback stack alone, so headings rendered as SF Rounded on
         // macOS, Segoe UI on Windows and something else again on Android.
         sans: ["var(--font-jakarta)", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["var(--font-fredoka)", "ui-rounded", "Segoe UI", "system-ui", "sans-serif"],
+        display: ["var(--font-jakarta)", "ui-sans-serif", "system-ui", "sans-serif"],
         handwritten: ["var(--font-caveat)", "cursive"],
       },
       boxShadow: {

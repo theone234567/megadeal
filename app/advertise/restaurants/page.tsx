@@ -18,7 +18,7 @@ import {
 import { ORGANIZATION_ID, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
 import { INDEXABLE } from "@/lib/robotsMeta";
 import { staticImageSrcSet } from "@/lib/staticImages";
@@ -325,7 +325,7 @@ export default function RestaurantAdvertisingPage() {
                   <UtensilsIcon className="h-3.5 w-3.5" /> Restaurant &amp; café advertising in Auckland
                 </span>{" "}
                 <span
-                  className={`${fredoka.className} mt-3 block text-[40px] font-semibold leading-[1.08] sm:text-[52px] lg:text-[62px]`}
+                  className={`${displayFont.className} mt-3 block text-[40px] font-semibold leading-[1.08] sm:text-[52px] lg:text-[62px]`}
                 >
                   Turn Auckland&rsquo;s quieter restaurant tables into{" "}
                   <span style={{ color: "#ADDFFF" }}>new regulars.</span>
@@ -433,7 +433,7 @@ export default function RestaurantAdvertisingPage() {
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
                 More opportunity. Less commission.
               </p>
-              <h2 className={`${fredoka.className} mt-2 text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+              <h2 className={`${displayFont.className} mt-2 text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
                 You bring the food. Give locals a reason to come.
               </h2>
               <p className="mt-4 text-base leading-relaxed" style={{ color: "#475569" }}>
@@ -469,7 +469,7 @@ export default function RestaurantAdvertisingPage() {
               <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
                 A simple difference
               </p>
-              <h3 className={`${fredoka.className} mt-2 text-2xl font-semibold`} style={{ color: "#0F172A" }}>
+              <h3 className={`${displayFont.className} mt-2 text-2xl font-semibold`} style={{ color: "#0F172A" }}>
                 Your food. Your service. Your sale.
               </h3>
 
@@ -510,7 +510,7 @@ export default function RestaurantAdvertisingPage() {
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
               Your restaurant. Your kind of deal.
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
               A good offer doesn&rsquo;t have to mean a big discount.
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base" style={{ color: "#475569" }}>
@@ -530,7 +530,7 @@ export default function RestaurantAdvertisingPage() {
                   <p className="mt-4 text-xs font-bold uppercase tracking-wide" style={{ color: "#6D28D9" }}>
                     {o.eyebrow}
                   </p>
-                  <p className={`${fredoka.className} mt-1 text-lg font-semibold`} style={{ color: "#0F172A" }}>
+                  <p className={`${displayFont.className} mt-1 text-lg font-semibold`} style={{ color: "#0F172A" }}>
                     {o.title}
                   </p>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "#475569" }}>
@@ -559,7 +559,7 @@ export default function RestaurantAdvertisingPage() {
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
               Cafés, restaurants, bars and more
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
               Made for Auckland&rsquo;s food businesses.
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base" style={{ color: "#475569" }}>
@@ -575,7 +575,7 @@ export default function RestaurantAdvertisingPage() {
                   className="scroll-mt-[100px] rounded-[24px] border bg-white p-6 shadow-card"
                   style={{ borderColor: "#E8E1EF" }}
                 >
-                  <h3 className={`${fredoka.className} text-lg font-semibold`} style={{ color: "#0F172A" }}>
+                  <h3 className={`${displayFont.className} text-lg font-semibold`} style={{ color: "#0F172A" }}>
                     {t.heading}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed" style={{ color: "#475569" }}>
@@ -604,7 +604,7 @@ export default function RestaurantAdvertisingPage() {
             <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
               Simple. Direct. Local.
             </p>
-            <h2 className={`${fredoka.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} mx-auto mt-2 max-w-2xl text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
               From your kitchen to their next night out.
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base" style={{ color: "#475569" }}>
@@ -620,7 +620,7 @@ export default function RestaurantAdvertisingPage() {
                   >
                     {s.number}
                   </span>
-                  <p className={`${fredoka.className} mt-3 font-semibold`} style={{ color: "#0F172A" }}>
+                  <p className={`${displayFont.className} mt-3 font-semibold`} style={{ color: "#0F172A" }}>
                     {s.title}
                   </p>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: "#475569" }}>
@@ -675,7 +675,7 @@ export default function RestaurantAdvertisingPage() {
                   <p className="text-xs font-bold uppercase tracking-wider text-white/75">
                     {LAUNCHED ? "The Auckland offer" : "The Auckland launch offer"}
                   </p>
-                  <h2 className={`${fredoka.className} mt-2 text-[28px] font-semibold leading-tight sm:text-[36px]`}>
+                  <h2 className={`${displayFont.className} mt-2 text-[28px] font-semibold leading-tight sm:text-[36px]`}>
                     A new way to get discovered. Your first months are on us.
                   </h2>
                   <p className="mt-4 max-w-md text-sm leading-relaxed text-white/85 sm:text-base">
@@ -743,7 +743,7 @@ export default function RestaurantAdvertisingPage() {
             <p className="text-center text-xs font-bold uppercase tracking-wider" style={{ color: "#6D28D9" }}>
               Let&rsquo;s make it clear
             </p>
-            <h2 className={`${fredoka.className} mt-2 text-center text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
+            <h2 className={`${displayFont.className} mt-2 text-center text-[32px] font-semibold leading-tight sm:text-[39px]`} style={{ color: "#0F172A" }}>
               A few things you might be wondering.
             </h2>
 
@@ -798,7 +798,7 @@ export default function RestaurantAdvertisingPage() {
           <p className="text-sm font-semibold" style={{ color: "#475569" }}>
             New Zealand owned. Auckland first.
           </p>
-          <p className={`${fredoka.className} mt-1 text-xl font-semibold`} style={{ color: "#0F172A" }}>
+          <p className={`${displayFont.className} mt-1 text-xl font-semibold`} style={{ color: "#0F172A" }}>
             Built to help great local businesses get discovered.
           </p>
         </section>

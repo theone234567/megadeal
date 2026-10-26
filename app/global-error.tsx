@@ -37,7 +37,8 @@ export default function GlobalError({
           color: "#0f172a",
         }}
       >
-        <span style={{ fontSize: "2.5rem" }}>🐘</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/minimal/megadeal-elephant-minimal-purple.svg" alt="" width={72} height={51} />
         <h1 style={{ marginTop: "0.75rem", fontSize: "1.25rem", fontWeight: 700 }}>
           Something went sideways
         </h1>

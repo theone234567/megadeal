@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { SITE_NAME } from "@/lib/siteConfig";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { pageMetadata } from "@/lib/pageMetadata";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = pageMetadata({
   title: "How to Redeem a Deal: Quote Your Code, No Voucher",
@@ -77,17 +78,9 @@ export default function RedeemPage() {
         }}
       />
       {/* Hero */}
-      <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl">
-          <h1 className={`${fredoka.className} text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
-            How to redeem a deal
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            No voucher, no order confirmation — just contact the
-            business directly.
-          </p>
-        </div>
-      </section>
+      <PageHero crumb="Redeem a deal" title="How to redeem a deal">
+        No voucher, no order confirmation — just contact the business directly.
+      </PageHero>
 
       {/* Intro */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
@@ -104,7 +97,7 @@ export default function RedeemPage() {
       {/* Steps */}
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             Steps to redeem
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2">
@@ -124,7 +117,7 @@ export default function RedeemPage() {
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl space-y-10">
           <div>
-            <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+            <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
               Booking ahead
             </h2>
             <p className="mt-3 text-slate-600">
@@ -137,7 +130,7 @@ export default function RedeemPage() {
             </p>
           </div>
           <div>
-            <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+            <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
               Availability &amp; fair use
             </h2>
             <p className="mt-3 text-slate-600">
@@ -158,7 +151,7 @@ export default function RedeemPage() {
       {/* Trouble redeeming? */}
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className={`${fredoka.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
+          <p className={`${displayFont.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
             Trouble redeeming?
           </p>
           <p className="mt-2 text-base text-slate-600">

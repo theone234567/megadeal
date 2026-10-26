@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 /** Before launch the pre-launch offer stays exactly as it was (lib/launchCopy.test.ts is the other side). */
 
 vi.mock("@/lib/siteConfig", async (orig) => ({ ...(await orig<typeof import("@/lib/siteConfig")>()), SITE_LAUNCHED: false }));
-vi.mock("@/lib/fonts", () => ({ fredoka: { className: "" }, plusJakartaSans: { className: "" }, caveat: { className: "" } }));
+vi.mock("@/lib/fonts", () => ({ displayFont: { className: "" }, plusJakartaSans: { className: "" }, caveat: { className: "" } }));
 
 describe("before launch", () => {
   it("the business pages still offer up to 6 months", async () => {

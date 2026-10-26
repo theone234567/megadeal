@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { PercentIcon, ClockIcon, EyeIcon, CheckIcon } from "@/components/icons";
 import { pageMetadata } from "@/lib/pageMetadata";
 import { FOUNDER_NAME, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN, SITE_LAUNCHED } from "@/lib/siteConfig";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = pageMetadata({
   title: "About Us: Kiwi-Owned Local Deals Site",
@@ -39,17 +40,9 @@ export default function AboutPage() {
   return (
     <main className={plusJakartaSans.className}>
       {/* Hero */}
-      <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl">
-          <h1 className={`${fredoka.className} text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
-            About MegaDeal
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            Your local guide to restaurants, spas, activities and
-            getaways worth leaving the house for.
-          </p>
-        </div>
-      </section>
+      <PageHero crumb="About" title="About MegaDeal">
+        Your local guide to restaurants, spas, activities and getaways worth leaving the house for.
+      </PageHero>
 
       {/* Intro */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
@@ -73,7 +66,7 @@ export default function AboutPage() {
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl space-y-10">
           <div>
-            <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+            <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
               Our mission
             </h2>
             <p className="mt-3 text-slate-600">
@@ -86,7 +79,7 @@ export default function AboutPage() {
             </p>
           </div>
           <div>
-            <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+            <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
               How we pick deals
             </h2>
             <p className="mt-3 text-slate-600">
@@ -105,7 +98,7 @@ export default function AboutPage() {
       {/* What makes us different */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             What makes us different
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2">
@@ -128,7 +121,7 @@ export default function AboutPage() {
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl space-y-10">
           <div>
-            <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+            <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
               Where we operate
             </h2>
             <p className="mt-3 text-slate-600">
@@ -147,7 +140,7 @@ export default function AboutPage() {
           {/* Who runs the site: a named founder and a registered company are
               what customers, businesses and search engines check for. */}
           <div>
-            <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+            <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
               Who&apos;s behind MegaDeal
             </h2>
             <p className="mt-3 text-slate-600">
@@ -161,7 +154,7 @@ export default function AboutPage() {
       {/* Get in touch */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className={`${fredoka.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
+          <p className={`${displayFont.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
             Get in touch
           </p>
           <p className="mt-2 text-base text-slate-600">

@@ -12,7 +12,7 @@ import { DEALS_OPEN, FOUNDER_NAME, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN, ORGANIZ
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { INDEXABLE } from "@/lib/robotsMeta";
 import { SEARCH_LOGO, SQUARE_LOGO } from "@/lib/brand";
-import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
+import { caveat, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
 import { MegadealArtProvider } from "@/context/MegadealArtProvider";
 
@@ -91,7 +91,7 @@ export default function RootLayout({
     <html
       lang="en-NZ"
       data-scroll-behavior="smooth"
-      className={`${plusJakartaSans.variable} ${fredoka.variable} ${caveat.variable}`}
+      className={`${plusJakartaSans.variable} ${caveat.variable}`}
     >
       <body className="min-h-screen bg-white font-sans text-slate-900 antialiased">
         {/* First thing in the tree: a tab stranded by a deploy should

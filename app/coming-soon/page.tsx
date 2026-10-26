@@ -6,7 +6,7 @@ import { COMING_SOON_DESIGN, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/si
 import ComingSoonV2 from "@/components/comingSoon/v2/ComingSoonV2";
 import { V2_DESCRIPTION, V2_TITLE } from "@/lib/comingSoonV2Content";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { categoryPath } from "@/lib/categories";
 import CategoryPhoto from "@/components/CategoryPhoto";
 import EmailSignupForm from "@/components/EmailSignupForm";
@@ -430,7 +430,7 @@ async function LegacyComingSoonPage() {
               </div>
             </div>
             <h1
-              className={`${fredoka.className} mt-4 text-4xl font-bold leading-[0.98] tracking-[-0.02em] sm:text-5xl lg:mt-5 lg:text-[64px] ${HERO_TEXT_SHADOW}`}
+              className={`${displayFont.className} mt-4 text-4xl font-bold leading-[0.98] tracking-[-0.02em] sm:text-5xl lg:mt-5 lg:text-[64px] ${HERO_TEXT_SHADOW}`}
             >
               Big local deals are on the way, Auckland.
             </h1>
@@ -488,7 +488,7 @@ async function LegacyComingSoonPage() {
                   <TicketIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <h2 className={`${fredoka.className} text-lg font-bold leading-tight text-slate-900 sm:text-xl`}>
+                  <h2 className={`${displayFont.className} text-lg font-bold leading-tight text-slate-900 sm:text-xl`}>
                     Love a great deal?
                   </h2>
                   <span className="mt-0.5 block text-[13px] font-extrabold text-[#c7128a] underline-offset-4 group-hover:underline sm:text-sm">
@@ -505,7 +505,7 @@ async function LegacyComingSoonPage() {
                   <StoreIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <h2 className={`${fredoka.className} text-lg font-bold leading-tight text-slate-900 sm:text-xl`}>
+                  <h2 className={`${displayFont.className} text-lg font-bold leading-tight text-slate-900 sm:text-xl`}>
                     Run a local business?
                   </h2>
                   <span className="mt-0.5 block text-[13px] font-extrabold text-brand-700 underline-offset-4 group-hover:underline sm:text-sm">
@@ -563,7 +563,7 @@ async function LegacyComingSoonPage() {
         <div className="rounded-[22px] bg-[#6D28D9] bg-gradient-to-br from-brand-500 via-brand-700 to-brand-800 px-5 py-7 text-white shadow-[0_16px_40px_rgba(69,16,141,.12)] sm:px-8 sm:py-8 lg:rounded-[26px]">
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
             <div>
-              <h2 className={`${fredoka.className} text-2xl font-bold sm:text-3xl`}>
+              <h2 className={`${displayFont.className} text-2xl font-bold sm:text-3xl`}>
                 How MegaDeal works
               </h2>
               <p className="mt-1 text-sm font-semibold text-white/70">Simple. Direct. Local.</p>
@@ -625,7 +625,7 @@ async function LegacyComingSoonPage() {
                 For local businesses
               </p>
               <h2
-                className={`${fredoka.className} mt-2 max-w-[620px] text-2xl font-bold leading-tight text-slate-900 sm:text-3xl`}
+                className={`${displayFont.className} mt-2 max-w-[620px] text-2xl font-bold leading-tight text-slate-900 sm:text-3xl`}
               >
                 Fill quiet times. Grow local customers.
               </h2>
@@ -692,7 +692,7 @@ async function LegacyComingSoonPage() {
             </div>
 
             <div className="rounded-[24px] border border-[#eee7f6] bg-white p-6 shadow-[0_14px_34px_rgba(77,12,168,.10)] sm:p-7">
-              <p className={`${fredoka.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
+              <p className={`${displayFont.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
                 What it costs you
               </p>
               <dl className="mt-4 space-y-3 text-[15px]">
@@ -721,7 +721,7 @@ async function LegacyComingSoonPage() {
       <section id="categories" className={`${shell} pb-8 lg:pb-10`}>
         <div className="text-center">
           <h2
-            className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}
+            className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}
           >
             Explore deal categories
           </h2>
@@ -786,7 +786,7 @@ async function LegacyComingSoonPage() {
                 For deal hunters
               </p>
               <h2
-                className={`${fredoka.className} mt-2 max-w-[560px] text-2xl font-bold leading-tight text-slate-900 sm:text-3xl`}
+                className={`${displayFont.className} mt-2 max-w-[560px] text-2xl font-bold leading-tight text-slate-900 sm:text-3xl`}
               >
                 Be first in line for launch deals
               </h2>
@@ -877,7 +877,7 @@ async function LegacyComingSoonPage() {
             }),
           }}
         />
-        <h2 className={`${fredoka.className} text-2xl font-bold leading-tight text-slate-900 sm:text-3xl`}>
+        <h2 className={`${displayFont.className} text-2xl font-bold leading-tight text-slate-900 sm:text-3xl`}>
           Questions about MegaDeal
         </h2>
         <div className="mt-5 divide-y divide-[#ece7f2] rounded-[20px] bg-white ring-1 ring-[#ece7f2]">

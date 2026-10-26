@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { DEALS_OPEN, SITE_NAME, SITE_URL, ORGANIZATION_ID } from "@/lib/siteConfig";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { pageMetadata } from "@/lib/pageMetadata";
 import { CATEGORIES } from "@/lib/categories";
@@ -10,6 +10,7 @@ import { DEAL_TAGS } from "@/lib/dealTags";
 import { NZ_CITIES } from "@/lib/nzPlaces";
 import { FEED_MAX_LIMIT, FEED_RATE_LIMIT, FEED_TERMS, FEED_VERSION, feedDeal } from "@/lib/dealFeed";
 import type { Deal } from "@/lib/types";
+import PageHero from "@/components/PageHero";
 
 const DESCRIPTION =
   "Every live MegaDeal deal as free JSON for AI tools and developers: prices, dates, conditions, how to redeem and who verified each deal. New Zealand only.";
@@ -79,7 +80,7 @@ const EXAMPLE: Deal = {
   businessClaimed: true,
 };
 
-const h2 = `${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`;
+const h2 = `${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`;
 
 function Code({ children }: { children: ReactNode }) {
   return (
@@ -136,14 +137,9 @@ export default function DevelopersPage() {
         />
       )}
 
-      <section className="bg-brand-700 px-4 py-14 text-center sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl">
-          <h1 className={`${fredoka.className} text-3xl font-bold leading-tight text-white sm:text-4xl`}>Deals data for developers and AI</h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            Every live {SITE_NAME} deal as JSON. Free, no key needed, New Zealand only.
-          </p>
-        </div>
-      </section>
+      <PageHero crumb="Developers" title="Deals data for developers and AI">
+        Every live {SITE_NAME} deal as JSON. Free, no key needed, New Zealand only.
+      </PageHero>
 
       <div className="mx-auto max-w-3xl space-y-12 px-4 py-12 sm:px-6 lg:px-8">
         {!DEALS_OPEN && (

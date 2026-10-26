@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { DEALS_OPEN, SITE_LAUNCHED, SITE_NAME } from "@/lib/siteConfig";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { pageMetadata } from "@/lib/pageMetadata";
 import { CATEGORIES } from "@/lib/categories";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = pageMetadata({
   title: "How It Works: Free Local Deals, No Vouchers",
@@ -208,23 +209,14 @@ export default function HowItWorksPage() {
         }}
       />
       {/* Hero */}
-      <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl">
-          <h1 className={`${fredoka.className} text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
-            How it works
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            Free to browse for customers. Advertising, not a
-            marketplace, for businesses. Here&apos;s exactly how each
-            side works.
-          </p>
-        </div>
-      </section>
+      <PageHero crumb="How it works" title="How it works">
+        Free to browse for customers. Advertising, not a marketplace, for businesses. Here&apos;s exactly how each side works.
+      </PageHero>
 
       {/* For customers */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             For customers
           </h2>
           <StepGrid steps={CUSTOMER_STEPS} cols="sm:grid-cols-2" />
@@ -234,7 +226,7 @@ export default function HowItWorksPage() {
       {/* For businesses */}
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             For businesses
           </h2>
           <p className="mt-3 max-w-2xl text-slate-600">
@@ -250,7 +242,7 @@ export default function HowItWorksPage() {
       {/* Questions or issues? */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className={`${fredoka.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
+          <p className={`${displayFont.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
             Questions or issues?
           </p>
           <p className="mt-2 text-base text-slate-600">

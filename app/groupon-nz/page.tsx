@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ORGANIZATION_ID, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { pageMetadata } from "@/lib/pageMetadata";
 import { CONTENT_UPDATED } from "@/lib/sitemapDates";
+import PageHero from "@/components/PageHero";
 
 /**
  * "Is Groupon still in NZ?" (T254): people still search for Groupon in New
@@ -91,14 +92,9 @@ export default function GrouponNzPage() {
         }}
       />
 
-      <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl">
-          <h1 className={`${fredoka.className} text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
-            Is Groupon still in New Zealand?
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">No. It closed its New Zealand business in 2020.</p>
-        </div>
-      </section>
+      <PageHero crumb="Groupon NZ" title="Is Groupon still in New Zealand?">
+        No. It closed its New Zealand business in 2020.
+      </PageHero>
 
       {/* The answer first, for people and for AI tools that quote it. */}
       <section className="px-4 py-12 sm:px-6 lg:px-8">
@@ -115,7 +111,7 @@ export default function GrouponNzPage() {
 
       <section className="bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>What happened</h2>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>What happened</h2>
           <ol className="mt-6 space-y-4">
             {TIMELINE.map((t) => (
               <li key={t.when} className="flex gap-4">
@@ -129,7 +125,7 @@ export default function GrouponNzPage() {
 
       <section className="px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>Finding local deals in New Zealand now</h2>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>Finding local deals in New Zealand now</h2>
           <p className="mt-3 text-slate-600">
             Deals sites in New Zealand work in two main ways. On a voucher site, such as GrabOne, you buy a voucher online
             first, then use it at the business. On {SITE_NAME}, the deal code is free: you contact the business and pay
@@ -166,7 +162,7 @@ export default function GrouponNzPage() {
 
       <section className="bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>Questions</h2>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>Questions</h2>
           <div className="mt-6 space-y-6">
             {FAQS.slice(1).map((f) => (
               <div key={f.q}>
@@ -180,7 +176,7 @@ export default function GrouponNzPage() {
 
       <section className="px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
-          <h2 className={`${fredoka.className} text-xl font-bold text-slate-900`}>Sources</h2>
+          <h2 className={`${displayFont.className} text-xl font-bold text-slate-900`}>Sources</h2>
           <ul className="mt-3 space-y-2 text-sm">
             {SOURCES.map((s) => (
               <li key={s.url}>

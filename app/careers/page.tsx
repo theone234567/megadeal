@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { pageMetadata } from "@/lib/pageMetadata";
+import PageHero from "@/components/PageHero";
 
 export const metadata: Metadata = pageMetadata({
   title: "Careers: Join Auckland's Local Deals Team",
@@ -14,17 +15,9 @@ export default function CareersPage() {
   return (
     <main className={plusJakartaSans.className}>
       {/* Hero */}
-      <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl">
-          <h1 className={`${fredoka.className} text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl`}>
-            Careers at MegaDeal
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
-            We&apos;re a small team helping local businesses meet new
-            customers.
-          </p>
-        </div>
-      </section>
+      <PageHero crumb="Careers" title="Careers at MegaDeal">
+        We&apos;re a small team helping local businesses meet new customers.
+      </PageHero>
 
       {/* Intro */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
@@ -43,7 +36,7 @@ export default function CareersPage() {
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl space-y-10">
           <div>
-            <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+            <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
               What we look for
             </h2>
             <p className="mt-3 text-slate-600">
@@ -55,7 +48,7 @@ export default function CareersPage() {
             </p>
           </div>
           <div>
-            <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+            <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
               Open roles
             </h2>
             <p className="mt-3 text-slate-600">
@@ -72,7 +65,7 @@ export default function CareersPage() {
       {/* Closing CTA */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <p className={`${fredoka.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
+          <p className={`${displayFont.className} text-xl font-bold text-slate-900 sm:text-2xl`}>
             Interested anyway?
           </p>
           <p className="mt-2 text-base text-slate-600">

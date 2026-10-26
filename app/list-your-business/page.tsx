@@ -12,7 +12,7 @@ import BusinessLandingV2 from "@/components/business/BusinessLandingV2";
 import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { getSignupStats, shownStats } from "@/lib/publicStats";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { PercentIcon, ZapIcon, MapPinIcon, CheckIcon, UtensilsIcon, FlowerIcon, TicketIcon, SuitcaseIcon, DumbbellIcon, WrenchIcon, TagIcon, StoreIcon, PhoneIcon, ReceiptIcon, MailIcon } from "@/components/icons";
 
 // Re-checked at most once a minute — the counts only need to be
@@ -371,7 +371,7 @@ export default async function MerchantsPage() {
             Coming soon to Auckland — up to 6 months free before launch
           </span>
 
-          <h1 className={`${fredoka.className} mt-6 text-4xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-5xl lg:text-6xl text-white`}>
+          <h1 className={`${displayFont.className} mt-6 text-4xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-5xl lg:text-6xl text-white`}>
             Get your business in front of Auckland customers — for free.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-brand-50">
@@ -408,7 +408,7 @@ export default async function MerchantsPage() {
           else asks for attention. */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl text-center">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             Why join MegaDeal before launch?
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-slate-600">
@@ -437,7 +437,7 @@ export default async function MerchantsPage() {
           abstract, right before the signup form asks for the ask. */}
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             No commission eating into your sale.
           </h2>
           <div className="mt-8 grid grid-cols-3 gap-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-card sm:p-8">
@@ -472,7 +472,7 @@ export default async function MerchantsPage() {
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           <div className="text-center">
-            <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+            <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
               Claim your free advertising
             </h2>
             <p className="mt-2 text-slate-600">
@@ -505,7 +505,7 @@ export default async function MerchantsPage() {
             with this much copy get real room, without the row going so
             wide that a 2-column grid starts to feel sparse. */}
         <div className="mx-auto max-w-[1120px]">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             Turn quieter times into new customers.
           </h2>
           <div className="mt-3 space-y-3 text-slate-600">
@@ -553,7 +553,7 @@ export default async function MerchantsPage() {
                 {t.href ? (
                   <Link
                     href={t.href}
-                    className={`${fredoka.className} mt-4 inline-flex w-fit items-center gap-1 rounded-sm text-xl text-slate-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2`}
+                    className={`${displayFont.className} mt-4 inline-flex w-fit items-center gap-1 rounded-sm text-xl text-slate-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2`}
                   >
                     {t.label}
                     <span aria-hidden className="text-brand-600">
@@ -561,7 +561,7 @@ export default async function MerchantsPage() {
                     </span>
                   </Link>
                 ) : (
-                  <h3 className={`${fredoka.className} mt-4 text-xl text-slate-900`}>{t.label}</h3>
+                  <h3 className={`${displayFont.className} mt-4 text-xl text-slate-900`}>{t.label}</h3>
                 )}
                 <p className="mt-2 text-base leading-[1.65] text-slate-600">
                   {t.description}
@@ -597,7 +597,7 @@ export default async function MerchantsPage() {
       {/* What you get */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl text-center">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             What does my business actually get?
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-x-10 gap-y-8 text-left sm:grid-cols-2">
@@ -624,7 +624,7 @@ export default async function MerchantsPage() {
             <span className="text-xs font-bold uppercase tracking-wide text-brand-600">
               A quick preview
             </span>
-            <h2 className={`${fredoka.className} mt-2 text-2xl font-bold text-slate-900 sm:text-3xl`}>
+            <h2 className={`${displayFont.className} mt-2 text-2xl font-bold text-slate-900 sm:text-3xl`}>
               Here&apos;s what customers will see
             </h2>
             <p className="mx-auto mt-2 max-w-xl text-slate-500">
@@ -649,7 +649,7 @@ export default async function MerchantsPage() {
       {/* How it works */}
       <section className="bg-slate-50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>
             How it works
           </h2>
           <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-3">
@@ -727,7 +727,7 @@ export default async function MerchantsPage() {
       {/* FAQ */}
       <section className="px-4 pt-16 pb-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
-          <h2 className={`${fredoka.className} text-center text-2xl font-bold text-slate-900 sm:text-3xl`}>
+          <h2 className={`${displayFont.className} text-center text-2xl font-bold text-slate-900 sm:text-3xl`}>
             Frequently asked questions
           </h2>
           <div className="mt-8 space-y-3">
@@ -792,7 +792,7 @@ export default async function MerchantsPage() {
       {/* Final CTA — the page's real ending. */}
       <section className="bg-brand-700 px-4 py-16 text-center sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
-          <h2 className={`${fredoka.className} text-2xl font-bold text-white sm:text-3xl`}>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-white sm:text-3xl`}>
             Ready to get more local customers?
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-lg text-brand-50">

@@ -16,7 +16,7 @@ import {
 } from "@/components/icons";
 import { ORGANIZATION_ID, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { currentPromo } from "@/lib/promo";
 import { BUSINESS_TYPES } from "./businessTypes";
 
@@ -243,12 +243,12 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Beauty & Spa's section heading: Fredoka, 26/32px, centred. */
+/** Beauty & Spa's section heading: the display face, 26/32px, centred. */
 function SectionHeading({ id, children, className = "" }: { id?: string; children: React.ReactNode; className?: string }) {
   return (
     <h2
       id={id}
-      className={`${fredoka.className} mx-auto max-w-2xl text-center text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px] ${className}`}
+      className={`${displayFont.className} mx-auto max-w-2xl text-center text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px] ${className}`}
       style={{ color: INK }}
     >
       {children}
@@ -348,7 +348,7 @@ export default function HomeCarAdvertisingPage() {
                   Home &amp; car advertising in Auckland
                 </span>{" "}
                 <span
-                  className={`${fredoka.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
+                  className={`${displayFont.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
                 >
                   More local jobs.{" "}
                   <span className="block text-hp-purple">More reasons to choose you.</span>
@@ -463,7 +463,7 @@ export default function HomeCarAdvertisingPage() {
                   <span className="flex h-11 w-11 items-center justify-center rounded-full" style={{ backgroundColor: LAVENDER, color: PURPLE }}>
                     <c.icon className="h-5 w-5" />
                   </span>
-                  <h3 className={`${fredoka.className} mt-4 font-semibold`} style={{ color: INK }}>
+                  <h3 className={`${displayFont.className} mt-4 font-semibold`} style={{ color: INK }}>
                     {c.title}
                   </h3>
                   <p className="mt-1.5 text-sm leading-relaxed" style={{ color: BODY }}>
@@ -512,7 +512,7 @@ export default function HomeCarAdvertisingPage() {
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: LAVENDER, color: PURPLE }}>
                         <b.icon className="h-5 w-5" />
                       </span>
-                      <h3 id={`${b.id}-heading`} className={`${fredoka.className} text-xl font-semibold`} style={{ color: INK }}>
+                      <h3 id={`${b.id}-heading`} className={`${displayFont.className} text-xl font-semibold`} style={{ color: INK }}>
                         {b.title}
                       </h3>
                     </div>
@@ -591,7 +591,7 @@ export default function HomeCarAdvertisingPage() {
               ))}
             </div>
             <div className="mx-auto mt-10 max-w-[760px] text-center">
-              <h3 className={`${fredoka.className} text-2xl font-semibold`} style={{ color: INK }}>
+              <h3 className={`${displayFont.className} text-2xl font-semibold`} style={{ color: INK }}>
                 Start with one focused offer.
               </h3>
               <p className="mt-3 text-base leading-relaxed" style={{ color: BODY }}>
@@ -614,7 +614,7 @@ export default function HomeCarAdvertisingPage() {
                   <span className="flex h-11 w-11 items-center justify-center rounded-full" style={{ backgroundColor: LAVENDER, color: PURPLE }}>
                     <w.icon className="h-5 w-5" />
                   </span>
-                  <h3 className={`${fredoka.className} mt-4 font-semibold`} style={{ color: INK }}>
+                  <h3 className={`${displayFont.className} mt-4 font-semibold`} style={{ color: INK }}>
                     {w.title}
                   </h3>
                   <p className="mt-1.5 text-sm leading-relaxed" style={{ color: BODY }}>
@@ -635,12 +635,12 @@ export default function HomeCarAdvertisingPage() {
                 <li key={s.number}>
                   <span
                     aria-hidden
-                    className={`${fredoka.className} flex h-12 w-12 items-center justify-center rounded-full text-2xl font-bold`}
+                    className={`${displayFont.className} flex h-12 w-12 items-center justify-center rounded-full text-2xl font-bold`}
                     style={{ backgroundColor: "#F1EBFB", color: PURPLE }}
                   >
                     {s.number}
                   </span>
-                  <h3 className={`${fredoka.className} mt-3 font-semibold`} style={{ color: INK }}>
+                  <h3 className={`${displayFont.className} mt-3 font-semibold`} style={{ color: INK }}>
                     {s.title}
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={{ color: BODY }}>
@@ -667,7 +667,7 @@ export default function HomeCarAdvertisingPage() {
             <div className="grid grid-cols-1 items-center gap-8 rounded-3xl px-6 py-9 sm:px-10 sm:py-11 lg:grid-cols-[1.1fr_1fr]" style={{ backgroundColor: "#EEF6FC" }}>
               <div>
                 <Eyebrow>Auckland first</Eyebrow>
-                <h2 className={`${fredoka.className} mt-2 text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: INK }}>
+                <h2 className={`${displayFont.className} mt-2 text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={{ color: INK }}>
                   {LAUNCHED ? "Get discovered. Build your presence." : "Get in early. Build your presence."}
                 </h2>
                 <p className="mt-3 text-lg font-bold leading-snug" style={{ color: INK }}>
@@ -758,7 +758,7 @@ export default function HomeCarAdvertisingPage() {
         {/* Closing call to action — the hero's lavender panel again */}
         <section className="bg-white px-4 pb-14 sm:px-6 sm:pb-16 lg:px-8">
           <div className="mx-auto max-w-[1240px] rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-6 py-10 text-center sm:rounded-3xl sm:px-12 sm:py-12">
-            <h2 className={`${fredoka.className} mx-auto max-w-2xl text-[26px] font-semibold leading-tight text-hp-ink [text-wrap:balance] sm:text-[32px]`}>
+            <h2 className={`${displayFont.className} mx-auto max-w-2xl text-[26px] font-semibold leading-tight text-hp-ink [text-wrap:balance] sm:text-[32px]`}>
               Give local customers a reason to choose you.
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed sm:text-base" style={{ color: BODY }}>

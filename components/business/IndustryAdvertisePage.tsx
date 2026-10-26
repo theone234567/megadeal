@@ -6,7 +6,7 @@ import { MapPinIcon, MegaphoneIcon, PercentIcon, UnlockIcon } from "@/components
 import { ORGANIZATION_ID, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
-import { fredoka, plusJakartaSans } from "@/lib/fonts";
+import { displayFont, plusJakartaSans } from "@/lib/fonts";
 
 /**
  * The advertise page for one customer category (Travel & Getaways, Health &
@@ -68,7 +68,7 @@ const SIGNUP_HREF = "/list-your-business#signup";
 const TERMS_HREF = "/terms#businesses";
 const MASCOT = "/megadeal/coming-soon-v2/mascot-hoodie.webp";
 
-const H2 = `${fredoka.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`;
+const H2 = `${displayFont.className} mx-auto mt-2 max-w-2xl text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`;
 const EYEBROW = "text-xs font-bold uppercase tracking-wider";
 const INK = { color: "#0F172A" };
 const MUTED = { color: "#475569" };
@@ -165,7 +165,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
               <h1>
                 <span className="block text-xs font-bold uppercase tracking-[0.08em] text-hp-purple">{c.audience}</span>{" "}
                 <span
-                  className={`${fredoka.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
+                  className={`${displayFont.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
                 >
                   {c.headline} <span className="block text-hp-purple">{c.headlineAccent}</span>
                 </span>
@@ -173,7 +173,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
               <p className="mt-4 max-w-[34rem] text-base leading-relaxed sm:text-lg md:text-base lg:text-lg" style={{ color: "#334155" }}>
                 {c.intro}
               </p>
-              <p className={`${fredoka.className} mt-5 text-xl font-semibold text-hp-purple sm:text-2xl`}>{OFFER}*</p>
+              <p className={`${displayFont.className} mt-5 text-xl font-semibold text-hp-purple sm:text-2xl`}>{OFFER}*</p>
 
               <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
                 <a href={SIGNUP_HREF} data-cta-section="hero" className={`w-full sm:w-auto ${PRIMARY_BUTTON}`}>
@@ -274,7 +274,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
                     <v.icon className="h-5 w-5" />
                   </span>
                   <div>
-                    <h3 className={`${fredoka.className} text-lg font-semibold`} style={INK}>
+                    <h3 className={`${displayFont.className} text-lg font-semibold`} style={INK}>
                       {v.title}
                     </h3>
                     <p className="mt-1 text-sm leading-relaxed" style={MUTED}>
@@ -304,7 +304,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
                   <span className="flex h-11 w-11 items-center justify-center rounded-full" style={ICON_CIRCLE}>
                     <t.icon className="h-5 w-5" />
                   </span>
-                  <h3 className={`${fredoka.className} mt-3 text-xl font-semibold`} style={INK}>
+                  <h3 className={`${displayFont.className} mt-3 text-xl font-semibold`} style={INK}>
                     {t.title}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed" style={MUTED}>
@@ -344,12 +344,12 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
                 <li key={s.number}>
                   <span
                     aria-hidden
-                    className={`${fredoka.className} flex h-12 w-12 items-center justify-center rounded-full text-2xl font-bold`}
+                    className={`${displayFont.className} flex h-12 w-12 items-center justify-center rounded-full text-2xl font-bold`}
                     style={{ backgroundColor: "#F1EBFB", color: "#6D28D9" }}
                   >
                     {s.number}
                   </span>
-                  <h3 className={`${fredoka.className} mt-3 text-lg font-semibold`} style={INK}>
+                  <h3 className={`${displayFont.className} mt-3 text-lg font-semibold`} style={INK}>
                     {s.title}
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={MUTED}>
@@ -382,7 +382,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
                   <span className="flex h-11 w-11 items-center justify-center rounded-full" style={ICON_CIRCLE}>
                     <w.icon className="h-5 w-5" />
                   </span>
-                  <h3 className={`${fredoka.className} mt-3 text-lg font-semibold`} style={INK}>
+                  <h3 className={`${displayFont.className} mt-3 text-lg font-semibold`} style={INK}>
                     {w.title}
                   </h3>
                   <p className="mt-1 text-sm leading-relaxed" style={MUTED}>
@@ -392,10 +392,10 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
               ))}
             </div>
             <div id="launch-offer" className="mx-auto mt-8 max-w-2xl scroll-mt-[100px] rounded-2xl border bg-white px-5 py-7 text-center sm:px-8" style={LINE}>
-              <h3 className={`${fredoka.className} text-2xl font-semibold leading-tight [text-wrap:balance]`} style={INK}>
+              <h3 className={`${displayFont.className} text-2xl font-semibold leading-tight [text-wrap:balance]`} style={INK}>
                 {LAUNCHED ? "Get your business in front of Auckland." : "Get ready for Auckland’s launch."}
               </h3>
-              <p className={`${fredoka.className} mt-2 text-xl font-semibold`} style={PURPLE}>
+              <p className={`${displayFont.className} mt-2 text-xl font-semibold`} style={PURPLE}>
                 {OFFER}*
               </p>
               <a href={SIGNUP_HREF} data-cta-section="launch_offer" className={`mt-5 w-full sm:w-auto ${PRIMARY_BUTTON}`}>
@@ -421,7 +421,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
         {/* FAQ (header nav: #questions) */}
         <section id="questions" aria-labelledby="faq-heading" className="scroll-mt-[100px] bg-white px-4 pb-12 sm:px-6 sm:pb-14 lg:px-8">
           <div className="mx-auto max-w-3xl">
-            <h2 id="faq-heading" className={`${fredoka.className} text-center text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={INK}>
+            <h2 id="faq-heading" className={`${displayFont.className} text-center text-[26px] font-semibold leading-tight [text-wrap:balance] sm:text-[32px]`} style={INK}>
               {c.headings.faq}
             </h2>
             <div className="mt-7 space-y-3">
@@ -463,7 +463,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
         {/* Closing CTA: the hero's lavender panel, kept short. */}
         <section aria-labelledby="final-heading" className="bg-white px-4 pb-12 sm:px-6 sm:pb-14 lg:px-8">
           <div className="mx-auto max-w-[1240px] rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-6 py-10 text-center sm:rounded-3xl sm:px-12">
-            <h2 id="final-heading" className={`${fredoka.className} mx-auto max-w-2xl text-[26px] font-semibold leading-tight text-hp-ink [text-wrap:balance] sm:text-[32px]`}>
+            <h2 id="final-heading" className={`${displayFont.className} mx-auto max-w-2xl text-[26px] font-semibold leading-tight text-hp-ink [text-wrap:balance] sm:text-[32px]`}>
               {c.finalHeading}
             </h2>
             <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed sm:text-base" style={MUTED}>
