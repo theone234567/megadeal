@@ -123,6 +123,15 @@ export async function middleware(request: NextRequest) {
     return new NextResponse("Not found", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8", "X-Robots-Tag": "noindex" } });
   }
 
+  // Deal, business and area addresses are always lower case (the
+  // database's slug rule), so /deal/Two-Brunches is the same page as
+  // /deal/two-brunches (T252): sent there for good, rather than a 404.
+  if (/^\/(?:deal|business|auckland)\/[^?]*[A-Z]/.test(request.nextUrl.pathname)) {
+    const target = request.nextUrl.clone();
+    target.pathname = request.nextUrl.pathname.toLowerCase();
+    return NextResponse.redirect(target, 308);
+  }
+
   // Category URLs moved from the percent-encoded display name
   // (/category/Food%20%26%20Drink) to a slug, now under the city
   // (/auckland/food-drink; next.config.mjs sends /category/* here). Done

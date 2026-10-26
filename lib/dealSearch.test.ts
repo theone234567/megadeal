@@ -104,3 +104,32 @@ describe("deal search covers everything a customer can read (Flash and Everyday)
     expect(coded.searchText).not.toContain("secret42");
   });
 });
+
+describe("deal search, T252", () => {
+  const coffee = { name: "Two flat whites", description: "<p>Two coffees at the counter.</p>", categories: ["Food & Drink"] };
+  const spa = { name: "60 minute massage", description: "<p>Relax.</p>", categories: ["Beauty & Spa"] };
+  const q = (deal: typeof coffee, query: string) => dealMatchesSearch(deal, searchWords(query));
+
+  it("ignores 'near me' and friends", () => {
+    expect(q(coffee, "coffee near me")).toBe(true);
+    expect(q(coffee, "best coffee nearby")).toBe(true);
+    expect(q(spa, "coffee near me")).toBe(false);
+  });
+
+  it("reads known emoji as words, and matches nothing for other symbols", () => {
+    expect(q(coffee, "☕")).toBe(true);
+    expect(q(spa, "💆")).toBe(true);
+    expect(q(spa, "☕")).toBe(false);
+    expect(q(coffee, "🦄")).toBe(false);
+    expect(q(coffee, "!!!")).toBe(false);
+    expect(searchWords("near me")).toEqual([]);
+  });
+
+  it("forgives one slipped letter in a longer word", () => {
+    expect(q(coffee, "cofee")).toBe(true);
+    expect(q(spa, "masage")).toBe(true);
+    expect(q(spa, "mssage")).toBe(true);
+    expect(q(coffee, "masage")).toBe(false);
+    expect(q(coffee, "cofe")).toBe(false); // too short to guess
+  });
+});

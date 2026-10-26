@@ -5,12 +5,13 @@ import dynamic from "next/dynamic";
 import { isDealLive } from "@/lib/dealVisibility";
 import type { Deal } from "@/lib/types";
 import { useWithTestDeals } from "@/lib/useTestDeals";
-import { sortDeals, type SortOption } from "@/lib/sortDeals";
+import { sortDeals } from "@/lib/sortDeals";
+import { useUrlSortView } from "@/lib/useUrlSortView";
 import { useUserLocation } from "@/lib/geo";
 import DealGrid from "@/components/DealGrid";
 import SortSelect from "@/components/SortSelect";
 import NearMeStatus from "@/components/NearMeStatus";
-import ViewToggle, { type DealsView } from "@/components/ViewToggle";
+import ViewToggle from "@/components/ViewToggle";
 
 const DealsMap = dynamic(() => import("@/components/DealsMap"), {
   ssr: false,
@@ -24,8 +25,8 @@ const DealsMap = dynamic(() => import("@/components/DealsMap"), {
 // Deals are fetched server-side (see page.tsx) so listings are present in
 // the raw HTML on first load. This component only filters/sorts on top.
 export default function FlashDealsList({ initialDeals, testDeals = false }: { initialDeals: Deal[]; testDeals?: boolean }) {
-  const [sort, setSort] = useState<SortOption>("ending");
-  const [view, setView] = useState<DealsView>("grid");
+  // In the address, so Back and shared links keep them (T252).
+  const { sort, setSort, view, setView } = useUrlSortView("ending");
   const [now, setNow] = useState(() => Date.now());
   const { coords, status: locationStatus, request: requestLocation } = useUserLocation();
 

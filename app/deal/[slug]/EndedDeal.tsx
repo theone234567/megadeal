@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Deal } from "@/lib/types";
-import { formatOfferEndDate } from "@/lib/format";
+import { formatOfferEndDate, nzZoneName } from "@/lib/format";
 import { placeLabel } from "@/lib/location";
 import { wixImageSrcSet, wixImageUrl } from "@/lib/wixImageUrl";
 import { ArrowRightIcon, MapPinIcon } from "@/components/icons";
@@ -19,11 +19,17 @@ import { ArrowRightIcon, MapPinIcon } from "@/components/icons";
  */
 export default function EndedDeal({ deal, moreDeals }: { deal: Deal; moreDeals: ReactNode }) {
   const now = Date.now();
-  const expired = Boolean(deal.expiresAt && new Date(deal.expiresAt).getTime() <= now);
+  // Cancelled by the business or MegaDeal (T252): never "ended", even
+  // when its end date has also passed; it didn't run its course.
+  const cancelled = deal.status === "Cancelled";
+  const expired = !cancelled && Boolean(deal.expiresAt && new Date(deal.expiresAt).getTime() <= now);
   const place = placeLabel(deal.businessSuburb, deal.businessCity);
   const status = expired
-    ? `This deal ended on ${formatOfferEndDate(deal.expiresAt!, false)}.`
-    : "This deal isn’t available right now.";
+    ? // A Flash deal ends at a time of day, so it says when (T252).
+      `This deal ended on ${formatOfferEndDate(deal.expiresAt!, Boolean(deal.isFlash))}${deal.isFlash ? ` ${nzZoneName(deal.expiresAt!)}` : ""}.`
+    : cancelled
+      ? "This deal is no longer available."
+      : "This deal isn’t available right now.";
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">

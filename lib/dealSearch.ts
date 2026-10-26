@@ -17,7 +17,22 @@ export function foldText(s: string): string {
 }
 
 /** Words that narrow nothing down ("massage deals near ponsonby"). */
-const IGNORED = new Set(["a", "an", "and", "at", "deal", "deals", "for", "in", "near", "of", "offer", "offers", "on", "the", "to", "with"]);
+const IGNORED = new Set([
+  "a", "an", "and", "at", "deal", "deals", "for", "in", "near", "of", "offer", "offers", "on", "the", "to", "with",
+  // "coffee near me", "best brunch nearby" (T252): these found nothing.
+  "me", "my", "i", "nearby", "around", "close", "closest", "nearest", "best", "good", "cheap", "cheapest", "local", "today",
+]);
+
+/** Emoji people type for what they want (T252): "🍕" is a pizza search. */
+const EMOJI_WORDS: Record<string, string> = {
+  "🍕": "pizza", "☕": "coffee", "🍔": "burger", "🍣": "sushi", "🍜": "noodles", "🍺": "beer", "🍷": "wine",
+  "🍰": "cake", "🥐": "pastry", "🥞": "brunch", "🍦": "ice cream", "💆": "massage", "💅": "nails", "💇": "hair",
+  "🏋": "gym", "🧖": "spa", "🚗": "car", "🏨": "hotel", "🎳": "bowling", "⛳": "golf",
+};
+
+/** A query of only symbols that mean nothing here: matches no deal rather
+ *  than every deal. */
+const NOTHING = "\u0000";
 
 /**
  * The everyday words for each category: a search for "cafe" or "gym" finds
@@ -44,10 +59,39 @@ const SAME_AS: Record<string, string[]> = {
 
 /** The query as the words to look for; [] when nothing is left to narrow by. */
 export function searchWords(query: string): string[] {
-  return foldText(query)
+  let text = query;
+  for (const [emoji, word] of Object.entries(EMOJI_WORDS)) text = text.split(emoji).join(` ${word} `);
+  const folded = foldText(text);
+  // Something typed, but no letters or digits at all (an emoji we don't
+  // know, "!!!"): nothing matches, rather than everything.
+  if (folded.trim() && !/[a-z0-9]/.test(folded)) return [NOTHING];
+  return folded
     .split(/[^a-z0-9']+/)
     .map((w) => w.replace(/'/g, ""))
     .filter((w) => w && !IGNORED.has(w));
+}
+
+/** Edit distance of at most one ("cofee" and "coffee"). */
+function oneEditApart(a: string, b: string): boolean {
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  let j = 0;
+  let edits = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) {
+      i++;
+      j++;
+      continue;
+    }
+    if (++edits > 1) return false;
+    if (a.length > b.length) i++;
+    else if (b.length > a.length) j++;
+    else {
+      i++;
+      j++;
+    }
+  }
+  return edits + (a.length - i) + (b.length - j) <= 1;
 }
 
 /** "massages" also as "massage", "cafes" as "cafe", each with its synonyms. */
@@ -129,5 +173,23 @@ export function dealMatchesSearch(deal: Searchable, words: string[]): boolean {
   if (words.length === 0) return true;
   const text = deal.searchText ?? dealSearchText(deal);
   const categoryWords = deal.categories.flatMap((c) => CATEGORY_WORDS[c] ?? []);
-  return words.every((word) => forms(word).some((f) => text.includes(f) || categoryWords.includes(f)));
+  let tokens: string[] | null = null;
+  return words.every((word) => {
+    if (forms(word).some((f) => text.includes(f) || categoryWords.includes(f))) return true;
+    // A one-letter slip in a longer word (T252), checked only when there's
+    // no exact match.
+    if (word.length < 5) return false;
+    tokens ??= [
+      ...new Set(
+        text
+          .split(/[^a-z0-9]+/)
+          .filter((t) => t.length >= 4)
+          .flatMap((t) => (t.endsWith("s") ? [t, t.slice(0, -1)] : [t])),
+      ),
+    ];
+    if (tokens.some((t) => oneEditApart(word, t)) || categoryWords.some((c) => c.length >= 4 && oneEditApart(word, c))) return true;
+    // A slip in a word with synonyms ("cofee" for coffee, a flat white).
+    const meant = Object.keys(SAME_AS).find((k) => oneEditApart(word, k));
+    return meant !== undefined && forms(meant).some((f) => text.includes(f));
+  });
 }

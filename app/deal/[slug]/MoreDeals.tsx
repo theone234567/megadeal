@@ -2,6 +2,7 @@ import Link from "next/link";
 import DealGrid from "@/components/DealGrid";
 import { fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import type { Deal } from "@/lib/types";
+import { moreDealsFor } from "@/lib/moreDeals";
 
 /**
  * The two lists under a deal: this business's other deals, then "You
@@ -13,23 +14,8 @@ import type { Deal } from "@/lib/types";
  */
 export default async function MoreDeals({ deal }: { deal: Deal }) {
   const allDeals = await fetchAllLiveDealsServer();
-  const others = allDeals.filter((d) => d.id !== deal.id);
-
-  // Same business first: someone who liked this deal is often more
-  // interested in this specific business's other offers than in a
-  // same-category deal from a stranger. Capped higher than "you might
-  // also like" below since it's the more relevant list.
-  const otherBusinessDeals = deal.businessSlug
-    ? others.filter((d) => d.businessSlug === deal.businessSlug).slice(0, 8)
-    : [];
-  const otherBusinessDealIds = new Set(otherBusinessDeals.map((d) => d.id));
-
-  // "You might also like" fills in with same-category deals from OTHER
-  // businesses — excluding anything already shown above so the same deal
-  // never appears twice on the page.
-  const remainingOthers = others.filter((d) => !otherBusinessDealIds.has(d.id));
-  const sameCategory = remainingOthers.filter((d) => d.categories.some((c) => deal.categories.includes(c)));
-  const relatedDeals = (sameCategory.length > 0 ? sameCategory : remainingOthers).slice(0, 4);
+  // Which deals, and in what order (lib/moreDeals.ts).
+  const { fromBusiness: otherBusinessDeals, related: relatedDeals } = moreDealsFor(deal, allDeals);
 
   return (
     <>

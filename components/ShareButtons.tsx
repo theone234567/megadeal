@@ -52,7 +52,10 @@ export default function ShareButtons({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard access can be denied — the copy button just won't confirm.
+      // Clipboard access denied (some in-app browsers, an iframe): the link
+      // shown to copy by hand, rather than a button that silently does
+      // nothing (T252).
+      window.prompt("Copy this link:", url);
     }
   }
 
@@ -127,6 +130,10 @@ export default function ShareButtons({
           {copied ? "✓" : "🔗"}
         </span>
       </button>
+      {/* The tick is visual only; this says it out loud. */}
+      <span role="status" className="sr-only">
+        {copied ? "Link copied" : ""}
+      </span>
     </div>
   );
 }
