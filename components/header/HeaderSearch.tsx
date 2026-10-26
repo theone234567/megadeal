@@ -34,6 +34,10 @@ function SearchForm({ initial }: { initial: string }) {
   return (
     <form
       role="search"
+      // An AI agent in the browser can call this form as a tool
+      // (declarative WebMCP, lib/webmcp.d.ts); ignored everywhere else.
+      toolname="search_deals"
+      tooldescription="Search MegaDeal's local Auckland deals by keyword, such as a food, a service, a business name or a suburb. Opens the matching deals."
       onSubmit={(e) => {
         e.preventDefault();
         goHome(pathname, router, { q: query.trim() });
@@ -52,6 +56,7 @@ function SearchForm({ initial }: { initial: string }) {
         onChange={(e) => setQuery(e.target.value)}
         type="search"
         name="q"
+        toolparamdescription="What to look for, e.g. coffee, massage, pizza or Ponsonby"
         aria-label="Search local deals"
         placeholder="Search local deals…"
         className="h-full min-w-0 flex-1 bg-transparent px-3 text-[0.9375rem] text-hp-ink outline-none placeholder:text-hp-muted"
