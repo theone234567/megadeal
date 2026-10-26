@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { isAdminRequest } from "@/lib/adminSession";
 import { generateTotpSecret, totpUri, verifyTotp } from "@/lib/totp";
 import { adminSignInMode } from "@/lib/adminSignIn";
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!(await allowed(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers: NO_STORE });
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   const ok = verifyTotp(String(body?.secret ?? ""), String(body?.code ?? "")) !== null;
   if (!ok) {
     return NextResponse.json(

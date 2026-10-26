@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
@@ -21,7 +22,7 @@ import { parseBusinessPhotos } from "@/lib/businessPhotos";
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   const decision = body?.decision;
   if (decision !== "approve" && decision !== "decline") return NextResponse.json({ error: "Approve or decline." }, { status: 400 });
   const note = typeof body?.note === "string" ? body.note.trim().slice(0, 500) : "";

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createTestDeal, listTestDeals } from "@/lib/testDealStore";
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
   if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers: NO_STORE });
   }
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   try {
     const result = await createTestDeal(body?.deal);
     if (!result.ok) {

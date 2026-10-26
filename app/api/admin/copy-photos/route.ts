@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { isAdminRequest } from "@/lib/adminSession";
 import { withDb } from "@/lib/db/connection";
 import { copyWixPhotos } from "@/lib/db/copyPhotos";
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
   const bucket = await photoBucket();
   if (!bucket) return NextResponse.json({ error: "No PHOTOS bucket is connected." }, { status: 503 });
 
-  const body = await req.json().catch(() => ({}));
+  const body = ((await readSmallJson(req, JSON_BODY_MAX)) ?? {});
   const skip = Number.isInteger(body?.skip) && body.skip >= 0 ? body.skip : 0;
   try {
     const result = await withDb((db) => copyWixPhotos(db, bucket, (url) => fetch(url), SITE_URL, { skip }));

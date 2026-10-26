@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { isAdminRequest } from "@/lib/adminSession";
 import { logAdminAction } from "@/lib/adminAudit";
 import { fromOwnSite } from "@/lib/authSession";
@@ -95,12 +96,8 @@ export async function POST(req: NextRequest) {
   // It emails real people: only from the admin page itself.
   if (!fromOwnSite(req, SITE_URL)) return json({ error: "Use the admin page." }, 403);
 
-  let input: Record<string, unknown>;
-  try {
-    input = await req.json();
-  } catch {
-    return json({ error: "Bad request." }, 400);
-  }
+  const input: Record<string, unknown> = await readSmallJson(req, JSON_BODY_MAX);
+  if (!input || typeof input !== "object") return json({ error: "Bad request." }, 400);
   const audience = audienceOf(input.audience);
   const campaign = typeof input.campaign === "string" && input.campaign ? input.campaign : "launch";
   const subject = typeof input.subject === "string" ? input.subject.trim() : "";

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { isAdminRequest } from "@/lib/adminSession";
 import { fromOwnSite } from "@/lib/authSession";
 import { withDb } from "@/lib/db/connection";
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
     // Up to the newest message the tab showed, named by its id, with its
     // time read here (never a time sent by the page): one that arrived
     // after the tab loaded stays unseen.
-    const body = await req.json().catch(() => ({}));
+    const body = ((await readSmallJson(req, JSON_BODY_MAX)) ?? {});
     const id = typeof body?.id === "string" && /^[0-9]{1,18}$/.test(body.id) ? body.id : null;
     if (!id) return NextResponse.json({ error: "Which message?" }, { status: 400 });
     const [newest] = await withDb((db) =>

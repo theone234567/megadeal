@@ -40,3 +40,9 @@ export async function readSmallJson(req: Request, maxBytes = 16 * 1024): Promise
   const body = await readJsonBody(req, maxBytes);
   return body === "too_large" ? null : body;
 }
+
+/** The cap for every other JSON route (T257): business details, deals,
+ *  admin actions. Generous (the largest real body, a deal with its
+ *  description and conditions, is under 20 KB), but a body can't run up
+ *  memory. */
+export const JSON_BODY_MAX = 64 * 1024;

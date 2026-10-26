@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   const photos = body?.photos;
   if (!Array.isArray(photos) || photos.length === 0 || photos.length > MAX_BUSINESS_PHOTOS) {
     return NextResponse.json(

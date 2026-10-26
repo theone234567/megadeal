@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { ADMIN_COOKIE_NAME, createAdminSessionToken, verifyAdminPassword } from "@/lib/adminSession";
 import {
   getClientIp,
@@ -64,7 +65,8 @@ export async function POST(req: NextRequest) {
   let code: string;
   let captchaToken: unknown;
   try {
-    const body = await req.json();
+    const body = await readSmallJson(req, JSON_BODY_MAX);
+    if (!body || typeof body !== "object") throw new Error("not JSON");
     password = String(body?.password ?? "");
     code = String(body?.code ?? "").replace(/\s/g, "");
     captchaToken = body?.captchaToken;

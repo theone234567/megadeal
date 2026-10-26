@@ -1,4 +1,5 @@
 import { emailDnsFacts } from "@/lib/dnsCheck";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminSession";
 import { logAdminAction } from "@/lib/adminAudit";
@@ -91,7 +92,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!(await isAdminRequest(req))) return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers });
   if (!fromOwnSite(req, SITE_URL)) return NextResponse.json({ error: "Use the admin page." }, { status: 403, headers });
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   if (!isManualItem(body?.id) || typeof body?.done !== "boolean") {
     return NextResponse.json({ error: "Which item?" }, { status: 400, headers });
   }

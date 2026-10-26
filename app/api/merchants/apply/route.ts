@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { sliceGraphemes } from "@/lib/format";
 import { cleanAmenities } from "@/lib/amenities";
 import { hasMarkup, NAME_MARKUP_MESSAGE } from "@/lib/nameRules";
@@ -86,7 +87,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }

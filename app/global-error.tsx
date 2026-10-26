@@ -9,10 +9,10 @@ import { useEffect } from "react";
 // loaded at this point, so styling here is deliberately plain inline CSS.
 export default function GlobalError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     console.error(error);
@@ -45,7 +45,7 @@ export default function GlobalError({
           That&apos;s on us, not you — the site hit a snag loading. Give it another go.
         </p>
         <button
-          onClick={reset}
+          onClick={() => retry()}
           style={{
             marginTop: "1.5rem",
             borderRadius: "999px",

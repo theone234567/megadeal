@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { ADMIN_COOKIE_NAME, endAdminSession, isAdminRequest, revokeAllAdminSessions } from "@/lib/adminSession";
 import { logAdminAction } from "@/lib/adminAudit";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
     return clearCookie(NextResponse.json({ error: "Not signed in." }, { status: 401 }));
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   const everywhere = Boolean(body && typeof body === "object" && (body as Record<string, unknown>).everywhere === true);
   if (everywhere) {
     // Invalidates every admin session server-side, not just this browser's

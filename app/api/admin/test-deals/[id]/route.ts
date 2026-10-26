@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { codeForDraft } from "@/lib/dealCode";
@@ -20,7 +21,7 @@ const MAX_DRAFTS = 25;
 export async function PUT(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   if (!(await isAdminRequest(req))) return unauthorized();
   const { id } = await props.params;
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   try {
     const result = await updateTestDeal(id, body?.deal);
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: result.status, headers: NO_STORE });
@@ -57,7 +58,7 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
 export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   if (!(await isAdminRequest(req))) return unauthorized();
   const { id } = await props.params;
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
 
   if (body?.action === "restart") {
     try {

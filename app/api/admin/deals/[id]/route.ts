@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
 import { logMerchantActivity } from "@/lib/merchantActivity";
@@ -22,7 +23,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }

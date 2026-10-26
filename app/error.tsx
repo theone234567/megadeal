@@ -5,10 +5,13 @@ import Link from "next/link";
 
 export default function ErrorPage({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  /** Fetches the page again and re-renders it (T257). The old reset()
+   *  only re-rendered what had already failed, so a server error came
+   *  straight back. */
+  retry: () => void;
 }) {
   useEffect(() => {
     console.error(error);
@@ -30,7 +33,7 @@ export default function ErrorPage({
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <button
-          onClick={reset}
+          onClick={() => retry()}
           className="rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white shadow-card transition hover:bg-brand-700"
         >
           Try again

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { isAdminRequest } from "@/lib/adminSession";
 import { logAdminAction } from "@/lib/adminAudit";
 import { fromOwnSite } from "@/lib/authSession";
@@ -24,7 +25,7 @@ const json = (body: unknown, status = 200) => NextResponse.json(body, { status, 
 export async function POST(req: NextRequest) {
   if (!(await isAdminRequest(req))) return json({ error: "Unauthorized." }, 401);
   if (!fromOwnSite(req, SITE_URL)) return json({ error: "Use the admin page." }, 403);
-  const body = await req.json().catch(() => ({}));
+  const body = ((await readSmallJson(req, JSON_BODY_MAX)) ?? {});
   if (body?.what !== "database") return json({ error: "Bad request." }, 400);
 
   const bucket = await backupBucket();

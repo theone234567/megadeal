@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
   if (await memberRateLimited("merchant-email-prefs", ctx.member.id, 30, HOUR)) {
     return NextResponse.json({ error: "That's a lot of changes at once. Please try again shortly." }, { status: 429, headers });
   }
-  const body = (await req.json().catch(() => null)) as { subscribed?: unknown } | null;
+  const body = (await readSmallJson(req, JSON_BODY_MAX)) as { subscribed?: unknown } | null;
   if (!body || typeof body.subscribed !== "boolean") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400, headers });
   }

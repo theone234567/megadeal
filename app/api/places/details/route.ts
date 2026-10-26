@@ -75,6 +75,11 @@ export async function GET(req: NextRequest) {
         lat: typeof data.location?.latitude === "number" ? data.location.latitude : null,
         lon: typeof data.location?.longitude === "number" ? data.location.longitude : null,
       },
+    }, {
+      // The same place picked again (back and forth on the form) is
+      // answered by the browser rather than another paid lookup (T257).
+      // Private: it's this visitor's own search.
+      headers: { "Cache-Control": "private, max-age=300" },
     });
   } catch (err) {
     console.error("[places/details] failed", err);

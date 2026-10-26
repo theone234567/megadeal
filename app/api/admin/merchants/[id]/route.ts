@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { sliceGraphemes } from "@/lib/format";
 import { cleanAmenities } from "@/lib/amenities";
 import { REFERRAL_BONUS_CREDITS, referralCreditsLabel, signupCodes } from "@/lib/referralBonus";
@@ -183,7 +184,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
@@ -818,7 +819,7 @@ export async function DELETE(req: NextRequest, props: { params: Promise<{ id: st
   }
 
   // "Delete with all its deals" (test businesses): lib/db/deleteBusiness.ts.
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   if (body?.everything === true) return deleteEverything(req, params.id, body);
 
   try {

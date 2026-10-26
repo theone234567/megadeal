@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { isAdminRequest } from "@/lib/adminSession";
 import { logAdminAction } from "@/lib/adminAudit";
 import { fromOwnSite } from "@/lib/authSession";
@@ -42,7 +43,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!(await isAdminRequest(req))) return json({ error: "Unauthorized." }, 401);
   if (!fromOwnSite(req, SITE_URL)) return json({ error: "Use the admin page." }, 403);
-  const body = await req.json().catch(() => ({}));
+  const body = ((await readSmallJson(req, JSON_BODY_MAX)) ?? {});
   const mode = body?.mode === "restore" ? "restore" : body?.mode === "rehearse" ? "rehearse" : null;
   const key = typeof body?.key === "string" && BACKUP_KEY.test(body.key) ? body.key : null;
   if (!mode || !key) return json({ error: "Bad request." }, 400);

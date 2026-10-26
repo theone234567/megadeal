@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { isAdminRequest } from "@/lib/adminSession";
 import { SITE_LAUNCHED } from "@/lib/siteConfig";
 import { getPlatformSettings, getSettingsHistory, savePlatformSettings } from "@/lib/platformSettings";
@@ -26,7 +27,7 @@ export async function PUT(req: NextRequest) {
   if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401, headers: NO_STORE });
   }
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400, headers: NO_STORE });
   }

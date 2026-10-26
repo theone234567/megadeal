@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { codeForDraft, draftNeedsNewCode } from "@/lib/dealCode";
 import { newDealCode } from "@/lib/db/dealCodes";
 import { getVerifiedMember } from "@/lib/memberAuth";
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }

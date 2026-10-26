@@ -1,4 +1,5 @@
 import { imageSizeAcceptable } from "@/lib/imageDimensions";
+import { readSmallJson } from "@/lib/readJsonBody";
 import { NextRequest, NextResponse } from "next/server";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { checkRateLimit } from "@/lib/rateLimit";
@@ -96,7 +97,9 @@ export async function POST(req: NextRequest) {
   if (Number(req.headers.get("content-length") ?? 0) > Math.ceil(MAX_BYTES * 1.4) + 10_000) {
     return NextResponse.json({ error: "That image is too large." }, { status: 413 });
   }
-  const body = await req.json().catch(() => null);
+  // Also capped while reading: a body sent without a length can't get past
+  // the check above otherwise (T257).
+  const body = await readSmallJson(req, Math.ceil(MAX_BYTES * 1.4) + 10_000);
   const dataUrl = body?.dataUrl;
   const label = typeof body?.label === "string" ? body.label : "";
   const match =

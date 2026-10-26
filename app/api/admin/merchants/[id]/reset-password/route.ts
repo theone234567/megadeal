@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
 import { isAdminRequest } from "@/lib/adminSession";
 import { createDataClient } from "@/lib/dataClient";
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
   if (!(await isAdminRequest(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   const send = body?.send === "email" ? "email" : body?.send === "link" ? "link" : null;
   if (!send) return NextResponse.json({ error: "Invalid request." }, { status: 400 });
 

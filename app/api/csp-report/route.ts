@@ -36,6 +36,19 @@ const MAX_REPORTS_PER_MINUTE = 30;
 let windowStart = 0;
 let windowCount = 0;
 
+/** And per address (T257), so one client can't use up the minute's
+ *  allowance for everyone. Kept in this Worker's memory, like the count
+ *  above: reports are only logged, so a database write each isn't worth
+ *  it. Bounded, so a flood of addresses can't grow it without end. */
+const MAX_REPORTS_PER_ADDRESS = 5;
+const perAddress = new Map<string, number>();
+function addressOverLimit(ip: string): boolean {
+  const n = (perAddress.get(ip) ?? 0) + 1;
+  if (perAddress.size >= 2000 && !perAddress.has(ip)) return true;
+  perAddress.set(ip, n);
+  return n > MAX_REPORTS_PER_ADDRESS;
+}
+
 function truncate(value: unknown, max = 300): string {
   if (typeof value !== "string") return "";
   return value.length > max ? `${value.slice(0, max)}…` : value;
@@ -50,7 +63,10 @@ export async function POST(request: NextRequest) {
   if (now - windowStart > 60_000) {
     windowStart = now;
     windowCount = 0;
+    perAddress.clear();
   }
+  const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (addressOverLimit(ip)) return noContent;
   if (++windowCount > MAX_REPORTS_PER_MINUTE) return noContent;
 
   const length = Number(request.headers.get("content-length") ?? 0);

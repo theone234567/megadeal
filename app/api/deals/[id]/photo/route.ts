@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { JSON_BODY_MAX, readSmallJson } from "@/lib/readJsonBody";
 import { getVerifiedMember } from "@/lib/memberAuth";
 import { memberRateLimited, HOUR } from "@/lib/memberRateLimit";
 import { createDataClient } from "@/lib/dataClient";
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     return NextResponse.json({ error: "That's a lot of photo changes at once — please try again shortly." }, { status: 429 });
   }
 
-  const body = await req.json().catch(() => null);
+  const body = await readSmallJson(req, JSON_BODY_MAX);
   const photoUrl = body?.photoUrl;
   if (!isUploadedPhotoUrl(photoUrl, SITE_URL)) {
     return NextResponse.json({ error: "Invalid photo." }, { status: 400 });
