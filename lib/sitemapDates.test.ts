@@ -3,7 +3,8 @@ import { CHANGES_AT_LAUNCH, CONTENT_UPDATED, contentUpdated } from "./sitemapDat
 
 describe("sitemap dates", () => {
   it("before launch, every page keeps its own date", () => {
-    expect(contentUpdated("/advertise/restaurants", false, "2026-11-02")).toBe("2026-10-04");
+    // Its own date, whatever it is now: bumped whenever its wording changes.
+    expect(contentUpdated("/advertise/restaurants", false, "2026-11-02")).toBe(CONTENT_UPDATED["/advertise/restaurants"]);
     expect(contentUpdated("/terms", false, "")).toBe("2026-10-04");
   });
 

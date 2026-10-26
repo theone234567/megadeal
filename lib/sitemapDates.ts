@@ -7,8 +7,8 @@
 export const CONTENT_UPDATED: Record<string, string> = {
   "/coming-soon": "2026-10-05",
   "/list-your-business": "2026-10-05",
-  "/advertise/restaurants": "2026-10-04",
-  "/advertise/beauty-spa": "2026-10-05",
+  "/advertise/restaurants": "2026-10-27",
+  "/advertise/beauty-spa": "2026-10-27",
   "/advertise/home-car": "2026-10-05",
   "/advertise/things-to-do": "2026-10-05",
   "/advertise/travel-getaways": "2026-10-17",
