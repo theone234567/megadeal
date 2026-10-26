@@ -48,7 +48,9 @@ export default function BusinessSummary({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={wixImageUrl(photo, 160, 160)}
-            alt=""
+            // Named for search engines; the name is read beside it (T253).
+            alt={name || "The business"}
+            aria-hidden="true"
             width={64}
             height={64}
             loading="lazy"

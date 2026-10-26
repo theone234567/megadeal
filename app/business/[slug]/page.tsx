@@ -257,7 +257,7 @@ export default async function BusinessProfilePage(
       <header className="flex items-center gap-4">
         {business.logoUrl ? (
           <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-slate-50 ring-1 ring-slate-200 sm:h-20 sm:w-20">
-            <Image src={wixImageUrl(business.logoUrl, 160, 160)} alt="" fill sizes="80px" className="object-cover" />
+            <Image src={wixImageUrl(business.logoUrl, 160, 160)} alt={`${business.businessName} logo`} fill sizes="80px" className="object-cover" />
           </div>
         ) : (
           <span
@@ -486,7 +486,7 @@ function BusinessDealRow({ deal, place }: { deal: Deal; place: string | null }) 
             src={wixImageUrl(deal.image, 360, 240)}
             srcSet={wixImageSrcSet(deal.image, [360, 540], 3 / 2)}
             sizes="(min-width: 640px) 160px, 112px"
-            alt=""
+            alt={deal.name} aria-hidden="true"
             loading="lazy"
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover"

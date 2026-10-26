@@ -148,7 +148,7 @@ export default function DealCard({
             sizes={imageSizes}
             // Empty: the title is already the link's text, so repeating it
             // as the photo's alt made screen readers announce it twice.
-            alt=""
+            alt={deal.name} aria-hidden="true"
             // A hero card's photo loads first. (Any photo that isn't lazy
             // also becomes a preload in the page's prefetched data, so
             // desktop pages showing a link to it fetch it in advance; phones,

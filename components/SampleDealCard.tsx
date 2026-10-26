@@ -29,7 +29,7 @@ export default function SampleDealCard() {
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
           <Image
             src="/images/beauty-spa/beauty-massage.webp"
-            alt=""
+            alt="Example deal photo: a massage" aria-hidden="true"
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw"
             className="object-cover"

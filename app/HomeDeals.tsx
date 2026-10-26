@@ -886,7 +886,7 @@ function EmptyState({
       {searching && (
         <Image
           src="/megadeal/mascot/megadeal-mascot-search.webp"
-          alt=""
+          alt="MegaDeal’s elephant mascot" aria-hidden="true"
           width={400}
           height={331}
           sizes="120px"

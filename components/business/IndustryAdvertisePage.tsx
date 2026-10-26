@@ -222,7 +222,7 @@ export default function IndustryAdvertisePage({ content: c }: { content: Industr
                   src={MASCOT}
                   srcSet="/megadeal/coming-soon-v2/mascot-hoodie-240.webp 240w, /megadeal/coming-soon-v2/mascot-hoodie.webp 480w"
                   sizes="(min-width: 1024px) 160px, (min-width: 768px) 110px, (min-width: 640px) 140px, 104px"
-                  alt=""
+                  alt="MegaDeal’s elephant mascot" aria-hidden="true"
                   width={480}
                   height={496}
                   loading="lazy"

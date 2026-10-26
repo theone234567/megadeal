@@ -131,7 +131,7 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
             </div>
             <Image
               src="/megadeal/coming-soon-v2/mascot-hoodie-240.webp"
-              alt=""
+              alt="MegaDeal’s elephant mascot"
               width={240}
               height={248}
               sizes="110px"

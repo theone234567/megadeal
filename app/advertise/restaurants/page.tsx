@@ -661,7 +661,7 @@ export default function RestaurantAdvertisingPage() {
                 <MascotFigure
                   src={art.mascotWave}
                   fallbackSrc="/brand/megadeal-elephant.svg"
-                  alt=""
+                  alt="MegaDeal’s elephant mascot" aria-hidden="true"
                   width={200}
                   height={156}
                   className="h-auto w-[110px] opacity-90 sm:w-[140px]"

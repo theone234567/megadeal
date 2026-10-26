@@ -102,7 +102,7 @@ export default function PrelaunchHero() {
               sizes="(min-width: 1024px) 130px, 25vw"
               width={240}
               height={249}
-              alt=""
+              alt="MegaDeal’s elephant mascot" aria-hidden="true"
               loading="eager"
               fetchPriority="low"
               decoding="async"
@@ -144,7 +144,7 @@ function CollageCard({
           sizes="(min-width: 1024px) 190px, 40vw"
           width={480}
           height={360}
-          alt=""
+          alt={`Example deal photo: ${title}`} aria-hidden="true"
           decoding="async"
           className="aspect-[4/3] w-full object-cover"
         />

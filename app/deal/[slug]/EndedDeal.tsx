@@ -45,7 +45,7 @@ export default function EndedDeal({ deal, moreDeals }: { deal: Deal; moreDeals: 
               src={wixImageUrl(deal.image, 750, 500)}
               srcSet={wixImageSrcSet(deal.image, [540, 750], 3 / 2)}
               sizes="(min-width: 640px) 40vw, 100vw"
-              alt=""
+              alt={deal.name} aria-hidden="true"
               className="absolute inset-0 h-full w-full object-cover opacity-70 grayscale"
             />
           )}

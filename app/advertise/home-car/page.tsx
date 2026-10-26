@@ -416,7 +416,7 @@ export default function HomeCarAdvertisingPage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={HERO_MASCOT}
-                  alt=""
+                  alt="MegaDeal’s elephant mascot" aria-hidden="true"
                   width={480}
                   height={496}
                   decoding="async"

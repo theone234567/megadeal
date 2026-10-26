@@ -135,7 +135,7 @@ export default function DealPhotos({ images, alt }: { images: string[]; alt: str
             }`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={wixImageUrl(url, 360, 240)} alt="" loading="lazy" decoding="async" className="aspect-[3/2] w-full object-cover" />
+            <img src={wixImageUrl(url, 360, 240)} alt={`Photo ${i + 1}`} aria-hidden="true" loading="lazy" decoding="async" className="aspect-[3/2] w-full object-cover" />
           </button>
         ))}
       </div>

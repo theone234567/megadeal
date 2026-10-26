@@ -270,7 +270,7 @@ function BusinessBand() {
                   sizes="220px"
                   width={480}
                   height={360}
-                  alt=""
+                  alt="Example deal photo: pizza for two" aria-hidden="true"
                   loading="lazy"
                   decoding="async"
                   className="aspect-[4/3] w-full object-cover"
@@ -297,7 +297,7 @@ function BusinessBand() {
               sizes="100px"
               width={240}
               height={249}
-              alt=""
+              alt="MegaDeal’s elephant mascot" aria-hidden="true"
               loading="lazy"
               decoding="async"
               className="relative z-10 -mb-4 -ml-2 w-[100px] shrink-0 drop-shadow-[0_10px_18px_rgba(20,10,50,0.35)]"

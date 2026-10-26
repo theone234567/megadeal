@@ -613,7 +613,7 @@ async function LegacyComingSoonPage() {
         <MascotFigure
           src={art.mascotJump}
           fallbackSrc="/brand/megadeal-elephant.svg"
-          alt=""
+          alt="MegaDeal’s elephant mascot" aria-hidden="true"
           width={300}
           height={340}
           className="absolute -bottom-6 right-2 hidden h-auto w-[150px] opacity-[0.35] lg:block xl:right-10 xl:w-[190px]"
@@ -752,6 +752,7 @@ async function LegacyComingSoonPage() {
                     icon behind stays as the fallback if a photo fails. */}
                 <CategoryPhoto
                   src={image}
+                  label={name}
                   sizes="(min-width: 1024px) 200px, (min-width: 640px) 33vw, 50vw"
                   className="object-cover transition duration-500 group-hover:scale-[1.04]"
                 />
@@ -821,7 +822,7 @@ async function LegacyComingSoonPage() {
               <MascotFigure
                 src={art.mascotWave}
                 fallbackSrc="/brand/megadeal-elephant.svg"
-                alt=""
+                alt="MegaDeal’s elephant mascot" aria-hidden="true"
                 width={320}
                 height={250}
                 className="absolute -left-24 -top-14 z-10 hidden h-auto w-[120px] -scale-x-100 drop-shadow-[0_12px_20px_rgba(69,16,141,.18)] lg:block xl:-left-32 xl:w-[148px]"

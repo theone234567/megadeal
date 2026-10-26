@@ -8,13 +8,15 @@ import Image from "next/image";
  * it removes itself rather than leaving the browser's broken-image glyph,
  * so the category icon drawn behind it shows through as the fallback.
  */
-export default function CategoryPhoto({ src, sizes, className }: { src: string; sizes: string; className: string }) {
+export default function CategoryPhoto({ src, sizes, className, label }: { src: string; sizes: string; className: string; label?: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) return null;
   return (
     <Image
       src={src}
-      alt=""
+      // Named for search engines; hidden from screen readers, which read
+      // the tile's own name (T253).
+      alt={label ? `${label} deals in Auckland` : "Deal category photo"}
       aria-hidden
       fill
       loading="lazy"

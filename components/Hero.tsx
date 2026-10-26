@@ -40,7 +40,7 @@ export default function Hero() {
               src="/megadeal/hero/auckland-skyline-800.webp"
               srcSet="/megadeal/hero/auckland-skyline-640.webp 640w, /megadeal/hero/auckland-skyline-800.webp 800w, /megadeal/hero/auckland-skyline.webp 1600w"
               sizes="(min-width: 1200px) 650px, (min-width: 640px) 54vw, 100vw"
-              alt=""
+              alt="Auckland city skyline" aria-hidden="true"
               width={800}
               height={351}
               fetchPriority="high"
@@ -93,7 +93,7 @@ export default function Hero() {
             <img
               src="/megadeal/mascot/megadeal-mascot-hero-240.webp"
               srcSet="/megadeal/mascot/megadeal-mascot-hero-240.webp 240w, /megadeal/mascot/megadeal-mascot-hero-380.webp 380w, /megadeal/mascot/megadeal-mascot-hero.webp 560w"
-              alt=""
+              alt="MegaDeal’s elephant mascot" aria-hidden="true"
               width={560}
               height={580}
               fetchPriority="high"

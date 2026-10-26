@@ -70,7 +70,7 @@ export default function ComingSoonV2() {
                 src={MASCOT}
                 srcSet={MASCOT_SRCSET}
                 sizes="(max-width: 767px) 72px, 104px"
-                alt=""
+                alt="MegaDeal’s elephant mascot" aria-hidden="true"
                 width={240}
                 height={248}
                 decoding="async"

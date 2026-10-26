@@ -36,7 +36,7 @@ export default function BrandLogo({
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={tone === "onDark" ? "/brand/minimal/megadeal-logo-minimal-white.svg" : "/brand/minimal/megadeal-logo-minimal-purple.svg"}
-      alt=""
+      alt="MegaDeal"
       width={LOGO_VIEWBOX.width}
       height={LOGO_VIEWBOX.height}
       decoding="async"
@@ -72,7 +72,7 @@ function ClassicLogo({ placement, className }: { placement: LogoPlacement; class
   return (
     <Image
       src={c.src}
-      alt=""
+      alt="MegaDeal"
       width={c.width}
       height={c.height}
       priority

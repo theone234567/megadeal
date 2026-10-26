@@ -113,7 +113,7 @@ export default function ComingSoonV3() {
                 fetchPriority="high"
               />
             </div>
-            <img className={styles.mascot} src={MASCOT} width={480} height={496} alt="" />
+            <img className={styles.mascot} src={MASCOT} width={480} height={496} alt="MegaDeal’s elephant mascot" aria-hidden="true" />
           </div>
         </div>
       </section>
@@ -214,7 +214,7 @@ export default function ComingSoonV3() {
 
         <div className={styles.signupRow}>
           <section id={SIGNUP_ID} className={styles.customerPanel} aria-labelledby="cs3-signup">
-            <img className={styles.panelMascot} src={MASCOT} width={480} height={496} alt="" loading="lazy" />
+            <img className={styles.panelMascot} src={MASCOT} width={480} height={496} alt="MegaDeal’s elephant mascot" aria-hidden="true" loading="lazy" />
             <div className={styles.panelBody}>
               <h2 id="cs3-signup">Be first in line for launch deals</h2>
               <p className={styles.panelLede}>Hear about the best local offers in Auckland as soon as we launch.</p>

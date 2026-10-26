@@ -70,7 +70,7 @@ export default function MetaPixel() {
         <img
           height="1"
           width="1"
-          alt=""
+          alt="Meta Pixel"
           style={{ display: "none" }}
           src={`https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1`}
         />
