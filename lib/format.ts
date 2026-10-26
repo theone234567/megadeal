@@ -9,9 +9,28 @@
 export function truncateForMeta(text: string, maxLength = 155): string {
   const trimmed = text.trim();
   if (trimmed.length <= maxLength) return trimmed;
-  const cut = trimmed.slice(0, maxLength);
+  const cut = sliceGraphemes(trimmed, maxLength);
   const lastSpace = cut.lastIndexOf(" ");
   return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}
+
+/** The longest start of `text` that fits in `max` UTF-16 units without
+ *  splitting a character: an emoji (or a letter with its accent) is kept
+ *  whole or left out, never cut in half into a broken symbol (T256). */
+export function sliceGraphemes(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const Segmenter = (Intl as unknown as { Segmenter?: new (l?: string, o?: { granularity: string }) => { segment(t: string): Iterable<{ segment: string }> } }).Segmenter;
+  if (!Segmenter) {
+    // Older engines: at least never end on half of a surrogate pair.
+    const code = text.charCodeAt(max - 1);
+    return text.slice(0, code >= 0xd800 && code <= 0xdbff ? max - 1 : max);
+  }
+  let out = "";
+  for (const { segment } of new Segmenter("en", { granularity: "grapheme" }).segment(text)) {
+    if (out.length + segment.length > max) break;
+    out += segment;
+  }
+  return out;
 }
 
 /**
@@ -54,14 +73,21 @@ export function offerDaysLeft(expiresAt: string, now: number = Date.now()): stri
 
 export function formatMoney(amount: number, currency: string, formatted?: string | null) {
   if (formatted) return formatted;
+  // Never "NaN" or "$Infinity" on a page (T256).
+  if (typeof amount !== "number" || !Number.isFinite(amount)) return "—";
+  // To the cent first, so 49.999 is "$50" and float noise never shows.
+  const cents = Math.round(amount * 100) / 100;
   try {
     return new Intl.NumberFormat("en-NZ", {
       style: "currency",
-      currency: currency || "USD",
-      minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
-    }).format(amount);
+      // Every deal is in New Zealand dollars; a missing currency used to
+      // fall back to US dollars and print "US$".
+      currency: currency || "NZD",
+      minimumFractionDigits: cents % 1 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
+    }).format(cents);
   } catch {
-    return `$${amount.toFixed(2)}`;
+    return `$${cents.toFixed(2)}`;
   }
 }
 

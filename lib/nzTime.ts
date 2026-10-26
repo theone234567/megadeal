@@ -75,3 +75,19 @@ export function formatNzDateTime(value: string | number | Date): string {
   const ms = value instanceof Date ? value.getTime() : typeof value === "number" ? value : Date.parse(value);
   return Number.isFinite(ms) ? displayFormat.format(new Date(ms)) : "";
 }
+
+/**
+ * `days` calendar days after `ms`, at the same clock time in New Zealand
+ * (T256). Adding 24-hour steps drifted by an hour across a daylight-saving
+ * change: a deal started at 9am ended at 8am or 10am. If that clock time
+ * doesn't exist on the last day (the hour skipped in spring), the plain
+ * 24-hour sum is used.
+ */
+export function addNzCalendarDays(ms: number, days: number): number {
+  const { date, time } = nzDateTimeParts(ms);
+  const d = new Date(`${date}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  const target = nzLocalToUtc(d.toISOString().slice(0, 10), time);
+  // Seconds and milliseconds of the start are kept.
+  return target.ms !== undefined ? target.ms + (ms % 60_000 + 60_000) % 60_000 : ms + days * 86_400_000;
+}

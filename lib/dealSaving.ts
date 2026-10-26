@@ -29,8 +29,20 @@ export function dealSaving(was: number, now: number): number | null {
  * the two prices printed beside it.
  */
 export function dealSavingPercent(was: number, now: number): number | null {
-  const saving = dealSaving(was, now);
-  if (saving === null || was <= 0) return null;
-  const pct = Math.round((saving / was) * 100);
+  const pct = savingPercentOf(was, now);
   return pct > 0 ? pct : null;
+}
+
+/**
+ * The saving as a whole percentage, rounded down (T256, T103): 49.6% off
+ * is "49% off", never "50% off", so a badge never claims more than the
+ * prices give. 0 when there's no saving. Every percentage shown or sent
+ * comes from here: the cards, the deal page, previews and the feed.
+ */
+export function savingPercentOf(was: number, now: number): number {
+  const saving = dealSaving(was, now);
+  if (saving === null || !(was > 0)) return 0;
+  // The tiny allowance keeps float noise (29.999999999) from dropping a
+  // whole percent off an exact figure.
+  return Math.max(0, Math.floor((saving / was) * 100 + 1e-9));
 }

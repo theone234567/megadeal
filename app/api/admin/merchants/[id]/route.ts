@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sliceGraphemes } from "@/lib/format";
 import { cleanAmenities } from "@/lib/amenities";
 import { REFERRAL_BONUS_CREDITS, referralCreditsLabel, signupCodes } from "@/lib/referralBonus";
 import { auditTarget, logAdminAction } from "@/lib/adminAudit";
@@ -34,7 +35,7 @@ const MAX_BIO_LENGTH = 600;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function cleanText(value: unknown, maxLength: number): string {
-  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+  return typeof value === "string" ? sliceGraphemes(value.trim(), maxLength) : "";
 }
 
 const INTRO_CREDITS = 2;

@@ -20,7 +20,7 @@
  */
 
 import { SCHEDULE_TOLERANCE_MS } from "./dealSchedule";
-import { formatNzDateTime } from "./nzTime";
+import { addNzCalendarDays, formatNzDateTime } from "./nzTime";
 
 export const FLASH_MAX_MINUTES = 360;
 export const EVERYDAY_MAX_DAYS = 30;
@@ -137,6 +137,10 @@ export function firstPublicationFields(deal: Record<string, any>, now: number = 
     // Stored values were validated at submission; capped again here so a
     // hand-edited row can't publish a longer run than the rules allow.
     const ms = Math.min(requested * MINUTE, maxDurationMs(Boolean(deal.isFlash)));
+    // Whole days end at the same NZ clock time they started, daylight
+    // saving or not (T256); Flash deals run their minutes.
+    const endFrom = (start: number) =>
+      !deal.isFlash && ms % DAY === 0 ? addNzCalendarDays(start, ms / DAY) : start + ms;
     // A requested start (lib/dealSchedule.ts): the agreed start and end are
     // kept whenever approval comes before it (or within the tolerance just
     // after it). Any later, the slot it was written for has gone, so it
@@ -149,10 +153,10 @@ export function firstPublicationFields(deal: Record<string, any>, now: number = 
         };
       }
       return {
-        fields: { firstPublishedAt: new Date(scheduled).toISOString(), expiresAt: new Date(scheduled + ms).toISOString() },
+        fields: { firstPublishedAt: new Date(scheduled).toISOString(), expiresAt: new Date(endFrom(scheduled)).toISOString() },
       };
     }
-    return { fields: { firstPublishedAt: nowIso, expiresAt: new Date(now + ms).toISOString() } };
+    return { fields: { firstPublishedAt: nowIso, expiresAt: new Date(endFrom(now)).toISOString() } };
   }
 
   const legacyEnd = deal.expiresAt ? new Date(deal.expiresAt).getTime() : NaN;

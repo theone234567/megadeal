@@ -1,4 +1,5 @@
 import { availableMethods } from "@/lib/contactOverride";
+import { sliceGraphemes } from "@/lib/format";
 import { cleanAmenities } from "@/lib/amenities";
 import { hasMarkup, NAME_MARKUP_MESSAGE } from "@/lib/nameRules";
 import { isContactMethod } from "@/lib/dealContact";
@@ -29,7 +30,7 @@ const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function cleanText(value: unknown, maxLength: number): string {
-  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+  return typeof value === "string" ? sliceGraphemes(value.trim(), maxLength) : "";
 }
 
 /**

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sliceGraphemes } from "@/lib/format";
 import { afterResponse } from "@/lib/afterResponse";
 import { createDataClient } from "@/lib/dataClient";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
@@ -17,7 +18,7 @@ const MAX_LENGTH = 2000;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function cleanText(value: unknown, maxLength: number): string {
-  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+  return typeof value === "string" ? sliceGraphemes(value.trim(), maxLength) : "";
 }
 
 export async function POST(req: NextRequest) {

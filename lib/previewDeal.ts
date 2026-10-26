@@ -1,4 +1,5 @@
 import type { ContactOverride } from "./contactOverride";
+import { savingPercentOf } from "./dealSaving";
 import { isContactMethod } from "./dealContact";
 import { businessSuburb, publicLocation } from "./location";
 import type { Deal } from "./types";
@@ -85,7 +86,7 @@ export function buildPreviewDeal(input: PreviewInput, merchant: any): Deal {
     was,
     formattedNow: null,
     formattedWas: null,
-    discountPercent: was > now ? Math.round(((was - now) / was) * 100) : 0,
+    discountPercent: savingPercentOf(was, now),
     currency: "NZD",
     ribbon: null,
     categories: input.category ? [input.category] : [],

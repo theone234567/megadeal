@@ -32,7 +32,7 @@ export function feedOpenApi(siteUrl: string, siteName: string) {
         properties: {
           amount: { type: "number", description: "The deal price, in NZ dollars, paid to the business." },
           original_amount: nullable({ type: "number", description: "The business's usual price, when it gave one higher than the deal price." }),
-          discount_percent: nullable({ type: "integer", description: "How much less than the usual price, rounded." }),
+          discount_percent: nullable({ type: "integer", description: "How much less than the usual price, as a whole percentage rounded down." }),
           currency: { type: "string", const: "NZD" },
         },
       },

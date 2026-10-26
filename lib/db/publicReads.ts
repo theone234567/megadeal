@@ -1,4 +1,5 @@
 import { businessSlug } from "../slug";
+import { savingPercentOf } from "../dealSaving";
 import { businessSuburb, publicLocation } from "../location";
 import { MAX_BUSINESS_PHOTOS } from "../businessPhotos";
 import { parseBookingRequirement } from "../booking";
@@ -131,7 +132,7 @@ export function rowToDeal(r: Row): Deal {
     was,
     formattedNow: null,
     formattedWas: null,
-    discountPercent: was > now && was > 0 ? Math.round(100 - (now / was) * 100) : 0,
+    discountPercent: savingPercentOf(was, now),
     currency: "NZD",
     ribbon: blankToNull(r.ribbon),
     categories: category ? [category] : [],

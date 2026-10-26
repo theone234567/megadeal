@@ -6,7 +6,7 @@ import MoreDeals from "./MoreDeals";
 import EndedDeal from "./EndedDeal";
 import { fetchDealForSEO, fetchEndedDeal, fetchAllLiveDealsServer } from "@/lib/fetchDealServer";
 import { SITE_URL, SITE_NAME, DEALS_OPEN } from "@/lib/siteConfig";
-import { formatMoney, truncateForMeta } from "@/lib/format";
+import { formatMoney, sliceGraphemes, truncateForMeta } from "@/lib/format";
 import { placeLabel } from "@/lib/location";
 import { hideEmail } from "@/lib/hiddenEmail";
 import { dealTitles } from "@/lib/dealTitle";
@@ -27,7 +27,7 @@ function endedTitle(name: string, business: string | null, expired: boolean): st
   const tag = expired ? " (ended)" : " (not available)";
   const room = 65 - " | MegaDeal".length - tag.length;
   const full = business ? `${name} at ${business}` : name;
-  const cut = (t: string) => (t.length <= room ? t : `${t.slice(0, room - 1).trimEnd()}…`);
+  const cut = (t: string) => (t.length <= room ? t : `${sliceGraphemes(t, room - 1).trimEnd()}…`);
   return `${cut(full.length <= room ? full : name)}${tag}`;
 }
 

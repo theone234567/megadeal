@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { sliceGraphemes } from "@/lib/format";
 import { cleanAmenities } from "@/lib/amenities";
 import { hasMarkup, NAME_MARKUP_MESSAGE } from "@/lib/nameRules";
 import { phoneLink } from "@/lib/booking";
@@ -11,7 +12,7 @@ import { createDataClient } from "@/lib/dataClient";
 import { getOrClaimMerchant, statusAfterMerchantEdit } from "@/lib/merchant";
 import { sendTransactionalEmail } from "@/lib/sendEmail";
 import { SITE_URL, DEALS_OPEN } from "@/lib/siteConfig";
-import { generateReferralCode } from "@/lib/referral";
+import { generateReferralCode, isReferralCodeClash } from "@/lib/referral";
 import { isValidSocialUrl, isSafeOptionalUrl, normaliseSocialUrl } from "@/lib/socialLinks";
 import { isValidNzbnFormat, normalizeNzbn } from "@/lib/nzbn";
 import { isBusinessCategory } from "@/lib/categories";
@@ -36,7 +37,7 @@ const MAX_BIO_LENGTH = 600;
 const ALLOWED_PRICE_RANGES = ["", "$", "$$", "$$$", "$$$$"];
 
 function cleanText(value: unknown, maxLength: number): string {
-  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+  return typeof value === "string" ? sliceGraphemes(value.trim(), maxLength) : "";
 }
 
 function welcomeEmailHtml(businessName: string, contactName: string): string {
@@ -264,7 +265,17 @@ export async function POST(req: NextRequest) {
         status: statusAfterMerchantEdit(existing, merged),
       });
     } else {
-      item = await adminClient.items.insert("Merchants", {
+      // A new referral code on the rare clash with an existing one (T256),
+      // rather than failing the application.
+      const insertWithCode = async (attempt: number): Promise<any> => {
+        try {
+          return await adminClient.items.insert("Merchants", { ...application, referralCode: generateReferralCode() });
+        } catch (err) {
+          if (attempt < 3 && isReferralCodeClash(err)) return insertWithCode(attempt + 1);
+          throw err;
+        }
+      };
+      const application = {
         ...fields,
         ...(startsAsTest ? { isTest: true } : {}),
         couponCode: cleanText(body.couponCode, 50),
@@ -277,10 +288,10 @@ export async function POST(req: NextRequest) {
         creditsBalance: 0,
         status: "Pending",
         logoUrl: "",
-        referralCode: generateReferralCode(),
         referralRewarded: false,
         _owner: member.id,
-      });
+      };
+      item = await insertWithCode(1);
     }
   } catch (err) {
     // One business per email (the database's merchants_email_key). Only

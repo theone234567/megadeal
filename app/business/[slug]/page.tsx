@@ -15,6 +15,7 @@ import { phoneLink } from "@/lib/booking";
 import { comparableUrl } from "@/lib/dealContact";
 import { leadingMethod } from "@/lib/contactOverride";
 import { safeWebHref } from "@/lib/socialLinks";
+import OpenNowLabel from "@/components/OpenNowLabel";
 import { formatMoney } from "@/lib/format";
 import { dealSavingPercent } from "@/lib/dealSaving";
 import type { Deal } from "@/lib/types";
@@ -410,7 +411,7 @@ export default async function BusinessProfilePage(
                 <div className="min-w-0">
                   <p className="font-semibold text-slate-900">Opening hours</p>
                   {/* From the hours the business gave, in New Zealand time. */}
-                  {known && status && <p className={`text-sm font-semibold ${status.open ? "text-emerald-800" : "text-slate-600"}`}>{status.label}</p>}
+                  {known && status && <OpenNowLabel hours={business.businessHours ?? ""} initial={status} />}
                   <ul className="mt-0.5 tabular-nums text-slate-700">
                     {hoursLines.map((line, i) => (
                       <li key={i}>{line}</li>

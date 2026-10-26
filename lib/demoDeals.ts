@@ -1,4 +1,5 @@
 import type { Deal } from "./types";
+import { savingPercentOf } from "./dealSaving";
 import type { BookingRequirement } from "./booking";
 
 /**
@@ -55,7 +56,7 @@ function example(o: ExampleInput): Deal {
     was: o.was,
     formattedNow: null,
     formattedWas: null,
-    discountPercent: Math.round(((o.was - o.now) / o.was) * 100),
+    discountPercent: savingPercentOf(o.was, o.now),
     currency: "NZD",
     ribbon: null,
     categories: [o.category],
