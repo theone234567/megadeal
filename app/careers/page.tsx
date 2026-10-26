@@ -4,7 +4,7 @@ import { fredoka, plusJakartaSans } from "@/lib/fonts";
 import { pageMetadata } from "@/lib/pageMetadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Careers",
+  title: "Careers: Join Auckland's Local Deals Team",
   description:
     "MegaDeal is a small team helping local NZ businesses reach new customers without a cut of sales. See what we look for and how to get in touch.",
   path: "/careers",

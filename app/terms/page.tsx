@@ -4,7 +4,7 @@ import { LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN } from "@/lib/siteConfig";
 import { pageMetadata } from "@/lib/pageMetadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Terms of Service",
+  title: "Terms of Service for Customers & Businesses",
   description:
     "MegaDeal's Terms of Service — the rules for using the site as a customer or business, including how deals, accounts and listings work.",
   path: "/terms",

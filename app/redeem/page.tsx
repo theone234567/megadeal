@@ -7,7 +7,7 @@ import { safeJsonLd } from "@/lib/safeJsonLd";
 import { pageMetadata } from "@/lib/pageMetadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "How to Redeem a Deal",
+  title: "How to Redeem a Deal: Quote Your Code, No Voucher",
   description:
     "How to redeem a MegaDeal deal — no voucher or order confirmation, just contact the business directly and quote your code.",
   path: "/redeem",

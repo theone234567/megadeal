@@ -4,7 +4,7 @@ import { LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN } from "@/lib/siteConfig";
 import { pageMetadata } from "@/lib/pageMetadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Privacy Policy",
+  title: "Privacy Policy: Your Data & Your Rights (NZ)",
   description:
     "MegaDeal's Privacy Policy — what personal information we collect, how it's used, and your rights under the Privacy Act 2020.",
   path: "/privacy",

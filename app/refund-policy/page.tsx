@@ -3,7 +3,7 @@ import PageShell from "@/components/PageShell";
 import { pageMetadata } from "@/lib/pageMetadata";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Refund Policy",
+  title: "Refund Policy: Pricing & Disputes Explained",
   description:
     "MegaDeal never charges customers, so there's nothing for us to refund — here's how pricing and disputes work instead.",
   path: "/refund-policy",
