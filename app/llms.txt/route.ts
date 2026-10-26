@@ -1,4 +1,4 @@
-import { DEALS_OPEN, PRELAUNCH_HOME, SITE_NAME, SITE_LAUNCHED } from "@/lib/siteConfig";
+import { DEALS_OPEN, PRELAUNCH_HOME, SITE_NAME, SITE_LAUNCHED, SITE_URL } from "@/lib/siteConfig";
 import { DEFAULT_CITY, cityPath, flashDealsPath } from "@/lib/cities";
 import { CATEGORIES } from "@/lib/categories";
 import { COMPANY, INTRO, categoryLinks } from "@/lib/llmsContent";
@@ -16,6 +16,11 @@ import { LAUNCH_PROMO } from "@/lib/promo";
 // already depends on keeps it truthful automatically, with no separate
 // file to remember to update at launch.
 export const revalidate = 3600;
+
+/** A page in a list, as the llms.txt format (llmstxt.org) has it: a
+ *  Markdown link with its full address, then what it's for. Lighthouse's
+ *  "Agentic browsing" check flagged the plain "Label: /path" lines. */
+const page = (label: string, path: string, note?: string) => `- [${label}](${SITE_URL}${path})${note ? `: ${note}` : ""}`;
 
 const BUSINESS_PITCH = `MegaDeal is currently launching in Auckland, New Zealand. Local businesses approved before launch get 180 free advertising credits (offer code WELCOME6; up to 6 months: an Everyday Deal uses 30 credits, a Flash Deal 3), can run 1 Everyday Deal and 1 Flash Deal at a time free before launch, pay zero commission on sales and need no credit card. Offers may change at any time; conditions apply — see /terms. Full details are at /list-your-business.`;
 
@@ -38,15 +43,15 @@ ${categoryLinks}
 
 ## Key pages
 
-- Homepage (all live deals): /
-- How it works: /how-it-works
-- How to redeem a deal: /redeem
-- Every Help Centre answer in full: /llms-full.txt
-- List your business / advertise your deal: /list-your-business
-- About: /about
-- Contact: /contact
-- Terms of service: /terms
-- Privacy policy: /privacy
+${page(`Homepage`, "/", `all live deals`)}
+${page(`How it works`, "/how-it-works")}
+${page(`How to redeem a deal`, "/redeem")}
+${page(`Every Help Centre answer in full`, "/llms-full.txt")}
+${page(`List your business / advertise your deal`, "/list-your-business")}
+${page(`About`, "/about")}
+${page(`Contact`, "/contact")}
+${page(`Terms of service`, "/terms")}
+${page(`Privacy policy`, "/privacy")}
 
 ## Data notes
 
@@ -57,12 +62,12 @@ ${categoryLinks}
 }
 
 // The pages for businesses in each category, listed before and after deals open.
-const ADVERTISE_LINKS = `- Restaurant advertising: /advertise/restaurants
-- Beauty & spa advertising: /advertise/beauty-spa
-- Home & car business advertising (cleaning, gardening, home maintenance, car wash, servicing, tyres): /advertise/home-car
-- Activity & experience advertising (tours, outdoor adventures, indoor activities, family experiences, workshops, cruises and day trips): /advertise/things-to-do
-- Accommodation & getaway advertising (hotels, motels, B&Bs, retreats, lodges, glamping, holiday parks): /advertise/travel-getaways
-- Health & fitness advertising (gyms, yoga and Pilates studios, fitness classes, personal training, martial arts, dance, swim and sports coaching): /advertise/health-fitness`;
+const ADVERTISE_LINKS = `${page(`Restaurant advertising`, "/advertise/restaurants")}
+${page(`Beauty & spa advertising`, "/advertise/beauty-spa")}
+${page(`Home & car business advertising`, "/advertise/home-car", `cleaning, gardening, home maintenance, car wash, servicing, tyres`)}
+${page(`Activity & experience advertising`, "/advertise/things-to-do", `tours, outdoor adventures, indoor activities, family experiences, workshops, cruises and day trips`)}
+${page(`Accommodation & getaway advertising`, "/advertise/travel-getaways", `hotels, motels, B&Bs, retreats, lodges, glamping, holiday parks`)}
+${page(`Health & fitness advertising`, "/advertise/health-fitness", `gyms, yoga and Pilates studios, fitness classes, personal training, martial arts, dance, swim and sports coaching`)}`;
 
 /** Before launch, with approved businesses' deals already live
  *  (DEALS_OPEN): the homepage is "/", there may be a few real deals or
@@ -83,19 +88,19 @@ MegaDeal is in its pre-launch period in ${DEFAULT_CITY.name}, New Zealand. The h
 
 ## Key pages
 
-- Homepage: /
-- Live deals in ${DEFAULT_CITY.name}: ${cityPath()}
-- A plain-text list of every live deal: /deals.txt
-- Deals data for developers and AI tools: /developers (JSON: /feed/deals.json)
-- Every Help Centre answer in full: /llms-full.txt
-- List your business / advertise your deal: /list-your-business
+${page(`Homepage`, "/")}
+${page(`Live deals in ${DEFAULT_CITY.name}`, cityPath())}
+${page(`A plain-text list of every live deal`, "/deals.txt")}
+${page(`Deals data for developers and AI tools`, "/developers", `JSON: /feed/deals.json`)}
+${page(`Every Help Centre answer in full`, "/llms-full.txt")}
+${page(`List your business / advertise your deal`, "/list-your-business")}
 ${ADVERTISE_LINKS}
-- How it works: /how-it-works
-- How to redeem a deal: /redeem
-- About: /about
-- Contact: /contact
-- Terms of service: /terms
-- Privacy policy: /privacy`;
+${page(`How it works`, "/how-it-works")}
+${page(`How to redeem a deal`, "/redeem")}
+${page(`About`, "/about")}
+${page(`Contact`, "/contact")}
+${page(`Terms of service`, "/terms")}
+${page(`Privacy policy`, "/privacy")}`;
 }
 
 /** Before launch with no deals yet. The front page is "/" when the
@@ -114,17 +119,17 @@ MegaDeal has not launched to the public yet. There are no live deals to browse, 
 
 ## Key pages
 
-- Current status / launch updates: ${front}
-- Deals data for developers and AI tools: /developers
-- Every Help Centre answer in full: /llms-full.txt
-- List your business / advertise your deal: /list-your-business
+${page(`Current status / launch updates`, front)}
+${page(`Deals data for developers and AI tools`, "/developers")}
+${page(`Every Help Centre answer in full`, "/llms-full.txt")}
+${page(`List your business / advertise your deal`, "/list-your-business")}
 ${ADVERTISE_LINKS}
-- How it works: /how-it-works
-- How to redeem a deal (once launched): /redeem
-- About: /about
-- Contact: /contact
-- Terms of service: /terms
-- Privacy policy: /privacy`;
+${page(`How it works`, "/how-it-works")}
+${page(`How to redeem a deal`, "/redeem", `once launched`)}
+${page(`About`, "/about")}
+${page(`Contact`, "/contact")}
+${page(`Terms of service`, "/terms")}
+${page(`Privacy policy`, "/privacy")}`;
 }
 
 export async function GET() {

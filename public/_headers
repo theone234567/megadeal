@@ -8,21 +8,23 @@
 /_next/static/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Images in public/. These keep their names when replaced, so they're kept
-# for a day, then used while a fresh copy is fetched in the background for
-# up to a week. A replaced image shows within a day; give it a new file
-# name to show it at once.
+# The site's own pictures in public/ (logos, mascot, category and example
+# photos): never deals, prices, pages or businesses' uploaded photos
+# (/media), which aren't covered here. Kept for a week (was a day: PageSpeed
+# flagged it), then used while a fresh copy is fetched in the background
+# for up to a month. These only change with a deploy; a changed picture
+# gets a new file name so it shows at once.
 /megadeal/*
-  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
 /brand/*
-  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
 /branding/*
-  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
 /homepage/*
-  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
 /images/*
-  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
 /megadeal-coming-soon/*
-  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
 /badge/*
-  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
