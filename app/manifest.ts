@@ -3,9 +3,10 @@ import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/siteConfig";
 
 /**
  * The web app manifest (/manifest.webmanifest): the name, colours and
- * icons a phone uses when the site is added to a home screen. Only the
- * icons the site already has; 192×192 and 512×512 versions (and a maskable
- * one) would let Android show a sharper icon.
+ * icons a phone, Edge or Bing uses for the site. 192 and 512 sizes (and a
+ * maskable one, full-bleed purple with the elephant inside the safe area,
+ * for Android's shaped icons) are in public/brand, rendered from
+ * public/brand/minimal/*.svg.
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -20,6 +21,9 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       { src: "/icon.png", sizes: "96x96", type: "image/png" },
       { src: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+      { src: "/brand/megadeal-icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/brand/megadeal-icon-512.png", sizes: "512x512", type: "image/png" },
+      { src: "/brand/megadeal-icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

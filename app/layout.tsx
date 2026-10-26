@@ -11,7 +11,7 @@ import { SOCIAL_URLS } from "@/components/SocialLinks";
 import { DEALS_OPEN, FOUNDER_NAME, LEGAL_ENTITY_NAME, LEGAL_ENTITY_NZBN, ORGANIZATION_ID, PRELAUNCH_HOME, SITE_DESCRIPTION, SITE_LAUNCHED, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/siteConfig";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { INDEXABLE } from "@/lib/robotsMeta";
-import { SEARCH_LOGO } from "@/lib/brand";
+import { SEARCH_LOGO, SQUARE_LOGO } from "@/lib/brand";
 import { caveat, fredoka, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
 import { MegadealArtProvider } from "@/context/MegadealArtProvider";
@@ -150,11 +150,19 @@ export default function RootLayout({
               url: SITE_URL,
               description: SITE_DESCRIPTION,
               areaServed: { "@type": "Country", name: "New Zealand" },
-              // The logo the headers show (SEARCH_LOGO, lib/brand.ts) — gives
-              // Google/AI answer engines an actual brand image to attach to
-              // this entity (used in Knowledge Panels and AI-generated
-              // citations), alongside the sameAs profiles below.
+              // The square elephant icon (SQUARE_LOGO, lib/brand.ts) as the
+              // logo: what Bing and Google show beside the brand, where a
+              // square reads best. The wordmark the headers show
+              // (SEARCH_LOGO) as its image. Both give Google, Bing and AI
+              // answer engines an actual brand image to attach to this
+              // entity, alongside the sameAs profiles below.
               logo: {
+                "@type": "ImageObject",
+                url: `${SITE_URL}${SQUARE_LOGO.path}`,
+                width: SQUARE_LOGO.width,
+                height: SQUARE_LOGO.height,
+              },
+              image: {
                 "@type": "ImageObject",
                 url: `${SITE_URL}${SEARCH_LOGO.path}`,
                 width: SEARCH_LOGO.width,

@@ -43,3 +43,12 @@ export const SEARCH_LOGO =
   LOGO_STYLE === "minimal"
     ? { path: "/megadeal/megadeal-logo-og-minimal.png", width: 1233, height: 260 }
     : { path: "/megadeal/megadeal-logo.webp", width: 2000, height: 667 };
+
+/**
+ * The square brand icon, 512×512 (public/brand, rendered from
+ * public/brand/minimal/megadeal-favicon-minimal.svg). The Organization's
+ * `logo`: Bing's brand cards and Google's logo slot in results show a
+ * square best, and the wide wordmark (SEARCH_LOGO) was shrunk to a sliver
+ * there. The wordmark stays as the Organization's `image`.
+ */
+export const SQUARE_LOGO = { path: "/brand/megadeal-icon-512.png", width: 512, height: 512 };
