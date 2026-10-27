@@ -17,6 +17,7 @@ import PageHero from "@/components/PageHero";
  */
 const PATH = "/groupon-nz";
 const CHECKED = CONTENT_UPDATED[PATH];
+const PUBLISHED = "2026-10-26";
 // A calendar date, so formatted as one (in NZ time it would move a day).
 const CHECKED_LABEL = new Date(`${CHECKED}T00:00:00Z`).toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
@@ -25,6 +26,7 @@ export const metadata: Metadata = pageMetadata({
   description:
     "Groupon closed its New Zealand business in August 2020. What happened to its vouchers, and the alternatives for local deals in NZ now, like free deal codes.",
   path: PATH,
+  article: { published: PUBLISHED, modified: CHECKED },
 });
 
 const SOURCES = [
@@ -101,7 +103,7 @@ export default function GrouponNzPage() {
                 description: ANSWER,
                 url: `${SITE_URL}${PATH}`,
                 inLanguage: "en-NZ",
-                datePublished: "2026-10-26",
+                datePublished: PUBLISHED,
                 dateModified: CHECKED,
                 author: { "@id": ORGANIZATION_ID },
                 publisher: { "@id": ORGANIZATION_ID },

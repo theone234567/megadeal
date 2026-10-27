@@ -18,6 +18,7 @@ import PageHero from "@/components/PageHero";
  */
 const PATH = "/grabone-alternatives";
 const CHECKED = CONTENT_UPDATED[PATH];
+const PUBLISHED = "2026-10-27";
 // A calendar date, so formatted as one (in NZ time it would move a day).
 const CHECKED_LABEL = new Date(`${CHECKED}T00:00:00Z`).toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
@@ -26,6 +27,7 @@ export const metadata: Metadata = pageMetadata({
   description:
     "The main alternatives to GrabOne in New Zealand, compared: how each local deal site works and what it's best for, including free deal codes in Auckland.",
   path: PATH,
+  article: { published: PUBLISHED, modified: CHECKED },
 });
 
 const SOURCES = [
@@ -106,7 +108,7 @@ export default function GrabOneAlternativesPage() {
                 description: ANSWER,
                 url: `${SITE_URL}${PATH}`,
                 inLanguage: "en-NZ",
-                datePublished: "2026-10-27",
+                datePublished: PUBLISHED,
                 dateModified: CHECKED,
                 author: { "@id": ORGANIZATION_ID },
                 publisher: { "@id": ORGANIZATION_ID },

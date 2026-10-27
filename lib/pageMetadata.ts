@@ -12,7 +12,19 @@ import { SITE_NAME, SITE_URL } from "./siteConfig";
  * also drops the inherited share image, so it names the site-wide one
  * (app/opengraph-image.tsx) itself.
  */
-export function pageMetadata({ title, description, path }: { title: string; description: string; path: string }): Metadata {
+export function pageMetadata({
+  title,
+  description,
+  path,
+  article,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  /** A dated answer page (/groupon-nz, /grabone-alternatives): shared as an
+   *  article with its dates, matching its Article structured data. */
+  article?: { published: string; modified: string };
+}): Metadata {
   const url = `${SITE_URL}${path}`;
   // title.template adds "| MegaDeal" to <title>; social titles aren't
   // run through it, so they carry the brand themselves.
@@ -22,7 +34,19 @@ export function pageMetadata({ title, description, path }: { title: string; desc
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title: socialTitle, description, url, siteName: SITE_NAME, type: "website", locale: "en_NZ", images: [image] },
+    openGraph: article
+      ? {
+          title: socialTitle,
+          description,
+          url,
+          siteName: SITE_NAME,
+          type: "article",
+          publishedTime: article.published,
+          modifiedTime: article.modified,
+          locale: "en_NZ",
+          images: [image],
+        }
+      : { title: socialTitle, description, url, siteName: SITE_NAME, type: "website", locale: "en_NZ", images: [image] },
     twitter: { card: "summary_large_image", title: socialTitle, description, images: [image.url] },
   };
 }
