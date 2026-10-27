@@ -9,7 +9,6 @@ import {
   ArrowRightIcon,
   CalendarIcon,
   CheckIcon,
-  ChevronDownIcon,
   CompassIcon,
   DumbbellIcon,
   FlowerIcon,
@@ -86,31 +85,39 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
       />
 
       <div className="mx-auto w-full max-w-[1184px] px-5 sm:px-8">
-        {/* Hero */}
-        {/* Lavender rounded panel and ink + purple heading, sized as on the
-            Beauty & Spa and coming-soon heroes. */}
+        {/* Hero: the home page's purple card (components/PrelaunchHero.tsx),
+            so the two pages people land on look like one site: white
+            headline with its second line in light blue, a white button. */}
         <section
           aria-labelledby="business-title"
-          className="mt-5 grid items-center gap-8 rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-5 py-7 sm:mt-7 sm:rounded-3xl sm:px-9 sm:py-10 lg:grid-cols-[1.2fr_1fr] lg:gap-12 lg:px-12 lg:py-12"
+          className="relative mt-5 overflow-hidden rounded-[22px] bg-gradient-to-br from-[#7C3AED] via-hp-purple to-[#4C1D95] text-white sm:mt-7 sm:rounded-3xl"
         >
+          <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-[#F0ABFC]/20 blur-3xl" />
+          <div className="relative grid items-center gap-8 px-5 py-7 sm:px-9 sm:py-10 lg:grid-cols-[1.2fr_1fr] lg:gap-12 lg:px-12 lg:py-12">
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.08em] text-hp-purple">{copy.eyebrow}</p>
+            <p className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-white">{copy.eyebrow}</p>
             <h1
               id="business-title"
-              className="mt-3 font-display text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]"
+              className="mt-3 font-display text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-white [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]"
             >
-              {copy.headlineLead} <span className="block text-hp-purple">{copy.headlineAccent}</span>
+              {copy.headlineLead} <span className="block text-[#BAE6FD]">{copy.headlineAccent}</span>
             </h1>
-            <p className="mt-4 text-xl font-bold text-hp-ink sm:text-2xl">{copy.subheading}</p>
-            <p className="mt-2 text-base sm:text-lg" style={{ color: "#334155" }}>{copy.intro}</p>
+            <p className="mt-4 text-xl font-bold text-white sm:text-2xl">{copy.subheading}</p>
+            <p className="mt-2 text-base text-white/85 sm:text-lg">{copy.intro}</p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
-              <a href="#business-signup" data-cta-section="hero" className="btn-primary w-full px-5 py-3 text-base min-[360px]:whitespace-nowrap min-[400px]:px-7 sm:w-auto">
-                {copy.heroCta} →
+              <a
+                href="#business-signup"
+                data-cta-section="hero"
+                className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-white px-5 text-base font-bold text-hp-purple shadow-[0_8px_20px_rgba(33,26,53,0.25)] transition hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple min-[360px]:whitespace-nowrap min-[400px]:px-7 sm:w-auto"
+              >
+                {copy.heroCta}
+                <ArrowRightIcon className="h-4 w-4 shrink-0" />
               </a>
               {/* Businesses already on MegaDeal look for their way back in. */}
-              <p className="text-center text-sm sm:text-left" style={{ color: "#475569" }}>
+              <p className="text-center text-sm text-white/85 sm:text-left">
                 Already listed?{" "}
-                <Link href="/portal" className="font-semibold text-brand-600 underline underline-offset-2">
+                <Link href="/portal" className="font-semibold text-white underline underline-offset-2">
                   Sign in
                 </Link>
               </p>
@@ -118,15 +125,15 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
             {/* Real, approved businesses only, and only once the number is
                 worth showing (lib/publicStats.ts MIN_COUNT_TO_SHOW). */}
             {businessCount > 0 && (
-              <p className="mt-4 text-sm font-semibold text-hp-ink">
+              <p className="mt-4 text-sm font-semibold text-white">
                 Join {businessCount.toLocaleString("en-NZ")} Auckland businesses already on {SITE_NAME}.
               </p>
             )}
             {/* The fine print on one short line (was three). */}
-            <p className="mt-4 text-sm" style={{ color: "#475569" }}>
+            <p className="mt-4 text-sm text-white/80">
               {copy.launchNote ? "Free before launch: 1 Everyday + 1 Flash Deal at a time. " : "For eligible businesses. "}
               Offers may change.{" "}
-              <Link href={OFFER_TERMS_HREF} className="font-semibold text-brand-600 underline underline-offset-2">
+              <Link href={OFFER_TERMS_HREF} className="font-semibold text-white underline underline-offset-2">
                 T&amp;Cs apply.
               </Link>
             </p>
@@ -136,10 +143,10 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
               example details: a card that can't drift from the real one.
               Not a link, and labelled as an example. */}
           <figure className="relative mx-auto w-full max-w-[340px] sm:max-w-[380px] lg:mr-0">
-            <figcaption className="mb-2 text-center text-xs font-semibold sm:text-sm" style={{ color: "#475569" }}>
+            <figcaption className="mb-2 text-center text-xs font-semibold text-white/80 sm:text-sm">
               Example deal — not available to redeem
             </figcaption>
-            <div aria-hidden className="pointer-events-none select-none rounded-2xl shadow-card-hover">
+            <div aria-hidden className="pointer-events-none select-none rounded-2xl shadow-[0_22px_40px_-12px_rgba(33,26,53,0.45)]">
               <DealCard deal={EXAMPLE_BURGER_DEAL} preview priority />
             </div>
             <Image
@@ -148,18 +155,23 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
               width={240}
               height={248}
               sizes="110px"
-              className="absolute -bottom-4 -right-3 h-auto w-[84px] sm:-right-8 sm:w-[110px] lg:-right-6 xl:-right-10"
+              className="absolute -bottom-4 -right-3 h-auto w-[84px] drop-shadow-[0_12px_20px_rgba(33,26,53,0.25)] sm:-right-8 sm:w-[110px] lg:-right-6 xl:-right-10"
             />
           </figure>
+          </div>
         </section>
 
         {/* Benefits */}
-        <ul className="grid gap-5 pb-2 pt-8 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-slate-200">
+        {/* Benefits: white cards with the icon in a lavender tile, as the
+            industry cards lower down. */}
+        <ul className="grid gap-3 pt-6 sm:grid-cols-3 sm:gap-4 sm:pt-8">
           {copy.benefits.map(([title, text], i) => {
             const Icon = BENEFIT_ICONS[i];
             return (
-              <li key={title} className="flex gap-4 sm:px-6 sm:first:pl-0">
-                <Icon className="h-9 w-9 shrink-0 text-brand-600" />
+              <li key={title} className="flex gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/[0.06] sm:p-5">
+                <span aria-hidden className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                  <Icon className="h-6 w-6" />
+                </span>
                 <div>
                   <strong className="block text-base font-bold text-slate-900 sm:text-lg">{title}</strong>
                   <p className="mt-1 text-sm text-slate-600 sm:text-base">{text}</p>
@@ -170,16 +182,16 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
         </ul>
 
         {/* Steps */}
-        <section aria-labelledby="steps-title" className="mt-6 sm:mt-8">
+        <section aria-labelledby="steps-title" className="mt-8 rounded-3xl bg-hp-lavender px-4 py-7 sm:mt-10 sm:px-8 sm:py-9">
           <h2 id="steps-title" className="font-display text-2xl font-bold text-slate-900 sm:text-[1.75rem]">
             Get started in three simple steps.
           </h2>
-          <ol className="mt-5 grid gap-5 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-slate-200">
+          <ol className="mt-5 grid gap-5 sm:grid-cols-3 sm:gap-6">
             {copy.steps.map(([title, text], i) => (
-              <li key={title} className="flex gap-4 sm:px-6 sm:first:pl-0">
+              <li key={title} className="flex gap-4">
                 <span
                   aria-hidden
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-50 font-display text-xl font-bold text-brand-600"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-hp-purple font-display text-xl font-bold text-white shadow-[0_6px_14px_-4px_rgba(76,29,149,0.5)]"
                 >
                   {i + 1}
                 </span>
@@ -190,7 +202,7 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
               </li>
             ))}
           </ol>
-          <p className="mt-5 text-sm text-slate-600 sm:text-center">{copy.dealNote}</p>
+          <p className="mt-5 text-sm text-slate-700 sm:text-center">{copy.dealNote}</p>
         </section>
 
         {/* Signup, compact (17 Oct 2026): the introduction on the left,
@@ -218,13 +230,15 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
             <ul className="mt-3.5 space-y-1.5 lg:mt-5 lg:space-y-2.5">
               {copy.reassurances.map((t) => (
                 <li key={t} className="flex items-center gap-2 text-[15px] text-[#222126] lg:text-base">
-                  <CheckIcon className="h-[18px] w-[18px] shrink-0 text-brand-600" />
+                  <span aria-hidden className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-hp-purple text-white">
+                    <CheckIcon className="h-3.5 w-3.5" />
+                  </span>
                   {t}
                 </li>
               ))}
             </ul>
           </div>
-          <div className="w-full min-w-0 sm:max-w-[560px] min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-1 min-[900px]:max-w-none">
+          <div className="w-full min-w-0 rounded-xl shadow-[0_18px_40px_-18px_rgba(76,29,149,0.35)] sm:max-w-[560px] lg:rounded-2xl min-[900px]:col-start-2 min-[900px]:row-span-2 min-[900px]:row-start-1 min-[900px]:max-w-none">
             {/* useSearchParams (?ref=) inside needs a Suspense boundary. */}
             <Suspense fallback={null}>
               <MerchantSignupForm launched={launched} redesign />
@@ -248,12 +262,14 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
           <h2 id="faq-title" className="font-display text-2xl font-bold text-slate-900 sm:text-[1.75rem]">
             Frequently asked questions
           </h2>
-          <div className="mt-4 divide-y divide-slate-200 rounded-2xl border border-slate-200">
+          <div className="mt-4 divide-y divide-hp-line rounded-2xl border border-hp-line bg-white">
             {copy.faqs.map((faq, i) => (
               <details key={faq.question} className="group px-4 sm:px-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-base font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between gap-4 py-3.5 text-base font-semibold text-hp-ink [&::-webkit-details-marker]:hidden">
                   {faq.question}
-                  <ChevronDownIcon className="h-5 w-5 shrink-0 text-slate-500 transition group-open:rotate-180" />
+                  <span aria-hidden="true" className="shrink-0 text-xl leading-none text-hp-muted transition group-open:rotate-45">
+                    +
+                  </span>
                 </summary>
                 <p className="max-w-[72ch] pb-4 text-base text-slate-700">
                   {faq.answer}
