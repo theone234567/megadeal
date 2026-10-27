@@ -24,7 +24,7 @@ export default function ErrorPage({
           its place (React puts the tag in <head>). */}
       <meta name="robots" content="noindex" />
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/minimal/megadeal-elephant-minimal-purple.svg" alt="" width={72} height={51} className="h-auto w-[72px]" />
+      <img src="/brand/minimal/megadeal-elephant-minimal-purple.svg" alt="" width={72} height={51} loading="lazy" className="h-auto w-[72px]" />
       <h1 className="font-display mt-4 text-2xl font-bold text-slate-900">
         Something went sideways
       </h1>

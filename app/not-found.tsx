@@ -11,8 +11,10 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <main className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center px-4 text-center">
+      {/* Lazy in this and the error pages: they're part of every page's
+          tree, so an eager image here was preloaded on every page. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/minimal/megadeal-elephant-minimal-purple.svg" alt="" width={72} height={51} className="h-auto w-[72px]" />
+      <img src="/brand/minimal/megadeal-elephant-minimal-purple.svg" alt="" width={72} height={51} loading="lazy" className="h-auto w-[72px]" />
       <h1 className="font-display mt-4 text-2xl font-bold text-slate-900">
         This page has wandered off
       </h1>

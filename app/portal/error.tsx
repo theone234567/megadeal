@@ -14,7 +14,7 @@ export default function PortalError({ error, retry }: { error: Error & { digest?
     <main className="mx-auto flex min-h-[50vh] max-w-md flex-col items-center justify-center px-4 text-center">
       <meta name="robots" content="noindex" />
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/minimal/megadeal-elephant-minimal-purple.svg" alt="" width={72} height={51} className="h-auto w-[72px]" />
+      <img src="/brand/minimal/megadeal-elephant-minimal-purple.svg" alt="" width={72} height={51} loading="lazy" className="h-auto w-[72px]" />
       <h1 className="font-display mt-4 text-2xl font-bold text-slate-900">Something went sideways</h1>
       <p className="mt-2 text-sm text-slate-500">
         Your portal hit a snag loading. Nothing you saved is lost. Give it another go.
