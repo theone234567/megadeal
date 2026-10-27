@@ -319,7 +319,8 @@ function SectionCta({ section }: { section: string }) {
 }
 
 export default async function MerchantsPage() {
-  if (SHOW_V2) return <BusinessLandingV2 launched={SITE_LAUNCHED} />;
+  // The approved-business count, once it's big enough to show (lib/publicStats.ts).
+  if (SHOW_V2) return <BusinessLandingV2 launched={SITE_LAUNCHED} businessCount={shownStats(await getSignupStats())?.merchantCount ?? 0} />;
   // The live counters, each only once it reaches 60 (shownStats in
   // lib/publicStats.ts): a small number undercuts the trust they're for.
   const stats = shownStats(await getSignupStats());

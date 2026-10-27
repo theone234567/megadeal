@@ -4,10 +4,10 @@ import { ArrowRightIcon, CheckIcon } from "./icons";
 
 /**
  * The prelaunch homepage's hero, one bold idea: the headline (the page's
- * only <h1>), one sentence, the business promise as three bold ticks
- * ("0% commission" in purple, the same display type as the headline),
- * then the business action. Kept short, so the example deals below show
- * on the first screen.
+ * only <h1>), one sentence for shoppers, three bold ticks that hold for
+ * every deal, then two actions: deals by email for shoppers first, the
+ * free advertising offer second, with its conditions in one line. Kept
+ * short, so the example deals below show on the first screen.
  *
  * The picture is three example deals as small, real-looking deal cards
  * (photo with the saving, then name, suburb and price; small copies of the
@@ -28,8 +28,12 @@ export default function PrelaunchHero() {
       <div className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#7C3AED] via-hp-purple to-[#4C1D95] text-white sm:rounded-3xl">
         <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-[#F0ABFC]/20 blur-3xl" />
-        <div className="relative grid items-center gap-8 px-5 py-6 sm:px-8 sm:py-8 lg:py-7 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-10 lg:px-10">
-          <div>
+        {/* Three parts: the headline and sentence, the picture, then the
+            ticks and buttons. On a phone they stack in that order, so the
+            example deals show on the first screen; from lg the text is one
+            column on the left and the picture spans both rows on the right. */}
+        <div className="relative grid items-center gap-5 px-5 py-6 sm:gap-7 sm:px-8 sm:py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-x-10 lg:gap-y-0 lg:px-10 lg:py-7">
+          <div className="lg:col-start-1 lg:row-start-1 lg:self-end">
             <p className="mb-2.5 hidden rounded-full sm:inline-flex bg-white/15 px-3 py-1 text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-white">
               Launching in Auckland
             </p>
@@ -41,44 +45,13 @@ export default function PrelaunchHero() {
               <span className="sm:block">Big local deals are</span>{" "}
               <span className="block text-[#BAE6FD]">coming to Auckland.</span>
             </h1>
+            {/* Shoppers first (owner, 27 Oct 2026): what MegaDeal is and why
+                it's different, then the business offer as the second
+                button, its conditions in one place. */}
             <p className="mt-2.5 max-w-[38rem] text-[0.9375rem] leading-relaxed text-white/85 sm:text-base">
-              Auckland&apos;s new local deals site. Businesses advertise free during prelaunch, then get up to{" "}
-              {PRELAUNCH_PROMO.months} months free from launch.*{" "}
-              {/* On a phone the conditions link sits here, saving a line
-                  under the button. */}
-              <Link href="/terms" prefetch={false} className="whitespace-nowrap text-sm text-white/75 underline underline-offset-2 hover:text-white sm:hidden">
-                Conditions apply
-              </Link>
+              Free deal codes from Auckland restaurants, spas, activities and more. No vouchers to buy: you pay the business
+              directly.
             </p>
-            {/* The same round white ticks as the business card's list. */}
-            <ul className="mt-3.5 flex flex-wrap gap-x-4 gap-y-1.5 sm:gap-x-5">
-              {["0% commission", "No lock-in", "No credit card"].map((t, i) => (
-                <li
-                  key={t}
-                  className={`inline-flex items-center gap-1.5 whitespace-nowrap font-display text-[0.9375rem] font-bold sm:gap-2 sm:text-base ${
-                    i === 0 ? "text-[#BAE6FD]" : "text-white"
-                  }`}
-                >
-                  <span aria-hidden="true" className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white text-hp-purple">
-                    <CheckIcon className="h-3.5 w-3.5" />
-                  </span>
-                  {t}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-5">
-              <Link href="/list-your-business" className="inline-flex min-h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white px-7 text-base font-bold text-hp-purple shadow-[0_8px_20px_rgba(33,26,53,0.25)] transition hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple">
-                Claim my free advertising
-                <ArrowRightIcon className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/terms"
-                prefetch={false}
-                className="hidden text-sm text-white/75 underline underline-offset-2 hover:text-white sm:inline"
-              >
-                *Conditions apply
-              </Link>
-            </div>
           </div>
 
           {/* The picture: three example deals as small deal cards, fanned
@@ -87,7 +60,7 @@ export default function PrelaunchHero() {
               headline says what matters. */}
           <div
             aria-hidden="true"
-            className="relative mx-auto -mt-1 h-[150px] w-full max-w-[420px] min-[400px]:h-[160px] sm:h-[250px] sm:max-w-[460px] lg:mt-0 lg:h-[225px] lg:max-w-none xl:h-[245px]"
+            className="relative mx-auto h-[150px] w-full max-w-[420px] min-[400px]:h-[160px] sm:h-[250px] sm:max-w-[460px] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-[225px] lg:max-w-none xl:h-[245px]"
           >
             {/* Stacked left to right, each card in front of the one before, so
                 only a card's right edge is ever covered and every saving, name
@@ -106,9 +79,50 @@ export default function PrelaunchHero() {
               loading="eager"
               fetchPriority="low"
               decoding="async"
-              className="absolute -bottom-5 -right-4 z-30 w-[15%] max-w-[130px] sm:-bottom-6 sm:-right-8 sm:w-[18%] lg:-right-6 lg:w-[22%] select-none drop-shadow-[0_12px_20px_rgba(33,26,53,0.25)] sm:-right-6"
+              className="absolute -bottom-3 -right-1 z-30 w-[17%] max-w-[130px] transform-gpu select-none drop-shadow-[0_12px_20px_rgba(33,26,53,0.25)] sm:-bottom-6 sm:-right-6 sm:w-[18%] lg:w-[22%]"
             />
           </div>
+
+          <div className="lg:col-start-1 lg:row-start-2 lg:self-start">
+            {/* Things that are true of every deal, as the same round white
+                ticks as the business card's list, all one colour. */}
+            <ul className="mt-3.5 flex flex-wrap gap-x-4 gap-y-1.5 sm:gap-x-5">
+              {["Free for shoppers", "Every business checked", "NZ-owned"].map((t) => (
+                <li
+                  key={t}
+                  className="inline-flex items-center gap-1.5 whitespace-nowrap font-display text-[0.9375rem] font-bold text-white sm:gap-2 sm:text-base"
+                >
+                  <span aria-hidden="true" className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white text-hp-purple">
+                    <CheckIcon className="h-3.5 w-3.5" />
+                  </span>
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+              {/* The email sign-up at the foot of every page (Footer.tsx). */}
+              <a
+                href="#deal-alerts"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-full bg-white px-7 text-base font-bold text-hp-purple shadow-[0_8px_20px_rgba(33,26,53,0.25)] transition hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple"
+              >
+                Get launch deals by email
+                <ArrowRightIcon className="h-4 w-4" />
+              </a>
+              <Link
+                href="/list-your-business"
+                className="inline-flex min-h-[48px] items-center justify-center gap-2 whitespace-nowrap rounded-full border-2 border-white/80 px-6 text-base font-bold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple"
+              >
+                Advertise your business free*
+              </Link>
+            </div>
+            <p className="mt-3 text-sm text-white/80">
+              *Free during prelaunch, then up to {PRELAUNCH_PROMO.months} months free from launch for eligible businesses.{" "}
+              <Link href="/terms" prefetch={false} className="whitespace-nowrap text-white underline underline-offset-2 hover:text-white">
+                Conditions apply
+              </Link>
+            </p>
+          </div>
+
         </div>
       </div>
     </section>

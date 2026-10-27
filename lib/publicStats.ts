@@ -66,7 +66,9 @@ export async function getSignupStats(): Promise<SignupStats | null> {
       ),
     ]);
 
-    const merchantCount = merchants.length;
+    // Test businesses (Admin → Test business) are never public, so never
+    // counted as real ones either.
+    const merchantCount = (merchants as any[]).filter((m) => !m.isTest).length;
     // unsubscribed is only ever explicitly set true on opt-out — filtering
     // in JS (rather than .eq("unsubscribed", false) in the query) avoids
     // excluding rows where it was never set at all.

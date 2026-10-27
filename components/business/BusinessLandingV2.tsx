@@ -47,7 +47,7 @@ const INDUSTRY_ICONS: Record<(typeof ADVERTISE_PAGES)[number]["slug"], typeof Co
 };
 
 
-export default function BusinessLandingV2({ launched }: { launched: boolean }) {
+export default function BusinessLandingV2({ launched, businessCount = 0 }: { launched: boolean; businessCount?: number }) {
   const copy = businessPageCopy(launched);
 
   return (
@@ -103,20 +103,33 @@ export default function BusinessLandingV2({ launched }: { launched: boolean }) {
             </h1>
             <p className="mt-4 text-xl font-bold text-hp-ink sm:text-2xl">{copy.subheading}</p>
             <p className="mt-2 text-base sm:text-lg" style={{ color: "#334155" }}>{copy.intro}</p>
-            <a href="#business-signup" data-cta-section="hero" className="btn-primary mt-6 w-full px-7 py-3 text-base sm:w-auto">
-              {copy.heroCta} →
-            </a>
-            <p className="mt-4 text-sm" style={{ color: "#475569" }}>
-              {copy.offerQualifier.replace(/ Terms and conditions apply\.$/, "")}{" "}
-              <Link href={OFFER_TERMS_HREF} className="font-semibold text-brand-600 underline underline-offset-2">
-                Terms and conditions apply.
-              </Link>
-            </p>
-            {copy.launchNote && (
-              <p className="mt-1 text-sm" style={{ color: "#475569" }}>
-                {copy.launchNote}
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
+              <a href="#business-signup" data-cta-section="hero" className="btn-primary w-full whitespace-nowrap px-5 py-3 text-base min-[400px]:px-7 sm:w-auto">
+                {copy.heroCta} →
+              </a>
+              {/* Businesses already on MegaDeal look for their way back in. */}
+              <p className="text-center text-sm sm:text-left" style={{ color: "#475569" }}>
+                Already listed?{" "}
+                <Link href="/portal" className="font-semibold text-brand-600 underline underline-offset-2">
+                  Sign in
+                </Link>
+              </p>
+            </div>
+            {/* Real, approved businesses only, and only once the number is
+                worth showing (lib/publicStats.ts MIN_COUNT_TO_SHOW). */}
+            {businessCount > 0 && (
+              <p className="mt-4 text-sm font-semibold text-hp-ink">
+                Join {businessCount.toLocaleString("en-NZ")} Auckland businesses already on {SITE_NAME}.
               </p>
             )}
+            {/* The fine print on one short line (was three). */}
+            <p className="mt-4 text-sm" style={{ color: "#475569" }}>
+              {copy.launchNote ? "Free before launch: 1 Everyday + 1 Flash Deal at a time. " : "For eligible businesses. "}
+              Offers may change.{" "}
+              <Link href={OFFER_TERMS_HREF} className="font-semibold text-brand-600 underline underline-offset-2">
+                T&amp;Cs apply.
+              </Link>
+            </p>
           </div>
 
           {/* The real DealCard, as customers see it on the site, with
