@@ -21,6 +21,7 @@ import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { staticImageSrcSet } from "@/lib/staticImages";
+import { HERO_ACCENT, HERO_BUTTON, HERO_CARD, HERO_EYEBROW, HERO_LIFT, HeroGlows, HeroTicks } from "@/components/business/purpleHero";
 
 /**
  * /advertise/things-to-do — the Things To Do pack (4 Oct 2026), consolidated
@@ -283,56 +284,52 @@ export default function ThingsToDoAdvertisingPage() {
 
 
       <div id="things-to-do-main">
-        {/* 1 — Hero: lavender rounded panel, text left, photo right with the
-            mascot at its lower edge. */}
+        {/* 1 — Hero: the home page's purple card (components/business/
+            purpleHero), text left, photo right with the mascot at its lower edge. */}
         <section id="hero" className="px-4 pt-5 sm:px-6 sm:pt-7 lg:px-8">
-          <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-8 rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-5 py-7 sm:rounded-3xl sm:px-9 sm:py-10 md:grid-cols-[1.12fr_1fr] md:gap-8 lg:grid-cols-2 lg:gap-12 lg:px-12 lg:py-12">
-            <div>
+          <div className={`mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-8 rounded-[20px] px-5 py-7 sm:rounded-3xl sm:px-9 sm:py-10 md:grid-cols-[1.12fr_1fr] md:gap-8 lg:grid-cols-2 lg:gap-12 lg:px-12 lg:py-12 ${HERO_CARD}`}>
+            <HeroGlows />
+            <div className="relative min-w-0">
               {/* The small label is part of the heading, as on Home & Car:
                   the big line alone says nothing about what the page is,
                   and the page's one heading is what search engines and AI
                   answers lean on most after the title (SEO pack T11). */}
               <h1>
-                <span className="block text-xs font-bold uppercase tracking-[0.08em] text-hp-purple">
+                <span className={HERO_EYEBROW}>
                   Activity &amp; experience advertising in Auckland
                 </span>{" "}
                 <span
-                  className={`${displayFont.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
+                  className={`${displayFont.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-white [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
                 >
                   Fill quiet times.{" "}
-                  <span className="block text-hp-purple">Welcome more local adventurers.</span>
+                  <span className={`block ${HERO_ACCENT}`}>Welcome more local adventurers.</span>
                 </span>
               </h1>
-              <p className="mt-4 max-w-[34rem] text-base leading-relaxed sm:text-lg md:text-base lg:text-lg" style={{ color: "#334155" }}>
+              <p className="mt-4 max-w-[34rem] text-base leading-relaxed text-white/85 sm:text-lg md:text-base lg:text-lg">
                 Put your tours, activities and experiences in front of Auckland locals looking for
                 their next day out. You choose the offer, dates and availability. Customers book and
                 pay you directly.
               </p>
-              <p className={`${displayFont.className} mt-5 text-xl font-semibold text-hp-purple sm:text-2xl`}>{OFFER}*</p>
+              <p className={`${displayFont.className} mt-5 text-xl font-semibold text-white sm:text-2xl`}>{OFFER}*</p>
 
-              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
-                <a href={SIGNUP_HREF} data-cta-section="hero" className={`w-full sm:w-auto ${PRIMARY_BUTTON}`}>
+              <HeroTicks items={["0% commission", "No lock-in", "No credit card required"]} className="mt-4" />
+
+              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+                <a href={SIGNUP_HREF} data-cta-section="hero" className={`w-full sm:w-auto ${HERO_BUTTON}`}>
                   {CTA_LABEL} <span aria-hidden>→</span>
                 </a>
                 <a
                   href="#how-it-works"
                   data-cta-section="hero_secondary"
-                  className="inline-flex min-h-11 items-center text-base font-bold text-hp-purple underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
+                  className="inline-flex min-h-11 items-center text-base font-bold text-white underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple"
                 >
                   See how it works
                 </a>
               </div>
 
-              <p className="mt-5 flex flex-wrap gap-x-1.5 gap-y-1 text-sm font-semibold text-hp-ink">
-                <span className="whitespace-nowrap">0% commission</span>
-                <span aria-hidden className="text-hp-muted">·</span>
-                <span className="whitespace-nowrap">No lock-in</span>
-                <span aria-hidden className="text-hp-muted">·</span>
-                <span className="whitespace-nowrap">No credit card required</span>
-              </p>
-              <p className="mt-2 text-xs" style={MUTED}>
+              <p className="mt-4 text-xs text-white/80">
                 *{LAUNCHED ? "For eligible new businesses." : "For eligible businesses that join before launch."}{" "}
-                <Link href={TERMS_HREF} className="font-semibold text-hp-purple underline underline-offset-2 hover:no-underline">
+                <Link href={TERMS_HREF} className="font-semibold text-white underline underline-offset-2 hover:no-underline">
                   Terms apply.
                 </Link>
                 {!LAUNCHED && " Your free advertising starts when MegaDeal goes live."}
@@ -340,7 +337,7 @@ export default function ThingsToDoAdvertisingPage() {
             </div>
 
             <div className="relative">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white">
+              <div className={`relative aspect-[4/3] overflow-hidden rounded-xl bg-white ${HERO_LIFT}`}>
                 {/* Both sizes on offer, and the browser picks: the column is at
                     most ~550px wide, so most screens take the small one, and
                     only high-density ones the full 1536px original. */}

@@ -19,6 +19,7 @@ import { safeJsonLd } from "@/lib/safeJsonLd";
 import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { currentPromo } from "@/lib/promo";
 import { BUSINESS_TYPES } from "./businessTypes";
+import { HERO_ACCENT, HERO_BUTTON, HERO_CARD, HERO_EYEBROW, HERO_LIFT, HeroGlows, HeroTicks } from "@/components/business/purpleHero";
 
 /**
  * /advertise/home-car — for cleaning, garden, home-maintenance and
@@ -334,31 +335,34 @@ export default function HomeCarAdvertisingPage() {
 
 
       <div id="home-car-main">
-        {/* Hero — Beauty & Spa's: a pale lavender rounded panel, text left
-            and one photo right (text and buttons first on phones). */}
+        {/* Hero — the home page's purple card (components/business/purpleHero),
+            text left and one photo right (text and buttons first on phones). */}
         <section className="px-4 pt-5 sm:px-6 sm:pt-7 lg:px-8">
-          <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-8 rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-5 py-7 sm:rounded-3xl sm:px-9 sm:py-10 md:grid-cols-[1.12fr_1fr] md:gap-8 lg:grid-cols-2 lg:gap-12 lg:px-12 lg:py-12">
-            <div>
+          <div className={`mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-8 rounded-[20px] px-5 py-7 sm:rounded-3xl sm:px-9 sm:py-10 md:grid-cols-[1.12fr_1fr] md:gap-8 lg:grid-cols-2 lg:gap-12 lg:px-12 lg:py-12 ${HERO_CARD}`}>
+            <HeroGlows />
+            <div className="relative min-w-0">
               {/* The small label is part of the heading: "More local jobs."
                   alone says nothing about what the page is, and the page's
                   one heading is what search engines and AI answers lean on
                   most after the title. */}
               <h1>
-                <span className="block text-xs font-bold uppercase tracking-[0.08em] text-hp-purple">
+                <span className={HERO_EYEBROW}>
                   Home &amp; car advertising in Auckland
                 </span>{" "}
                 <span
-                  className={`${displayFont.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-hp-ink [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
+                  className={`${displayFont.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-white [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
                 >
                   More local jobs.{" "}
-                  <span className="block text-hp-purple">More reasons to choose you.</span>
+                  <span className={`block ${HERO_ACCENT}`}>More reasons to choose you.</span>
                 </span>
               </h1>
-              <p className="mt-4 max-w-[34rem] text-base leading-relaxed sm:text-lg md:text-base lg:text-lg" style={{ color: "#334155" }}>
+              <p className="mt-4 max-w-[34rem] text-base leading-relaxed text-white/85 sm:text-lg md:text-base lg:text-lg">
                 Give Auckland locals a reason to try your cleaning, gardening, home-maintenance or
                 automotive business. Promote selected services when you have capacity, with an offer
                 that works for you.
               </p>
+
+              <HeroTicks items={["0% commission", "You choose the offer", "Auckland first"]} className="mt-4" />
 
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
                 {/* One line at every width: full width with a little less
@@ -366,33 +370,27 @@ export default function HomeCarAdvertisingPage() {
                 <a
                   href="#launch-offer"
                   data-cta-section="hero"
-                  className={`${PRIMARY_BUTTON} w-full whitespace-nowrap max-[359px]:px-3 max-[359px]:text-[15px] min-[400px]:w-auto`}
+                  className={`${HERO_BUTTON} w-full whitespace-nowrap max-[359px]:px-3 max-[359px]:text-[15px] min-[400px]:w-auto`}
                 >
                   Explore the launch offer →
                 </a>
                 <a
                   href="#how-it-works"
                   data-cta-section="hero_secondary"
-                  className="inline-flex min-h-11 items-center text-base font-bold text-hp-purple underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
+                  className="inline-flex min-h-11 items-center text-base font-bold text-white underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple"
                 >
                   See how it works
                 </a>
               </div>
-
-              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-semibold text-hp-ink">
-                {["0% commission", "You choose the offer", "Auckland first"].map((p) => (
-                  <span key={p} className="flex items-center gap-1.5">
-                    <CheckIcon className="h-4 w-4 text-hp-purple" /> {p}
-                  </span>
-                ))}
-                <a href="#launch-offer" className="text-hp-purple underline underline-offset-2 hover:no-underline">
+              <p className="mt-4 text-sm">
+                <a href="#launch-offer" className="font-semibold text-white underline underline-offset-2 hover:no-underline">
                   Eligibility and offer terms
                 </a>
-              </div>
+              </p>
             </div>
 
             <div className="relative">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-white">
+              <div className={`relative aspect-[4/3] overflow-hidden rounded-xl bg-white ${HERO_LIFT}`}>
                 {/* A plain img with both sizes on offer (next/image is
                     unoptimized on this site, next.config.mjs), and the browser
                     picks: the column is at most ~550px wide, so most screens
