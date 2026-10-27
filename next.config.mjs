@@ -242,6 +242,10 @@ const nextConfig = {
       // CSP once it starts enforcing.
       { key: "X-Frame-Options", value: "DENY" },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      // A page this site opens (a share window, a business's website) can't
+      // reach back into it through window.opener, and the reverse. "Allow
+      // popups" keeps the Facebook and X share windows working.
+      { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
       {
         key: "Permissions-Policy",
         // geolocation=(self), not (): "Nearest to me" and the distance
