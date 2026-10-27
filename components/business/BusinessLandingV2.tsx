@@ -93,7 +93,7 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
           aria-labelledby="business-title"
           className="mt-5 grid items-center gap-8 rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] px-5 py-7 sm:mt-7 sm:rounded-3xl sm:px-9 sm:py-10 lg:grid-cols-[1.2fr_1fr] lg:gap-12 lg:px-12 lg:py-12"
         >
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-[0.08em] text-hp-purple">{copy.eyebrow}</p>
             <h1
               id="business-title"
@@ -104,7 +104,7 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
             <p className="mt-4 text-xl font-bold text-hp-ink sm:text-2xl">{copy.subheading}</p>
             <p className="mt-2 text-base sm:text-lg" style={{ color: "#334155" }}>{copy.intro}</p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
-              <a href="#business-signup" data-cta-section="hero" className="btn-primary w-full whitespace-nowrap px-5 py-3 text-base min-[400px]:px-7 sm:w-auto">
+              <a href="#business-signup" data-cta-section="hero" className="btn-primary w-full px-5 py-3 text-base min-[360px]:whitespace-nowrap min-[400px]:px-7 sm:w-auto">
                 {copy.heroCta} →
               </a>
               {/* Businesses already on MegaDeal look for their way back in. */}
