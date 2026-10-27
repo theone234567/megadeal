@@ -44,7 +44,7 @@ export default async function HomeCarOpengraphImage() {
         {logoDataUri ? (
           <img src={logoDataUri} width={LOGO_WIDTH} height={LOGO_HEIGHT} alt="" />
         ) : (
-          <span style={{ fontSize: 64, fontWeight: 800, fontFamily: "Plus Jakarta Sans", color: "#6519C7" }}>
+          <span style={{ fontSize: 64, fontWeight: 700, fontFamily: "Fredoka", color: "#6519C7" }}>
             MegaDeal
           </span>
         )}
@@ -56,8 +56,8 @@ export default async function HomeCarOpengraphImage() {
             alignItems: "center",
             marginTop: 44,
             fontSize: 54,
-            fontFamily: "Plus Jakarta Sans",
-            fontWeight: 800,
+            fontFamily: "Fredoka",
+            fontWeight: 700,
             color: "#1e293b",
             textAlign: "center",
             maxWidth: 1000,

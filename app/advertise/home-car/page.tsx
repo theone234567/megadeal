@@ -243,7 +243,7 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Beauty & Spa's section heading: the display face, 26/32px, centred. */
+/** Beauty & Spa's section heading: Fredoka, 26/32px, centred. */
 function SectionHeading({ id, children, className = "" }: { id?: string; children: React.ReactNode; className?: string }) {
   return (
     <h2

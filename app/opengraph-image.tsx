@@ -46,7 +46,7 @@ export default async function OpengraphImage() {
         {logoDataUri ? (
           <img src={logoDataUri} width={LOGO_WIDTH} height={LOGO_HEIGHT} alt="" />
         ) : (
-          <span style={{ fontSize: 80, fontWeight: 800, fontFamily: "Plus Jakarta Sans", color: "#6D28D9" }}>
+          <span style={{ fontSize: 80, fontWeight: 700, fontFamily: "Fredoka", color: "#6D28D9" }}>
             MegaDeal
           </span>
         )}
@@ -59,8 +59,8 @@ export default async function OpengraphImage() {
               display: "flex",
               marginTop: 36,
               fontSize: 56,
-              fontFamily: "Plus Jakarta Sans",
-              fontWeight: 800,
+              fontFamily: "Fredoka",
+              fontWeight: 700,
               color: "#211A35",
               textAlign: "center",
             }}

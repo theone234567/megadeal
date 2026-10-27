@@ -44,15 +44,15 @@ export async function industryOgImage(headline: string, offer: string) {
         {logoDataUri ? (
           <img src={logoDataUri} width={LOGO_WIDTH} height={LOGO_HEIGHT} alt="" />
         ) : (
-          <span style={{ fontSize: 64, fontWeight: 800, fontFamily: "Plus Jakarta Sans", color: "#6519C7" }}>MegaDeal</span>
+          <span style={{ fontSize: 64, fontWeight: 700, fontFamily: "Fredoka", color: "#6519C7" }}>MegaDeal</span>
         )}
         <div
           style={{
             display: "flex",
             marginTop: 44,
             fontSize: 54,
-            fontFamily: "Plus Jakarta Sans",
-            fontWeight: 800,
+            fontFamily: "Fredoka",
+            fontWeight: 700,
             color: "#1e293b",
             textAlign: "center",
             maxWidth: 1000,
