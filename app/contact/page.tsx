@@ -16,7 +16,7 @@ export default function ContactPage() {
   return (
     <main className={plusJakartaSans.className}>
       {/* Hero */}
-      <PageHero crumb="Contact" title="Contact us">
+      <PageHero path="/contact" crumb="Contact" title="Contact us">
         Questions about a deal, a listing, or something else — we&apos;re happy to help.
       </PageHero>
 

@@ -40,7 +40,7 @@ export default function AboutPage() {
   return (
     <main className={plusJakartaSans.className}>
       {/* Hero */}
-      <PageHero crumb="About" title="About MegaDeal">
+      <PageHero path="/about" crumb="About" title="About MegaDeal">
         Your local guide to restaurants, spas, activities and getaways worth leaving the house for.
       </PageHero>
 

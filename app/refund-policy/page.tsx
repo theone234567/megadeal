@@ -11,7 +11,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function RefundPolicyPage() {
   return (
-    <PageShell title="Refund policy" subtitle="Last updated September 2026">
+    <PageShell path="/refund-policy" title="Refund policy" subtitle="Last updated September 2026">
       <p>
         MegaDeal doesn&apos;t charge customers for deals — we&apos;re an
         advertising board, not a checkout. That means there&apos;s no order,

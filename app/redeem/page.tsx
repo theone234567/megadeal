@@ -78,7 +78,7 @@ export default function RedeemPage() {
         }}
       />
       {/* Hero */}
-      <PageHero crumb="Redeem a deal" title="How to redeem a deal">
+      <PageHero path="/redeem" crumb="Redeem a deal" title="How to redeem a deal">
         No voucher, no order confirmation — just contact the business directly.
       </PageHero>
 

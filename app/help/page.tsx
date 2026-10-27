@@ -191,7 +191,7 @@ export default function HelpPage() {
       />
 
       {/* Hero */}
-      <PageHero crumb="Help centre" title="Help centre">
+      <PageHero path="/help" crumb="Help centre" title="Help centre">
         Answers to the questions we hear most often.
       </PageHero>
 

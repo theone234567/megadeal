@@ -12,7 +12,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function PrivacyPage() {
   return (
-    <PageShell title="Privacy policy" subtitle="Last updated October 2026">
+    <PageShell path="/privacy" title="Privacy policy" subtitle="Last updated October 2026">
       <p>
         MegaDeal is operated by {LEGAL_ENTITY_NAME}
         {LEGAL_ENTITY_NZBN ? ` (NZBN ${LEGAL_ENTITY_NZBN})` : ""},

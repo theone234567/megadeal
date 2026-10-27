@@ -137,7 +137,7 @@ export default function DevelopersPage() {
         />
       )}
 
-      <PageHero crumb="Developers" title="Deals data for developers and AI">
+      <PageHero path="/developers" crumb="Developers" title="Deals data for developers and AI">
         Every live {SITE_NAME} deal as JSON. Free, no key needed, New Zealand only.
       </PageHero>
 

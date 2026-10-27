@@ -209,7 +209,7 @@ export default function HowItWorksPage() {
         }}
       />
       {/* Hero */}
-      <PageHero crumb="How it works" title="How it works">
+      <PageHero path="/how-it-works" crumb="How it works" title="How it works">
         Free to browse for customers. Advertising, not a marketplace, for businesses. Here&apos;s exactly how each side works.
       </PageHero>
 

@@ -12,7 +12,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function TermsPage() {
   return (
-    <PageShell title="Terms of service" subtitle="Last updated October 2026">
+    <PageShell path="/terms" title="Terms of service" subtitle="Last updated October 2026">
       <p>
         MegaDeal is operated by {LEGAL_ENTITY_NAME}
         {LEGAL_ENTITY_NZBN ? ` (NZBN ${LEGAL_ENTITY_NZBN})` : ""},

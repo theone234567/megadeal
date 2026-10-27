@@ -15,7 +15,7 @@ export default function CareersPage() {
   return (
     <main className={plusJakartaSans.className}>
       {/* Hero */}
-      <PageHero crumb="Careers" title="Careers at MegaDeal">
+      <PageHero path="/careers" crumb="Careers" title="Careers at MegaDeal">
         We&apos;re a small team helping local businesses meet new customers.
       </PageHero>
 

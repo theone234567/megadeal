@@ -12,17 +12,21 @@ import PageHero from "./PageHero";
 export default function PageShell({
   title,
   subtitle,
-  crumb = "Legal",
+  crumb,
+  path,
   children,
 }: {
   title: string;
   subtitle?: string;
+  /** The breadcrumb label: the title unless given. */
   crumb?: string;
+  /** For the breadcrumb data (components/PageHero.tsx). */
+  path?: string;
   children: React.ReactNode;
 }) {
   return (
     <main>
-      <PageHero crumb={crumb} title={title}>
+      <PageHero crumb={crumb ?? title} title={title} path={path}>
         {subtitle}
       </PageHero>
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
