@@ -22,6 +22,7 @@ import { displayFont, plusJakartaSans } from "@/lib/fonts";
 import { getMegadealArt } from "@/lib/megadealAssets";
 import { INDEXABLE } from "@/lib/robotsMeta";
 import { staticImageSrcSet } from "@/lib/staticImages";
+import { HERO_ACCENT, HERO_BUTTON, HERO_CARD, HERO_EYEBROW, HeroGlows, HeroTicks } from "@/components/business/purpleHero";
 
 // Was noindex/nofollow while the page was still built from spec docs
 // alone (no real photo, approximated layout details). Flipped to
@@ -305,33 +306,29 @@ export default function RestaurantAdvertisingPage() {
 
 
       <div id="restaurant-main">
-        {/* Hero */}
-        <section
-          id="hero"
-          className="relative overflow-hidden text-white"
-          style={{
-            background:
-              "radial-gradient(ellipse at 90% 0%, #813ada 0%, transparent 53%), linear-gradient(120deg, #3c087d 0%, #6416bf 62%, #7020c7 100%)",
-          }}
-        >
-          <div className="mx-auto grid max-w-[1184px] grid-cols-1 items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.08fr_1fr] lg:gap-[60px] lg:px-8 lg:pb-[85px] lg:pt-[78px]">
-            <div>
+        {/* Hero: the home page's purple card (components/business/purpleHero),
+            as on the other advertise pages, with this page's own photo and
+            stickers. */}
+        <section id="hero" className="px-4 pt-5 sm:px-6 sm:pt-7 lg:px-8">
+          <div className={`mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-10 rounded-[20px] px-5 py-8 sm:rounded-3xl sm:px-9 sm:py-10 lg:grid-cols-[1.08fr_1fr] lg:gap-12 lg:px-12 lg:py-12 ${HERO_CARD}`}>
+            <HeroGlows />
+            <div className="relative min-w-0">
               {/* The small label is part of the heading, as on Home & Car:
                   the big line alone says nothing about what the page is,
                   and the page's one heading is what search engines and AI
                   answers lean on most after the title (SEO pack T11). */}
               <h1>
-                <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-white/80">
+                <span className={`${HERO_EYEBROW} items-center gap-1.5`}>
                   <UtensilsIcon className="h-3.5 w-3.5" /> Restaurant &amp; café advertising in Auckland
                 </span>{" "}
                 <span
-                  className={`${displayFont.className} mt-3 block text-[40px] font-semibold leading-[1.08] sm:text-[52px] lg:text-[62px]`}
+                  className={`${displayFont.className} mt-3 block text-[34px] font-bold leading-[1.08] tracking-[-0.01em] text-white [text-wrap:balance] sm:text-[40px] md:text-[34px] lg:text-[46px] xl:text-[50px]`}
                 >
                   Turn Auckland&rsquo;s quieter restaurant tables into{" "}
-                  <span style={{ color: "#ADDFFF" }}>new regulars.</span>
+                  <span className={HERO_ACCENT}>new regulars.</span>
                 </span>
               </h1>
-              <p className="mt-5 max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
+              <p className="mt-4 max-w-lg text-base leading-relaxed text-white/85 sm:text-lg">
                 {LAUNCHED
                   ? `Give locals a reason to try your restaurant. Join MegaDeal for up to ${PROMO.months} months of free advertising, with `
                   : "Give locals a reason to try your restaurant. Join MegaDeal before launch for up to six months of free advertising, with "}
@@ -340,27 +337,17 @@ export default function RestaurantAdvertisingPage() {
                 </strong>
               </p>
 
-              <div className="mt-7 flex flex-wrap items-center gap-4">
-                <a
-                  href="#launch-offer"
-                  data-cta-section="hero"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-extrabold text-brand-600 shadow-[0_10px_24px_rgba(20,6,50,.25)] transition hover:bg-brand-50 active:scale-95 sm:text-base"
-                >
+              <HeroTicks items={["No credit card", "No lock-in"]} className="mt-4" />
+
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <a href="#launch-offer" data-cta-section="hero" className={`w-full sm:w-auto ${HERO_BUTTON}`}>
                   Claim my free advertising →
                 </a>
-                <div className="flex items-center gap-3 text-sm font-semibold text-white/85">
-                  <span className="flex items-center gap-1.5">
-                    <CheckIcon className="h-4 w-4" /> No credit card
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <CheckIcon className="h-4 w-4" /> No lock-in
-                  </span>
-                </div>
               </div>
 
-              <p className="mt-4 text-xs text-white/60">
+              <p className="mt-4 text-xs text-white/80">
                 {LAUNCHED ? "For eligible new businesses." : "For eligible businesses joining before launch."}{" "}
-                <Link href="/terms" className="underline decoration-white/40 underline-offset-2 hover:text-white/90 hover:decoration-white/90">
+                <Link href="/terms" className="font-semibold text-white underline underline-offset-2 hover:no-underline">
                   Conditions apply.
                 </Link>
               </p>
@@ -368,7 +355,7 @@ export default function RestaurantAdvertisingPage() {
 
             <div className="relative mx-auto w-full max-w-[420px] lg:mx-0">
               <div
-                className="relative h-[280px] overflow-hidden rounded-[28px] shadow-[0_24px_48px_rgba(20,3,50,.4)] sm:h-[340px] lg:h-[427px]"
+                className="relative h-[280px] overflow-hidden rounded-[28px] shadow-[0_24px_48px_rgba(20,3,50,.4)] sm:h-[340px] lg:h-[400px]"
                 style={{ transform: "rotate(2deg)" }}
               >
                 {/* A plain <img> with the 640px copy as an option (next/image
