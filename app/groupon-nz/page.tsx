@@ -23,7 +23,7 @@ const CHECKED_LABEL = new Date(`${CHECKED}T00:00:00Z`).toLocaleDateString("en-NZ
 export const metadata: Metadata = pageMetadata({
   title: "Is Groupon Still in NZ? No, It Closed in 2020",
   description:
-    "Groupon closed its New Zealand business in August 2020. What happened to its vouchers, and how Kiwis find local deals now, including free deal codes.",
+    "Groupon closed its New Zealand business in August 2020. What happened to its vouchers, and the alternatives for local deals in NZ now, like free deal codes.",
   path: PATH,
 });
 
@@ -35,6 +35,37 @@ const SOURCES = [
 
 const ANSWER =
   "No. Groupon closed its New Zealand business in August 2020 and no longer sells deals here. Vouchers bought before then could be used until 30 September 2020; after that, unused ones could be refunded through Groupon.";
+
+// The other half of a "groupon nz" search: what people use instead. What
+// each one offers, in neutral words; nothing about their prices or fees,
+// which change and are theirs to state.
+const ALTERNATIVES = [
+  {
+    name: "GrabOne",
+    url: "https://www.grabone.co.nz/",
+    what: "A New Zealand deals site: buy a discount voucher online for dining, activities, beauty or getaways, then use it at the business.",
+  },
+  {
+    name: "First Table",
+    url: "https://www.firsttable.co.nz/",
+    what: "Book an early or late table at a participating restaurant for a discount on the food bill.",
+  },
+  {
+    name: "Bookme",
+    url: "https://www.bookme.co.nz/",
+    what: "Book discounted activities, attractions and tours around New Zealand.",
+  },
+  {
+    name: SITE_NAME,
+    url: null,
+    what: "Free deal codes from local businesses, starting in Auckland: restaurants, spas, activities and more. Quote the code when you book or visit, and pay the business directly.",
+  },
+];
+
+const ALTERNATIVES_FAQ = {
+  q: "What are the alternatives to Groupon in New Zealand?",
+  a: `Since Groupon left in 2020, Kiwis find local deals on sites such as GrabOne (discount vouchers bought online for dining, activities, beauty and getaways), First Table (a discount on the food bill for early or late restaurant tables), Bookme (discounted activities, attractions and tours) and ${SITE_NAME} (free deal codes from local businesses, starting in Auckland: you quote the code and pay the business directly).`,
+};
 
 const FAQS = [
   { q: "Is Groupon still in New Zealand?", a: ANSWER },
@@ -78,7 +109,7 @@ export default function GrouponNzPage() {
               },
               {
                 "@type": "FAQPage",
-                mainEntity: FAQS.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+                mainEntity: [FAQS[0], ALTERNATIVES_FAQ, ...FAQS.slice(1)].map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
               },
               {
                 "@type": "BreadcrumbList",
@@ -93,7 +124,7 @@ export default function GrouponNzPage() {
       />
 
       <PageHero crumb="Groupon NZ" title="Is Groupon still in New Zealand?">
-        No. It closed its New Zealand business in 2020.
+        No. It closed its New Zealand business in 2020. Here&apos;s what happened, and the alternatives for local deals now.
       </PageHero>
 
       {/* The answer first, for people and for AI tools that quote it. */}
@@ -125,7 +156,31 @@ export default function GrouponNzPage() {
 
       <section className="px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
-          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>Finding local deals in New Zealand now</h2>
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>Alternatives to Groupon in New Zealand</h2>
+          <p className="mt-3 text-slate-600">Since Groupon left in 2020, Kiwis find local deals on sites such as these:</p>
+          <ul className="mt-6 space-y-4">
+            {ALTERNATIVES.map((a) => (
+              <li key={a.name} className={`rounded-2xl border p-5 ${a.url ? "border-slate-200 bg-white" : "border-brand-200 bg-brand-50"}`}>
+                <h3 className="text-base font-bold text-slate-900">
+                  {a.url ? (
+                    <a href={a.url} className="text-brand-600 hover:underline" rel="nofollow noopener">
+                      {a.name}
+                    </a>
+                  ) : (
+                    <>{a.name} (this site)</>
+                  )}
+                </h3>
+                <p className="mt-1 text-sm leading-relaxed text-slate-600">{a.what}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-xs text-slate-500">Each site sets its own offers and terms; check theirs before you book.</p>
+        </div>
+      </section>
+
+      <section className="bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl">
+          <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>Prepaid voucher or free deal code?</h2>
           <p className="mt-3 text-slate-600">
             Deals sites in New Zealand work in two main ways. On a voucher site, such as GrabOne, you buy a voucher online
             first, then use it at the business. On {SITE_NAME}, the deal code is free: you contact the business and pay
@@ -160,7 +215,7 @@ export default function GrouponNzPage() {
         </div>
       </section>
 
-      <section className="bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
+      <section className="px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           <h2 className={`${displayFont.className} text-2xl font-bold text-slate-900 sm:text-3xl`}>Questions</h2>
           <div className="mt-6 space-y-6">
@@ -174,7 +229,7 @@ export default function GrouponNzPage() {
         </div>
       </section>
 
-      <section className="px-4 py-12 sm:px-6 lg:px-8">
+      <section className="bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           <h2 className={`${displayFont.className} text-xl font-bold text-slate-900`}>Sources</h2>
           <ul className="mt-3 space-y-2 text-sm">
@@ -187,7 +242,8 @@ export default function GrouponNzPage() {
             ))}
           </ul>
           <p className="mt-4 text-xs text-slate-500">
-            Groupon is a trademark of its owner. {SITE_NAME} uses the name only to answer this question.
+            Groupon, GrabOne, First Table and Bookme are trademarks of their owners. {SITE_NAME} isn&apos;t connected with
+            them and uses the names only to answer this question.
           </p>
         </div>
       </section>
