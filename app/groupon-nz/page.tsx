@@ -175,6 +175,11 @@ export default function GrouponNzPage() {
             ))}
           </ul>
           <p className="mt-4 text-xs text-slate-500">Each site sets its own offers and terms; check theirs before you book.</p>
+          <p className="mt-3 text-sm text-slate-600">
+            <Link href="/grabone-alternatives" className="font-semibold text-brand-600 hover:underline">
+              Compare these sites in more detail
+            </Link>
+          </p>
         </div>
       </section>
 

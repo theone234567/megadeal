@@ -24,6 +24,7 @@ export const CONTENT_UPDATED: Record<string, string> = {
   "/privacy": "2026-09-27",
   "/refund-policy": "2026-09-27",
   "/groupon-nz": "2026-10-27",
+  "/grabone-alternatives": "2026-10-27",
 };
 
 /**
@@ -43,6 +44,7 @@ export const CHANGES_AT_LAUNCH = new Set([
   "/how-it-works",
   "/help",
   "/about",
+  "/grabone-alternatives",
 ]);
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;

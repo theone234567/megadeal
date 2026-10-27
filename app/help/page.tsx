@@ -130,7 +130,17 @@ const FAQS: Faq[] = [
   {
     // GrabOne sells prepaid vouchers; facts only, checked 26 Oct 2026 (T254).
     q: "How is MegaDeal different from GrabOne?",
-    a: "With GrabOne, you buy a voucher online first, then use it at the business. MegaDeal works differently. The deal code is free, you contact the business, and you pay them directly at the deal price. You never pay up front, so there's no voucher money to lose if a website or business closes. MegaDeal isn't connected with GrabOne.",
+    a: (
+      <>
+        With GrabOne, you buy a voucher online first, then use it at the business. MegaDeal works differently. The deal
+        code is free, you contact the business, and you pay them directly at the deal price. You never pay up front, so
+        there&apos;s no voucher money to lose if a website or business closes. MegaDeal isn&apos;t connected with
+        GrabOne.{" "}
+        <Link href="/grabone-alternatives" className="font-semibold text-brand-600 hover:underline">
+          GrabOne alternatives compared
+        </Link>
+      </>
+    ),
   },
   {
     q: "How do I stop MegaDeal emails?",
