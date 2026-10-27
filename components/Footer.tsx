@@ -152,10 +152,11 @@ export default function Footer({
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,3fr)]">
             <div>
               <Link prefetch={false} href="/" className="inline-block rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
-                {/* Lazy: it's always below the fold, and without it the page
-                    asked for this logo up front, beside the header's. */}
+                {/* Low priority: React otherwise asks for every eager image up
+                    front, so this below-the-fold logo was fetched beside the
+                    header's. Not lazy, so it's there in a full-page capture. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/minimal/megadeal-logo-minimal-purple.svg" alt="MegaDeal" width={150} height={32} loading="lazy" decoding="async" className="h-8 w-auto" />
+                <img src="/brand/minimal/megadeal-logo-minimal-purple.svg" alt="MegaDeal" width={150} height={32} fetchPriority="low" decoding="async" className="h-8 w-auto" />
               </Link>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-600">
                 Local deals from real New Zealand businesses. Free deal codes, and you pay the business directly.

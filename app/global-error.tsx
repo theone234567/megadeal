@@ -38,7 +38,7 @@ export default function GlobalError({
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/minimal/megadeal-elephant-minimal-purple.svg" alt="" width={72} height={51} loading="lazy" />
+        <img src="/brand/minimal/megadeal-elephant-minimal-purple.svg" alt="" width={72} height={51} fetchPriority="low" />
         <h1 style={{ marginTop: "0.75rem", fontSize: "1.25rem", fontWeight: 700 }}>
           Something went sideways
         </h1>
