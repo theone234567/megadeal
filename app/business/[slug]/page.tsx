@@ -342,7 +342,7 @@ export default async function BusinessProfilePage(
               <a
                 href={mainContact.href}
                 {...(mainContact.external ? { target: "_blank", rel: "noopener noreferrer nofollow ugc" } : {})}
-                className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border-[1.5px] border-brand-600 bg-white px-4 text-base font-bold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+                className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-full border-[1.5px] border-brand-600 bg-white px-4 text-base font-bold text-brand-700 transition hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
               >
                 <mainContact.Icon className="h-[18px] w-[18px]" />
                 {mainContact.label}
@@ -511,7 +511,7 @@ function BusinessDealRow({ deal, place }: { deal: Deal; place: string | null }) 
         <Link
           href={`/deal/${deal.slug}`}
           prefetch={false}
-          className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-brand-600 px-4 text-sm font-bold text-white transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-brand-600 px-4 text-sm font-bold text-white transition hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
         >
           View deal<span className="sr-only">: {deal.name}</span> <span aria-hidden="true">→</span>
         </Link>

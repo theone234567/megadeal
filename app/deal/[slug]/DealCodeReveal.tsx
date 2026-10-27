@@ -166,7 +166,7 @@ export default function DealCodeReveal({
           <button
             type="button"
             onClick={() => reveal("main")}
-            className="flex min-h-12 w-full items-center justify-center rounded-lg bg-hp-purple px-5 text-base font-bold text-white transition hover:bg-hp-purple-dark active:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
+            className="flex min-h-12 w-full items-center justify-center rounded-full bg-hp-purple px-5 text-base font-bold text-white transition hover:bg-hp-purple-dark active:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
           >
             Get deal code
           </button>
@@ -195,7 +195,7 @@ export default function DealCodeReveal({
               <button
                 type="button"
                 onClick={() => onNeedCode?.()}
-                className="inline-flex min-h-11 items-center rounded-lg border border-hp-purple bg-white px-3.5 text-sm font-bold text-hp-purple hover:bg-hp-lavender"
+                className="inline-flex min-h-11 items-center rounded-full border border-hp-purple bg-white px-3.5 text-sm font-bold text-hp-purple hover:bg-hp-lavender"
               >
                 Try again
               </button>
@@ -210,7 +210,7 @@ export default function DealCodeReveal({
               <button
                 type="button"
                 onClick={copy}
-                className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg border border-hp-purple bg-white px-3.5 text-sm font-bold text-hp-purple transition hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
+                className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-hp-purple bg-white px-3.5 text-sm font-bold text-hp-purple transition hover:bg-hp-lavender focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
               >
                 <CopyIcon className="h-4 w-4" />
                 {copied === "Copied" ? "Copied" : "Copy code"}
@@ -258,7 +258,7 @@ export default function DealCodeReveal({
               <button
                 type="button"
                 onClick={() => reveal("sticky")}
-                className="ml-auto flex min-h-11 shrink-0 items-center justify-center rounded-lg bg-hp-purple px-5 text-[0.9375rem] font-bold text-white transition hover:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
+                className="ml-auto flex min-h-11 shrink-0 items-center justify-center rounded-full bg-hp-purple px-5 text-[0.9375rem] font-bold text-white transition hover:bg-hp-purple-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2"
               >
                 Get deal code
               </button>
