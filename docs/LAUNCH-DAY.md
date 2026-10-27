@@ -9,9 +9,9 @@ password), and the rest are ticked there by hand.
 
 ## The week before
 
-1. **Terms.** Update the offer paragraph in `app/terms/page.tsx` (proposed wording in
-   `docs/LAUNCH-OFFER-CHECKLIST.md`). It's the only launch wording that doesn't switch by
-   itself, because it's a legal document.
+1. **Terms.** Done: the offer paragraph in `app/terms/page.tsx` already covers both offers
+   (180 credits for businesses approved before launch, 90 after), so it needs no change at
+   launch. Read it once more if the offer changes.
 2. **Test deals and the test business.** In **Admin**, cancel or delete the test deals
    (Admin → Test deals) and the test business, so the public homepage opens with real deals
    only. Test deals already stop appearing in listings after launch (`docs/TEST-DEALS.md`).
@@ -66,7 +66,7 @@ What then changes by itself:
   engines, and the sitemap lists them.
 - Every business page, the footer, `llms.txt` and the share images switch from up to 6 months
   (WELCOME6) to up to 3 months (WELCOME3), with no "before launch" wording left. The signup
-  form pre-fills WELCOME3, and approvals from then on give 12 credits.
+  form pre-fills WELCOME3, and approvals from then on give 90 credits.
 - The sitemap gives the pages that changed wording today's date (`LAUNCHED_ON`), so search
   engines recrawl them.
 - Businesses can submit their saved drafts; each goes live once an admin approves it. Nothing
@@ -113,7 +113,7 @@ What then changes by itself:
    not in quick repeats. Later emails (say, a monthly round-up of new deals) use the
    same tool with a new email name, such as `deals-2026-12`.
 10. **Check the offer end to end** (`docs/LAUNCH-OFFER-CHECKLIST.md`, "After launch, check"):
-    approve a test signup that used WELCOME3; it should get 12 credits and its email should
+    approve a test signup that used WELCOME3; it should get 90 credits and its email should
     name WELCOME3.
 11. **"Up to 50% off", only once it's true.** The site launches without it: the home page,
     `/auckland` and the restaurant, spa and beauty, and fitness pages' search titles, and the

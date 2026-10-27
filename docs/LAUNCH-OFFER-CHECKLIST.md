@@ -1,7 +1,7 @@
 # Launch-day offer checklist: 6 months (WELCOME6) → 3 months (WELCOME3)
 
 Owner decision (28 Sep 2026): at launch the business offer drops to **up to 3 months free
-advertising, code WELCOME3 (12 credits)**. Businesses approved before launch keep their 6
+advertising, code WELCOME3 (90 credits)**. Businesses approved before launch keep their 6
 months. After launch, WELCOME6 typed before launch still counts, as the 3-month offer.
 
 ## Already switches automatically at launch (no copy change needed)
@@ -9,7 +9,8 @@ months. After launch, WELCOME6 typed before launch still counts, as the 3-month 
 Driven by `lib/promo.ts` and `SITE_LAUNCHED`:
 
 - **Approval credits** (`app/api/admin/merchants/[id]/route.ts`): before launch WELCOME6 →
-  24 credits; from launch WELCOME3 or WELCOME6 → 12 credits. Decided at the moment the
+  180 credits; from launch WELCOME3 or WELCOME6 → 90 credits (24 and 12 on the credit scale
+  before 17 Oct 2026). Decided at the moment the
   admin approves, so a business that applied before launch but is approved after gets 12.
 - **Signup form** (`MerchantSignupForm`): pre-fills WELCOME3 and says "up to 3 months free
   advertising" (no "if you're approved before launch").
@@ -25,23 +26,18 @@ Launch with the code switch (`LAUNCHED = true` in `lib/siteConfig.ts`, then push
 pages are pre-rendered, so a runtime-only `SITE_LAUNCHED` would leave them on the pre-launch
 wording.
 
-- **"Up to 50% off"** (17 Oct 2026): the site's default title and description,
-  the Auckland and category page titles and the coming-soon FAQ leave the saving
-  claim out before launch (no live deals to back it yet) and add it at launch
-  (`SITE_TAGLINE`, `SITE_DESCRIPTION`, `SAVING_CLAIM` in `lib/siteConfig.ts`).
+- **"Up to 50% off"** is *not* switched on by launch (owner, 27 Oct 2026): the site
+  launches without the saving claim, and it's turned on separately once real 50%-off deals
+  back it (`SAVING_CLAIM_LIVE` in `lib/siteConfig.ts`, `docs/LAUNCH-DAY.md` step 11).
 
 ## Must be updated before or at launch (owner to approve wording)
 
-### Terms — `app/terms/page.tsx` (the offer paragraph) — needs owner/legal approval
+### Terms — `app/terms/page.tsx` (the offer paragraph) — done
 
-Now: "MegaDeal may offer up to 6 months of free advertising credits to businesses that join
-before our official launch in Auckland — this offer is only available before launch, not
-after."
-
-Proposed: "MegaDeal may offer free advertising credits to new businesses: up to 6 months for
-businesses approved before our official launch in Auckland, and up to 3 months (code
-WELCOME3) for businesses approved after it. Businesses approved before launch keep their
-pre-launch offer." (rest of the paragraph unchanged)
+Already says both offers, so nothing changes at launch: "businesses approved before our
+official launch in Auckland receive up to 180 advertising credits (up to 6 months of
+Everyday Deals). Businesses approved after launch receive up to 90 credits (up to 3
+months)."
 
 ## Not switched, because visitors don't see them after launch
 
@@ -52,7 +48,7 @@ pre-launch offer." (rest of the paragraph unchanged)
 
 ## After launch, check
 
-- Approve a test business that entered WELCOME3: 12 credits, email names WELCOME3.
+- Approve a test business that entered WELCOME3: 90 credits, email names WELCOME3.
 - `/list-your-business` signup form shows WELCOME3.
 - Search the site for "6 months" and "WELCOME6": only historical/terms mentions remain.
 - Share a business page link (e.g. in a message to yourself): the preview says up to 3 months.
