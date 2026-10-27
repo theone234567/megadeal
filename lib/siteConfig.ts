@@ -91,16 +91,28 @@ export const PRELAUNCH_FREE_DEALS = DEALS_OPEN && !SITE_LAUNCHED;
  */
 export const LAUNCHED_ON = "";
 
-// No "up to 50% off" before launch: a saving claim needs live deals to back
-// it (Fair Trading Act), so it starts at launch along with them.
-export const SITE_TAGLINE = SITE_LAUNCHED ? "Local deals up to 50% off" : "Local deals from Auckland businesses";
+/**
+ * THE "UP TO 50% OFF" CLAIM, off until the owner turns it on (owner, 27 Oct
+ * 2026, option B). An "up to" saving has to be true on every page that
+ * makes it (Fair Trading Act): the home page, /auckland and each category
+ * page's title, and the tagline in share previews. So it doesn't start
+ * with launch: set this to true only once real 50%-off deals are live,
+ * including in each category whose page carries it (restaurants, spa and
+ * beauty, fitness). Has no effect before launch.
+ */
+const SAVING_CLAIM_LIVE = false;
+export const SAVING_CLAIM_ON = SITE_LAUNCHED && SAVING_CLAIM_LIVE;
 
-/** " — Up to 50% Off" for page titles from launch, nothing before it. */
-export const SAVING_CLAIM = SITE_LAUNCHED ? " — Up to 50% Off" : "";
+export const SITE_TAGLINE = SAVING_CLAIM_ON ? "Local deals up to 50% off" : "Local deals from Auckland businesses";
 
-export const SITE_DESCRIPTION = SITE_LAUNCHED
+/** " — Up to 50% Off" for page titles once the claim is on, else nothing. */
+export const SAVING_CLAIM = SAVING_CLAIM_ON ? " — Up to 50% Off" : "";
+
+export const SITE_DESCRIPTION = SAVING_CLAIM_ON
   ? "New Zealand's daily deals site — restaurants, spas, activities and getaways at up to 50% off from real local Kiwi businesses."
-  : "New Zealand's local deals site, launching in Auckland: restaurants, spas, activities, getaways and more from real local businesses.";
+  : SITE_LAUNCHED
+    ? "New Zealand's daily deals site — restaurants, spas, activities and getaways from real local Kiwi businesses."
+    : "New Zealand's local deals site, launching in Auckland: restaurants, spas, activities, getaways and more from real local businesses.";
 
 /**
  * The registered legal entity behind MegaDeal, referenced in /terms and

@@ -115,6 +115,12 @@ What then changes by itself:
 10. **Check the offer end to end** (`docs/LAUNCH-OFFER-CHECKLIST.md`, "After launch, check"):
     approve a test signup that used WELCOME3; it should get 12 credits and its email should
     name WELCOME3.
+11. **"Up to 50% off", only once it's true.** The site launches without it: the home page,
+    `/auckland` and the restaurant, spa and beauty, and fitness pages' search titles, and the
+    tagline in share previews, make no saving claim. Once real 50%-off deals are live,
+    including in each of those three categories, set `SAVING_CLAIM_LIVE = true` in
+    `lib/siteConfig.ts` and push. If a category loses its last 50%-off deal, set it back
+    (Fair Trading Act: an "up to" saving has to be true on every page that makes it).
 
 ## If you need to go back
 

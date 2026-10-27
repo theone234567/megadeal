@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { COMING_SOON_DESIGN, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
+import { COMING_SOON_DESIGN, SAVING_CLAIM_ON, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
 import ComingSoonV2 from "@/components/comingSoon/v2/ComingSoonV2";
 import { V2_DESCRIPTION, V2_TITLE } from "@/lib/comingSoonV2Content";
 import { safeJsonLd } from "@/lib/safeJsonLd";
@@ -174,7 +174,7 @@ const launchCities = ["Wellington", "Christchurch", "Queenstown", "Hamilton"];
 const FAQS: { q: string; a: string; aNode?: ReactNode }[] = [
   {
     q: "What is MegaDeal?",
-    a: `MegaDeal is a New Zealand-owned website for local deals — ${SITE_LAUNCHED ? "up to 50% off " : ""}at restaurants, spas, activities, getaways and other local businesses. It's an advertising platform, not a shop: you never buy anything from MegaDeal.`,
+    a: `MegaDeal is a New Zealand-owned website for local deals — ${SAVING_CLAIM_ON ? "up to 50% off " : ""}at restaurants, spas, activities, getaways and other local businesses. It's an advertising platform, not a shop: you never buy anything from MegaDeal.`,
   },
   {
     q: "When does MegaDeal launch?",

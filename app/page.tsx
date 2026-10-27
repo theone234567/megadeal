@@ -3,7 +3,7 @@ import SearchAwareHero from "@/components/SearchAwareHero";
 import HomeDeals from "./HomeDeals";
 import { fetchAllLiveDealsServer, fetchTestBusinessDeals } from "@/lib/fetchDealServer";
 import type { Metadata } from "next";
-import { SITE_URL, SITE_NAME, SITE_LAUNCHED, PRELAUNCH_HOME, DEALS_OPEN } from "@/lib/siteConfig";
+import { SITE_URL, SITE_NAME, SITE_LAUNCHED, PRELAUNCH_HOME, DEALS_OPEN, SAVING_CLAIM_ON } from "@/lib/siteConfig";
 import PrelaunchHome from "./PrelaunchHome";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { hasFilterParams, toSearchString } from "@/lib/homeFilters";
@@ -13,9 +13,9 @@ import { INDEXABLE } from "@/lib/robotsMeta";
 import HomeHowItWorks, { SHOPPER_FAQS, type HomeFaq } from "@/components/HomeHowItWorks";
 import { BUSINESS_COST } from "@/lib/helpFaq";
 
-const HOME_TITLE = `${SITE_NAME} — Local Deals Up to 50% Off in Auckland & NZ`;
-const HOME_DESCRIPTION =
-  "Local deals up to 50% off at Auckland restaurants, spas, activities and getaways. No vouchers to buy — contact the business directly and pay them, not us.";
+// The saving only once the owner turns it on (lib/siteConfig.ts SAVING_CLAIM_ON).
+const HOME_TITLE = `${SITE_NAME} — Local Deals${SAVING_CLAIM_ON ? " Up to 50% Off" : ""} in Auckland & NZ`;
+const HOME_DESCRIPTION = `Local deals${SAVING_CLAIM_ON ? " up to 50% off" : ""} at Auckland restaurants, spas, activities and getaways. No vouchers to buy — contact the business directly and pay them, not us.`;
 
 // Before launch (PRELAUNCH_HOME): what shoppers search for first (Auckland,
 // the kinds of deal), then what's true now: free to use, and businesses
