@@ -344,14 +344,14 @@ export async function businessIndexFacts(db: Sql, businessId: string): Promise<{
 export async function listLiveDealsForSitemap(
   db: Sql,
   now: number = Date.now()
-): Promise<{ slug: string; updatedAt: string | null; categories: string[]; merchantEmail: string }[]> {
+): Promise<{ slug: string; updatedAt: string | null; categories: string[]; merchantEmail: string; image: string | null }[]> {
   const rows = await db.query(
     // When what customers see last changed (content_updated_at), not
     // updated_at, which moves on every view and click: a sitemap date
     // that changes constantly teaches search engines to ignore it. Read
     // through to_jsonb until the database update adds the column.
     `select d.slug, coalesce((to_jsonb(d)->>'content_updated_at')::timestamptz, d.updated_at) as updated_at,
-            d.category_slug, d.status, d.first_published_at, d.expires_at, m.email
+            d.category_slug, d.status, d.first_published_at, d.expires_at, d.photo_url, m.email
        from public.deals d
        join public.merchants m on m.id = d.merchant_id
       where d.status = 'Live' and not d.is_test and ${PUBLIC_BUSINESS} and d.slug is not null`
@@ -363,6 +363,7 @@ export async function listLiveDealsForSitemap(
       updatedAt: toIso(r.updated_at),
       categories: CATEGORY_NAME_BY_SLUG[r.category_slug] ? [CATEGORY_NAME_BY_SLUG[r.category_slug]] : [],
       merchantEmail: String(r.email || "").toLowerCase(),
+      image: blankToNull(r.photo_url),
     }));
 }
 

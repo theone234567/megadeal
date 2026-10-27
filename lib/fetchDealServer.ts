@@ -267,7 +267,7 @@ export async function fetchAllBusinessSlugsForSitemap(): Promise<
  * these dates to decide what to recrawl.
  */
 export async function fetchAllLiveDealSlugsForSitemap(): Promise<
-  { slug: string; updatedAt: string | null; categories: string[]; merchantEmail: string }[]
+  { slug: string; updatedAt: string | null; categories: string[]; merchantEmail: string; image: string | null }[]
 > {
   try {
     return await withDb((db) => pg.listLiveDealsForSitemap(db));

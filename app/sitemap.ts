@@ -10,6 +10,7 @@ import {
 import { CATEGORIES, categoryPath } from "@/lib/categories";
 import { businessPageIndexable } from "@/lib/businessIndexing";
 import { hubIsIndexable } from "@/lib/robotsMeta";
+import { sitemapImageUrl } from "@/lib/sitemapImage";
 
 // Deals are created/edited by merchants continuously, so a build-time-only
 // static sitemap would go stale between deploys.
@@ -81,12 +82,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const deals = await fetchAllLiveDealSlugsForSitemap();
-  const dealPages: MetadataRoute.Sitemap = deals.map((d) => ({
-    url: `${SITE_URL}/deal/${d.slug}`,
-    lastModified: d.updatedAt ?? undefined,
-    changeFrequency: "daily",
-    priority: 0.8,
-  }));
+  const dealPages: MetadataRoute.Sitemap = deals.map((d) => {
+    const image = sitemapImageUrl(d.image);
+    return {
+      url: `${SITE_URL}/deal/${d.slug}`,
+      lastModified: d.updatedAt ?? undefined,
+      changeFrequency: "daily",
+      priority: 0.8,
+      // The deal's photo, so it can show in Google Images ("pizza deal
+      // Auckland") and image-rich results.
+      ...(image ? { images: [image] } : {}),
+    };
+  });
 
   // A listing page changes when one of its deals does, so it's dated by
   // its newest deal. Bing leans on these dates to decide what to recrawl;
