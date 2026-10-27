@@ -35,6 +35,7 @@ import { ORGANIZATION_ID, SITE_NAME, SITE_URL } from "@/lib/siteConfig";
  */
 
 const BENEFIT_ICONS = [UsersIcon, CalendarIcon, PercentIcon];
+const HERO_TICKS = ["0% commission", "No credit card", "No lock-in"];
 // The category bar's icons (components/CategoryNav.tsx), by category slug.
 const INDUSTRY_ICONS: Record<(typeof ADVERTISE_PAGES)[number]["slug"], typeof CompassIcon> = {
   "food-drink": UtensilsIcon,
@@ -105,6 +106,21 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
             </h1>
             <p className="mt-4 text-xl font-bold text-white sm:text-2xl">{copy.subheading}</p>
             <p className="mt-2 text-base text-white/85 sm:text-lg">{copy.intro}</p>
+            {/* The home page hero's round white ticks, with three things the
+                page already promises (the intro and the sign-up list). */}
+            <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 sm:gap-x-5">
+              {HERO_TICKS.map((t) => (
+                <li
+                  key={t}
+                  className="inline-flex items-center gap-1.5 whitespace-nowrap font-display text-[0.9375rem] font-bold text-white sm:gap-2 sm:text-base"
+                >
+                  <span aria-hidden="true" className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white text-hp-purple">
+                    <CheckIcon className="h-3.5 w-3.5" />
+                  </span>
+                  {t}
+                </li>
+              ))}
+            </ul>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
               <a
                 href="#business-signup"
