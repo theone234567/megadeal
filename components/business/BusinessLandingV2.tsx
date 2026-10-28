@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import ConversionTracker from "@/components/ConversionTracker";
 import ViewContentTracker from "@/components/ViewContentTracker";
@@ -91,7 +90,7 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
             headline with its second line in light blue, a white button. */}
         <section
           aria-labelledby="business-title"
-          className="relative mt-5 overflow-hidden rounded-[22px] bg-gradient-to-br from-[#7C3AED] via-hp-purple to-[#4C1D95] text-white sm:mt-7 sm:rounded-3xl"
+          className="relative isolate mt-5 overflow-hidden rounded-[22px] bg-gradient-to-br from-[#7C3AED] via-hp-purple to-[#4C1D95] text-white sm:mt-7 sm:rounded-3xl"
         >
           <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-[#F0ABFC]/20 blur-3xl" />
@@ -158,21 +157,35 @@ export default function BusinessLandingV2({ launched, businessCount = 0 }: { lau
           {/* The real DealCard, as customers see it on the site, with
               example details: a card that can't drift from the real one.
               Not a link, and labelled as an example. */}
-          <figure className="relative mx-auto w-full max-w-[340px] sm:max-w-[380px] lg:mr-0">
+          {/* The mascot presents the example deal, as on the home page
+              (components/PrelaunchHero.tsx): he and the card stand on one
+              baseline, a soft shadow under his feet, his open hand held out
+              to the card. On a phone the card is a little narrower so he
+              stands beside it; from lg the card moves left to give him
+              room. */}
+          <figure className="relative mx-auto w-full max-w-[340px] sm:max-w-[380px] lg:mr-16">
             <figcaption className="mb-2 text-center text-xs font-semibold text-white/80 sm:text-sm">
               Example deal — not available to redeem
             </figcaption>
-            <div aria-hidden className="pointer-events-none select-none rounded-2xl shadow-[0_22px_40px_-12px_rgba(33,26,53,0.45)]">
-              <DealCard deal={EXAMPLE_BURGER_DEAL} preview priority />
+            <div className="relative">
+              <div aria-hidden className="pointer-events-none w-[80%] select-none rounded-2xl shadow-[0_22px_40px_-12px_rgba(33,26,53,0.45)] sm:w-full">
+                <DealCard deal={EXAMPLE_BURGER_DEAL} preview priority />
+              </div>
+              <div aria-hidden="true" className="absolute -bottom-1 right-[2%] h-4 w-[26%] rounded-[50%] bg-[#1e0b3d]/45 blur-md sm:-right-12 sm:w-[110px] lg:-right-[1.75rem] lg:w-[92px] xl:-right-[4.5rem] xl:w-[110px]" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/megadeal/mascot/megadeal-mascot-hero-240.webp"
+                srcSet="/megadeal/mascot/megadeal-mascot-hero-240.webp 240w, /megadeal/mascot/megadeal-mascot-hero-380.webp 380w"
+                sizes="(min-width: 640px) 150px, 120px"
+                width={560}
+                height={580}
+                alt="MegaDeal’s elephant mascot"
+                loading="eager"
+                fetchPriority="low"
+                decoding="async"
+                className="absolute bottom-0 -right-[4%] h-auto w-[120px] select-none drop-shadow-[0_14px_22px_rgba(33,26,53,0.3)] sm:-right-[4.5rem] sm:w-[148px] lg:-right-[2.25rem] lg:w-[124px] xl:-right-[5.75rem] xl:w-[148px]"
+              />
             </div>
-            <Image
-              src="/megadeal/coming-soon-v2/mascot-hoodie-240.webp"
-              alt="MegaDeal’s elephant mascot"
-              width={240}
-              height={248}
-              sizes="110px"
-              className="absolute -bottom-4 -right-3 h-auto w-[84px] drop-shadow-[0_12px_20px_rgba(33,26,53,0.25)] sm:-right-8 sm:w-[110px] lg:-right-6 xl:-right-10"
-            />
           </figure>
           </div>
         </section>

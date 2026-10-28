@@ -10,7 +10,7 @@ import { ArrowRightIcon, CheckIcon } from "./icons";
  * short, so the example deals below show on the first screen.
  *
  * The picture is three example deals as small, real-looking deal cards
- * (photo with the saving, then name, suburb and price; small copies of the
+ * (photo with the saving, then name and price; small copies of the
  * site's own photos in public/megadeal/hero/collage-*), fanned out, and the
  * current mascot at the bottom right, his open hand pointing at them. The
  * mascot is the approved file (public/megadeal/mascot/megadeal-mascot-hero*.webp)
@@ -25,7 +25,10 @@ import { ArrowRightIcon, CheckIcon } from "./icons";
 export default function PrelaunchHero() {
   return (
     <section aria-labelledby="hero-heading" className="mx-auto max-w-[1200px] px-4 pt-4 sm:px-6 lg:px-8 lg:pt-5">
-      <div className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#7C3AED] via-hp-purple to-[#4C1D95] text-white sm:rounded-3xl">
+      {/* isolate: everything in the card stays on the card's own layer, so
+          the mascot (z-30 inside it) can never be drawn over the sticky
+          header (also z-30) as the page scrolls under it. */}
+      <div className="relative isolate overflow-hidden rounded-[22px] bg-gradient-to-br from-[#7C3AED] via-hp-purple to-[#4C1D95] text-white sm:rounded-3xl">
         <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/10 blur-2xl" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 left-1/3 h-64 w-64 rounded-full bg-[#F0ABFC]/20 blur-3xl" />
         {/* Three parts: the headline and sentence, the picture, then the
@@ -54,32 +57,38 @@ export default function PrelaunchHero() {
             </p>
           </div>
 
-          {/* The picture: three example deals as small deal cards, fanned
-              out, and the mascot at the bottom right pointing at them; on a
-              phone, a compact strip under the button. Decorative: the
-              headline says what matters. */}
+          {/* The picture: the mascot presenting three example deals; on a
+              phone, a compact strip under the sentence. Decorative: the
+              headline says what matters.
+
+              Everything stands on one baseline, like things set out on a
+              table (owner, 27 Oct 2026: the mascot looked like it was
+              floating, and the deals' arrangement odd): the deals as a
+              hand of cards, the two outer ones tilted outward with their
+              bottoms on the baseline and the middle one raised in front, so
+              every name and price shows below it; the mascot on the same
+              baseline at the right, a soft shadow under his feet, his open
+              hand held out to the cards. */}
           <div
             aria-hidden="true"
-            className="relative mx-auto h-[150px] w-full max-w-[420px] min-[400px]:h-[160px] sm:h-[250px] sm:max-w-[460px] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-[225px] lg:max-w-none xl:h-[245px]"
+            className="relative mx-auto h-[175px] w-full max-w-[420px] min-[400px]:h-[185px] sm:h-[265px] sm:max-w-[460px] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-[235px] lg:max-w-none xl:h-[270px]"
           >
-            {/* Stacked left to right, each card in front of the one before, so
-                only a card's right edge is ever covered and every saving, name
-                and price (all on the left) stays in view. */}
-            <CollageCard photo="pizza" title="Pizza for two" place="Ponsonby" price="$49" was="$78" off="37% off" className="left-0 top-[12%] -rotate-[4deg]" />
-            <CollageCard photo="massage" title="60 min massage" place="Takapuna" price="$69" was="$120" off="42% off" className="left-[28%] top-0 z-10" />
-            <CollageCard photo="kayak" title="Sea kayak tour" place="Devonport" price="$59" was="$99" off="40% off" className="right-[3%] top-[16%] sm:right-0 z-20 rotate-[4deg] shadow-[0_22px_40px_-12px_rgba(33,26,53,0.4)]" />
+            <CollageCard photo="pizza" title="Pizza for two" price="$49" was="$78" off="37% off" className="bottom-[3%] left-0 origin-bottom-right -rotate-[6deg]" />
+            <CollageCard photo="kayak" title="Sea kayak tour" price="$59" was="$99" off="40% off" offRight className="bottom-[3%] left-[44%] z-[5] origin-bottom-left rotate-[6deg] lg:left-[42%]" />
+            <CollageCard photo="massage" title="60 min massage" price="$69" was="$120" off="42% off" className="left-[22%] top-0 z-10 shadow-[0_22px_40px_-12px_rgba(33,26,53,0.45)] lg:left-[21%]" />
+            <div aria-hidden="true" className="absolute bottom-0 right-[5%] z-20 h-4 w-[24%] rounded-[50%] bg-[#1e0b3d]/45 blur-md lg:-right-[3%]" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/megadeal/mascot/megadeal-mascot-hero-240.webp"
+              src="/megadeal/mascot/megadeal-mascot-hero-380.webp"
               srcSet="/megadeal/mascot/megadeal-mascot-hero-240.webp 240w, /megadeal/mascot/megadeal-mascot-hero-380.webp 380w, /megadeal/mascot/megadeal-mascot-hero.webp 560w"
-              sizes="(min-width: 1024px) 130px, 25vw"
-              width={240}
-              height={249}
+              sizes="(min-width: 1024px) 200px, 34vw"
+              width={560}
+              height={580}
               alt="MegaDeal’s elephant mascot" aria-hidden="true"
               loading="eager"
               fetchPriority="low"
               decoding="async"
-              className="absolute -bottom-3 -right-1 z-30 w-[17%] max-w-[130px] transform-gpu select-none drop-shadow-[0_12px_20px_rgba(33,26,53,0.25)] sm:-bottom-6 sm:-right-6 sm:w-[18%] lg:w-[22%]"
+              className="absolute bottom-1 right-0 z-30 w-[34%] max-w-[200px] select-none drop-shadow-[0_14px_22px_rgba(33,26,53,0.3)] lg:-right-[8%] lg:w-[33%]"
             />
           </div>
 
@@ -130,26 +139,27 @@ export default function PrelaunchHero() {
 }
 
 /** One example deal in the picture, as a small deal card: photo with the
- *  saving, then the name, suburb and price. */
+ *  saving, then the name and price. */
 function CollageCard({
   photo,
   title,
-  place,
   price,
   was,
   off,
+  offRight = false,
   className,
 }: {
   photo: "pizza" | "massage" | "kayak";
   title: string;
-  place: string;
   price: string;
   was: string;
   off: string;
+  /** The saving at the top right: for a card whose top left is behind another. */
+  offRight?: boolean;
   className: string;
 }) {
   return (
-    <div className={`absolute w-[37%] overflow-hidden rounded-lg sm:w-[40%] bg-white shadow-[0_14px_30px_-10px_rgba(33,26,53,0.3)] ring-1 ring-black/5 sm:rounded-2xl ${className}`}>
+    <div className={`absolute w-[34%] overflow-hidden rounded-lg bg-white lg:w-[33%] shadow-[0_14px_30px_-10px_rgba(33,26,53,0.3)] ring-1 ring-black/5 sm:rounded-2xl ${className}`}>
       <div className="relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -162,13 +172,12 @@ function CollageCard({
           decoding="async"
           className="aspect-[4/3] w-full object-cover"
         />
-        <span className="absolute left-1.5 top-1.5 rounded-md bg-white px-1.5 py-0.5 text-[0.625rem] font-bold text-hp-ink shadow-sm sm:left-2 sm:top-2 sm:text-xs">
+        <span className={`absolute top-1.5 rounded-md bg-white px-1.5 py-0.5 text-[0.625rem] font-bold text-hp-ink shadow-sm sm:top-2 sm:text-xs ${offRight ? "right-1.5 sm:right-2" : "left-1.5 sm:left-2"}`}>
           {off}
         </span>
       </div>
       <div className="px-2 pb-2 pt-1.5 sm:px-3 sm:pb-2.5 sm:pt-2">
-        <p className="truncate font-display text-[0.6875rem] font-bold leading-snug text-hp-ink sm:text-sm lg:text-[0.8125rem] xl:text-sm">{title}</p>
-        <p className="hidden truncate text-xs text-hp-muted sm:block">{place}</p>
+        <p className="truncate font-display text-[0.6875rem] font-bold leading-snug text-hp-ink sm:text-sm lg:text-[0.75rem] xl:text-[0.8125rem]">{title}</p>
         <p className="mt-0.5 leading-none sm:mt-1">
           <span className="font-display text-[0.8125rem] font-bold text-hp-purple sm:text-base">{price}</span>
           <span className="ml-1 text-[0.625rem] text-hp-muted line-through sm:text-xs">{was}</span>

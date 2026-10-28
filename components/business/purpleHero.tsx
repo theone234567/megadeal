@@ -8,8 +8,11 @@ import { CheckIcon } from "@/components/icons";
  * second line in light blue, a white button and round white ticks.
  */
 
-/** The card itself; its content goes in a `relative` element so it sits above the glows. */
-export const HERO_CARD = "relative overflow-hidden bg-gradient-to-br from-[#7C3AED] via-hp-purple to-[#4C1D95] text-white";
+/** The card itself; its content goes in a `relative` element so it sits
+ *  above the glows. isolate keeps everything in it (the mascot included)
+ *  on the card's own layer, so nothing can be drawn over the sticky header
+ *  as the page scrolls under it. */
+export const HERO_CARD = "relative isolate overflow-hidden bg-gradient-to-br from-[#7C3AED] via-hp-purple to-[#4C1D95] text-white";
 
 /** The headline's second line. */
 export const HERO_ACCENT = "text-[#BAE6FD]";
