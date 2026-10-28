@@ -19,7 +19,6 @@ import { ORGANIZATION_ID, SITE_LAUNCHED, SITE_NAME, SITE_URL } from "@/lib/siteC
 import { currentPromo } from "@/lib/promo";
 import { safeJsonLd } from "@/lib/safeJsonLd";
 import { displayFont, plusJakartaSans } from "@/lib/fonts";
-import { getMegadealArt } from "@/lib/megadealAssets";
 import { INDEXABLE } from "@/lib/robotsMeta";
 import { staticImageSrcSet } from "@/lib/staticImages";
 import { HERO_ACCENT, HERO_BUTTON, HERO_CARD, HERO_EYEBROW, HeroGlows, HeroTicks } from "@/components/business/purpleHero";
@@ -262,7 +261,6 @@ const STEPS = [
 ] as const;
 
 export default function RestaurantAdvertisingPage() {
-  const art = getMegadealArt();
 
   return (
     <main className={plusJakartaSans.className}>
@@ -638,22 +636,21 @@ export default function RestaurantAdvertisingPage() {
                   "radial-gradient(ellipse at 90% 0%, #813ada 0%, transparent 53%), linear-gradient(120deg, #3c087d 0%, #6416bf 62%, #7020c7 100%)",
               }}
             >
-              {/* Small supporting mascot in the corner — hidden on very
-                  small screens so it never competes with the offer text.
-                  No `overflow-hidden` on the panel and no negative offset
-                  here: that combination is what clipped the mascot on the
-                  portal sign-in screen earlier in this project (any
-                  negative translate/inset against an overflow-hidden
-                  ancestor gets cut in a straight line, regardless of how
-                  small the offset is) — kept fully inside the box instead. */}
-              <div className="pointer-events-none absolute right-4 top-4 hidden sm:block">
+              {/* The mascot stands on the panel's bottom edge at the right,
+                  his open hand held out to the offer, in front of it (z-10).
+                  Hidden on very small screens so it never competes with the
+                  offer text. Kept inside the panel, which has no
+                  overflow-hidden, so nothing clips him. */}
+              <div className="pointer-events-none absolute bottom-0 right-3 z-10 hidden sm:block">
+                {/* The current mascot (owner, 28 Oct 2026: not the older
+                    waving, jumping or sign-holding ones). */}
                 <MascotFigure
-                  src={art.mascotWave}
+                  src="/megadeal/mascot/megadeal-mascot-hero-240.webp"
                   fallbackSrc="/brand/megadeal-elephant.svg"
                   alt="MegaDeal’s elephant mascot" aria-hidden="true"
-                  width={200}
-                  height={156}
-                  className="h-auto w-[110px] opacity-90 sm:w-[140px]"
+                  width={240}
+                  height={249}
+                  className="h-auto w-[110px] drop-shadow-[0_12px_20px_rgba(33,26,53,0.3)] sm:w-[130px]"
                 />
               </div>
 

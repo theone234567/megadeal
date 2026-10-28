@@ -611,11 +611,11 @@ async function LegacyComingSoonPage() {
           whole background. */}
       <section className="relative overflow-hidden bg-brand-50 py-10 lg:py-14">
         <MascotFigure
-          src={art.mascotJump}
+          src="/megadeal/mascot/megadeal-mascot-hero-380.webp"
           fallbackSrc="/brand/megadeal-elephant.svg"
           alt="MegaDeal’s elephant mascot" aria-hidden="true"
-          width={300}
-          height={340}
+          width={380}
+          height={394}
           className="absolute -bottom-6 right-2 hidden h-auto w-[150px] opacity-[0.35] lg:block xl:right-10 xl:w-[190px]"
         />
         <div className={`${shell} relative z-10`}>
@@ -820,11 +820,11 @@ async function LegacyComingSoonPage() {
 
             <div className="relative mx-auto w-full max-w-[320px] lg:max-w-none">
               <MascotFigure
-                src={art.mascotWave}
+                src="/megadeal/mascot/megadeal-mascot-hero-240.webp"
                 fallbackSrc="/brand/megadeal-elephant.svg"
                 alt="MegaDeal’s elephant mascot" aria-hidden="true"
-                width={320}
-                height={250}
+                width={240}
+                height={249}
                 className="absolute -left-24 -top-14 z-10 hidden h-auto w-[120px] -scale-x-100 drop-shadow-[0_12px_20px_rgba(69,16,141,.18)] lg:block xl:-left-32 xl:w-[148px]"
               />
               <SampleDealCard />
