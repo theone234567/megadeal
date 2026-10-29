@@ -723,6 +723,15 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
   if (becomingApproved && !firstApproval && existing.email) {
     try {
       const safeName = escapeHtml(greetingName(updated.contactName ?? existing.contactName, existing.businessName));
+      // Only say its deals are showing again if it has a live one: a
+      // business sent back for a check before its first deal was told
+      // "your live deals are showing" with none (launch rehearsal, 29 Oct
+      // 2026). If the count can't be read, the email leaves it out.
+      const hasLiveDeal =
+        DEALS_OPEN &&
+        (await queryAllByEmail((e) => adminClient.items.query("Deals").eq("merchantEmail", e), existing.email, "Deals (re-approval email)")
+          .then((all) => all.some((d: any) => d.status === "Live"))
+          .catch(() => false));
       const sent = await sendTransactionalEmail({
         to: existing.email,
         subject: "You're back on MegaDeal",
@@ -731,7 +740,7 @@ export async function PATCH(req: NextRequest, props: { params: Promise<{ id: str
         html: brandedEmailHtml(`
           <p style="margin:0 0 16px;">Hi ${safeName},</p>
           <p style="margin:0 0 16px;">We've checked your business details and you're approved again${
-            DEALS_OPEN ? " — your live deals are showing to customers again" : ""
+            hasLiveDeal ? " — your live deals are showing to customers again" : ""
           }.</p>
           <p style="margin:0;"><a href="${SITE_URL}/portal" style="color:#6D28D9;font-weight:700;">Go to your portal</a></p>
         `),
