@@ -49,7 +49,7 @@ export default function PhotoGallery({ photos, name }: { photos: string[]; name:
                 alt={`${name}, photo ${i + 1}`}
                 loading="lazy"
                 decoding="async"
-                className="absolute inset-0 h-full w-full object-cover transition group-hover:scale-[1.03]"
+                className="absolute inset-0 h-full w-full object-cover text-transparent transition group-hover:scale-[1.03]"
               />
               <span aria-hidden="true" className="absolute bottom-1.5 right-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-sm">
                 <SearchIcon className="h-4 w-4" />

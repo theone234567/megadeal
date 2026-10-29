@@ -55,7 +55,7 @@ export default function BusinessSummary({
             height={64}
             loading="lazy"
             decoding="async"
-            className="h-14 w-14 shrink-0 rounded-full bg-hp-lavender object-cover ring-1 ring-hp-border sm:h-16 sm:w-16"
+            className="h-14 w-14 shrink-0 rounded-full bg-hp-lavender object-cover text-transparent ring-1 ring-hp-border sm:h-16 sm:w-16"
           />
         ) : (
           <span

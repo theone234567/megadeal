@@ -156,7 +156,11 @@ export default function DealCard({
             loading={priority ? "eager" : "lazy"}
             {...(priority ? { fetchPriority: "high" } : {})}
             decoding="async"
-            className={`absolute inset-0 h-full w-full object-cover transition duration-300 ${linked ? "group-hover:scale-[1.02]" : ""} ${soldOut ? "grayscale" : ""}`}
+            // text-transparent: if a photo ever fails to load, the browser
+            // shows the alt text in its place, which spilled across the
+            // card under the saving badge; the card's pale background
+            // shows instead.
+            className={`absolute inset-0 h-full w-full object-cover text-transparent transition duration-300 ${linked ? "group-hover:scale-[1.02]" : ""} ${soldOut ? "grayscale" : ""}`}
           />
         ) : (
           <div aria-hidden className="flex h-full w-full items-center justify-center text-hp-purple/40">

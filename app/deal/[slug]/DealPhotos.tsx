@@ -45,7 +45,7 @@ export default function DealPhotos({ images, alt }: { images: string[]; alt: str
       srcSet={wixImageSrcSet(url, [540, 750, 1200], 3 / 2)}
       sizes="(min-width: 1024px) 640px, (min-width: 640px) 90vw, 100vw"
       alt={many ? `${alt} (photo ${i + 1} of ${images.length})` : alt}
-      className="absolute inset-0 h-full w-full object-cover"
+      className="absolute inset-0 h-full w-full object-cover text-transparent"
       loading={i === 0 ? "eager" : "lazy"}
       fetchPriority={i === 0 ? "high" : "auto"}
       decoding="async"
@@ -135,7 +135,7 @@ export default function DealPhotos({ images, alt }: { images: string[]; alt: str
             }`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={wixImageUrl(url, 360, 240)} alt={`Photo ${i + 1}`} aria-hidden="true" loading="lazy" decoding="async" className="aspect-[3/2] w-full object-cover" />
+            <img src={wixImageUrl(url, 360, 240)} alt={`Photo ${i + 1}`} aria-hidden="true" loading="lazy" decoding="async" className="aspect-[3/2] w-full object-cover text-transparent" />
           </button>
         ))}
       </div>
