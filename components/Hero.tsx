@@ -1,109 +1,110 @@
 import Link from "next/link";
 import { ArrowRightIcon } from "./icons";
+import { HERO_ACCENT, HERO_BUTTON, HERO_CARD, HERO_LIFT, HeroGlows, HeroTicks } from "./business/purpleHero";
 
 /**
- * The homepage hero, in three separate layers:
+ * The homepage hero after launch: the same purple card as the prelaunch
+ * home and the business pages (components/business/purpleHero.tsx; owner,
+ * 29 Oct 2026), so the site looks the same on launch day.
  *
- *  1. The lavender panel, with the headline, copy and buttons as real HTML.
- *  2. A real photo of the Auckland skyline (public/megadeal/hero/), in its
- *     own panel over the right ~54% of the hero, fading into the lavender
- *     at its left edge. object-fit: cover applies only inside that panel,
- *     so the photo keeps its proportions.
- *  3. The transparent elephant, on its own at the far right.
+ * Kept short, so the real deals below start on the first screen. On a
+ * computer: the headline, sentence, ticks and buttons on the left, and on
+ * the right a photo of the Auckland skyline as a lifted card with the
+ * mascot standing on its baseline beside it, a soft shadow under his
+ * feet, his open hand held out to it. On a phone there's no photo (the
+ * deals are the picture there): the text and buttons, with the mascot
+ * standing at the card's lower right.
  *
- * On wider screens the grid has three columns: the text (48% of the hero),
- * an empty middle column where the photo shows — Sky Tower sits there, clear
- * of both — and the elephant. On phones the photo becomes a short band
- * across the top with the tower in the middle, the text runs full width
- * below it, and the elephant sits beside the buttons; nothing overlaps and
- * the text doesn't shrink.
- *
- * The earlier artwork (public/megadeal/hero-auckland-card.webp and
- * public/homepage/mobile-hero-artwork.webp, kept for rollback) had the old
- * elephant and hand-lettering baked in, so it isn't used.
+ * No example deals here: real ones are right below, and made-up prices
+ * next to them could be taken for real offers.
  */
 export default function Hero() {
   return (
-    <section aria-labelledby="hero-heading" className="px-4 pt-4 sm:px-6 lg:px-8 lg:pt-5">
-      <div className="relative mx-auto max-w-[1200px] overflow-hidden rounded-[20px] bg-gradient-to-br from-hp-lavender via-hp-lavender to-[#ECE4FA] lg:rounded-3xl">
-        {/* Layer 2: the skyline. Decorative — the headline says what matters. */}
-        <div
-          aria-hidden
-          className="relative h-[104px] [mask-image:linear-gradient(to_bottom,black_60%,transparent)] min-[360px]:h-[116px] sm:absolute sm:inset-y-0 sm:right-0 sm:h-auto sm:w-[54%] sm:[mask-image:linear-gradient(to_right,transparent,black_30%)]"
-        >
-          {/* Both sizes on offer, and the browser picks: on wider screens
-              the band is 54% of a hero at most 1200px wide (~650px), so a
-              standard screen takes the 800px copy (46KB) and only a
-              high-density one the 1600px original (137KB). */}
-          <picture>
-            <img
-              src="/megadeal/hero/auckland-skyline-800.webp"
-              srcSet="/megadeal/hero/auckland-skyline-640.webp 640w, /megadeal/hero/auckland-skyline-800.webp 800w, /megadeal/hero/auckland-skyline.webp 1600w"
-              sizes="(min-width: 1200px) 650px, (min-width: 640px) 54vw, 100vw"
-              alt="Auckland city skyline" aria-hidden="true"
-              width={800}
-              height={351}
-              fetchPriority="high"
-              decoding="async"
-              // Sky Tower is at the photo's horizontal centre. On phones it
-              // stays centred in the band; on wider screens the photo is
-              // anchored a little right of centre so the tower sits in the
-              // gap between the text and the elephant.
-              className="h-full w-full select-none object-cover object-[50%_4%] sm:object-[72%_38%]"
-            />
-          </picture>
-        </div>
-
-        {/* Layers 1 and 3: text, buttons and the elephant. */}
-        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-3 px-4 pt-3 [grid-template-areas:'text_text'_'cta_art'] min-[360px]:px-5 sm:grid-cols-[minmax(0,48%)_minmax(0,1fr)_auto] sm:gap-x-0 sm:px-8 sm:pt-6 sm:[grid-template-areas:'text_._art'_'cta_._art'] lg:px-12">
-          <div className="self-end [grid-area:text] sm:self-auto sm:pt-1 lg:pt-4">
+    <section aria-labelledby="hero-heading" className="mx-auto max-w-[1200px] px-4 pt-4 sm:px-6 lg:px-8 lg:pt-5">
+      <div className={`rounded-[22px] sm:rounded-3xl ${HERO_CARD}`}>
+        <HeroGlows />
+        <div className="relative grid items-center gap-6 px-5 py-6 sm:px-8 sm:py-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-10 lg:px-10 lg:py-8">
+          <div className="min-w-0">
             <h1
               id="hero-heading"
-              className="font-display text-[1.75rem] font-semibold leading-[1.1] text-hp-ink sm:text-[2.125rem] lg:text-[clamp(2.25rem,3vw,2.75rem)]"
+              className="font-display text-[1.875rem] font-bold leading-[1.04] tracking-[-0.01em] text-white min-[400px]:text-[2.125rem] sm:text-[2.5rem] xl:text-[2.875rem]"
             >
               {/* "Auckland" in the heading: what people search for (owner, 26 Oct 2026). */}
               Local deals in Auckland.{" "}
-              <span className="block text-hp-purple">More to enjoy.</span>
+              <span className={`block ${HERO_ACCENT}`}>More to enjoy.</span>
             </h1>
-            <p className="mt-2 text-[0.9375rem] leading-relaxed text-hp-ink sm:mt-3 sm:pr-4 sm:text-base">
+            <p className="mt-2.5 max-w-[36rem] text-[0.9375rem] leading-relaxed text-white/85 sm:text-base">
               Discover standout offers from Auckland businesses. Contact or book directly with the business.
             </p>
+            <HeroTicks items={["Free for shoppers", "Every business checked", "NZ-owned"]} className="mt-3.5" />
+            <div className="mt-5 flex flex-col items-start gap-2.5 pr-[96px] min-[400px]:pr-[110px] sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:pr-[150px] lg:pr-0">
+              <a href="#deals" className={HERO_BUTTON}>
+                Browse deals
+                <ArrowRightIcon className="h-4 w-4" />
+              </a>
+              <Link
+                href="/list-your-business"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-full border-2 border-white/80 px-6 text-base font-bold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-hp-purple"
+              >
+                List your business
+              </Link>
+            </div>
           </div>
 
-          <div className="flex flex-col items-start gap-2 self-center py-4 [grid-area:cta] sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:self-start sm:pb-6 sm:pt-4 lg:pt-5">
-            <a href="#deals" className="btn-primary whitespace-nowrap">
-              Browse deals
-              <ArrowRightIcon className="hidden h-4 w-4 min-[360px]:block" />
-            </a>
-            <Link
-              href="/list-your-business"
-              // A text link on phones (it sits beside the elephant, where two
-              // full buttons don't fit); the outlined button from sm up.
-              className="inline-flex min-h-[44px] items-center rounded-full px-1 text-[0.9375rem] font-semibold text-hp-purple underline underline-offset-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hp-purple focus-visible:ring-offset-2 sm:border-[1.5px] sm:border-hp-purple sm:bg-white sm:px-5 sm:no-underline sm:hover:bg-hp-lavender"
-            >
-              List your business
-            </Link>
-          </div>
-
-          {/* Bottom-aligned so the feet sit on the panel's edge. */}
-          <div className="self-end [grid-area:art]">
-            {/* A plain <img> with sized copies: images aren't optimised on
-                Cloudflare, so next/image sent the 560px original to a
-                118px space. */}
+          {/* The picture, from lg: the skyline as a lifted photo card, the
+              mascot on its baseline. Decorative: the headline says what
+              matters. */}
+          <div aria-hidden="true" className="relative hidden h-[250px] lg:block xl:h-[270px]">
+            <div className={`absolute bottom-3 left-0 top-0 w-[76%] overflow-hidden rounded-2xl bg-white/10 ${HERO_LIFT}`}>
+              {/* Both sizes on offer, and the browser picks: the card is at
+                  most ~400px wide, so most screens take the 640px copy. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/megadeal/hero/auckland-skyline-800.webp"
+                srcSet="/megadeal/hero/auckland-skyline-640.webp 640w, /megadeal/hero/auckland-skyline-800.webp 800w, /megadeal/hero/auckland-skyline.webp 1600w"
+                sizes="400px"
+                alt=""
+                width={800}
+                height={351}
+                fetchPriority="high"
+                decoding="async"
+                // Sky Tower is at the photo's horizontal centre.
+                className="h-full w-full select-none object-cover object-[50%_40%] text-transparent"
+              />
+            </div>
+            <div className="absolute bottom-0 right-[2%] h-4 w-[26%] rounded-[50%] bg-[#1e0b3d]/45 blur-md" />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/megadeal/mascot/megadeal-mascot-hero-240.webp"
+              src="/megadeal/mascot/megadeal-mascot-hero-380.webp"
               srcSet="/megadeal/mascot/megadeal-mascot-hero-240.webp 240w, /megadeal/mascot/megadeal-mascot-hero-380.webp 380w, /megadeal/mascot/megadeal-mascot-hero.webp 560w"
-              alt="MegaDeal’s elephant mascot" aria-hidden="true"
+              sizes="190px"
+              alt=""
               width={560}
               height={580}
-              fetchPriority="high"
+              loading="eager"
+              fetchPriority="low"
               decoding="async"
-              sizes="(min-width: 1024px) 190px, (min-width: 640px) 150px, 118px"
-              className="block h-auto w-[92px] select-none min-[360px]:w-[118px] sm:w-[150px] lg:w-[190px]"
+              className="absolute bottom-1 right-0 w-[38%] max-w-[190px] select-none drop-shadow-[0_14px_22px_rgba(33,26,53,0.3)]"
             />
           </div>
         </div>
+
+        {/* On a phone and tablet: the mascot at the card's lower right,
+            standing on its edge, beside the buttons. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/megadeal/mascot/megadeal-mascot-hero-240.webp"
+          srcSet="/megadeal/mascot/megadeal-mascot-hero-240.webp 240w, /megadeal/mascot/megadeal-mascot-hero-380.webp 380w"
+          sizes="(min-width: 640px) 150px, 110px"
+          alt=""
+          aria-hidden="true"
+          width={560}
+          height={580}
+          loading="eager"
+          fetchPriority="low"
+          decoding="async"
+          className="pointer-events-none absolute bottom-0 right-2 w-[96px] select-none drop-shadow-[0_14px_22px_rgba(33,26,53,0.3)] min-[400px]:w-[110px] sm:right-4 sm:w-[150px] lg:hidden"
+        />
       </div>
     </section>
   );

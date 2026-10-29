@@ -45,6 +45,13 @@ no longer used (`docs/WIX-MIGRATION.md`). Before opening it to the public:
 
 ## Launching
 
+**First: approve every business that's waiting** (Admin → Businesses, status "Pending").
+Approval decides the offer at that moment: before the switch a WELCOME6 business gets 180
+credits (6 months), after it 90. Businesses that applied before launch were promised the 6
+months, so approve them all before step 4 (owner's choice, 29 Oct 2026: approve first, rather
+than going by application date). Anyone you can't approve yet (a question still open) gets
+the launch offer when you do; tell them, or add the difference by hand in Credits.
+
 4. In `lib/siteConfig.ts` set:
 
    ```ts
