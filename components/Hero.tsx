@@ -100,8 +100,10 @@ export default function Hero() {
           aria-hidden="true"
           width={560}
           height={580}
+          // Not low priority: on a phone it's the largest thing on the
+          // first screen until the deal photos arrive, so it's what the
+          // page's loading speed is measured by.
           loading="eager"
-          fetchPriority="low"
           decoding="async"
           className="pointer-events-none absolute bottom-0 right-2 w-[96px] select-none drop-shadow-[0_14px_22px_rgba(33,26,53,0.3)] min-[400px]:w-[110px] sm:right-4 sm:w-[150px] lg:hidden"
         />

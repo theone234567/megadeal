@@ -1,5 +1,5 @@
 import { notFound, permanentRedirect } from "next/navigation";
-import { pageLookup } from "@/lib/fetchDealServer";
+import { fetchBusinessIndexFacts, fetchBusinessProfileBySlug, pageLookup } from "@/lib/fetchDealServer";
 
 /**
  * Sends an old business address (from before a rename, or the Wix-era
@@ -17,5 +17,12 @@ export default async function Layout(props: { children: React.ReactNode; params:
   const { redirect, missing } = await pageLookup("business", slug);
   if (redirect) permanentRedirect(`/business/${redirect}`);
   if (missing) notFound();
+  // Read here too what the page's title and description need (both reads
+  // are cache()d, so the page doesn't read twice): with them still
+  // pending when the page starts, the title and description were sent
+  // far down the page instead of in <head>, to Google and AI crawlers too
+  // (only Bing got them in place), as on the deal page they aren't.
+  const found = await fetchBusinessProfileBySlug(slug).catch(() => null);
+  if (found) await fetchBusinessIndexFacts(found.business.id);
   return props.children;
 }
