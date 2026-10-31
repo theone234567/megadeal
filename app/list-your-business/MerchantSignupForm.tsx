@@ -194,6 +194,9 @@ export default function MerchantSignupForm({
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // The error that also offers the contact page (the sign-up code couldn't
+  // be sent): kept as its text, so a later, different error doesn't.
+  const [contactUsFor, setContactUsFor] = useState<string | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   /** Redesigned layout: problems found on submit, by field. Empty until
    *  then, so untouched fields never look wrong; a field's message clears
@@ -379,6 +382,7 @@ export default function MerchantSignupForm({
       savePendingSignup(outcome.email, applicationRef.current);
     } else {
       setSubmitError(outcome.message);
+      setContactUsFor(outcome.contactUs ? outcome.message : null);
     }
   }
 
@@ -1105,6 +1109,15 @@ export default function MerchantSignupForm({
         {submitError && (
           <p role="alert" className={redesign ? "text-sm font-medium text-red-700" : "text-sm text-ember-600"}>
             {submitError}
+            {contactUsFor === submitError && (
+              <>
+                {" "}If it keeps happening,{" "}
+                <a href="/contact" className="underline underline-offset-2">
+                  contact us
+                </a>{" "}
+                and we&apos;ll set you up.
+              </>
+            )}
           </p>
         )}
 

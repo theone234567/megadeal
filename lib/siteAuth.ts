@@ -13,7 +13,9 @@ export type AuthOutcome =
    *  unless `codeSent` is false (it couldn't go out just now; Resend can
    *  try again in `retryAfterSec`). */
   | { status: "verify"; pendingState: { email: string }; email: string; codeSent: boolean; retryAfterSec?: number }
-  | { status: "error"; message: string };
+  /** contactUs: the sign-up code couldn't be sent, so the form offers the
+   *  contact page as well as trying again. */
+  | { status: "error"; message: string; contactUs?: boolean };
 
 type Answer = { ok: boolean; status: number; json: Record<string, any> };
 
@@ -44,7 +46,11 @@ const toOutcome = (r: Answer, email: string): AuthOutcome =>
     ? { status: "success" }
     : r.json.status === "verify"
       ? { status: "verify", pendingState: { email }, email, codeSent: r.json.sent !== false, retryAfterSec: retryAfter(r.json) }
-      : { status: "error", message: typeof r.json.error === "string" && r.json.error ? r.json.error : fallbackMessage(r.status) };
+      : {
+          status: "error",
+          message: typeof r.json.error === "string" && r.json.error ? r.json.error : fallbackMessage(r.status),
+          ...(r.json.contactUs === true ? { contactUs: true } : {}),
+        };
 
 /** With the robot check on, no token means it didn't run in this browser:
  *  say why there and then, rather than sending the form to be refused

@@ -12,6 +12,7 @@ import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { SITE_URL } from "@/lib/siteConfig";
 import { BREACHED_PASSWORD_MESSAGE, passwordSeenInBreaches } from "@/lib/pwnedPassword";
 import { codeDidNotGoOut, noteSignupCodeProblem, projectEmailLimitHit, reportCodeSend } from "@/lib/signupHealth";
+import { forgetMissedSignup, noteMissedSignup } from "@/lib/missedSignups";
 
 export const dynamic = "force-dynamic";
 
@@ -39,8 +40,18 @@ export async function POST(req: NextRequest) {
   if (!res.ok && res.code === "weak_password") return NextResponse.json({ error: "Choose a stronger password: longer, and not a common one." }, { status: 400 });
   if (!res.ok && !["user_already_exists", "email_exists", "over_email_send_rate_limit"].includes(res.code)) {
     console.error("[auth/register] refused", res.status, res.code);
-    // Everyone's sign-up stops on this: Needs attention, and an email.
-    if (codeDidNotGoOut(res)) await noteSignupCodeProblem(res.code);
+    if (codeDidNotGoOut(res)) {
+      // Everyone's sign-up stops on this: Needs attention, and an email.
+      // Supabase doesn't keep the account, so this business is noted for
+      // the admin to contact (lib/missedSignups.ts), and the form offers
+      // the contact page (contactUs).
+      await noteSignupCodeProblem(res.code);
+      await noteMissedSignup(pre.email);
+      return NextResponse.json(
+        { error: "We couldn't send your sign-up code just now. Please try again in a few minutes.", contactUs: true },
+        { status: 502 }
+      );
+    }
     return NextResponse.json({ error: "We couldn't create your account just now. Please try again." }, { status: 502 });
   }
   // One business per email: the address already has an account (Supabase
@@ -70,7 +81,11 @@ export async function POST(req: NextRequest) {
     if (!kept.ok && kept.status !== 422) console.error("[auth/register] couldn't keep the sign-up", kept.status, kept.code);
   }
   // A new code went out: its wrong tries start again (lib/signupCodeAttempts.ts).
-  if (res.ok && !signUpHitExistingAccount(res.data)) await clearWrongCodes(pre.email);
+  if (res.ok && !signUpHitExistingAccount(res.data)) {
+    await clearWrongCodes(pre.email);
+    // Signed up after all: no need for the admin to get in touch.
+    await forgetMissedSignup(pre.email);
+  }
   return NextResponse.json({ status: "verify", ...(await reportCodeSend(res, "auth/register")) });
 }
 

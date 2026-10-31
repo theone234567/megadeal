@@ -42,6 +42,10 @@ export default function AdminDashboardPage() {
   const [aiNote, setAiNote] = useState<string | null>(null);
   // Set when a sign-up code couldn't be sent and none has gone out since.
   const [signupNote, setSignupNote] = useState<string | null>(null);
+  // Businesses whose sign-up code couldn't be sent (lib/missedSignups.ts):
+  // no account was kept, so this is the only way to reach them.
+  const [missed, setMissed] = useState<{ email: string; at: string }[]>([]);
+  const [missedError, setMissedError] = useState<string | null>(null);
   const [rudenessError, setRudenessError] = useState<string | null>(null);
   const [aiChecking, setAiChecking] = useState<{ done: number; total: number; error: string | null } | null>(null);
   const [dealsRefreshKey, setDealsRefreshKey] = useState(0);
@@ -85,6 +89,12 @@ export default function AdminDashboardPage() {
     }
 
     load();
+    fetch("/api/admin/missed-signups")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && Array.isArray(d?.items)) setMissed(d.items);
+      })
+      .catch(() => {});
     fetch("/api/admin/settings")
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
@@ -92,10 +102,15 @@ export default function AdminDashboardPage() {
         const sp = d?.signupProblem;
         if (!cancelled && sp?.at) {
           const when = new Date(sp.at).toLocaleString("en-NZ", { timeZone: "Pacific/Auckland", dateStyle: "medium", timeStyle: "short" });
+          // What the site found out (lib/signupHealth.ts signupCodeDiagnosis):
+          // "unexpected_failure: Resend's sending limit reached", say.
+          const cause = typeof sp.code === "string" && sp.code.includes(": ") ? sp.code.slice(sp.code.indexOf(": ") + 2) : null;
           setSignupNote(
             sp.kind === "password reset"
               ? `Password reset emails aren't going out (last failed ${when}), so "Forgot password" doesn't work. Check resend.com > Emails for why. This clears when an account email next goes out.`
-              : `New businesses can't get their sign-up code (last failed ${when}). Check Cloudflare > Security: Bot fight mode off, and the rule "Let Supabase reach email hook" active; then resend.com > Emails. This clears when a code next goes out.`
+              : cause && cause !== "Supabase didn't reach the site"
+                ? `New businesses can't get their sign-up code (last failed ${when}: ${cause}). The alert email says what to check. This clears when a code next goes out.`
+                : `New businesses can't get their sign-up code (last failed ${when}). Check Cloudflare > Security: Bot fight mode off, and the rule "Let Supabase reach email hook" active; then resend.com > Emails. This clears when a code next goes out.`
           );
         }
         const ai = d?.aiReview;
@@ -112,6 +127,19 @@ export default function AdminDashboardPage() {
       cancelled = true;
     };
   }, [router]);
+
+  /** The admin has been in touch with a business that couldn't sign up. */
+  async function markMissedDone(email: string) {
+    setMissedError(null);
+    const res = await fetch("/api/admin/missed-signups", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    }).catch(() => null);
+    const d = res?.ok ? await res.json().catch(() => null) : null;
+    if (Array.isArray(d?.items)) setMissed(d.items);
+    else setMissedError("Couldn't save that. Please try again.");
+  }
 
   async function toggleRudenessCheck() {
     if (rudenessCheck === null) return;
@@ -382,13 +410,41 @@ export default function AdminDashboardPage() {
               {signupNote}
             </p>
           )}
+          {missed.length > 0 && (
+            <div className="mt-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+              <p className="font-medium">
+                {missed.length === 1 ? "This business" : `These ${missed.length} businesses`} tried to sign up when the sign-up code
+                couldn&apos;t be sent, so no account was kept. Get in touch and ask them to try again:
+              </p>
+              <ul className="mt-1.5 space-y-1">
+                {missed.map((m) => (
+                  <li key={m.email} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <a href={`mailto:${m.email}`} className="break-all font-semibold underline underline-offset-2">
+                      {m.email}
+                    </a>
+                    <span className="text-red-800">
+                      {new Date(m.at).toLocaleString("en-NZ", { timeZone: "Pacific/Auckland", dateStyle: "medium", timeStyle: "short" })}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => markMissedDone(m.email)}
+                      className="rounded-full border border-red-300 bg-white px-2.5 py-0.5 text-xs font-semibold text-red-900 hover:bg-red-100"
+                    >
+                      Done
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {missedError && <p className="mt-1 font-medium">{missedError}</p>}
+            </div>
+          )}
           {aiNote && (
             <p role="status" className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">
               {aiNote}
             </p>
           )}
           {attention.length === 0 ? (
-            <p className="mt-1 text-sm text-slate-500">{aiNote || signupNote ? "Nothing else is waiting on you." : "Nothing is waiting on you."}</p>
+            <p className="mt-1 text-sm text-slate-500">{aiNote || signupNote || missed.length > 0 ? "Nothing else is waiting on you." : "Nothing is waiting on you."}</p>
           ) : (
             <ul className="mt-2 flex flex-wrap gap-2">
               {attention.map((a) => (

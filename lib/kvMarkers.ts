@@ -36,6 +36,11 @@ export const SIGNUP_SEND_FAILURE_KEY = "auth:email-hook:send-failure";
 /** When the email hook last sent a sign-up code successfully. */
 export const SIGNUP_CODE_SENT_KEY = "auth:signup:code-sent";
 
+/** Businesses whose sign-up code couldn't be sent, so their account wasn't
+ *  kept ([{ email, at }], lib/missedSignups.ts): shown in Needs attention
+ *  so the admin can contact them. */
+export const SIGNUP_MISSED_KEY = "auth:signup:missed";
+
 /** Set for a few hours after the admin is emailed about failing sign-up
  *  codes, so one outage sends one email, not one per attempt. */
 export const SIGNUP_ALERT_SENT_KEY = "auth:signup:alerted";
