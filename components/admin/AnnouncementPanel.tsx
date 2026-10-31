@@ -121,7 +121,7 @@ export default function AnnouncementPanel() {
         if (data.quotaReached) {
           setMessage({
             tone: "error",
-            text: `${sentTotal} sent, then Resend's sending limit was reached. Press Send again tomorrow to carry on (nobody gets it twice), or move Resend to a bigger plan to send the rest today.`,
+            text: `${sentTotal} sent, then it stopped for today: Resend's sending limit was reached, or on its free plan (100 emails a day) the last 25 are kept for sign-up codes and password resets. Press Send again tomorrow to carry on (nobody gets it twice), or move Resend to a paid plan to send the rest today.`,
           });
           break;
         }

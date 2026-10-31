@@ -41,6 +41,11 @@ export const SIGNUP_CODE_SENT_KEY = "auth:signup:code-sent";
  *  so the admin can contact them. */
 export const SIGNUP_MISSED_KEY = "auth:signup:missed";
 
+/** Set when a bulk send stopped for the day (lib/bulkEmailPause.ts), so
+ *  the hourly weekly-deals run doesn't send one more each hour into the
+ *  room kept for sign-up codes. */
+export const BULK_EMAIL_PAUSED_KEY = "email:bulk:paused";
+
 /** Set for a few hours after the admin is emailed about failing sign-up
  *  codes, so one outage sends one email, not one per attempt. */
 export const SIGNUP_ALERT_SENT_KEY = "auth:signup:alerted";

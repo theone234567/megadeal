@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     if (r.sent || r.failed || r.quotaReached) {
       await logAdminAction({
         action: `Sent the weekly deals email (${campaign})`,
-        detail: `${r.sent} sent${r.failed ? `, ${r.failed} failed` : ""}, ${r.remaining} to go${r.quotaReached ? " (stopped: Resend's sending limit)" : ""}`,
+        detail: `${r.sent} sent${r.failed ? `, ${r.failed} failed` : ""}, ${r.remaining} to go${r.quotaReached ? " (stopped for today: Resend's daily limit, or the room kept for sign-up codes)" : ""}`,
       });
     }
     return NextResponse.json({ campaign, ...r });

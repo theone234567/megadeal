@@ -13,7 +13,28 @@ const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
  *  sign-up alert names it, so it says what actually went wrong
  *  (lib/signupHealth.ts). */
 export type SendFailure = "quota" | "refused" | "timeout" | "unreachable" | "bad_address" | "not_configured";
-export type SendResult = { ok: true } | { ok: false; reason?: SendFailure; status?: number };
+/** dailyUsed: how many emails Resend has counted today, which it reports
+ *  only on its free plan (100 a day): see bulkShouldPause. */
+export type SendResult = { ok: true; dailyUsed?: number } | { ok: false; reason?: SendFailure; status?: number };
+
+/**
+ * Bulk sends (the subscriber email, the weekly deals email, login invites)
+ * stop for the day at 75 emails on Resend's free plan, keeping the last
+ * 25 for sign-up codes and password resets: those failing for the rest of
+ * the day would stop every new business signing up. Paid plans have no
+ * daily limit, and Resend doesn't report one, so they never pause here.
+ */
+export const BULK_DAILY_STOP = 75;
+
+export function bulkShouldPause(result: SendResult): boolean {
+  return result.ok && result.dailyUsed !== undefined && result.dailyUsed >= BULK_DAILY_STOP;
+}
+
+/** Resend's x-resend-daily-quota header: emails counted today, if given. */
+export function dailyUsedFrom(header: string | null): number | undefined {
+  const m = header?.match(/^\s*(\d+)/);
+  return m ? Number(m[1]) : undefined;
+}
 
 /** Sends one email, through Resend from megadeal.co.nz (sendWithResend below). */
 export async function sendTransactionalEmail(msg: Parameters<typeof sendEmail>[0]): Promise<boolean> {
@@ -120,7 +141,10 @@ async function sendWithResend(msg: { to: string[]; subject: string; html: string
         body,
         signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())),
       });
-      if (res.ok) return { ok: true };
+      if (res.ok) {
+        const dailyUsed = dailyUsedFrom(res.headers.get("x-resend-daily-quota"));
+        return dailyUsed === undefined ? { ok: true } : { ok: true, dailyUsed };
+      }
       // Resend's error can quote the address it refused: masked, so the
       // log says what went wrong without who it was for.
       const answer = (await res.text().catch(() => "")).slice(0, 300).replace(/[^\s"'<>@,;:]+@[^\s"'<>@,;:]+/g, "[address]");

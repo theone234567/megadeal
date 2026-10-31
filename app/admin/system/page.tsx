@@ -395,7 +395,7 @@ function LoginInvites() {
           <p>
             {done.sent} emailed.{done.alreadySent > 0 && ` ${done.alreadySent} already emailed this week.`}
             {done.failed.length > 0 && ` Couldn't email: ${done.failed.join(", ")} (tried again if you press this in an hour or more).`}
-            {done.quotaReached && " The email service's daily sending limit was reached: press this again tomorrow to email the rest. Nobody is emailed twice."}
+            {done.quotaReached && " It stopped for today at the email service's daily limit (on Resend's free plan, the last 25 of its 100 a day are kept for sign-up codes): press this again tomorrow to email the rest. Nobody is emailed twice."}
           </p>
         )}
         {error && <p className="text-red-700">{error}</p>}

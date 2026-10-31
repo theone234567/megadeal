@@ -152,6 +152,29 @@ describe("sending", () => {
   });
 });
 
+describe("Resend's daily count (free plan)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it("is passed on from its header, and bulk sends pause at 75", async () => {
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.stubGlobal("fetch", async () => new Response("{}", { headers: { "x-resend-daily-quota": "75" } }));
+    const { bulkShouldPause, dailyUsedFrom, sendEmail } = await import("./sendEmail");
+    const result = await sendEmail({ to: "a@b.nz", subject: "Hi", html: "<p>Hi</p>" });
+    expect(result).toEqual({ ok: true, dailyUsed: 75 });
+    expect(bulkShouldPause(result)).toBe(true);
+    expect(bulkShouldPause({ ok: true, dailyUsed: 74 })).toBe(false);
+    // A paid plan: no header, never paused here.
+    expect(bulkShouldPause({ ok: true })).toBe(false);
+    expect(bulkShouldPause({ ok: false, reason: "quota" })).toBe(false);
+    expect(dailyUsedFrom(null)).toBeUndefined();
+    expect(dailyUsedFrom("nonsense")).toBeUndefined();
+    expect(dailyUsedFrom(" 12")).toBe(12);
+  });
+});
+
 describe("email text and links (T246)", () => {
   it("decodes every entity in the text part", async () => {
     const { emailHtmlToText } = await import("./emailText");

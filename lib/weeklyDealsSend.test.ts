@@ -26,7 +26,8 @@ vi.mock("@/lib/rateLimit", () => ({ getRateLimitKv: async () => kv }));
 vi.mock("@/lib/dataClient", () => ({ createDataClient: () => ({ items: { query: () => ({}) } }) }));
 vi.mock("@/lib/queryAll", () => ({ queryAllItems: async () => subscribers }));
 vi.mock("@/lib/fetchDealServer", () => ({ fetchAllLiveDealsServer: async () => deals }));
-vi.mock("@/lib/sendEmail", () => ({
+vi.mock("@/lib/sendEmail", async (orig) => ({
+  ...(await orig<typeof import("@/lib/sendEmail")>()),
   sendEmail: async (m: (typeof sent)[number]) => (sent.push(m), { ok: true as const }),
 }));
 

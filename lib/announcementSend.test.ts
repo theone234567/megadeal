@@ -9,7 +9,15 @@ import { NextRequest } from "next/server";
 
 const SITE = "https://megadeal.co.nz";
 const kvStore = new Map<string, string>();
-const kv = { get: async (k: string) => kvStore.get(k) ?? null, put: async (k: string, v: string) => void kvStore.set(k, v) };
+// Cloudflare forgets a key once its expirationTtl is up.
+const kvExpires = new Map<string, number>();
+const kv = {
+  get: async (k: string) => ((kvExpires.get(k) ?? Infinity) > Date.now() ? (kvStore.get(k) ?? null) : null),
+  put: async (k: string, v: string, o?: { expirationTtl?: number }) => {
+    kvStore.set(k, v);
+    if (o?.expirationTtl) kvExpires.set(k, Date.now() + o.expirationTtl * 1000);
+  },
+};
 
 // 25 addresses that can never be sent to, ahead of 20 that can.
 const BAD = Array.from({ length: 25 }, (_, i) => `bad${i}@example.nz`);
@@ -34,15 +42,18 @@ vi.mock("@/lib/dataClient", () => ({ createDataClient: () => ({ items: { query: 
 vi.mock("@/lib/queryAll", () => ({ queryAllItems: async () => rows }));
 vi.mock("@/lib/fetchDealServer", () => ({ fetchAllLiveDealsServer: async () => [] }));
 let quotaAfter = Infinity;
-vi.mock("@/lib/sendEmail", () => {
+// Resend's free plan: how many emails it had counted today before this run
+// (undefined: a paid plan, which reports no daily count).
+let usedBefore: number | undefined;
+vi.mock("@/lib/sendEmail", async (orig) => {
   const sendEmail = async ({ to, unsubscribeUrl }: { to: string; unsubscribeUrl?: string }) => {
     if (sentTo.length >= quotaAfter) return { ok: false as const, reason: "quota" as const };
     if (down || to.startsWith("bad")) return { ok: false as const };
     sentTo.push(to);
     unsubHeaders.push(unsubscribeUrl);
-    return { ok: true as const };
+    return usedBefore === undefined ? { ok: true as const } : { ok: true as const, dailyUsed: usedBefore + sentTo.length };
   };
-  return { sendEmail, sendTransactionalEmail: async (m: { to: string }) => (await sendEmail(m)).ok };
+  return { ...(await orig<typeof import("@/lib/sendEmail")>()), sendEmail, sendTransactionalEmail: async (m: { to: string }) => (await sendEmail(m)).ok };
 });
 
 async function send() {
@@ -88,6 +99,7 @@ describe("sending an announcement", () => {
 
   it("stops after two empty batches when sending is down, and picks up later", async () => {
     kvStore.clear();
+    kvExpires.clear();
     sentTo.length = 0;
     down = true;
     const run = await sendAll();
@@ -106,6 +118,7 @@ describe("sending an announcement", () => {
 
   it("stops at Resend's sending limit without counting it against anyone", async () => {
     kvStore.clear();
+    kvExpires.clear();
     sentTo.length = 0;
     quotaAfter = 7;
     let run = { sent: 0, failed: 0, quotaReached: false };
@@ -116,8 +129,15 @@ describe("sending an announcement", () => {
     // The 25 bad addresses failed on their own; the limit stopped it at 7.
     expect(run).toEqual({ sent: 7, failed: 25, quotaReached: true });
 
-    // The next day: carries on where it stopped, nobody twice.
+    // Later the same day nothing more is tried, not even one email to find
+    // out (the weekly deals email runs every hour).
     quotaAfter = Infinity;
+    expect(await send()).toMatchObject({ sent: 0, failed: 0, quotaReached: true });
+    expect(sentTo).toHaveLength(7);
+
+    // The next day: carries on where it stopped, nobody twice.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(Date.now() + 13 * 60 * 60 * 1000);
     let sent = 0;
     for (let i = 0; i < 10; i++) {
       const data = await send();
@@ -127,6 +147,29 @@ describe("sending an announcement", () => {
     expect(sent).toBe(13);
     expect(sentTo).toHaveLength(20);
     expect(new Set(sentTo).size).toBe(20);
+  });
+
+  it("on Resend's free plan, stops at 75 emails a day so sign-up codes can still go out", async () => {
+    kvStore.clear();
+    kvExpires.clear();
+    sentTo.length = 0;
+    // 70 already sent today (codes, alerts, an earlier batch).
+    usedBefore = 70;
+    let run = { sent: 0, quotaReached: false };
+    for (let i = 0; i < 10 && !run.quotaReached; i++) {
+      const data = await send();
+      run = { sent: run.sent + data.sent, quotaReached: data.quotaReached };
+    }
+    expect(run).toEqual({ sent: 5, quotaReached: true });
+    // Paused for the rest of the day.
+    expect(await send()).toMatchObject({ sent: 0, quotaReached: true });
+
+    // A paid plan reports no daily count: everyone, in one go.
+    kvStore.clear();
+    kvExpires.clear();
+    sentTo.length = 0;
+    usedBefore = undefined;
+    expect((await sendAll()).sent).toBe(20);
   });
 
   it("every business email carries its signed one-click unsubscribe", () => {

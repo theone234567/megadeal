@@ -115,8 +115,10 @@ What then changes by itself:
 
    These go out through Resend from megadeal.co.nz (`EMAIL_PROVIDER=resend`, switched on
    7 Oct 2026). Check Resend's plan covers the list first: its free plan has a daily
-   sending limit, so for a launch list bigger than that, move to a paid plan for the
-   month. A new sending domain builds its reputation slowly, so send each group once,
+   sending limit (100 a day), so for a launch list bigger than that, move to a paid plan for the
+   month. On the free plan, Send stops for the day at 75 emails, keeping the last 25 for
+   sign-up codes and password resets (otherwise a big send would stop new businesses
+   signing up until the next day); press Send again the next day to carry on. A new sending domain builds its reputation slowly, so send each group once,
    not in quick repeats. Later emails (say, a monthly round-up of new deals) use the
    same tool with a new email name, such as `deals-2026-12`.
 10. **Check the offer end to end** (`docs/LAUNCH-OFFER-CHECKLIST.md`, "After launch, check"):

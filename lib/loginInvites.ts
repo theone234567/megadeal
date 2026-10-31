@@ -3,7 +3,8 @@ import { INVITE_LINK_HOURS } from "./resetLinkTimes";
 import type { Sql } from "./db/connection";
 import { createPasswordResetToken, INVITE_TTL_SECONDS } from "./passwordResetTokens";
 import { getRateLimitKv } from "./rateLimit";
-import { sendEmail } from "./sendEmail";
+import { bulkShouldPause, sendEmail } from "./sendEmail";
+import { bulkEmailPaused, pauseBulkEmail } from "./bulkEmailPause";
 import { brandedEmailHtml } from "./emailTemplate";
 import { escapeHtml } from "./escapeHtml";
 import { greetingName } from "./emailGreeting";
@@ -85,6 +86,11 @@ export async function sendLoginInvites(db: Sql, siteUrl: string, opts: { limit?:
     else if (await kv.get(FAILED_PREFIX + b.id)) result.waiting++;
     else todo.push(b);
   }
+  if (await bulkEmailPaused(kv)) {
+    result.quotaReached = true;
+    result.remaining = todo.length;
+    return result;
+  }
   let tried = 0;
   for (const b of todo.slice(0, limit)) {
     const token = await createPasswordResetToken(b.email, INVITE_TTL_SECONDS);
@@ -106,11 +112,17 @@ export async function sendLoginInvites(db: Sql, siteUrl: string, opts: { limit?:
     if (sent.ok) {
       await kv.put(SENT_PREFIX + b.id, new Date().toISOString(), { expirationTtl: INVITE_TTL_SECONDS });
       result.sent++;
+      // The day's free sending kept for sign-up codes: stop for today.
+      if (bulkShouldPause(sent)) {
+        result.quotaReached = true;
+        break;
+      }
     } else {
       await kv.put(FAILED_PREFIX + b.id, "1", { expirationTtl: RETRY_FAILED_AFTER_SECONDS });
       result.failed.push(b.businessName || b.email);
     }
   }
+  if (result.quotaReached) await pauseBulkEmail(kv);
   result.remaining = Math.max(0, todo.length - tried);
   return result;
 }

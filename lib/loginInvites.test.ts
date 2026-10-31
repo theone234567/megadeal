@@ -19,7 +19,8 @@ vi.mock("./rateLimit", () => ({
   getRateLimitKv: async () => ({ get: async (k: string) => kvStore.get(k) ?? null, put: async (k: string, v: string) => void kvStore.set(k, v) }),
 }));
 vi.mock("./passwordResetTokens", () => ({ INVITE_TTL_SECONDS: 7 * 24 * 3600, createPasswordResetToken: async () => "tok" }));
-vi.mock("./sendEmail", () => ({
+vi.mock("./sendEmail", async (orig) => ({
+  ...(await orig<typeof import("./sendEmail")>()),
   sendEmail: async ({ to }: { to: string }) => {
     if (sentTo.length >= quotaAfter) return { ok: false, reason: "quota" };
     if (to.startsWith("bad")) return { ok: false };
@@ -81,7 +82,11 @@ describe("emailing set-password links", () => {
     const first = await pressButton();
     expect(first).toMatchObject({ sent: 4, quotaReached: true });
 
+    // The same day: paused, nothing more tried.
     quotaAfter = Infinity;
+    expect(await pressButton()).toMatchObject({ sent: 0, quotaReached: true });
+    // Another day (the pause has run out).
+    kvStore.delete("email:bulk:paused");
     const next = await pressButton();
     expect(next.sent).toBe(11);
     expect(new Set(sentTo).size).toBe(15);

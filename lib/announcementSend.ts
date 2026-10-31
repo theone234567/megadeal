@@ -4,7 +4,8 @@ import { businessOptOutLinks, optedOutBusinesses } from "./businessEmailOptOut";
 import { createDataClient } from "./dataClient";
 import { queryAllItems } from "./queryAll";
 import { getRateLimitKv } from "./rateLimit";
-import { sendEmail } from "./sendEmail";
+import { bulkEmailPaused, pauseBulkEmail } from "./bulkEmailPause";
+import { bulkShouldPause, sendEmail } from "./sendEmail";
 import { SITE_URL } from "./siteConfig";
 import {
   announcementHtml,
@@ -24,7 +25,8 @@ import {
  * at a time: the admin page's "Send" (app/api/admin/announcement) and the
  * weekly deals email (lib/weeklyDeals.ts). Each address once per
  * announcement and audience; addresses that fail are passed over for an
- * hour, then tried again; it stops at Resend's sending limit.
+ * hour, then tried again; it stops at Resend's sending limit, or on its
+ * free plan once the day's emails reach lib/sendEmail.ts BULK_DAILY_STOP.
  */
 
 const SENT_TTL_SECONDS = 180 * 24 * 3600;
@@ -113,6 +115,9 @@ export async function sendAnnouncementBatch(opts: {
   // Resend's daily or monthly limit: stop here, and don't count it
   // against anyone. Send again once the limit resets.
   let quotaReached = false;
+  if (await bulkEmailPaused(kv)) {
+    return { sent, failed, waiting: notSent.length - todo.length, quotaReached: true, alreadySent: everyone.length - notSent.length, remaining: todo.length };
+  }
   // Written once at the end of the batch (Cloudflare allows about one
   // write a second to a key), and in `finally` so a batch that stops part
   // way still records who it reached.
@@ -133,6 +138,11 @@ export async function sendAnnouncementBatch(opts: {
       if (result.ok) {
         sentList.add(addressHash(r.email));
         sent++;
+        // The day's free sending kept for sign-up codes: stop for today.
+        if (bulkShouldPause(result)) {
+          quotaReached = true;
+          break;
+        }
       } else if ("reason" in result && result.reason === "quota") {
         quotaReached = true;
         break;
@@ -142,6 +152,7 @@ export async function sendAnnouncementBatch(opts: {
       }
     }
   } finally {
+    if (quotaReached) await pauseBulkEmail(kv);
     if (sent) await kv.put(key, JSON.stringify([...sentList]), { expirationTtl: SENT_TTL_SECONDS });
     if (failed) await kv.put(failedKey, JSON.stringify(Object.fromEntries(failedList)), { expirationTtl: SENT_TTL_SECONDS });
   }
