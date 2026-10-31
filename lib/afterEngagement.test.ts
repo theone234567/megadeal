@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { afterEngagement, ENGAGE_FALLBACK_MS, resetAfterEngagementForTests } from "./afterEngagement";
+import { afterEngagement, arrivedFromAd, ENGAGE_FALLBACK_MS, resetAfterEngagementForTests } from "./afterEngagement";
 
 // A bare window/document: enough for the listeners and timers it uses.
 function fakeBrowser(readyState: "loading" | "complete") {
@@ -75,5 +75,39 @@ describe("afterEngagement (T244)", () => {
     const late = vi.fn();
     afterEngagement(late);
     expect(late).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("visitors from an ad are tracked straight away", () => {
+  beforeEach(() => resetAfterEngagementForTests());
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("recognises an ad click's address", () => {
+    expect(arrivedFromAd("?fbclid=IwAR123")).toBe(true);
+    expect(arrivedFromAd("?utm_source=facebook&utm_medium=paid")).toBe(true);
+    expect(arrivedFromAd("?gclid=abc")).toBe(true);
+    expect(arrivedFromAd("")).toBe(false);
+    expect(arrivedFromAd("?q=pizza&category=food-drink")).toBe(false);
+  });
+
+  it("runs the scripts at once for an ad visitor, without waiting", () => {
+    vi.stubGlobal("window", { location: { search: "?fbclid=IwAR123" }, addEventListener: vi.fn(), removeEventListener: vi.fn(), setTimeout: vi.fn() });
+    vi.stubGlobal("document", { readyState: "complete" });
+    const ga = vi.fn();
+    const pixel = vi.fn();
+    afterEngagement(ga);
+    afterEngagement(pixel);
+    expect(ga).toHaveBeenCalledTimes(1);
+    expect(pixel).toHaveBeenCalledTimes(1);
+  });
+
+  it("still waits for everyone else", () => {
+    const add = vi.fn();
+    vi.stubGlobal("window", { location: { search: "?q=pizza" }, addEventListener: add, removeEventListener: vi.fn(), setTimeout: vi.fn() });
+    vi.stubGlobal("document", { readyState: "complete" });
+    const ga = vi.fn();
+    afterEngagement(ga);
+    expect(ga).not.toHaveBeenCalled();
+    expect(add).toHaveBeenCalled();
   });
 });

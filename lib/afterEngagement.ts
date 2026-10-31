@@ -10,9 +10,26 @@
  * queue every call, including the first page view, until their script
  * arrives. A visitor who leaves within 5 seconds without touching the page
  * isn't counted, which is the trade.
+ *
+ * Except a visitor who arrived from an ad (a click ID or utm_ tags in the
+ * address): their scripts start straight away (owner, 31 Oct 2026), so the
+ * ad's landing page views, bounces and time on site are counted in full.
+ * Paid visits are what the measurement is for; everyone else keeps the
+ * faster first screen.
  */
 
 export const ENGAGE_FALLBACK_MS = 5000;
+
+/** Address parameters an ad click adds: Meta, Google, Microsoft and TikTok
+ *  click IDs, and the utm_ tags a campaign puts on its links. */
+const AD_PARAMS = ["fbclid", "gclid", "gbraid", "wbraid", "msclkid", "ttclid", "utm_source", "utm_medium", "utm_campaign"];
+
+/** Whether this page was reached from an ad (see above). */
+export function arrivedFromAd(search: string): boolean {
+  if (!search) return false;
+  const params = new URLSearchParams(search);
+  return AD_PARAMS.some((p) => params.has(p));
+}
 
 const EVENTS = ["pointerdown", "keydown", "scroll", "touchstart"] as const;
 
@@ -51,6 +68,11 @@ function startWatching() {
 export function afterEngagement(run: () => void): void {
   if (typeof window === "undefined") return;
   if (fired) {
+    run();
+    return;
+  }
+  if (arrivedFromAd(window.location?.search ?? "")) {
+    fired = true;
     run();
     return;
   }
