@@ -44,7 +44,12 @@ export function trackEvent(
     window.gtag?.("event", event, {
       deal_id: data.dealId ?? undefined,
       business_slug: data.businessSlug ?? undefined,
-      source: data.source,
+      // Not "source": Google Analytics reads an event's source (and
+      // medium, campaign) as the visit's traffic source, so a code reveal
+      // relabelled a visit from a Facebook ad as "code_panel / (not set)"
+      // (owner's report, 31 Oct 2026). Which button it was goes as
+      // click_location instead.
+      click_location: data.source,
       method: data.method,
     });
   } catch {
