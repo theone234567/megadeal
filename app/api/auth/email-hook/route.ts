@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
-import { sendTransactionalEmail } from "@/lib/sendEmail";
+import { sendEmail } from "@/lib/sendEmail";
 import { brandedEmailHtml } from "@/lib/emailTemplate";
 import { checkRateLimit, getRateLimitKv } from "@/lib/rateLimit";
-import { EMAIL_HOOK_REACHED_KEY } from "@/lib/kvMarkers";
+import { EMAIL_HOOK_REACHED_KEY, SIGNUP_SEND_FAILURE_KEY } from "@/lib/kvMarkers";
 import { noteSignupCodeSent } from "@/lib/signupHealth";
 
 export const dynamic = "force-dynamic";
@@ -87,8 +87,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: { http_code: 400, message: `Unsupported email: ${action}` } }, { status: 400 });
   }
   // Supabase waits 5 seconds for this hook: answer within 4.
-  const sent = await sendTransactionalEmail({ to: email, subject: message.subject, html: message.html, withinMs: 4000 });
-  if (!sent) return NextResponse.json({ error: { http_code: 500, message: "Couldn't send" } }, { status: 500 });
+  const sent = await sendEmail({ to: email, subject: message.subject, html: message.html, withinMs: 4000 });
+  if (!sent.ok) {
+    // Why, for the sign-up alert (lib/signupHealth.ts): Supabase only
+    // reports "unexpected_failure", which could be anything.
+    await (await getRateLimitKv())
+      ?.put(SIGNUP_SEND_FAILURE_KEY, JSON.stringify({ at: new Date().toISOString(), reason: sent.reason ?? "unknown", status: sent.status ?? null }), { expirationTtl: 60 * 60 * 24 })
+      .catch(() => {});
+    return NextResponse.json({ error: { http_code: 500, message: "Couldn't send" } }, { status: 500 });
+  }
   // Clears Needs attention's "can't get their sign-up code", if it's up.
   await noteSignupCodeSent();
   return NextResponse.json({});

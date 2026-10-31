@@ -99,7 +99,7 @@ describe("sending", () => {
     it("doesn't wait out a daily or monthly limit, and says that's why", async () => {
       resend.mockResolvedValueOnce(tooMany('{"name":"daily_quota_exceeded"}'));
       const { sendEmail } = await import("./sendEmail");
-      expect(await sendEmail({ to: "a@b.nz", subject: "Hi", html: "<p>Hi</p>" })).toEqual({ ok: false, reason: "quota" });
+      expect(await sendEmail({ to: "a@b.nz", subject: "Hi", html: "<p>Hi</p>" })).toEqual({ ok: false, reason: "quota", status: 429 });
       expect(resend).toHaveBeenCalledOnce();
     });
 

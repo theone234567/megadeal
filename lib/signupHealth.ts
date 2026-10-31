@@ -1,6 +1,6 @@
 import "server-only";
 import { afterResponse } from "./afterResponse";
-import { SIGNUP_ALERT_SENT_KEY, SIGNUP_CODE_SENT_KEY, SIGNUP_PROBLEM_KEY } from "./kvMarkers";
+import { EMAIL_HOOK_REACHED_KEY, SIGNUP_ALERT_SENT_KEY, SIGNUP_CODE_SENT_KEY, SIGNUP_PROBLEM_KEY, SIGNUP_SEND_FAILURE_KEY } from "./kvMarkers";
 import { getRateLimitKv } from "./rateLimit";
 import { sendTransactionalEmail } from "./sendEmail";
 import { brandedEmailHtml } from "./emailTemplate";
@@ -39,11 +39,55 @@ const CHECKS: Record<AccountEmail, string> = {
   "password reset": "Most likely a sending problem: resend.com &gt; Emails shows why (a daily limit, or the domain needing attention).",
 };
 
+/** How recent a hook visit or failure must be to belong to this sign-up. */
+const SAME_SIGNUP_MS = 2 * 60 * 1000;
+
+/**
+ * What actually stopped a sign-up code, as far as the site can tell.
+ * Supabase only answers "unexpected_failure", so the email hook records
+ * why its send failed (app/api/auth/email-hook) and when it was last
+ * reached: a failure just now says what Resend did; no visit to the hook
+ * just now points at Cloudflare stopping Supabase on the way.
+ */
+export function signupCodeDiagnosis(
+  hookReachedAt: string | null,
+  sendFailure: { at: string; reason: string; status?: number | null } | null,
+  now: number = Date.now(),
+): { label: string; check: string } | null {
+  const recent = (at: string | null | undefined) => Boolean(at && now - new Date(at).getTime() <= SAME_SIGNUP_MS);
+  if (sendFailure && recent(sendFailure.at)) {
+    const status = sendFailure.status ? ` (${sendFailure.status})` : "";
+    switch (sendFailure.reason) {
+      case "quota":
+        return { label: "Resend's sending limit reached", check: "Resend's daily or monthly sending limit was reached: resend.com &gt; Usage. It resets by itself, or a paid plan lifts it." };
+      case "refused":
+        return { label: `Resend refused the email${status}`, check: `Resend refused this email${status}: resend.com &gt; Logs shows why. If it was a mistyped or test address, there's nothing to fix; if it keeps happening, check the domain under resend.com &gt; Domains.` };
+      case "timeout":
+        return { label: "Resend didn't answer in time", check: "Resend didn't answer within Supabase's 5 seconds. Usually brief: if it keeps happening, check status.resend.com." };
+      case "unreachable":
+        return { label: "Resend couldn't be reached", check: "The site couldn't reach Resend. Usually brief: if it keeps happening, check status.resend.com." };
+      case "not_configured":
+        return { label: "no Resend key set", check: "RESEND_API_KEY isn't set on the site: Cloudflare &gt; Workers &gt; megadeal &gt; Settings &gt; Variables." };
+      case "bad_address":
+        return { label: "not a valid email address", check: "The address given wasn't a valid email address. Nothing to fix unless it keeps happening." };
+    }
+  }
+  if (!recent(hookReachedAt)) {
+    return { label: "Supabase didn't reach the site", check: CHECKS["sign-up code"] };
+  }
+  return null;
+}
+
 export async function noteSignupCodeProblem(code: string, kind: AccountEmail = "sign-up code"): Promise<void> {
   try {
     const kv = await getRateLimitKv();
     if (!kv) return;
-    const reason = code.replace(/[^a-z0-9_ -]/gi, "").slice(0, 60);
+    let diagnosis: { label: string; check: string } | null = null;
+    if (kind === "sign-up code") {
+      const failure = await kv.get(SIGNUP_SEND_FAILURE_KEY).catch(() => null);
+      diagnosis = signupCodeDiagnosis(await kv.get(EMAIL_HOOK_REACHED_KEY).catch(() => null), failure ? JSON.parse(failure) : null);
+    }
+    const reason = `${code.replace(/[^a-z0-9_ -]/gi, "").slice(0, 60)}${diagnosis ? `: ${diagnosis.label}` : ""}`;
     await kv.put(SIGNUP_PROBLEM_KEY, JSON.stringify({ at: new Date().toISOString(), code: reason, kind }), { expirationTtl: KEEP_SECONDS });
     const to = process.env.ADMIN_NOTIFY_EMAIL;
     if (!to || (await kv.get(SIGNUP_ALERT_SENT_KEY))) return;
@@ -58,7 +102,7 @@ export async function noteSignupCodeProblem(code: string, kind: AccountEmail = "
         subject: kind === "sign-up code" ? "MegaDeal: new businesses can't get their sign-up code" : "MegaDeal: password reset emails aren't going out",
         html: brandedEmailHtml(`
           <p style="margin:0 0 16px;">${who} (${reason})</p>
-          <p style="margin:0 0 16px;">${CHECKS[kind]}</p>
+          <p style="margin:0 0 16px;">${diagnosis?.check ?? CHECKS[kind]}</p>
           <p style="margin:0;">Admin &gt; Needs attention shows this until an account email goes out again: <a href="${SITE_URL}/admin">${SITE_URL}/admin</a>. You'll get at most one of these emails every 6 hours.</p>
         `),
       })

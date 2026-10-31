@@ -5,9 +5,15 @@ import { SITE_URL } from "./siteConfig";
 
 const EMAIL_RE = /^[^\s@<>",;]+@[^\s@<>",;]+\.[^\s@<>",;]+$/;
 
-/** Why an email wasn't sent, when it's worth telling apart: "quota" is
- *  Resend's daily or monthly sending limit, which no retry today fixes. */
-export type SendResult = { ok: true } | { ok: false; reason?: "quota" };
+/** Why an email wasn't sent: "quota" is Resend's daily or monthly
+ *  sending limit, which no retry today fixes; "refused" is any other
+ *  refusal from Resend (status says which); "timeout" and "unreachable"
+ *  are Resend not answering in time or at all; "bad_address" is an address
+ *  the site wouldn't send to; "not_configured" is no RESEND_API_KEY. The
+ *  sign-up alert names it, so it says what actually went wrong
+ *  (lib/signupHealth.ts). */
+export type SendFailure = "quota" | "refused" | "timeout" | "unreachable" | "bad_address" | "not_configured";
+export type SendResult = { ok: true } | { ok: false; reason?: SendFailure; status?: number };
 
 /** Sends one email, through Resend from megadeal.co.nz (sendWithResend below). */
 export async function sendTransactionalEmail(msg: Parameters<typeof sendEmail>[0]): Promise<boolean> {
@@ -57,7 +63,7 @@ export async function sendEmail({
   const safeReplyTo = replyTo ? headerSafe(replyTo, 320).split(",")[0].trim() || undefined : undefined;
   if (!recipients.length || !recipients.every((a) => EMAIL_RE.test(a)) || (safeReplyTo && !EMAIL_RE.test(safeReplyTo))) {
     console.error("[sendTransactionalEmail] refused: not an email address");
-    return { ok: false };
+    return { ok: false, reason: "bad_address" };
   }
   const tagged = withEmailUtm(html, SITE_URL, campaign);
   return sendWithResend({ to: recipients, subject: safeSubject, html: tagged, replyTo: safeReplyTo, unsubscribeUrl }, withinMs);
@@ -87,7 +93,7 @@ async function sendWithResend(msg: { to: string[]; subject: string; html: string
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     console.error("[sendTransactionalEmail] RESEND_API_KEY isn't set");
-    return { ok: false };
+    return { ok: false, reason: "not_configured" };
   }
   const headers: Record<string, string> = {};
   if (msg.unsubscribeUrl) {
@@ -129,10 +135,11 @@ async function sendWithResend(msg: { to: string[]; subject: string; html: string
       }
       // The provider's answer, never the message or the address.
       console.error("[sendTransactionalEmail] Resend refused", res.status, answer);
-      return quota ? { ok: false, reason: "quota" } : { ok: false };
+      return quota ? { ok: false, reason: "quota", status: res.status } : { ok: false, reason: "refused", status: res.status };
     }
   } catch (err) {
     console.error("[sendTransactionalEmail] Resend unreachable", err);
-    return { ok: false };
+    const timedOut = err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
+    return { ok: false, reason: timedOut ? "timeout" : "unreachable" };
   }
 }

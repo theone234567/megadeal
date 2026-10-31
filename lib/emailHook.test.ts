@@ -5,7 +5,7 @@ import { NextRequest } from "next/server";
 /** Supabase's "send email" hook (app/api/auth/email-hook): signed requests only, sign-up codes only. */
 
 const sent: { to: string; subject: string }[] = [];
-vi.mock("@/lib/sendEmail", () => ({ sendTransactionalEmail: async (m: { to: string; subject: string }) => (sent.push(m), true) }));
+vi.mock("@/lib/sendEmail", () => ({ sendEmail: async (m: { to: string; subject: string }) => (sent.push(m), { ok: true }) }));
 const kv = new Map<string, string>();
 vi.mock("@/lib/rateLimit", () => ({
   checkRateLimit: async () => ({ limited: false }),

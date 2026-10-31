@@ -29,6 +29,10 @@ export const MESSAGES_SEEN_KEY = "admin:messages:seen";
  *  code next goes out (SIGNUP_CODE_SENT_KEY). */
 export const SIGNUP_PROBLEM_KEY = "auth:signup:problem";
 
+/** Why the email hook's last send failed (lib/sendEmail.ts SendFailure),
+ *  read by the sign-up alert so it says what went wrong. */
+export const SIGNUP_SEND_FAILURE_KEY = "auth:email-hook:send-failure";
+
 /** When the email hook last sent a sign-up code successfully. */
 export const SIGNUP_CODE_SENT_KEY = "auth:signup:code-sent";
 
