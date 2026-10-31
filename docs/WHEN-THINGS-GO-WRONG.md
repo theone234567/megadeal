@@ -42,6 +42,19 @@ The 6-digit code a new business needs couldn't be sent, so nobody new can
 finish signing up. The admin page's Needs attention shows it until a code
 goes out again; you get at most one email about it every 6 hours.
 
+The email and the warning say what the site found, after the error code:
+"Resend's sending limit reached", "Resend refused the email (422)",
+"Resend didn't answer in time", or "Supabase didn't reach the site". Start
+with what it names; for "Supabase didn't reach the site", start at step 1.
+
+**Contact the business.** Supabase doesn't keep an account whose code
+couldn't be sent, so it won't be under Authentication > Users. Needs
+attention lists each address that tried (with a Done button once you've
+been in touch); the business itself was told to try again in a few
+minutes or contact us. Failing that (the list started on 31 Oct 2026),
+Supabase > **Logs** > **Auth** shows the address: search for
+`unexpected_failure` (the free plan keeps these logs for about a day).
+
 1. Cloudflare > **megadeal.co.nz** > **Security** > **Settings**: **Bot
    fight mode** must be **off** (it blocks Supabase, which sends the
    request for the code).
@@ -61,7 +74,10 @@ so start at step 3.
 1. Go to **resend.com** > **Emails**: each one says delivered, bounced or
    failed, and why.
 2. If it says you've reached a sending limit, the free plan's daily limit is
-   used up: wait until tomorrow, or move to a paid plan for the month.
+   used up: wait until tomorrow, or move to a paid plan for the month. (Bulk
+   emails — the subscriber email, the weekly deals email, login invites —
+   stop for the day at 75 on the free plan, so the last 25 of the 100 stay
+   free for sign-up codes and password resets.)
 3. If a domain problem is shown, check Resend > **Domains**: megadeal.co.nz
    should say **Verified**.
 
